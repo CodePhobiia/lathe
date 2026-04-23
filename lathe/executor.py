@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw
 from .assembly_ir import AssemblyIR
 from .capabilities import probe_blender, probe_topology_backend, probe_uv_backend
 from .backends import resolve_selected_backends
+from .constants import RNG_PRIME_OFFSET
 from .checker import check_program
 from .feature_ir import FeatureIR
 from .fit_ir import FitIR
@@ -1173,7 +1174,7 @@ def _make_color(name: str) -> tuple[int, int, int]:
 
 
 def _candidate_rng(seed: int, index: int) -> np.random.Generator:
-    return np.random.default_rng(seed + index * 7919)
+    return np.random.default_rng(seed + index * RNG_PRIME_OFFSET)
 
 
 def _translated_box(extents: Iterable[float], center: Iterable[float]) -> trimesh.Trimesh:

@@ -11,6 +11,7 @@ from PIL import Image
 
 from .asset_graph import build_asset_graph
 from .conformance import fit_provider_proposals
+from .constants import RNG_PRIME_OFFSET
 from .scaffold_compiler import compile_scaffold_candidates
 from .shape_providers import maybe_run_shape_provider
 
@@ -56,7 +57,7 @@ def _make_color(name: str) -> tuple[int, int, int]:
 
 
 def _candidate_rng(seed: int, index: int) -> np.random.Generator:
-    return np.random.default_rng(seed + index * 7919)
+    return np.random.default_rng(seed + index * RNG_PRIME_OFFSET)
 
 
 def _translated_box(extents: Iterable[float], center: Iterable[float]) -> trimesh.Trimesh:

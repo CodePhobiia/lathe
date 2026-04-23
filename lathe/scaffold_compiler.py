@@ -10,6 +10,7 @@ import trimesh
 from .assembly_kernel import compile_assembly_blueprint
 from .asset_graph import AssetGraph
 from .blueprints import resolve_blueprint
+from .constants import RNG_PRIME_OFFSET
 from .candidate_search import apply_candidate_params, generate_candidate_params, objective_weights
 from .feature_grammar import compile_feature_enhancements
 from .fidelity import infer_fidelity_profile
@@ -26,7 +27,7 @@ def _make_color(name: str) -> tuple[int, int, int]:
 
 
 def _candidate_rng(seed: int, index: int) -> np.random.Generator:
-    return np.random.default_rng(seed + index * 7919)
+    return np.random.default_rng(seed + index * RNG_PRIME_OFFSET)
 
 
 def _translated_box(extents: tuple[float, float, float], center: tuple[float, float, float]) -> trimesh.Trimesh:
