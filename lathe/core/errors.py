@@ -1,18 +1,18 @@
 """Build-stage error classes and diagnostic helpers.
 
-Extracted from ``lathe/executor.py`` during Stage 2.IV. ``BuildError`` is
-re-exported from ``lathe.executor`` so all existing imports continue to work.
+Stage 2.V (Wave 2) moved the authoritative definition of ``BuildError`` into
+``lathe/errors.py`` as part of the unified :class:`lathe.errors.LatheError`
+hierarchy. This module re-exports it so all existing imports
+(``from lathe.core.errors import BuildError`` and — through the
+``lathe.executor`` shim — ``from lathe.executor import BuildError``) keep
+working.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-
-class BuildError(Exception):
-    def __init__(self, message: str, diagnostics: list[dict[str, Any]] | None = None) -> None:
-        super().__init__(message)
-        self.diagnostics = diagnostics or []
+from ..errors import BuildError  # re-export — authoritative definition lives in lathe/errors.py
 
 
 def runtime_stage_error(
@@ -40,3 +40,6 @@ def runtime_stage_error(
             }
         ],
     )
+
+
+__all__ = ["BuildError", "runtime_stage_error"]

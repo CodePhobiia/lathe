@@ -3,13 +3,12 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+# re-export — authoritative definition lives in lathe/errors.py
+from .errors import BackendResolutionError
+
 
 PACKAGE_FORMATS = ["usd", "usdz", "glb", "gltf", "fbx", "obj"]
 BACKEND_SELECTION_STAGES = ["shape", "topology", "uv", "package"]
-
-
-class BackendResolutionError(Exception):
-    pass
 
 
 BACKENDS: dict[str, dict[str, Any]] = {

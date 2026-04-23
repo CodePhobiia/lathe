@@ -11,30 +11,9 @@ from PIL import Image, ImageDraw
 
 from .bridge.blender_plan import build_bridge_plan
 from .capabilities import probe_blender
+from .errors import BlenderExecutionError  # re-export — authoritative definition lives in lathe/errors.py
 from .inspection.evidence import build_inspection_policy_ir, build_validation_evidence_ir
 from .render_eval import evaluate_render_views
-
-
-class BlenderExecutionError(Exception):
-    """Raised when a Blender subprocess exits non-zero or signals an error on stderr.
-
-    TODO(Stage 2.V): relocate to lathe/errors.py once the shared errors module lands.
-    """
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        blender_path: str | None = None,
-        returncode: int | None = None,
-        stderr_tail: str | None = None,
-        matched_patterns: list[str] | None = None,
-    ) -> None:
-        super().__init__(message)
-        self.blender_path = blender_path
-        self.returncode = returncode
-        self.stderr_tail = stderr_tail
-        self.matched_patterns = list(matched_patterns or [])
 
 
 _BLENDER_STDERR_ERROR_PATTERNS: tuple[str, ...] = (

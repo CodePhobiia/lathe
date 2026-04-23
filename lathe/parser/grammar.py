@@ -4,6 +4,9 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
+# re-export — authoritative definitions live in lathe/errors.py
+from ..errors import DuplicateFieldError, LatheParseError
+
 
 def _find_grammar_path() -> Path:
     here = Path(__file__).resolve()
@@ -16,17 +19,6 @@ def _find_grammar_path() -> Path:
 
 GRAMMAR_PATH = _find_grammar_path()
 REPO_ROOT = GRAMMAR_PATH.parent.parent
-
-
-class LatheParseError(Exception):
-    pass
-
-
-class DuplicateFieldError(LatheParseError):
-    def __init__(self, path: str, context: str) -> None:
-        super().__init__(f"Duplicate assignment to '{path}' in {context} block")
-        self.path = path
-        self.context = context
 
 
 _UNIT_RE = re.compile(

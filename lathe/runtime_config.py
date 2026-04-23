@@ -9,18 +9,14 @@ from typing import Any
 
 import jsonschema
 
+# re-export — authoritative definition lives in lathe/errors.py
+from .errors import RuntimeConfigError
+
 
 _MAX_CONFIG_BYTES = 256 * 1024
 _SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema" / "runtime_config.schema.json"
 _SCHEMA_CACHE: dict[str, Any] | None = None
 _VALIDATOR_CACHE: jsonschema.Draft202012Validator | None = None
-
-
-class RuntimeConfigError(RuntimeError):
-    """Raised when a user-supplied runtime config is malformed or fails schema validation.
-
-    Re-homed under LatheError in Stage 2.V.
-    """
 
 
 def _load_schema() -> jsonschema.Draft202012Validator:

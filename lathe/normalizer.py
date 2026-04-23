@@ -20,6 +20,8 @@ from .defaults import (
     VALIDATE_REPAIR_DEFAULTS,
     VARIANT_DEFAULTS,
 )
+# re-export — authoritative definition lives in lathe/errors.py
+from .errors import NormalizationError
 from .utils import dedupe_keep_first, deep_fill_missing
 
 
@@ -72,10 +74,6 @@ CANONICAL_ASSET_KEYS = [
     "publish",
 ]
 CANONICAL_VARIANT_KEYS = ["node_type", "name", "on", "patches"]
-
-
-class NormalizationError(Exception):
-    pass
 
 
 def _ordered(mapping: dict[str, Any], keys: list[str]) -> dict[str, Any]:

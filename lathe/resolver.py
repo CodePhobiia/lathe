@@ -4,22 +4,13 @@ import logging
 from copy import deepcopy
 from typing import Any
 
+# re-export — authoritative definitions live in lathe/errors.py
+from .errors import ResolutionError, UnresolvedNameError
 from .normalizer import normalize_asset
 from .utils import append_by_path, deep_merge, has_path, remove_by_path, set_by_path, unset_by_path
 
 
 log = logging.getLogger(__name__)
-
-
-class ResolutionError(Exception):
-    pass
-
-
-class UnresolvedNameError(ResolutionError):
-    """Raised when a required named declaration cannot be resolved.
-
-    Re-homed under LatheError in Stage 2.V.
-    """
 
 
 def _resolve_required(name: str, mapping: dict[str, Any], kind: str) -> Any:

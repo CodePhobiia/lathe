@@ -3,11 +3,9 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+# re-export — authoritative definition lives in lathe/errors.py
+from .errors import PatchAPIError
 from .normalizer import normalize_program
-
-
-class PatchAPIError(Exception):
-    pass
 
 
 def _decl(program: dict[str, Any], collection: str, name: str) -> dict[str, Any]:
