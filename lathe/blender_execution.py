@@ -15,6 +15,38 @@ from .inspection.evidence import build_inspection_policy_ir, build_validation_ev
 from .render_eval import evaluate_render_views
 
 
+class BlenderExecutionError(Exception):
+    """Raised when a Blender subprocess exits non-zero or signals an error on stderr.
+
+    TODO(Stage 2.V): relocate to lathe/errors.py once the shared errors module lands.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        blender_path: str | None = None,
+        returncode: int | None = None,
+        stderr_tail: str | None = None,
+        matched_patterns: list[str] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.blender_path = blender_path
+        self.returncode = returncode
+        self.stderr_tail = stderr_tail
+        self.matched_patterns = list(matched_patterns or [])
+
+
+_BLENDER_STDERR_ERROR_PATTERNS: tuple[str, ...] = (
+    "Error:",
+    "Traceback (most recent call last):",
+    "Python script failed",
+    "Segmentation fault",
+    "Fatal Python error:",
+    "AddressSanitizer:",
+)
+
+
 IMAGE_BG = (246, 247, 250, 255)
 LINE_COLOR = (30, 36, 44, 255)
 BACKEND_IDS = {
@@ -227,11 +259,20 @@ def _export_blend_artifact(blender: dict[str, Any], input_glb: Path, output_blen
         text=True,
         timeout=300,
     )
+    stderr_text = proc.stderr or ""
+    matched_patterns = [pat for pat in _BLENDER_STDERR_ERROR_PATTERNS if pat in stderr_text]
+    stderr_signaled_error = bool(matched_patterns)
+    stderr_tail = stderr_text.strip()[-2000:] or None
+    subprocess_failed = proc.returncode != 0 or stderr_signaled_error
+    ok = (not subprocess_failed) and output_blend.exists()
     return {
-        "ok": proc.returncode == 0 and output_blend.exists(),
+        "ok": ok,
         "stdout_tail": (proc.stdout or "").strip()[-800:] or None,
-        "stderr_tail": (proc.stderr or "").strip()[-800:] or None,
+        "stderr_tail": stderr_tail,
         "returncode": proc.returncode,
+        "blender_path": blender.get("path"),
+        "stderr_signaled_error": stderr_signaled_error,
+        "matched_stderr_patterns": matched_patterns,
     }
 
 

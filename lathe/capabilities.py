@@ -2,16 +2,56 @@ from __future__ import annotations
 
 import importlib.metadata
 import importlib.util
+import ipaddress
 import json
 import os
 import platform
 import shutil
+import socket
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+
+# TODO(Stage 2.V): move these SSRF guard helpers into lathe/net.py once that module lands.
+_LOOPBACK_HOSTS: frozenset[str] = frozenset({"localhost", "127.0.0.1", "::1"})
+_HUNYUAN_PROBE_MAX_BODY_BYTES = 64 * 1024
+_HUNYUAN_PROBE_MAX_TIMEOUT_S = 5.0
+
+
+def _is_loopback_host(host: str) -> bool:
+    return host.strip("[]").lower() in _LOOPBACK_HOSTS
+
+
+def _is_private_address(addr_str: str) -> bool:
+    try:
+        addr = ipaddress.ip_address(addr_str)
+    except ValueError:
+        return False
+    if addr.is_loopback or addr.is_private or addr.is_link_local or addr.is_multicast or addr.is_reserved or addr.is_unspecified:
+        return True
+    if isinstance(addr, ipaddress.IPv4Address):
+        # CGNAT 100.64.0.0/10 is not flagged as private by ipaddress.
+        if ipaddress.IPv4Address("100.64.0.0") <= addr <= ipaddress.IPv4Address("100.127.255.255"):
+            return True
+    return False
+
+
+def _resolve_host_addresses(host: str) -> list[str]:
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except OSError:
+        return []
+    addresses: list[str] = []
+    for info in infos:
+        sockaddr = info[4]
+        if sockaddr and isinstance(sockaddr[0], str):
+            addresses.append(sockaddr[0])
+    return addresses
 
 
 DEFAULT_HUNYUAN_BASE_URL = "http://localhost:8081"
@@ -388,14 +428,97 @@ def probe_vggt(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
 def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
     provider_cfg = ((runtime_config or {}).get("shape", {}).get("providers", {}).get("hunyuan2_1_http", {}))
     base_url = str(provider_cfg.get("base_url", DEFAULT_HUNYUAN_BASE_URL)).rstrip("/")
-    timeout_s = int(provider_cfg.get("health_timeout_s", 5))
+    configured_timeout = float(provider_cfg.get("health_timeout_s", 5))
+    timeout_s = min(configured_timeout if configured_timeout > 0 else _HUNYUAN_PROBE_MAX_TIMEOUT_S, _HUNYUAN_PROBE_MAX_TIMEOUT_S)
     if not base_url:
         return {"configured": False, "available": False, "code": "missing_base_url"}
+
+    try:
+        parsed = urllib.parse.urlsplit(base_url)
+    except ValueError as exc:
+        return {
+            "configured": True,
+            "available": False,
+            "base_url": base_url,
+            "code": "invalid_url",
+            "message": f"Could not parse base_url: {exc}",
+        }
+
+    scheme = (parsed.scheme or "").lower()
+    if scheme not in {"http", "https"}:
+        return {
+            "configured": True,
+            "available": False,
+            "base_url": base_url,
+            "code": "scheme_insecure",
+            "message": f"Only http/https schemes are permitted for probe, got '{parsed.scheme}'",
+        }
+
+    hostname = (parsed.hostname or "").lower()
+    if not hostname:
+        return {
+            "configured": True,
+            "available": False,
+            "base_url": base_url,
+            "code": "invalid_url",
+            "message": "base_url is missing a hostname",
+        }
+
+    host_is_loopback = _is_loopback_host(hostname)
+    if scheme == "http" and not host_is_loopback:
+        return {
+            "configured": True,
+            "available": False,
+            "base_url": base_url,
+            "code": "scheme_insecure",
+            "message": "Plain http is only permitted for loopback hosts (localhost, 127.0.0.1, ::1)",
+        }
+
+    if not host_is_loopback:
+        resolved = _resolve_host_addresses(hostname)
+        if not resolved:
+            return {
+                "configured": True,
+                "available": False,
+                "base_url": base_url,
+                "code": "dns_resolution_failed",
+                "message": f"Could not resolve host '{hostname}'",
+            }
+        for addr in resolved:
+            if _is_private_address(addr):
+                return {
+                    "configured": True,
+                    "available": False,
+                    "base_url": base_url,
+                    "code": "private_ip_rejected",
+                    "message": f"Host '{hostname}' resolves to a private/loopback/link-local/CGNAT address ({addr})",
+                }
+
     url = base_url + "/health"
     req = urllib.request.Request(url, method="GET")
     try:
         with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-            body = resp.read().decode("utf-8", errors="replace")
+            content_type = (resp.headers.get("Content-Type") or "").split(";", 1)[0].strip().lower()
+            if content_type not in {"application/json", "text/json"}:
+                return {
+                    "configured": True,
+                    "available": False,
+                    "base_url": base_url,
+                    "status": getattr(resp, "status", 200),
+                    "code": "unexpected_content_type",
+                    "message": f"Expected JSON content-type, got '{content_type or '<missing>'}'",
+                }
+            raw = resp.read(_HUNYUAN_PROBE_MAX_BODY_BYTES + 1)
+            if len(raw) > _HUNYUAN_PROBE_MAX_BODY_BYTES:
+                return {
+                    "configured": True,
+                    "available": False,
+                    "base_url": base_url,
+                    "status": getattr(resp, "status", 200),
+                    "code": "response_too_large",
+                    "message": f"Health response exceeded {_HUNYUAN_PROBE_MAX_BODY_BYTES} bytes",
+                }
+            body = raw.decode("utf-8", errors="replace")
             payload = json.loads(body) if body.strip().startswith(("{", "[")) else {"raw": body}
             return {
                 "configured": True,
@@ -406,13 +529,17 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
                 "health": payload,
             }
     except urllib.error.HTTPError as exc:
+        try:
+            error_body = exc.read(_HUNYUAN_PROBE_MAX_BODY_BYTES).decode("utf-8", errors="replace")
+        except Exception:  # noqa: BLE001
+            error_body = ""
         return {
             "configured": True,
             "available": False,
             "base_url": base_url,
             "status": exc.code,
             "code": "http_error",
-            "message": exc.read().decode("utf-8", errors="replace"),
+            "message": error_body,
         }
     except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
         return {
