@@ -2,9 +2,89 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+
+import jsonschema
+
+
+_MAX_CONFIG_BYTES = 256 * 1024
+_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema" / "runtime_config.schema.json"
+_SCHEMA_CACHE: dict[str, Any] | None = None
+_VALIDATOR_CACHE: jsonschema.Draft202012Validator | None = None
+
+
+class RuntimeConfigError(RuntimeError):
+    """Raised when a user-supplied runtime config is malformed or fails schema validation.
+
+    Re-homed under LatheError in Stage 2.V.
+    """
+
+
+def _load_schema() -> jsonschema.Draft202012Validator:
+    global _SCHEMA_CACHE, _VALIDATOR_CACHE
+    if _VALIDATOR_CACHE is not None:
+        return _VALIDATOR_CACHE
+    try:
+        schema_text = _SCHEMA_PATH.read_text(encoding="utf-8")
+        _SCHEMA_CACHE = json.loads(schema_text)
+    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeConfigError(
+            f"runtime_config schema at {_SCHEMA_PATH} could not be loaded: {exc}"
+        ) from exc
+    _VALIDATOR_CACHE = jsonschema.Draft202012Validator(_SCHEMA_CACHE)
+    return _VALIDATOR_CACHE
+
+
+def _format_pointer(path_deque: Any) -> str:
+    parts = [str(p) for p in path_deque]
+    return "/" + "/".join(parts) if parts else "/"
+
+
+def _collect_unknown_keys(raw: Any, schema: Any, prefix: str = "") -> list[str]:
+    # Walk raw against schema, collecting keys not declared in `properties` for objects whose
+    # schema documents a properties block. We treat missing schema sub-nodes as "unconstrained"
+    # and do not report under them.
+    unknown: list[str] = []
+    if not isinstance(raw, dict) or not isinstance(schema, dict):
+        return unknown
+    properties = schema.get("properties") or {}
+    if properties:
+        for key, value in raw.items():
+            path = f"{prefix}/{key}" if prefix else f"/{key}"
+            if key not in properties:
+                unknown.append(path)
+            else:
+                unknown.extend(_collect_unknown_keys(value, properties[key], path))
+    else:
+        for key, value in raw.items():
+            path = f"{prefix}/{key}" if prefix else f"/{key}"
+            unknown.extend(_collect_unknown_keys(value, {}, path))
+    return unknown
+
+
+def _validate_runtime_config(raw: dict[str, Any], source: str) -> None:
+    validator = _load_schema()
+    errors = sorted(validator.iter_errors(raw), key=lambda e: list(e.absolute_path))
+    if errors:
+        first = errors[0]
+        pointer = _format_pointer(first.absolute_path)
+        snippet = repr(first.instance)
+        if len(snippet) > 120:
+            snippet = snippet[:117] + "..."
+        raise RuntimeConfigError(
+            f"runtime_config {source} failed schema validation at {pointer}: "
+            f"{first.message} (value={snippet})"
+        )
+    unknown_keys = _collect_unknown_keys(raw, _SCHEMA_CACHE or {})
+    if unknown_keys:
+        warnings.warn(
+            f"runtime_config {source} contains unknown keys (ignored, will become errors in a "
+            f"future release): {', '.join(unknown_keys)}",
+            stacklevel=3,
+        )
 
 
 DEFAULT_RUNTIME_CONFIG: dict[str, Any] = {
@@ -63,9 +143,41 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
     config = deepcopy(DEFAULT_RUNTIME_CONFIG)
     if path is not None:
-        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+        config_path = Path(path)
+        try:
+            stat_result = config_path.stat()
+        except FileNotFoundError as exc:
+            raise RuntimeConfigError(f"runtime_config file not found: {config_path}") from exc
+        except OSError as exc:
+            raise RuntimeConfigError(
+                f"runtime_config file could not be stat'd ({config_path}): {exc}"
+            ) from exc
+        if stat_result.st_size > _MAX_CONFIG_BYTES:
+            raise RuntimeConfigError(
+                f"runtime_config file exceeds 256 KiB "
+                f"({stat_result.st_size} bytes > {_MAX_CONFIG_BYTES}): {config_path}"
+            )
+        try:
+            text = config_path.read_text(encoding="utf-8")
+        except FileNotFoundError as exc:
+            raise RuntimeConfigError(f"runtime_config file not found: {config_path}") from exc
+        except UnicodeDecodeError as exc:
+            raise RuntimeConfigError(
+                f"runtime_config file is not valid UTF-8 ({config_path}): {exc}"
+            ) from exc
+        try:
+            raw = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise RuntimeConfigError(
+                f"runtime_config file contains invalid JSON ({config_path}): "
+                f"{exc.msg} at line {exc.lineno}, column {exc.colno}"
+            ) from exc
         if not isinstance(raw, dict):
-            raise TypeError("Runtime config must be a JSON object")
+            raise RuntimeConfigError(
+                f"runtime_config root must be a JSON object, got {type(raw).__name__} "
+                f"({config_path})"
+            )
+        _validate_runtime_config(raw, source=str(config_path))
         config = _deep_merge(config, raw)
     return apply_env_overrides(config)
 

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schemas/runtime_config-v1.json",
+  "title": "Lathe Runtime Config v1",
+  "description": "JSON schema for runtime_config files passed via --runtime-config. Mirrors DEFAULT_RUNTIME_CONFIG in lathe/runtime_config.py. Unknown keys are permitted (warned at load time) until stricter gates land in a later release.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "shape": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.-]+$",
+          "description": "Provider alias or fully-qualified provider id (e.g. auto, reference_conditioned_v1, hunyuan2_1_http, vggt_local, codex_imagegen)."
+        },
+        "strict": { "type": "boolean" },
+        "providers": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "hunyuan2_1_http": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "base_url": { "type": "string", "format": "uri" },
+                "timeout_s": { "type": "integer", "minimum": 1, "maximum": 3600 },
+                "url_allowlist": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "remove_background": { "type": "boolean" },
+                "texture": { "type": "boolean" },
+                "octree_resolution": { "type": "integer", "minimum": 1 },
+                "num_inference_steps": { "type": "integer", "minimum": 1 },
+                "guidance_scale": { "type": "number" },
+                "face_count": { "type": "integer", "minimum": 1 },
+                "type": { "type": "string" }
+              }
+            },
+            "vggt_local": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "path": { "type": "string" },
+                "weights": { "type": "string" },
+                "device": { "type": "string" },
+                "dtype": { "type": "string" },
+                "max_views": { "type": "integer", "minimum": 1 },
+                "stride": { "type": "integer", "minimum": 1 },
+                "min_confidence": { "type": "number" },
+                "max_edge_ratio": { "type": "number" },
+                "candidate_variants": { "type": "integer", "minimum": 1 },
+                "use_point_head": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "topology": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "adapter": { "type": "string" },
+        "strict": { "type": "boolean" },
+        "blender": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "path": { "type": ["string", "null"] },
+            "timeout_s": { "type": "integer", "minimum": 1, "maximum": 3600 },
+            "asset_libraries": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "addons": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "uv": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "adapter": { "type": "string" },
+        "strict": { "type": "boolean" },
+        "xatlas": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "resolution": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "backend": { "type": "string" },
+        "fallback_mode": { "type": "string" },
+        "codex_imagegen": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "mode": { "type": "string" },
+            "request_dir": { "type": "string" },
+            "output_dir": { "type": "string" }
+          }
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "blender": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "path": { "type": ["string", "null"] },
+            "strict": { "type": "boolean" },
+            "allow_autoexec": { "type": "boolean" },
+            "trusted": { "type": "boolean" },
+            "preserve_blend": { "type": "string" },
+            "asset_libraries": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "addons": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "render_device": { "type": "string" },
+            "request_dir": { "type": "string" },
+            "output_dir": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

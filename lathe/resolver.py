@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
 from typing import Any
 
@@ -7,8 +8,31 @@ from .normalizer import normalize_asset
 from .utils import append_by_path, deep_merge, has_path, remove_by_path, set_by_path, unset_by_path
 
 
+log = logging.getLogger(__name__)
+
+
 class ResolutionError(Exception):
     pass
+
+
+class UnresolvedNameError(ResolutionError):
+    """Raised when a required named declaration cannot be resolved.
+
+    Re-homed under LatheError in Stage 2.V.
+    """
+
+
+def _resolve_required(name: str, mapping: dict[str, Any], kind: str) -> Any:
+    if name not in mapping:
+        raise UnresolvedNameError(f"unresolved {kind}: {name}")
+    return mapping[name]
+
+
+def _resolve_optional(name: str, mapping: dict[str, Any], kind: str) -> Any | None:
+    if name in mapping:
+        return mapping[name]
+    log.debug("skipping optional %s %r: not in map", kind, name)
+    return None
 
 
 def _dedupe(values: list[Any]) -> list[Any]:
@@ -289,8 +313,24 @@ class Resolver:
             "reconstruct_policy": self._resolve_mapping_optional(self.reconstruct_policy_map, reconstruct_policy_name, "reconstruct_policy"),
             "adapt_policy": self._resolve_mapping_optional(self.adapt_policy_map, adapt_policy_name, "adapt_policy"),
             "assembly_policy": self._resolve_mapping_optional(self.assembly_policy_map, assembly_policy_name, "assembly_policy"),
-            "transfer_rules": [self._resolve_mapping_optional(self.transfer_rule_map, item, "transfer_rule") for item in transfer_rule_names if item in self.transfer_rule_map],
+            "transfer_rules": self._resolve_optional_list(
+                transfer_rule_names, self.transfer_rule_map, "transfer_rule"
+            ),
         }
+
+    def _resolve_optional_list(
+        self,
+        names: list[str],
+        mapping: dict[str, dict[str, Any]],
+        kind: str,
+    ) -> list[dict[str, Any]]:
+        resolved: list[dict[str, Any]] = []
+        for item in names:
+            decl = _resolve_optional(item, mapping, kind)
+            if decl is None:
+                continue
+            resolved.append(deepcopy(decl))
+        return resolved
 
     def materialize_asset(self, name: str, execution_profile_override: str | None = None) -> dict[str, Any]:
         explicit = self.derive_explicit_asset(name)
@@ -430,13 +470,21 @@ class Resolver:
         mask_program_names = _dedupe(list(merged["surface"].get("mask_programs", [])))
         trim_sheet_names = _dedupe(list(merged["surface"].get("trim_sheets", [])))
         pattern_names = _dedupe(list(merged["surface"].get("patterns", [])))
-        merged["surface"]["resolved_patterns"] = [self._resolve_pattern(item) for item in pattern_names if item in self.pattern_map]
+        merged["surface"]["resolved_patterns"] = self._resolve_optional_list(
+            pattern_names, self.pattern_map, "pattern"
+        )
         merged["surface"]["resolved_surface_program"] = resolved_surface_program
         merged["surface"]["resolved_surface_policy"] = resolved_surface_policy
         merged["surface"]["resolved_surface_backend"] = resolved_surface_backend
-        merged["surface"]["resolved_decal_libraries"] = [self._resolve_decal_library(item) for item in decal_library_names if item in self.decal_library_map]
-        merged["surface"]["resolved_mask_programs"] = [self._resolve_mask_program(item) for item in mask_program_names if item in self.mask_program_map]
-        merged["surface"]["resolved_trim_sheets"] = [self._resolve_trim_sheet(item) for item in trim_sheet_names if item in self.trim_sheet_map]
+        merged["surface"]["resolved_decal_libraries"] = self._resolve_optional_list(
+            decal_library_names, self.decal_library_map, "decal_library"
+        )
+        merged["surface"]["resolved_mask_programs"] = self._resolve_optional_list(
+            mask_program_names, self.mask_program_map, "mask_program"
+        )
+        merged["surface"]["resolved_trim_sheets"] = self._resolve_optional_list(
+            trim_sheet_names, self.trim_sheet_map, "trim_sheet"
+        )
         material_graph_name = str(merged["surface"].get("material_graph", "") or "")
         resolved_material_graph = self._resolve_mapping_optional(self.material_graph_map, material_graph_name, "material_graph")
         if resolved_material_graph:
