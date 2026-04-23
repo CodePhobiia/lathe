@@ -1,0 +1,98 @@
+{
+  "asset": "courier_drone",
+  "source_build": "dist_local/courier_drone",
+  "selection_notes": [
+    "generated from intent with 2 image refs",
+    "front_aspect=1.211934",
+    "side_aspect=1.105634",
+    "candidate_index=0"
+  ],
+  "topology": {
+    "mesh_stats": {
+      "vertex_count": 280,
+      "triangle_count": 504,
+      "watertight": true,
+      "volume": 28035.508964041353,
+      "bounds_min": [-41.328683, -29.309505, -44.521718],
+      "bounds_max": [41.637538, 13.074488, 44.121031],
+      "extents": [82.966221, 42.383993, 88.642749],
+      "body_count": 14
+    },
+    "part_groups": [
+      {
+        "name": "body",
+        "face_count": 84,
+        "vertex_count": 56,
+        "bounds_min": [-23.604696, -11.330566, -17.738638],
+        "bounds_max": [23.604696, 11.651243, 17.738638]
+      },
+      {
+        "name": "cargo_door",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [-10.899046, -12.89435, -0.354773],
+        "bounds_max": [10.899046, -10.19435, 11.707501]
+      },
+      {
+        "name": "landing_leg_l",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [17.878834, -29.309505, 7.424092],
+        "bounds_max": [21.478834, -11.309505, 11.024092]
+      },
+      {
+        "name": "landing_leg_r",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [-21.478834, -29.309505, -11.024092],
+        "bounds_max": [-17.878834, -11.309505, -7.424092]
+      },
+      {
+        "name": "rotor_fl",
+        "face_count": 96,
+        "vertex_count": 50,
+        "bounds_min": [25.368432, 11.724488, 28.252612],
+        "bounds_max": [41.236852, 13.074488, 44.121031]
+      },
+      {
+        "name": "rotor_fr",
+        "face_count": 96,
+        "vertex_count": 50,
+        "bounds_min": [-40.368257, 11.724488, 29.121206],
+        "bounds_max": [-26.237026, 13.074488, 43.252437]
+      },
+      {
+        "name": "rotor_rl",
+        "face_count": 96,
+        "vertex_count": 50,
+        "bounds_min": [24.967746, 11.724488, -44.521718],
+        "bounds_max": [41.637538, 13.074488, -27.851925]
+      },
+      {
+        "name": "rotor_rr",
+        "face_count": 96,
+        "vertex_count": 50,
+        "bounds_min": [-41.328683, 11.724488, -44.212863],
+        "bounds_max": [-25.276601, 13.074488, -28.16078]
+      }
+    ]
+  },
+  "interfaces": {
+    "sockets": [
+      {
+        "name": "battery_slot",
+        "position": [0.0, -8.117509, 22.160687]
+      },
+      {
+        "name": "underslung_mount",
+        "position": [0.0, -8.117509, 22.160687]
+      }
+    ],
+    "anchors": [
+      {
+        "name": "floor_contact",
+        "position": [0.0, -29.309505, -0.200343]
+      }
+    ]
+  }
+}

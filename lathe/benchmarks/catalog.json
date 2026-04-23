@@ -1,0 +1,134 @@
+{
+  "positive": [
+    {
+      "name": "brassbound_chest",
+      "file": "examples/brassbound_chest.lth",
+      "asset": "brassbound_chest",
+      "family": "brassbound_chest"
+    },
+    {
+      "name": "courier_drone",
+      "file": "examples/courier_drone.lth",
+      "asset": "courier_drone",
+      "family": "courier_drone"
+    },
+    {
+      "name": "sci_fi_wall_panel",
+      "file": "examples/sci_fi_wall_panel.lth",
+      "asset": "sci_fi_wall_panel",
+      "family": "sci_fi_wall_panel"
+    },
+    {
+      "name": "industrial_crate",
+      "file": "examples/industrial_crate.lth",
+      "asset": "industrial_crate",
+      "family": "industrial_crate"
+    },
+    {
+      "name": "mechanical_door",
+      "file": "examples/mechanical_door.lth",
+      "asset": "mechanical_door",
+      "family": "mechanical_door"
+    },
+    {
+      "name": "console_terminal",
+      "file": "examples/console_terminal.lth",
+      "asset": "console_terminal",
+      "family": "console_terminal"
+    },
+    {
+      "name": "service_cabinet",
+      "file": "examples/service_cabinet.lth",
+      "asset": "service_cabinet",
+      "family": "service_cabinet"
+    },
+    {
+      "name": "control_pedestal",
+      "file": "examples/control_pedestal.lth",
+      "asset": "control_pedestal",
+      "family": "control_pedestal"
+    },
+    {
+      "name": "supply_container",
+      "file": "examples/supply_container.lth",
+      "asset": "supply_container",
+      "family": "supply_container"
+    }
+  ],
+  "negative": [
+    {
+      "name": "legacy_brassbound_chest_v02",
+      "asset": "brassbound_chest",
+      "file": "examples/brassbound_chest.lth",
+      "snapshot": "legacy_outputs/legacy_brassbound_chest_v02.json"
+    },
+    {
+      "name": "legacy_courier_drone_v02",
+      "asset": "courier_drone",
+      "file": "examples/courier_drone.lth",
+      "snapshot": "legacy_outputs/legacy_courier_drone_v02.json"
+    }
+  ],
+  "near_miss": [
+    {
+      "name": "legacy_brassbound_chest_v04",
+      "asset": "brassbound_chest",
+      "file": "examples/brassbound_chest.lth",
+      "build_dir": "dist_v04_chest/brassbound_chest"
+    },
+    {
+      "name": "legacy_brassbound_chest_v05",
+      "asset": "brassbound_chest",
+      "file": "examples/brassbound_chest.lth",
+      "build_dir": "dist_v05_chest/brassbound_chest"
+    },
+    {
+      "name": "legacy_brassbound_chest_v06",
+      "asset": "brassbound_chest",
+      "file": "examples/brassbound_chest.lth",
+      "build_dir": "dist_v06_chest/brassbound_chest"
+    },
+    {
+      "name": "legacy_courier_drone_v04",
+      "asset": "courier_drone",
+      "file": "examples/courier_drone.lth",
+      "build_dir": "dist_v04_drone/courier_drone"
+    },
+    {
+      "name": "legacy_courier_drone_v05",
+      "asset": "courier_drone",
+      "file": "examples/courier_drone.lth",
+      "build_dir": "dist_v05_drone/courier_drone"
+    },
+    {
+      "name": "legacy_courier_drone_v06",
+      "asset": "courier_drone",
+      "file": "examples/courier_drone.lth",
+      "build_dir": "dist_v06_drone/courier_drone"
+    },
+    {
+      "name": "legacy_console_terminal_v03",
+      "asset": "console_terminal",
+      "file": "examples/console_terminal.lth",
+      "build_dir": "dist_v03_console/console_terminal"
+    },
+    {
+      "name": "legacy_console_terminal_v04",
+      "asset": "console_terminal",
+      "file": "examples/console_terminal.lth",
+      "build_dir": "dist_v04_console/console_terminal"
+    },
+    {
+      "name": "legacy_console_terminal_v05",
+      "asset": "console_terminal",
+      "file": "examples/console_terminal.lth",
+      "build_dir": "dist_v05_console/console_terminal"
+    },
+    {
+      "name": "legacy_console_terminal_v06",
+      "asset": "console_terminal",
+      "file": "examples/console_terminal.lth",
+      "build_dir": "dist_v06_console/console_terminal"
+    }
+  ]
+}

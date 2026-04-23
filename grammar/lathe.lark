@@ -1,0 +1,263 @@
+?start: program
+
+program: module_decl? import_decl* decl*
+
+module_decl: "module" qident
+import_decl: "import" qident
+
+?decl: profile_decl
+     | contract_decl
+     | critic_decl
+     | library_decl
+     | kit_decl
+     | pattern_decl
+     | family_decl
+     | component_decl
+     | assembly_decl
+     | trait_decl
+     | mechanism_decl
+     | material_decl
+     | surface_program_decl
+     | surface_backend_decl
+     | surface_policy_decl
+     | decal_library_decl
+     | mask_program_decl
+     | trim_sheet_decl
+     | palette_decl
+     | reference_set_decl
+     | reconstruct_policy_decl
+     | adapt_policy_decl
+     | assembly_policy_decl
+     | fit_profile_decl
+     | transfer_rule_decl
+     | execution_profile_decl
+     | render_fixture_decl
+     | bake_profile_decl
+     | library_binding_decl
+     | material_graph_decl
+     | inspection_policy_decl
+     | repair_policy_decl
+     | fixture_decl
+     | test_decl
+     | benchmark_decl
+     | space_decl
+     | asset_decl
+     | variant_decl
+
+use_clause: "uses" qident ("," qident)*
+
+profile_decl: "profile" IDENT use_clause? "{" defaults_block? rule_stmt* repair_block? "}"
+contract_decl: "contract" IDENT use_clause? "{" defaults_block? rule_stmt* repair_block? "}"
+
+critic_decl: "critic" IDENT "(" IDENT ":" "asset" ")" "=" critic_body
+?critic_body: weighted_critic | expr
+weighted_critic: "weighted" "{" weighted_item+ "}"
+weighted_item: metric_ref number
+
+family_decl: "family" IDENT (":" kind)? use_clause? "{" family_item* "}"
+?family_item: defaults_block
+            | params_block
+            | geometry_block
+            | features_block
+            | source_surface_block
+            | assembly_block
+            | space_inline_block
+            | search_inline_block
+            | repair_policy_inline_block
+            | rule_stmt
+            | assign_stmt
+
+component_decl: "component" IDENT use_clause? "{" component_item* "}"
+?component_item: params_block
+               | geometry_block
+               | features_block
+               | source_surface_block
+               | assembly_block
+               | assign_stmt
+
+assembly_decl: "assembly" IDENT use_clause? "{" assembly_decl_item* "}"
+?assembly_decl_item: params_block
+                   | geometry_block
+                   | features_block
+                   | assembly_block
+                   | assign_stmt
+
+trait_decl: "trait" IDENT use_clause? "{" trait_item* "}"
+?trait_item: defaults_block
+           | geometry_block
+           | features_block
+           | source_surface_block
+           | assembly_block
+           | repair_policy_inline_block
+           | rule_stmt
+           | assign_stmt
+
+mechanism_decl: "mechanism" IDENT use_clause? "{" mechanism_item* "}"
+?mechanism_item: params_block
+               | geometry_block
+               | assembly_block
+               | assign_stmt
+
+library_decl: "library" IDENT use_clause? "{" assign_stmt* "}"
+kit_decl: "kit" IDENT use_clause? "{" assign_stmt* "}"
+pattern_decl: "pattern" IDENT use_clause? "{" assign_stmt* "}"
+material_decl: "material" IDENT use_clause? "{" assign_stmt* "}"
+surface_program_decl: "surface_program" IDENT use_clause? "{" assign_stmt* "}"
+surface_backend_decl: "surface_backend" IDENT use_clause? "{" assign_stmt* "}"
+surface_policy_decl: "surface_policy" IDENT use_clause? "{" assign_stmt* "}"
+decal_library_decl: "decal_library" IDENT use_clause? "{" assign_stmt* "}"
+mask_program_decl: "mask_program" IDENT use_clause? "{" assign_stmt* "}"
+trim_sheet_decl: "trim_sheet" IDENT use_clause? "{" assign_stmt* "}"
+palette_decl: "palette" IDENT use_clause? "{" assign_stmt* "}"
+reference_set_decl: "reference_set" IDENT use_clause? "{" assign_stmt* "}"
+reconstruct_policy_decl: "reconstruct_policy" IDENT use_clause? "{" assign_stmt* "}"
+adapt_policy_decl: "adapt_policy" IDENT use_clause? "{" assign_stmt* "}"
+assembly_policy_decl: "assembly_policy" IDENT use_clause? "{" assign_stmt* "}"
+fit_profile_decl: "fit_profile" IDENT use_clause? "{" assign_stmt* "}"
+transfer_rule_decl: "transfer_rule" IDENT use_clause? "{" assign_stmt* "}"
+execution_profile_decl: "execution_profile" IDENT use_clause? "{" assign_stmt* "}"
+render_fixture_decl: "render_fixture" IDENT use_clause? "{" assign_stmt* "}"
+bake_profile_decl: "bake_profile" IDENT use_clause? "{" assign_stmt* "}"
+library_binding_decl: "library_binding" IDENT use_clause? "{" assign_stmt* "}"
+material_graph_decl: "material_graph" IDENT use_clause? "{" assign_stmt* "}"
+inspection_policy_decl: "inspection_policy" IDENT use_clause? "{" assign_stmt* "}"
+repair_policy_decl: "repair_policy" IDENT "{" assign_stmt* "}"
+fixture_decl: "fixture" IDENT "{" assign_stmt* "}"
+test_decl: "test" IDENT "{" assign_stmt* assert_stmt* "}"
+benchmark_decl: "benchmark" IDENT "{" assign_stmt* assert_stmt* "}"
+space_decl: "space" IDENT "{" space_stmt* "}"
+
+from_clause: "from" qident
+asset_decl: "asset" IDENT ":" kind from_clause? use_clause? "{" refs_block? intent_block? geometry_block? features_block? source_surface_block? assembly_block? fit_block? transfer_block? reuse_block? constraints_block? ingest_block? assembly_rules_block? execution_block? space_inline_block? search_inline_block? repair_policy_inline_block? build_block? validate_block? package_block? publish_block? "}"
+variant_decl: "variant" IDENT "on" qident "{" patch_stmt+ "}"
+
+kind: KIND
+KIND: "hard_surface_prop" | "env_module" | "mechanical_assembly"
+
+defaults_block: "defaults" "{" assign_stmt* "}"
+repair_block: "repair" "{" assign_stmt* "}"
+params_block: "params" "{" assign_stmt* "}"
+
+refs_block: "refs" "{" assign_stmt* "}"
+intent_block: "intent" "{" assign_stmt* "}"
+geometry_block: "geometry" "{" assign_stmt* "}"
+features_block: "features" "{" assign_stmt* "}"
+source_surface_block: "surface" "{" assign_stmt* "}"
+assembly_block: "assembly" "{" assign_stmt* "}"
+fit_block: "fit" "{" assign_stmt* "}"
+transfer_block: "transfer" "{" assign_stmt* "}"
+reuse_block: "reuse" "{" assign_stmt* "}"
+constraints_block: "constraints" "{" assign_stmt* "}"
+ingest_block: "ingest" "{" assign_stmt* "}"
+assembly_rules_block: "assembly_rules" "{" assign_stmt* "}"
+space_inline_block: "space" "{" space_stmt* "}"
+search_inline_block: "search" "{" space_stmt* "}"
+repair_policy_inline_block: "repair_policy" "{" assign_stmt* "}"
+execution_block: "execution" "{" assign_stmt* "}"
+
+build_block: "build" "{" shape_block? topology_block? uv_block? build_surface_block? rig_block? interfaces_block? physics_block? optimize_block? "}"
+shape_block: "shape" "{" assign_stmt* "}"
+topology_block: "topology" "{" assign_stmt* "}"
+uv_block: "uv" "{" assign_stmt* "}"
+build_surface_block: "surface" "{" assign_stmt* "}"
+rig_block: "rig" "{" assign_stmt* "}"
+interfaces_block: "interfaces" "{" assign_stmt* "}"
+physics_block: "physics" "{" assign_stmt* "}"
+optimize_block: "optimize" "{" assign_stmt* "}"
+
+validate_block: "validate" "{" rule_stmt* assign_stmt* repair_block? "}"
+package_block: "package" "{" assign_stmt* "}"
+publish_block: "publish" "{" assign_stmt* "}"
+
+rule_stmt: "ensure" expr                         -> ensure_rule
+         | "prefer" expr ("weight" number)?     -> prefer_rule
+
+space_stmt: "vary" path "in" expr                             -> vary_stmt
+          | "freeze" path                                     -> freeze_stmt
+          | "objective" objective_dir metric_ref ("weight" number)? -> objective_stmt
+          | "select" "best_of" number                         -> select_best_of_stmt
+          | assign_stmt
+
+objective_dir: "maximize" -> maximize_dir
+             | "minimize" -> minimize_dir
+
+assert_stmt: "assert" expr
+
+assign_stmt: path "=" expr
+
+patch_stmt: "set" path "=" expr      -> set_patch
+          | "append" path "=" expr   -> append_patch
+          | "remove" path "=" expr   -> remove_patch
+          | "unset" path              -> unset_patch
+
+?metric_ref: call | qident
+
+?expr: or_expr
+
+?or_expr: and_expr
+        | or_expr "or" and_expr       -> or_expr
+
+?and_expr: equality
+         | and_expr "and" equality    -> and_expr
+
+?equality: comparison
+         | equality "==" comparison   -> eq_expr
+         | equality "!=" comparison   -> neq_expr
+
+?comparison: sum
+           | comparison "<" sum       -> lt_expr
+           | comparison "<=" sum      -> lte_expr
+           | comparison ">" sum       -> gt_expr
+           | comparison ">=" sum      -> gte_expr
+           | comparison "in" sum      -> in_expr
+
+?sum: term
+    | sum "+" term                    -> add_expr
+    | sum "-" term                    -> sub_expr
+
+?term: factor
+     | term "*" factor                -> mul_expr
+     | term "/" factor                -> div_expr
+
+?factor: "not" factor                -> not_expr
+       | "-" factor                   -> neg_expr
+       | range_expr
+
+?range_expr: atom ".." atom          -> range_expr
+           | atom
+
+?atom: literal
+     | qident                         -> ident_expr
+     | list
+     | call
+     | "(" expr ")"
+
+list: "[" [expr ("," expr)* ","?] "]"
+call: qident "(" [args] ")"
+args: arg ("," arg)*
+?arg: IDENT ":" expr                 -> named_arg
+    | expr                            -> positional_arg
+
+path: IDENT ("." IDENT)*
+qident: IDENT ("." IDENT)*
+
+?literal: UNIT_LITERAL                -> unit_lit
+        | number                      -> number_lit
+        | STRING                      -> string_lit
+        | "true"                     -> true_lit
+        | "false"                    -> false_lit
+
+number: NUMBER
+
+IDENT: /[a-z][a-z0-9_]*/
+STRING: /"(?:\\.|[^"\\])*"/
+UNIT_LITERAL.2: /-?(?:\d+\.\d+|\d+)(?:mm|cm|m|deg|rad|g|kg|ms|s|kb|mb|gb|px|px_per_m|px_per_cm)\b/
+NUMBER: /-?(?:\d+\.\d+|\d+)/
+
+COMMENT_LINE: /\/\/[^\n]*/
+COMMENT_BLOCK: /\/\*[\s\S]*?\*\//
+
+%import common.WS
+%ignore WS
+%ignore COMMENT_LINE
+%ignore COMMENT_BLOCK

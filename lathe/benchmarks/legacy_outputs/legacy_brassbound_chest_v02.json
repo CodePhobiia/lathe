@@ -1,0 +1,94 @@
+{
+  "asset": "brassbound_chest",
+  "source_build": "dist_chest/brassbound_chest",
+  "selection_notes": [
+    "generated from intent with 0 image refs",
+    "front_aspect=None",
+    "side_aspect=None",
+    "candidate_index=0"
+  ],
+  "topology": {
+    "mesh_stats": {
+      "vertex_count": 80,
+      "triangle_count": 120,
+      "watertight": true,
+      "volume": 29039.979183748994,
+      "bounds_min": [-28.607809, -25.153098, -19.057288],
+      "bounds_max": [31.224674, 9.840462, 37.67035],
+      "extents": [59.832483, 34.99356, 56.727638],
+      "body_count": 10
+    },
+    "part_groups": [
+      {
+        "name": "body",
+        "face_count": 36,
+        "vertex_count": 24,
+        "bounds_min": [-16.112606, -9.569623, -19.057288],
+        "bounds_max": [16.112606, 9.840462, 19.057288]
+      },
+      {
+        "name": "foot_l",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [19.346388, -25.153098, 8.30979],
+        "bounds_max": [22.546388, -9.153098, 11.50979]
+      },
+      {
+        "name": "foot_r",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [-22.546388, -25.153098, -11.50979],
+        "bounds_max": [-19.346388, -9.153098, -8.30979]
+      },
+      {
+        "name": "front_hatch",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [-11.601076, -10.950182, -0.381146],
+        "bounds_max": [11.601076, -8.550182, 12.57781]
+      },
+      {
+        "name": "handle_l",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [-10.680043, -3.2, 23.27035],
+        "bounds_max": [-1.080043, 3.2, 37.67035]
+      },
+      {
+        "name": "handle_r",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [-28.607809, -3.2, 6.360582],
+        "bounds_max": [-19.007809, 3.2, 20.760582]
+      },
+      {
+        "name": "lid_panel",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [21.624674, -3.2, -7.2],
+        "bounds_max": [31.224674, 3.2, 7.2]
+      },
+      {
+        "name": "lock_plate",
+        "face_count": 12,
+        "vertex_count": 8,
+        "bounds_min": [11.675515, -3.2, 17.235324],
+        "bounds_max": [21.275515, 3.2, 31.635324]
+      }
+    ]
+  },
+  "interfaces": {
+    "sockets": [
+      {
+        "name": "loot_anchor",
+        "position": [0.0, -7.656318, 10.671315]
+      }
+    ],
+    "anchors": [
+      {
+        "name": "floor_contact",
+        "position": [0.0, -25.153098, 9.306531]
+      }
+    ]
+  }
+}
