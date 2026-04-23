@@ -1,0 +1,77 @@
+module std.components.supply_container
+
+component supply_body_shell {
+  part = body
+  tags = [body, shell, container]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component supply_lid_panel {
+  part = lid_panel
+  tags = [lid, panel]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = lid
+  }
+}
+
+component supply_strap_band {
+  part = strap_band
+  tags = [band, frame]
+  material_zone = warning_paint
+  geometry {
+    component_type = frame
+  }
+}
+
+component supply_latch_plate {
+  part = latch_plate
+  tags = [lock, latch, plate]
+  material_zone = warning_paint
+  geometry {
+    component_type = lock_plate
+  }
+}
+
+component supply_handle_l {
+  part = handle_l
+  tags = [handle, left]
+  interface_role = grip
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
+
+component supply_handle_r {
+  part = handle_r
+  tags = [handle, right]
+  interface_role = grip
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
+
+component supply_foot_l {
+  part = foot_l
+  tags = [foot, left]
+  interface_role = support
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = foot
+  }
+}
+
+component supply_foot_r {
+  part = foot_r
+  tags = [foot, right]
+  interface_role = support
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = foot
+  }
+}

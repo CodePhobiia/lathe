@@ -1,0 +1,421 @@
+{
+  "node_type": "asset",
+  "name": "courier_drone_mobile",
+  "kind": "mechanical_assembly",
+  "uses": [
+    "shipping_prop",
+    "mobile_runtime"
+  ],
+  "refs": {
+    "images": [
+      "refs/courier_front.png",
+      "refs/courier_side.png",
+      "refs/materials.jpg"
+    ],
+    "meshes": [],
+    "assets": [],
+    "materials": [],
+    "notes": []
+  },
+  "intent": {
+    "role": "last-mile courier drone",
+    "style": [
+      "premium",
+      "industrial",
+      "near-future"
+    ],
+    "parts": [
+      "body",
+      "rotor_fl",
+      "rotor_fr",
+      "rotor_rl",
+      "rotor_rr",
+      "cargo_door",
+      "landing_leg_l",
+      "landing_leg_r"
+    ],
+    "materials": [
+      "anodized_aluminum",
+      "carbon_fiber",
+      "amber_glass"
+    ],
+    "negatives": [
+      "military",
+      "toy_like",
+      "fragile"
+    ],
+    "scale": {
+      "type": "unit",
+      "value": 0.9,
+      "unit": "m"
+    },
+    "interactions": [
+      "pickup",
+      "open_cargo_door",
+      "dock_battery"
+    ],
+    "notes": []
+  },
+  "build": {
+    "optimize": {
+      "lods": 4,
+      "atlas": true,
+      "draw_calls": 2,
+      "texture_budget": {
+        "type": "unit",
+        "value": 16,
+        "unit": "mb"
+      },
+      "mesh_compression": true,
+      "backend": "auto",
+      "strip_hidden_faces": false,
+      "instance_candidates": false
+    },
+    "interfaces": {
+      "clearance": {
+        "type": "unit",
+        "value": 2,
+        "unit": "cm"
+      },
+      "sockets": [
+        "battery_slot",
+        "underslung_mount"
+      ],
+      "anchors": [
+        "floor_contact"
+      ],
+      "backend": "auto"
+    },
+    "surface": {
+      "resolution": {
+        "type": "unit",
+        "value": 2048,
+        "unit": "px"
+      },
+      "workflow": "pbr_metal_rough",
+      "maps": [
+        "basecolor",
+        "normal",
+        "orm",
+        "emissive"
+      ],
+      "bakes": [
+        "ao",
+        "curvature",
+        "id"
+      ],
+      "decals": [
+        "serials",
+        "warning_labels"
+      ],
+      "id_map": true,
+      "backend": "auto"
+    },
+    "shape": {
+      "mode": "generate",
+      "candidates": 12,
+      "seed": 42,
+      "symmetry": "x",
+      "preserve": [
+        "silhouette",
+        "part_graph",
+        "symmetry",
+        "proportions"
+      ],
+      "backend": "auto"
+    },
+    "topology": {
+      "retopo": "auto",
+      "target_quads": 18000,
+      "ngons": "forbid",
+      "preserve": [
+        "hard_edges",
+        "part_borders"
+      ],
+      "backend": "auto"
+    },
+    "uv": {
+      "sets": [
+        "base",
+        "lightmap"
+      ],
+      "unwrap": "auto",
+      "padding": {
+        "type": "unit",
+        "value": 8,
+        "unit": "px"
+      },
+      "texel_density": {
+        "type": "unit",
+        "value": 512,
+        "unit": "px_per_m"
+      },
+      "backend": "auto",
+      "tile_mode": "zero_to_one",
+      "pack_rotate": true,
+      "udims": []
+    },
+    "rig": {
+      "type": "rigid_mechanical",
+      "joints": [
+        "rotor_fl",
+        "rotor_fr",
+        "rotor_rl",
+        "rotor_rr",
+        "cargo_door"
+      ],
+      "pivot_policy": "studio_standard",
+      "joint_limits": "auto",
+      "backend": "auto"
+    },
+    "physics": {
+      "collision": "convex_decomp",
+      "max_hulls": 10,
+      "mass": "auto",
+      "center_of_mass": "auto",
+      "backend": "auto"
+    }
+  },
+  "validate": {
+    "rules": [
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "units",
+          "args": [
+            {
+              "name": null,
+              "value": "cm"
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "manifold",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "watertight",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "material_slots",
+          "args": [
+            {
+              "name": "max",
+              "value": 4
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "uv_range",
+          "args": [
+            {
+              "name": "set",
+              "value": "base"
+            },
+            {
+              "name": "range",
+              "value": {
+                "type": "range",
+                "from": 0,
+                "to": 1
+              }
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "lightmap_uvs",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "collision_proxy",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "pivots",
+          "args": [
+            {
+              "name": "policy",
+              "value": "studio_standard"
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "names",
+          "args": [
+            {
+              "name": "policy",
+              "value": "studio_standard"
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "texel_density",
+          "args": [
+            {
+              "name": "target",
+              "value": {
+                "type": "unit",
+                "value": 512,
+                "unit": "px_per_m"
+              }
+            },
+            {
+              "name": "tolerance",
+              "value": 0.1
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "runtime_budget",
+          "args": [
+            {
+              "name": "draw_calls",
+              "value": 3
+            },
+            {
+              "name": "texture_memory",
+              "value": {
+                "type": "unit",
+                "value": 32,
+                "unit": "mb"
+              }
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "prefer",
+        "expr": "silhouette_readability",
+        "weight": 0.3,
+        "node_type": "rule"
+      },
+      {
+        "kind": "prefer",
+        "expr": "part_coherence",
+        "weight": 0.2,
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "material_slots",
+          "args": [
+            {
+              "name": "max",
+              "value": 2
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "texture_budget",
+          "args": [
+            {
+              "name": "max",
+              "value": {
+                "type": "unit",
+                "value": 16,
+                "unit": "mb"
+              }
+            }
+          ]
+        },
+        "node_type": "rule"
+      }
+    ],
+    "repair": {
+      "mode": "auto_until_pass",
+      "max_rounds": 4,
+      "allow": [
+        "reselect_candidate",
+        "enforce_symmetry",
+        "seal_mesh",
+        "retopo_auto",
+        "reduce_tris",
+        "repack_uvs",
+        "rebake_maps",
+        "normalize_pivots",
+        "create_collision_proxy",
+        "generate_lods"
+      ],
+      "deny": [
+        "rebuild_shape"
+      ]
+    },
+    "score": "hero_prop",
+    "threshold": 0.82
+  },
+  "package": {
+    "formats": [
+      "usd",
+      "glb"
+    ],
+    "manifest": true,
+    "include_trace": true,
+    "previews": [
+      "turntable",
+      "wireframe",
+      "material_ids",
+      "uv_layout",
+      "collision",
+      "lod_sheet"
+    ],
+    "embed_textures": false,
+    "backend": "auto",
+    "naming": "auto"
+  },
+  "publish": {
+    "registry": "props/drones/courier_drone",
+    "version": "0.1.0",
+    "tags": [
+      "drone",
+      "courier",
+      "mechanical"
+    ],
+    "visibility": "studio",
+    "approval": "required",
+    "channel": "dev"
+  }
+}

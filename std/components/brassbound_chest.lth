@@ -1,0 +1,87 @@
+module std.components.brassbound_chest
+
+component chest_body {
+  part = body
+  tags = [body, shell]
+  material_zone = oak_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component chest_lid {
+  part = lid_panel
+  tags = [lid, panel]
+  articulation = hinge
+  material_zone = oak_body
+  geometry {
+    component_type = lid
+  }
+}
+
+component brass_latch_set {
+  part = lock_plate
+  tags = [lock, latch, plate]
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = lock_plate
+  }
+}
+
+component front_clasp {
+  part = front_clasp
+  tags = [clasp, lock, front]
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = latch
+  }
+}
+
+component side_handle_l {
+  part = handle_l
+  tags = [handle, left]
+  interface_role = grip
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = handle
+  }
+}
+
+component side_handle_r {
+  part = handle_r
+  tags = [handle, right]
+  interface_role = grip
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = handle
+  }
+}
+
+component support_foot_l {
+  part = foot_l
+  tags = [foot, left]
+  interface_role = support
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = foot
+  }
+}
+
+component support_foot_r {
+  part = foot_r
+  tags = [foot, right]
+  interface_role = support
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = foot
+  }
+}
+
+component chest_interior_liner {
+  part = interior_liner
+  tags = [liner, interior]
+  material_zone = velvet_interior
+  geometry {
+    component_type = panel
+  }
+}

@@ -1,0 +1,161 @@
+module studio.props.terminals.v12
+import std.families.console_terminal
+import std.surface_programs.v12_surface_authoring
+
+profile interactable_terminal_v12 {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_terminal_v12 uses interactable_terminal_v12 {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 24mb)
+}
+
+critic terminal_surface_prop(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.15
+  topology_quality 0.20
+  material_quality 0.20
+  runtime_efficiency 0.10
+  part_coherence 0.10
+}
+
+asset console_terminal_v12_surface: hard_surface_prop from console_terminal_family uses shipping_terminal_v12 {
+  intent {
+    role = "industrial console terminal with governed zone-first surface authoring"
+    style = ["industrial", "service_bay", "sci_fi"]
+    parts = [
+      body,
+      bezel_frame,
+      screen_panel,
+      console_panel,
+      stand_base,
+      socket_plate,
+    ]
+    materials = ["painted_steel", "smoked_glass", "rubber_trim"]
+    scale = 1.45m
+    interactions = [stand_in_world, read_status, plug_power]
+  }
+
+  surface {
+    program = console_terminal_hero
+    backend = codex_imagegen
+    policy = hero_zone_first_surface
+    authoring.backend = codex_imagegen
+    authoring.mode = zone_first
+    authoring.generate = [basecolor, wear_mask, decal_mask, detail_overlay]
+    authoring.derive = [roughness, orm, normal_detail]
+    decal_libraries = [industrial_console_decals]
+    mask_programs = [console_wear_masks]
+    trim_sheets = [console_trim_sheet]
+    patterns = [vent_slats_dense, cargo_fastener_grid]
+    palette = industrial_service_console
+    material_zones = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+    materials = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+    decals = [service_labels, screen_glow]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [console_body_shell, console_bezel, console_screen, console_panel_face, console_stand, power_socket_plate]
+    mechanisms = [console_service_panel_mechanism]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 27
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions, interfaces]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 13000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm, emissive]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = ["service_labels", "screen_glow"]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [power_socket]
+      anchors = [floor_contact]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 6
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 24mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = terminal_surface_prop
+    threshold = 0.84
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [reselect_candidate, repack_uvs, rebake_maps, reauthor_surface_layer, generate_lods]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout]
+    embed_textures = false
+  }
+}

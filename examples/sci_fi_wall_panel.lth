@@ -1,0 +1,161 @@
+module studio.env.modules
+
+profile sci_fi_env_module {
+  defaults {
+    build.optimize.lods = 3
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_module uses sci_fi_env_module {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 16mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic module_prop(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.15
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.15
+}
+
+asset sci_fi_wall_panel: env_module uses shipping_module {
+  intent {
+    role = "sci fi wall control panel"
+    style = ["clean_room", "modular", "industrial"]
+    parts = [
+      body,
+      screen_panel,
+      screen_frame,
+      vent_l,
+      vent_r,
+      console_strip,
+      mount_top,
+      mount_bottom,
+    ]
+    materials = ["painted_steel", "smoked_glass", "amber_indicator"]
+    negatives = ["fantasy", "organic", "medieval"]
+    scale = 1.4m
+    interactions = [wall_mount, plug_power, view_status]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 4
+      seed = 23
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions, interfaces]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 9000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm, emissive]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = ["maintenance_label", "warning_stripes"]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [power_socket]
+      anchors = [wall_mount_anchor]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 4
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = module_prop
+    threshold = 0.84
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 3
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "env/modules/sci_fi_wall_panel"
+    version = "0.1.0"
+    tags = ["panel", "wall", "sci_fi", "module"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}

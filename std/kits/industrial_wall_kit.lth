@@ -1,0 +1,17 @@
+module std.kits.industrial_wall_kit
+
+kit industrial_wall_kit {
+  family = sci_fi_wall_panel_family
+  modules = [
+    wall_panel_shell,
+    wall_screen_bezel,
+    wall_frame_panel,
+    wall_vent_l,
+    wall_vent_r,
+    wall_mount_top,
+    wall_mount_bottom,
+  ]
+  snap_grid = 10cm
+  clearance = 1cm
+  allowed_joins = [panel_to_panel, panel_to_frame, panel_to_vent]
+}

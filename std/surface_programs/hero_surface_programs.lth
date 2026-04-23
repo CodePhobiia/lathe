@@ -1,0 +1,102 @@
+module std.surface_programs.hero_surface_programs
+
+surface_program chest_wood_brass_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [crest, trim_wear]
+  patterns = [plank_spacing_hero, rivet_row_hero]
+  zones.body = oak_body
+  zones.lid = oak_body
+  zones.panel = oak_body
+  zones.lock = aged_brass_trim
+  zones.handle = aged_brass_trim
+  zones.foot = aged_brass_trim
+  zones.hinge = aged_brass_trim
+  zones.clasp = aged_brass_trim
+  zones.liner = velvet_interior
+}
+
+surface_program industrial_crate_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [shipping_mark, warning_band, trim_band, service_label]
+  patterns = [cargo_fastener_grid, warning_stripe_band]
+  zones.body = painted_steel_body
+  zones.lid = painted_steel_body
+  zones.handle = rubber_trim_dark
+  zones.foot = rubber_trim_dark
+  zones.plate = painted_steel_body
+  zones.guard = aged_brass_trim
+}
+
+surface_program mechanical_door_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id, emissive]
+  bakes = [ao, curvature, id]
+  decals = [door_number, warning_band]
+  patterns = [warning_stripe_band, vent_slats_dense]
+  zones.body = painted_steel_body
+  zones.door = painted_steel_body
+  zones.hinge = aged_brass_trim
+  zones.handle = rubber_trim_dark
+  zones.threshold = painted_steel_body
+  zones.light = smoked_glass_screen
+}
+
+surface_program console_terminal_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id, emissive]
+  bakes = [ao, curvature, id]
+  decals = [service_labels, screen_glow]
+  patterns = [vent_slats_dense, cargo_fastener_grid]
+  zones.body = painted_steel_body
+  zones.panel = painted_steel_body
+  zones.vent = painted_steel_body
+  zones.screen = smoked_glass_screen
+  zones.bezel = rubber_trim_dark
+  zones.socket = rubber_trim_dark
+}
+
+surface_program service_cabinet_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [service_label, warning_band]
+  patterns = [vent_slats_dense, cargo_fastener_grid]
+  zones.body = painted_steel_body
+  zones.door = painted_steel_body
+  zones.handle = rubber_trim_dark
+  zones.foot = rubber_trim_dark
+  zones.vent = warning_paint
+  zones.shelf = painted_steel_body
+}
+
+surface_program control_pedestal_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id, emissive]
+  bakes = [ao, curvature, id]
+  decals = [service_labels, screen_glow]
+  patterns = [vent_slats_dense, cargo_fastener_grid]
+  zones.body = painted_steel_body
+  zones.panel = painted_steel_body
+  zones.screen = smoked_glass_screen
+  zones.bezel = rubber_trim_dark
+  zones.socket = rubber_trim_dark
+  zones.base = painted_steel_body
+}
+
+surface_program supply_container_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [shipping_mark, service_label]
+  patterns = [cargo_fastener_grid, warning_stripe_band]
+  zones.body = painted_steel_body
+  zones.lid = painted_steel_body
+  zones.band = warning_paint
+  zones.lock = warning_paint
+  zones.handle = rubber_trim_dark
+  zones.foot = rubber_trim_dark
+}

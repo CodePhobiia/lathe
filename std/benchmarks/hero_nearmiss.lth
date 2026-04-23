@@ -1,0 +1,19 @@
+module std.benchmarks.hero_nearmiss
+
+fixture legacy_brassbound_chest_v06_fixture {
+  asset = brassbound_chest
+  build_dir = "dist_v06_chest/brassbound_chest"
+  expect = fail
+}
+
+fixture legacy_courier_drone_v06_fixture {
+  asset = courier_drone
+  build_dir = "dist_v06_drone/courier_drone"
+  expect = fail
+}
+
+fixture legacy_console_terminal_v06_fixture {
+  asset = console_terminal
+  build_dir = "dist_v06_console/console_terminal"
+  expect = fail
+}

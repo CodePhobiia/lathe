@@ -1,0 +1,30 @@
+module std.libraries.industrial_assets
+
+library industrial_hardsurface_library {
+  families = [
+    sci_fi_wall_panel_family,
+    console_terminal_family,
+    mechanical_door_family,
+  ]
+  components = [
+    wall_panel_shell,
+    wall_screen_bezel,
+    wall_frame_panel,
+    wall_vent_l,
+    wall_vent_r,
+    console_body_shell,
+    console_bezel,
+    console_screen,
+    console_panel_face,
+    console_stand,
+  ]
+  materials = [
+    painted_steel_body,
+    smoked_glass_screen,
+    rubber_trim_dark,
+  ]
+  patterns = [
+    vent_slats_dense,
+    cargo_fastener_grid,
+  ]
+}

@@ -1,0 +1,48 @@
+module std.families.mechanical_door
+import std.components.mechanical_door
+import std.mechanisms.hero_mechanisms
+import std.palettes.hero_palettes
+import std.patterns.hero_patterns
+import std.surface_programs.hero_surface_programs
+import std.repair.hero_hardsurface
+import std.spaces.hero_spaces
+
+family mechanical_door_family: env_module {
+  runtime_family = mechanical_door
+  blueprint_id = lathe.blueprint.env_mechanical_door_v2
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [frame_split, hinge_cut, lock_cut, threshold_break]
+    edge_classes = [hero_bevel, frame_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_door_frame, preserve_threshold]
+  }
+
+  features {
+    allow = [inset_panel, frame_lip, hinge_set, support_bracket, vent_grille, edge_break]
+    density = hero
+  }
+
+  surface {
+    program = mechanical_door_hero
+    patterns = [warning_stripe_band, vent_slats_dense]
+    palette = mechanical_door_hero_palette
+    materials = [painted_steel_body, seal_rubber, smoked_glass_screen]
+    material_zones = [painted_steel_body, seal_rubber, smoked_glass_screen]
+    decals = [door_number, warning_band]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [door_frame_shell, door_leaf_panel, door_hinge_top, door_hinge_bottom, door_handle_main, door_lock_plate, threshold_trim_plate, status_light_module, side_bracket_l, side_bracket_r]
+    mechanisms = [door_hinge_mechanism, door_lock_mechanism]
+  }
+
+  search {
+    use = door_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "shape": {
+    "provider": "vggt_local",
+    "strict": true,
+    "providers": {
+      "vggt_local": {
+        "weights": "facebook/VGGT-1B",
+        "device": "auto",
+        "dtype": "auto",
+        "max_views": 6,
+        "stride": 6,
+        "min_confidence": 0.2,
+        "max_edge_ratio": 6.0,
+        "candidate_variants": 2,
+        "use_point_head": false
+      }
+    }
+  }
+}

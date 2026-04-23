@@ -1,0 +1,15 @@
+{
+  "shape": {
+    "provider": "auto",
+    "strict": false,
+    "providers": {
+      "hunyuan2_1_http": {
+        "base_url": "http://localhost:8081"
+      },
+      "vggt_local": {
+        "weights": "facebook/VGGT-1B",
+        "device": "auto"
+      }
+    }
+  }
+}

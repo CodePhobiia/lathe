@@ -1,0 +1,27 @@
+{
+  "shape_providers": [
+    {
+      "available": false,
+      "provider_id": "lathe.provider.shape.hunyuan2_1_http_v1",
+      "code": "probe_failed",
+      "message": "<urlopen error [Errno 111] Connection refused>",
+      "details": {}
+    },
+    {
+      "available": true,
+      "provider_id": "lathe.provider.shape.reference_conditioned_v1",
+      "details": {}
+    },
+    {
+      "available": false,
+      "provider_id": "lathe.provider.shape.vggt_local_v1",
+      "code": "missing_python_packages",
+      "message": "Missing local packages: ['vggt']",
+      "details": {
+        "missing": [
+          "vggt"
+        ]
+      }
+    }
+  ]
+}

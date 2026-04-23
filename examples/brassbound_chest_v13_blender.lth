@@ -1,0 +1,256 @@
+module studio.props.containers.v13
+import std.families.brassbound_chest
+import std.benchmarks.hero_nearmiss
+
+profile unreal_interactable_prop {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_prop uses unreal_interactable_prop {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 32mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic hero_prop(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.15
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.15
+}
+
+execution_profile hero_blender {
+  engine = blender
+  mode = background_cli
+  deterministic = true
+  preserve_blend = on_failure
+  geometry_backend = blender_gnodes
+  uv_backend = blender_uv
+  bake_backend = blender_cycles
+  surface_backend = blender_materials
+  render_backend = blender_eval
+  package_backend = blender_export
+  library_backend = blender_assets
+}
+
+bake_profile hero_pbr_bakes {
+  maps = [normal, ao, curvature, id]
+  target_resolution = 4096px
+  normal_space = tangent
+  cage_policy = auto
+  require_highlow = true
+}
+
+render_fixture hero_prop_eval {
+  views = [front_34, front, side, rear_34]
+  shading = studio_neutral
+  passes = [beauty, normal, depth]
+  resolution = 1024px
+}
+
+material_graph aged_brass_graph {
+  base = aged_brass
+  layers = [patina, edge_wear, cavity_oxidation]
+  outputs = [basecolor, roughness, metallic, normal_detail]
+}
+
+library_binding chest_hardware_blender {
+  target = blender_assets
+  catalog = "lathe/std/chest_hardware"
+  maps.lock_plate = lock_plate_asset
+  maps.clasp = clasp_asset
+  maps.side_handle = side_handle_asset
+}
+
+asset brassbound_chest_v13: hard_surface_prop from brassbound_chest_family uses shipping_prop {
+  execution {
+    profile = hero_blender
+    library_bindings = [chest_hardware_blender]
+  }
+
+  intent {
+    role = "ornate brassbound loot chest"
+    style = ["adventure", "stylized", "wood_and_brass"]
+    parts = [
+      body,
+      lid_panel,
+      front_hatch,
+      lock_plate,
+      handle_l,
+      handle_r,
+      foot_l,
+      foot_r,
+    ]
+    materials = ["oak_planks", "brass_bands", "red_velvet_lining"]
+    negatives = ["modern", "plastic", "sci_fi"]
+    scale = 0.8m
+    interactions = [open_lid, collect_loot, place_in_world]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [panel_seam, lid_break, clasp_cut]
+    edge_classes = [hero_bevel, support_bevel, trim_edge]
+    integration_rules = [boolean_union, preserve_lid_break]
+  }
+
+  features {
+    density = hero
+    allow = [inset_panel, frame_lip, trim_band, clasp_set, recessed_handle, support_bracket, edge_break]
+  }
+
+  surface {
+    program = chest_wood_brass_hero
+    material_graph = aged_brass_graph
+    patterns = [plank_spacing_hero, rivet_row_hero]
+    palette = fantasy_brassbound
+    material_zones = [oak_body, aged_brass_trim, velvet_interior]
+    materials = [oak_body, aged_brass_trim, velvet_interior]
+    decals = [crest, trim_wear]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [chest_body, chest_lid, brass_latch_set, front_clasp, side_handle_l, side_handle_r, support_foot_l, support_foot_r, chest_interior_liner]
+    mechanisms = [lid_hinge_mechanism]
+  }
+
+  search {
+    use = chest_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 6
+      seed = 19
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 12000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      bake_profile = hero_pbr_bakes
+      render_fixture = hero_prop_eval
+      decals = ["crest", "trim_wear"]
+      id_map = true
+    }
+
+    rig {
+      type = rigid_mechanical
+      joints = [front_hatch]
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [loot_anchor]
+      anchors = [floor_contact]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 6
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = hero_prop
+    threshold = 0.84
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "props/containers/brassbound_chest_v13"
+    version = "0.1.0"
+    tags = ["chest", "loot", "container", "fantasy", "v13"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}
+
+test brassbound_chest_v13_language_surface {
+  asset = brassbound_chest_v13
+  assert execution.profile == hero_blender
+  assert build.surface.bake_profile == hero_pbr_bakes
+  assert build.surface.render_fixture == hero_prop_eval
+}

@@ -1,0 +1,41 @@
+module std.families.sci_fi_wall_panel
+import std.components.sci_fi_wall_panel
+import std.palettes.hero_palettes
+import std.patterns.hero_patterns
+import std.surface_programs.hero_surface_programs
+import std.repair.hero_hardsurface
+
+family sci_fi_wall_panel_family: env_module {
+  runtime_family = sci_fi_wall_panel
+  blueprint_id = lathe.blueprint.env_wall_panel_v2
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [panel_split, bezel_break, mount_split]
+    edge_classes = [hero_bevel, frame_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_screen_frame]
+  }
+
+  features {
+    allow = [inset_panel, frame_lip, vent_grille, support_bracket, edge_break]
+    density = game
+  }
+
+  surface {
+    program = control_pedestal_hero
+    patterns = [vent_slats_dense]
+    palette = industrial_service_console
+    materials = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+    material_zones = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+    decals = [service_labels]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [wall_panel_shell, wall_screen_bezel, wall_frame_panel, wall_vent_l, wall_vent_r, wall_mount_top, wall_mount_bottom]
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

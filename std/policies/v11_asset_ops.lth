@@ -1,0 +1,29 @@
+module std.policies.v11_asset_ops
+
+adapt_policy mobile_console_policy {
+  allow = [reduce_feature_density, rebuild_highlow, rebake, reauthor_surface_layer, rederive_lods]
+  preserve = [part_graph, interfaces, material_zones, silhouette]
+  target_profile = mobile_runtime
+}
+
+assembly_policy industrial_wall_policy {
+  allow = [panel_to_panel, panel_to_frame, panel_to_vent]
+  clearance = 1cm
+  snap_grid = 10cm
+}
+
+reconstruct_policy courier_reconstruct_policy {
+  family_bias = courier_drone_family
+  allow = [family_fit, component_reuse, silhouette_fit, dimension_inference]
+  deny = [freeform_shape_invention]
+}
+
+fit_profile courier_fit_default {
+  family_bias = courier_drone_family
+  silhouette_tolerance = 0.12
+  symmetry_bias = x
+}
+
+transfer_rule preserve_console_surface {
+  preserve = [material_zones, surface_program, decals]
+}

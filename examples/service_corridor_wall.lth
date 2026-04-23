@@ -1,0 +1,129 @@
+module studio.env.modules
+import std.libraries.industrial_assets
+import std.families.sci_fi_wall_panel
+import std.kits.industrial_wall_kit
+import std.policies.v11_asset_ops
+
+profile sci_fi_env_module {
+  defaults {
+    build.optimize.lods = 3
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_module uses sci_fi_env_module {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 16mb)
+}
+
+critic module_prop(a: asset) = weighted {
+  prompt_match 0.24
+  silhouette_readability 0.16
+  topology_quality 0.20
+  material_quality 0.14
+  runtime_efficiency 0.10
+  part_coherence 0.16
+}
+
+asset service_corridor_wall: env_module from industrial_wall_kit uses shipping_module {
+  intent {
+    role = "service corridor wall kit assembly"
+    style = ["clean_room", "modular", "industrial"]
+    parts = [
+      body,
+      screen_panel,
+      frame_panel,
+      vent_l,
+      vent_r,
+      mount_top,
+      mount_bottom,
+    ]
+    materials = ["painted_steel", "smoked_glass", "amber_indicator"]
+    scale = 1.4m
+    interactions = [wall_mount, plug_power, view_status]
+  }
+
+  constraints {
+    assembly_policy = industrial_wall_policy
+  }
+
+  assembly_rules {
+    repeat_modules = [wall_panel_shell, wall_frame_panel]
+    inserts = [wall_screen_bezel]
+    mounts = [wall_vent_l, wall_vent_r, wall_mount_top, wall_mount_bottom]
+  }
+
+  build {
+    shape {
+      mode = assemble
+      assembly_policy = industrial_wall_policy
+      candidates = 3
+      seed = 91
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, interfaces]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 9000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm, emissive]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = ["maintenance_label", "warning_stripes"]
+      id_map = true
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = module_prop
+    threshold = 0.84
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 3
+      allow = [reselect_candidate, repack_uvs, rebake_maps, generate_lods]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+  }
+}

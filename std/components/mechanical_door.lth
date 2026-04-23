@@ -1,0 +1,94 @@
+module std.components.mechanical_door
+
+component door_frame_shell {
+  part = body
+  tags = [body, shell, frame]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = frame
+  }
+}
+
+component door_leaf_panel {
+  part = door_leaf
+  tags = [door, panel]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = door
+  }
+}
+
+component door_hinge_top {
+  part = hinge_top
+  tags = [hinge, top]
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = hinge
+  }
+}
+
+component door_hinge_bottom {
+  part = hinge_bottom
+  tags = [hinge, bottom]
+  material_zone = aged_brass_trim
+  geometry {
+    component_type = hinge
+  }
+}
+
+component door_handle_main {
+  part = handle
+  tags = [handle]
+  interface_role = grip
+  material_zone = seal_rubber
+  geometry {
+    component_type = handle
+  }
+}
+
+component door_lock_plate {
+  part = lock_plate
+  tags = [lock, plate]
+  material_zone = warning_paint
+  geometry {
+    component_type = lock_plate
+  }
+}
+
+component threshold_trim_plate {
+  part = threshold_plate
+  tags = [threshold, plate]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = panel
+  }
+}
+
+component status_light_module {
+  part = status_light
+  tags = [screen, light]
+  material_zone = smoked_glass_screen
+  geometry {
+    component_type = bezel
+  }
+}
+
+component side_bracket_l {
+  part = side_bracket_l
+  tags = [bracket, left]
+  interface_role = support
+  material_zone = painted_steel_body
+  geometry {
+    component_type = bracket
+  }
+}
+
+component side_bracket_r {
+  part = side_bracket_r
+  tags = [bracket, right]
+  interface_role = support
+  material_zone = painted_steel_body
+  geometry {
+    component_type = bracket
+  }
+}

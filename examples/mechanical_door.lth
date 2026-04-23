@@ -1,0 +1,209 @@
+module studio.env.doors
+import std.families.mechanical_door
+
+profile env_mechanical_module {
+  defaults {
+    build.optimize.lods = 3
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_module uses env_mechanical_module {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 16mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic env_prop(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.15
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.15
+}
+
+asset mechanical_door: env_module from mechanical_door_family uses shipping_module {
+  intent {
+    role = "reinforced mechanical airlock door"
+    style = ["industrial", "modular", "sci_fi"]
+    parts = [
+      body,
+      door_leaf,
+      hinge_top,
+      hinge_bottom,
+      handle,
+      lock_plate,
+      threshold_plate,
+    ]
+    materials = [painted_steel_body, seal_rubber, smoked_glass_screen]
+    negatives = ["fantasy", "organic", "fragile"]
+    scale = 2.1m
+    interactions = [open_door, lock_door, wall_mount]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [frame_split, hinge_cut, lock_cut, threshold_break]
+    edge_classes = [hero_bevel, frame_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_door_frame, preserve_threshold]
+  }
+
+  features {
+    density = hero
+    allow = [inset_panel, frame_lip, hinge_set, support_bracket, vent_grille, edge_break]
+  }
+
+  surface {
+    program = mechanical_door_hero
+    patterns = [warning_stripe_band, vent_slats_dense]
+    palette = mechanical_door_hero_palette
+    material_zones = [painted_steel_body, seal_rubber, smoked_glass_screen]
+    materials = [painted_steel_body, seal_rubber, smoked_glass_screen]
+    decals = [door_number, warning_band]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [door_frame_shell, door_leaf_panel, door_hinge_top, door_hinge_bottom, door_handle_main, door_lock_plate, threshold_trim_plate, status_light_module, side_bracket_l, side_bracket_r]
+    mechanisms = [door_hinge_mechanism, door_lock_mechanism]
+  }
+
+  search {
+    use = door_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 4
+      seed = 41
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions, interfaces]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 10000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm, emissive]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = [door_number, warning_band]
+      id_map = true
+    }
+
+    rig {
+      type = rigid_mechanical
+      joints = [door_leaf]
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [power_socket]
+      anchors = [wall_mount_anchor]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 5
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = env_prop
+    threshold = 0.84
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "env/doors/mechanical_door"
+    version = "0.1.0"
+    tags = ["door", "mechanical", "airlock"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}
+
+test mechanical_door_language_surface {
+  asset = mechanical_door
+  assert from == mechanical_door_family
+  assert surface.program == mechanical_door_hero
+  assert space.use == door_hero_search
+}
+
+benchmark mechanical_door_hero_language {
+  asset = mechanical_door
+  must_pass = true
+  assert score >= threshold
+}

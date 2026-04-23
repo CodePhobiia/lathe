@@ -1,0 +1,31 @@
+module std.mechanisms.hero_mechanisms
+
+mechanism lid_hinge_mechanism {
+  type = hinge
+  axis = x
+}
+
+mechanism rotor_spin_mechanism {
+  type = rotor_spin
+  axis = y
+}
+
+mechanism console_service_panel_mechanism {
+  type = maintenance_panel
+  axis = x
+}
+
+mechanism crate_latch_mechanism {
+  type = latch_lock
+  axis = z
+}
+
+mechanism door_hinge_mechanism {
+  type = hinge
+  axis = y
+}
+
+mechanism door_lock_mechanism {
+  type = latch_lock
+  axis = z
+}

@@ -1,0 +1,48 @@
+module std.families.industrial_crate
+import std.components.industrial_crate
+import std.mechanisms.hero_mechanisms
+import std.palettes.hero_palettes
+import std.patterns.hero_patterns
+import std.surface_programs.hero_surface_programs
+import std.repair.hero_hardsurface
+import std.spaces.hero_spaces
+
+family industrial_crate_family: hard_surface_prop {
+  runtime_family = industrial_crate
+  blueprint_id = lathe.blueprint.hard_surface_crate_v2
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [cargo_panel_break, lid_break, latch_cut, foot_split]
+    edge_classes = [hero_bevel, cargo_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_lid_break, preserve_corner_guards]
+  }
+
+  features {
+    allow = [inset_panel, trim_band, fastener_strip, support_bracket, edge_break, clasp_set]
+    density = hero
+  }
+
+  surface {
+    program = industrial_crate_hero
+    patterns = [cargo_fastener_grid, warning_stripe_band]
+    palette = industrial_crate_hero_palette
+    materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+    material_zones = [painted_steel_body, rubber_trim_dark, warning_paint]
+    decals = [shipping_mark, warning_band, trim_band, service_label]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [crate_body_shell, crate_lid_frame, crate_latch_plate, crate_warning_plate, crate_handle_l, crate_handle_r, crate_foot_l, crate_foot_r]
+    mechanisms = [crate_latch_mechanism]
+  }
+
+  search {
+    use = crate_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

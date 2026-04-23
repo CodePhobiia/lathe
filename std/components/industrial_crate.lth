@@ -1,0 +1,77 @@
+module std.components.industrial_crate
+
+component crate_body_shell {
+  part = body
+  tags = [body, shell]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component crate_lid_frame {
+  part = lid_frame
+  tags = [lid, frame]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = lid
+  }
+}
+
+component crate_latch_plate {
+  part = latch_plate
+  tags = [lock, latch, plate]
+  material_zone = warning_paint
+  geometry {
+    component_type = lock_plate
+  }
+}
+
+component crate_warning_plate {
+  part = warning_plate
+  tags = [plate, guard]
+  material_zone = warning_paint
+  geometry {
+    component_type = panel
+  }
+}
+
+component crate_handle_l {
+  part = handle_l
+  tags = [handle, left]
+  interface_role = grip
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
+
+component crate_handle_r {
+  part = handle_r
+  tags = [handle, right]
+  interface_role = grip
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
+
+component crate_foot_l {
+  part = foot_l
+  tags = [foot, left]
+  interface_role = support
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = foot
+  }
+}
+
+component crate_foot_r {
+  part = foot_r
+  tags = [foot, right]
+  interface_role = support
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = foot
+  }
+}

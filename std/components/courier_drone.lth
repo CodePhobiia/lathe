@@ -1,0 +1,76 @@
+module std.components.courier_drone
+
+component courier_body {
+  part = body
+  tags = [body, shell]
+  material_zone = anodized_aluminum_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component rotor_front_left {
+  part = rotor_fl
+  tags = [rotor, front, left]
+  material_zone = carbon_fiber_trim
+  geometry {
+    component_type = rotor_pod
+  }
+}
+
+component rotor_front_right {
+  part = rotor_fr
+  tags = [rotor, front, right]
+  material_zone = carbon_fiber_trim
+  geometry {
+    component_type = rotor_pod
+  }
+}
+
+component rotor_rear_left {
+  part = rotor_rl
+  tags = [rotor, rear, left]
+  material_zone = carbon_fiber_trim
+  geometry {
+    component_type = rotor_pod
+  }
+}
+
+component rotor_rear_right {
+  part = rotor_rr
+  tags = [rotor, rear, right]
+  material_zone = carbon_fiber_trim
+  geometry {
+    component_type = rotor_pod
+  }
+}
+
+component cargo_door_panel {
+  part = cargo_door
+  tags = [door, cargo]
+  articulation = hinge
+  material_zone = anodized_aluminum_body
+  geometry {
+    component_type = door
+  }
+}
+
+component landing_leg_left {
+  part = landing_leg_l
+  tags = [foot, left]
+  interface_role = support
+  material_zone = carbon_fiber_trim
+  geometry {
+    component_type = foot
+  }
+}
+
+component landing_leg_right {
+  part = landing_leg_r
+  tags = [foot, right]
+  interface_role = support
+  material_zone = carbon_fiber_trim
+  geometry {
+    component_type = foot
+  }
+}

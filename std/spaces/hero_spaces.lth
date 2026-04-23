@@ -1,0 +1,104 @@
+module std.spaces.hero_spaces
+
+space chest_hero_search {
+  vary feature_density in 0.95..1.28
+  vary panel_depth in 0.90..1.24
+  vary edge_weight in 0.92..1.22
+  freeze silhouette_bias
+  objective maximize silhouette_readability weight 0.25
+  objective maximize geometry_integration_quality weight 0.30
+  objective maximize visual_surface_quality weight 0.20
+  objective minimize primitive_likeness_penalty weight 0.25
+  select best_of 10
+}
+
+space drone_hero_search {
+  vary feature_density in 0.94..1.24
+  vary support_spread in 0.94..1.16
+  vary rotor_guard_scale in 0.96..1.18
+  vary edge_weight in 0.92..1.18
+  freeze silhouette_bias
+  objective maximize silhouette_readability weight 0.20
+  objective maximize geometry_integration_quality weight 0.35
+  objective maximize visual_surface_quality weight 0.20
+  objective minimize primitive_likeness_penalty weight 0.25
+  select best_of 12
+}
+
+space console_hero_search {
+  vary feature_density in 0.92..1.18
+  vary panel_depth in 0.96..1.22
+  vary edge_weight in 0.92..1.16
+  vary trim_scale in 0.94..1.16
+  freeze width_scale
+  objective maximize silhouette_readability weight 0.22
+  objective maximize geometry_integration_quality weight 0.28
+  objective maximize visual_surface_quality weight 0.25
+  objective minimize primitive_likeness_penalty weight 0.25
+  select best_of 9
+}
+
+space crate_hero_search {
+  vary feature_density in 0.94..1.22
+  vary panel_depth in 0.96..1.18
+  vary trim_scale in 0.92..1.14
+  vary support_spread in 0.94..1.10
+  freeze silhouette_bias
+  objective maximize silhouette_readability weight 0.20
+  objective maximize geometry_integration_quality weight 0.32
+  objective maximize visual_surface_quality weight 0.20
+  objective minimize primitive_likeness_penalty weight 0.28
+  select best_of 10
+}
+
+space door_hero_search {
+  vary feature_density in 0.96..1.22
+  vary panel_depth in 0.98..1.24
+  vary edge_weight in 0.94..1.18
+  vary attachment_spread in 0.96..1.10
+  freeze width_scale
+  objective maximize silhouette_readability weight 0.18
+  objective maximize geometry_integration_quality weight 0.34
+  objective maximize visual_surface_quality weight 0.22
+  objective minimize primitive_likeness_penalty weight 0.26
+  select best_of 10
+}
+
+space cabinet_hero_search {
+  vary feature_density in 0.94..1.22
+  vary panel_depth in 0.96..1.20
+  vary edge_weight in 0.94..1.18
+  vary trim_scale in 0.94..1.14
+  freeze width_scale
+  objective maximize silhouette_readability weight 0.18
+  objective maximize geometry_integration_quality weight 0.32
+  objective maximize visual_surface_quality weight 0.22
+  objective minimize primitive_likeness_penalty weight 0.28
+  select best_of 10
+}
+
+space pedestal_hero_search {
+  vary feature_density in 0.96..1.24
+  vary panel_depth in 0.98..1.24
+  vary edge_weight in 0.94..1.20
+  vary trim_scale in 0.94..1.16
+  freeze width_scale
+  objective maximize silhouette_readability weight 0.20
+  objective maximize geometry_integration_quality weight 0.28
+  objective maximize visual_surface_quality weight 0.24
+  objective minimize primitive_likeness_penalty weight 0.28
+  select best_of 10
+}
+
+space supply_hero_search {
+  vary feature_density in 0.95..1.24
+  vary panel_depth in 0.96..1.22
+  vary edge_weight in 0.94..1.18
+  vary attachment_spread in 0.92..1.12
+  freeze silhouette_bias
+  objective maximize silhouette_readability weight 0.20
+  objective maximize geometry_integration_quality weight 0.30
+  objective maximize visual_surface_quality weight 0.22
+  objective minimize primitive_likeness_penalty weight 0.28
+  select best_of 10
+}

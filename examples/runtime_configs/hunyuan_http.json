@@ -1,0 +1,18 @@
+{
+  "shape": {
+    "provider": "hunyuan2_1_http",
+    "strict": true,
+    "providers": {
+      "hunyuan2_1_http": {
+        "base_url": "http://localhost:8081",
+        "remove_background": true,
+        "texture": false,
+        "octree_resolution": 256,
+        "num_inference_steps": 5,
+        "guidance_scale": 5.0,
+        "face_count": 40000,
+        "type": "glb"
+      }
+    }
+  }
+}

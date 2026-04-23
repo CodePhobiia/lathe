@@ -1,0 +1,95 @@
+module std.components.service_cabinet
+
+component cabinet_body_shell {
+  part = body
+  tags = [body, shell, cabinet]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component cabinet_door_l {
+  part = door_l
+  tags = [door, left]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = door
+  }
+}
+
+component cabinet_door_r {
+  part = door_r
+  tags = [door, right]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = door
+  }
+}
+
+component cabinet_handle_l {
+  part = handle_l
+  tags = [handle, left]
+  interface_role = grip
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
+
+component cabinet_handle_r {
+  part = handle_r
+  tags = [handle, right]
+  interface_role = grip
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
+
+component cabinet_vent_panel {
+  part = vent_panel
+  tags = [vent, panel]
+  material_zone = warning_paint
+  geometry {
+    component_type = vent
+  }
+}
+
+component cabinet_shelf_a {
+  part = shelf_a
+  tags = [panel, shelf]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = panel
+  }
+}
+
+component cabinet_shelf_b {
+  part = shelf_b
+  tags = [panel, shelf]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = panel
+  }
+}
+
+component cabinet_foot_l {
+  part = foot_l
+  tags = [foot, left]
+  interface_role = support
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = foot
+  }
+}
+
+component cabinet_foot_r {
+  part = foot_r
+  tags = [foot, right]
+  interface_role = support
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = foot
+  }
+}

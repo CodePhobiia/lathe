@@ -1,0 +1,31 @@
+module std.patterns.hero_patterns
+
+pattern plank_spacing_hero {
+  family = linear_repeat
+  spacing_cm = 6.5
+  emphasis = silhouette
+}
+
+pattern rivet_row_hero {
+  family = fastener_repeat
+  spacing_cm = 5.0
+  emphasis = hardware
+}
+
+pattern cargo_fastener_grid {
+  family = grid_repeat
+  spacing_cm = 9.0
+  emphasis = industrial_readability
+}
+
+pattern vent_slats_dense {
+  family = slat_repeat
+  spacing_cm = 1.8
+  emphasis = airflow_readability
+}
+
+pattern warning_stripe_band {
+  family = stripe_repeat
+  spacing_cm = 4.0
+  emphasis = safety_marking
+}

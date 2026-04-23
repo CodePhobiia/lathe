@@ -1,0 +1,41 @@
+module std.surface_programs.v12_surface_authoring
+
+surface_backend codex_imagegen {
+  id = lathe.surface.codex_imagegen_v1
+  determinism = best_effort
+  authoring_modes = [zone_first, subatlas_first]
+  generates = [basecolor, wear_mask, decal_mask, detail_overlay, trim_overlay, emissive_art]
+  derives = [roughness, orm, normal_detail]
+}
+
+surface_backend deterministic_pbr {
+  id = lathe.surface.deterministic_pbr_v1
+  determinism = deterministic
+  authoring_modes = [deterministic_only, zone_first]
+  generates = [basecolor, normal, orm, ao, curvature, id, emissive]
+  derives = [roughness, metallic, normal_detail]
+}
+
+surface_policy hero_zone_first_surface {
+  maps = [basecolor, normal, orm, ao, curvature, id, emissive]
+  required_bakes = [normal, ao, curvature, id]
+  allowed_backends = [lathe.surface.deterministic_pbr_v1, lathe.surface.codex_imagegen_v1]
+  authoring_mode = zone_first
+  resolution = 2048px
+  repair = [reauthor_zone_basecolor, rederive_zone_roughness, reassemble_atlas, fallback_zone_deterministic]
+}
+
+decal_library industrial_console_decals {
+  decals = [service_labels, warning_band, serial_mark, screen_glow]
+  placement = zone_local
+}
+
+mask_program console_wear_masks {
+  masks = [edge_wear, cavity_darkening, decal_mask, trim_mask]
+  source = control_pack
+}
+
+trim_sheet console_trim_sheet {
+  trims = [rubber_bezel_edge, painted_panel_band, socket_ring]
+  padding = 16px
+}

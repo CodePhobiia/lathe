@@ -1,0 +1,43 @@
+module std.families.courier_drone
+import std.components.courier_drone
+import std.mechanisms.hero_mechanisms
+import std.palettes.hero_palettes
+import std.repair.hero_hardsurface
+import std.spaces.hero_spaces
+
+family courier_drone_family {
+  runtime_family = courier_drone
+  blueprint_id = lathe.blueprint.mechanical_quad_drone_v1
+
+  geometry {
+    seam_classes = [cargo_break, pod_split, service_panel]
+    edge_classes = [hero_bevel, pod_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_rotor_mounts]
+  }
+
+  features {
+    allow = [trim_band, vent_grille, rotor_shroud, support_bracket, edge_break]
+    density = hero
+  }
+
+  surface {
+    palette = courier_premium
+    materials = [anodized_aluminum_body, carbon_fiber_trim, amber_glass_lens]
+    material_zones = [anodized_aluminum_body, carbon_fiber_trim, amber_glass_lens]
+    decals = [serials, warning_labels]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [courier_body, rotor_front_left, rotor_front_right, rotor_rear_left, rotor_rear_right, cargo_door_panel, landing_leg_left, landing_leg_right]
+    mechanisms = [rotor_spin_mechanism]
+  }
+
+  space {
+    use = drone_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

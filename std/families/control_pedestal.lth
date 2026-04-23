@@ -1,0 +1,48 @@
+module std.families.control_pedestal
+import std.components.control_pedestal
+import std.mechanisms.hero_mechanisms
+import std.palettes.hero_palettes
+import std.patterns.hero_patterns
+import std.surface_programs.hero_surface_programs
+import std.repair.hero_hardsurface
+import std.spaces.hero_spaces
+
+family control_pedestal_family: hard_surface_prop {
+  runtime_family = control_pedestal
+  blueprint_id = lathe.blueprint.hard_surface_control_pedestal_v1
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [bezel_break, service_hatch, base_split]
+    edge_classes = [hero_bevel, screen_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_screen_bezel, preserve_pedestal_column]
+  }
+
+  features {
+    allow = [screen_bezel, vent_grille, trim_band, support_bracket, edge_break, fastener_strip]
+    density = hero
+  }
+
+  surface {
+    program = control_pedestal_hero
+    patterns = [vent_slats_dense, cargo_fastener_grid]
+    palette = industrial_service_console
+    materials = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+    material_zones = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+    decals = [service_labels, screen_glow]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [pedestal_body_shell, pedestal_bezel_frame, pedestal_screen_panel, pedestal_control_panel, pedestal_column, pedestal_base_plate, pedestal_service_hatch, pedestal_socket_plate]
+    mechanisms = [console_service_panel_mechanism]
+  }
+
+  search {
+    use = pedestal_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

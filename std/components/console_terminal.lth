@@ -1,0 +1,74 @@
+module std.components.console_terminal
+
+component console_body_shell {
+  part = body
+  tags = [body, shell]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component console_bezel {
+  part = bezel_frame
+  tags = [bezel, frame]
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = bezel
+  }
+}
+
+component console_screen {
+  part = screen_panel
+  tags = [screen, panel]
+  material_zone = smoked_glass_screen
+  geometry {
+    component_type = panel
+  }
+}
+
+component console_panel_face {
+  part = console_panel
+  tags = [panel]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = panel
+  }
+}
+
+component vent_left {
+  part = vent_l
+  tags = [vent, left]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = vent
+  }
+}
+
+component vent_right {
+  part = vent_r
+  tags = [vent, right]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = vent
+  }
+}
+
+component console_stand {
+  part = stand_base
+  tags = [stand]
+  interface_role = support
+  material_zone = painted_steel_body
+  geometry {
+    component_type = stand
+  }
+}
+
+component power_socket_plate {
+  part = socket_plate
+  tags = [socket, plate]
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = socket_plate
+  }
+}

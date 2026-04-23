@@ -1,0 +1,126 @@
+module studio.props.terminals
+import std.families.console_terminal
+import std.policies.v11_asset_ops
+
+profile mobile_runtime {
+  defaults {
+    build.optimize.lods = 3
+    build.surface.resolution = 2048px
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract mobile_shipping_prop uses mobile_runtime {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 2, texture_memory: 8mb)
+}
+
+critic mobile_prop(a: asset) = weighted {
+  prompt_match 0.22
+  silhouette_readability 0.14
+  topology_quality 0.18
+  material_quality 0.12
+  runtime_efficiency 0.20
+  part_coherence 0.14
+}
+
+asset console_terminal_mobile: hard_surface_prop from console_terminal_family uses mobile_shipping_prop {
+  refs {
+    meshes = ["refs/source_block.obj"]
+  }
+
+  intent {
+    role = "industrial console terminal mobile retarget"
+    style = ["industrial", "service_bay", "sci_fi"]
+    parts = [
+      body,
+      bezel_frame,
+      screen_panel,
+      console_panel,
+      stand_base,
+      socket_plate,
+    ]
+    materials = ["painted_steel", "smoked_glass", "rubber_trim"]
+    scale = 1.45m
+    interactions = [stand_in_world, read_status, plug_power]
+  }
+
+  transfer {
+    adapt_policy = mobile_console_policy
+    rules = [preserve_console_surface]
+  }
+
+  build {
+    shape {
+      mode = adapt
+      adapt_policy = mobile_console_policy
+      candidates = 3
+      seed = 81
+      symmetry = x
+      preserve = [silhouette, part_graph, interfaces]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 9000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm, emissive]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = ["service_labels", "screen_glow"]
+      id_map = true
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 2
+      texture_budget = 8mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = mobile_prop
+    threshold = 0.82
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [reselect_candidate, reduce_tris, repack_uvs, rebake_maps, reauthor_surface_layer, generate_lods]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+  }
+}

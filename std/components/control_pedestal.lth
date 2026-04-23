@@ -1,0 +1,75 @@
+module std.components.control_pedestal
+
+component pedestal_body_shell {
+  part = body
+  tags = [body, shell, pedestal]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component pedestal_bezel_frame {
+  part = bezel_frame
+  tags = [bezel, frame]
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = bezel
+  }
+}
+
+component pedestal_screen_panel {
+  part = screen_panel
+  tags = [screen, panel]
+  material_zone = smoked_glass_screen
+  geometry {
+    component_type = panel
+  }
+}
+
+component pedestal_control_panel {
+  part = control_panel
+  tags = [panel, console]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = panel
+  }
+}
+
+component pedestal_column {
+  part = pedestal_column
+  tags = [stand, column]
+  interface_role = support
+  material_zone = painted_steel_body
+  geometry {
+    component_type = stand
+  }
+}
+
+component pedestal_base_plate {
+  part = base_plate
+  tags = [plate, base]
+  interface_role = support
+  material_zone = painted_steel_body
+  geometry {
+    component_type = panel
+  }
+}
+
+component pedestal_service_hatch {
+  part = service_hatch
+  tags = [door, hatch]
+  material_zone = warning_paint
+  geometry {
+    component_type = door
+  }
+}
+
+component pedestal_socket_plate {
+  part = socket_plate
+  tags = [socket, plate]
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = socket_plate
+  }
+}

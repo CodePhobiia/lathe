@@ -1,0 +1,48 @@
+module std.families.service_cabinet
+import std.components.service_cabinet
+import std.mechanisms.hero_mechanisms
+import std.palettes.hero_palettes
+import std.patterns.hero_patterns
+import std.surface_programs.hero_surface_programs
+import std.repair.hero_hardsurface
+import std.spaces.hero_spaces
+
+family service_cabinet_family: hard_surface_prop {
+  runtime_family = service_cabinet
+  blueprint_id = lathe.blueprint.hard_surface_service_cabinet_v1
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [door_split, vent_break, shelf_divider, foot_split]
+    edge_classes = [hero_bevel, support_bevel, trim_edge]
+    integration_rules = [boolean_union, preserve_door_splits, preserve_vent_panel]
+  }
+
+  features {
+    allow = [inset_panel, frame_lip, trim_band, hinge_set, recessed_handle, support_bracket, vent_grille, edge_break]
+    density = hero
+  }
+
+  surface {
+    program = service_cabinet_hero
+    patterns = [vent_slats_dense, cargo_fastener_grid]
+    palette = industrial_crate_hero_palette
+    materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+    material_zones = [painted_steel_body, rubber_trim_dark, warning_paint]
+    decals = [service_label, warning_band]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [cabinet_body_shell, cabinet_door_l, cabinet_door_r, cabinet_handle_l, cabinet_handle_r, cabinet_vent_panel, cabinet_shelf_a, cabinet_shelf_b, cabinet_foot_l, cabinet_foot_r]
+    mechanisms = [door_hinge_mechanism, door_lock_mechanism]
+  }
+
+  search {
+    use = cabinet_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

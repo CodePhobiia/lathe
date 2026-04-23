@@ -1,0 +1,22 @@
+module std.palettes.hero_palettes
+import std.materials.hero_materials
+
+palette fantasy_brassbound {
+  materials = [oak_body, aged_brass_trim, velvet_interior]
+}
+
+palette courier_premium {
+  materials = [anodized_aluminum_body, carbon_fiber_trim, amber_glass_lens]
+}
+
+palette industrial_service_console {
+  materials = [painted_steel_body, smoked_glass_screen, rubber_trim_dark]
+}
+
+palette industrial_crate_hero_palette {
+  materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+}
+
+palette mechanical_door_hero_palette {
+  materials = [painted_steel_body, seal_rubber, smoked_glass_screen]
+}

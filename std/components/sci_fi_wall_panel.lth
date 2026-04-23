@@ -1,0 +1,64 @@
+module std.components.sci_fi_wall_panel
+
+component wall_panel_shell {
+  part = body
+  tags = [body, shell, panel]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component wall_screen_bezel {
+  part = screen_panel
+  tags = [screen, bezel]
+  material_zone = smoked_glass_screen
+  geometry {
+    component_type = bezel
+  }
+}
+
+component wall_frame_panel {
+  part = frame_panel
+  tags = [frame, panel]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = frame
+  }
+}
+
+component wall_vent_l {
+  part = vent_l
+  tags = [vent, left]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = vent
+  }
+}
+
+component wall_vent_r {
+  part = vent_r
+  tags = [vent, right]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = vent
+  }
+}
+
+component wall_mount_top {
+  part = mount_top
+  tags = [mount, top]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = bracket
+  }
+}
+
+component wall_mount_bottom {
+  part = mount_bottom
+  tags = [mount, bottom]
+  material_zone = painted_steel_body
+  geometry {
+    component_type = bracket
+  }
+}

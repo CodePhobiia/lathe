@@ -1,0 +1,20 @@
+module std.repair.hero_hardsurface
+
+repair_policy hero_hardsurface_repair {
+  mode = auto_until_pass
+  max_rounds = 4
+  allow = [
+    reselect_candidate,
+    enforce_symmetry,
+    seal_mesh,
+    retopo_auto,
+    reduce_tris,
+    repack_uvs,
+    rebake_maps,
+    reauthor_surface_layer,
+    normalize_pivots,
+    create_collision_proxy,
+    generate_lods,
+  ]
+  deny = [rebuild_shape]
+}

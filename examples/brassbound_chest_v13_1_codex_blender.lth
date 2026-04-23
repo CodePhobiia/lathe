@@ -1,0 +1,21 @@
+module studio.props.containers.v13_1
+import examples.brassbound_chest_v13_blender
+
+inspection_policy hero_visual_gate {
+  require = [geometry_evidence, topology_evidence, uv_evidence, bake_evidence, surface_evidence]
+  render_fixture = hero_prop_eval
+  bake_profile = hero_pbr_bakes
+  patch_source_allowed = true
+  unsafe_blender_python_allowed = false
+  recovery_branches = [reselect_candidate, repair_candidate, regenerate_candidate, patch_source]
+}
+
+variant brassbound_chest_v13_1 on brassbound_chest_v13 {
+  set execution.inspection_policy = hero_visual_gate
+  set publish.version = "0.1.1"
+}
+
+test brassbound_chest_v13_1_control_plane {
+  asset = brassbound_chest_v13_1
+  assert execution.inspection_policy == hero_visual_gate
+}
