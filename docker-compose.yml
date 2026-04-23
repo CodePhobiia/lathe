@@ -1,0 +1,51 @@
+# Lathe docker-compose — three service profiles:
+#
+#   lathe            slim image; runs the compiler CLI against mounted
+#                    examples/std trees and writes into ./dist.
+#   hunyuan-mock     stub HTTP server matching the Hunyuan provider
+#                    contract. Relies on tests/fixtures/mock_hunyuan.py
+#                    which is produced by the wave1-tests agent. Until
+#                    that fixture lands, this service will fail to start —
+#                    that is expected and documented.
+#   blender-headless Blender 4.5 LTS runtime image. Runs a trivial
+#                    `blender --background --version` smoke.
+#
+# Usage:
+#   docker compose run --rm lathe doctor
+#   docker compose run --rm lathe build examples/courier_drone.lth courier_drone --out dist
+#   docker compose up -d hunyuan-mock
+#   docker compose run --rm blender-headless
+
+services:
+  lathe:
+    image: lathe:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./examples:/app/examples:ro
+      - ./std:/app/std:ro
+      - ./dist:/app/dist
+    working_dir: /app
+    # Override the entrypoint arg list via `docker compose run lathe <args>`.
+
+  hunyuan-mock:
+    image: python:3.12-slim
+    working_dir: /srv
+    volumes:
+      - ./tests/fixtures:/srv:ro
+    # Placeholder command. wave1-tests is expected to produce
+    # tests/fixtures/mock_hunyuan.py exposing a stub HTTP server on
+    # port 8080. Update this command once that file lands.
+    command: >
+      sh -c "python mock_hunyuan.py --port 8080"
+    ports:
+      - "8080:8080"
+
+  blender-headless:
+    image: lathe:blender
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.blender
+    entrypoint: ["/opt/blender/blender"]
+    command: ["--background", "--version"]

@@ -1,0 +1,43 @@
+{
+  "name": "Lathe (Blender-backed)",
+  "build": {
+    "dockerfile": "../docker/Dockerfile.blender",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/lathe",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/lathe,type=bind,consistency=cached",
+  "remoteUser": "lathe",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    }
+  },
+  "postCreateCommand": "just bootstrap",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "lathe-lang.lathe"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspaces/lathe/.venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
+      }
+    }
+  },
+  "containerEnv": {
+    "LATHE_BLENDER_PATH": "/opt/blender/blender"
+  },
+  "forwardPorts": [],
+  "mounts": [
+    "source=${localWorkspaceFolder}/.devcontainer/cache,target=/home/lathe/.cache,type=bind,consistency=cached"
+  ]
+}

@@ -1,0 +1,65 @@
+# syntax=docker/dockerfile:1.7
+# Lathe + Blender image — extends the slim image with a pinned
+# Blender 4.5 LTS install for the blender-backed topology/execution
+# adapters.
+#
+# Build prerequisites:
+#   1. Build the slim image first:  docker build -t lathe:local .
+#   2. Then build this image:       docker build -f docker/Dockerfile.blender -t lathe:blender .
+#
+# GPU caveat (see plans/07_security_supply_chain.md amendment):
+# the Blender render/bake paths may require GPU passthrough via
+# `--device` (rootless podman) or `--gpus all` (Docker). Passing a
+# GPU is incompatible with `--network=none`, so sandboxed runs that
+# forbid network access cannot use GPU acceleration. CPU fallbacks
+# are deterministic but slower.
+
+FROM lathe:local AS base
+
+USER root
+
+# ------------------------------------------------------------------
+# Pinned Blender 4.5 LTS
+# ------------------------------------------------------------------
+# Release page:  https://www.blender.org/download/lts/4-5/
+# Tarball URL (amd64):
+#   https://download.blender.org/release/Blender4.5/blender-4.5.0-linux-x64.tar.xz
+# SHA256: VERIFY at build time against the upstream SHA256SUMS file
+# published alongside the tarball. Pinning the expected hash here
+# prevents silent upstream swap — update both URL and hash together.
+ARG BLENDER_VERSION=4.5.0
+ARG BLENDER_URL=https://download.blender.org/release/Blender4.5/blender-${BLENDER_VERSION}-linux-x64.tar.xz
+ARG BLENDER_SHA256=REPLACE_WITH_UPSTREAM_SHA256_FROM_BLENDER_ORG
+
+RUN apt-get update \
+ && apt-get install --no-install-recommends -y \
+        ca-certificates \
+        curl \
+        libxi6 libxrender1 libxxf86vm1 libxfixes3 libxkbcommon0 \
+        libgl1 libegl1 libsm6 libglib2.0-0 \
+        xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    mkdir -p /opt/blender; \
+    curl --fail --location --output /tmp/blender.tar.xz "${BLENDER_URL}"; \
+    echo "${BLENDER_SHA256}  /tmp/blender.tar.xz" | sha256sum --check --strict; \
+    tar --extract --xz --strip-components=1 --file /tmp/blender.tar.xz --directory /opt/blender; \
+    rm /tmp/blender.tar.xz; \
+    /opt/blender/blender --version
+
+ENV LATHE_BLENDER_PATH=/opt/blender/blender
+
+# ------------------------------------------------------------------
+# Optional: xatlas Python wheel
+# ------------------------------------------------------------------
+# The xatlas UV adapter is optional. Uncomment the block below (and
+# rebuild) to install it. Wheel availability varies per platform —
+# on glibc-slim amd64 the PyPI wheel usually installs cleanly.
+#
+# RUN /app/.venv/bin/pip install --no-cache-dir xatlas
+
+USER lathe
+
+# Inherit ENTRYPOINT from the slim base image so `docker run lathe:blender doctor`
+# works identically; override with `--entrypoint` for raw Blender invocation.
