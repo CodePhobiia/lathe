@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lathe"
+version = "0.1.0"
+description = "Reference compiler scaffold for the Lathe AI-native 3D build language"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "lark>=1.1",
+  "jsonschema>=4.0",
+  "numpy>=1.26",
+  "Pillow>=10.0",
+  "trimesh>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0",
+]
+hunyuan_http = []
+vggt = [
+  "torch>=2.11.0",
+  "torchvision>=0.26.0",
+]
+xatlas = [
+  "xatlas>=0.0.11",
+]
+geometry = [
+  "scikit-image>=0.25",
+]
+export = [
+  "scipy>=1.16",
+]
+
+[project.scripts]
+lathe = "lathe.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lathe*"]

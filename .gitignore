@@ -1,0 +1,52 @@
+# Virtual envs
+.venv/
+.venv_old_broken/
+.venv*/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Transient build dirs (per CLAUDE.md: dist_*, tmp_*, warm_*, v05_*, cache_probe_*)
+dist/
+dist_*/
+tmp_*/
+warm_*/
+v05_*/
+cache_probe_*/
+
+# Parser cache (25MB, regenerates on first parse)
+.lathe_lark_cache/
+.lathe_lark_cache
+
+# External vendored deps — ignored per Plan 06 amendment (custom Meta VGGT License, too large to vendor)
+external/vggt/
+
+# Editor + OS
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.DS_Store
+Thumbs.db
+
+# Blender scratch
+*.blend1
+
+# Env
+.env
+.env.local
+
+# Node (for eventual VS Code extension workspace)
+node_modules/

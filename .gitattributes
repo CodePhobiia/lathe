@@ -1,0 +1,13 @@
+* text=auto eol=lf
+*.lth text eol=lf
+*.glb binary
+*.gltf text eol=lf
+*.usda text eol=lf
+*.usd binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.obj text eol=lf
+*.stl binary
+*.fbx binary
