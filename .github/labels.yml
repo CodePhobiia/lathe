@@ -1,0 +1,41 @@
+# Canonical label set for the lathe repo. Apply via github-label-sync:
+#   npx github-label-sync --access-token $GH_TOKEN --labels .github/labels.yml talmerri/lathe
+- name: bug
+  color: d73a4a
+  description: Something is broken.
+- name: enhancement
+  color: a2eeef
+  description: New feature or capability request.
+- name: language-contract
+  color: 5319e7
+  description: Touches the stable public surface (profile/contract/critic/asset/variant) or a backend ID.
+- name: backend
+  color: 0e8a16
+  description: Backend stack, provider, or adapter change.
+- name: shape-stage
+  color: 1d76db
+  description: Affects the shape stage or the intent_mesh_handoff_v1 contract.
+- name: stdlib
+  color: c5def5
+  description: std/ library authoring layer.
+- name: docs
+  color: 0075ca
+  description: Documentation or spec changes.
+- name: good-first-issue
+  color: 7057ff
+  description: Scoped for first-time contributors.
+- name: help-wanted
+  color: 008672
+  description: Maintainers welcome outside help.
+- name: stale
+  color: ededed
+  description: Auto-applied by the stale workflow.
+- name: security
+  color: ee0701
+  description: Security vulnerability or hardening.
+- name: deps
+  color: 0366d6
+  description: Dependency updates (Dependabot).
+- name: needs-repro
+  color: fbca04
+  description: Needs a minimal reproduction before triage.

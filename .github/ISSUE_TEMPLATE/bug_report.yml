@@ -1,0 +1,102 @@
+name: Bug report
+description: Something in Lathe misbehaves — compiler, runtime, validator, or CLI.
+title: "[bug] <short description>"
+labels: [bug, needs-repro]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please provide as much of the following as
+        possible. Minimal reproductions get resolved fastest.
+
+  - type: input
+    id: lathe-version
+    attributes:
+      label: Lathe version
+      description: Output of `python -m lathe.cli --version` or the installed package version.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (describe in details)
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python --version`.
+      placeholder: "3.11.9"
+    validations:
+      required: true
+
+  - type: textarea
+    id: lth-source
+    attributes:
+      label: Minimal failing .lth source
+      description: Paste the smallest `.lth` source that reproduces the bug.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: lathe doctor output
+      description: Paste the full output of `python -m lathe.cli doctor`.
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage where the break occurs
+      options:
+        - refs
+        - intent
+        - shape
+        - topology
+        - uv
+        - surface
+        - execution
+        - rig
+        - interfaces
+        - physics
+        - optimize
+        - validate
+        - package
+        - publish
+        - CLI / tooling
+        - unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior (include tracebacks)
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context

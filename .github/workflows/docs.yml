@@ -1,0 +1,58 @@
+# Docs site build + gh-pages deploy.
+# Trigger activates once mkdocs.yml lands (wave1-docs owns it).
+# Until then this job is a no-op on dispatch and a build-only check on push.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "spec/**"
+      - "README.md"
+      - "mkdocs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    name: mkdocs build + deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Short-circuit when mkdocs.yml is missing
+        id: guard
+        run: |
+          if [ ! -f mkdocs.yml ]; then
+            echo "mkdocs.yml not present yet; skipping docs build."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install docs extras
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[docs]"
+
+      - name: Build site (strict)
+        if: steps.guard.outputs.skip != 'true'
+        run: mkdocs build --strict
+
+      - name: Deploy to gh-pages
+        if: steps.guard.outputs.skip != 'true' && github.event_name == 'push'
+        run: mkdocs gh-deploy --force

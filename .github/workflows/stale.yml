@@ -1,0 +1,37 @@
+name: Stale triage
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: actions/stale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: "security,language-contract,help-wanted,good-first-issue"
+          exempt-pr-labels: "security,language-contract,help-wanted,good-first-issue"
+          stale-issue-message: >
+            This issue has been idle for 60 days and is being marked stale.
+            It will close in 14 days without further activity. Add a comment
+            to keep it open, or apply an exempt label if this should remain.
+          stale-pr-message: >
+            This PR has been idle for 30 days and is being marked stale.
+            It will close in 14 days without further activity.
+          close-issue-message: >
+            Closing as stale. Please reopen with fresh context if still relevant.
+          close-pr-message: >
+            Closing as stale. Please reopen and rebase when ready to resume.

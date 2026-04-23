@@ -1,0 +1,78 @@
+name: Feature request
+description: Propose a new capability, backend, or language surface.
+title: "[feature] <short description>"
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please indicate which compiler stage(s) the request touches and flag any
+        impact on the stable public surface before we scope it.
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem does this solve? Who benefits?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Which stage does this touch?
+      multiple: true
+      options:
+        - refs
+        - intent
+        - shape
+        - topology
+        - uv
+        - surface
+        - execution
+        - rig
+        - interfaces
+        - physics
+        - optimize
+        - validate
+        - package
+        - publish
+        - tooling / CLI
+        - stdlib (std/)
+        - documentation
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: public-surface
+    attributes:
+      label: Public-surface impact (check all that apply)
+      options:
+        - label: Changes the `profile` language surface
+        - label: Changes the `contract` language surface
+        - label: Changes the `critic` language surface
+        - label: Changes the `asset` language surface
+        - label: Changes the `variant` language surface
+        - label: No public-surface change
+
+  - type: checkboxes
+    id: backend-id
+    attributes:
+      label: Backend ID impact
+      options:
+        - label: Adds a new backend ID
+        - label: Changes an existing backend ID
+        - label: Changes the stable `lathe.shape.intent_mesh_handoff_v1` contract
+        - label: No backend-ID change
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

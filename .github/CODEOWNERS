@@ -1,0 +1,13 @@
+# CODEOWNERS for the lathe repo.
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+
+* @talmerri
+
+grammar/ @talmerri
+spec/ @talmerri
+schema/ @talmerri
+
+lathe/shape_backend.py @talmerri
+lathe/shape_providers.py @talmerri
+lathe/asset_graph.py @talmerri
+lathe/assembly_kernel.py @talmerri

@@ -1,0 +1,51 @@
+name: Lathe Smoke (nightly)
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: lathe-smoke-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: lathe smoke + example builds
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run pytest smoke
+        run: bash scripts/lathe_smoke.sh
+
+      - name: Build courier drone (generate example)
+        run: python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist
+
+      - name: Build reconstruct example
+        run: |
+          if [ -f examples/reconstruct_courier_from_mesh.lth ]; then
+            python -m lathe.cli build examples/reconstruct_courier_from_mesh.lth reconstruct_courier_from_mesh --out dist
+          else
+            echo "reconstruct example not yet present; skipping."
+          fi
+
+      - name: Upload dist manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lathe-smoke-dist-${{ github.run_id }}
+          path: dist/
+          if-no-files-found: warn
+          retention-days: 7
