@@ -8,6 +8,22 @@ version = "0.1.0"
 description = "Reference compiler scaffold for the Lathe AI-native 3D build language"
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Tal Merri", email = "talmerri@gmail.com" },
+]
+keywords = ["3d", "compiler", "dsl", "asset-pipeline", "game-dev", "procedural"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics :: 3D Modeling",
+  "Topic :: Software Development :: Compilers",
+]
 dependencies = [
   "lark>=1.1",
   "jsonschema>=4.0",
@@ -16,11 +32,41 @@ dependencies = [
   "trimesh>=4.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/talmerri/lathe"
+Documentation = "https://talmerri.github.io/lathe/"
+Repository = "https://github.com/talmerri/lathe"
+Issues = "https://github.com/talmerri/lathe/issues"
+Changelog = "https://github.com/talmerri/lathe/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=9.0",
+  "pytest-cov>=5",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "pre-commit>=3.8",
+  "types-jsonschema",
+  "types-Pillow",
+  "hypothesis>=6.100",
+  "syrupy>=4",
+  "mutmut>=2.5",
+  "pip-tools",
+  "build",
+  "pip-audit",
+  "bump-my-version",
 ]
+docs = [
+  "mkdocs-material>=9.5",
+  "mkdocstrings[python]>=0.26",
+  "mkdocs-mermaid2-plugin",
+  "mkdocs-gen-files",
+  "mkdocs-literate-nav",
+  "mkdocs-section-index",
+]
+test-min = []
 hunyuan_http = []
+# TODO (Plan 10 amendment): verify this version actually exists; may need to loosen to torch>=2.2,<3
 vggt = [
   "torch>=2.11.0",
   "torchvision>=0.26.0",
@@ -41,3 +87,99 @@ lathe = "lathe.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["lathe*"]
+
+# ---------------------------------------------------------------------------
+# Tooling config (added Wave 1 per plans/01_code_quality.md, 02_documentation.md,
+# 04_test_coverage.md, 05_developer_experience.md, 07_security.md).
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+src = ["lathe"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RET", "C90", "N", "D", "PL", "TRY", "BLE", "PTH", "RUF", "S"]
+ignore = ["D203", "D213", "PLR0913"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "PLR2004", "S"]
+"grammar/*" = ["ALL"]
+
+[tool.ruff.format]
+# Supersedes black/isort; single source of truth.
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["trimesh.*", "lark.*", "xatlas.*", "torch.*", "torchvision.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["lathe"]
+branch = true
+omit = ["lathe/scaffolds/*", "lathe/__init__.py"]
+
+[tool.coverage.report]
+fail_under = 0  # Gate lifts to 85 in Wave 3 per plans/04_test_coverage.md
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "requires_blender: skipped unless Blender is available",
+  "requires_xatlas: skipped unless xatlas is importable",
+  "requires_torch: skipped unless torch is importable",
+  "requires_network: skipped unless LATHE_TESTS_ALLOW_NETWORK=1",
+  "bug_regression: regression test for an audit finding (tests/bugs/)",
+]
+
+[tool.uv]
+# uv-specific settings live here; dependency groups below mirror optional-dependencies
+# for uv's native workflow. Legacy pip users read [project.optional-dependencies].
+
+[dependency-groups]
+dev = [
+  "pytest>=9.0",
+  "pytest-cov>=5",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "pre-commit>=3.8",
+  "types-jsonschema",
+  "types-Pillow",
+  "hypothesis>=6.100",
+  "syrupy>=4",
+  "mutmut>=2.5",
+  "pip-tools",
+  "build",
+  "pip-audit",
+  "bump-my-version",
+]
+docs = [
+  "mkdocs-material>=9.5",
+  "mkdocstrings[python]>=0.26",
+  "mkdocs-mermaid2-plugin",
+  "mkdocs-gen-files",
+  "mkdocs-literate-nav",
+  "mkdocs-section-index",
+]
