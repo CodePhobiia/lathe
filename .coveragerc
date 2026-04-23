@@ -1,0 +1,23 @@
+[run]
+source = lathe
+branch = True
+omit =
+    lathe/scaffolds/*
+    lathe/__init__.py
+
+[report]
+fail_under = 0
+show_missing = True
+skip_covered = False
+precision = 2
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if TYPE_CHECKING:
+    if __name__ == .__main__.:
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml
