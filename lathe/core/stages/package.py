@@ -13,6 +13,7 @@ from ..common import dump_json, hash_obj, hash_ref, output_entry, relpath
 from ..io import export_glb, export_gltf, export_obj, write_usda
 from ..mesh import RuntimeMesh
 from ..rendering import render_lod_sheet, render_mesh_preview, render_uv_layout
+from ...engine_manifests import ADAPTERS as _ENGINE_ADAPTERS, manifest_filename as _engine_manifest_filename
 from ...selector_manifest import build_selector_manifest, write_selector_manifest
 
 
@@ -89,6 +90,34 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         dst.write_bytes(src.read_bytes())
         outputs.append(output_entry(executor.out_dir, dst, kind_name))
 
+    # STAGE-10: engine-specific manifests (godot/unity/unreal). Emitted at the
+    # executor.out_dir root — NOT inside stages/package/ — so they sit next to
+    # the copied lod_{0..3}.glb + collision_*.glb / main <asset>.glb bundle
+    # that engine importers actually consume. Only runs on glb-packaged builds
+    # (engine importers expect a glb alongside).
+    engine_manifest_entries: dict[str, Any] = {}
+    if "glb" in package_cfg.get("formats", []):
+        engine_context = _build_engine_context(
+            executor=executor,
+            outputs=outputs,
+            optimize_bundle=optimize_bundle_local,
+        )
+        for engine_id, emit_fn in _ENGINE_ADAPTERS.items():
+            try:
+                payload = emit_fn(engine_context, executor.asset_name)
+            except Exception:  # noqa: BLE001 — best-effort sidecar, never fail the build
+                continue
+            filename = _engine_manifest_filename(engine_id, executor.asset_name)
+            target = executor.out_dir / filename
+            target.write_text(payload, encoding="utf-8")
+            import hashlib as _hashlib
+
+            engine_manifest_entries[engine_id] = {
+                "path": relpath(executor.out_dir, target),
+                "sha256": _hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+                "format": "yaml" if filename.endswith(".yaml") else "json",
+            }
+
     previews = []
     preview_dir = stage_dir / "previews"
     preview_dir.mkdir(exist_ok=True)
@@ -153,6 +182,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         "trace_path": relpath(executor.out_dir, trace_path) if trace_path else None,
         "normalized_source_path": relpath(executor.out_dir, executor.normalized_asset_path),
         "previews": previews,
+        "engine_manifests": engine_manifest_entries,
     }
     executor.runtime["package"] = {"bundle": bundle}
     dump_json(stage_dir / "bundle.json", bundle)
@@ -161,6 +191,130 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         bundle["selector_manifest_path"] = relpath(executor.out_dir, selector_manifest_path)
         dump_json(stage_dir / "bundle.json", bundle)
     return bundle
+
+
+def _build_engine_context(
+    *,
+    executor: Any,
+    outputs: list[dict[str, Any]],
+    optimize_bundle: dict[str, Any],
+) -> dict[str, Any]:
+    """Assemble the small context dict passed to each engine adapter.
+
+    Keeps adapter inputs free of executor-specific types — every value is
+    JSON-serialisable. Resolves the main glb uri from ``outputs``.
+    """
+
+    main_glb = next(
+        (entry.get("uri") for entry in outputs if entry.get("format") == "glb"),
+        None,
+    )
+    lods_ctx: list[dict[str, Any]] = []
+    for lod in optimize_bundle.get("lods") or []:
+        if not isinstance(lod, dict):
+            continue
+        name = str(lod.get("name") or "lod0")
+        try:
+            level = int(name.replace("lod", ""))
+        except (TypeError, ValueError):
+            level = 0
+        lods_ctx.append(
+            {
+                "level": level,
+                "mesh_uri": lod.get("mesh_uri"),
+                "triangle_count": lod.get("triangle_count"),
+                "distance_min": lod.get("distance_min"),
+                "distance_max": lod.get("distance_max"),
+                "screen_coverage": lod.get("screen_coverage"),
+            }
+        )
+    interfaces = (executor.runtime.get("interfaces") or {}).get("bundle") or {}
+    sockets = [
+        {
+            "id": sock.get("id") or sock.get("name"),
+            "origin": sock.get("origin") or sock.get("position") or [0.0, 0.0, 0.0],
+            "axis": sock.get("axis") or [0.0, 1.0, 0.0],
+            "socket_type": sock.get("socket_type")
+            or sock.get("socketType")
+            or sock.get("kind")
+            or "attach",
+            "kind": sock.get("kind"),
+            "parent_part_id": sock.get("parent_part_id") or sock.get("parentPartId"),
+        }
+        for sock in interfaces.get("sockets", []) or []
+        if isinstance(sock, dict) and (sock.get("id") or sock.get("name"))
+    ]
+    pivots = [
+        {
+            "id": piv.get("id") or piv.get("name"),
+            "origin": piv.get("origin") or piv.get("position") or [0.0, 0.0, 0.0],
+            "axis": piv.get("axis") or [0.0, 1.0, 0.0],
+            "pivot_type": piv.get("pivot_type") or piv.get("pivotType") or "center",
+        }
+        for piv in interfaces.get("pivots", []) or []
+        if isinstance(piv, dict) and (piv.get("id") or piv.get("name"))
+    ]
+    collisions: list[dict[str, Any]] = []
+    collision_info = optimize_bundle.get("collision") or {}
+    if collision_info.get("hull_uri"):
+        collisions.append(
+            {
+                "id": "hull",
+                "kind": "hull",
+                "uri": collision_info.get("hull_uri"),
+                "parent_part_id": None,
+            }
+        )
+    if collision_info.get("parts_uri"):
+        collisions.append(
+            {
+                "id": "parts",
+                "kind": "hull",
+                "uri": collision_info.get("parts_uri"),
+                "parent_part_id": None,
+            }
+        )
+    surface = (executor.runtime.get("surface") or {}).get("bundle") or {}
+    mats_raw = surface.get("materials") or []
+    materials: list[dict[str, Any]] = []
+    if isinstance(mats_raw, list) and mats_raw:
+        for mat in mats_raw:
+            if not isinstance(mat, dict):
+                continue
+            mid = mat.get("id") or mat.get("name")
+            if not mid:
+                continue
+            materials.append(
+                {
+                    "id": str(mid),
+                    "display_name": mat.get("display_name") or mat.get("displayName") or str(mid),
+                }
+            )
+    if not materials:
+        # Fall back to material_zones.
+        seen: set[str] = set()
+        for zone in surface.get("material_zones", []) or []:
+            if not isinstance(zone, dict):
+                continue
+            name = zone.get("material") or zone.get("name")
+            if not isinstance(name, str) or not name or name in seen:
+                continue
+            seen.add(name)
+            materials.append({"id": name, "display_name": name})
+    publish = executor.asset.get("publish") or {}
+    raw_tags = publish.get("tags") or []
+    from ...selector_manifest import GAMEPLAY_TAG_CATALOG
+
+    gameplay_tags = [t for t in raw_tags if isinstance(t, str) and t in GAMEPLAY_TAG_CATALOG]
+    return {
+        "main_glb_uri": main_glb,
+        "lods": lods_ctx,
+        "sockets": sockets,
+        "pivots": pivots,
+        "collisions": collisions,
+        "materials": materials,
+        "gameplay_tags": gameplay_tags,
+    }
 
 
 def _write_selector_manifest(executor: Any, validate_bundle: dict[str, Any]) -> Any:

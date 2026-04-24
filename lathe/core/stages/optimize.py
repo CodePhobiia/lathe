@@ -43,6 +43,28 @@ def _resolve_lod_ratios(asset_cfg: dict[str, Any], runtime_cfg: dict[str, Any]) 
     return list(DEFAULT_LOD_RATIOS)
 
 
+def _resolve_lod_config(asset_cfg: dict[str, Any]) -> list[dict[str, Any]] | None:
+    """Resolve the STAGE-9 ``lod_config`` block (per-level distance + coverage hints).
+
+    Expected shape: ``[{level, ratio?, distance_min, distance_max, screen_coverage}, ...]``.
+    Missing keys on any entry fall back to the LOD module's defaults inferred
+    from ``DEFAULT_DISTANCE_BANDS`` / ``DEFAULT_SCREEN_COVERAGE``.
+    """
+
+    raw = asset_cfg.get("lod_config")
+    if not isinstance(raw, list):
+        return None
+    out: list[dict[str, Any]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        lvl = entry.get("level")
+        if not isinstance(lvl, int) or lvl < 0:
+            continue
+        out.append(entry)
+    return out or None
+
+
 def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
     """Run.
 
@@ -59,7 +81,8 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
     uv_runtime: RuntimeMesh = executor.runtime["uv"]["runtime_mesh"]
 
     lod_ratios = _resolve_lod_ratios(cfg, runtime_cfg)
-    lod_results = lod_mod.build_lods(uv_runtime.mesh, lod_ratios)
+    lod_config = _resolve_lod_config(cfg)
+    lod_results = lod_mod.build_lods(uv_runtime.mesh, lod_ratios, lod_config)
 
     lods: list[dict[str, Any]] = []
     lod_manifest_entries: list[dict[str, Any]] = []
@@ -75,13 +98,17 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
         lod_path = stage_dir / f"lod_{result.level}.glb"
         export_glb(result.mesh, lod_path)
         rel = relpath(executor.out_dir, lod_path)
-        lod_manifest_entries.append({
+        entry = {
             "level": result.level,
             "ratio": result.ratio,
             "tris": result.tris,
             "verts": result.verts,
             "path": rel,
-        })
+            "distance_min": result.distance_min,
+            "distance_max": result.distance_max,
+            "screen_coverage": result.screen_coverage,
+        }
+        lod_manifest_entries.append(entry)
         # Back-compat shape for downstream code expecting ``lods`` list entries.
         lods.append({
             "name": f"lod{result.level}",
@@ -89,6 +116,9 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
             "triangle_count": result.tris,
             "vertex_count": result.verts,
             "decimation": "quadric_edge_collapse" if result.ratio < 1.0 else "source",
+            "distance_min": result.distance_min,
+            "distance_max": result.distance_max,
+            "screen_coverage": result.screen_coverage,
         })
 
     lod_manifest = {

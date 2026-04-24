@@ -117,6 +117,85 @@ def _extract_score(raw: dict[str, Any], score_key: str | None, passes: bool) -> 
     return 1.0 if passes else 0.0
 
 
+def build_urdf_validator() -> "FunctionValidator":
+    """Return the STAGE-11 URDF validator wrapped as a pipeline validator.
+
+    Kept in ``composition.py`` (alongside the other built-in registrations)
+    so the canonical list of validators lives in one file. The validator is
+    gated internally: for non-robotics assets it returns an empty-evidence
+    report with no diagnostics and so acts as a no-op for the aggregate
+    certification score.
+    """
+
+    from .urdf_validation import evaluate_urdf_validation
+
+    return FunctionValidator(
+        name="urdf_validation",
+        fn=evaluate_urdf_validation,
+        stage_dependencies=["interfaces", "physics"],
+        weight=1.0,
+    )
+
+
+def build_gameplay_tag_validator() -> "FunctionValidator":
+    """Return the STAGE-12 gameplay-tag catalog validator.
+
+    Verifies every tag declared in ``asset.publish.tags`` is a member of
+    ``GAMEPLAY_TAG_CATALOG`` (see ``lathe/selector_manifest.py``). Any
+    unknown tag is surfaced as a validate-stage error (``L6410``) carrying
+    the offending tag name and the allowed catalog for operator feedback.
+    Assets with no tags are silently a no-op.
+    """
+
+    def _evaluate(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG001
+        from ..selector_manifest import GAMEPLAY_TAG_CATALOG
+
+        diagnostics: list[dict[str, Any]] = []
+        publish = (asset or {}).get("publish") or {}
+        raw_tags = publish.get("tags") or []
+        if not isinstance(raw_tags, list):
+            raw_tags = []
+        unknown: list[str] = []
+        valid: list[str] = []
+        for tag in raw_tags:
+            if not isinstance(tag, str):
+                continue
+            if tag in GAMEPLAY_TAG_CATALOG:
+                valid.append(tag)
+            else:
+                unknown.append(tag)
+        for tag in unknown:
+            diagnostics.append(
+                {
+                    "code": "L6410",
+                    "id": "L6410",
+                    "name": "unknown_gameplay_tag",
+                    "severity": "error",
+                    "phase": "validate",
+                    "stage": "validate",
+                    "validator": "gameplay_tags",
+                    "message": (
+                        f"Unknown gameplay tag '{tag}'. "
+                        f"Allowed: {sorted(GAMEPLAY_TAG_CATALOG)}."
+                    ),
+                    "details": {"tag": tag, "allowed": sorted(GAMEPLAY_TAG_CATALOG)},
+                }
+            )
+        return {
+            "diagnostics": diagnostics,
+            "metrics": {"valid": valid, "unknown": unknown},
+            "valid_tags": valid,
+            "unknown_tags": unknown,
+        }
+
+    return FunctionValidator(
+        name="gameplay_tags",
+        fn=_evaluate,
+        stage_dependencies=[],
+        weight=0.0,
+    )
+
+
 class ValidatorPipeline:
     """Topologically-ordered validator pipeline.
 

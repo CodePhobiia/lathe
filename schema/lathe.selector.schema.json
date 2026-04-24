@@ -254,7 +254,59 @@
           "ref": { "type": "string", "pattern": "^@lathe\\[.+#lod[0-9]+\\..+\\]$" },
           "partId": { "type": "string" },
           "triangleCount": { "type": "integer", "minimum": 0 },
-          "screenSize": { "type": "number", "minimum": 0, "maximum": 1 }
+          "screenSize": { "type": "number", "minimum": 0, "maximum": 1 },
+          "distanceMin": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Minimum camera distance (m) at which this LOD becomes active."
+          },
+          "distanceMax": {
+            "type": ["number", "null"],
+            "description": "Maximum camera distance (m) at which this LOD is active; null means unbounded."
+          },
+          "screenCoverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Screen-space coverage hint (fraction of screen height)."
+          }
+        }
+      }
+    },
+    "lodConfig": {
+      "type": "array",
+      "minItems": 0,
+      "description": "STAGE-9 LOD configuration echoed from the asset build config. See docs/engine_handoff.md.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 0 },
+          "ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+          "distance_min": { "type": "number", "minimum": 0 },
+          "distance_max": { "type": ["number", "null"] },
+          "screen_coverage": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "gameplayTags": {
+      "type": "array",
+      "minItems": 0,
+      "description": "STAGE-12 gameplay-tag catalog values declared on the asset. See docs/gameplay_tags.md.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "engineManifests": {
+      "type": "object",
+      "description": "STAGE-10 engine-specific manifest files emitted alongside the main glb, keyed by engine id ('godot', 'unity', 'unreal').",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "format": { "type": "string", "enum": ["json", "yaml"] }
         }
       }
     },

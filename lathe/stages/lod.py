@@ -21,7 +21,7 @@ Design notes:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Any, Iterable
 
 import heapq
 import numpy as np
@@ -37,6 +37,22 @@ class LODResult:
     mesh: trimesh.Trimesh
     tris: int
     verts: int
+    distance_min: float = 0.0
+    distance_max: float | None = None
+    screen_coverage: float | None = None
+
+
+# Default distance thresholds in metres for a 4-level LOD ladder (LOD0..LOD3).
+# LOD3's distance_max is ``None`` to mean "infinity".
+DEFAULT_DISTANCE_BANDS: tuple[tuple[float, float | None], ...] = (
+    (0.0, 10.0),
+    (10.0, 30.0),
+    (30.0, 100.0),
+    (100.0, None),
+)
+
+# Default screen-space coverage hints (fraction of screen height).
+DEFAULT_SCREEN_COVERAGE: tuple[float, ...] = (1.0, 0.4, 0.15, 0.05)
 
 
 def _plane_quadric(p0: np.ndarray, p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
@@ -302,13 +318,46 @@ def _rebuild_mesh(
     return mesh
 
 
-def build_lods(mesh: trimesh.Trimesh, ratios: Iterable[float]) -> list[LODResult]:
+def _default_band(level: int) -> tuple[float, float | None]:
+    """Return a default (distance_min, distance_max) band for ``level``.
+
+    For levels beyond the builtin table, extrapolate by doubling the previous
+    outer radius so the ladder never collapses.
+    """
+    if level < len(DEFAULT_DISTANCE_BANDS):
+        return DEFAULT_DISTANCE_BANDS[level]
+    # Extrapolate: keep doubling from the last concrete outer radius.
+    last = DEFAULT_DISTANCE_BANDS[-2][1] or 100.0  # LOD2 outer, fallback 100
+    steps = level - (len(DEFAULT_DISTANCE_BANDS) - 1)
+    lo = last * (2 ** steps)
+    return (lo, None)
+
+
+def _default_screen_coverage(level: int) -> float:
+    if level < len(DEFAULT_SCREEN_COVERAGE):
+        return DEFAULT_SCREEN_COVERAGE[level]
+    # Halve each further level, floored at a small positive value.
+    tail = DEFAULT_SCREEN_COVERAGE[-1] * (0.5 ** (level - len(DEFAULT_SCREEN_COVERAGE) + 1))
+    return max(tail, 0.005)
+
+
+def build_lods(
+    mesh: trimesh.Trimesh,
+    ratios: Iterable[float],
+    lod_config: list[dict[str, Any]] | None = None,
+) -> list[LODResult]:
     """Build LOD chain for the given ratios.
 
     Edge cases:
     - Empty input mesh: returns a single LOD0 pointing to the empty mesh.
     - Ratios are used as-is (not sorted) so callers can request e.g. [1.0,
       0.5, 0.25, 0.1] and receive LOD0..LOD3 in order.
+
+    ``lod_config`` is an optional list of ``{level, ratio, distance_min,
+    distance_max, screen_coverage}`` dicts (STAGE-9). When provided, it
+    overrides the defaults inferred from ``DEFAULT_DISTANCE_BANDS`` /
+    ``DEFAULT_SCREEN_COVERAGE`` for matching ``level`` entries. Ratios passed
+    via ``lod_config`` take precedence over ``ratios`` for the same level.
     """
 
     ratios_list = list(ratios)
@@ -319,16 +368,43 @@ def build_lods(mesh: trimesh.Trimesh, ratios: Iterable[float]) -> list[LODResult
         )
         return results
 
+    by_level: dict[int, dict[str, Any]] = {}
+    if isinstance(lod_config, list):
+        for entry in lod_config:
+            if not isinstance(entry, dict):
+                continue
+            lvl = entry.get("level")
+            if isinstance(lvl, int) and lvl >= 0:
+                by_level[int(lvl)] = entry
+
     for idx, raw_ratio in enumerate(ratios_list):
+        override = by_level.get(idx) or {}
+        if "ratio" in override and isinstance(override["ratio"], (int, float)):
+            raw_ratio = override["ratio"]
         ratio = max(0.01, min(1.0, float(raw_ratio)))
         lod_mesh = decimate(mesh, ratio)
-        results.append(
-            LODResult(
-                level=idx,
-                ratio=ratio,
-                mesh=lod_mesh,
-                tris=int(len(lod_mesh.faces)),
-                verts=int(len(lod_mesh.vertices)),
-            )
+
+        default_min, default_max = _default_band(idx)
+        dist_min = override.get("distance_min")
+        dist_max = override.get("distance_max")
+        screen = override.get("screen_coverage")
+        result = LODResult(
+            level=idx,
+            ratio=ratio,
+            mesh=lod_mesh,
+            tris=int(len(lod_mesh.faces)),
+            verts=int(len(lod_mesh.vertices)),
+            distance_min=float(dist_min) if isinstance(dist_min, (int, float)) else default_min,
+            distance_max=(
+                float(dist_max)
+                if isinstance(dist_max, (int, float))
+                else default_max
+            ),
+            screen_coverage=(
+                float(screen)
+                if isinstance(screen, (int, float))
+                else _default_screen_coverage(idx)
+            ),
         )
+        results.append(result)
     return results

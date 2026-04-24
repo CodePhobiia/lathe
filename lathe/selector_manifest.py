@@ -1,10 +1,12 @@
-"""Selector manifest writer (REF-5).
+"""Selector manifest writer (REF-5 + REF-6).
 
 Emits ``selector_manifest.json`` alongside every certified Lathe build. The
 manifest is the authoritative sidecar for ``@lathe[...]`` reference resolution:
 every addressable entity (part, socket, pivot, collision, LOD, material,
-diagnostic) has a stable id whose canonical form is the corresponding ref
-token. Face/edge/vertex lists stay empty in Phase 1 — those land with REF-6.
+diagnostic, face/edge/vertex) has a stable id whose canonical form is the
+corresponding ref token. REF-6 populates the faces/edges/vertices arrays
+from the authoritative topology mesh with deterministic per-part ids
+(``<part>.face<n>`` etc) and minimal geometric facts.
 
 Schema: ``schema/lathe.selector.schema.json`` (schemaVersion=1). The writer
 validates against it via ``jsonschema.Draft202012Validator`` before the file
@@ -138,11 +140,129 @@ def _coordinate_system(asset: dict[str, Any] | None) -> dict[str, Any]:
     return result
 
 
+def _bbox_from_bounds(bounds_min: Any, bounds_max: Any) -> list[float] | None:
+    if not isinstance(bounds_min, list) or not isinstance(bounds_max, list):
+        return None
+    if len(bounds_min) != 3 or len(bounds_max) != 3:
+        return None
+    if not all(isinstance(v, (int, float)) for v in bounds_min):
+        return None
+    if not all(isinstance(v, (int, float)) for v in bounds_max):
+        return None
+    return [
+        float(bounds_min[0]), float(bounds_min[1]), float(bounds_min[2]),
+        float(bounds_max[0]), float(bounds_max[1]), float(bounds_max[2]),
+    ]
+
+
+def _collect_sub_parts(
+    runtime: dict[str, Any],
+    pid: str,
+    token_target: str,
+    *,
+    max_faces: int = 256,
+    max_edges: int = 512,
+    max_vertices: int = 512,
+) -> dict[str, list[dict[str, Any]]]:
+    """Extract per-part faces/edges/vertices from the topology runtime mesh.
+
+    Returns a dict with ``faces``, ``edges``, and ``vertices`` lists.
+    Each entry has a deterministic id (``<pid>.face<n>`` etc) and minimal
+    geometric facts. Caps are applied to keep the sidecar bounded on large
+    meshes — consumers that need full enumeration should pull from the
+    underlying GLB. Deterministic: same runtime_mesh input -> same output.
+    """
+
+    empty = {"faces": [], "edges": [], "vertices": []}
+    topology = runtime.get("topology") or {}
+    runtime_mesh = topology.get("runtime_mesh")
+    if runtime_mesh is None:
+        return empty
+    try:
+        import numpy as np
+
+        mesh = getattr(runtime_mesh, "mesh", None)
+        face_parts = list(getattr(runtime_mesh, "face_parts", []) or [])
+        if mesh is None or len(face_parts) != len(mesh.faces):
+            return empty
+        face_indices = [i for i, part in enumerate(face_parts) if part == pid]
+        if not face_indices:
+            return empty
+
+        faces_out: list[dict[str, Any]] = []
+        centroids = mesh.triangles_center
+        normals = mesh.face_normals
+        areas = mesh.area_faces
+        for local_idx, face_idx in enumerate(face_indices[:max_faces]):
+            face_id = f"{pid}.face{local_idx}"
+            c = centroids[face_idx]
+            n = normals[face_idx]
+            entry = {
+                "id": face_id,
+                "ref": _ref(token_target, f"part.{face_id}"),
+                "centroid": [round(float(c[0]), 6), round(float(c[1]), 6), round(float(c[2]), 6)],
+                "normal": [round(float(n[0]), 6), round(float(n[1]), 6), round(float(n[2]), 6)],
+                "area": round(float(areas[face_idx]), 6),
+                "meshFaceIndex": int(face_idx),
+            }
+            faces_out.append(entry)
+
+        vertex_ids: dict[int, int] = {}
+        for face_idx in face_indices:
+            for vi in mesh.faces[face_idx]:
+                vi = int(vi)
+                if vi not in vertex_ids:
+                    vertex_ids[vi] = len(vertex_ids)
+        verts_out: list[dict[str, Any]] = []
+        sorted_verts = sorted(vertex_ids.items(), key=lambda kv: kv[1])
+        for vi, local_idx in sorted_verts[:max_vertices]:
+            p = mesh.vertices[vi]
+            vid = f"{pid}.vertex{local_idx}"
+            verts_out.append({
+                "id": vid,
+                "ref": _ref(token_target, f"part.{vid}"),
+                "position": [round(float(p[0]), 6), round(float(p[1]), 6), round(float(p[2]), 6)],
+                "meshVertexIndex": int(vi),
+            })
+
+        edge_set: dict[tuple[int, int], int] = {}
+        for face_idx in face_indices:
+            face = mesh.faces[face_idx]
+            for a, b in ((face[0], face[1]), (face[1], face[2]), (face[2], face[0])):
+                key = (int(min(a, b)), int(max(a, b)))
+                if key not in edge_set:
+                    edge_set[key] = len(edge_set)
+        edges_out: list[dict[str, Any]] = []
+        sorted_edges = sorted(edge_set.items(), key=lambda kv: kv[1])
+        for (a, b), local_idx in sorted_edges[:max_edges]:
+            pa = mesh.vertices[a]
+            pb = mesh.vertices[b]
+            length = float(np.linalg.norm(pa - pb))
+            eid = f"{pid}.edge{local_idx}"
+            edges_out.append({
+                "id": eid,
+                "ref": _ref(token_target, f"part.{eid}"),
+                "endpoints": [
+                    [round(float(pa[0]), 6), round(float(pa[1]), 6), round(float(pa[2]), 6)],
+                    [round(float(pb[0]), 6), round(float(pb[1]), 6), round(float(pb[2]), 6)],
+                ],
+                "length": round(length, 6),
+            })
+
+        return {"faces": faces_out, "edges": edges_out, "vertices": verts_out}
+    except Exception:  # noqa: BLE001 — best-effort enrichment
+        return empty
+
+
 def _collect_parts(
     runtime: dict[str, Any],
     token_target: str,
 ) -> list[dict[str, Any]]:
-    """Build the ``parts`` array from the topology bundle's ``part_groups``."""
+    """Build the ``parts`` array from the topology bundle's ``part_groups``.
+
+    REF-6: the ``faces``/``edges``/``vertices`` lists are populated from the
+    topology runtime mesh when it's present in ``runtime["topology"]["runtime_mesh"]``.
+    """
 
     topology = (runtime.get("topology") or {}).get("bundle") or {}
     part_groups = topology.get("part_groups") or []
@@ -166,13 +286,17 @@ def _collect_parts(
         bbox = group.get("bbox") or group.get("aabb")
         if isinstance(bbox, list) and len(bbox) == 6 and all(isinstance(v, (int, float)) for v in bbox):
             entry["bbox"] = [float(v) for v in bbox]
+        else:
+            flat = _bbox_from_bounds(group.get("bounds_min"), group.get("bounds_max"))
+            if flat is not None:
+                entry["bbox"] = flat
         face_count = group.get("face_count") or group.get("faceCount") or group.get("tri_count")
         if isinstance(face_count, int) and face_count >= 0:
             entry["faceCount"] = face_count
-        # Phase 2 slots stay empty arrays.
-        entry["faces"] = []
-        entry["edges"] = []
-        entry["vertices"] = []
+        sub = _collect_sub_parts(runtime, str(pid), token_target)
+        entry["faces"] = sub["faces"]
+        entry["edges"] = sub["edges"]
+        entry["vertices"] = sub["vertices"]
         parts.append(entry)
     return parts
 
@@ -360,6 +484,18 @@ def _collect_lods(
             screen = entry.get("screen_size") or entry.get("screenSize")
             if isinstance(screen, (int, float)) and 0.0 <= float(screen) <= 1.0:
                 item["screenSize"] = float(screen)
+            dist_min = entry.get("distance_min")
+            if isinstance(dist_min, (int, float)) and float(dist_min) >= 0.0:
+                item["distanceMin"] = float(dist_min)
+            if "distance_max" in entry:
+                dist_max = entry["distance_max"]
+                if dist_max is None:
+                    item["distanceMax"] = None
+                elif isinstance(dist_max, (int, float)):
+                    item["distanceMax"] = float(dist_max)
+            coverage = entry.get("screen_coverage")
+            if isinstance(coverage, (int, float)) and 0.0 <= float(coverage) <= 1.0:
+                item["screenCoverage"] = float(coverage)
             out.append(item)
         return out
     # Legacy: optimize bundle just has a `lods` list of {name, mesh_uri, ...}.
@@ -380,6 +516,18 @@ def _collect_lods(
         tri = entry.get("triangle_count") or entry.get("triangleCount")
         if isinstance(tri, int) and tri >= 0:
             item["triangleCount"] = tri
+        dist_min = entry.get("distance_min")
+        if isinstance(dist_min, (int, float)) and float(dist_min) >= 0.0:
+            item["distanceMin"] = float(dist_min)
+        if "distance_max" in entry:
+            dist_max = entry["distance_max"]
+            if dist_max is None:
+                item["distanceMax"] = None
+            elif isinstance(dist_max, (int, float)):
+                item["distanceMax"] = float(dist_max)
+        coverage = entry.get("screen_coverage")
+        if isinstance(coverage, (int, float)) and 0.0 <= float(coverage) <= 1.0:
+            item["screenCoverage"] = float(coverage)
         out.append(item)
     return out
 
@@ -429,6 +577,123 @@ def _collect_materials(
             "id": name,
             "ref": _ref(token_target, f"material.{name}"),
         })
+    return out
+
+
+# STAGE-12: Gameplay-tag controlled vocabulary. Keep in sync with
+# ``docs/gameplay_tags.md``. The checker validates tags against this set.
+GAMEPLAY_TAG_CATALOG: frozenset[str] = frozenset(
+    {
+        "kinematic",
+        "static",
+        "interactable",
+        "weapon",
+        "vehicle",
+        "door",
+        "trigger",
+        "spawn_point",
+        "decoration",
+        "destructible",
+        "consumable",
+        "collectible",
+        "hazard",
+        "cover",
+        "waypoint",
+        "vfx_anchor",
+    }
+)
+
+
+def _collect_gameplay_tags(asset: dict[str, Any] | None) -> list[str]:
+    """Return asset-declared gameplay tags filtered to the catalog.
+
+    Tags live in ``asset.publish.tags`` (existing free-form field); we surface
+    only the ones that appear in ``GAMEPLAY_TAG_CATALOG`` so the manifest stays
+    strictly a game-engine signal. Unknown tags are dropped here (and rejected
+    upstream by the checker).
+    """
+
+    if not isinstance(asset, dict):
+        return []
+    publish = asset.get("publish")
+    if not isinstance(publish, dict):
+        return []
+    raw = publish.get("tags") or []
+    if not isinstance(raw, list):
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for tag in raw:
+        if not isinstance(tag, str):
+            continue
+        if tag not in GAMEPLAY_TAG_CATALOG or tag in seen:
+            continue
+        seen.add(tag)
+        out.append(tag)
+    return out
+
+
+def _collect_lod_config(asset: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Echo the STAGE-9 ``lod_config`` block from the asset build config."""
+
+    if not isinstance(asset, dict):
+        return []
+    build = asset.get("build") or {}
+    optimize = build.get("optimize") if isinstance(build, dict) else None
+    if not isinstance(optimize, dict):
+        return []
+    raw = optimize.get("lod_config")
+    if not isinstance(raw, list):
+        return []
+    out: list[dict[str, Any]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        lvl = entry.get("level")
+        if not isinstance(lvl, int) or lvl < 0:
+            continue
+        clean: dict[str, Any] = {"level": int(lvl)}
+        ratio = entry.get("ratio")
+        if isinstance(ratio, (int, float)):
+            clean["ratio"] = float(ratio)
+        dist_min = entry.get("distance_min")
+        if isinstance(dist_min, (int, float)):
+            clean["distance_min"] = float(dist_min)
+        if "distance_max" in entry:
+            dm = entry["distance_max"]
+            if dm is None:
+                clean["distance_max"] = None
+            elif isinstance(dm, (int, float)):
+                clean["distance_max"] = float(dm)
+        cov = entry.get("screen_coverage")
+        if isinstance(cov, (int, float)):
+            clean["screen_coverage"] = float(cov)
+        out.append(clean)
+    return out
+
+
+def _collect_engine_manifests(runtime: dict[str, Any]) -> dict[str, Any]:
+    """Return the STAGE-10 ``engine_manifests`` block from the package bundle."""
+
+    pkg = (runtime.get("package") or {}).get("bundle") or {}
+    raw = pkg.get("engine_manifests")
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, Any] = {}
+    for name, entry in raw.items():
+        if not isinstance(name, str) or not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        if not isinstance(path, str) or not path:
+            continue
+        clean: dict[str, Any] = {"path": path}
+        sha = entry.get("sha256")
+        if isinstance(sha, str) and len(sha) == 64 and all(c in "0123456789abcdef" for c in sha):
+            clean["sha256"] = sha
+        fmt = entry.get("format")
+        if isinstance(fmt, str) and fmt in {"json", "yaml"}:
+            clean["format"] = fmt
+        out[name] = clean
     return out
 
 
@@ -554,6 +819,15 @@ def build_selector_manifest(
     budgets = _collect_budgets(runtime or {})
     if budgets is not None:
         manifest["budgets"] = budgets
+    gameplay_tags = _collect_gameplay_tags(asset)
+    if gameplay_tags:
+        manifest["gameplayTags"] = gameplay_tags
+    lod_config = _collect_lod_config(asset)
+    if lod_config:
+        manifest["lodConfig"] = lod_config
+    engine_manifests = _collect_engine_manifests(runtime or {})
+    if engine_manifests:
+        manifest["engineManifests"] = engine_manifests
     return manifest
 
 
