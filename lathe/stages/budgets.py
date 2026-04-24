@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 
-DEFAULT_TEXTURE_MEMORY_BUDGET_MB: float = 256.0
+DEFAULT_TEXTURE_MEMORY_BUDGET_MB: float = 128.0
 DEFAULT_MATERIAL_COUNT_BUDGET: int = 16
 DEFAULT_DRAW_CALL_BUDGET: int = 64
 
@@ -33,23 +33,45 @@ L_TEXTURE_MEMORY_OVER_BUDGET = "L6301"
 L_MATERIAL_COUNT_OVER_BUDGET = "L6302"
 L_DRAW_CALL_OVER_BUDGET = "L6303"
 
-# Estimated bytes-per-pixel after typical compression (uncompressed is 4.0).
-# Mirrors what a runtime importer would produce once the PNGs are transcoded.
+# Estimated bytes-per-pixel for each compressed format. KTX2/BC7 is the default
+# for hero-quality output; normal (BC5), ORM (BC1), emissive (BC1) compress
+# more aggressively so the per-channel estimate is channel-aware below.
 _FORMAT_BPP: dict[str, float] = {
-    "ktx2": 1.0,     # BC7 / UASTC averaged — 1 byte / pixel
+    "ktx2": 1.0,
     "bc7": 1.0,
     "bc5": 1.0,
     "bc3": 1.0,
     "bc1": 0.5,
     "astc": 1.0,
     "etc2": 0.5,
-    "png": 4.0,      # RGBA8 uncompressed on GPU upload
+    "png": 4.0,
     "jpg": 4.0,
     "jpeg": 4.0,
     "raw": 4.0,
 }
 
 _DEFAULT_FORMAT = "ktx2"
+
+# Per-channel realistic bpp after typical format selection (basecolor=BC7,
+# normal=BC5, orm/emissive=BC1). Used only by the heuristic path when no
+# explicit material/map table is present.
+_CHANNEL_BPP: dict[str, float] = {
+    "basecolor": 1.0,
+    "albedo": 1.0,
+    "diffuse": 1.0,
+    "color": 1.0,
+    "normal": 1.0,
+    "orm": 0.5,
+    "ao": 0.5,
+    "roughness": 0.5,
+    "metallic": 0.5,
+    "emissive": 0.5,
+    "opacity": 0.5,
+    "height": 1.0,
+    "curvature": 0.5,
+    "id": 0.5,
+    "mask": 0.5,
+}
 
 
 @dataclass
@@ -240,8 +262,26 @@ def _unique_material_names(surface_bundle: Mapping[str, Any]) -> list[str]:
 
 
 def _budget_mb_to_bytes(value: Any, default_mb: float) -> int:
-    """Resolve a megabyte budget to bytes, defaulting to ``default_mb``."""
+    """Resolve a megabyte budget to bytes, defaulting to ``default_mb``.
 
+    Accepts either a scalar (interpreted as MiB) or a unit dict of the form
+    ``{"value": N, "unit": "mb"|"mib"|"kb"|"kib"|"gb"|"gib"}`` as emitted by
+    the Lathe normalizer for asset fields like ``texture_budget``.
+    """
+
+    if isinstance(value, Mapping):
+        raw = value.get("value")
+        unit = str(value.get("unit") or "mb").lower()
+        if isinstance(raw, (int, float)) and raw > 0:
+            scale = {
+                "kb": 1000,
+                "kib": 1024,
+                "mb": 1024 * 1024,
+                "mib": 1024 * 1024,
+                "gb": 1024 * 1024 * 1024,
+                "gib": 1024 * 1024 * 1024,
+            }.get(unit, 1024 * 1024)
+            return int(float(raw) * scale)
     if isinstance(value, (int, float)) and value > 0:
         return int(float(value) * 1024 * 1024)
     return int(default_mb * 1024 * 1024)
@@ -251,11 +291,13 @@ def _evaluate_texture_memory(
     cfg: Mapping[str, Any],
     surface_bundle: Mapping[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    # STAGE-7 introduces ``texture_memory_budget_mb`` for runtime GPU memory.
+    # The pre-existing ``texture_budget`` field captures pre-compressed on-disk
+    # size targets under a different pipeline semantic and is intentionally
+    # not consumed here.
     budget_mb_override = cfg.get("texture_memory_budget_mb")
-    # Backwards-compat: the asset surface uses ``texture_budget`` as MB already.
-    texture_budget_cfg = cfg.get("texture_budget")
     budget_bytes = _budget_mb_to_bytes(
-        budget_mb_override if budget_mb_override is not None else texture_budget_cfg,
+        budget_mb_override,
         DEFAULT_TEXTURE_MEMORY_BUDGET_MB,
     )
 
@@ -290,13 +332,12 @@ def _evaluate_texture_memory(
             estimated_total += mat_bytes
 
     if not considered:
-        # Heuristic path: resolution × channel count × (distinct materials).
+        # Heuristic path: resolution × channel-aware bpp × (distinct materials).
         resolution = _resolution_px(surface_bundle)
         maps = surface_bundle.get("maps") if isinstance(surface_bundle, Mapping) else None
         if not isinstance(maps, list):
             maps = []
-        fmt = _infer_format(surface_bundle)
-        bpp = _bpp_for(fmt)
+        default_bpp = _bpp_for(_infer_format(surface_bundle))
         materials = _unique_material_names(surface_bundle)
         material_slots = surface_bundle.get("material_slots") if isinstance(surface_bundle, Mapping) else None
         slot_count = len(materials) or (int(material_slots) if isinstance(material_slots, int) and material_slots > 0 else 0)
@@ -311,7 +352,13 @@ def _evaluate_texture_memory(
                 },
                 None,
             )
-        per_slot_bytes = int(resolution * resolution * len(maps) * bpp)
+        total_bpp = 0.0
+        for channel in maps:
+            if isinstance(channel, str):
+                total_bpp += _CHANNEL_BPP.get(channel.lower(), default_bpp)
+            else:
+                total_bpp += default_bpp
+        per_slot_bytes = int(resolution * resolution * total_bpp)
         names = materials if materials else [f"slot_{i}" for i in range(slot_count)]
         for name in names:
             per_material.append({"name": name, "bytes": per_slot_bytes})

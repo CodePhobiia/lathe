@@ -41,16 +41,19 @@ How it is estimated:
    is `ktx2` (~1 byte/pixel).
 
 Budget resolution: `build.optimize.texture_memory_budget_mb` if set, else
-the legacy `build.optimize.texture_budget` (already in MiB via the `mb`
-suffix), else the default of **64 MiB**.
+the default of **128 MiB**. The separate `build.optimize.texture_budget`
+field (pre-existing) targets pre-compressed on-disk size and is
+intentionally not reused for the runtime GPU memory budget — the two
+semantics (disk vs GPU memory) diverge once compressed formats enter the
+picture.
 
 Recommended budgets:
 
 | target       | recommended |
 |--------------|------------:|
-| mobile       |        8 MB |
-| desktop game |       32 MB |
-| hero/cinema  |       64 MB |
+| mobile       |       32 MB |
+| desktop game |       96 MB |
+| hero/cinema  |      128 MB |
 
 ### Material count (STAGE-8, diagnostic `L6302`)
 
