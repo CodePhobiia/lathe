@@ -2,32 +2,23 @@
 
 Extends Wave 3's backlog with items carried over + new tickets flagged by Wave 3 reviewers + the big content tracks that were intentionally deferred.
 
-## P0 — finish Plan 01 exit criteria
+## P0 — finish Plan 01 exit criteria ✅ **Wave 4.I COMPLETE**
 
-### BL-17. `lathe/blender_execution.py` 567 LOC decomposition
+### BL-17. `lathe/blender_execution.py` 567 LOC decomposition — **DONE** (`767b844`)
 
-- **Source:** reviewer-code-hygiene + reviewer-plan-audit Wave 3 verdicts.
-- **Scope:** file landed at 567 LOC after BL-10 `run_sandboxed` migration. Still 67 over the Plan 01 500-LOC cap.
-- **Proposed split:** extract bake/render driver helpers into `lathe/blender/` subpackage; keep `blender_execution.py` as thin orchestrator.
-- **Acceptance:** all files ≤500 LOC; pytest 70/70; hero certifies at 0.879435.
-- **Effort:** 0.5 day.
+Landed as 24-LOC shim + 6-file `lathe/blender/` package (max 292 LOC). courier_drone 0.879435.
 
-### BL-18. Explicit decision on `lathe/resolver.py` 540 LOC
+### BL-18. Explicit decision on `lathe/resolver.py` 540 LOC — **DONE** (`3174295`)
 
-- **Source:** reviewer-plan-audit Wave 3.
-- **Scope:** BL-8 was deferred in Wave 3 under the "split only if multi-concern" clause. Reviewer wants an explicit documented decision either to split OR to grant a per-file exception.
-- **Options:**
-  - (a) Decompose into `lathe/resolver/` package (uses chains, profile/contract resolution, variant patching, as-needed helpers).
-  - (b) Accept 540 LOC as permanent exception with inline comment and `# noqa` for the file. Document rationale in an ADR.
-- **Acceptance:** either (a) with file ≤500 LOC OR (b) with `docs/adr/0007-resolver-loc-exception.md` merged.
-- **Effort:** 0.5 day (a) or 0.1 day (b).
+Path B chosen: ADR exception at `docs/adr/0007-resolver-loc-exception.md`. Re-evaluation criteria: >650 LOC, second orchestrator appears, external caller consumes private helpers, or namespace-map wiring >50% of file.
 
-### BL-19. Schemas for trust-boundary JSON sites
+### BL-19. Schemas for trust-boundary JSON sites — **DONE** (`a1aee13`)
 
-- **Source:** Plan 07 Phase 1 completion; reviewer-plan-audit Wave 3.
-- **Scope:** `docs/security/json_ingress_audit.md` lists N trust-boundary sites tagged `TODO(security): trust-boundary JSON ingress`. For each: write a JSON schema, route through `lathe/validation.py::validate_json`.
-- **Acceptance:** every TODO(security) marker either removed (validated now) or re-scoped with justification. `pip-audit` + smoke tests still green.
-- **Effort:** 1 day.
+Audit surfaced only 1 trust-boundary site (`capabilities.py:425` Hunyuan probe). Migrated via new `lathe/validation.py` + `schema/hunyuan_probe.schema.json`. Zero TODO(security) markers remain.
+
+### Minor carryover from Wave 4.I
+
+`lathe/capabilities.py` grew 490 → 506 LOC (+16) during BL-19 when the validation-module imports landed. 6 LOC over Plan 01 cap. Options: trim by condensing the new imports, or accept as a second ADR exception. Defer to Wave 4.II cleanup pass.
 
 ## P1 — Plan 04 test backfill (owned track)
 
