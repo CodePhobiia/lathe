@@ -14,6 +14,7 @@ than binding at import time.
 from __future__ import annotations
 
 import urllib.error
+import warnings
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -78,6 +79,11 @@ def resolve_shape_provider(
     shape_cfg = (runtime_config or {}).get("shape", {})
     explicit = normalize_provider_id(shape_cfg.get("provider", "auto"))
     strict = bool(shape_cfg.get("strict", False))
+    # BL-37 (Plan 08 Phase 8): `allow_fallback` is the explicit opt-in to the
+    # legacy "fall back to reference_conditioned" behavior. Only meaningful for
+    # learned providers; kept on selection dict so `maybe_run_shape_provider`
+    # can emit the V0.1.x DeprecationWarning / enforce the exit-code contract.
+    allow_fallback = bool(shape_cfg.get("allow_fallback", False))
     configured_providers = shape_cfg.get("providers", {})
     auto_learned_requested = bool(configured_providers)
 
@@ -88,6 +94,7 @@ def resolve_shape_provider(
             "config": provider_config(runtime_config, explicit),
             "selected_via": "explicit",
             "strict": strict,
+            "allow_fallback": allow_fallback,
         }
 
     if not auto_learned_requested:
@@ -97,6 +104,7 @@ def resolve_shape_provider(
             "config": provider_config(runtime_config, provider["id"]),
             "selected_via": "default_fallback",
             "strict": strict,
+            "allow_fallback": allow_fallback,
         }
 
     image_refs = _non_material_image_refs(conditioning)
@@ -107,6 +115,7 @@ def resolve_shape_provider(
             "config": provider_config(runtime_config, provider["id"]),
             "selected_via": "auto_multiview",
             "strict": strict,
+            "allow_fallback": allow_fallback,
         }
     if mode in {"generate", "reconstruct"} and image_refs:
         provider = get_provider("hunyuan2_1_http")
@@ -115,6 +124,7 @@ def resolve_shape_provider(
             "config": provider_config(runtime_config, provider["id"]),
             "selected_via": "auto_image",
             "strict": strict,
+            "allow_fallback": allow_fallback,
         }
     provider = get_provider("reference_conditioned")
     return {
@@ -122,6 +132,7 @@ def resolve_shape_provider(
         "config": provider_config(runtime_config, provider["id"]),
         "selected_via": "auto_fallback",
         "strict": strict,
+        "allow_fallback": allow_fallback,
     }
 
 
@@ -264,15 +275,38 @@ def maybe_run_shape_provider(
     selection = resolve_shape_provider(asset, conditioning, runtime_config)
     provider = selection["provider"]
     provider_id = provider["id"]
+    learned = bool(provider.get("learned", False))
+    strict = bool(selection.get("strict", False))
+    allow_fallback = bool(selection.get("allow_fallback", False))
     fallback_provider = get_provider("reference_conditioned")
+
+    # BL-37 (Plan 08 Phase 8, V0.1.x opt-in rollout): when a learned provider
+    # is selected with strict=False and the user has NOT explicitly opted into
+    # fallback via ``shape.allow_fallback=true``, emit a DeprecationWarning so
+    # users see the upcoming V0.2 default flip one minor version ahead, per
+    # Phase 11's deprecation-window policy. The default behavior is unchanged.
+    if learned and not strict and not allow_fallback:
+        short_name = _short_provider_name(provider_id)
+        warnings.warn(
+            (
+                f"V0.1.x deprecation: shape.strict=False under learned provider "
+                f"'{short_name}' will default to True in V0.2. Set "
+                f"shape.allow_fallback=true (or pass --allow-fallback) to keep "
+                f"legacy fallback behavior explicitly."
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     report = {
         "selected_provider_id": provider_id,
         "selected_provider_version": provider["version"],
         "actual_provider_id": provider_id,
         "actual_provider_version": provider["version"],
         "selected_via": selection["selected_via"],
-        "strict": selection["strict"],
-        "learned": bool(provider.get("learned", False)),
+        "strict": strict,
+        "allow_fallback": allow_fallback,
+        "learned": learned,
         "status": "selected",
         "probe": probe_shape_provider(provider_id, runtime_config),
         "config": _redact_provider_config(provider_id, selection["config"]),
@@ -283,15 +317,20 @@ def maybe_run_shape_provider(
 
     if not report["probe"].get("available", False):
         message = f"Selected shape provider '{provider_id}' is unavailable: {report['probe'].get('message', 'unknown error')}"
-        if selection["strict"]:
-            # Plan 10 M6: a user-selected learned provider with strict=True must
-            # not silently demote to the reference fallback.  Raise a typed
-            # error so the build fails loudly at the same boundary.
-            raise ShapeProviderUnavailable(
+        if strict:
+            # BL-37 (Plan 08 Phase 8) exit-code contract: strict + would-fall-back
+            # raises ``ShapeProviderExecutionError`` with code
+            # ``provider_fallback_blocked`` so CLI callers can gate a non-zero
+            # exit. The underlying probe details are preserved under ``details``.
+            raise ShapeProviderExecutionError(
                 provider_id,
                 message,
-                code=report["probe"].get("code", "provider_unavailable"),
-                details=report["probe"],
+                code="provider_fallback_blocked",
+                details={
+                    "reason": "probe_unavailable",
+                    "probe": report["probe"],
+                    "underlying_code": report["probe"].get("code", "provider_unavailable"),
+                },
             )
         report["status"] = "fallback"
         report["fallback_reason"] = message
@@ -319,13 +358,23 @@ def maybe_run_shape_provider(
         else:
             raise ShapeProviderExecutionError(provider_id, f"No executor implemented for provider '{provider_id}'", code="not_implemented")
     except ShapeProviderError as exc:
-        if selection["strict"]:
-            # Plan 10 M6: strict mode must not silently demote a user-selected
-            # learned provider to the reference fallback.  The underlying
-            # error is propagated unchanged so callers can still branch on
-            # its ``code``; the strict flag itself is the contract that
-            # distinguishes "fail loud" from the non-strict fallback below.
-            raise
+        if strict:
+            # BL-37 (Plan 08 Phase 8) exit-code contract: strict + would-fall-back
+            # raises ``ShapeProviderExecutionError`` with code
+            # ``provider_fallback_blocked``. The underlying error's provider_id,
+            # code, and details are preserved under ``details`` so callers can
+            # still branch on the root cause.
+            raise ShapeProviderExecutionError(
+                provider_id,
+                str(exc),
+                code="provider_fallback_blocked",
+                details={
+                    "reason": "execution_error",
+                    "underlying_provider_id": exc.provider_id,
+                    "underlying_code": exc.code,
+                    "underlying_details": exc.details,
+                },
+            ) from exc
         report["status"] = "fallback"
         report["fallback_reason"] = str(exc)
         report["error"] = {"provider_id": exc.provider_id, "code": exc.code, "details": exc.details}

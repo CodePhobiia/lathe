@@ -77,13 +77,41 @@ def _build_parser() -> argparse.ArgumentParser:
     p_mat.add_argument("name")
     p_mat.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
 
-    p_build = sub.add_parser("build", help="Execute the first runnable backend stack and package outputs")
+    p_build = sub.add_parser(
+        "build",
+        help="Execute the first runnable backend stack and package outputs",
+        description=(
+            "Execute the first runnable backend stack and package outputs. "
+            "Exit codes: 0 = ok; 1 = build or provider error (including "
+            "'provider_fallback_blocked' under strict shape-provider mode); "
+            "2 = CLI usage error."
+        ),
+    )
     p_build.add_argument("file")
     p_build.add_argument("name")
     p_build.add_argument("--out", default="dist", help="Output directory root (default: ./dist)")
     p_build.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
     p_build.add_argument("--shape-provider", default=None, help="Override the shape provider adapter (for example: hunyuan2_1_http or vggt_local)")
-    p_build.add_argument("--strict-shape-provider", action="store_true", help="Fail instead of falling back when the selected shape provider is unavailable or errors")
+    p_build.add_argument(
+        "--strict-shape-provider",
+        action="store_true",
+        help=(
+            "[DEPRECATED] Back-compat alias: fail instead of falling back when "
+            "the selected shape provider is unavailable or errors. Emits a "
+            "DeprecationWarning; use --strict (V0.2+) or set shape.strict=true "
+            "in runtime_config."
+        ),
+    )
+    p_build.add_argument(
+        "--allow-fallback",
+        action="store_true",
+        help=(
+            "BL-37 (Plan 08 Phase 8): explicitly opt into the legacy "
+            "'fall back to reference_conditioned on learned-provider error' "
+            "behavior, silencing the V0.1.x DeprecationWarning. In V0.2 this "
+            "becomes the sole non-strict opt-out."
+        ),
+    )
     p_build.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None, help="Codex-operated imagegen handoff mode for V1.2 surfaces")
     p_build.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
 
@@ -133,11 +161,27 @@ def _build_parser() -> argparse.ArgumentParser:
     p_surface_plan.add_argument("file")
     p_surface_plan.add_argument("name")
 
-    p_surface_build = sub.add_parser("surface-build", help="Run the V1.2 surface stage with required upstream prerequisites")
+    p_surface_build = sub.add_parser(
+        "surface-build",
+        help="Run the V1.2 surface stage with required upstream prerequisites",
+        description=(
+            "Run the V1.2 surface stage. Exit codes: 0 = ok; 1 = build or "
+            "provider error (including 'provider_fallback_blocked' under "
+            "strict shape-provider mode); 2 = CLI usage error."
+        ),
+    )
     p_surface_build.add_argument("file")
     p_surface_build.add_argument("name")
     p_surface_build.add_argument("--out", default="dist")
     p_surface_build.add_argument("--runtime-config", default=None)
+    p_surface_build.add_argument(
+        "--allow-fallback",
+        action="store_true",
+        help=(
+            "BL-37 (Plan 08 Phase 8): opt into legacy learned-provider "
+            "fallback behavior, silencing the V0.1.x DeprecationWarning."
+        ),
+    )
     p_surface_build.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None)
 
     p_surface_validate = sub.add_parser("surface-validate", help="Evaluate only V1.2 surface outputs")

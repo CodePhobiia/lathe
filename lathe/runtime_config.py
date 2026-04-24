@@ -94,6 +94,13 @@ DEFAULT_RUNTIME_CONFIG: dict[str, Any] = {
     "shape": {
         "provider": "auto",
         "strict": False,
+        # BL-37 (Plan 08 Phase 8): when a learned provider is selected and
+        # ``allow_fallback`` is explicitly ``True``, the user has opted into
+        # the legacy "fall back to reference_conditioned on error" behavior.
+        # In V0.1.x this flag is informational (no default change); V0.2 will
+        # flip ``strict`` to ``True`` for learned providers and this flag will
+        # become the sole non-strict opt-out.
+        "allow_fallback": False,
         "providers": {},
     },
     "topology": {
@@ -217,6 +224,7 @@ def apply_cli_overrides(
     *,
     shape_provider: str | None = None,
     shape_strict: bool | None = None,
+    allow_fallback: bool | None = None,
     codex_imagegen: str | None = None,
 ) -> dict[str, Any]:
     """Apply cli overrides.
@@ -225,6 +233,7 @@ def apply_cli_overrides(
         config: config argument.
         shape_provider: shape_provider argument.
         shape_strict: shape_strict argument.
+        allow_fallback: allow_fallback argument (BL-37 Plan 08 Phase 8).
         codex_imagegen: codex_imagegen argument.
 
     Returns:
@@ -236,6 +245,8 @@ def apply_cli_overrides(
         shape["provider"] = shape_provider
     if shape_strict is not None:
         shape["strict"] = bool(shape_strict)
+    if allow_fallback is not None:
+        shape["allow_fallback"] = bool(allow_fallback)
     if codex_imagegen:
         surface = merged.setdefault("surface", {})
         imagegen = surface.setdefault("codex_imagegen", {})

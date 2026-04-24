@@ -3,10 +3,31 @@
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 
+from ..providers.errors import ShapeProviderError
 from ..runtime_config import apply_cli_overrides, load_runtime_config
 from ._common import _dump
+
+
+def _resolve_strict_flag(args) -> bool | None:
+    """BL-37 (Plan 08 Phase 8): normalize ``--strict-shape-provider`` (deprecated)
+    and any future ``--strict`` flag into a single strict override.
+
+    ``--strict-shape-provider`` is preserved as a back-compat alias and emits
+    a ``DeprecationWarning`` when used; callers should migrate to the Phase 11
+    V0.2.0 default flip path (where strict becomes the default for learned
+    providers).
+    """
+    if getattr(args, "strict_shape_provider", False):
+        warnings.warn(
+            "--strict-shape-provider is a back-compat alias; pass --strict in V0.2+.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return True
+    return None
 
 
 def run_build(args) -> None:
@@ -25,7 +46,8 @@ def run_build(args) -> None:
     runtime_config = apply_cli_overrides(
         runtime_config,
         shape_provider=args.shape_provider,
-        shape_strict=True if args.strict_shape_provider else None,
+        shape_strict=_resolve_strict_flag(args),
+        allow_fallback=True if getattr(args, "allow_fallback", False) else None,
         codex_imagegen=args.codex_imagegen,
     )
     try:
@@ -40,6 +62,23 @@ def run_build(args) -> None:
         )
     except BuildError as exc:
         payload = {"ok": False, "message": str(exc), "diagnostics": exc.diagnostics}
+        _dump(payload)
+        raise SystemExit(1) from exc
+    except ShapeProviderError as exc:
+        # BL-37 (Plan 08 Phase 8) exit-code contract: strict-mode provider
+        # blocks fallback -> non-zero exit with diagnostic
+        # ``provider_fallback_blocked`` visible on stdout.
+        payload = {
+            "ok": False,
+            "message": str(exc),
+            "diagnostics": [
+                {
+                    "code": exc.code,
+                    "provider_id": exc.provider_id,
+                    "details": exc.details,
+                }
+            ],
+        }
         _dump(payload)
         raise SystemExit(1) from exc
 

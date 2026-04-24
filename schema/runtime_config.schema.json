@@ -16,6 +16,10 @@
           "description": "Provider alias or fully-qualified provider id (e.g. auto, reference_conditioned_v1, hunyuan2_1_http, vggt_local, codex_imagegen)."
         },
         "strict": { "type": "boolean" },
+        "allow_fallback": {
+          "type": "boolean",
+          "description": "BL-37 (Plan 08 Phase 8): explicit opt-in to legacy 'fall back to reference_conditioned on learned-provider error' behavior. In V0.1.x informational; V0.2 flips strict=True for learned providers and this flag becomes the sole non-strict opt-out."
+        },
         "providers": {
           "type": "object",
           "additionalProperties": true,
