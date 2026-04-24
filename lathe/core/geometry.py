@@ -4,159 +4,18 @@ Extracted from ``lathe/executor.py`` during Stage 2.IV. All helpers here are
 stateless utilities consumed by stage modules. ``run_reference_topology_cleanup``
 is re-exported from ``lathe.executor`` as ``_run_reference_topology_cleanup``
 because tests import it directly.
-
-NOTE(Stage 2.IV): ``generate_candidate_mesh`` is preserved byte-for-byte even
-though no current call site references it; follow-up cleanup should decide
-whether to delete it entirely.
 """
 
 from __future__ import annotations
 
-import math
 from collections import Counter
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 import trimesh
 
-from .common import characteristic_scale_cm, make_color
 from .mesh import RuntimeMesh
-from .seeding import candidate_rng
-
-
-def translated_box(extents: Iterable[float], center: Iterable[float]) -> trimesh.Trimesh:
-    matrix = np.eye(4)
-    matrix[:3, 3] = np.array(list(center), dtype=float)
-    return trimesh.creation.box(extents=np.array(list(extents), dtype=float), transform=matrix)
-
-
-def translated_cylinder(radius: float, height: float, center: Iterable[float], axis: str = "y") -> trimesh.Trimesh:
-    mesh = trimesh.creation.cylinder(radius=radius, height=height, sections=24)
-    if axis == "y":
-        mesh.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2.0, [1.0, 0.0, 0.0]))
-    elif axis == "x":
-        mesh.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2.0, [0.0, 1.0, 0.0]))
-    matrix = np.eye(4)
-    matrix[:3, 3] = np.array(list(center), dtype=float)
-    mesh.apply_transform(matrix)
-    return mesh
-
-
-def generate_candidate_mesh(asset: dict[str, Any], *, index: int, seed: int) -> tuple[RuntimeMesh, dict[str, Any]]:
-    rng = candidate_rng(seed, index)
-    scale_cm = characteristic_scale_cm(asset)
-    role = asset.get("intent", {}).get("role", "")
-    parts = list(asset.get("intent", {}).get("parts", []))
-    if not parts:
-        parts = ["body"]
-    kind = asset.get("kind")
-    part_meshes: list[trimesh.Trimesh] = []
-    face_parts: list[str] = []
-    part_colors = {part: make_color(part) for part in parts}
-
-    def add_part(name: str, mesh: trimesh.Trimesh) -> None:
-        part_meshes.append(mesh)
-        face_parts.extend([name] * int(len(mesh.faces)))
-
-    body_names = [name for name in parts if any(token in name for token in ("body", "hull", "core", "base"))]
-    root_name = body_names[0] if body_names else parts[0]
-
-    if kind == "env_module":
-        width = scale_cm * float(1.6 + 0.1 * rng.uniform(-1, 1))
-        height = scale_cm * float(1.2 + 0.05 * rng.uniform(-1, 1))
-        depth = scale_cm * float(1.0 + 0.1 * rng.uniform(-1, 1))
-        for idx, name in enumerate(parts):
-            lname = name.lower()
-            if "floor" in lname:
-                add_part(name, translated_box([width, 8.0, depth], [0.0, -height / 2.0 + 4.0, 0.0]))
-            elif "ceiling" in lname or "roof" in lname:
-                add_part(name, translated_box([width, 8.0, depth], [0.0, height / 2.0 - 4.0, 0.0]))
-            elif "wall" in lname:
-                side = idx % 4
-                thickness = 6.0
-                if side == 0:
-                    center = [0.0, 0.0, depth / 2.0 - thickness / 2.0]
-                    extents = [width, height, thickness]
-                elif side == 1:
-                    center = [0.0, 0.0, -depth / 2.0 + thickness / 2.0]
-                    extents = [width, height, thickness]
-                elif side == 2:
-                    center = [width / 2.0 - thickness / 2.0, 0.0, 0.0]
-                    extents = [thickness, height, depth]
-                else:
-                    center = [-width / 2.0 + thickness / 2.0, 0.0, 0.0]
-                    extents = [thickness, height, depth]
-                add_part(name, translated_box(extents, center))
-            elif "column" in lname or "pillar" in lname:
-                angle = 2.0 * math.pi * idx / max(1, len(parts))
-                add_part(name, translated_box([10.0, height, 10.0], [math.cos(angle) * width * 0.35, 0.0, math.sin(angle) * depth * 0.35]))
-            else:
-                add_part(name, translated_box([width * 0.2, height * 0.4, depth * 0.2], [0.0, 0.0, 0.0]))
-    else:
-        body_extents = np.array([
-            scale_cm * float(0.38 + 0.04 * rng.uniform(-1, 1)),
-            scale_cm * float(0.14 + 0.02 * rng.uniform(-1, 1)),
-            scale_cm * float(0.48 + 0.04 * rng.uniform(-1, 1)),
-        ])
-        root_mesh = translated_box(body_extents, [0.0, 0.0, 0.0])
-        add_part(root_name, root_mesh)
-        rotor_positions = [
-            [body_extents[0] * 0.9, body_extents[1] * 0.55, body_extents[2] * 0.85],
-            [-body_extents[0] * 0.9, body_extents[1] * 0.55, body_extents[2] * 0.85],
-            [body_extents[0] * 0.9, body_extents[1] * 0.55, -body_extents[2] * 0.85],
-            [-body_extents[0] * 0.9, body_extents[1] * 0.55, -body_extents[2] * 0.85],
-        ]
-        leg_positions = [
-            [body_extents[0] * 0.55, -body_extents[1] * 0.75, body_extents[2] * 0.25],
-            [-body_extents[0] * 0.55, -body_extents[1] * 0.75, -body_extents[2] * 0.25],
-        ]
-        generic_idx = 0
-        rotor_idx = 0
-        leg_idx = 0
-        for name in parts:
-            if name == root_name:
-                continue
-            lname = name.lower()
-            if "rotor" in lname or "fan" in lname or "prop" in lname:
-                pos = rotor_positions[rotor_idx % len(rotor_positions)]
-                rotor_idx += 1
-                radius = scale_cm * float(0.09 + 0.01 * rng.uniform(-1, 1))
-                height = scale_cm * 0.015
-                add_part(name, translated_cylinder(radius, height, pos, axis="y"))
-            elif "leg" in lname or "foot" in lname:
-                pos = leg_positions[leg_idx % len(leg_positions)]
-                leg_idx += 1
-                add_part(name, translated_box([scale_cm * 0.04, scale_cm * 0.18, scale_cm * 0.04], pos))
-            elif "door" in lname or "hatch" in lname or "cargo" in lname:
-                center = [0.0, -body_extents[1] * 0.55, body_extents[2] * 0.15]
-                add_part(name, translated_box([body_extents[0] * 0.7, scale_cm * 0.03, body_extents[2] * 0.35], center))
-            elif "camera" in lname or "gimbal" in lname or "sensor" in lname:
-                center = [0.0, -body_extents[1] * 0.7, body_extents[2] * 0.45]
-                add_part(name, translated_cylinder(scale_cm * 0.05, scale_cm * 0.08, center, axis="y"))
-            else:
-                angle = 2.0 * math.pi * generic_idx / max(1, len(parts) - 1)
-                generic_idx += 1
-                center = [math.cos(angle) * body_extents[0] * 0.8, 0.0, math.sin(angle) * body_extents[2] * 0.8]
-                add_part(name, translated_box([scale_cm * 0.12, scale_cm * 0.08, scale_cm * 0.18], center))
-
-    combined = trimesh.util.concatenate(part_meshes)
-    score = 0.72
-    if "drone" in role.lower() and sum(1 for part in parts if "rotor" in part.lower()) >= 4:
-        score += 0.18
-    if asset.get("build", {}).get("shape", {}).get("symmetry") in {"x", "z"}:
-        score += 0.04
-    score += min(0.06, 0.01 * max(0, len(parts) - 1))
-    score = min(0.99, score)
-    return RuntimeMesh(mesh=combined, face_parts=face_parts, part_colors=part_colors, units="cm"), {
-        "parts": parts,
-        "score": round(float(score), 6),
-        "selection_notes": [
-            f"generated procedurally from role='{role}'",
-            f"parts={len(parts)}",
-            f"candidate_index={index}",
-        ],
-    }
 
 
 def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, str | None]:
