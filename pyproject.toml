@@ -66,7 +66,6 @@ docs = [
 ]
 test-min = []
 hunyuan_http = []
-# TODO (Plan 10 amendment): verify this version actually exists; may need to loosen to torch>=2.2,<3
 vggt = [
   "torch>=2.11.0",
   "torchvision>=0.26.0",
