@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lathe.dev/schema/collision_manifest.schema.json",
+  "title": "Collision Manifest",
+  "description": "Describes convex collision proxies emitted by the optimize stage (STAGE-2, V0.2 E3).",
+  "type": "object",
+  "required": ["schemaVersion", "proxies"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "proxies": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/proxyEntry" }
+    }
+  },
+  "definitions": {
+    "aabb": {
+      "type": "object",
+      "required": ["min", "max"],
+      "additionalProperties": false,
+      "properties": {
+        "min": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+        "max": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+      }
+    },
+    "proxyEntry": {
+      "type": "object",
+      "required": ["name", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "tris": { "type": "integer", "minimum": 0 },
+        "verts": { "type": "integer", "minimum": 0 },
+        "aabb": { "$ref": "#/definitions/aabb" },
+        "subproxies": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/subproxy" }
+        }
+      }
+    },
+    "subproxy": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "tris": { "type": "integer", "minimum": 0 },
+        "verts": { "type": "integer", "minimum": 0 },
+        "aabb": { "$ref": "#/definitions/aabb" }
+      }
+    }
+  }
+}

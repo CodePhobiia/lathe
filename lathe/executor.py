@@ -206,6 +206,11 @@ class BuildExecutor:
             "score": validate_bundle["score"],
             "threshold": validate_bundle["threshold"],
             "repair_rounds": repair_rounds,
+            "optimize": {
+                "lod_manifest_path": optimize_bundle.get("lod_manifest_path"),
+                "lods": optimize_bundle.get("lods"),
+                "collision": optimize_bundle.get("collision"),
+            },
         }
         dump_json(self.out_dir / "build_report.json", report)
         self._persist_build_cache()
