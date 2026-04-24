@@ -3,13 +3,37 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import warnings
 from pathlib import Path
 
+from ..paths import PathGuardError, safe_resolve
 from ..providers.errors import ShapeProviderError
 from ..runtime_config import apply_cli_overrides, load_runtime_config
 from ._common import _dump, _emit_error
+
+
+def _guarded_out_root(raw_out: str | Path) -> Path:
+    """Apply ``safe_resolve`` to a user-supplied ``--out`` target (SEC-1).
+
+    Bypassed when ``LATHE_ALLOW_EXTERNAL_OUT=1`` — the escape hatch for
+    CI / tooling that legitimately writes outside cwd. Emits a CLI
+    error (exit code 2) when rejected.
+    """
+    if os.environ.get("LATHE_ALLOW_EXTERNAL_OUT") == "1":
+        return Path(raw_out)
+    try:
+        return safe_resolve(Path.cwd(), raw_out)
+    except PathGuardError as exc:
+        _emit_error(
+            "lathe.cli.build.unsafe_out_path",
+            f"--out rejected by path guard: {exc}",
+            "Pick a path under the current working directory, or set "
+            "LATHE_ALLOW_EXTERNAL_OUT=1 to bypass.",
+            exit_code=2,
+        )
+        raise SystemExit(2) from exc
 
 
 def _resolve_report_format(args) -> str:
@@ -77,7 +101,7 @@ def run_build(args) -> None:
     from ..parser import parse_file
 
     program = parse_file(Path(args.file))
-    out_root = Path(args.out)
+    out_root = _guarded_out_root(args.out)
     out_dir = out_root / args.name
     runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
     runtime_config = apply_cli_overrides(
@@ -163,7 +187,7 @@ def run_render_eval(args) -> None:
     from ..parser import parse_file
 
     program = parse_file(Path(args.file))
-    out_root = Path(args.out)
+    out_root = _guarded_out_root(args.out)
     out_dir = out_root / args.name
     runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
     try:
@@ -209,7 +233,7 @@ def run_mode_build(args) -> None:
     actual_mode = str(effective.get("build", {}).get("shape", {}).get("mode", "generate"))
     if actual_mode != expected_mode:
         raise SystemExit(f"Asset '{args.name}' is configured for shape.mode={actual_mode}, not {expected_mode}")
-    out_root = Path(args.out)
+    out_root = _guarded_out_root(args.out)
     out_dir = out_root / args.name
     runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
     try:

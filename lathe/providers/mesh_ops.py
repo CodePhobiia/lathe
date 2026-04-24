@@ -14,7 +14,8 @@ from typing import Any
 import numpy as np
 import trimesh
 
-from .errors import ShapeMeshLoadError
+from ..mesh_ingest import safe_load_mesh
+from .errors import ShapeMeshLoadError, ShapeProviderExecutionError
 
 
 logger = logging.getLogger(__name__)
@@ -98,29 +99,27 @@ def _normalize_mesh_to_scale(mesh: trimesh.Trimesh, target_extent_cm: float) -> 
 
 
 def _load_mesh_file(path: Path) -> trimesh.Trimesh | None:
-    """Load a mesh file from disk.
+    """Load a mesh file from disk via the sandboxed ingest path (SEC-NEW-1).
 
-    Returns ``None`` for files that loaded successfully but contain no usable
-    geometry.  Raises :class:`ShapeMeshLoadError` when the file cannot be
-    opened or parsed at all — previously this was a bare ``except
-    Exception`` that silently returned ``None``, hiding ``PermissionError``,
-    ``OSError``, and corrupt-header cases alike (Plan 10 C1).
+    Delegates to :func:`lathe.mesh_ingest.safe_load_mesh` for size cap,
+    format allowlist, magic-byte sniff, and post-load sanity checks.
+    Returns ``None`` when the loader produces an empty geometry; raises
+    :class:`ShapeProviderExecutionError` for any ingest rejection so the
+    provider layer presents a single error class to callers.
     """
     try:
-        loaded = trimesh.load(path, force="scene")
-    except (OSError, ValueError, KeyError, IndexError) as exc:
-        logger.warning("Failed to load mesh %s (%s)", path, type(exc).__name__)
-        raise ShapeMeshLoadError(
-            "lathe.provider.shape", f"Cannot load mesh: {path}", code="mesh_load_failed"
+        loaded = safe_load_mesh(Path(path))
+    except ShapeMeshLoadError as exc:
+        logger.warning("Safe mesh ingest rejected %s (%s)", path, exc.code)
+        raise ShapeProviderExecutionError(
+            "lathe.provider.shape",
+            f"Cannot load mesh: {path}",
+            code="mesh_load_failed",
+            details={"ingest_code": exc.code, **(exc.details or {})},
         ) from exc
-    if isinstance(loaded, trimesh.Scene):
-        meshes = [geom.copy() for geom in loaded.geometry.values() if isinstance(geom, trimesh.Trimesh)]
-        if not meshes:
-            return None
-        return trimesh.util.concatenate(meshes)
-    if isinstance(loaded, trimesh.Trimesh):
-        return loaded.copy()
-    return None
+    if len(loaded.faces) == 0 or len(loaded.vertices) == 0:
+        return None
+    return loaded.copy()
 
 
 def _mesh_body_count(mesh: trimesh.Trimesh) -> int:

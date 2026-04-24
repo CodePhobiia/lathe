@@ -11,6 +11,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from ..paths import PathGuardError, safe_resolve
 from .fast_parser import _FastParser
 from .grammar import (
     LatheParseError,
@@ -32,14 +33,23 @@ def _merge_programs(imported: dict[str, Any], local: dict[str, Any]) -> dict[str
 
 def _resolve_import_path(source_path: Path, import_name: str) -> Path:
     rel = Path(*import_name.split(".")).with_suffix(".lth")
-    candidates = [
-        source_path.parent / rel,
-        REPO_ROOT / rel,
-    ]
-    for candidate in candidates:
-        resolved = candidate.resolve()
+    rel_str = str(rel)
+    source_dir = source_path.parent
+
+    # Source-relative lookup is hardened (SEC-1): a crafted import name
+    # can't reach disk outside the source's own directory tree.
+    # REPO_ROOT is trusted stdlib — it keeps the original resolve path.
+    try:
+        resolved = safe_resolve(source_dir, rel_str)
         if resolved.exists() and resolved.is_file():
             return resolved
+    except PathGuardError:
+        pass
+
+    repo_candidate = (REPO_ROOT / rel).resolve()
+    if repo_candidate.exists() and repo_candidate.is_file():
+        return repo_candidate
+
     raise LatheParseError(f"Could not resolve import '{import_name}' from '{source_path}'")
 
 
