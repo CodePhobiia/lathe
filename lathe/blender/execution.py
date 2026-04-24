@@ -1,7 +1,10 @@
 """Blender execution orchestration.
 
-Launches the Blender subprocess, passes plan + intent data through
-``lathe.subproc`` and collects the result artefacts.
+Launches the Blender subprocess and collects the result artefacts.
+All Blender invocations flow through :func:`lathe.sandbox.blender.run_blender_sandboxed`
+(SEC-7), which layers per-host CPU + memory caps, a 600s default
+timeout, and per-run stdout/stderr log files on top of the base
+``lathe.subproc.run_sandboxed`` env-scrubbing primitive.
 """
 
 from __future__ import annotations

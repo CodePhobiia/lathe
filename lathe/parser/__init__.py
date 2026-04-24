@@ -22,6 +22,12 @@ from .imports import (
     parse_file,
     parse_text,
 )
+from .prompt_injection import (
+    PromptInjectionDiagnostic,
+    PromptInjectionError,
+    PromptInjectionScanResult,
+    scan_source,
+)
 from .tokens import TOKEN_RE, _TokenStream
 from .fast_parser import _FastParser
 from .transformer import _LatheTransformer
@@ -32,8 +38,12 @@ __all__ = [
     "GRAMMAR_PATH",
     "LatheParseError",
     "PROGRAM_ARRAY_KEYS",
+    "PromptInjectionDiagnostic",
+    "PromptInjectionError",
+    "PromptInjectionScanResult",
     "REPO_ROOT",
     "TOKEN_RE",
     "parse_file",
     "parse_text",
+    "scan_source",
 ]

@@ -11,7 +11,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from ..publish import get_driver
+from ..publish import ReproVerifyError, get_driver, sign_receipt, verify_receipt
 from ..runtime_config import load_runtime_config
 from ._common import _dump
 
@@ -27,7 +27,7 @@ def register(subparsers: argparse._SubParsersAction) -> None:
             "from --runtime-config (runtime_config.publish.*) with --target overriding."
         ),
     )
-    p.add_argument("build_dir", help="Directory produced by `lathe build --out`")
+    p.add_argument("build_dir", nargs="?", help="Directory produced by `lathe build --out`")
     p.add_argument("--target", default=None, help="Publish target id (e.g. local_fs, s3)")
     p.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
     p.add_argument("--signing-key", default=None, help="ed25519 private key path (overrides runtime_config)")
@@ -35,10 +35,47 @@ def register(subparsers: argparse._SubParsersAction) -> None:
     p.add_argument("--bucket", default=None, help="S3 / Supabase bucket override")
     p.add_argument("--asset", default=None, help="Asset name override")
     p.add_argument("--version", default=None, help="Asset version override")
+    p.add_argument(
+        "--sign",
+        action="store_true",
+        help="SEC-NEW-2: emit a signed reproducibility_receipt.json next to the manifest.",
+    )
+    p.add_argument(
+        "--signer-id",
+        default=None,
+        help="Signer identity recorded in the reproducibility receipt.",
+    )
+    p.add_argument(
+        "--verify",
+        default=None,
+        metavar="RECEIPT",
+        help="SEC-NEW-2: verify an existing reproducibility_receipt.json and exit.",
+    )
 
 
 def run_publish(args: argparse.Namespace) -> None:
     """Run the ``publish`` CLI subcommand."""
+    if args.verify:
+        try:
+            receipt = verify_receipt(args.verify)
+        except ReproVerifyError as exc:
+            _dump({"ok": False, "verify": args.verify, "message": str(exc)})
+            raise SystemExit(1) from exc
+        _dump(
+            {
+                "ok": True,
+                "verify": args.verify,
+                "signer_id": receipt.signer_id,
+                "timestamp": receipt.timestamp,
+                "schema_version": receipt.schema_version,
+                "env_fingerprint": receipt.env_fingerprint,
+            }
+        )
+        return
+
+    if not args.build_dir:
+        _dump({"ok": False, "message": "build_dir is required unless --verify is used"})
+        raise SystemExit(2)
     build_dir = Path(args.build_dir)
     if not build_dir.exists():
         _dump({"ok": False, "message": f"build_dir does not exist: {build_dir}"})
@@ -73,11 +110,38 @@ def run_publish(args: argparse.Namespace) -> None:
         _dump({"ok": False, "message": str(exc)})
         raise SystemExit(1) from exc
 
+    if args.sign:
+        target_config["emit_repro_receipt"] = True
+        if args.signer_id:
+            target_config["signer_id"] = args.signer_id
+
     try:
         result = driver.publish(build_dir, target_config)
     except (ValueError, RuntimeError) as exc:
         _dump({"ok": False, "driver": str(target), "message": str(exc)})
         raise SystemExit(1) from exc
+
+    # When --sign is requested but the driver did not emit a receipt
+    # (non-local_fs drivers currently don't), fall back to signing the
+    # local build_dir directly so the caller always gets a receipt path.
+    receipt_uri = result.get("reproducibility_receipt_uri")
+    if args.sign and not receipt_uri:
+        try:
+            receipt_path = sign_receipt(
+                build_dir,
+                signing_key_path=target_config.get("signing_key") or args.signing_key,
+                signer_id=args.signer_id,
+            )
+            receipt_uri = str(receipt_path)
+        except ReproVerifyError as exc:
+            _dump(
+                {
+                    "ok": False,
+                    "driver": result.get("driver", str(target)),
+                    "message": f"reproducibility receipt failed: {exc}",
+                }
+            )
+            raise SystemExit(1) from exc
 
     _dump(
         {
@@ -85,6 +149,7 @@ def run_publish(args: argparse.Namespace) -> None:
             "driver": result.get("driver", str(target)),
             "manifest_uri": result.get("manifest_uri"),
             "signature_uri": result.get("signature_uri"),
+            "reproducibility_receipt_uri": receipt_uri,
             "published_files": result.get("published_files", []),
         }
     )

@@ -23,6 +23,9 @@ when the ``cryptography`` package is importable and a key path is configured.
 Missing key OR missing library ⇒ skip signing with a warning logged to the
 returned manifest (``signature.skipped_reason``). This keeps the publish
 runner useful in the default smoke-test environment.
+
+The package also exports SEC-NEW-2 signed reproducibility receipts via
+:mod:`lathe.publish.signed_repro`.
 """
 
 from __future__ import annotations
@@ -34,9 +37,9 @@ import os
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-from .core.common import dump_json
-from .net import NetGuardError, safe_urlopen
-from .subproc import run_sandboxed
+from ..core.common import dump_json
+from ..net import NetGuardError, safe_urlopen
+from ..subproc import run_sandboxed
 
 try:  # Optional dep — ships under the ``[publish]`` extra.
     from cryptography.hazmat.primitives.asymmetric import ed25519 as _ed25519
@@ -65,6 +68,10 @@ __all__ = [
     "build_manifest",
     "sign_manifest",
     "verify_signature",
+    "ReproReceipt",
+    "ReproVerifyError",
+    "sign_receipt",
+    "verify_receipt",
 ]
 
 
@@ -116,7 +123,7 @@ def _git_sha(cwd: Path | None = None) -> str | None:
 
 def _lathe_version() -> str:
     try:
-        from . import __version__ as version
+        from .. import __version__ as version
 
         return str(version)
     except ImportError:  # pragma: no cover - defensive
@@ -399,11 +406,26 @@ class LocalFSDriver:
                 encoding="utf-8",
             )
 
+        # SEC-NEW-2: emit signed reproducibility receipt when requested.
+        receipt_uri: str | None = None
+        if target_config.get("emit_repro_receipt"):
+            try:
+                receipt_path = sign_receipt(
+                    build_dir,
+                    signing_key_path=target_config.get("signing_key"),
+                    signer_id=target_config.get("signer_id"),
+                    out_path=target_dir / "reproducibility_receipt.json",
+                )
+                receipt_uri = str(receipt_path)
+            except ReproVerifyError as exc:
+                _LOG.warning("publish: reproducibility receipt skipped: %s", exc)
+
         return {
             "driver": self.name,
             "target_dir": str(target_dir),
             "manifest_uri": str(manifest_path),
             "signature_uri": str(signature_path) if signature_path else None,
+            "reproducibility_receipt_uri": receipt_uri,
             "published_files": copied,
             "manifest": manifest,
         }
@@ -695,3 +717,13 @@ def get_driver(target_id: str) -> PublishDriver:
             f"{sorted(PUBLISH_DRIVERS)}"
         )
     return PUBLISH_DRIVERS[target_id]
+
+
+# Re-exports for SEC-NEW-2. Placed at the end so ``sign_receipt`` can
+# reference ``build_manifest`` / ``sign_manifest`` without ordering gymnastics.
+from .signed_repro import (  # noqa: E402 - intentional late import
+    ReproReceipt,
+    ReproVerifyError,
+    sign_receipt,
+    verify_receipt,
+)

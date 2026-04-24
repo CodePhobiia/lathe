@@ -20,6 +20,7 @@ from .grammar import (
     _dedupe_keep_first,
     _empty_program,
 )
+from .prompt_injection import check_and_log as _scan_prompt_injection
 
 
 def _merge_programs(imported: dict[str, Any], local: dict[str, Any]) -> dict[str, Any]:
@@ -83,7 +84,10 @@ def _parse_file_recursive(path: Path, stack: list[Path], cache: dict[Path, dict[
     if resolved in cache:
         return deepcopy(cache[resolved])
 
-    raw = parse_text(resolved.read_text(encoding="utf-8"))
+    source_text = resolved.read_text(encoding="utf-8")
+    # SEC-8 pre-parse scan. Warnings by default; env/CLI flag promotes to errors.
+    _scan_prompt_injection(source_text, path=str(resolved))
+    raw = parse_text(source_text)
     merged_imports = _empty_program()
     for import_name in raw.get("imports", []):
         import_path = _resolve_import_path(resolved, import_name)
