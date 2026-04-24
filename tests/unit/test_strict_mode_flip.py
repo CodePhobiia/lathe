@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import sys
 import unittest
 import warnings
@@ -251,6 +252,7 @@ class CLIExitCodeContractTests(unittest.TestCase):
                     sys.modules,
                     {},  # allow real imports
                 ),
+                mock.patch.dict(os.environ, {"LATHE_ALLOW_EXTERNAL_OUT": "1"}),
                 warnings.catch_warnings(),
                 redirect_stdout(buf),
             ):
