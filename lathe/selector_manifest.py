@@ -177,6 +177,40 @@ def _collect_parts(
     return parts
 
 
+_DEFAULT_SOCKET_TYPE = "attach"
+_DEFAULT_PIVOT_TYPE = "center"
+
+
+def _validate_transform(value: Any) -> list[list[float]] | None:
+    """Return a 4x4 row-major list-of-lists of floats, or ``None`` if invalid."""
+    if not isinstance(value, list) or len(value) != 4:
+        return None
+    rows: list[list[float]] = []
+    for row in value:
+        if not isinstance(row, list) or len(row) != 4:
+            return None
+        if not all(isinstance(v, (int, float)) for v in row):
+            return None
+        rows.append([float(v) for v in row])
+    return rows
+
+
+def _validate_aabb(value: Any) -> dict[str, list[float]] | None:
+    if not isinstance(value, dict):
+        return None
+    lo = value.get("min")
+    hi = value.get("max")
+    if not isinstance(lo, list) or not isinstance(hi, list):
+        return None
+    if len(lo) != 3 or len(hi) != 3:
+        return None
+    if not all(isinstance(v, (int, float)) for v in lo):
+        return None
+    if not all(isinstance(v, (int, float)) for v in hi):
+        return None
+    return {"min": [float(v) for v in lo], "max": [float(v) for v in hi]}
+
+
 def _collect_sockets(
     runtime: dict[str, Any],
     token_target: str,
@@ -192,16 +226,26 @@ def _collect_sockets(
         sid = sock.get("id") or sock.get("name")
         if not sid:
             continue
+        socket_type = sock.get("socket_type") or sock.get("socketType") or _DEFAULT_SOCKET_TYPE
         entry: dict[str, Any] = {
             "id": str(sid),
             "ref": _ref(token_target, f"socket.{sid}"),
+            "socketType": str(socket_type),
         }
+        if isinstance(sock.get("name"), str) and sock["name"]:
+            entry["name"] = sock["name"]
         origin = sock.get("origin") or sock.get("position")
         if isinstance(origin, list) and len(origin) == 3 and all(isinstance(v, (int, float)) for v in origin):
             entry["origin"] = [float(v) for v in origin]
         axis = sock.get("axis")
         if isinstance(axis, list) and len(axis) == 3 and all(isinstance(v, (int, float)) for v in axis):
             entry["axis"] = [float(v) for v in axis]
+        transform = _validate_transform(sock.get("transform"))
+        if transform is not None:
+            entry["transform"] = transform
+        aabb = _validate_aabb(sock.get("aabb"))
+        if aabb is not None:
+            entry["aabb"] = aabb
         for key_src, key_dst in (("kind", "kind"), ("compat_kind", "compatKind"), ("parent_part_id", "parentPartId")):
             val = sock.get(key_src)
             if isinstance(val, str) and val:
@@ -225,16 +269,23 @@ def _collect_pivots(
         pid = piv.get("id") or piv.get("name")
         if not pid:
             continue
+        pivot_type = piv.get("pivot_type") or piv.get("pivotType") or _DEFAULT_PIVOT_TYPE
         entry: dict[str, Any] = {
             "id": str(pid),
             "ref": _ref(token_target, f"pivot.{pid}"),
+            "pivotType": str(pivot_type),
         }
+        if isinstance(piv.get("name"), str) and piv["name"]:
+            entry["name"] = piv["name"]
         origin = piv.get("origin") or piv.get("position")
         if isinstance(origin, list) and len(origin) == 3 and all(isinstance(v, (int, float)) for v in origin):
             entry["origin"] = [float(v) for v in origin]
         axis = piv.get("axis")
         if isinstance(axis, list) and len(axis) == 3 and all(isinstance(v, (int, float)) for v in axis):
             entry["axis"] = [float(v) for v in axis]
+        transform = _validate_transform(piv.get("transform"))
+        if transform is not None:
+            entry["transform"] = transform
         for key_src, key_dst in (("kind", "kind"), ("parent_part_id", "parentPartId")):
             val = piv.get(key_src)
             if isinstance(val, str) and val:

@@ -131,12 +131,52 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "ref"],
+        "required": ["id", "ref", "socketType"],
         "properties": {
           "id": { "type": "string" },
           "ref": { "type": "string", "pattern": "^@lathe\\[.+#socket\\.[^\\]]+\\]$" },
+          "name": { "type": "string" },
+          "socketType": {
+            "type": "string",
+            "enum": [
+              "attach",
+              "hand",
+              "mount",
+              "port",
+              "attachment_point",
+              "hinge",
+              "door",
+              "slot",
+              "grip",
+              "muzzle",
+              "rail"
+            ],
+            "description": "Typed socket kind. See docs/anchor_catalog.md."
+          },
           "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
           "axis": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "transform": {
+            "type": "array",
+            "description": "4x4 row-major homogeneous transform.",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "aabb": {
+            "type": "object",
+            "description": "Axis-aligned bounding box for the socket region.",
+            "additionalProperties": false,
+            "required": ["min", "max"],
+            "properties": {
+              "min": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+              "max": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+            }
+          },
           "kind": { "type": "string" },
           "compatKind": { "type": "string" },
           "parentPartId": { "type": "string" }
@@ -149,12 +189,37 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "ref"],
+        "required": ["id", "ref", "pivotType"],
         "properties": {
           "id": { "type": "string" },
           "ref": { "type": "string", "pattern": "^@lathe\\[.+#pivot\\.[^\\]]+\\]$" },
+          "name": { "type": "string" },
+          "pivotType": {
+            "type": "string",
+            "enum": [
+              "world",
+              "center",
+              "bottom",
+              "contact",
+              "hand_hold",
+              "sight_line"
+            ],
+            "description": "Typed pivot kind. See docs/anchor_catalog.md."
+          },
           "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
           "axis": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "transform": {
+            "type": "array",
+            "description": "4x4 row-major homogeneous transform.",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
           "kind": { "type": "string" },
           "parentPartId": { "type": "string" }
         }

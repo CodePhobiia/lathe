@@ -11,6 +11,7 @@ from typing import Any
 
 from ..resolver import ResolutionError
 from .cross_stage import check_backend_resolution
+from .interfaces import check_interfaces
 from .surface import check_surface_v12_refs
 from .utils import diag
 
@@ -412,4 +413,5 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
                 diag("L4502", "non_positive_prefer_weight", "error", "typecheck", "prefer weights must be positive", asset=asset_name, path="validate.rules")
             )
 
+    check_interfaces(checker, asset)
     check_backend_resolution(checker, asset)
