@@ -14,6 +14,7 @@ from typing import Any
 from ..common import dump_json, relpath
 from ..io import export_glb
 from ..mesh import RuntimeMesh
+from ...stages import budgets as budgets_mod
 from ...stages import collision as collision_mod
 from ...stages import lod as lod_mod
 
@@ -154,6 +155,17 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
         "atlas": bool(cfg.get("atlas", False)),
         "diagnostics": diagnostics,
     }
+    # STAGE-7/8: evaluate budgets after LODs/collision so we can reference the
+    # real runtime data (surface materials + emitted LODs). The report is
+    # written to disk and embedded in the bundle for downstream consumers
+    # (reports stage, selector manifest).
     executor.runtime["optimize"] = {"bundle": bundle, "runtime_mesh": uv_runtime}
+    budget_report, budget_diagnostics = budgets_mod.evaluate(executor.asset, executor.runtime)
+    budget_report_path = stage_dir / "budget_report.json"
+    dump_json(budget_report_path, budget_report)
+    bundle["budget_report"] = budget_report
+    bundle["budget_report_path"] = relpath(executor.out_dir, budget_report_path)
+    if budget_diagnostics:
+        bundle["diagnostics"] = list(diagnostics) + list(budget_diagnostics)
     dump_json(stage_dir / "bundle.json", bundle)
     return bundle

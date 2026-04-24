@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/budget_manifest.schema.json",
+  "title": "Lathe Budget Manifest",
+  "description": "Per-build budget report emitted by the optimize stage (STAGE-7/8, V0.2 E3). Tracks texture memory, material count, and draw-call estimates against their budgets. Status per category is 'pass' | 'warning' | 'error' | 'skipped'. Diagnostic codes: L6301 texture_memory_over_budget, L6302 material_count_over_budget, L6303 draw_call_over_budget. Overage exceeding 25% escalates to error.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "texture_memory",
+    "materials",
+    "draw_calls",
+    "overall_status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "warning", "error", "skipped"]
+    },
+    "texture_memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["budget_bytes", "estimated_bytes", "per_material", "status"],
+      "properties": {
+        "budget_bytes": { "type": "integer", "minimum": 0 },
+        "estimated_bytes": { "type": "integer", "minimum": 0 },
+        "per_material": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "bytes"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "bytes": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+        "reason": { "type": "string" }
+      }
+    },
+    "materials": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["budget", "count", "status", "materials"],
+      "properties": {
+        "budget": { "type": "integer", "minimum": 0 },
+        "count": { "type": "integer", "minimum": 0 },
+        "status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+        "materials": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason": { "type": "string" }
+      }
+    },
+    "draw_calls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["budget", "estimated", "status", "breakdown"],
+      "properties": {
+        "budget": { "type": "integer", "minimum": 0 },
+        "estimated": { "type": "integer", "minimum": 0 },
+        "status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+        "breakdown": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["lod", "count"],
+            "properties": {
+              "lod": { "type": "integer", "minimum": 0 },
+              "count": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

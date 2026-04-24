@@ -432,6 +432,25 @@ def _collect_materials(
     return out
 
 
+def _collect_budgets(runtime: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the STAGE-7/8 ``budget_report`` from the optimize bundle, if any.
+
+    The report has already been validated against
+    ``schema/budget_manifest.schema.json`` when it was emitted; we just
+    propagate it verbatim so the selector manifest shares a single source of
+    truth with ``stages/optimize/budget_report.json``.
+    """
+
+    optimize = (runtime.get("optimize") or {}).get("bundle") or {}
+    report = optimize.get("budget_report")
+    if not isinstance(report, dict):
+        return None
+    required = {"schemaVersion", "texture_memory", "materials", "draw_calls", "overall_status"}
+    if not required.issubset(report.keys()):
+        return None
+    return report
+
+
 def _collect_diagnostics(
     validate_report: dict[str, Any] | None,
     token_target: str,
@@ -532,6 +551,9 @@ def build_selector_manifest(
         "diagnostics": _collect_diagnostics(validate_report, token_target),
         "relations": {},
     }
+    budgets = _collect_budgets(runtime or {})
+    if budgets is not None:
+        manifest["budgets"] = budgets
     return manifest
 
 
