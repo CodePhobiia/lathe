@@ -7,7 +7,7 @@ in ``lathe/parser/grammar.py``, etc.) are re-exported from their original
 locations for backwards compatibility; the authoritative definitions live
 here.
 
-Landed in Stage 2.V (Wave 2) — see ``plans/01_code_quality.md`` Phase 3 and
+See ``plans/01_code_quality.md`` Phase 3 and
 ``plans/10_bugs_errors.md`` Phase 4.5 for context.
 
 Hierarchy

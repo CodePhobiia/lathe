@@ -1,8 +1,8 @@
 """Build-stage error classes and diagnostic helpers.
 
-Stage 2.V (Wave 2) moved the authoritative definition of ``BuildError`` into
-``lathe/errors.py`` as part of the unified :class:`lathe.errors.LatheError`
-hierarchy. This module re-exports it so all existing imports
+The authoritative definition of ``BuildError`` lives in ``lathe/errors.py``
+as part of the unified :class:`lathe.errors.LatheError` hierarchy. This
+module re-exports it so all existing imports
 (``from lathe.core.errors import BuildError`` and — through the
 ``lathe.executor`` shim — ``from lathe.executor import BuildError``) keep
 working.

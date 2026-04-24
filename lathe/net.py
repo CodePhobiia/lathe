@@ -14,8 +14,8 @@ Provides :func:`safe_urlopen`, a narrow replacement for
 
 This module is consumed by
 ``lathe.providers.adapters.hunyuan._hunyuan_request`` and is the intended
-migration target for ``lathe.capabilities.probe_hunyuan_endpoint`` (see the
-``TODO(Stage 2.V)`` comment there).
+migration target for ``lathe.capabilities.probe_hunyuan_endpoint`` (tracked
+under Wave 3 backlog BL-12).
 
 Plan reference: ``plans/07_security.md`` Phase 3.
 """

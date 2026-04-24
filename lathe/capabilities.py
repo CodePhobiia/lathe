@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any
 
 
-# TODO(Stage 2.V): move these SSRF guard helpers into lathe/net.py once that module lands.
 _LOOPBACK_HOSTS: frozenset[str] = frozenset({"localhost", "127.0.0.1", "::1"})
 _HUNYUAN_PROBE_MAX_BODY_BYTES = 64 * 1024
 _HUNYUAN_PROBE_MAX_TIMEOUT_S = 5.0

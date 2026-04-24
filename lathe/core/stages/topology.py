@@ -10,9 +10,8 @@ M4b hardening pattern already present on
 * raise :class:`BlenderExecutionError` with matched patterns and the last
   2000 chars of stderr rather than a generic ``RuntimeError``.
 
-``BlenderExecutionError`` itself still lives in ``lathe.blender_execution``
-with a TODO to move to ``lathe/errors.py`` in Stage 2.V; we reuse that class
-rather than defining a new one.
+``BlenderExecutionError`` itself lives in ``lathe.blender_execution``; we
+reuse that class rather than defining a new one.
 """
 
 from __future__ import annotations
