@@ -19,6 +19,7 @@ from .validators.visual_quality import evaluate_visual_quality
 
 
 def load_benchmark_catalog() -> dict[str, Any]:
+    # JSON ingress — internal controlled payload from lathe/benchmarks/catalog.json fixture shipped inside this package; safe without schema validation.
     return json.loads((BENCHMARK_ROOT / "catalog.json").read_text(encoding="utf-8"))
 
 
@@ -33,6 +34,7 @@ def _positive_scorecard(workspace: Path, benchmark: dict[str, Any]) -> dict[str,
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir) / benchmark["asset"]
         report = build_asset(program, benchmark["asset"], out_dir)
+        # JSON ingress — internal controlled payloads from our own shape/validate stage artifacts emitted by build_asset above into a tempdir; safe without schema validation.
         shape_bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
         validate_report = json.loads((out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
     return {
@@ -54,8 +56,10 @@ def _positive_scorecard(workspace: Path, benchmark: dict[str, Any]) -> dict[str,
 
 def _load_legacy_snapshot(workspace: Path, benchmark: dict[str, Any]) -> dict[str, Any]:
     if benchmark.get("snapshot"):
+        # JSON ingress — internal controlled payload from snapshot fixture shipped inside lathe/benchmarks/; safe without schema validation.
         return json.loads((BENCHMARK_ROOT / benchmark["snapshot"]).read_text(encoding="utf-8"))
     build_dir = workspace / benchmark["build_dir"]
+    # JSON ingress — internal controlled payloads from our own shape/topology/interfaces/surface stage bundles emitted by a prior build_asset run; safe without schema validation.
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
     topology_bundle = json.loads((build_dir / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8"))
     interfaces_bundle = json.loads((build_dir / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8"))
@@ -115,6 +119,7 @@ def _negative_scorecard(workspace: Path, benchmark: dict[str, Any], *, expected_
         "candidates": [{"candidate_id": "legacy_candidate_00", "integration_report": {"mode": "constructive_fallback"}}],
     }
     if benchmark.get("build_dir"):
+        # JSON ingress — internal controlled payload from our own shape stage bundle emitted by a prior build_asset run; safe without schema validation.
         build_shape = json.loads((workspace / benchmark["build_dir"] / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
         selected_id = build_shape["selected_candidate_id"]
         selected = next(item for item in build_shape["candidates"] if item["candidate_id"] == selected_id)

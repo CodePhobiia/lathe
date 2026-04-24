@@ -53,6 +53,7 @@ def run_render_eval(args) -> None:
             runtime_config=runtime_config,
             execution_profile_override=args.execution_profile,
         )
+        # JSON ingress — internal controlled payload from our own execution stage bundle just emitted by build_asset above; safe without schema validation.
         bundle = json.loads((out_dir / "stages" / "execution" / "bundle.json").read_text(encoding="utf-8"))
         _dump(
             {

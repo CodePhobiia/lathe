@@ -137,6 +137,7 @@ def build_bridge_doctor(runtime_config: dict[str, Any] | None = None) -> dict[st
 
 
 def _read_execution_bundle(build_dir: Path) -> dict[str, Any]:
+    # JSON ingress — internal controlled payload from our own execution stage bundle emitted by build_asset; safe without schema validation.
     return json.loads((build_dir / "stages" / "execution" / "bundle.json").read_text(encoding="utf-8"))
 
 

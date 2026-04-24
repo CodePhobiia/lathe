@@ -60,6 +60,7 @@ def _read_direct_url(dist_name: str) -> dict[str, Any] | None:
     if not raw:
         return None
     try:
+        # JSON ingress — internal controlled payload from importlib.metadata distribution metadata (direct_url.json written by pip at install time); safe without schema validation.
         return json.loads(raw)
     except json.JSONDecodeError:
         return None
@@ -420,6 +421,7 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
         return {**base, "code": "request_failed", "message": str(exc)}
 
     body = response.body.decode("utf-8", errors="replace")
+    # TODO(security): trust-boundary JSON ingress; route through lathe/validation.py::validate_json with hunyuan_probe.schema.json in Wave 4.
     payload = json.loads(body) if body.strip().startswith(("{", "[")) else {"raw": body}
     return {**base, "available": True, "status": response.status, "code": "ok", "health": payload}
 

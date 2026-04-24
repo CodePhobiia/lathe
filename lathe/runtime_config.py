@@ -25,6 +25,7 @@ def _load_schema() -> jsonschema.Draft202012Validator:
         return _VALIDATOR_CACHE
     try:
         schema_text = _SCHEMA_PATH.read_text(encoding="utf-8")
+        # JSON ingress — internal controlled payload from schema/runtime_config.schema.json canonical schema shipped inside this repo; safe without schema validation (this IS the schema).
         _SCHEMA_CACHE = json.loads(schema_text)
     except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeConfigError(
@@ -162,6 +163,7 @@ def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
                 f"runtime_config file is not valid UTF-8 ({config_path}): {exc}"
             ) from exc
         try:
+            # JSON ingress — trust-boundary user-supplied runtime_config file; validated below via _validate_runtime_config against schema/runtime_config.schema.json (BL-9 validated site).
             raw = json.loads(text)
         except json.JSONDecodeError as exc:
             raise RuntimeConfigError(

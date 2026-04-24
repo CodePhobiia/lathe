@@ -39,6 +39,7 @@ def run_export_blend(args) -> None:
 
 def run_explain(args) -> None:
     build_dir = Path(args.build_dir).resolve()
+    # JSON ingress — internal controlled payloads from our own prior-run build artifacts (build_report.json, shape stage bundle, validate report, all emitted by this package); safe without schema validation.
     report = json.loads((build_dir / "build_report.json").read_text(encoding="utf-8"))
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
     validate_report = json.loads((build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
@@ -67,6 +68,7 @@ def run_explain(args) -> None:
 
 def run_explain_fit(args) -> None:
     build_dir = Path(args.build_dir).resolve()
+    # JSON ingress — internal controlled payloads from our own prior-run shape stage bundle and validate report; safe without schema validation.
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
     validate_report = json.loads((build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
     _dump(

@@ -280,6 +280,7 @@ class BuildExecutor:
         shutil.copytree(self.cache_dir, self.out_dir)
         report_path = self.out_dir / "build_report.json"
         if report_path.exists():
+            # JSON ingress — internal controlled payload from our own cached build_report.json (copytree'd from a prior build out_dir); safe without schema validation.
             report = json.loads(report_path.read_text(encoding="utf-8"))
             report["out_dir"] = str(self.out_dir)
             report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")

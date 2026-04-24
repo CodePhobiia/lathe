@@ -188,6 +188,7 @@ def fuse_shape_ir(shape_ir: ShapeIR, fidelity: FidelityProfile) -> tuple[MeshIR 
     ).hexdigest()
     if cache_key in _FUSION_CACHE:
         mesh_ir_payload, report = _FUSION_CACHE[cache_key]
+        # JSON ingress — internal controlled payload from an in-memory dumps/loads deep-copy roundtrip of our own _FUSION_CACHE entry (no I/O, no external input); safe without schema validation.
         return MeshIR(**json.loads(json.dumps(mesh_ir_payload))), {**report, "cache_hit": True}
 
     bounds = [_primitive_bounds(primitive, primitive_rounding(primitive, fidelity)) for primitive in primitives]

@@ -18,4 +18,5 @@ SCHEMA_PATH = _find_schema_path()
 
 
 def get_schema() -> dict[str, Any]:
+    # JSON ingress — internal controlled payload from schema/lathe.schema.json canonical schema shipped inside this repo; safe without schema validation (this IS the schema).
     return json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
