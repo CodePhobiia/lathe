@@ -2,55 +2,31 @@ from __future__ import annotations
 
 import importlib.metadata
 import importlib.util
-import ipaddress
 import json
 import os
 import platform
 import shutil
-import socket
 import subprocess
 import sys
 import urllib.error
-import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Any
 
+from lathe.net import NetGuardError, safe_urlopen
 
-_LOOPBACK_HOSTS: frozenset[str] = frozenset({"localhost", "127.0.0.1", "::1"})
+
 _HUNYUAN_PROBE_MAX_BODY_BYTES = 64 * 1024
 _HUNYUAN_PROBE_MAX_TIMEOUT_S = 5.0
 
-
-def _is_loopback_host(host: str) -> bool:
-    return host.strip("[]").lower() in _LOOPBACK_HOSTS
-
-
-def _is_private_address(addr_str: str) -> bool:
-    try:
-        addr = ipaddress.ip_address(addr_str)
-    except ValueError:
-        return False
-    if addr.is_loopback or addr.is_private or addr.is_link_local or addr.is_multicast or addr.is_reserved or addr.is_unspecified:
-        return True
-    if isinstance(addr, ipaddress.IPv4Address):
-        # CGNAT 100.64.0.0/10 is not flagged as private by ipaddress.
-        if ipaddress.IPv4Address("100.64.0.0") <= addr <= ipaddress.IPv4Address("100.127.255.255"):
-            return True
-    return False
-
-
-def _resolve_host_addresses(host: str) -> list[str]:
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except OSError:
-        return []
-    addresses: list[str] = []
-    for info in infos:
-        sockaddr = info[4]
-        if sockaddr and isinstance(sockaddr[0], str):
-            addresses.append(sockaddr[0])
-    return addresses
+_NETGUARD_TO_PROBE_CODE: dict[str, str] = {
+    "invalid_url": "invalid_url",
+    "scheme_insecure": "scheme_insecure",
+    "host_not_allowlisted": "scheme_insecure",
+    "dns_resolution_failed": "dns_resolution_failed",
+    "private_ip_rejected": "private_ip_rejected",
+    "unexpected_media_type": "unexpected_content_type",
+    "response_too_large": "response_too_large",
+}
 
 
 DEFAULT_HUNYUAN_BASE_URL = "http://localhost:8081"
@@ -251,45 +227,45 @@ def _candidate_blender_paths(runtime_config: dict[str, Any] | None = None) -> li
 def probe_blender(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
     execution_cfg = ((runtime_config or {}).get("execution", {}).get("blender", {}))
     python_module_available = _module_available("bpy")
-    asset_library_paths = [str(path) for path in execution_cfg.get("asset_libraries", [])]
-    asset_libraries = [{"path": path, "available": Path(path).exists()} for path in asset_library_paths]
+    asset_libraries = [
+        {"path": str(p), "available": Path(p).exists()}
+        for p in execution_cfg.get("asset_libraries", [])
+    ]
     addons = [{"name": str(name), "declared": True} for name in execution_cfg.get("addons", [])]
+    supported_modes = ["background_cli"] + (["python_module"] if python_module_available else [])
+    base = {
+        "python_module_available": python_module_available,
+        "supported_modes": supported_modes,
+        "asset_libraries": asset_libraries,
+        "addons": addons,
+    }
     for candidate in _candidate_blender_paths(runtime_config):
         if not candidate.exists():
             continue
         result = _run_command([str(candidate), "--version"], timeout_s=15)
         if not result["ok"]:
             return {
+                **base,
                 "available": False,
                 "path": str(candidate),
-                "python_module_available": python_module_available,
-                "supported_modes": ["background_cli"] + (["python_module"] if python_module_available else []),
-                "asset_libraries": asset_libraries,
-                "addons": addons,
                 "code": result.get("code", "version_failed"),
                 "message": result.get("error") or result.get("stderr") or "Failed to query Blender version",
             }
         first_line = next((line.strip() for line in result.get("stdout", "").splitlines() if line.strip()), "")
         version = first_line.replace("Blender", "", 1).strip() if first_line.lower().startswith("blender") else first_line
         return {
+            **base,
             "available": True,
             "path": str(candidate),
             "version": version or None,
-            "python_module_available": python_module_available,
-            "supported_modes": ["background_cli"] + (["python_module"] if python_module_available else []),
             "gpu_cpu_render_capability": execution_cfg.get("render_device", "cpu"),
             "export_capabilities": {"usd": True, "glb": True, "gltf": True, "obj": True},
-            "asset_libraries": asset_libraries,
-            "addons": addons,
             "code": "ok",
         }
     return {
+        **base,
         "available": False,
         "path": None,
-        "python_module_available": python_module_available,
-        "supported_modes": ["background_cli"] + (["python_module"] if python_module_available else []),
-        "asset_libraries": asset_libraries,
-        "addons": addons,
         "code": "not_found",
         "message": "Blender executable not found on PATH or common install locations",
     }
@@ -319,44 +295,27 @@ def probe_xatlas() -> dict[str, Any]:
 
 
 def probe_torch() -> dict[str, Any]:
+    base_unavailable = {"available": False, "cuda_available": False, "cuda_version": None, "devices": []}
     if not _module_available("torch"):
-        return {
-            "available": False,
-            "version": None,
-            "cuda_available": False,
-            "cuda_version": None,
-            "devices": [],
-            "code": "not_installed",
-            "message": "torch is not installed",
-        }
+        return {**base_unavailable, "version": None, "code": "not_installed", "message": "torch is not installed"}
     try:
         import torch
     except (ImportError, OSError, RuntimeError) as exc:
-        # OSError covers DLL/shared-lib load failures; RuntimeError covers
-        # torch's C-extension init errors (e.g., CUDA init) that surface at import.
-        return {
-            "available": False,
-            "version": _distribution_version("torch"),
-            "cuda_available": False,
-            "cuda_version": None,
-            "devices": [],
-            "code": "import_failed",
-            "message": str(exc),
-        }
+        # OSError covers DLL/shared-lib load failures; RuntimeError covers torch's
+        # C-extension init errors (e.g., CUDA init) that surface at import.
+        return {**base_unavailable, "version": _distribution_version("torch"), "code": "import_failed", "message": str(exc)}
 
     cuda_available = bool(torch.cuda.is_available())
     devices: list[dict[str, Any]] = []
     if cuda_available:
         for index in range(torch.cuda.device_count()):
             props = torch.cuda.get_device_properties(index)
-            devices.append(
-                {
-                    "index": index,
-                    "name": props.name,
-                    "total_memory_bytes": int(props.total_memory),
-                    "compute_capability": f"{props.major}.{props.minor}",
-                }
-            )
+            devices.append({
+                "index": index,
+                "name": props.name,
+                "total_memory_bytes": int(props.total_memory),
+                "compute_capability": f"{props.major}.{props.minor}",
+            })
     return {
         "available": True,
         "version": getattr(torch, "__version__", _distribution_version("torch")),
@@ -434,176 +393,84 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
     if not base_url:
         return {"configured": False, "available": False, "code": "missing_base_url"}
 
+    base = {"configured": True, "available": False, "base_url": base_url}
     try:
-        parsed = urllib.parse.urlsplit(base_url)
-    except ValueError as exc:
-        return {
-            "configured": True,
-            "available": False,
-            "base_url": base_url,
-            "code": "invalid_url",
-            "message": f"Could not parse base_url: {exc}",
-        }
-
-    scheme = (parsed.scheme or "").lower()
-    if scheme not in {"http", "https"}:
-        return {
-            "configured": True,
-            "available": False,
-            "base_url": base_url,
-            "code": "scheme_insecure",
-            "message": f"Only http/https schemes are permitted for probe, got '{parsed.scheme}'",
-        }
-
-    hostname = (parsed.hostname or "").lower()
-    if not hostname:
-        return {
-            "configured": True,
-            "available": False,
-            "base_url": base_url,
-            "code": "invalid_url",
-            "message": "base_url is missing a hostname",
-        }
-
-    host_is_loopback = _is_loopback_host(hostname)
-    if scheme == "http" and not host_is_loopback:
-        return {
-            "configured": True,
-            "available": False,
-            "base_url": base_url,
-            "code": "scheme_insecure",
-            "message": "Plain http is only permitted for loopback hosts (localhost, 127.0.0.1, ::1)",
-        }
-
-    if not host_is_loopback:
-        resolved = _resolve_host_addresses(hostname)
-        if not resolved:
-            return {
-                "configured": True,
-                "available": False,
-                "base_url": base_url,
-                "code": "dns_resolution_failed",
-                "message": f"Could not resolve host '{hostname}'",
-            }
-        for addr in resolved:
-            if _is_private_address(addr):
-                return {
-                    "configured": True,
-                    "available": False,
-                    "base_url": base_url,
-                    "code": "private_ip_rejected",
-                    "message": f"Host '{hostname}' resolves to a private/loopback/link-local/CGNAT address ({addr})",
-                }
-
-    url = base_url + "/health"
-    req = urllib.request.Request(url, method="GET")
-    try:
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-            content_type = (resp.headers.get("Content-Type") or "").split(";", 1)[0].strip().lower()
-            if content_type not in {"application/json", "text/json"}:
-                return {
-                    "configured": True,
-                    "available": False,
-                    "base_url": base_url,
-                    "status": getattr(resp, "status", 200),
-                    "code": "unexpected_content_type",
-                    "message": f"Expected JSON content-type, got '{content_type or '<missing>'}'",
-                }
-            raw = resp.read(_HUNYUAN_PROBE_MAX_BODY_BYTES + 1)
-            if len(raw) > _HUNYUAN_PROBE_MAX_BODY_BYTES:
-                return {
-                    "configured": True,
-                    "available": False,
-                    "base_url": base_url,
-                    "status": getattr(resp, "status", 200),
-                    "code": "response_too_large",
-                    "message": f"Health response exceeded {_HUNYUAN_PROBE_MAX_BODY_BYTES} bytes",
-                }
-            body = raw.decode("utf-8", errors="replace")
-            payload = json.loads(body) if body.strip().startswith(("{", "[")) else {"raw": body}
-            return {
-                "configured": True,
-                "available": True,
-                "base_url": base_url,
-                "status": getattr(resp, "status", 200),
-                "code": "ok",
-                "health": payload,
-            }
+        response = safe_urlopen(
+            base_url + "/health",
+            method="GET",
+            timeout_s=timeout_s,
+            max_bytes=_HUNYUAN_PROBE_MAX_BODY_BYTES,
+            expect_content_type=("application/json", "text/json"),
+        )
+    except NetGuardError as exc:
+        probe_code = _NETGUARD_TO_PROBE_CODE.get(exc.code, "request_failed")
+        result: dict[str, Any] = {**base, "code": probe_code, "message": str(exc)}
+        if probe_code == "unexpected_content_type" and isinstance(exc.details, dict):
+            status = exc.details.get("status")
+            if status is not None:
+                result["status"] = status
+        return result
     except urllib.error.HTTPError as exc:
         try:
             error_body = exc.read(_HUNYUAN_PROBE_MAX_BODY_BYTES).decode("utf-8", errors="replace")
         except (OSError, AttributeError, ValueError):
             error_body = ""
-        return {
-            "configured": True,
-            "available": False,
-            "base_url": base_url,
-            "status": exc.code,
-            "code": "http_error",
-            "message": error_body,
-        }
+        return {**base, "status": exc.code, "code": "http_error", "message": error_body}
     except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
-        return {
-            "configured": True,
-            "available": False,
-            "base_url": base_url,
-            "code": "request_failed",
-            "message": str(exc),
-        }
+        return {**base, "code": "request_failed", "message": str(exc)}
+
+    body = response.body.decode("utf-8", errors="replace")
+    payload = json.loads(body) if body.strip().startswith(("{", "[")) else {"raw": body}
+    return {**base, "available": True, "status": response.status, "code": "ok", "health": payload}
+
+
+def _backend_report(
+    runtime_config: dict[str, Any] | None,
+    cfg_key: str,
+    backend_id: str,
+    real: str,
+    real_aliases: set[str],
+    fallback: str,
+    fallback_aliases: set[str],
+    probe: dict[str, Any],
+) -> dict[str, Any]:
+    cfg = (runtime_config or {}).get(cfg_key, {})
+    requested = str(cfg.get("adapter", "auto") or "auto")
+    strict = bool(cfg.get("strict", False))
+    if requested in fallback_aliases:
+        selected = fallback
+    elif requested in ({"auto"} | real_aliases) and probe["available"]:
+        selected = real
+    else:
+        selected = fallback
+    return {
+        "backend_id": backend_id,
+        "requested_adapter": requested,
+        "selected_adapter": selected,
+        "strict": strict,
+        "available": selected != real or probe["available"] or not strict,
+        "real_adapter_available": bool(probe["available"]),
+        "fallback_available": True,
+        "probe": probe,
+    }
 
 
 def probe_topology_backend(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
-    cfg = (runtime_config or {}).get("topology", {})
-    requested = str(cfg.get("adapter", "auto") or "auto")
-    strict = bool(cfg.get("strict", False))
-    blender = probe_blender(runtime_config)
-    fallback_available = True
-
-    if requested in {"cleanup", "reference_cleanup"}:
-        selected = "reference_cleanup"
-    elif requested in {"auto", "blender"} and blender["available"]:
-        selected = "blender_subprocess"
-    else:
-        selected = "reference_cleanup"
-
-    available = selected != "blender_subprocess" or blender["available"] or not strict
-    return {
-        "backend_id": "lathe.topology.blender_hard_surface_v1",
-        "requested_adapter": requested,
-        "selected_adapter": selected,
-        "strict": strict,
-        "available": available,
-        "real_adapter_available": bool(blender["available"]),
-        "fallback_available": fallback_available,
-        "probe": blender,
-    }
+    return _backend_report(
+        runtime_config, "topology", "lathe.topology.blender_hard_surface_v1",
+        "blender_subprocess", {"blender"},
+        "reference_cleanup", {"cleanup", "reference_cleanup"},
+        probe_blender(runtime_config),
+    )
 
 
 def probe_uv_backend(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
-    cfg = (runtime_config or {}).get("uv", {})
-    requested = str(cfg.get("adapter", "auto") or "auto")
-    strict = bool(cfg.get("strict", False))
-    xatlas = probe_xatlas()
-    fallback_available = True
-
-    if requested in {"box", "reference_box"}:
-        selected = "reference_box"
-    elif requested in {"auto", "xatlas"} and xatlas["available"]:
-        selected = "xatlas"
-    else:
-        selected = "reference_box"
-
-    available = selected != "xatlas" or xatlas["available"] or not strict
-    return {
-        "backend_id": "lathe.uv.xatlas_v1",
-        "requested_adapter": requested,
-        "selected_adapter": selected,
-        "strict": strict,
-        "available": available,
-        "real_adapter_available": bool(xatlas["available"]),
-        "fallback_available": fallback_available,
-        "probe": xatlas,
-    }
+    return _backend_report(
+        runtime_config, "uv", "lathe.uv.xatlas_v1",
+        "xatlas", {"xatlas"},
+        "reference_box", {"box", "reference_box"},
+        probe_xatlas(),
+    )
 
 
 def deterministic_backend_reports(runtime_config: dict[str, Any] | None = None) -> list[dict[str, Any]]:
