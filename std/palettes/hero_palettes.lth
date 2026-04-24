@@ -1,3 +1,10 @@
+// doc:
+//   purpose: named material palettes that bind material sets to hero families (fantasy, courier, industrial, door, crate).
+//   exports: palettes fantasy_brassbound, courier_premium, industrial_service_console, industrial_crate_hero_palette, mechanical_door_hero_palette
+//   depends_on: std.materials.hero_materials
+//   used_by: all std.families.* hero families (transitively every hero example)
+//   stability: stable
+//   layer: V0.8
 module std.palettes.hero_palettes
 import std.materials.hero_materials
 

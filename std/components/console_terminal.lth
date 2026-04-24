@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the console_terminal family (body, bezel, screen, panel, vents, stand, socket).
+//   exports: components console_body_shell, console_bezel, console_screen, console_panel_face, vent_left, vent_right, console_stand, power_socket_plate
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.console_terminal (transitively examples/console_terminal*.lth)
+//   stability: stable
+//   layer: V1.0
 module std.components.console_terminal
 
 component console_body_shell {

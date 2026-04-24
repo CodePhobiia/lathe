@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the industrial_crate family (body, lid frame, latch, warning plate, handles, feet).
+//   exports: components crate_body_shell, crate_lid_frame, crate_latch_plate, crate_warning_plate, crate_handle_l, crate_handle_r, crate_foot_l, crate_foot_r
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.industrial_crate (transitively examples/industrial_crate.lth)
+//   stability: stable
+//   layer: V0.9
 module std.components.industrial_crate
 
 component crate_body_shell {

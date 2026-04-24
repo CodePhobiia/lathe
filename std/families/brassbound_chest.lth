@@ -1,3 +1,10 @@
+// doc:
+//   purpose: hard-surface family for the brassbound_chest hero prop (oak + brass + velvet chest).
+//   exports: family brassbound_chest_family
+//   depends_on: std.components.brassbound_chest, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/brassbound_chest.lth, examples/brassbound_chest_v13_blender.lth
+//   stability: stable
+//   layer: V1.0
 module std.families.brassbound_chest
 import std.components.brassbound_chest
 import std.mechanisms.hero_mechanisms

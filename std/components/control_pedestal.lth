@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the control_pedestal family (body, bezel, screen, control panel, column, base, hatch, socket).
+//   exports: components pedestal_body_shell, pedestal_bezel_frame, pedestal_screen_panel, pedestal_control_panel, pedestal_column, pedestal_base_plate, pedestal_service_hatch, pedestal_socket_plate
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.control_pedestal (transitively examples/control_pedestal.lth)
+//   stability: stable
+//   layer: V1.0
 module std.components.control_pedestal
 
 component pedestal_body_shell {

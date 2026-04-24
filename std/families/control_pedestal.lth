@@ -1,3 +1,10 @@
+// doc:
+//   purpose: hard-surface family for the control_pedestal hero prop (floor-standing control column).
+//   exports: family control_pedestal_family
+//   depends_on: std.components.control_pedestal, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/control_pedestal.lth
+//   stability: stable
+//   layer: V1.0
 module std.families.control_pedestal
 import std.components.control_pedestal
 import std.mechanisms.hero_mechanisms

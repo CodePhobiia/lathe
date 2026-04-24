@@ -1,3 +1,10 @@
+// doc:
+//   purpose: hard-surface family for the console_terminal hero prop (industrial service console).
+//   exports: family console_terminal_family
+//   depends_on: std.components.console_terminal, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/console_terminal.lth, examples/console_terminal_v12_surface.lth, examples/console_terminal_mobile_adapt.lth
+//   stability: stable
+//   layer: V1.0
 module std.families.console_terminal
 import std.components.console_terminal
 import std.mechanisms.hero_mechanisms

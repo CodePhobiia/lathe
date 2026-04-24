@@ -1,3 +1,10 @@
+// doc:
+//   purpose: V1.1 kit binding the sci_fi_wall_panel family into a snap-grid modular wall kit with allowed join rules.
+//   exports: kit industrial_wall_kit
+//   depends_on: std.families.sci_fi_wall_panel, std.components.sci_fi_wall_panel (referenced by module name)
+//   used_by: examples/service_corridor_wall.lth
+//   stability: beta
+//   layer: V1.1
 module std.kits.industrial_wall_kit
 
 kit industrial_wall_kit {

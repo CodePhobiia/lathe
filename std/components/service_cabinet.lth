@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the service_cabinet family (body, two doors, handles, vent, two shelves, feet).
+//   exports: components cabinet_body_shell, cabinet_door_l, cabinet_door_r, cabinet_handle_l, cabinet_handle_r, cabinet_vent_panel, cabinet_shelf_a, cabinet_shelf_b, cabinet_foot_l, cabinet_foot_r
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.service_cabinet (transitively examples/service_cabinet.lth)
+//   stability: stable
+//   layer: V1.0
 module std.components.service_cabinet
 
 component cabinet_body_shell {

@@ -1,3 +1,10 @@
+// doc:
+//   purpose: articulation mechanism definitions for hero families (hinges, rotor spin, latch locks, service panels).
+//   exports: mechanisms lid_hinge_mechanism, rotor_spin_mechanism, console_service_panel_mechanism, crate_latch_mechanism, door_hinge_mechanism, door_lock_mechanism
+//   depends_on: none
+//   used_by: std.families.{brassbound_chest, courier_drone, console_terminal, control_pedestal, industrial_crate, mechanical_door, service_cabinet, supply_container}
+//   stability: stable
+//   layer: V0.9
 module std.mechanisms.hero_mechanisms
 
 mechanism lid_hinge_mechanism {

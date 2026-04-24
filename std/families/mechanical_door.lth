@@ -1,3 +1,10 @@
+// doc:
+//   purpose: env-module family for the mechanical_door hero asset (industrial door with hinges, lock, status light).
+//   exports: family mechanical_door_family
+//   depends_on: std.components.mechanical_door, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/mechanical_door.lth
+//   stability: stable
+//   layer: V0.9
 module std.families.mechanical_door
 import std.components.mechanical_door
 import std.mechanisms.hero_mechanisms

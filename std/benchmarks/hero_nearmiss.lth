@@ -1,3 +1,10 @@
+// doc:
+//   purpose: regression fixtures anchoring legacy v0.6 toy-like outputs as expected-fail nearmisses (guards against quality drift).
+//   exports: fixtures legacy_brassbound_chest_v06_fixture, legacy_courier_drone_v06_fixture, legacy_console_terminal_v06_fixture
+//   depends_on: none (references dist_v06_* build directories as fixtures)
+//   used_by: examples/brassbound_chest.lth, examples/brassbound_chest_v13_blender.lth, examples/console_terminal.lth, examples/courier_drone.lth
+//   stability: stable
+//   layer: V0.9
 module std.benchmarks.hero_nearmiss
 
 fixture legacy_brassbound_chest_v06_fixture {

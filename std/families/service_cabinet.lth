@@ -1,3 +1,10 @@
+// doc:
+//   purpose: hard-surface family for the service_cabinet hero prop (two-door industrial cabinet with vent).
+//   exports: family service_cabinet_family
+//   depends_on: std.components.service_cabinet, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/service_cabinet.lth
+//   stability: stable
+//   layer: V1.0
 module std.families.service_cabinet
 import std.components.service_cabinet
 import std.mechanisms.hero_mechanisms

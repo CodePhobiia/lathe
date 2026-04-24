@@ -1,3 +1,10 @@
+// doc:
+//   purpose: hard-surface family for the industrial_crate hero prop (steel shipping crate with warning paint).
+//   exports: family industrial_crate_family
+//   depends_on: std.components.industrial_crate, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/industrial_crate.lth
+//   stability: stable
+//   layer: V0.9
 module std.families.industrial_crate
 import std.components.industrial_crate
 import std.mechanisms.hero_mechanisms

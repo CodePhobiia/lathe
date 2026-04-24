@@ -1,3 +1,10 @@
+// doc:
+//   purpose: search-space definitions (feature density, panel depth, edge weights) driving shape-stage best_of selection per hero family.
+//   exports: spaces chest_hero_search, drone_hero_search, console_hero_search, crate_hero_search, door_hero_search, cabinet_hero_search, pedestal_hero_search, supply_hero_search
+//   depends_on: none
+//   used_by: all std.families.* hero families that declare hero-scale search (transitively every hero example)
+//   stability: stable
+//   layer: V0.9
 module std.spaces.hero_spaces
 
 space chest_hero_search {

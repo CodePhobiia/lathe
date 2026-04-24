@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the sci_fi_wall_panel family (shell, screen bezel, frame panel, vents, mounts).
+//   exports: components wall_panel_shell, wall_screen_bezel, wall_frame_panel, wall_vent_l, wall_vent_r, wall_mount_top, wall_mount_bottom
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.sci_fi_wall_panel, std.kits.industrial_wall_kit (transitively examples/service_corridor_wall.lth)
+//   stability: stable
+//   layer: V1.0
 module std.components.sci_fi_wall_panel
 
 component wall_panel_shell {

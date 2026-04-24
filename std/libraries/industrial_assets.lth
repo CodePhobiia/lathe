@@ -1,3 +1,10 @@
+// doc:
+//   purpose: V1.1 library aggregating industrial hard-surface families, components, materials, and patterns for environment authoring.
+//   exports: library industrial_hardsurface_library
+//   depends_on: std.families.{sci_fi_wall_panel, console_terminal, mechanical_door}, std.components.{sci_fi_wall_panel, console_terminal}, std.materials.hero_materials, std.patterns.hero_patterns (referenced by name)
+//   used_by: examples/service_corridor_wall.lth
+//   stability: beta
+//   layer: V1.1
 module std.libraries.industrial_assets
 
 library industrial_hardsurface_library {

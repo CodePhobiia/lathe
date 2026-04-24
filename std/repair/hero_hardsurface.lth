@@ -1,3 +1,10 @@
+// doc:
+//   purpose: shared repair policy for hard-surface hero families (auto_until_pass loop with bounded remediation allow-list).
+//   exports: repair_policy hero_hardsurface_repair
+//   depends_on: none
+//   used_by: all std.families.* hero families (transitively every hero example)
+//   stability: stable
+//   layer: V0.9
 module std.repair.hero_hardsurface
 
 repair_policy hero_hardsurface_repair {

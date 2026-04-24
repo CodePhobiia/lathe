@@ -1,3 +1,10 @@
+// doc:
+//   purpose: V1.2 governed surface-authoring primitives (backends, policy, decals, masks, trim sheets) including the Codex ImageGen backend.
+//   exports: surface_backend codex_imagegen, surface_backend deterministic_pbr, surface_policy hero_zone_first_surface, decal_library industrial_console_decals, mask_program console_wear_masks, trim_sheet console_trim_sheet
+//   depends_on: none
+//   used_by: examples/console_terminal_v12_surface.lth
+//   stability: beta
+//   layer: V1.2
 module std.surface_programs.v12_surface_authoring
 
 surface_backend codex_imagegen {

@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the mechanical_door family (frame, leaf, hinges, handle, lock, threshold, status light, side brackets).
+//   exports: components door_frame_shell, door_leaf_panel, door_hinge_top, door_hinge_bottom, door_handle_main, door_lock_plate, threshold_trim_plate, status_light_module, side_bracket_l, side_bracket_r
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.mechanical_door (transitively examples/mechanical_door.lth)
+//   stability: stable
+//   layer: V0.9
 module std.components.mechanical_door
 
 component door_frame_shell {

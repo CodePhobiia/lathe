@@ -1,3 +1,10 @@
+// doc:
+//   purpose: PBR metal-rough surface programs (maps, bakes, decals, patterns, zone/material bindings) per hero family.
+//   exports: surface_programs chest_wood_brass_hero, industrial_crate_hero, mechanical_door_hero, console_terminal_hero, service_cabinet_hero, control_pedestal_hero, supply_container_hero
+//   depends_on: std.materials.hero_materials (referenced by name), std.patterns.hero_patterns (referenced by name)
+//   used_by: all std.families.* hero families that bind a surface.program (transitively every hero example)
+//   stability: stable
+//   layer: V0.9
 module std.surface_programs.hero_surface_programs
 
 surface_program chest_wood_brass_hero {

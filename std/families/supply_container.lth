@@ -1,3 +1,10 @@
+// doc:
+//   purpose: hard-surface family for the supply_container hero prop (strap-banded industrial container).
+//   exports: family supply_container_family
+//   depends_on: std.components.supply_container, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.patterns.hero_patterns, std.surface_programs.hero_surface_programs, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/supply_container.lth
+//   stability: stable
+//   layer: V1.0
 module std.families.supply_container
 import std.components.supply_container
 import std.mechanisms.hero_mechanisms

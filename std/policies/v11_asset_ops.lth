@@ -1,3 +1,10 @@
+// doc:
+//   purpose: V1.1 asset-ops policies (adapt, assembly, reconstruct, fit, transfer) for mobile adapts, wall assembly, drone reconstruction, and console transfers.
+//   exports: adapt_policy mobile_console_policy, assembly_policy industrial_wall_policy, reconstruct_policy courier_reconstruct_policy, fit_profile courier_fit_default, transfer_rule preserve_console_surface
+//   depends_on: none (refers to family/material/surface names by identifier)
+//   used_by: examples/console_terminal_mobile_adapt.lth, examples/reconstruct_courier_from_views.lth, examples/service_corridor_wall.lth
+//   stability: beta
+//   layer: V1.1
 module std.policies.v11_asset_ops
 
 adapt_policy mobile_console_policy {

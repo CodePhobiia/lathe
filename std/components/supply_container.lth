@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the supply_container family (body, lid, strap band, latch, handles, feet).
+//   exports: components supply_body_shell, supply_lid_panel, supply_strap_band, supply_latch_plate, supply_handle_l, supply_handle_r, supply_foot_l, supply_foot_r
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.supply_container (transitively examples/supply_container.lth)
+//   stability: stable
+//   layer: V1.0
 module std.components.supply_container
 
 component supply_body_shell {

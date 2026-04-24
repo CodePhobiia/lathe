@@ -1,3 +1,10 @@
+// doc:
+//   purpose: shared PBR material library used across all hero families (wood, brass, velvet, steel, glass, rubber, warning paint).
+//   exports: materials oak_body, aged_brass_trim, velvet_interior, anodized_aluminum_body, carbon_fiber_trim, amber_glass_lens, painted_steel_body, smoked_glass_screen, rubber_trim_dark, seal_rubber, warning_paint
+//   depends_on: none
+//   used_by: std.palettes.hero_palettes, std.surface_programs.hero_surface_programs, std.libraries.industrial_assets (transitively all hero examples)
+//   stability: stable
+//   layer: V0.8
 module std.materials.hero_materials
 
 material oak_body {

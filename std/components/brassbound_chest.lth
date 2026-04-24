@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the brassbound_chest family (body, lid, latches, handles, feet, liner).
+//   exports: components chest_body, chest_lid, brass_latch_set, front_clasp, side_handle_l, side_handle_r, support_foot_l, support_foot_r, chest_interior_liner
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.brassbound_chest (transitively examples/brassbound_chest*.lth)
+//   stability: stable
+//   layer: V1.0
 module std.components.brassbound_chest
 
 component chest_body {

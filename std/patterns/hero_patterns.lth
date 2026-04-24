@@ -1,3 +1,10 @@
+// doc:
+//   purpose: shared surface pattern library for hero families (plank spacing, rivet rows, cargo fastener grid, vent slats, warning stripes).
+//   exports: patterns plank_spacing_hero, rivet_row_hero, cargo_fastener_grid, vent_slats_dense, warning_stripe_band
+//   depends_on: none
+//   used_by: most std.families.* (brassbound_chest, industrial_crate, mechanical_door, console_terminal, control_pedestal, service_cabinet, supply_container, sci_fi_wall_panel), std.surface_programs.hero_surface_programs, std.libraries.industrial_assets
+//   stability: stable
+//   layer: V0.8
 module std.patterns.hero_patterns
 
 pattern plank_spacing_hero {

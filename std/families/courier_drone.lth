@@ -1,3 +1,10 @@
+// doc:
+//   purpose: mechanical-quad-drone family for the courier_drone hero asset (aluminum + carbon fiber + amber lens).
+//   exports: family courier_drone_family
+//   depends_on: std.components.courier_drone, std.mechanisms.hero_mechanisms, std.palettes.hero_palettes, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/courier_drone.lth (reconstruct policy referenced via std.policies.v11_asset_ops from examples/reconstruct_courier_from_views.lth)
+//   stability: stable
+//   layer: V0.9
 module std.families.courier_drone
 import std.components.courier_drone
 import std.mechanisms.hero_mechanisms

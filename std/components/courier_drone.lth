@@ -1,3 +1,10 @@
+// doc:
+//   purpose: component definitions for the courier_drone family (body, four rotor pods, cargo door, landing legs).
+//   exports: components courier_body, rotor_front_left, rotor_front_right, rotor_rear_left, rotor_rear_right, cargo_door_panel, landing_leg_left, landing_leg_right
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.courier_drone (transitively examples/courier_drone.lth)
+//   stability: stable
+//   layer: V0.9
 module std.components.courier_drone
 
 component courier_body {
