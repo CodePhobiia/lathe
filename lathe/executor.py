@@ -82,6 +82,7 @@ __all__ = [
 
 
 class BuildExecutor:
+    """BuildExecutor."""
     def __init__(
         self,
         program: dict[str, Any],
@@ -129,6 +130,11 @@ class BuildExecutor:
         self.cache_dir = BUILD_CACHE_ROOT / self.cache_key
 
     def build(self) -> dict[str, Any]:
+        """Build.
+
+        Returns:
+            The result.
+        """
         diagnostics = check_program(self.program)
         errors = [item for item in diagnostics if item["severity"] == "error"]
         if errors:
@@ -218,6 +224,14 @@ class BuildExecutor:
         dump_json(self.out_dir / "materialized_asset.json", self.asset)
 
     def build_surface_stage(self, *, repair_mode: str | None = None) -> dict[str, Any]:
+        """Build surface stage.
+
+        Args:
+            repair_mode: repair_mode argument.
+
+        Returns:
+            The result.
+        """
         self._prepare_uncached_build()
         shape_bundle = stage_shape.run(self)
         topology_bundle = stage_topology.run(self, shape_bundle)
@@ -237,6 +251,11 @@ class BuildExecutor:
         }
 
     def validate_surface_stage(self) -> dict[str, Any]:
+        """Validate surface stage.
+
+        Returns:
+            The result.
+        """
         surface_result = self.build_surface_stage()
         report = evaluate_surface_quality(self.asset, self.runtime)
         dump_json(self.stage_dirs["surface"] / "surface_quality_report.json", report)
@@ -252,6 +271,11 @@ class BuildExecutor:
         }
 
     def repair_surface_stage(self) -> dict[str, Any]:
+        """Repair surface stage.
+
+        Returns:
+            The result.
+        """
         initial = self.validate_surface_stage()
         if initial["ok"]:
             return {**initial, "repaired": False, "repair_reason": "surface_already_valid"}
@@ -381,6 +405,18 @@ def build_asset(
     runtime_config: dict[str, Any] | None = None,
     execution_profile_override: str | None = None,
 ) -> dict[str, Any]:
+    """Build asset.
+
+    Args:
+        program: program argument.
+        asset_name: asset_name argument.
+        out_dir: out_dir argument.
+        runtime_config: runtime_config argument.
+        execution_profile_override: execution_profile_override argument.
+
+    Returns:
+        The result.
+    """
     return BuildExecutor(
         program,
         asset_name,
@@ -391,12 +427,45 @@ def build_asset(
 
 
 def build_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str | Path, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build surface stage.
+
+    Args:
+        program: program argument.
+        asset_name: asset_name argument.
+        out_dir: out_dir argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     return BuildExecutor(program, asset_name, out_dir, runtime_config=runtime_config).build_surface_stage()
 
 
 def validate_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str | Path, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Validate surface stage.
+
+    Args:
+        program: program argument.
+        asset_name: asset_name argument.
+        out_dir: out_dir argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     return BuildExecutor(program, asset_name, out_dir, runtime_config=runtime_config).validate_surface_stage()
 
 
 def repair_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str | Path, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Repair surface stage.
+
+    Args:
+        program: program argument.
+        asset_name: asset_name argument.
+        out_dir: out_dir argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     return BuildExecutor(program, asset_name, out_dir, runtime_config=runtime_config).repair_surface_stage()

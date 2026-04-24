@@ -32,6 +32,21 @@ def run_shape_backend(
     work_dir: Path,
     runtime_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Run shape backend.
+
+    Args:
+        backend_id: backend_id argument.
+        asset: asset argument.
+        source_root: source_root argument.
+        seed: seed argument.
+        candidates_count: candidates_count argument.
+        conditioning: conditioning argument.
+        work_dir: work_dir argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     if backend_id != "lathe.shape.intent_mesh_handoff_v1":
         raise ValueError(f"Unsupported runnable shape backend '{backend_id}'")
 

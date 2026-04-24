@@ -1,3 +1,10 @@
+"""Import-statement handling for the Lathe parser.
+
+Resolves ``import`` and ``uses`` references relative to the source
+file, pulls in stdlib (``std/``) files, and surfaces structured
+errors for missing or circular imports.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -37,6 +44,14 @@ def _resolve_import_path(source_path: Path, import_name: str) -> Path:
 
 
 def parse_text(source: str) -> dict[str, Any]:
+    """Parse text.
+
+    Args:
+        source: source argument.
+
+    Returns:
+        The result.
+    """
     try:
         return _FastParser(source).parse()
     except LatheParseError:
@@ -71,6 +86,14 @@ def _parse_file_recursive(path: Path, stack: list[Path], cache: dict[Path, dict[
 
 
 def parse_file(path: str | Path) -> dict[str, Any]:
+    """Parse file.
+
+    Args:
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     resolved = Path(path).resolve()
     program = _parse_file_recursive(resolved, [], {})
     program["_source_path"] = str(resolved)

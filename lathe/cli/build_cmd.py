@@ -1,3 +1,5 @@
+"""``lathe build`` subcommand: run the full pipeline and emit a bundle."""
+
 from __future__ import annotations
 
 import json
@@ -8,6 +10,11 @@ from ._common import _dump
 
 
 def run_build(args) -> None:
+    """Run build.
+
+    Args:
+        args: args argument.
+    """
     from ..executor import BuildError, build_asset
     from ..parser import parse_file
 
@@ -38,6 +45,11 @@ def run_build(args) -> None:
 
 
 def run_render_eval(args) -> None:
+    """Run render eval.
+
+    Args:
+        args: args argument.
+    """
     from ..executor import BuildError, build_asset
     from ..parser import parse_file
 
@@ -73,6 +85,11 @@ def run_render_eval(args) -> None:
 
 
 def run_mode_build(args) -> None:
+    """Run mode build.
+
+    Args:
+        args: args argument.
+    """
     from ..executor import BuildError, build_asset
     from ..parser import parse_file
     from ..resolver import materialize_asset

@@ -1,3 +1,9 @@
+"""Blender execution result dataclasses.
+
+Structured output (artefacts, logs, timings, exit status) returned
+from the Blender driver back to the host process.
+"""
+
 from __future__ import annotations
 
 import json
@@ -8,6 +14,14 @@ from .plan_adapter import _dump_json
 
 
 def inspect_blend_artifact(build_dir: Path) -> dict[str, Any]:
+    """Inspect blend artifact.
+
+    Args:
+        build_dir: build_dir argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = build_dir / "stages" / "execution"
     bundle = json.loads((stage_dir / "bundle.json").read_text(encoding="utf-8"))
     return {
@@ -24,6 +38,15 @@ def inspect_blend_artifact(build_dir: Path) -> dict[str, Any]:
 
 
 def export_blend_artifact(build_dir: Path, destination: Path | None = None) -> dict[str, Any]:
+    """Export blend artifact.
+
+    Args:
+        build_dir: build_dir argument.
+        destination: destination argument.
+
+    Returns:
+        The result.
+    """
     inspect = inspect_blend_artifact(build_dir)
     artifact_path = inspect.get("blend_artifact_ir", {}).get("artifact_path")
     if not artifact_path:
@@ -40,6 +63,15 @@ def export_blend_artifact(build_dir: Path, destination: Path | None = None) -> d
 
 
 def build_library_sync_manifest(program: dict[str, Any], out_dir: Path) -> dict[str, Any]:
+    """Build library sync manifest.
+
+    Args:
+        program: program argument.
+        out_dir: out_dir argument.
+
+    Returns:
+        The result.
+    """
     bindings = []
     for binding in program.get("library_bindings", []):
         values = binding.get("values", {})

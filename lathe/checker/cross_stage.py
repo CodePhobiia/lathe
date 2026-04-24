@@ -1,3 +1,10 @@
+"""Cross-stage consistency checks.
+
+Enforces invariants that span multiple pipeline stages, such as the
+stable shape bundle contract, topology/UV compatibility and the
+surface control pack schema.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -15,6 +22,12 @@ from .utils import BACKEND_PATHS, diag
 
 
 def check_backend_resolution(checker: Any, asset: dict[str, Any]) -> None:
+    """Check backend resolution.
+
+    Args:
+        checker: checker argument.
+        asset: asset argument.
+    """
     asset_name = asset["name"]
 
     for stage in BACKEND_SELECTION_STAGES:

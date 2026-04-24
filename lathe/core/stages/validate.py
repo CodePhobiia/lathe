@@ -17,6 +17,15 @@ from ..evaluators import evaluate_critic, evaluate_metric, evaluate_rule
 
 
 def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        optimize_bundle: optimize_bundle argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["validate"]
     diagnostics: list[dict[str, Any]] = []
     semantic_report = evaluate_semantic_quality(executor.asset, executor.runtime)

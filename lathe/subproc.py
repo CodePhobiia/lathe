@@ -77,6 +77,11 @@ class SandboxResult:
 
     @property
     def ok(self) -> bool:
+        """Ok.
+
+        Returns:
+            The result.
+        """
         return (
             not self.timed_out
             and self.returncode == 0

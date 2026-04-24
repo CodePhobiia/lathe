@@ -1,9 +1,23 @@
+"""Material authoring helpers.
+
+Resolves material references, applies default PBR parameters and
+feeds the surface stage and packaging.
+"""
+
 from __future__ import annotations
 
 from typing import Any
 
 
 def palette_for_material(name: str) -> dict[str, Any]:
+    """Palette for material.
+
+    Args:
+        name: name argument.
+
+    Returns:
+        The result.
+    """
     lname = name.lower()
     if "oak" in lname or "wood" in lname:
         return {
@@ -115,6 +129,15 @@ def _custom_material(asset: dict[str, Any], name: str) -> dict[str, Any] | None:
 
 
 def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[dict[str, Any]]:
+    """Assign material zones.
+
+    Args:
+        asset: asset argument.
+        part_names: part_names argument.
+
+    Returns:
+        The result.
+    """
     surface = asset.get("surface", {})
     materials = list(surface.get("materials", [])) or list(asset.get("intent", {}).get("materials", []))
     palette = surface.get("resolved_palette", {})

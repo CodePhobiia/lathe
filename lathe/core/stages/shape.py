@@ -33,6 +33,14 @@ from ..rendering import render_mesh_preview
 
 
 def run(executor: Any) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+
+    Returns:
+        The result.
+    """
     shape_cfg = executor.asset["build"]["shape"]
     backend = executor.selected_backends["shape"]
     seed = resolve_seed(shape_cfg.get("seed", "auto"), executor.asset_name)
@@ -167,6 +175,13 @@ def run(executor: Any) -> dict[str, Any]:
 
 
 def select_candidate(executor: Any, candidate_id: str, reason: str) -> None:
+    """Select candidate.
+
+    Args:
+        executor: executor argument.
+        candidate_id: candidate_id argument.
+        reason: reason argument.
+    """
     bundle = executor.runtime["shape"]["bundle"]
     selected = next((item for item in bundle.get("candidates", []) if item.get("candidate_id") == candidate_id), None)
     runtime_mesh = executor.runtime["shape"].get("runtime_candidates", {}).get(candidate_id)

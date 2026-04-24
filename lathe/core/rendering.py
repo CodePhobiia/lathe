@@ -38,6 +38,13 @@ def _rotation_matrix(x_angle: float, y_angle: float) -> np.ndarray:
 
 
 def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "shaded") -> None:
+    """Render mesh preview.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        path: path argument.
+        mode: mode argument.
+    """
     mesh = runtime_mesh.mesh
     vertices = mesh.vertices
     rotation = _rotation_matrix(math.radians(35.264), math.radians(45.0))
@@ -77,6 +84,12 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
 
 
 def render_uv_layout(runtime_mesh: RuntimeMesh, path: Path) -> None:
+    """Render uv layout.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        path: path argument.
+    """
     mesh = runtime_mesh.mesh
     uv = getattr(mesh.visual, "uv", None)
     if uv is None:
@@ -98,6 +111,13 @@ def render_uv_layout(runtime_mesh: RuntimeMesh, path: Path) -> None:
 
 
 def render_lod_sheet(runtime_mesh: RuntimeMesh, lod_count: int, path: Path) -> None:
+    """Render lod sheet.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        lod_count: lod_count argument.
+        path: path argument.
+    """
     grid = min(4, max(1, lod_count))
     cell = 512
     sheet = Image.new("RGBA", (cell * 2, cell * 2), PREVIEW_BG)

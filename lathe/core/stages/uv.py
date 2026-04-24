@@ -17,6 +17,15 @@ from ..uv_ops import apply_box_uv, apply_xatlas_uv
 
 
 def run(executor: Any, topology_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        topology_bundle: topology_bundle argument.
+
+    Returns:
+        The result.
+    """
     backend = executor.selected_backends["uv"]
     topology_runtime: RuntimeMesh = executor.runtime["topology"]["runtime_mesh"]
     adapter_report = probe_uv_backend(executor.runtime_config)

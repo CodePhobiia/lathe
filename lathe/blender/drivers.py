@@ -1,3 +1,9 @@
+"""Blender driver scripts.
+
+Python entry points Blender runs on startup to realize a Lathe
+execution plan inside ``bpy``.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path

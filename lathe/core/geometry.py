@@ -19,6 +19,14 @@ from .mesh import RuntimeMesh
 
 
 def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, str | None]:
+    """Seal non watertight mesh.
+
+    Args:
+        mesh: mesh argument.
+
+    Returns:
+        The result.
+    """
     if mesh.is_watertight:
         return mesh, None
     repaired = mesh.copy()
@@ -42,6 +50,14 @@ def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, st
 
 
 def quadrant_tokens(part_name: str) -> tuple[int | None, int | None]:
+    """Quadrant tokens.
+
+    Args:
+        part_name: part_name argument.
+
+    Returns:
+        The result.
+    """
     name = part_name.lower()
     if "_fl" in name or name.endswith("fl"):
         return 1, 1
@@ -55,6 +71,14 @@ def quadrant_tokens(part_name: str) -> tuple[int | None, int | None]:
 
 
 def assign_faces_by_score(assignments: np.ndarray, score: np.ndarray, part_name: str, face_count: int) -> None:
+    """Assign faces by score.
+
+    Args:
+        assignments: assignments argument.
+        score: score argument.
+        part_name: part_name argument.
+        face_count: face_count argument.
+    """
     if face_count <= 0:
         return
     order = np.argsort(score)[::-1]
@@ -69,6 +93,16 @@ def assign_faces_by_score(assignments: np.ndarray, score: np.ndarray, part_name:
 
 
 def infer_face_parts_from_mesh(mesh: trimesh.Trimesh, expected_parts: list[str], default_name: str) -> list[str]:
+    """Infer face parts from mesh.
+
+    Args:
+        mesh: mesh argument.
+        expected_parts: expected_parts argument.
+        default_name: default_name argument.
+
+    Returns:
+        The result.
+    """
     face_count = int(len(mesh.faces))
     if face_count == 0:
         return []
@@ -131,6 +165,15 @@ def infer_face_parts_from_mesh(mesh: trimesh.Trimesh, expected_parts: list[str],
 
 
 def run_reference_topology_cleanup(runtime_mesh: RuntimeMesh, asset: dict[str, Any] | None = None) -> tuple[RuntimeMesh, dict[str, Any]]:
+    """Run reference topology cleanup.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     mesh = runtime_mesh.mesh.copy()
     mesh.remove_infinite_values()
     mesh.remove_unreferenced_vertices()
@@ -173,6 +216,14 @@ def run_reference_topology_cleanup(runtime_mesh: RuntimeMesh, asset: dict[str, A
 
 
 def runtime_scene_parts(runtime_mesh: RuntimeMesh) -> list[tuple[str, trimesh.Trimesh]]:
+    """Runtime scene parts.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+
+    Returns:
+        The result.
+    """
     if not runtime_mesh.face_parts or len(runtime_mesh.face_parts) != len(runtime_mesh.mesh.faces):
         return [("mesh", runtime_mesh.mesh.copy())]
     parts: list[tuple[str, trimesh.Trimesh]] = []
@@ -184,6 +235,15 @@ def runtime_scene_parts(runtime_mesh: RuntimeMesh) -> list[tuple[str, trimesh.Tr
 
 
 def load_runtime_mesh_from_scene(path: Path, source_runtime: RuntimeMesh) -> RuntimeMesh | None:
+    """Load runtime mesh from scene.
+
+    Args:
+        path: path argument.
+        source_runtime: source_runtime argument.
+
+    Returns:
+        The result.
+    """
     try:
         loaded = trimesh.load(path, force="scene")
     except (OSError, ValueError, KeyError, AttributeError, TypeError):
@@ -215,6 +275,14 @@ def load_runtime_mesh_from_scene(path: Path, source_runtime: RuntimeMesh) -> Run
 
 
 def body_count(mesh: trimesh.Trimesh) -> int:
+    """Body count.
+
+    Args:
+        mesh: mesh argument.
+
+    Returns:
+        The result.
+    """
     try:
         return int(mesh.body_count)
     except (AttributeError, ValueError, TypeError, IndexError):
@@ -246,6 +314,14 @@ def body_count(mesh: trimesh.Trimesh) -> int:
 
 
 def mesh_stats(mesh: trimesh.Trimesh) -> dict[str, Any]:
+    """Mesh stats.
+
+    Args:
+        mesh: mesh argument.
+
+    Returns:
+        The result.
+    """
     bounds = mesh.bounds
     extents = bounds[1] - bounds[0]
     return {
@@ -261,6 +337,15 @@ def mesh_stats(mesh: trimesh.Trimesh) -> dict[str, Any]:
 
 
 def part_groups_from_face_parts(mesh: trimesh.Trimesh, face_parts: list[str]) -> list[dict[str, Any]]:
+    """Part groups from face parts.
+
+    Args:
+        mesh: mesh argument.
+        face_parts: face_parts argument.
+
+    Returns:
+        The result.
+    """
     if len(face_parts) != len(mesh.faces):
         face_parts = ["mesh"] * int(len(mesh.faces))
     groups: list[dict[str, Any]] = []
@@ -278,6 +363,15 @@ def part_groups_from_face_parts(mesh: trimesh.Trimesh, face_parts: list[str]) ->
 
 
 def part_centroids(mesh: trimesh.Trimesh, face_parts: list[str]) -> dict[str, list[float]]:
+    """Part centroids.
+
+    Args:
+        mesh: mesh argument.
+        face_parts: face_parts argument.
+
+    Returns:
+        The result.
+    """
     if len(face_parts) != len(mesh.faces):
         face_parts = ["mesh"] * int(len(mesh.faces))
     out: dict[str, list[float]] = {}
@@ -290,10 +384,26 @@ def part_centroids(mesh: trimesh.Trimesh, face_parts: list[str]) -> dict[str, li
 
 
 def estimate_mass_kg(mesh: trimesh.Trimesh) -> float:
+    """Estimate mass kg.
+
+    Args:
+        mesh: mesh argument.
+
+    Returns:
+        The result.
+    """
     volume_cm3 = abs(float(mesh.volume)) if mesh.is_volume else float(np.prod(mesh.extents)) * 0.2
     density_g_cm3 = 0.8
     return (volume_cm3 * density_g_cm3) / 1000.0
 
 
 def derived_lightmap_uv(uv: np.ndarray) -> np.ndarray:
+    """Derived lightmap uv.
+
+    Args:
+        uv: uv argument.
+
+    Returns:
+        The result.
+    """
     return np.clip(uv * 0.9 + 0.05, 0.0, 1.0)

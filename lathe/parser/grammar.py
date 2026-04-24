@@ -1,3 +1,10 @@
+"""Lark grammar loader and parse driver for the Lathe source language.
+
+Builds (and caches to ``.lathe_lark_cache``) the Lark parser from
+``grammar/lathe.lark`` and exposes the formal fallback parse entry
+used when the fast parser declines.
+"""
+
 from __future__ import annotations
 
 import re

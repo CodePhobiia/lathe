@@ -1,3 +1,9 @@
+"""Semantic-quality validator.
+
+Scores ``semantic_preservation_quality`` against the resolved intent
+and the authoritative mesh.
+"""
+
 from __future__ import annotations
 
 import math
@@ -143,6 +149,15 @@ def _toy_detected(asset: dict[str, Any], runtime: dict[str, Any], metrics: dict[
 
 
 def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+    """Evaluate semantic quality.
+
+    Args:
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     shape_bundle = runtime["shape"]["bundle"]
     scaffold_report = shape_bundle.get("scaffold_report", {})
     asset_graph = scaffold_report.get("asset_graph", {})

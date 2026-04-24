@@ -64,6 +64,16 @@ def resolve_shape_provider(
     conditioning: dict[str, Any],
     runtime_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Resolve shape provider.
+
+    Args:
+        asset: asset argument.
+        conditioning: conditioning argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     mode = asset.get("build", {}).get("shape", {}).get("mode", "generate")
     shape_cfg = (runtime_config or {}).get("shape", {})
     explicit = normalize_provider_id(shape_cfg.get("provider", "auto"))
@@ -116,6 +126,15 @@ def resolve_shape_provider(
 
 
 def probe_shape_provider(provider_id: str, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Probe shape provider.
+
+    Args:
+        provider_id: provider_id argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     provider = get_provider(provider_id)
     config = provider_config(runtime_config, provider["id"])
     try:
@@ -165,6 +184,14 @@ def probe_shape_provider(provider_id: str, runtime_config: dict[str, Any] | None
 
 
 def probe_all_shape_providers(runtime_config: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Probe all shape providers.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     reports = []
     for provider in list_shape_providers():
         reports.append(probe_shape_provider(provider["id"], runtime_config))
@@ -220,6 +247,20 @@ def maybe_run_shape_provider(
     work_dir: Path,
     runtime_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Maybe run shape provider.
+
+    Args:
+        asset: asset argument.
+        source_root: source_root argument.
+        seed: seed argument.
+        candidates_count: candidates_count argument.
+        conditioning: conditioning argument.
+        work_dir: work_dir argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     selection = resolve_shape_provider(asset, conditioning, runtime_config)
     provider = selection["provider"]
     provider_id = provider["id"]

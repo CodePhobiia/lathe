@@ -1,3 +1,5 @@
+"""``lathe patch`` subcommand: apply patch_api operations to sources."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,11 @@ from ._common import _dump
 
 
 def run_patch(args) -> None:
+    """Run patch.
+
+    Args:
+        args: args argument.
+    """
     from ..parser import parse_file
     from ..patch_api import (
         add_benchmark_fixture,

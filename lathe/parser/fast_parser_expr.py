@@ -1,3 +1,9 @@
+"""Expression-level productions for the fast parser.
+
+Handles numeric/string/identifier atoms, unit suffixes, composite
+mapping/list literals and operator chains used inside Lathe blocks.
+"""
+
 from __future__ import annotations
 
 import ast as py_ast

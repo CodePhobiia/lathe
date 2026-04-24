@@ -1,3 +1,10 @@
+"""Backend / stack registry and compatibility checks.
+
+Registers stable stack IDs (``lathe.stack.hard_surface_game_asset_v1``
+and friends) and provides the compatibility matrix the checker uses
+to reject mis-wired plans before runtime.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -228,14 +235,32 @@ def _deepcopy(obj: Any) -> Any:
 
 
 def list_backends() -> list[dict[str, Any]]:
+    """List backends.
+
+    Returns:
+        The result.
+    """
     return [_deepcopy(BACKENDS[key]) for key in sorted(BACKENDS)]
 
 
 def list_stacks() -> list[dict[str, Any]]:
+    """List stacks.
+
+    Returns:
+        The result.
+    """
     return [_deepcopy(STACKS[key]) for key in sorted(STACKS)]
 
 
 def get_backend(backend_id: str) -> dict[str, Any]:
+    """Get backend.
+
+    Args:
+        backend_id: backend_id argument.
+
+    Returns:
+        The result.
+    """
     if backend_id not in BACKENDS:
         raise BackendResolutionError(f"Unknown backend '{backend_id}'")
     return _deepcopy(BACKENDS[backend_id])
@@ -256,6 +281,16 @@ def _get_explicit_backend_id(asset: dict[str, Any], stage: str) -> str:
 
 
 def evaluate_backend(backend_id: str, asset: dict[str, Any], stage: str) -> tuple[bool, list[str]]:
+    """Evaluate backend.
+
+    Args:
+        backend_id: backend_id argument.
+        asset: asset argument.
+        stage: stage argument.
+
+    Returns:
+        The result.
+    """
     backend = get_backend(backend_id)
     reasons: list[str] = []
     if backend["stage"] != stage:
@@ -293,6 +328,15 @@ def evaluate_backend(backend_id: str, asset: dict[str, Any], stage: str) -> tupl
 
 
 def evaluate_stack(stack_id: str, asset: dict[str, Any]) -> tuple[bool, list[str]]:
+    """Evaluate stack.
+
+    Args:
+        stack_id: stack_id argument.
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     if stack_id not in STACKS:
         raise BackendResolutionError(f"Unknown backend stack '{stack_id}'")
     stack = STACKS[stack_id]
@@ -319,6 +363,14 @@ def evaluate_stack(stack_id: str, asset: dict[str, Any]) -> tuple[bool, list[str
 
 
 def select_stack(asset: dict[str, Any]) -> dict[str, Any]:
+    """Select stack.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     for stack_id in sorted(STACKS):
         ok, reasons = evaluate_stack(stack_id, asset)
         if ok:
@@ -331,6 +383,14 @@ def select_stack(asset: dict[str, Any]) -> dict[str, Any]:
 
 
 def resolve_selected_backends(asset: dict[str, Any]) -> dict[str, Any]:
+    """Resolve selected backends.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     stack = select_stack(asset)
     selected: dict[str, Any] = {}
     for stage in BACKEND_SELECTION_STAGES:

@@ -14,17 +14,41 @@ from typing import Any
 
 
 def relpath(root: Path, path: Path | None) -> str | None:
+    """Relpath.
+
+    Args:
+        root: root argument.
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     if path is None:
         return None
     return str(path.relative_to(root))
 
 
 def dump_json(path: Path, data: Any) -> None:
+    """Dump json.
+
+    Args:
+        path: path argument.
+        data: data argument.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, sort_keys=False), encoding="utf-8")
 
 
 def resolve_seed(seed: Any, asset_name: str) -> int:
+    """Resolve seed.
+
+    Args:
+        seed: seed argument.
+        asset_name: asset_name argument.
+
+    Returns:
+        The result.
+    """
     if isinstance(seed, int):
         return seed
     if isinstance(seed, str) and seed != "auto":
@@ -37,15 +61,39 @@ def resolve_seed(seed: Any, asset_name: str) -> int:
 
 
 def hash_obj(obj: Any) -> str:
+    """Hash obj.
+
+    Args:
+        obj: obj argument.
+
+    Returns:
+        The result.
+    """
     payload = json.dumps(obj, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
 def hash_file(path: Path) -> str:
+    """Hash file.
+
+    Args:
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def hash_ref(value: Any) -> str:
+    """Hash ref.
+
+    Args:
+        value: value argument.
+
+    Returns:
+        The result.
+    """
     try:
         path = Path(str(value))
         if path.exists() and path.is_file():
@@ -56,6 +104,16 @@ def hash_ref(value: Any) -> str:
 
 
 def output_entry(root: Path, path: Path, fmt: str) -> dict[str, Any]:
+    """Output entry.
+
+    Args:
+        root: root argument.
+        path: path argument.
+        fmt: fmt argument.
+
+    Returns:
+        The result.
+    """
     return {
         "format": fmt,
         "uri": relpath(root, path),
@@ -65,6 +123,14 @@ def output_entry(root: Path, path: Path, fmt: str) -> dict[str, Any]:
 
 
 def unit_to_cm(value: Any) -> float:
+    """Unit to cm.
+
+    Args:
+        value: value argument.
+
+    Returns:
+        The result.
+    """
     if isinstance(value, (int, float)):
         return float(value)
     if not isinstance(value, dict) or value.get("type") != "unit":
@@ -93,6 +159,14 @@ def unit_to_cm(value: Any) -> float:
 
 
 def unit_to_bytes(value: Any) -> int:
+    """Unit to bytes.
+
+    Args:
+        value: value argument.
+
+    Returns:
+        The result.
+    """
     if isinstance(value, (int, float)):
         return int(value)
     if not isinstance(value, dict) or value.get("type") != "unit":
@@ -109,6 +183,14 @@ def unit_to_bytes(value: Any) -> int:
 
 
 def unit_to_px_per_m(value: Any) -> float:
+    """Unit to px per m.
+
+    Args:
+        value: value argument.
+
+    Returns:
+        The result.
+    """
     if isinstance(value, (int, float)):
         return float(value)
     if not isinstance(value, dict) or value.get("type") != "unit":
@@ -123,6 +205,14 @@ def unit_to_px_per_m(value: Any) -> float:
 
 
 def characteristic_scale_cm(asset: dict[str, Any]) -> float:
+    """Characteristic scale cm.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     intent = asset.get("intent", {})
     if "dimensions" in intent and isinstance(intent["dimensions"], dict) and intent["dimensions"].get("type") == "call":
         args = intent["dimensions"].get("args", [])
@@ -135,5 +225,13 @@ def characteristic_scale_cm(asset: dict[str, Any]) -> float:
 
 
 def make_color(name: str) -> tuple[int, int, int]:
+    """Make color.
+
+    Args:
+        name: name argument.
+
+    Returns:
+        The result.
+    """
     digest = hashlib.sha256(name.encode("utf-8")).digest()
     return (80 + digest[0] % 140, 80 + digest[1] % 140, 80 + digest[2] % 140)

@@ -1,3 +1,9 @@
+"""Scaffold compiler for the shape stage.
+
+Lowers an assembly blueprint into parameterized scaffold primitives
+that feed feature fusion and the authoritative mesh.
+"""
+
 from __future__ import annotations
 
 import hashlib
@@ -199,6 +205,18 @@ def compile_scaffold_candidates(
     conditioning: dict[str, Any],
     mode: str,
 ) -> dict[str, Any]:
+    """Compile scaffold candidates.
+
+    Args:
+        asset_graph: asset_graph argument.
+        seed: seed argument.
+        candidates_count: candidates_count argument.
+        conditioning: conditioning argument.
+        mode: mode argument.
+
+    Returns:
+        The result.
+    """
     candidate_records: list[dict[str, Any]] = []
     fidelity = infer_fidelity_profile(asset_graph)
     source_best_of = int(asset_graph.authoring.get("space", {}).get("select", {}).get("best_of", 0) or 0)

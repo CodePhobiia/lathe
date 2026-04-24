@@ -15,6 +15,15 @@ from ..common import dump_json
 
 
 def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        optimize_bundle: optimize_bundle argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["execution"]
     bundle = build_execution_bundle(
         asset=executor.asset,

@@ -1,3 +1,10 @@
+"""Effective build-plan emitter.
+
+Takes a resolved asset and produces the per-stage build plan
+(providers, critics, bake intents, package layout) that ``executor``
+drives.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -142,6 +149,16 @@ def _v13_1_control_summary(asset: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_plan(program: dict[str, Any], asset_name: str, execution_profile_override: str | None = None) -> dict[str, Any]:
+    """Build plan.
+
+    Args:
+        program: program argument.
+        asset_name: asset_name argument.
+        execution_profile_override: execution_profile_override argument.
+
+    Returns:
+        The result.
+    """
     resolver = Resolver(program)
     explicit = resolver.derive_explicit_asset(asset_name)
     if execution_profile_override:

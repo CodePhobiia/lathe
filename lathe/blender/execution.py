@@ -1,3 +1,9 @@
+"""Blender execution orchestration.
+
+Launches the Blender subprocess, passes plan + intent data through
+``lathe.subproc`` and collects the result artefacts.
+"""
+
 from __future__ import annotations
 
 import json
@@ -30,6 +36,18 @@ def build_execution_bundle(
     runtime_config: dict[str, Any] | None,
     out_dir: Path,
 ) -> dict[str, Any]:
+    """Build execution bundle.
+
+    Args:
+        asset: asset argument.
+        stage_dir: stage_dir argument.
+        runtime: runtime argument.
+        runtime_config: runtime_config argument.
+        out_dir: out_dir argument.
+
+    Returns:
+        The result.
+    """
     execution = dict(asset.get("execution", {}))
     requested = bool(execution.get("profile") or execution.get("engine"))
     resolved_profile = dict(execution.get("resolved_execution_profile", {}))

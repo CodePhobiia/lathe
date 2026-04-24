@@ -1,3 +1,10 @@
+"""AST normalizer: apply canonical defaults to the raw parser output.
+
+Runs between ``parser`` and ``resolver`` and is responsible for
+injecting the field-level defaults declared in ``lathe.defaults``
+so later stages can assume a fully-populated shape.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -222,6 +229,14 @@ def _normalize_profile_like(decl: dict[str, Any], node_type: str) -> dict[str, A
 
 
 def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
+    """Normalize asset.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     out = deep_fill_missing(asset, ASSET_DEFAULTS)
     out["node_type"] = "asset"
     out["uses"] = dedupe_keep_first(out.get("uses", []))
@@ -289,6 +304,14 @@ def _normalize_variant(variant: dict[str, Any]) -> dict[str, Any]:
 
 
 def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
+    """Normalize program.
+
+    Args:
+        program: program argument.
+
+    Returns:
+        The result.
+    """
     out = deep_fill_missing(program, PROGRAM_DEFAULTS)
     out["imports"] = dedupe_keep_first(out.get("imports", []))
     out["profiles"] = sorted([_normalize_profile_like(p, "profile") for p in out.get("profiles", [])], key=lambda d: d["name"])

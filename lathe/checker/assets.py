@@ -1,3 +1,10 @@
+"""Asset-declaration checks.
+
+Validates ``asset`` blocks: stage wiring, backend compatibility,
+reference resolution, profile/contract references and variant
+structure.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -9,6 +16,11 @@ from .utils import diag
 
 
 def check_assets_and_variants(checker: Any) -> None:
+    """Check assets and variants.
+
+    Args:
+        checker: checker argument.
+    """
     names = [decl["name"] for decl in checker.program.get("assets", [])] + [decl["name"] for decl in checker.program.get("variants", [])]
     for name in names:
         try:
@@ -20,6 +32,12 @@ def check_assets_and_variants(checker: Any) -> None:
 
 
 def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
+    """Check materialized asset.
+
+    Args:
+        checker: checker argument.
+        asset: asset argument.
+    """
     asset_name = asset["name"]
     intent = asset.get("intent", {})
     build = asset.get("build", {})

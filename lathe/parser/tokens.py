@@ -1,3 +1,10 @@
+"""Token classes, regexes and small helpers shared by the fast parser.
+
+Defines the minimal token vocabulary (identifiers, numbers with unit
+suffixes, strings, punctuation) used by both ``fast_parser`` and
+``fast_parser_expr``.
+"""
+
 from __future__ import annotations
 
 import re
@@ -39,13 +46,34 @@ class _TokenStream:
         self.index = 0
 
     def peek(self, value: str | None = None) -> str:
+        """Peek.
+
+        Args:
+            value: value argument.
+
+        Returns:
+            The result.
+        """
         current = self.tokens[self.index][1]
         return current if value is None else current == value
 
     def kind(self) -> str:
+        """Kind.
+
+        Returns:
+            The result.
+        """
         return self.tokens[self.index][0]
 
     def pop(self, expected: str | None = None) -> str:
+        """Pop.
+
+        Args:
+            expected: expected argument.
+
+        Returns:
+            The result.
+        """
         value = self.tokens[self.index][1]
         if expected is not None and value != expected:
             raise LatheParseError(f"Expected '{expected}', got '{value or 'end of file'}'")
@@ -53,9 +81,19 @@ class _TokenStream:
         return value
 
     def pop_ident(self) -> str:
+        """Pop ident.
+
+        Returns:
+            The result.
+        """
         if self.kind() != "ident":
             raise LatheParseError(f"Expected identifier, got '{self.peek() or 'end of file'}'")
         return self.pop()
 
     def eof(self) -> bool:
+        """Eof.
+
+        Returns:
+            The result.
+        """
         return self.kind() == "eof"

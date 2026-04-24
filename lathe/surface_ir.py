@@ -1,3 +1,9 @@
+"""Surface IR: V1.2 surface-stage intermediate representation.
+
+Captures the lowered ``surface_control_pack``, atlas assembly,
+decal and mask programs that feed the surface backend.
+"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -6,6 +12,7 @@ from typing import Any
 
 @dataclass
 class SurfaceIR:
+    """SurfaceIR."""
     program: str = ""
     material_graph: str = ""
     backend: str = ""
@@ -33,6 +40,14 @@ class SurfaceIR:
 
     @classmethod
     def from_asset(cls, asset: dict[str, Any]) -> "SurfaceIR":
+        """From asset.
+
+        Args:
+            asset: asset argument.
+
+        Returns:
+            The result.
+        """
         surface = asset.get("surface", {})
         return cls(
             program=str(surface.get("program", "")),
@@ -62,4 +77,9 @@ class SurfaceIR:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return asdict(self)

@@ -1,3 +1,10 @@
+"""Blender integration package.
+
+Houses the in-process Blender plan adapter, driver scripts, render
+helpers and execution result objects used by the V1.3 Blender-backed
+execution stage.
+"""
+
 from __future__ import annotations
 
 from ..errors import BlenderExecutionError

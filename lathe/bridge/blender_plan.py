@@ -1,3 +1,11 @@
+"""Blender bridge: execution plan for the Codex-operated Blender runner.
+
+Builds a deterministic, JSON-serialisable plan describing bakes,
+renders and retained ``.blend`` artefacts so the Blender worker can
+run headlessly and the result can be inspected with ``lathe
+inspect-blend``.
+"""
+
 from __future__ import annotations
 
 import json
@@ -64,14 +72,33 @@ def _contract(name: str, determinism_class: str, side_effect_class: str, approva
 
 
 def lathe_tool_contracts() -> list[dict[str, Any]]:
+    """Lathe tool contracts.
+
+    Returns:
+        The result.
+    """
     return [_contract(*item) for item in LATHE_TOOL_CONTRACTS]
 
 
 def blender_tool_contracts() -> list[dict[str, Any]]:
+    """Blender tool contracts.
+
+    Returns:
+        The result.
+    """
     return [_contract(*item) for item in BLENDER_TOOL_CONTRACTS]
 
 
 def build_bridge_plan(asset: dict[str, Any], runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build bridge plan.
+
+    Args:
+        asset: asset argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     execution = asset.get("execution", {})
     inspection_policy_ir = build_inspection_policy_ir(asset)
     requested = bool(execution.get("profile") or execution.get("engine"))
@@ -118,6 +145,14 @@ def build_bridge_plan(asset: dict[str, Any], runtime_config: dict[str, Any] | No
 
 
 def build_bridge_doctor(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build bridge doctor.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     probe = probe_blender(runtime_config)
     return {
         "schema": "lathe.bridge_doctor.v1",
@@ -142,6 +177,14 @@ def _read_execution_bundle(build_dir: Path) -> dict[str, Any]:
 
 
 def inspect_completed_build(build_dir: Path) -> dict[str, Any]:
+    """Inspect completed build.
+
+    Args:
+        build_dir: build_dir argument.
+
+    Returns:
+        The result.
+    """
     bundle = _read_execution_bundle(build_dir)
     return {
         "schema": "lathe.inspect.v1",
@@ -156,6 +199,14 @@ def inspect_completed_build(build_dir: Path) -> dict[str, Any]:
 
 
 def build_render_fixture_report(build_dir: Path) -> dict[str, Any]:
+    """Build render fixture report.
+
+    Args:
+        build_dir: build_dir argument.
+
+    Returns:
+        The result.
+    """
     bundle = _read_execution_bundle(build_dir)
     return {
         "schema": "lathe.render_fixture_report.v1",
@@ -166,6 +217,14 @@ def build_render_fixture_report(build_dir: Path) -> dict[str, Any]:
 
 
 def build_bake_audit(build_dir: Path) -> dict[str, Any]:
+    """Build bake audit.
+
+    Args:
+        build_dir: build_dir argument.
+
+    Returns:
+        The result.
+    """
     bundle = _read_execution_bundle(build_dir)
     return {
         "schema": "lathe.bake_audit.v1",

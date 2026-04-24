@@ -1,3 +1,5 @@
+"""``lathe surface`` subcommand: V1.2 surface-stage helpers."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,6 +9,11 @@ from ._common import _dump
 
 
 def run_surface(args) -> None:
+    """Run surface.
+
+    Args:
+        args: args argument.
+    """
     from ..executor import BuildError, build_surface_stage, repair_surface_stage, validate_surface_stage
     from ..parser import parse_file
 

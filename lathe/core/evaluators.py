@@ -16,6 +16,16 @@ IDENT_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
 def evaluate_rule(expr: Any, asset: dict[str, Any], runtime: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    """Evaluate rule.
+
+    Args:
+        expr: expr argument.
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     value = evaluate_expression(expr, asset, runtime)
     if isinstance(value, bool):
         return value, {"message": f"Rule {'passed' if value else 'failed'}", "value": value}
@@ -26,6 +36,16 @@ def evaluate_rule(expr: Any, asset: dict[str, Any], runtime: dict[str, Any]) -> 
 
 
 def evaluate_expression(expr: Any, asset: dict[str, Any], runtime: dict[str, Any]) -> Any:
+    """Evaluate expression.
+
+    Args:
+        expr: expr argument.
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     if isinstance(expr, (bool, int, float, str)):
         if isinstance(expr, str):
             if expr in _predicate_dispatch():
@@ -326,6 +346,16 @@ def _metric_surface_consistency(asset: dict[str, Any], runtime: dict[str, Any]) 
 
 
 def evaluate_metric(expr: Any, asset: dict[str, Any], runtime: dict[str, Any]) -> float:
+    """Evaluate metric.
+
+    Args:
+        expr: expr argument.
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     value = evaluate_expression(expr, asset, runtime)
     if isinstance(value, bool):
         return 1.0 if value else 0.0
@@ -335,6 +365,18 @@ def evaluate_metric(expr: Any, asset: dict[str, Any], runtime: dict[str, Any]) -
 
 
 def evaluate_critic(name: Any, asset: dict[str, Any], runtime: dict[str, Any], critics: dict[str, Any], rules: list[dict[str, Any]]) -> float:
+    """Evaluate critic.
+
+    Args:
+        name: name argument.
+        asset: asset argument.
+        runtime: runtime argument.
+        critics: critics argument.
+        rules: rules argument.
+
+    Returns:
+        The result.
+    """
     if not name:
         prefer_rules = [rule for rule in rules if rule.get("kind") == "prefer"]
         if not prefer_rules:

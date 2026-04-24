@@ -1,3 +1,10 @@
+"""Fast hand-rolled parser for Lathe source files.
+
+Bypasses the Lark grammar for the common happy path while falling back
+to the formal grammar on ambiguous constructs. Produces the same raw
+AST JSON shape as the Lark path.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -90,6 +97,11 @@ class _FastParser(_FastParserExprMixin):
         self.ts = _TokenStream(source)
 
     def parse(self) -> dict[str, Any]:
+        """Parse.
+
+        Returns:
+            The result.
+        """
         program = _empty_program()
         while not self.ts.eof():
             keyword = self.ts.pop_ident()

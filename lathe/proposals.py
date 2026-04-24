@@ -1,3 +1,9 @@
+"""Provider proposal coordination.
+
+Collects provider proposals (shape, topology, UV) and feeds them to
+the conformance fit and certification trace.
+"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -6,6 +12,7 @@ from typing import Any
 
 @dataclass
 class ProposalDelta:
+    """ProposalDelta."""
     delta_id: str
     kind: str
     target_region: str
@@ -15,11 +22,17 @@ class ProposalDelta:
     metrics: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return asdict(self)
 
 
 @dataclass
 class ShapeProposal:
+    """ShapeProposal."""
     proposal_id: str
     source_id: str
     candidate_index: int
@@ -28,6 +41,11 @@ class ShapeProposal:
     assessment: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         payload = asdict(self)
         payload["deltas"] = [delta.to_dict() for delta in self.deltas]
         return payload
@@ -35,10 +53,16 @@ class ShapeProposal:
 
 @dataclass
 class ProposalBank:
+    """ProposalBank."""
     attempted_sources: list[str]
     proposals: list[ShapeProposal]
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return {
             "attempted_sources": list(self.attempted_sources),
             "proposals": [proposal.to_dict() for proposal in self.proposals],

@@ -14,6 +14,15 @@ from ..mesh import RuntimeMesh
 
 
 def run(executor: Any, interfaces_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        interfaces_bundle: interfaces_bundle argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["physics"]
     topology_runtime: RuntimeMesh = executor.runtime["topology"]["runtime_mesh"]
     cfg = executor.asset["build"]["physics"]

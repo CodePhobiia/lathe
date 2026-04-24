@@ -13,6 +13,16 @@ from ..common import dump_json
 
 
 def run(executor: Any, uv_bundle: dict[str, Any], *, repair_mode: str | None = None) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        uv_bundle: uv_bundle argument.
+        repair_mode: repair_mode argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["surface"]
     bundle = build_surface_bundle(
         asset=executor.asset,

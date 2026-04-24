@@ -1,3 +1,11 @@
+"""Lathe parser package.
+
+Turns ``.lth`` source text into the raw AST JSON consumed by
+``lathe.normalizer``. This module re-exports the public parser entry
+points; implementation is split across ``fast_parser``, ``grammar``,
+``imports`` and the ``transformer*`` modules.
+"""
+
 from __future__ import annotations
 
 from .grammar import (

@@ -111,6 +111,15 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
     # ``lathe.executor`` module so test suites that patch those attributes on
     # ``lathe.executor`` continue to see their mocks applied at call time
     # (Stage 2.IV backward compat).
+    """Run.
+
+    Args:
+        executor: executor argument.
+        shape_bundle: shape_bundle argument.
+
+    Returns:
+        The result.
+    """
     from lathe import executor as _executor_module
     probe_topology_backend = _executor_module.probe_topology_backend
     _run_blender_topology = _executor_module._run_blender_topology

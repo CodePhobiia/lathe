@@ -1,3 +1,9 @@
+"""Flow-quality validator.
+
+Scores flow-specific metrics such as ``join_legality`` and
+``reconstruct_honesty_score`` against the build trace.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -121,6 +127,15 @@ def _reconstruct_metrics(asset: dict[str, Any], runtime: dict[str, Any]) -> dict
 
 
 def evaluate_flow_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+    """Evaluate flow quality.
+
+    Args:
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     mode = str(asset.get("build", {}).get("shape", {}).get("mode", "generate"))
     if mode == "adapt":
         metrics = _adapt_metrics(asset, runtime)

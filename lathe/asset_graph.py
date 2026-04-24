@@ -1,3 +1,9 @@
+"""Asset-graph construction for the shape stage.
+
+Turns the resolved intent into the component/join graph consumed by
+the assembly kernel and scaffold compiler.
+"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -12,6 +18,14 @@ def _token_set(value: str | None) -> set[str]:
 
 
 def infer_asset_family(asset: dict[str, Any]) -> str:
+    """Infer asset family.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     resolved_family = asset.get("assembly", {}).get("resolved_family", {})
     explicit_family = (
         resolved_family.get("values", {}).get("runtime_family")
@@ -48,6 +62,14 @@ def infer_asset_family(asset: dict[str, Any]) -> str:
 
 
 def infer_blueprint_id(asset: dict[str, Any]) -> str:
+    """Infer blueprint id.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     resolved_family = asset.get("assembly", {}).get("resolved_family", {})
     explicit_blueprint = resolved_family.get("values", {}).get("blueprint_id")
     if explicit_blueprint:
@@ -210,6 +232,7 @@ def _infer_part_graph(parts: list["PartNode"]) -> list[dict[str, str]]:
 
 @dataclass
 class PartNode:
+    """PartNode."""
     name: str
     tags: list[str] = field(default_factory=list)
     symmetry_mate: str | None = None
@@ -218,11 +241,17 @@ class PartNode:
     assembly_role: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return asdict(self)
 
 
 @dataclass
 class AssetGraph:
+    """AssetGraph."""
     name: str
     kind: str
     family: str
@@ -244,6 +273,11 @@ class AssetGraph:
     authoring: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         payload = asdict(self)
         payload["parts"] = [part.to_dict() for part in self.parts]
         return payload
@@ -265,6 +299,14 @@ def _scale_cm(asset: dict[str, Any]) -> float:
 
 
 def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
+    """Build asset graph.
+
+    Args:
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     part_names = [str(item) for item in asset.get("intent", {}).get("parts", [])]
     family = infer_asset_family(asset)
     blueprint_id = infer_blueprint_id(asset)

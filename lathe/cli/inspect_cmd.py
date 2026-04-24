@@ -1,3 +1,9 @@
+"""``lathe inspect`` / ``lathe inspect-blend`` subcommands.
+
+Dump human-readable views of normalized assets and retained Blender
+artefacts for debugging.
+"""
+
 from __future__ import annotations
 
 import json
@@ -7,30 +13,55 @@ from ._common import _dump
 
 
 def run_inspect(args) -> None:
+    """Run inspect.
+
+    Args:
+        args: args argument.
+    """
     from ..bridge.blender_plan import inspect_completed_build
 
     _dump(inspect_completed_build(Path(args.build_dir).resolve()))
 
 
 def run_inspect_blend(args) -> None:
+    """Run inspect blend.
+
+    Args:
+        args: args argument.
+    """
     from ..blender_execution import inspect_blend_artifact
 
     _dump(inspect_blend_artifact(Path(args.build_dir).resolve()))
 
 
 def run_render_fixture(args) -> None:
+    """Run render fixture.
+
+    Args:
+        args: args argument.
+    """
     from ..bridge.blender_plan import build_render_fixture_report
 
     _dump(build_render_fixture_report(Path(args.build_dir).resolve()))
 
 
 def run_bake_audit(args) -> None:
+    """Run bake audit.
+
+    Args:
+        args: args argument.
+    """
     from ..bridge.blender_plan import build_bake_audit
 
     _dump(build_bake_audit(Path(args.build_dir).resolve()))
 
 
 def run_export_blend(args) -> None:
+    """Run export blend.
+
+    Args:
+        args: args argument.
+    """
     from ..blender_execution import export_blend_artifact
 
     destination = Path(args.out).resolve() if args.out else None
@@ -38,6 +69,11 @@ def run_export_blend(args) -> None:
 
 
 def run_explain(args) -> None:
+    """Run explain.
+
+    Args:
+        args: args argument.
+    """
     build_dir = Path(args.build_dir).resolve()
     # JSON ingress — internal controlled payloads from our own prior-run build artifacts (build_report.json, shape stage bundle, validate report, all emitted by this package); safe without schema validation.
     report = json.loads((build_dir / "build_report.json").read_text(encoding="utf-8"))
@@ -67,6 +103,11 @@ def run_explain(args) -> None:
 
 
 def run_explain_fit(args) -> None:
+    """Run explain fit.
+
+    Args:
+        args: args argument.
+    """
     build_dir = Path(args.build_dir).resolve()
     # JSON ingress — internal controlled payloads from our own prior-run shape stage bundle and validate report; safe without schema validation.
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))

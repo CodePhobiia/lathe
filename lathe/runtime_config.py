@@ -1,3 +1,9 @@
+"""Runtime-config loader for ``--runtime-config`` JSON files.
+
+Parses the opt-in provider / HTTP / Blender runtime configuration
+and produces the structured config the executor consumes.
+"""
+
 from __future__ import annotations
 
 import json
@@ -138,6 +144,14 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 
 
 def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
+    """Load runtime config.
+
+    Args:
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     config = deepcopy(DEFAULT_RUNTIME_CONFIG)
     if path is not None:
         config_path = Path(path)
@@ -181,6 +195,15 @@ def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
 
 
 def merge_runtime_config(base: dict[str, Any] | None, override: dict[str, Any] | None) -> dict[str, Any]:
+    """Merge runtime config.
+
+    Args:
+        base: base argument.
+        override: override argument.
+
+    Returns:
+        The result.
+    """
     merged = deepcopy(DEFAULT_RUNTIME_CONFIG)
     if base:
         merged = _deep_merge(merged, base)
@@ -196,6 +219,17 @@ def apply_cli_overrides(
     shape_strict: bool | None = None,
     codex_imagegen: str | None = None,
 ) -> dict[str, Any]:
+    """Apply cli overrides.
+
+    Args:
+        config: config argument.
+        shape_provider: shape_provider argument.
+        shape_strict: shape_strict argument.
+        codex_imagegen: codex_imagegen argument.
+
+    Returns:
+        The result.
+    """
     merged = merge_runtime_config(config, None)
     shape = merged.setdefault("shape", {})
     if shape_provider:
@@ -210,6 +244,14 @@ def apply_cli_overrides(
 
 
 def apply_env_overrides(config: dict[str, Any]) -> dict[str, Any]:
+    """Apply env overrides.
+
+    Args:
+        config: config argument.
+
+    Returns:
+        The result.
+    """
     merged = deepcopy(config)
     shape = merged.setdefault("shape", {})
     providers = shape.setdefault("providers", {})

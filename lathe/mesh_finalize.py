@@ -1,3 +1,9 @@
+"""Mesh finalize: produce the authoritative downstream mesh.
+
+Cleans, welds and normalizes fused geometry so topology, UV and
+surface stages can assume a canonical manifold input.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -10,6 +16,17 @@ from .shape_ir import ShapeIR
 
 
 def finalize_mesh_ir(mesh: trimesh.Trimesh, shape_ir: ShapeIR, face_parts: list[str], *, metadata: dict[str, Any] | None = None) -> MeshIR:
+    """Finalize mesh ir.
+
+    Args:
+        mesh: mesh argument.
+        shape_ir: shape_ir argument.
+        face_parts: face_parts argument.
+        metadata: metadata argument.
+
+    Returns:
+        The result.
+    """
     face_parts = list(face_parts) if len(face_parts) == len(mesh.faces) else [shape_ir.regions[0].part if shape_ir.regions else "mesh"] * int(len(mesh.faces))
     seam_classes = [
         {"name": region.name, "part": region.part, "component": region.component, "tags": list(region.tags)}

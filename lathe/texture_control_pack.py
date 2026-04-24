@@ -1,3 +1,9 @@
+"""Texture control pack: in-memory representation of per-asset textures.
+
+Collects the images and per-channel metadata the surface stage
+produces and the package stage consumes.
+"""
+
 from __future__ import annotations
 
 import json
@@ -8,10 +14,28 @@ from PIL import Image
 
 
 def relative_uri(root: Path, path: Path) -> str:
+    """Relative uri.
+
+    Args:
+        root: root argument.
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     return str(path.relative_to(root)).replace("/", "\\")
 
 
 def write_image(image: Image.Image, path: Path) -> dict[str, Any]:
+    """Write image.
+
+    Args:
+        image: image argument.
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
     return {"name": path.stem, "uri": str(path), "size_bytes": path.stat().st_size}
@@ -29,6 +53,22 @@ def write_surface_control_pack(
     normal: Image.Image,
     id_map: Image.Image,
 ) -> dict[str, Any]:
+    """Write surface control pack.
+
+    Args:
+        out_dir: out_dir argument.
+        size: size argument.
+        material_zones: material_zones argument.
+        surface_cfg: surface_cfg argument.
+        source_surface: source_surface argument.
+        ao: ao argument.
+        curvature: curvature argument.
+        normal: normal argument.
+        id_map: id_map argument.
+
+    Returns:
+        The result.
+    """
     pack_dir = out_dir / "surface_control_pack"
     pack_dir.mkdir(parents=True, exist_ok=True)
     uv_layout = Image.new("L", (size, size), 0)

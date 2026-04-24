@@ -1,3 +1,9 @@
+"""Silhouette validator.
+
+Runs render-level silhouette checks to ensure the built asset
+matches the intended silhouette envelope.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -24,6 +30,16 @@ def _profile_bins(values: list[float]) -> list[float]:
 
 
 def compare_scaffold_signature(scaffold_signature: dict[str, Any], actual_extents: list[float], part_groups: list[dict[str, Any]] | None = None) -> float:
+    """Compare scaffold signature.
+
+    Args:
+        scaffold_signature: scaffold_signature argument.
+        actual_extents: actual_extents argument.
+        part_groups: part_groups argument.
+
+    Returns:
+        The result.
+    """
     expected_ratio = scaffold_signature.get("projected_ratio")
     if not expected_ratio:
         return 0.5

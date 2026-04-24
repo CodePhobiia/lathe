@@ -1,3 +1,9 @@
+"""Assembly IR: lowered ``assembly_rules`` / assembly policy.
+
+Captures the join policies, boundary rules and component ordering
+the assembly kernel enforces during shape assembly.
+"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -6,6 +12,7 @@ from typing import Any
 
 @dataclass
 class AssemblyIR:
+    """AssemblyIR."""
     family: str
     components: list[str] = field(default_factory=list)
     mechanisms: list[str] = field(default_factory=list)
@@ -16,6 +23,14 @@ class AssemblyIR:
 
     @classmethod
     def from_asset(cls, asset: dict[str, Any]) -> "AssemblyIR":
+        """From asset.
+
+        Args:
+            asset: asset argument.
+
+        Returns:
+            The result.
+        """
         assembly = asset.get("assembly", {})
         return cls(
             family=str(assembly.get("family", "")),
@@ -28,4 +43,9 @@ class AssemblyIR:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return asdict(self)

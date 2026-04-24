@@ -1,3 +1,10 @@
+"""Surface-authoring checks.
+
+Validates V1.2 surface blocks: ``surface_backend``, ``surface_policy``,
+``decal_library``, ``mask_program`` and ``trim_sheet`` wiring and
+cross-references.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -6,6 +13,14 @@ from .utils import diag
 
 
 def check_surface_v12_refs(checker: Any, surface: dict[str, Any], path_prefix: str, owner_name: str) -> None:
+    """Check surface v12 refs.
+
+    Args:
+        checker: checker argument.
+        surface: surface argument.
+        path_prefix: path_prefix argument.
+        owner_name: owner_name argument.
+    """
     checks = [
         ("policy", checker.resolver.surface_policy_map, "surface_policy", "L5221"),
         ("backend", checker.resolver.surface_backend_map, "surface_backend", "L5222"),

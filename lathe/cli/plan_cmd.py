@@ -1,3 +1,5 @@
+"""``lathe plan`` subcommand: emit the effective build plan."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,11 @@ from ._common import _dump
 
 
 def run_plan(args) -> None:
+    """Run plan.
+
+    Args:
+        args: args argument.
+    """
     from ..parser import parse_file
     from ..planner import build_plan
 
@@ -14,6 +21,11 @@ def run_plan(args) -> None:
 
 
 def run_surface_plan(args) -> None:
+    """Run surface plan.
+
+    Args:
+        args: args argument.
+    """
     from ..parser import parse_file
     from ..planner import build_plan
     from ..resolver import materialize_asset
@@ -57,6 +69,11 @@ def run_surface_plan(args) -> None:
 
 
 def run_fit(args) -> None:
+    """Run fit.
+
+    Args:
+        args: args argument.
+    """
     from ..parser import parse_file
     from ..resolver import materialize_asset
 

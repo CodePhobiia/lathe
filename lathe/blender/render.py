@@ -1,3 +1,9 @@
+"""Blender render helpers.
+
+Thin wrappers around ``bpy`` render APIs used by the execution stage
+and by validator-triggered preview renders.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -13,6 +13,15 @@ from ..mesh import RuntimeMesh
 
 
 def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        physics_bundle: physics_bundle argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["optimize"]
     cfg = executor.asset["build"]["optimize"]
     uv_runtime: RuntimeMesh = executor.runtime["uv"]["runtime_mesh"]

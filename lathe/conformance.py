@@ -1,3 +1,10 @@
+"""Conformance fit: align provider proposals to authoritative geometry.
+
+When a learned provider emits a shape proposal, this module scores
+and fits it against the authoritative scaffold mesh and records the
+outcome for the certification trace.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -138,6 +145,16 @@ def fit_provider_proposals(
     scaffold_result: dict[str, Any],
     provider_result: dict[str, Any],
 ) -> dict[str, Any]:
+    """Fit provider proposals.
+
+    Args:
+        asset_graph: asset_graph argument.
+        scaffold_result: scaffold_result argument.
+        provider_result: provider_result argument.
+
+    Returns:
+        The result.
+    """
     scaffold_candidates = list(scaffold_result["runtime_candidates"])
     scaffold_signature = scaffold_result["shape_irs"][0].signature if scaffold_result.get("shape_irs") else {}
     bank = _bank_from_provider(asset_graph, scaffold_signature, provider_result)

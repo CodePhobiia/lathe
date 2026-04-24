@@ -1,3 +1,9 @@
+"""Surface-quality validator.
+
+Scores V1.2 surface-stage evidence (atlas coverage, decal integrity,
+mask program legality) from the backend report.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -16,6 +22,15 @@ SURFACE_THRESHOLDS = {
 
 
 def build_surface_validation_ir(surface_cfg: dict[str, Any], backend_report: dict[str, Any]) -> dict[str, Any]:
+    """Build surface validation ir.
+
+    Args:
+        surface_cfg: surface_cfg argument.
+        backend_report: backend_report argument.
+
+    Returns:
+        The result.
+    """
     return {
         "schema": "lathe.surface_validation_ir.v1",
         "backend": backend_report["selected_backend_id"],
@@ -38,6 +53,15 @@ def build_surface_validation_ir(surface_cfg: dict[str, Any], backend_report: dic
 
 
 def evaluate_surface_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+    """Evaluate surface quality.
+
+    Args:
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     bundle = runtime.get("surface", {}).get("bundle", {})
     metrics = _surface_evidence(runtime, bundle)
     diagnostics: list[dict[str, Any]] = []

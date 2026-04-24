@@ -1,3 +1,10 @@
+"""Assembly kernel: turn an asset graph into an assembly blueprint.
+
+Produces the deterministic blueprint of components, joins and
+boundary constraints that seeds scaffold compilation and the shape
+IR.
+"""
+
 from __future__ import annotations
 
 import math
@@ -11,6 +18,7 @@ from .shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
 
 @dataclass
 class BlueprintComponent:
+    """BlueprintComponent."""
     name: str
     component_type: str
     part: str
@@ -25,17 +33,28 @@ class BlueprintComponent:
     interface_role: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return asdict(self)
 
 
 @dataclass
 class AssemblyBlueprint:
+    """AssemblyBlueprint."""
     blueprint_id: str
     family: str
     components: list[BlueprintComponent]
     notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         payload = asdict(self)
         payload["components"] = [component.to_dict() for component in self.components]
         return payload
@@ -442,6 +461,15 @@ def _build_shape_ir(
 
 
 def compile_assembly_blueprint(asset_graph: AssetGraph, blueprint: AssemblyBlueprint) -> ShapeIR:
+    """Compile assembly blueprint.
+
+    Args:
+        asset_graph: asset_graph argument.
+        blueprint: blueprint argument.
+
+    Returns:
+        The result.
+    """
     primitives: list[ShapePrimitive] = []
     regions: list[ShapeRegion] = []
     for component in blueprint.components:
@@ -464,6 +492,16 @@ def compile_assembly_blueprint(asset_graph: AssetGraph, blueprint: AssemblyBluep
 
 
 def refresh_shape_ir(asset_graph: AssetGraph, shape_ir: ShapeIR, *, notes: list[str] | None = None) -> ShapeIR:
+    """Refresh shape ir.
+
+    Args:
+        asset_graph: asset_graph argument.
+        shape_ir: shape_ir argument.
+        notes: notes argument.
+
+    Returns:
+        The result.
+    """
     return _build_shape_ir(
         asset_graph,
         blueprint_id=shape_ir.blueprint_id,
@@ -474,6 +512,15 @@ def refresh_shape_ir(asset_graph: AssetGraph, shape_ir: ShapeIR, *, notes: list[
 
 
 def mirrored(center: tuple[float, float, float], *, axis: str = "x") -> tuple[float, float, float]:
+    """Mirrored.
+
+    Args:
+        center: center argument.
+        axis: axis argument.
+
+    Returns:
+        The result.
+    """
     if axis == "x":
         return (-center[0], center[1], center[2])
     if axis == "z":
@@ -482,5 +529,16 @@ def mirrored(center: tuple[float, float, float], *, axis: str = "x") -> tuple[fl
 
 
 def polar_offset(radius: float, angle_deg: float, y: float, *, depth_scale: float = 1.0) -> tuple[float, float, float]:
+    """Polar offset.
+
+    Args:
+        radius: radius argument.
+        angle_deg: angle_deg argument.
+        y: y argument.
+        depth_scale: depth_scale argument.
+
+    Returns:
+        The result.
+    """
     angle = math.radians(angle_deg)
     return (round(math.cos(angle) * radius, 6), y, round(math.sin(angle) * radius * depth_scale, 6))

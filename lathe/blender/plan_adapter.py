@@ -1,3 +1,9 @@
+"""Plan-to-bpy adapter for the Blender execution stage.
+
+Translates the JSON execution plan into concrete ``bpy`` operations
+(imports, modifiers, bakes, renders) inside the Blender driver.
+"""
+
 from __future__ import annotations
 
 import hashlib

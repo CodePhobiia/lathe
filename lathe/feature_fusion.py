@@ -1,3 +1,9 @@
+"""Feature fusion: combine scaffold primitives into search geometry.
+
+Runs the boolean/chamfer/bevel cascade that turns feature-grammar
+output into the fused mesh used for conformance fitting.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -7,6 +13,15 @@ from .shape_ir import ShapePrimitive
 
 
 def integration_config_for_family(family: str, fidelity: FidelityProfile) -> dict[str, Any]:
+    """Integration config for family.
+
+    Args:
+        family: family argument.
+        fidelity: fidelity argument.
+
+    Returns:
+        The result.
+    """
     hero_family = family in {"brassbound_chest", "industrial_crate", "mechanical_door", "console_terminal", "service_cabinet", "control_pedestal", "supply_container"}
     pitch = 2.1 if fidelity.tier == "hero" else 2.35 if fidelity.tier == "game" else 2.6
     blur_sigma = 0.42 if fidelity.tier == "hero" else 0.28 if fidelity.tier == "game" else 0.16
@@ -23,6 +38,15 @@ def integration_config_for_family(family: str, fidelity: FidelityProfile) -> dic
 
 
 def primitive_rounding(primitive: ShapePrimitive, fidelity: FidelityProfile) -> float:
+    """Primitive rounding.
+
+    Args:
+        primitive: primitive argument.
+        fidelity: fidelity argument.
+
+    Returns:
+        The result.
+    """
     base = float(getattr(primitive, "rounding", 0.0) or 0.0)
     if base > 0:
         return base
@@ -34,4 +58,12 @@ def primitive_rounding(primitive: ShapePrimitive, fidelity: FidelityProfile) -> 
 
 
 def primitive_blend_mode(primitive: ShapePrimitive) -> str:
+    """Primitive blend mode.
+
+    Args:
+        primitive: primitive argument.
+
+    Returns:
+        The result.
+    """
     return getattr(primitive, "blend_mode", "union") or "union"

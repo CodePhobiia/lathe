@@ -23,6 +23,18 @@ def runtime_stage_error(
     *,
     details: dict[str, Any] | None = None,
 ) -> BuildError:
+    """Runtime stage error.
+
+    Args:
+        asset_name: asset_name argument.
+        stage: stage argument.
+        backend_id: backend_id argument.
+        message: message argument.
+        details: details argument.
+
+    Returns:
+        The result.
+    """
     return BuildError(
         message,
         diagnostics=[

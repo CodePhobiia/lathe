@@ -31,6 +31,16 @@ STAGE_ORDER_FOR_TRACE = [
 
 
 def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        optimize_bundle: optimize_bundle argument.
+        validate_bundle: validate_bundle argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["package"]
     package_cfg = executor.asset["package"]
     optimize_runtime: RuntimeMesh = executor.runtime["optimize"]["runtime_mesh"]

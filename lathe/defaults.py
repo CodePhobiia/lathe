@@ -1,3 +1,9 @@
+"""Canonical per-node defaults used by the normalizer.
+
+Keeps the authoritative list of field defaults in one place so the
+normalizer, tests and schema stay in sync.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -350,4 +356,12 @@ BUILD_STAGES = [
 
 
 def deep_copy(value: Any) -> Any:
+    """Deep copy.
+
+    Args:
+        value: value argument.
+
+    Returns:
+        The result.
+    """
     return deepcopy(value)

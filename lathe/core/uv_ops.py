@@ -17,6 +17,15 @@ from .mesh import RuntimeMesh
 
 
 def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[RuntimeMesh, dict[str, Any]]:
+    """Apply box uv.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        asset: asset argument.
+
+    Returns:
+        The result.
+    """
     mesh = runtime_mesh.mesh
     face_parts = runtime_mesh.face_parts
     unique_parts = sorted(set(face_parts))
@@ -93,6 +102,16 @@ def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[Runt
 
 
 def apply_xatlas_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any], runtime_config: dict[str, Any] | None) -> tuple[RuntimeMesh, dict[str, Any], dict[str, Any]]:
+    """Apply xatlas uv.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        asset: asset argument.
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     try:
         import xatlas
     except (ImportError, OSError, RuntimeError) as exc:

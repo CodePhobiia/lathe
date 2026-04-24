@@ -1,3 +1,9 @@
+"""Reference IR: V1.1 reference-set and ingest lowering.
+
+Turns reference-set declarations and per-asset ``ingest`` blocks
+into a form the shape stage and reconstruct providers can consume.
+"""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
@@ -6,6 +12,7 @@ from typing import Any
 
 @dataclass
 class ReferenceIR:
+    """ReferenceIR."""
     images: list[Any] = field(default_factory=list)
     meshes: list[Any] = field(default_factory=list)
     assets: list[Any] = field(default_factory=list)
@@ -15,6 +22,14 @@ class ReferenceIR:
 
     @classmethod
     def from_asset(cls, asset: dict[str, Any]) -> "ReferenceIR":
+        """From asset.
+
+        Args:
+            asset: asset argument.
+
+        Returns:
+            The result.
+        """
         refs = asset.get("refs", {})
         return cls(
             images=list(refs.get("images", [])),
@@ -26,4 +41,9 @@ class ReferenceIR:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict.
+
+        Returns:
+            The result.
+        """
         return asdict(self)

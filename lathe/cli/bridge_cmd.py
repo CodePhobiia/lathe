@@ -1,3 +1,5 @@
+"""``lathe bridge`` subcommand: operate the Codex/Blender bridge."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,6 +9,11 @@ from ._common import _dump
 
 
 def run_bridge(args) -> None:
+    """Run bridge.
+
+    Args:
+        args: args argument.
+    """
     from ..bridge.blender_plan import build_bridge_doctor, build_bridge_plan
 
     runtime_config = load_runtime_config(args.runtime_config) if getattr(args, "runtime_config", None) else load_runtime_config(None)

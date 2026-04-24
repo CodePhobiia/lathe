@@ -1,3 +1,9 @@
+"""Capability probing: what providers/backends are available here.
+
+Inspects the environment (Blender, xatlas, HTTP endpoints) and
+produces the capability record the selector and CLI doctor use.
+"""
+
 from __future__ import annotations
 
 import importlib.metadata
@@ -116,6 +122,15 @@ def _find_vs_msvc_tool(tool_name: str) -> str | None:
 
 
 def package_report(import_name: str, distribution_name: str | None = None) -> dict[str, Any]:
+    """Package report.
+
+    Args:
+        import_name: import_name argument.
+        distribution_name: distribution_name argument.
+
+    Returns:
+        The result.
+    """
     distribution_name = distribution_name or import_name
     return {
         "import_name": import_name,
@@ -126,6 +141,14 @@ def package_report(import_name: str, distribution_name: str | None = None) -> di
 
 
 def editable_install_report(dist_name: str = "lathe") -> dict[str, Any]:
+    """Editable install report.
+
+    Args:
+        dist_name: dist_name argument.
+
+    Returns:
+        The result.
+    """
     direct_url = _read_direct_url(dist_name)
     editable = bool(direct_url and direct_url.get("dir_info", {}).get("editable"))
     url = direct_url.get("url") if direct_url else None
@@ -137,6 +160,11 @@ def editable_install_report(dist_name: str = "lathe") -> dict[str, Any]:
 
 
 def repo_install_report() -> dict[str, Any]:
+    """Repo install report.
+
+    Returns:
+        The result.
+    """
     module_spec = importlib.util.find_spec("lathe")
     module_origin = module_spec.origin if module_spec else None
     source_root = None
@@ -162,6 +190,11 @@ def repo_install_report() -> dict[str, Any]:
 
 
 def environment_report() -> dict[str, Any]:
+    """Environment report.
+
+    Returns:
+        The result.
+    """
     venv = sys.prefix != getattr(sys, "base_prefix", sys.prefix)
     shell = os.environ.get("SHELL")
     if not shell and os.environ.get("PSModulePath"):
@@ -228,6 +261,14 @@ def _candidate_blender_paths(runtime_config: dict[str, Any] | None = None) -> li
 
 
 def probe_blender(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Probe blender.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     execution_cfg = ((runtime_config or {}).get("execution", {}).get("blender", {}))
     python_module_available = _module_available("bpy")
     asset_libraries = [
@@ -275,6 +316,11 @@ def probe_blender(runtime_config: dict[str, Any] | None = None) -> dict[str, Any
 
 
 def probe_xatlas() -> dict[str, Any]:
+    """Probe xatlas.
+
+    Returns:
+        The result.
+    """
     env_commands = environment_report()["commands"]
     report = package_report("xatlas")
     if report["available"]:
@@ -298,6 +344,11 @@ def probe_xatlas() -> dict[str, Any]:
 
 
 def probe_torch() -> dict[str, Any]:
+    """Probe torch.
+
+    Returns:
+        The result.
+    """
     base_unavailable = {"available": False, "cuda_available": False, "cuda_version": None, "devices": []}
     if not _module_available("torch"):
         return {**base_unavailable, "version": None, "code": "not_installed", "message": "torch is not installed"}
@@ -330,6 +381,11 @@ def probe_torch() -> dict[str, Any]:
 
 
 def probe_nvidia_smi() -> dict[str, Any]:
+    """Probe nvidia smi.
+
+    Returns:
+        The result.
+    """
     nvidia_smi = shutil.which("nvidia-smi")
     if not nvidia_smi:
         return {"available": False, "code": "not_found"}
@@ -345,6 +401,14 @@ def probe_nvidia_smi() -> dict[str, Any]:
 
 
 def probe_vggt(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Probe vggt.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     torch_report = probe_torch()
     cfg = ((runtime_config or {}).get("shape", {}).get("providers", {}).get("vggt_local", {}))
     weights = str(cfg.get("weights", DEFAULT_VGGT_WEIGHTS))
@@ -389,6 +453,14 @@ def probe_vggt(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
 
 
 def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Probe hunyuan endpoint.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     provider_cfg = ((runtime_config or {}).get("shape", {}).get("providers", {}).get("hunyuan2_1_http", {}))
     base_url = str(provider_cfg.get("base_url", DEFAULT_HUNYUAN_BASE_URL)).rstrip("/")
     configured_timeout = float(provider_cfg.get("health_timeout_s", 5))
@@ -472,6 +544,14 @@ def _backend_report(
 
 
 def probe_topology_backend(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Probe topology backend.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     return _backend_report(
         runtime_config, "topology", "lathe.topology.blender_hard_surface_v1",
         "blender_subprocess", {"blender"},
@@ -481,6 +561,14 @@ def probe_topology_backend(runtime_config: dict[str, Any] | None = None) -> dict
 
 
 def probe_uv_backend(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Probe uv backend.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     return _backend_report(
         runtime_config, "uv", "lathe.uv.xatlas_v1",
         "xatlas", {"xatlas"},
@@ -490,6 +578,14 @@ def probe_uv_backend(runtime_config: dict[str, Any] | None = None) -> dict[str, 
 
 
 def deterministic_backend_reports(runtime_config: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Deterministic backend reports.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     return [
         probe_topology_backend(runtime_config),
         probe_uv_backend(runtime_config),

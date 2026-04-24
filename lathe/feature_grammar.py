@@ -1,3 +1,9 @@
+"""Feature grammar for hard-surface shape authoring.
+
+Defines the feature vocabulary (panels, bevels, cuts, insets, rivets,
+etc.) that scaffolds and user sources use to describe local geometry.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -118,6 +124,17 @@ def compile_feature_enhancements(
     fidelity: FidelityProfile,
     params: CandidateParams,
 ) -> tuple[ShapeIR, dict[str, Any]]:
+    """Compile feature enhancements.
+
+    Args:
+        asset_graph: asset_graph argument.
+        shape_ir: shape_ir argument.
+        fidelity: fidelity argument.
+        params: params argument.
+
+    Returns:
+        The result.
+    """
     enriched = deepcopy(shape_ir)
     added = []
     feature_ops_used: set[str] = set()

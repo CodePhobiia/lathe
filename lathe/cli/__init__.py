@@ -1,3 +1,9 @@
+"""Lathe CLI package.
+
+Exposes the ``python -m lathe.cli`` entry point and the individual
+``*_cmd`` modules that implement each subcommand.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -249,6 +255,8 @@ _DISPATCH = {
 
 
 def main() -> None:
+    """Main.
+    """
     parser = _build_parser()
     args = parser.parse_args()
     handler = _DISPATCH.get(args.cmd)

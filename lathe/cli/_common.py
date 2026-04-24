@@ -1,3 +1,9 @@
+"""Shared helpers for the CLI subcommand modules.
+
+Argument parsing, output formatting and runtime-config loading used
+by more than one subcommand.
+"""
+
 from __future__ import annotations
 
 import glob

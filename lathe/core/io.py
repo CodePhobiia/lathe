@@ -16,12 +16,28 @@ from .mesh import RuntimeMesh
 
 
 def export_glb(mesh: trimesh.Trimesh, path: Path) -> None:
+    """Export glb.
+
+    Args:
+        mesh: mesh argument.
+        path: path argument.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     blob = mesh.export(file_type="glb")
     path.write_bytes(blob)
 
 
 def export_gltf(mesh: trimesh.Trimesh, directory: Path, asset_name: str) -> list[Path]:
+    """Export gltf.
+
+    Args:
+        mesh: mesh argument.
+        directory: directory argument.
+        asset_name: asset_name argument.
+
+    Returns:
+        The result.
+    """
     payload = mesh.export(file_type="gltf")
     written: list[Path] = []
     for name, data in payload.items():
@@ -35,6 +51,12 @@ def export_gltf(mesh: trimesh.Trimesh, directory: Path, asset_name: str) -> list
 
 
 def export_obj(mesh: trimesh.Trimesh, path: Path) -> None:
+    """Export obj.
+
+    Args:
+        mesh: mesh argument.
+        path: path argument.
+    """
     text = mesh.export(file_type="obj")
     path.write_text(text, encoding="utf-8")
     mtl_path = path.with_name("material.mtl")
@@ -43,6 +65,12 @@ def export_obj(mesh: trimesh.Trimesh, path: Path) -> None:
 
 
 def export_runtime_scene_glb(runtime_mesh: RuntimeMesh, path: Path) -> None:
+    """Export runtime scene glb.
+
+    Args:
+        runtime_mesh: runtime_mesh argument.
+        path: path argument.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     scene = trimesh.Scene()
     for part_name, submesh in runtime_scene_parts(runtime_mesh):
@@ -56,6 +84,13 @@ def _vec3(values: Iterable[float]) -> str:
 
 
 def write_usda(mesh: trimesh.Trimesh, path: Path, *, asset_name: str) -> None:
+    """Write usda.
+
+    Args:
+        mesh: mesh argument.
+        path: path argument.
+        asset_name: asset_name argument.
+    """
     points = ", ".join(f"({v[0]:.6f}, {v[1]:.6f}, {v[2]:.6f})" for v in mesh.vertices)
     counts = ", ".join("3" for _ in mesh.faces)
     indices = ", ".join(str(int(i)) for i in mesh.faces.reshape(-1))

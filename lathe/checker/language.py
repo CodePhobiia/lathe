@@ -1,3 +1,10 @@
+"""Language-surface checks common to all declarations.
+
+Covers identifier shape, unit literals, reserved keywords and other
+grammar-adjacent rules that are easier to enforce semantically than
+at the grammar level.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -7,6 +14,11 @@ from .utils import diag
 
 
 def check_duplicate_names(checker: Any) -> None:
+    """Check duplicate names.
+
+    Args:
+        checker: checker argument.
+    """
     namespaces = [
         ("profiles", "L2001"),
         ("contracts", "L2002"),
@@ -59,6 +71,11 @@ def check_duplicate_names(checker: Any) -> None:
 
 
 def check_use_graphs(checker: Any) -> None:
+    """Check use graphs.
+
+    Args:
+        checker: checker argument.
+    """
     for decl_type, ns_key in [("profile", "profiles"), ("contract", "contracts")]:
         for decl in checker.program.get(ns_key, []):
             try:
@@ -83,6 +100,11 @@ def _walk_decl_uses(checker: Any, decl_type: str, decl_name: str, stack: list[tu
 
 
 def check_critics(checker: Any) -> None:
+    """Check critics.
+
+    Args:
+        checker: checker argument.
+    """
     for critic in checker.program.get("critics", []):
         body = critic.get("body")
         if isinstance(body, dict) and body.get("type") == "weighted":
@@ -115,6 +137,11 @@ def check_critics(checker: Any) -> None:
 
 
 def check_tests_and_benchmarks(checker: Any) -> None:
+    """Check tests and benchmarks.
+
+    Args:
+        checker: checker argument.
+    """
     for decl in checker.program.get("tests", []):
         asset_name = decl.get("values", {}).get("asset")
         if asset_name and asset_name not in checker.resolver.asset_map and asset_name not in checker.resolver.variant_map:

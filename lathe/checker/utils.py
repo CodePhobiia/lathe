@@ -1,3 +1,9 @@
+"""Shared helpers for the checker rule modules.
+
+Small utilities for error accumulation, path rendering and AST
+traversal used by the ``check_*`` functions in sibling modules.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -33,6 +39,23 @@ def diag(
     details: dict[str, Any] | None = None,
     suggested_repairs: list[str] | None = None,
 ) -> dict[str, Any]:
+    """Diag.
+
+    Args:
+        code: code argument.
+        name: name argument.
+        severity: severity argument.
+        phase: phase argument.
+        message: message argument.
+        asset: asset argument.
+        stage: stage argument.
+        path: path argument.
+        details: details argument.
+        suggested_repairs: suggested_repairs argument.
+
+    Returns:
+        The result.
+    """
     return {
         "code": code,
         "name": name,

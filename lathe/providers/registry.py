@@ -71,16 +71,37 @@ PROVIDERS: dict[str, dict[str, Any]] = {
 
 
 def normalize_provider_id(provider: str | None) -> str:
+    """Normalize provider id.
+
+    Args:
+        provider: provider argument.
+
+    Returns:
+        The result.
+    """
     if not provider:
         return "auto"
     return PROVIDER_ALIASES.get(provider, provider)
 
 
 def list_shape_providers() -> list[dict[str, Any]]:
+    """List shape providers.
+
+    Returns:
+        The result.
+    """
     return [deepcopy(PROVIDERS[key]) for key in sorted(PROVIDERS)]
 
 
 def get_provider(provider_id: str) -> dict[str, Any]:
+    """Get provider.
+
+    Args:
+        provider_id: provider_id argument.
+
+    Returns:
+        The result.
+    """
     from .errors import ShapeProviderError
 
     provider_id = normalize_provider_id(provider_id)
@@ -96,6 +117,15 @@ def _short_provider_name(provider_id: str) -> str:
 
 
 def provider_config(runtime_config: dict[str, Any] | None, provider_id: str) -> dict[str, Any]:
+    """Provider config.
+
+    Args:
+        runtime_config: runtime_config argument.
+        provider_id: provider_id argument.
+
+    Returns:
+        The result.
+    """
     provider = get_provider(provider_id)
     defaults = provider.get("config", {})
     shape_cfg = (runtime_config or {}).get("shape", {})

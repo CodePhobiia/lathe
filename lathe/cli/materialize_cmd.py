@@ -1,3 +1,9 @@
+"""``lathe materialize`` subcommand.
+
+Resolve and apply variant patches to produce a concrete asset shape
+without running the downstream pipeline.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +12,11 @@ from ._common import _diff_objects, _dump
 
 
 def run_materialize(args) -> None:
+    """Run materialize.
+
+    Args:
+        args: args argument.
+    """
     from ..parser import parse_file
     from ..resolver import materialize_asset
 
@@ -14,6 +25,11 @@ def run_materialize(args) -> None:
 
 
 def run_diff_asset(args) -> None:
+    """Run diff asset.
+
+    Args:
+        args: args argument.
+    """
     from ..parser import parse_file as _parse_file
     from ..resolver import materialize_asset as _materialize_asset
 

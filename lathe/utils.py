@@ -1,3 +1,9 @@
+"""Small generic utilities used across the compiler.
+
+Mapping merging, order-preserving dedup, path helpers and other
+dependency-free helpers.
+"""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -5,6 +11,14 @@ from typing import Any, Iterable
 
 
 def dedupe_keep_first(values: Iterable[Any]) -> list[Any]:
+    """Dedupe keep first.
+
+    Args:
+        values: values argument.
+
+    Returns:
+        The result.
+    """
     seen: set[str] = set()
     out: list[Any] = []
     for value in values:
@@ -16,6 +30,15 @@ def dedupe_keep_first(values: Iterable[Any]) -> list[Any]:
 
 
 def deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+    """Deep merge.
+
+    Args:
+        base: base argument.
+        overlay: overlay argument.
+
+    Returns:
+        The result.
+    """
     result = deepcopy(base)
     for key, value in overlay.items():
         if key in result and isinstance(result[key], dict) and isinstance(value, dict):
@@ -26,6 +49,15 @@ def deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_by_path(obj: dict[str, Any], path: str) -> Any:
+    """Get by path.
+
+    Args:
+        obj: obj argument.
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     cursor: Any = obj
     for part in path.split("."):
         if not isinstance(cursor, dict) or part not in cursor:
@@ -35,6 +67,15 @@ def get_by_path(obj: dict[str, Any], path: str) -> Any:
 
 
 def has_path(obj: dict[str, Any], path: str) -> bool:
+    """Has path.
+
+    Args:
+        obj: obj argument.
+        path: path argument.
+
+    Returns:
+        The result.
+    """
     cursor: Any = obj
     for part in path.split("."):
         if not isinstance(cursor, dict) or part not in cursor:
@@ -44,6 +85,13 @@ def has_path(obj: dict[str, Any], path: str) -> bool:
 
 
 def set_by_path(obj: dict[str, Any], path: str, value: Any) -> None:
+    """Set by path.
+
+    Args:
+        obj: obj argument.
+        path: path argument.
+        value: value argument.
+    """
     parts = path.split(".")
     cursor: Any = obj
     for part in parts[:-1]:
@@ -54,6 +102,12 @@ def set_by_path(obj: dict[str, Any], path: str, value: Any) -> None:
 
 
 def unset_by_path(obj: dict[str, Any], path: str) -> None:
+    """Unset by path.
+
+    Args:
+        obj: obj argument.
+        path: path argument.
+    """
     parts = path.split(".")
     cursor: Any = obj
     for part in parts[:-1]:
@@ -65,6 +119,13 @@ def unset_by_path(obj: dict[str, Any], path: str) -> None:
 
 
 def append_by_path(obj: dict[str, Any], path: str, value: Any) -> None:
+    """Append by path.
+
+    Args:
+        obj: obj argument.
+        path: path argument.
+        value: value argument.
+    """
     current = get_by_path(obj, path)
     if not isinstance(current, list):
         raise TypeError(f"Path '{path}' is not a list")
@@ -75,6 +136,13 @@ def append_by_path(obj: dict[str, Any], path: str, value: Any) -> None:
 
 
 def remove_by_path(obj: dict[str, Any], path: str, value: Any) -> None:
+    """Remove by path.
+
+    Args:
+        obj: obj argument.
+        path: path argument.
+        value: value argument.
+    """
     current = get_by_path(obj, path)
     if not isinstance(current, list):
         raise TypeError(f"Path '{path}' is not a list")
@@ -84,6 +152,15 @@ def remove_by_path(obj: dict[str, Any], path: str, value: Any) -> None:
 
 
 def deep_fill_missing(target: dict[str, Any], defaults: dict[str, Any]) -> dict[str, Any]:
+    """Deep fill missing.
+
+    Args:
+        target: target argument.
+        defaults: defaults argument.
+
+    Returns:
+        The result.
+    """
     out = deepcopy(target)
     for key, default_value in defaults.items():
         if key not in out:

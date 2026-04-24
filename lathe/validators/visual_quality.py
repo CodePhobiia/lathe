@@ -1,3 +1,9 @@
+"""Visual-quality validator.
+
+Combines shape scaffolds, renders and surface evidence into a
+consolidated visual score used in certification.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -322,6 +328,15 @@ def _geometry_evidence(runtime: dict[str, Any], semantic: dict[str, Any], shape_
 
 
 def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+    """Evaluate visual quality.
+
+    Args:
+        asset: asset argument.
+        runtime: runtime argument.
+
+    Returns:
+        The result.
+    """
     shape_bundle = runtime["shape"]["bundle"]
     scaffold_report = shape_bundle.get("scaffold_report", {})
     asset_graph = scaffold_report.get("asset_graph", {})

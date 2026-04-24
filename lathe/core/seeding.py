@@ -13,4 +13,13 @@ from ..constants import RNG_PRIME_OFFSET
 
 
 def candidate_rng(seed: int, index: int) -> np.random.Generator:
+    """Candidate rng.
+
+    Args:
+        seed: seed argument.
+        index: index argument.
+
+    Returns:
+        The result.
+    """
     return np.random.default_rng(seed + index * RNG_PRIME_OFFSET)

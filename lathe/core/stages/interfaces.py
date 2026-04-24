@@ -11,6 +11,15 @@ from ..common import dump_json
 
 
 def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
+    """Run.
+
+    Args:
+        executor: executor argument.
+        rig_bundle: rig_bundle argument.
+
+    Returns:
+        The result.
+    """
     stage_dir = executor.stage_dirs["interfaces"]
     cfg = executor.asset["build"]["interfaces"]
     mesh = executor.runtime["topology"]["runtime_mesh"].mesh

@@ -1,3 +1,10 @@
+"""``uses``/profile/variant resolver for the normalized AST.
+
+Walks ``uses`` chains, applies profile and contract inheritance, and
+overlays variant patches to produce a single materialized asset that
+the checker and planner can reason about without further lookups.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -75,6 +82,7 @@ def _repair_policy_to_validate_repair(source_policy: dict[str, Any], validate_re
 
 
 class Resolver:
+    """Resolver."""
     def __init__(self, program: dict[str, Any]) -> None:
         self.program = program
         self.profile_map = {decl["name"]: decl for decl in program.get("profiles", [])}
@@ -134,6 +142,14 @@ class Resolver:
         return namespace[name]
 
     def resolve_use_chain(self, uses: list[str]) -> list[dict[str, Any]]:
+        """Resolve use chain.
+
+        Args:
+            uses: uses argument.
+
+        Returns:
+            The result.
+        """
         ordered: list[dict[str, Any]] = []
         seen: set[tuple[str, str]] = set()
 
@@ -156,6 +172,14 @@ class Resolver:
         return ordered
 
     def derive_explicit_asset(self, name: str) -> dict[str, Any]:
+        """Derive explicit asset.
+
+        Args:
+            name: name argument.
+
+        Returns:
+            The result.
+        """
         if name in self.asset_map:
             asset = deepcopy(self.asset_map[name])
             asset["node_type"] = "asset"
@@ -170,6 +194,12 @@ class Resolver:
         raise ResolutionError(f"Unknown asset or variant '{name}'")
 
     def apply_patch(self, asset: dict[str, Any], patch: dict[str, Any]) -> None:
+        """Apply patch.
+
+        Args:
+            asset: asset argument.
+            patch: patch argument.
+        """
         path = patch["path"]
         if path == "name":
             raise ResolutionError("Variants may not patch 'name'")
@@ -189,6 +219,14 @@ class Resolver:
             raise ResolutionError(f"Unknown patch op '{op}'")
 
     def resolve_space_spec(self, spec: dict[str, Any]) -> dict[str, Any]:
+        """Resolve space spec.
+
+        Args:
+            spec: spec argument.
+
+        Returns:
+            The result.
+        """
         spec = deepcopy(spec or {})
         use_name = spec.get("use") or spec.get("values", {}).get("use")
         base: dict[str, Any] = {}
@@ -209,6 +247,14 @@ class Resolver:
         return merged
 
     def resolve_repair_policy_spec(self, spec: dict[str, Any]) -> dict[str, Any]:
+        """Resolve repair policy spec.
+
+        Args:
+            spec: spec argument.
+
+        Returns:
+            The result.
+        """
         spec = deepcopy(spec or {})
         use_name = spec.get("use")
         base: dict[str, Any] = {}
@@ -324,6 +370,15 @@ class Resolver:
         return resolved
 
     def materialize_asset(self, name: str, execution_profile_override: str | None = None) -> dict[str, Any]:
+        """Materialize asset.
+
+        Args:
+            name: name argument.
+            execution_profile_override: execution_profile_override argument.
+
+        Returns:
+            The result.
+        """
         explicit = self.derive_explicit_asset(name)
         if execution_profile_override:
             explicit.setdefault("execution", {})
@@ -537,4 +592,14 @@ class Resolver:
 
 
 def materialize_asset(program: dict[str, Any], name: str, execution_profile_override: str | None = None) -> dict[str, Any]:
+    """Materialize asset.
+
+    Args:
+        program: program argument.
+        name: name argument.
+        execution_profile_override: execution_profile_override argument.
+
+    Returns:
+        The result.
+    """
     return Resolver(program).materialize_asset(name, execution_profile_override=execution_profile_override)

@@ -1,3 +1,9 @@
+"""``lathe doctor`` runtime: environment and provider diagnostics.
+
+Collects capability probes into the human-readable report the
+``lathe doctor`` CLI prints.
+"""
+
 from __future__ import annotations
 
 import json
@@ -80,6 +86,14 @@ def _remediation_steps(report: dict[str, Any]) -> list[str]:
 
 
 def collect_doctor_report(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Collect doctor report.
+
+    Args:
+        runtime_config: runtime_config argument.
+
+    Returns:
+        The result.
+    """
     report = {
         "environment": environment_report(),
         "lathe": repo_install_report(),
@@ -98,6 +112,14 @@ def collect_doctor_report(runtime_config: dict[str, Any] | None = None) -> dict[
 
 
 def format_doctor_report(report: dict[str, Any]) -> str:
+    """Format doctor report.
+
+    Args:
+        report: report argument.
+
+    Returns:
+        The result.
+    """
     env = report["environment"]
     python = env["python"]
     lines = [
@@ -160,4 +182,12 @@ def format_doctor_report(report: dict[str, Any]) -> str:
 
 
 def dump_doctor_json(report: dict[str, Any]) -> str:
+    """Dump doctor json.
+
+    Args:
+        report: report argument.
+
+    Returns:
+        The result.
+    """
     return json.dumps(report, indent=2, sort_keys=False)

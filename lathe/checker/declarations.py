@@ -1,3 +1,9 @@
+"""Declaration-scope checks.
+
+Validates ``profile``, ``contract``, ``critic``, ``library``,
+``kit`` and other top-level declarations outside of ``asset``.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -7,6 +13,11 @@ from .utils import V13_1_EVIDENCE_CLASSES, diag
 
 
 def check_new_declarations(checker: Any) -> None:
+    """Check new declarations.
+
+    Args:
+        checker: checker argument.
+    """
     for family in checker.program.get("families", []):
         for component_name in family.get("assembly", {}).get("components", []):
             if component_name not in checker.resolver.component_map:
