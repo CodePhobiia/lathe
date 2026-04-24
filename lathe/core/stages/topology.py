@@ -22,6 +22,7 @@ from typing import Any
 
 from ...blender_execution import BlenderExecutionError
 from ...capabilities import probe_blender
+from ...subproc import DEFAULT_STDERR_DENY_PATTERNS, run_sandboxed
 from ...topology_runtime import derive_topology_semantics, should_preserve_integrated_shape
 from ..common import dump_json, relpath
 from ..errors import runtime_stage_error
@@ -35,23 +36,13 @@ from ..io import export_glb, export_runtime_scene_glb
 from ..mesh import RuntimeMesh
 
 
-_BLENDER_STDERR_ERROR_PATTERNS: tuple[str, ...] = (
-    "Error:",
-    "Traceback (most recent call last):",
-    "Python script failed",
-    "Segmentation fault",
-    "Fatal Python error:",
-    "AddressSanitizer:",
-)
-
-
 def run_blender_topology(runtime_mesh: RuntimeMesh, stage_dir: Path, runtime_config: dict[str, Any] | None) -> tuple[RuntimeMesh, dict[str, Any]]:
     """Invoke Blender as a subprocess to re-topologize ``runtime_mesh``.
 
-    Stage 2.IV: hardened per Plan 07 M4 + Plan 10 M4b. We now treat a
-    returncode-0 run as a failure when Blender printed an error banner to
-    stderr, and raise a domain-typed :class:`BlenderExecutionError` instead
-    of a bare :class:`RuntimeError`.
+    Stage 2.IV + Plan 07 Phase 4: delegates to :func:`lathe.subproc.run_sandboxed`
+    for env-allowlist scrubbing and stderr deny-pattern scanning. A returncode-0
+    run that matches a deny pattern is still treated as failure; failures raise
+    :class:`BlenderExecutionError` rather than a bare :class:`RuntimeError`.
     """
     blender = probe_blender(runtime_config)
     if not blender["available"]:
@@ -61,7 +52,7 @@ def run_blender_topology(runtime_mesh: RuntimeMesh, stage_dir: Path, runtime_con
     script_path = Path(__file__).resolve().parents[3] / "scripts" / "blender_topology_adapter.py"
     export_runtime_scene_glb(runtime_mesh, input_path)
     timeout_s = int(((runtime_config or {}).get("topology", {}).get("blender", {}) or {}).get("timeout_s", 300))
-    result = subprocess.run(
+    result = run_sandboxed(
         [
             blender["path"],
             "--background",
@@ -74,23 +65,21 @@ def run_blender_topology(runtime_mesh: RuntimeMesh, stage_dir: Path, runtime_con
             "--output",
             str(output_path),
         ],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=timeout_s,
+        timeout_s=timeout_s,
+        cwd=stage_dir,
+        extra_env={"LATHE_BLENDER_PATH": str(blender["path"])},
+        expect_files=[output_path],
+        stderr_deny_patterns=DEFAULT_STDERR_DENY_PATTERNS,
     )
-    stderr_text = result.stderr or ""
-    matched_patterns = [pat for pat in _BLENDER_STDERR_ERROR_PATTERNS if pat in stderr_text]
-    stderr_signaled_error = bool(matched_patterns)
-    stderr_tail = stderr_text.strip()[-2000:] or None
-    if result.returncode != 0 or stderr_signaled_error:
-        fallback_message = (result.stderr or result.stdout or "").strip()[-500:] or "Blender topology subprocess failed"
+    stderr_tail = result.stderr_tail or None
+    if result.timed_out or result.returncode != 0 or result.stderr_signaled_error:
+        fallback_message = (result.stderr_tail or result.stdout or "").strip()[-500:] or "Blender topology subprocess failed"
         raise BlenderExecutionError(
             fallback_message,
             blender_path=blender.get("path"),
             returncode=result.returncode,
             stderr_tail=stderr_tail,
-            matched_patterns=matched_patterns,
+            matched_patterns=list(result.matched_stderr_patterns),
         )
     topology_runtime = load_runtime_mesh_from_scene(output_path, runtime_mesh)
     if topology_runtime is None or len(topology_runtime.mesh.faces) == 0:
@@ -100,7 +89,7 @@ def run_blender_topology(runtime_mesh: RuntimeMesh, stage_dir: Path, runtime_con
             blender_path=blender.get("path"),
             returncode=result.returncode,
             stderr_tail=stderr_tail,
-            matched_patterns=matched_patterns,
+            matched_patterns=list(result.matched_stderr_patterns),
         )
     return (
         topology_runtime,
@@ -110,9 +99,9 @@ def run_blender_topology(runtime_mesh: RuntimeMesh, stage_dir: Path, runtime_con
             "blender_version": blender.get("version"),
             "input_artifact": input_path.name,
             "output_artifact": output_path.name,
-            "stdout_tail": (result.stdout or "").strip()[-500:] or None,
-            "stderr_tail": (result.stderr or "").strip()[-500:] or None,
-            "matched_stderr_patterns": matched_patterns,
+            "stdout_tail": result.stdout.strip()[-500:] or None,
+            "stderr_tail": (result.stderr_tail or "").strip()[-500:] or None,
+            "matched_stderr_patterns": list(result.matched_stderr_patterns),
         },
     )
 

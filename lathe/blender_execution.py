@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -14,16 +13,7 @@ from .capabilities import probe_blender
 from .errors import BlenderExecutionError  # re-export — authoritative definition lives in lathe/errors.py
 from .inspection.evidence import build_inspection_policy_ir, build_validation_evidence_ir
 from .render_eval import evaluate_render_views
-
-
-_BLENDER_STDERR_ERROR_PATTERNS: tuple[str, ...] = (
-    "Error:",
-    "Traceback (most recent call last):",
-    "Python script failed",
-    "Segmentation fault",
-    "Fatal Python error:",
-    "AddressSanitizer:",
-)
+from .subproc import DEFAULT_STDERR_DENY_PATTERNS, run_sandboxed
 
 
 IMAGE_BG = (246, 247, 250, 255)
@@ -218,7 +208,8 @@ def _planned_materials(asset: dict[str, Any]) -> list[str]:
 
 def _export_blend_artifact(blender: dict[str, Any], input_glb: Path, output_blend: Path, summary_path: Path) -> dict[str, Any]:
     script_path = Path(__file__).resolve().parents[1] / "scripts" / "blender_export_blend.py"
-    proc = subprocess.run(
+    work_dir = output_blend.parent
+    result = run_sandboxed(
         [
             blender["path"],
             "--background",
@@ -233,25 +224,23 @@ def _export_blend_artifact(blender: dict[str, Any], input_glb: Path, output_blen
             "--summary",
             str(summary_path),
         ],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=300,
+        timeout_s=300,
+        cwd=work_dir,
+        extra_env={"LATHE_BLENDER_PATH": str(blender["path"])},
+        expect_files=[output_blend, summary_path],
+        stderr_deny_patterns=DEFAULT_STDERR_DENY_PATTERNS,
     )
-    stderr_text = proc.stderr or ""
-    matched_patterns = [pat for pat in _BLENDER_STDERR_ERROR_PATTERNS if pat in stderr_text]
-    stderr_signaled_error = bool(matched_patterns)
-    stderr_tail = stderr_text.strip()[-2000:] or None
-    subprocess_failed = proc.returncode != 0 or stderr_signaled_error
-    ok = (not subprocess_failed) and output_blend.exists()
+    stderr_tail = result.stderr_tail or None
     return {
-        "ok": ok,
-        "stdout_tail": (proc.stdout or "").strip()[-800:] or None,
+        "ok": result.ok,
+        "stdout_tail": result.stdout.strip()[-800:] or None,
         "stderr_tail": stderr_tail,
-        "returncode": proc.returncode,
+        "returncode": result.returncode,
         "blender_path": blender.get("path"),
-        "stderr_signaled_error": stderr_signaled_error,
-        "matched_stderr_patterns": matched_patterns,
+        "stderr_signaled_error": result.stderr_signaled_error,
+        "matched_stderr_patterns": list(result.matched_stderr_patterns),
+        "timed_out": result.timed_out,
+        "expected_files_missing": [str(p) for p in result.expected_files_missing],
     }
 
 
