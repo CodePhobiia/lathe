@@ -1,0 +1,3 @@
+# Watched by editors/godot/lathe-addon/lathe_watcher.gd.
+# Run `python -m lathe.cli build <file>.lth <asset> --out examples/godot_integration_demo/lathe_out`
+# to populate this directory and see the addon auto-import.

@@ -1,0 +1,26 @@
+; Engine configuration file.
+; Minimal Godot 4.x project used by the Lathe integration demo.
+; See README.md for the 90-second demo loop.
+;
+; Format:
+;   [section]  ; section goes between []
+;   param=value  ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Lathe Integration Demo"
+config/description="Minimal Godot 4.x scaffold that demonstrates the Lathe editor addon watching lathe_out/ and auto-importing certified assets into the scene."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.2")
+config/icon="res://addons/lathe-addon/icons/lathe.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/lathe-addon/plugin.cfg")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

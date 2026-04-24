@@ -57,3 +57,11 @@ node_modules/
 # rendered per-asset HTML, PNGs, WebPs, and build artifacts should not be committed).
 docs/gallery/*/
 docs/gallery/index.html
+
+# Godot — editor cache and per-file import data, per Plan 09 Phase 2.
+# The addon lives in editors/godot/lathe-addon/; demo project is examples/godot_integration_demo/.
+.godot/
+*.import
+*.translation
+export.cfg
+export_presets.cfg
