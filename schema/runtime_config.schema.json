@@ -146,6 +146,30 @@
           }
         }
       }
+    },
+    "publish": {
+      "type": "object",
+      "description": "BL-31 (Plan 08 Phase 1): publish-runner target configuration consumed by lathe/core/stages/publish.py and the `lathe publish` CLI.",
+      "additionalProperties": true,
+      "properties": {
+        "target": {
+          "type": "string",
+          "description": "Driver id: local_fs, s3, supabase, git_lfs, or a custom-registered driver."
+        },
+        "signing_key": { "type": "string" },
+        "asset": { "type": "string" },
+        "version": { "type": "string" },
+        "target_dir": { "type": "string" },
+        "bucket": { "type": "string" },
+        "prefix": { "type": "string" },
+        "region": { "type": "string" },
+        "base_url": { "type": "string" },
+        "service_key": { "type": "string" },
+        "repo_dir": { "type": "string" },
+        "branch": { "type": "string" },
+        "remote": { "type": "string" },
+        "timeout_s": { "type": "number", "minimum": 1 }
+      }
     }
   }
 }

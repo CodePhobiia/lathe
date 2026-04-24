@@ -1,0 +1,14 @@
+// top-of-file banner
+module studio.props.comments
+
+// before the profile
+profile p {
+  // inside defaults block
+  defaults {
+    build.optimize.lods = 4   // trailing after assign
+    /* block comment on own line */
+    package.manifest = true
+  }
+
+  ensure units(cm) // trailing rule comment
+}

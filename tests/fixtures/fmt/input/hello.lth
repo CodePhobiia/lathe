@@ -1,0 +1,26 @@
+module   studio.props.hello
+
+
+profile   p1{
+  defaults{
+      build.optimize.lods=4
+        package.formats = [ usd , glb ]
+     package.manifest=true
+  }
+     ensure units(cm)
+
+
+     ensure manifold
+
+}
+
+
+asset a: hard_surface_prop    uses p1 {
+  intent{
+      role   =   "hello world"
+      parts=[
+        a,
+        b,c,d,
+      ]
+  }
+}

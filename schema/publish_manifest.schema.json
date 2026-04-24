@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schemas/publish_manifest-v1.json",
+  "title": "Lathe Publish Manifest v1",
+  "description": "Manifest emitted by the publish runner (BL-31, Plan 08 Phase 1). Pinned shape returned by PublishDriver.publish(...) and written to manifest.json alongside uploaded artifacts.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "asset",
+    "stack_id",
+    "shape_contract",
+    "package_formats",
+    "lathe_version"
+  ],
+  "properties": {
+    "asset": {
+      "type": "string",
+      "description": "Asset name being published."
+    },
+    "stack_id": {
+      "type": "string",
+      "description": "Backend stack id that produced this build (e.g. lathe.stack.hard_surface_game_asset_v1)."
+    },
+    "shape_contract": {
+      "type": "string",
+      "description": "Stable shape-stage contract id. Defaults to lathe.shape.intent_mesh_handoff_v1."
+    },
+    "package_formats": {
+      "type": "array",
+      "description": "One entry per packaged artifact (usd / glb / gltf / obj).",
+      "items": {
+        "type": "object",
+        "required": ["format", "uri", "sha256", "size_bytes"],
+        "additionalProperties": true,
+        "properties": {
+          "format": { "type": "string" },
+          "uri": { "type": "string" },
+          "sha256": { "type": "string" },
+          "size_bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "validator_scores": {
+      "type": "object",
+      "description": "Snapshot of validate-stage report (may be empty if not present)."
+    },
+    "lathe_version": {
+      "type": "string",
+      "description": "Compiler version string from lathe.__version__."
+    },
+    "git_sha": {
+      "type": ["string", "null"],
+      "description": "git rev-parse HEAD inside the build directory, or null if unavailable."
+    },
+    "sbom": {
+      "type": ["string", "null"],
+      "description": "Relative path to an SBOM file (e.g. sbom.json) if present."
+    },
+    "signature": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "description": "Signature algorithm name (currently ed25519)."
+        },
+        "value_hex": {
+          "type": "string",
+          "description": "Hex-encoded signature bytes. Present only when signing succeeded."
+        },
+        "public_key_hex": {
+          "type": "string",
+          "description": "Hex-encoded raw ed25519 public key."
+        },
+        "skipped_reason": {
+          "type": "string",
+          "description": "Explanation when signing was skipped (no_signing_key_configured, cryptography_not_installed, signing_key_missing, invalid_signing_key:*)."
+        },
+        "key_path": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

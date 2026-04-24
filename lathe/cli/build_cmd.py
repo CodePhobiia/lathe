@@ -51,15 +51,37 @@ def run_build(args) -> None:
         codex_imagegen=args.codex_imagegen,
     )
     try:
-        _dump(
-            build_asset(
-                program,
-                args.name,
-                out_dir,
-                runtime_config=runtime_config,
-                execution_profile_override=args.execution_profile,
-            )
+        report = build_asset(
+            program,
+            args.name,
+            out_dir,
+            runtime_config=runtime_config,
+            execution_profile_override=args.execution_profile,
         )
+        publish_target = getattr(args, "publish", None)
+        if publish_target:
+            from ..publish import get_driver as _get_publish_driver
+
+            publish_cfg = dict((runtime_config or {}).get("publish") or {})
+            publish_cfg["target"] = publish_target
+            try:
+                driver = _get_publish_driver(str(publish_target))
+                publish_result = driver.publish(out_dir, publish_cfg)
+                report = dict(report)
+                report["publish"] = {
+                    "ok": True,
+                    "driver": publish_result.get("driver", str(publish_target)),
+                    "manifest_uri": publish_result.get("manifest_uri"),
+                    "signature_uri": publish_result.get("signature_uri"),
+                }
+            except (ValueError, RuntimeError) as publish_exc:
+                report = dict(report)
+                report["publish"] = {
+                    "ok": False,
+                    "driver": str(publish_target),
+                    "message": str(publish_exc),
+                }
+        _dump(report)
     except BuildError as exc:
         payload = {"ok": False, "message": str(exc), "diagnostics": exc.diagnostics}
         _dump(payload)

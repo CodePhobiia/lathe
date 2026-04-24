@@ -30,9 +30,11 @@ from .inspect_cmd import (
 )
 from .library_cmd import run_library
 from .materialize_cmd import run_diff_asset, run_materialize
-from .parse_cmd import run_fmt, run_normalize, run_parse, run_schema
+from .fmt_cmd import run_fmt
+from .parse_cmd import run_normalize, run_parse, run_schema
 from .patch_cmd import run_patch
 from .plan_cmd import run_fit, run_plan, run_surface_plan
+from .publish_cmd import register as _register_publish, run_publish
 from .surface_cmd import run_surface
 from .test_cmd import run_audit, run_bench, run_test
 
@@ -49,9 +51,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_norm = sub.add_parser("normalize", help="Normalize a .lth file to canonical JSON")
     p_norm.add_argument("file")
 
-    p_fmt = sub.add_parser("fmt", help="Check Lathe sources for canonical parse/normalize stability")
+    p_fmt = sub.add_parser(
+        "fmt",
+        help="Rewrite Lathe sources in canonical form",
+        description=(
+            "Rewrite Lathe sources in canonical form. By default, files are "
+            "rewritten in place; use --check to report without writing, "
+            "--dry-run to print a unified diff, or --stdout to read a single "
+            "file (or stdin) and write the canonical form to stdout."
+        ),
+    )
     p_fmt.add_argument("files", nargs="*", help="Files or glob patterns (default: examples/*.lth)")
-    p_fmt.add_argument("--check", action="store_true", help="Validate parse/normalize stability without rewriting files")
+    p_fmt.add_argument("--check", action="store_true", help="Don't write; exit non-zero if any file would change")
+    p_fmt.add_argument("--dry-run", dest="dry_run", action="store_true", help="Print a unified diff without writing")
+    p_fmt.add_argument("--stdout", action="store_true", help="Read a single file (or stdin) and write canonical output to stdout")
 
     sub.add_parser("schema", help="Emit the normalized AST JSON schema")
     sub.add_parser("backends", help="List builtin backend contracts and stacks")
@@ -114,6 +127,15 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_build.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None, help="Codex-operated imagegen handoff mode for V1.2 surfaces")
     p_build.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
+    p_build.add_argument(
+        "--publish",
+        default=None,
+        help=(
+            "BL-31 (Plan 08 Phase 1): after a successful build, publish the "
+            "output via the named driver (e.g. local_fs, s3, supabase, git_lfs). "
+            "Driver-specific settings come from --runtime-config."
+        ),
+    )
 
     p_probe_blender = sub.add_parser("probe-blender", help="Probe Blender availability and V1.3 execution capabilities")
     p_probe_blender.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
@@ -255,6 +277,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_patch.add_argument("--value", required=True, help="Primary value for the selected patch operation")
     p_patch.add_argument("--value2", default=None, help="Secondary value for operations that need two values")
 
+    _register_publish(sub)
+
     return parser
 
 
@@ -291,6 +315,7 @@ _DISPATCH = {
     "surface-validate": run_surface,
     "surface-repair": run_surface,
     "build": run_build,
+    "publish": run_publish,
     "render-eval": run_render_eval,
     "adapt": run_mode_build,
     "assemble": run_mode_build,
