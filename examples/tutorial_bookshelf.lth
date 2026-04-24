@@ -1,0 +1,183 @@
+// Tutorial asset for docs/tutorial/first_asset.md.
+// Intentionally minimal: one profile, one contract, one critic, one asset, one variant.
+module studio.props.furniture
+
+profile interior_prop {
+  defaults {
+    build.optimize.lods = 3
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 3)
+  ensure uv_range(set: base, range: 0..1)
+}
+
+contract furniture_prop uses interior_prop {
+  defaults {
+    build.interfaces.clearance = 1cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 2, texture_memory: 16mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic furniture_prop_critic(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.20
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.10
+}
+
+asset bookshelf: hard_surface_prop uses furniture_prop {
+  intent {
+    role = "three-shelf wooden bookshelf"
+    style = ["warm", "domestic", "utilitarian"]
+    parts = [base, shelf1, shelf2, shelf3, back]
+    materials = ["stained_oak", "matte_laminate"]
+    negatives = ["ornate", "toy_like", "rickety"]
+    scale = 1.2m
+    interactions = [place, lean_on]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [shelf_join, back_panel_break]
+    edge_classes = [hero_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_shelf_spacing]
+  }
+
+  features {
+    density = medium
+    allow = [trim_band, fastener_strip, edge_break]
+  }
+
+  surface {
+    material_zones = [stained_oak_body, matte_laminate_back]
+    materials = [stained_oak_body, matte_laminate_back]
+    bake = [normal, ao, curvature, id]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 4
+      seed = 7
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 6000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = []
+      anchors = [floor_contact]
+      clearance = 1cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 3
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = furniture_prop_critic
+    threshold = 0.82
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 3
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "props/furniture/bookshelf"
+    version = "0.1.0"
+    tags = ["bookshelf", "furniture", "tutorial"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}
+
+variant tall_bookshelf on bookshelf {
+  set intent.scale = 1.8m
+  append intent.parts = shelf4
+  set build.shape.seed = 11
+  set build.optimize.texture_budget = 24mb
+}
+
+test bookshelf_language_surface {
+  asset = bookshelf
+  assert intent.scale == 1.2m
+  assert build.shape.mode == generate
+  assert validate.threshold == 0.82
+}
