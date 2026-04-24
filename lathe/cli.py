@@ -248,8 +248,9 @@ def main() -> None:
     if args.cmd == "fmt":
         from .normalizer import normalize_program
         from .schema import get_schema
-        from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator, ValidationError as JSONSchemaValidationError
         from .parser import parse_file
+        from .errors import LatheError
 
         files = _expand_files(args.files) or _expand_files(["examples/*.lth"])
         results = []
@@ -260,7 +261,7 @@ def main() -> None:
                 normalized = normalize_program(parse_file(Path(file_name)))
                 validator.validate(normalized)
                 results.append({"file": file_name, "ok": True})
-            except Exception as exc:  # noqa: BLE001
+            except (LatheError, JSONSchemaValidationError, OSError) as exc:
                 ok = False
                 results.append({"file": file_name, "ok": False, "message": str(exc)})
         _dump({"ok": ok, "mode": "check" if args.check else "scaffold", "results": results})

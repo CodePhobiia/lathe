@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
 from .asset_graph import AssetGraph
+from .errors import ContractViolation
 from .shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
 
 
@@ -298,10 +299,17 @@ def _component_primitives(component: BlueprintComponent) -> list[ShapePrimitive]
 
 def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[float]]:
     if primitive.primitive_type == "box":
-        assert primitive.extents is not None
+        if primitive.extents is None:
+            raise ContractViolation(
+                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+            )
         half = [value / 2.0 for value in primitive.extents]
     else:
-        assert primitive.radius is not None and primitive.height is not None
+        if primitive.radius is None or primitive.height is None:
+            raise ContractViolation(
+                f"invariant violation: non-box ShapePrimitive requires radius and height, "
+                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+            )
         if primitive.axis == "x":
             half = [primitive.height / 2.0, primitive.radius, primitive.radius]
         elif primitive.axis == "z":

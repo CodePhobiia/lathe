@@ -12,6 +12,7 @@ from .asset_graph import AssetGraph
 from .blueprints import resolve_blueprint
 from .constants import RNG_PRIME_OFFSET
 from .candidate_search import apply_candidate_params, generate_candidate_params, objective_weights
+from .errors import ContractViolation
 from .feature_grammar import compile_feature_enhancements
 from .fidelity import infer_fidelity_profile
 from .geometry_kernel import fuse_shape_ir
@@ -50,10 +51,17 @@ def _translated_cylinder(radius: float, height: float, center: tuple[float, floa
 
 def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     if primitive.primitive_type == "box":
-        assert primitive.extents is not None
+        if primitive.extents is None:
+            raise ContractViolation(
+                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+            )
         return _translated_box(primitive.extents, primitive.center)
     if primitive.primitive_type == "cylinder":
-        assert primitive.radius is not None and primitive.height is not None
+        if primitive.radius is None or primitive.height is None:
+            raise ContractViolation(
+                f"invariant violation: cylinder ShapePrimitive requires radius and height, "
+                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+            )
         return _translated_cylinder(primitive.radius, primitive.height, primitive.center, primitive.axis)
     raise ValueError(f"Unsupported primitive type '{primitive.primitive_type}'")
 

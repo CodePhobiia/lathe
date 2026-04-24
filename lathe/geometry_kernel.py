@@ -9,6 +9,7 @@ import trimesh
 from scipy.ndimage import gaussian_filter
 from trimesh.voxel.ops import matrix_to_marching_cubes
 
+from .errors import ContractViolation
 from .exact_solids import compile_explicit_surface_mesh, exactify_surface_mesh
 from .feature_fusion import integration_config_for_family, primitive_blend_mode, primitive_rounding
 from .fidelity import FidelityProfile
@@ -23,10 +24,17 @@ _FUSION_CACHE: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
 
 def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple[np.ndarray, np.ndarray]:
     if primitive.primitive_type == "box":
-        assert primitive.extents is not None
+        if primitive.extents is None:
+            raise ContractViolation(
+                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+            )
         half = np.array(primitive.extents, dtype=np.float64) / 2.0 + rounding
     elif primitive.primitive_type == "cylinder":
-        assert primitive.radius is not None and primitive.height is not None
+        if primitive.radius is None or primitive.height is None:
+            raise ContractViolation(
+                f"invariant violation: cylinder ShapePrimitive requires radius and height, "
+                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+            )
         radius = float(primitive.radius) + rounding
         half_h = float(primitive.height) / 2.0 + rounding
         if primitive.axis == "x":
@@ -42,7 +50,10 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
 
 
 def _box_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
-    assert primitive.extents is not None
+    if primitive.extents is None:
+        raise ContractViolation(
+            f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+        )
     center = np.array(primitive.center, dtype=np.float64)
     half = np.array(primitive.extents, dtype=np.float64) / 2.0 - rounding
     q = np.abs(points - center) - half
@@ -52,7 +63,11 @@ def _box_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> 
 
 
 def _cylinder_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
-    assert primitive.radius is not None and primitive.height is not None
+    if primitive.radius is None or primitive.height is None:
+        raise ContractViolation(
+            f"invariant violation: cylinder ShapePrimitive requires radius and height, "
+            f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+        )
     center = np.array(primitive.center, dtype=np.float64)
     p = points - center
     radius = float(primitive.radius)
@@ -224,7 +239,9 @@ def fuse_shape_ir(shape_ir: ShapeIR, fidelity: FidelityProfile) -> tuple[MeshIR 
     mesh.merge_vertices()
     try:
         mesh.process(validate=True)
-    except Exception:  # noqa: BLE001
+    except (ValueError, RuntimeError, AttributeError, IndexError):
+        # trimesh.process(validate=True) can raise on malformed topology;
+        # remove_/merge_ above have already done the essential cleanup.
         pass
     exact_report: dict[str, Any] | None = None
     if config.get("exact_finalize"):

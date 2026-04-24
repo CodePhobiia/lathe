@@ -109,7 +109,11 @@ def run(executor: Any) -> dict[str, Any]:
             selected = candidate
             selected_runtime = runtime_mesh
 
-    assert selected is not None and selected_runtime is not None
+    if selected is None or selected_runtime is None:
+        raise BuildError(
+            "invariant violation: shape stage produced no selected candidate after "
+            f"iterating {candidates_count} candidate(s); selected={selected!r}"
+        )
     bundle = {
         "backend_id": backend["id"],
         "backend_version": backend["version"],

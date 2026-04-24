@@ -331,7 +331,9 @@ def probe_torch() -> dict[str, Any]:
         }
     try:
         import torch
-    except Exception as exc:  # noqa: BLE001
+    except (ImportError, OSError, RuntimeError) as exc:
+        # OSError covers DLL/shared-lib load failures; RuntimeError covers
+        # torch's C-extension init errors (e.g., CUDA init) that surface at import.
         return {
             "available": False,
             "version": _distribution_version("torch"),
@@ -530,7 +532,7 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
     except urllib.error.HTTPError as exc:
         try:
             error_body = exc.read(_HUNYUAN_PROBE_MAX_BODY_BYTES).decode("utf-8", errors="replace")
-        except Exception:  # noqa: BLE001
+        except (OSError, AttributeError, ValueError):
             error_body = ""
         return {
             "configured": True,

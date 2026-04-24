@@ -35,7 +35,10 @@ def _package_reports() -> dict[str, dict[str, Any]]:
 def _shape_provider_reports(runtime_config: dict[str, Any] | None) -> dict[str, Any]:
     try:
         from .shape_providers import probe_all_shape_providers
-    except Exception as exc:  # noqa: BLE001
+    except (ImportError, OSError, RuntimeError, AttributeError) as exc:
+        # Broader than plain ImportError because optional deps pulled transitively
+        # can raise OSError (shared-lib load), RuntimeError (C-extension init),
+        # or AttributeError (partial-module states during import-time failures).
         return {
             "importable": False,
             "reports": [],

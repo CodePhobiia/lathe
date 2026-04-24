@@ -33,7 +33,9 @@ def _resolve_ref_path(source_root: Path, value: Any) -> Path | None:
             value = args[0].get("value")
     try:
         path = Path(str(value))
-    except Exception:  # noqa: BLE001
+    except (TypeError, ValueError, OSError):
+        # str(value) can fail when value's __str__ is misbehaving; Path()
+        # raises ValueError/OSError for path strings the OS can't represent.
         return None
     if not path.is_absolute():
         path = source_root / path

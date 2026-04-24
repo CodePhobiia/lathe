@@ -5,12 +5,16 @@ from typing import Iterable
 import numpy as np
 import trimesh
 
+from .errors import ContractViolation
 from .fidelity import FidelityProfile
 from .shape_ir import ShapeIR, ShapePrimitive
 
 
 def _box_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
-    assert primitive.extents is not None
+    if primitive.extents is None:
+        raise ContractViolation(
+            f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+        )
     center = np.asarray(primitive.center, dtype=np.float64)
     half = np.asarray(primitive.extents, dtype=np.float64) / 2.0
     local = point - center
@@ -23,7 +27,11 @@ def _box_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np.ndarr
 
 
 def _cylinder_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
-    assert primitive.radius is not None and primitive.height is not None
+    if primitive.radius is None or primitive.height is None:
+        raise ContractViolation(
+            f"invariant violation: cylinder ShapePrimitive requires radius and height, "
+            f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+        )
     center = np.asarray(primitive.center, dtype=np.float64)
     local = point - center
     radius = float(primitive.radius)
@@ -78,10 +86,17 @@ def _translated_cylinder(radius: float, height: float, center: tuple[float, floa
 
 def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     if primitive.primitive_type == "box":
-        assert primitive.extents is not None
+        if primitive.extents is None:
+            raise ContractViolation(
+                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+            )
         return _translated_box(primitive.extents, primitive.center)
     if primitive.primitive_type == "cylinder":
-        assert primitive.radius is not None and primitive.height is not None
+        if primitive.radius is None or primitive.height is None:
+            raise ContractViolation(
+                f"invariant violation: cylinder ShapePrimitive requires radius and height, "
+                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+            )
         return _translated_cylinder(float(primitive.radius), float(primitive.height), primitive.center, primitive.axis)
     raise ValueError(f"Unsupported primitive type '{primitive.primitive_type}'")
 
@@ -113,7 +128,10 @@ def compile_explicit_surface_mesh(
                 mode = "exact_boolean_union"
             else:
                 combined = trimesh.util.concatenate(meshes)
-        except Exception:  # noqa: BLE001
+        except (ValueError, RuntimeError, AttributeError, IndexError, OSError):
+            # trimesh.boolean.union delegates to blender/manifold/openscad
+            # engines — each can fail with its own exception class. Fall
+            # back to deterministic concatenation.
             combined = trimesh.util.concatenate(meshes)
     else:
         combined = trimesh.util.concatenate(meshes) if len(meshes) > 1 else meshes[0].copy()
@@ -127,7 +145,8 @@ def compile_explicit_surface_mesh(
         try:
             trimesh.smoothing.filter_taubin(combined, lamb=0.18, nu=-0.19, iterations=1)
             combined.fix_normals()
-        except Exception:  # noqa: BLE001
+        except (ValueError, RuntimeError, AttributeError, IndexError):
+            # Taubin smoothing fails on degenerate / non-manifold topology.
             pass
     report = {
         "mode": mode,
@@ -141,10 +160,17 @@ def compile_explicit_surface_mesh(
 def _primitive_bounds(primitive: ShapePrimitive, margin: float) -> tuple[np.ndarray, np.ndarray]:
     center = np.asarray(primitive.center, dtype=np.float64)
     if primitive.primitive_type == "box":
-        assert primitive.extents is not None
+        if primitive.extents is None:
+            raise ContractViolation(
+                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+            )
         half = np.asarray(primitive.extents, dtype=np.float64) / 2.0 + margin
     elif primitive.primitive_type == "cylinder":
-        assert primitive.radius is not None and primitive.height is not None
+        if primitive.radius is None or primitive.height is None:
+            raise ContractViolation(
+                f"invariant violation: cylinder ShapePrimitive requires radius and height, "
+                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
+            )
         radius = float(primitive.radius) + margin
         half_height = float(primitive.height) / 2.0 + margin
         if primitive.axis == "x":
@@ -176,7 +202,8 @@ def exactify_surface_mesh(mesh: trimesh.Trimesh, shape_ir: ShapeIR, fidelity: Fi
 
     try:
         trimesh.smoothing.filter_taubin(refined, lamb=0.35, nu=-0.37, iterations=4 if fidelity.tier == "hero" else 2)
-    except Exception:  # noqa: BLE001
+    except (ValueError, RuntimeError, AttributeError, IndexError):
+        # Taubin smoothing fails on degenerate / non-manifold topology.
         pass
 
     vertices = np.asarray(refined.vertices, dtype=np.float64)
@@ -208,7 +235,9 @@ def exactify_surface_mesh(mesh: trimesh.Trimesh, shape_ir: ShapeIR, fidelity: Fi
     refined.merge_vertices()
     try:
         refined.process(validate=True)
-    except Exception:  # noqa: BLE001
+    except (ValueError, RuntimeError, AttributeError, IndexError):
+        # trimesh.process(validate=True) can raise on malformed topology;
+        # the caller still finalizes with remove/merge/fix_normals below.
         pass
     refined.fix_normals()
     return refined, {

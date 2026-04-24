@@ -292,7 +292,9 @@ class BuildExecutor:
                 shutil.rmtree(self.cache_dir)
             self.cache_dir.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(self.out_dir, self.cache_dir)
-        except Exception:  # noqa: BLE001
+        except (OSError, shutil.Error):
+            # Caching is best-effort; surface IO/permission/dest-exists failures
+            # silently rather than aborting the build.
             pass
 
     def _select_shape_candidate(self, candidate_id: str, reason: str) -> None:

@@ -74,7 +74,9 @@ def _load_legacy_snapshot(workspace: Path, benchmark: dict[str, Any]) -> dict[st
                 part_colors={default_part: (128, 128, 128)},
                 units="cm",
             )
-        except Exception:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, AttributeError, TypeError):
+            # trimesh.load failures span file IO (OSError), parse/format issues
+            # (ValueError), and attribute errors on malformed scenes.
             topology_runtime = None
     return {
         "asset": benchmark["asset"],

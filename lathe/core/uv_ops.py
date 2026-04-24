@@ -95,7 +95,9 @@ def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[Runt
 def apply_xatlas_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any], runtime_config: dict[str, Any] | None) -> tuple[RuntimeMesh, dict[str, Any], dict[str, Any]]:
     try:
         import xatlas
-    except Exception as exc:  # noqa: BLE001
+    except (ImportError, OSError, RuntimeError) as exc:
+        # xatlas is a compiled C extension; import surfaces ImportError when
+        # missing and OSError when the native library fails to load.
         raise RuntimeError(f"xatlas is unavailable: {exc}") from exc
 
     mesh = runtime_mesh.mesh

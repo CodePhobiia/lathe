@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
+from ..errors import LatheError
 from ..repair_planner import suggest_repairs_for_metric
 from ..render_eval import evaluate_render_views
 
@@ -55,7 +56,9 @@ def _load_image(runtime: dict[str, Any], name: str) -> np.ndarray | None:
     try:
         with Image.open(path) as image:
             return np.asarray(image.convert("RGB" if image.mode != "L" else "L"))
-    except Exception:  # noqa: BLE001
+    except (OSError, ValueError, TypeError, Image.UnidentifiedImageError):
+        # PIL raises UnidentifiedImageError for unknown formats, OSError for
+        # truncated files, ValueError for invalid mode conversions.
         return None
 
 
@@ -115,7 +118,12 @@ def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -
             "surface_authoring_quality": 0.0,
         }
 
-    assert basecolor is not None and normal is not None and orm is not None and ao is not None and curvature is not None and id_map is not None
+    if basecolor is None or normal is None or orm is None or ao is None or curvature is None or id_map is None:
+        raise LatheError(
+            "invariant violation: surface evidence pass reached metric computation with a missing "
+            f"image (basecolor={basecolor is None}, normal={normal is None}, orm={orm is None}, "
+            f"ao={ao is None}, curvature={curvature is None}, id_map={id_map is None})"
+        )
     texture_entropy = _image_entropy(basecolor)
     chroma_variation = min(1.0, float(np.std(basecolor.astype(np.float64), axis=(0, 1)).mean() / 72.0))
     normal_xy = normal[:, :, :2].astype(np.float64) - 128.0
@@ -236,7 +244,10 @@ def _geometry_evidence(runtime: dict[str, Any], semantic: dict[str, Any], shape_
         }
     try:
         angles = np.asarray(mesh.face_adjacency_angles, dtype=np.float64)
-    except Exception:  # noqa: BLE001
+    except (AttributeError, ValueError, IndexError, RuntimeError):
+        # trimesh.face_adjacency_angles is a cached property that can raise on
+        # meshes without face adjacency or degenerate normal computation;
+        # fall back to an explicit dot-product pass.
         normals = np.asarray(mesh.face_normals, dtype=np.float64)
         angles = np.array(
             [

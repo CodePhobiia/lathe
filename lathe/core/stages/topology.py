@@ -172,7 +172,12 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
             adapter_report["status"] = "forced" if adapter_report["requested_adapter"] in {"cleanup", "reference_cleanup"} else "fallback"
             if not adapter_report["real_adapter_available"]:
                 adapter_report["fallback_reason"] = adapter_report["probe"].get("message", "Blender unavailable")
-    except Exception as exc:  # noqa: BLE001
+    except (OSError, ValueError, RuntimeError, AttributeError, IndexError, TypeError, subprocess.SubprocessError, BlenderExecutionError) as exc:
+        # The Blender topology path shells out to a headless subprocess and
+        # then re-imports the emitted mesh through trimesh; failures span
+        # subprocess errors, file IO, glTF parse issues, and adapter-specific
+        # BlenderExecutionError. Any of those should degrade to the
+        # deterministic reference cleanup path in non-strict mode.
         if strict:
             raise runtime_stage_error(
                 executor.asset_name,

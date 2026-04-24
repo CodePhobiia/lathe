@@ -39,7 +39,14 @@ def _resolve_import_path(source_path: Path, import_name: str) -> Path:
 def parse_text(source: str) -> dict[str, Any]:
     try:
         return _FastParser(source).parse()
-    except Exception as exc:  # noqa: BLE001
+    except LatheParseError:
+        raise
+    except (ValueError, KeyError, IndexError, AttributeError, TypeError, UnicodeDecodeError) as exc:
+        # _FastParser raises LatheParseError explicitly for known grammar errors
+        # (re-raised above). These remaining classes cover defensive cases where
+        # an internal state-machine bug or a malformed token stream surfaces as
+        # a stdlib exception; wrap them in LatheParseError for a stable error
+        # contract to callers.
         raise LatheParseError(str(exc)) from exc
 
 

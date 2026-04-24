@@ -64,7 +64,7 @@ def _domain_bounds(domain: object) -> tuple[float, float] | None:
     if isinstance(domain, dict) and domain.get("type") == "range":
         try:
             return float(domain["from"]), float(domain["to"])
-        except Exception:  # noqa: BLE001
+        except (KeyError, TypeError, ValueError):
             return None
     return None
 

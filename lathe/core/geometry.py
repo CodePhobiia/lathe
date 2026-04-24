@@ -165,7 +165,9 @@ def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, st
     repaired = mesh.copy()
     try:
         repaired.fill_holes()
-    except Exception:  # noqa: BLE001
+    except (ValueError, IndexError, AttributeError, RuntimeError):
+        # trimesh.fill_holes can fail on degenerate topology; swallow and move on
+        # to the convex-hull fallback below.
         pass
     if repaired.is_watertight:
         return repaired, "fill_holes"
@@ -173,7 +175,9 @@ def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, st
         hull = repaired.convex_hull
         if hull is not None and len(hull.faces) > 0 and hull.is_watertight:
             return hull, "convex_hull"
-    except Exception:  # noqa: BLE001
+    except (ValueError, IndexError, AttributeError, RuntimeError):
+        # trimesh.convex_hull wraps scipy.spatial.qhull; QhullError is a
+        # RuntimeError subclass and fires on degenerate point sets.
         pass
     return repaired, None
 
@@ -323,7 +327,8 @@ def runtime_scene_parts(runtime_mesh: RuntimeMesh) -> list[tuple[str, trimesh.Tr
 def load_runtime_mesh_from_scene(path: Path, source_runtime: RuntimeMesh) -> RuntimeMesh | None:
     try:
         loaded = trimesh.load(path, force="scene")
-    except Exception:  # noqa: BLE001
+    except (OSError, ValueError, KeyError, AttributeError, TypeError):
+        # trimesh.load parse/IO failures; missing/malformed scene file.
         return None
     if isinstance(loaded, trimesh.Scene):
         meshes: list[trimesh.Trimesh] = []
@@ -353,7 +358,9 @@ def load_runtime_mesh_from_scene(path: Path, source_runtime: RuntimeMesh) -> Run
 def body_count(mesh: trimesh.Trimesh) -> int:
     try:
         return int(mesh.body_count)
-    except Exception:  # noqa: BLE001
+    except (AttributeError, ValueError, TypeError, IndexError):
+        # Fall back to manual face-graph traversal when trimesh's cached
+        # body_count is unavailable or inconsistent.
         faces = np.asarray(mesh.faces, dtype=np.int64)
         if len(faces) == 0:
             return 0

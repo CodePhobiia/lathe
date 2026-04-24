@@ -39,7 +39,10 @@ def run(executor: Any, topology_bundle: dict[str, Any]) -> dict[str, Any]:
             adapter_report["status"] = "forced" if adapter_report["requested_adapter"] in {"box", "reference_box"} else "fallback"
             if not adapter_report["real_adapter_available"]:
                 adapter_report["fallback_reason"] = adapter_report["probe"].get("message", "xatlas unavailable")
-    except Exception as exc:  # noqa: BLE001
+    except (ImportError, OSError, ValueError, RuntimeError, AttributeError, IndexError, TypeError) as exc:
+        # The xatlas path dispatches into a compiled C extension and trimesh
+        # mesh IO; failure modes span import/load errors, parametrization
+        # errors, and mesh-shape mismatches. Fall back to reference box UV.
         if strict:
             raise runtime_stage_error(
                 executor.asset_name,
