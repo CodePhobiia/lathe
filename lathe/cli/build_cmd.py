@@ -45,21 +45,35 @@ def _resolve_report_format(args) -> str:
     return "terminal" if sys.stdout.isatty() else "json"
 
 
-def _emit_report(report: dict, out_dir: Path, fmt: str) -> None:
+def _emit_report(report: dict, out_dir: Path, fmt: str, *, deterministic: bool = False) -> None:
     """Render the resolved report format after a successful build."""
 
-    from ..reports import render_html_report, render_terminal_report, write_report
+    from ..reports import (
+        canonicalize_report,
+        render_html_report,
+        render_terminal_report,
+        write_report,
+    )
+
+    payload = canonicalize_report(report) if deterministic else report
 
     if fmt == "json":
-        _dump(report)
+        if deterministic:
+            write_report(report, out_dir, "json", deterministic=True)
+            print(json.dumps(payload, sort_keys=True, separators=(",", ": "), ensure_ascii=False))
+        else:
+            _dump(payload)
         return
     if fmt == "html":
-        path = write_report(report, out_dir, "html")
-        _dump(report)
+        path = write_report(report, out_dir, "html", deterministic=deterministic)
+        if deterministic:
+            print(json.dumps(payload, sort_keys=True, separators=(",", ": "), ensure_ascii=False))
+        else:
+            _dump(payload)
         print(f"HTML report: {path}", file=sys.stderr)
         return
     if fmt == "terminal":
-        print(render_terminal_report(report))
+        print(render_terminal_report(payload))
         return
     # Unknown -- structured error via _emit_error.
     _emit_error(
@@ -147,7 +161,12 @@ def run_build(args) -> None:
                     "driver": str(publish_target),
                     "message": str(publish_exc),
                 }
-        _emit_report(report, out_dir, _resolve_report_format(args))
+        _emit_report(
+            report,
+            out_dir,
+            _resolve_report_format(args),
+            deterministic=bool(getattr(args, "deterministic", False)),
+        )
         try:
             from .. import telemetry as _telemetry
 

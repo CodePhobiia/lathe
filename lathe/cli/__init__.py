@@ -38,6 +38,7 @@ from .patch_cmd import run_patch
 from .plan_cmd import run_fit, run_plan, run_surface_plan
 from .publish_cmd import register as _register_publish, run_publish
 from .ref_cmd import run_ref
+from .snapshot_cmd import register as _register_snapshot, run_snapshot
 from .surface_cmd import run_surface
 from .telemetry_cmd import register as _register_telemetry, run_telemetry
 from .test_cmd import run_audit, run_bench, run_test
@@ -157,6 +158,16 @@ def _build_parser() -> argparse.ArgumentParser:
             "BL-36 (Plan 08 Phase 6): select the build-report output style. "
             "Default: 'terminal' if stdout is a TTY, else 'json'. "
             "'html' also writes report.html next to build_report.json."
+        ),
+    )
+    p_build.add_argument(
+        "--deterministic",
+        action="store_true",
+        help=(
+            "RPT-3 (V0.2 E4): emit reports with zeroed timestamps, "
+            "forward-slash paths, collapsed $HOME, runtime_ms rounded "
+            "to the nearest ms, and diagnostics sorted by code. Two "
+            "cache-cleared builds produce byte-identical JSON reports."
         ),
     )
 
@@ -335,6 +346,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     _register_cache(sub)
     _register_publish(sub)
+    _register_snapshot(sub)
     _register_telemetry(sub)
 
     return parser
@@ -376,6 +388,7 @@ _DISPATCH = {
     "build": run_build,
     "cache": run_cache,
     "ref": run_ref,
+    "snapshot": run_snapshot,
     "publish": run_publish,
     "telemetry": run_telemetry,
     "render-eval": run_render_eval,

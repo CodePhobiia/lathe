@@ -1,14 +1,16 @@
-"""Terminal report renderer (BL-36, Plan 08 Phase 6).
+"""Terminal report renderer (BL-36, Plan 08 Phase 6; RPT-2/3, V0.2 E4).
 
 Renders a ``build_report.json`` dict as a readable block for stdout.
 Uses ``rich`` if available for colored tables; otherwise falls back
 to hand-rolled ANSI (or no color, if stdout is not a TTY or
-``use_color=False``).
+``use_color=False``). Mirrors the four RPT-1 HTML sections.
 """
 
 from __future__ import annotations
 
+import json
 import sys
+from pathlib import Path
 from typing import Any
 
 _ANSI = {
@@ -64,6 +66,125 @@ def _collect_diagnostics(build_report: dict[str, Any]) -> list[dict[str, Any]]:
             entry.setdefault("source", str(name))
             diags.append(entry)
     return diags
+
+
+def _read_json(path: Path) -> Any | None:
+    try:
+        if not path.is_file():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _resolve_build_dir(build_report: dict[str, Any]) -> Path | None:
+    out_dir = build_report.get("out_dir")
+    if not out_dir:
+        return None
+    try:
+        path = Path(str(out_dir))
+    except (TypeError, ValueError):
+        return None
+    return path if path.is_dir() else None
+
+
+def _refs_manifest_lines(build_dir: Path, *, use_color: bool) -> list[str]:
+    manifest = _read_json(build_dir / "selector_manifest.json")
+    if not isinstance(manifest, dict):
+        return []
+    lines: list[str] = [_paint("Refs & Selector Manifest", "bold", "cyan", enabled=use_color)]
+    for label, key in (
+        ("Parts", "parts"),
+        ("Sockets", "sockets"),
+        ("Pivots", "pivots"),
+        ("Collisions", "collisions"),
+        ("LODs", "lods"),
+        ("Materials", "materials"),
+    ):
+        items = manifest.get(key) or []
+        if not isinstance(items, list):
+            items = []
+        top_names: list[str] = []
+        for item in items[:3]:
+            if isinstance(item, dict):
+                name = item.get("name") or item.get("id")
+                if name:
+                    top_names.append(str(name))
+        suffix = f"  [{', '.join(top_names)}]" if top_names else ""
+        lines.append(f"  {label:<11}{len(items):>4}{suffix}")
+    lines.append("")
+    return lines
+
+
+def _geometry_kernel_lines(build_dir: Path, *, use_color: bool) -> list[str]:
+    bundle = _read_json(build_dir / "stages" / "shape" / "bundle.json")
+    if not isinstance(bundle, dict):
+        return []
+    stats = bundle.get("bundle_stats")
+    if not isinstance(stats, dict):
+        return []
+    kernel_id = stats.get("geometry_kernel") or bundle.get("backend_id") or "?"
+    watertight_rate = stats.get("watertight_rate")
+    candidates = stats.get("candidate_count", 0)
+    watertight = stats.get("watertight_candidate_count", 0)
+    try:
+        pct = f"{float(watertight_rate) * 100.0:.1f}%"
+    except (TypeError, ValueError):
+        pct = "n/a"
+    lines = [_paint("Geometry Kernel", "bold", "cyan", enabled=use_color)]
+    lines.append(f"  kernel_id:        {kernel_id}")
+    lines.append(f"  watertight_rate:  {pct}  ({watertight}/{candidates} candidates)")
+    determinism = bundle.get("determinism_class")
+    if determinism:
+        lines.append(f"  determinism:      {determinism}")
+    lines.append("")
+    return lines
+
+
+def _lod_ladder_lines(build_dir: Path, *, use_color: bool) -> list[str]:
+    manifest = _read_json(build_dir / "stages" / "optimize" / "lod_manifest.json")
+    if not isinstance(manifest, dict):
+        return []
+    lods = manifest.get("lods") or []
+    if not isinstance(lods, list) or not lods:
+        return []
+    lines = [_paint("LOD Ladder", "bold", "cyan", enabled=use_color)]
+    lines.append(f"  {'level':<6}{'ratio':<8}{'tris':<10}path")
+    for lod in lods:
+        if not isinstance(lod, dict):
+            continue
+        level = lod.get("level", "?")
+        ratio = lod.get("ratio", "?")
+        tris = lod.get("tris", lod.get("triangle_count", "?"))
+        path = str(lod.get("path") or "").replace("\\", "/")
+        lines.append(f"  {str(level):<6}{str(ratio):<8}{str(tris):<10}{path}")
+    lines.append("")
+    return lines
+
+
+def _collision_proxies_lines(build_dir: Path, *, use_color: bool) -> list[str]:
+    manifest = _read_json(build_dir / "stages" / "optimize" / "collision_manifest.json")
+    if not isinstance(manifest, dict):
+        return []
+    proxies = manifest.get("proxies") or []
+    if not isinstance(proxies, list) or not proxies:
+        return []
+    lines = [_paint("Collision Proxies", "bold", "cyan", enabled=use_color)]
+    for proxy in proxies:
+        if not isinstance(proxy, dict):
+            continue
+        name = proxy.get("name") or "?"
+        tris = proxy.get("tris")
+        tris_s = f"tris={tris}" if tris is not None else ""
+        lines.append(f"  {name}  {tris_s}".rstrip())
+        for sub in proxy.get("subproxies") or []:
+            if not isinstance(sub, dict):
+                continue
+            sname = sub.get("name") or "?"
+            stris = sub.get("tris")
+            lines.append(f"    - {sname}  tris={stris}")
+    lines.append("")
+    return lines
 
 
 def _render_plain(build_report: dict[str, Any], *, use_color: bool) -> str:
@@ -136,6 +257,16 @@ def _render_plain(build_report: dict[str, Any], *, use_color: bool) -> str:
         for key, value in sorted(outputs.items()):
             lines.append(f"  {key}: {value}")
         lines.append("")
+
+    build_dir = _resolve_build_dir(build_report)
+    if build_dir is not None:
+        for extra in (
+            _refs_manifest_lines(build_dir, use_color=use_color),
+            _geometry_kernel_lines(build_dir, use_color=use_color),
+            _lod_ladder_lines(build_dir, use_color=use_color),
+            _collision_proxies_lines(build_dir, use_color=use_color),
+        ):
+            lines.extend(extra)
 
     out_dir = build_report.get("out_dir")
     if out_dir:
@@ -226,11 +357,91 @@ def _render_rich(build_report: dict[str, Any]) -> str | None:
             table.add_row(str(key), str(value))
         console.print(table)
 
+    build_dir = _resolve_build_dir(build_report)
+    if build_dir is not None:
+        _render_rich_extended(console, build_dir, Table)
+
     out_dir = build_report.get("out_dir")
     if out_dir:
         console.print(f"[dim]Build directory: {out_dir}[/]")
 
     return buf.getvalue()
+
+
+def _render_rich_extended(console: Any, build_dir: Path, Table: Any) -> None:
+    manifest = _read_json(build_dir / "selector_manifest.json")
+    if isinstance(manifest, dict):
+        table = Table(title="Refs & Selector Manifest", show_header=True, header_style="bold cyan")
+        table.add_column("Category")
+        table.add_column("Count")
+        table.add_column("Top 3")
+        for label, key in (
+            ("Parts", "parts"),
+            ("Sockets", "sockets"),
+            ("Pivots", "pivots"),
+            ("Collisions", "collisions"),
+            ("LODs", "lods"),
+            ("Materials", "materials"),
+        ):
+            items = manifest.get(key) or []
+            items = items if isinstance(items, list) else []
+            top = ", ".join(
+                str(i.get("name") or i.get("id") or "")
+                for i in items[:3]
+                if isinstance(i, dict)
+            )
+            table.add_row(label, str(len(items)), top or "(none)")
+        console.print(table)
+
+    bundle = _read_json(build_dir / "stages" / "shape" / "bundle.json")
+    if isinstance(bundle, dict) and isinstance(bundle.get("bundle_stats"), dict):
+        stats = bundle["bundle_stats"]
+        try:
+            pct = f"{float(stats.get('watertight_rate')) * 100.0:.1f}%"
+        except (TypeError, ValueError):
+            pct = "n/a"
+        table = Table(title="Geometry Kernel", show_header=False)
+        table.add_column("k")
+        table.add_column("v")
+        table.add_row("kernel_id", str(stats.get("geometry_kernel") or bundle.get("backend_id") or "?"))
+        table.add_row(
+            "watertight",
+            f"{pct}  ({stats.get('watertight_candidate_count', 0)}/{stats.get('candidate_count', 0)})",
+        )
+        console.print(table)
+
+    lod_manifest = _read_json(build_dir / "stages" / "optimize" / "lod_manifest.json")
+    if isinstance(lod_manifest, dict) and lod_manifest.get("lods"):
+        table = Table(title="LOD Ladder", show_header=True, header_style="bold cyan")
+        table.add_column("Level")
+        table.add_column("Ratio")
+        table.add_column("Tris")
+        table.add_column("Path")
+        for lod in lod_manifest["lods"]:
+            if not isinstance(lod, dict):
+                continue
+            table.add_row(
+                str(lod.get("level", "?")),
+                str(lod.get("ratio", "?")),
+                str(lod.get("tris", lod.get("triangle_count", "?"))),
+                str(lod.get("path") or "").replace("\\", "/"),
+            )
+        console.print(table)
+
+    coll_manifest = _read_json(build_dir / "stages" / "optimize" / "collision_manifest.json")
+    if isinstance(coll_manifest, dict) and coll_manifest.get("proxies"):
+        table = Table(title="Collision Proxies", show_header=True, header_style="bold cyan")
+        table.add_column("Proxy")
+        table.add_column("Tris")
+        for proxy in coll_manifest["proxies"]:
+            if not isinstance(proxy, dict):
+                continue
+            table.add_row(str(proxy.get("name", "?")), str(proxy.get("tris", "")))
+            for sub in proxy.get("subproxies") or []:
+                if not isinstance(sub, dict):
+                    continue
+                table.add_row(f"  - {sub.get('name','?')}", str(sub.get("tris", "")))
+        console.print(table)
 
 
 def render_terminal_report(build_report: dict[str, Any], *, use_color: bool | None = None) -> str:

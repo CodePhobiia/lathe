@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lathe.dev/schema/lathe_snapshot.schema.json",
+  "title": "Lathe Build Snapshot",
+  "description": "Canonical hash-based snapshot of a completed Lathe build (RPT-4, V0.2 E4).",
+  "type": "object",
+  "required": ["schemaVersion", "latheVersion", "sourcePath", "buildHash", "stages", "timestamp"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "latheVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourcePath": {
+      "type": "string"
+    },
+    "buildHash": {
+      "type": "string"
+    },
+    "stages": {
+      "type": "object",
+      "description": "sha256 of canonical JSON for each stage's primary bundle. Missing stages are omitted.",
+      "additionalProperties": false,
+      "properties": {
+        "refs":       { "$ref": "#/definitions/sha256" },
+        "intent":     { "$ref": "#/definitions/sha256" },
+        "shape":      { "$ref": "#/definitions/sha256" },
+        "topology":   { "$ref": "#/definitions/sha256" },
+        "uv":         { "$ref": "#/definitions/sha256" },
+        "surface":    { "$ref": "#/definitions/sha256" },
+        "execution":  { "$ref": "#/definitions/sha256" },
+        "rig":        { "$ref": "#/definitions/sha256" },
+        "interfaces": { "$ref": "#/definitions/sha256" },
+        "physics":    { "$ref": "#/definitions/sha256" },
+        "optimize":   { "$ref": "#/definitions/sha256" },
+        "validate":   { "$ref": "#/definitions/sha256" },
+        "package":    { "$ref": "#/definitions/sha256" }
+      }
+    },
+    "score": {
+      "type": "number"
+    },
+    "certified": {
+      "type": "boolean"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO8601 UTC, zeroed under --deterministic."
+    }
+  },
+  "definitions": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
