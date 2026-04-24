@@ -12,6 +12,7 @@ from typing import Any
 
 from ...validators.composition import FunctionValidator, ValidatorPipeline
 from ...validators.flow_quality import evaluate_flow_quality
+from ...validators.geometry_integrity import evaluate_geometry_integrity
 from ...validators.semantic_quality import evaluate_semantic_quality
 from ...validators.visual_quality import evaluate_visual_quality
 from ..common import dump_json
@@ -35,6 +36,11 @@ _PIPELINE = ValidatorPipeline(
             fn=evaluate_flow_quality,
             stage_dependencies=["shape", "topology", "uv", "surface"],
         ),
+        FunctionValidator(
+            name="geometry_integrity",
+            fn=evaluate_geometry_integrity,
+            stage_dependencies=["topology"],
+        ),
     ]
 )
 
@@ -56,15 +62,19 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     semantic_entry = cert_bundle["validators"]["semantic_quality"]
     visual_entry = cert_bundle["validators"]["visual_quality"]
     flow_entry = cert_bundle["validators"]["flow_quality"]
+    integrity_entry = cert_bundle["validators"]["geometry_integrity"]
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
+    integrity_report = integrity_entry["evidence"]
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
+    executor.runtime["geometry_integrity"] = integrity_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
+    diagnostics.extend(integrity_entry["diagnostics"])
     diagnostics.extend(executor.runtime.get("execution", {}).get("bundle", {}).get("diagnostics", []))
     rule_results = []
     for rule in executor.asset["validate"].get("rules", []):
@@ -104,6 +114,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "semantic_quality": {**semantic_report, "diagnostics": semantic_entry["diagnostics"]},
         "visual_quality": {**visual_report, "diagnostics": visual_entry["diagnostics"]},
         "flow_quality": {**flow_report, "diagnostics": flow_entry["diagnostics"]},
+        "geometry_integrity": {**integrity_report, "diagnostics": integrity_entry["diagnostics"]},
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),

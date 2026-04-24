@@ -120,6 +120,7 @@ lathe = "lathe.cli:main"
 "lathe.validator.flow_quality" = "lathe.validators.flow_quality:evaluate_flow_quality"
 "lathe.validator.surface_quality" = "lathe.validators.surface_quality:evaluate_surface_quality"
 "lathe.validator.silhouette" = "lathe.validators.silhouette:compare_scaffold_signature"
+"lathe.validator.geometry_integrity" = "lathe.validators.geometry_integrity:evaluate_geometry_integrity"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -7,6 +7,7 @@ composition contract formalises how these validators are run together.
 """
 
 from .composition import FunctionValidator, Validator, ValidatorPipeline, ValidatorReport
+from .geometry_integrity import evaluate_geometry_integrity
 from .semantic_quality import evaluate_semantic_quality
 from .visual_quality import evaluate_visual_quality
 
@@ -15,6 +16,7 @@ __all__ = [
     "Validator",
     "ValidatorPipeline",
     "ValidatorReport",
+    "evaluate_geometry_integrity",
     "evaluate_semantic_quality",
     "evaluate_visual_quality",
 ]

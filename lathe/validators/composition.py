@@ -10,6 +10,11 @@ lived inline in ``lathe/core/stages/validate.py``. It does not change
 validator behaviour: each wrapped validator still sees the same
 ``(asset, runtime)`` inputs and returns the same report shape, only now
 routed through a uniform ``evaluate`` entry point.
+
+Registered built-in validators (wired in ``lathe/core/stages/validate.py``):
+``semantic_quality``, ``visual_quality``, ``flow_quality``, and
+``geometry_integrity`` (post-topology, evaluated against the
+authoritative runtime mesh — not a shape-stage hook).
 """
 
 from __future__ import annotations
