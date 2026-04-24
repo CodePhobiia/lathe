@@ -1,7 +1,7 @@
 # `@lathe[...]` Semantic References
 
 > Public reference for the V0.2 E1 Semantic Reference System.
-> Status: **Phase 1 (non-geometric) — landed.** Phase 2 (face/edge/vertex extraction) is scheduled for the follow-on wave.
+> Status: **Phase 1 + REF-6 face/edge/vertex selectors — landed.** Remaining Phase-2 kinds (`socket`/`collision`/`pivot`/`material`/`lod<n>`) resolve via the REF-5 selector manifest; the parser still emits `phase_2_feature_not_yet_available` for them until each landing.
 
 A `@lathe[...]` token names an addressable entity in a Lathe source or a completed Lathe build. Tokens are stable, round-trippable strings that can be embedded in chat, diagnostics, reports, issue trackers, and agent prompts. The token grammar is defined by `lathe/ref.py`; the forward-looking sidecar shape is defined by `schema/lathe.selector.schema.json`.
 
@@ -34,10 +34,10 @@ Tokens are always surrounded by `@lathe[` / `]`. The target portion must be a **
 | `#variant.<name>` | ✅ resolves | — |
 | `#stage.<name>` | ✅ resolves | — |
 | `#diagnostic.<id>` | ✅ resolves | — |
-| `#part.<id>` | ✅ resolves via shape bundle `part_labels` | richer bbox/faces once REF-6 lands |
-| `#part.<id>.face<n>` | ❌ `phase_2_feature_not_yet_available` | ✅ REF-6 |
-| `#part.<id>.edge<n>` | ❌ `phase_2_feature_not_yet_available` | ✅ REF-6 |
-| `#part.<id>.vertex<n>` | ❌ `phase_2_feature_not_yet_available` | ✅ REF-6 |
+| `#part.<id>` | ✅ resolves via selector manifest (falls back to shape bundle `part_labels`) | |
+| `#part.<id>.face<n>` | ✅ resolves via selector manifest (REF-6) | |
+| `#part.<id>.edge<n>` | ✅ resolves via selector manifest (REF-6) | |
+| `#part.<id>.vertex<n>` | ✅ resolves via selector manifest (REF-6) | |
 | `#socket.<id>` | ❌ `phase_2_feature_not_yet_available` | ✅ REF-5 manifest |
 | `#collision.<id>` | ❌ `phase_2_feature_not_yet_available` | ✅ REF-5 manifest |
 | `#pivot.<id>` | ❌ `phase_2_feature_not_yet_available` | ✅ REF-5 manifest |
@@ -119,10 +119,45 @@ REF-5 (next wave) adds a per-build `selector_manifest.json` written alongside `b
 ## CLI
 
 ```
-lathe ref parse '@lathe[dist/courier_drone#asset.courier_drone]'
+lathe ref parse   '@lathe[dist/courier_drone#asset.courier_drone]'
+lathe ref inspect '@lathe[dist/courier_drone#part.body.face0]'
+lathe ref planes   dist/courier_drone [--part body]
+lathe ref diff     dist/courier_drone dist/courier_drone_v2
+lathe ref copy    '@lathe[dist/courier_drone#part.body]' ./body.glb
 ```
 
-Exit codes: `0` on success (JSON on stdout), `2` on parse error (JSON on stderr, including a stable `error.code`).
+Exit codes:
+
+- `lathe ref parse`: `0` on success (JSON on stdout), `2` on parse error (JSON on stderr, including a stable `error.code`).
+- `lathe ref inspect` (REF-9): `0` on resolved ref, `2` on bad token, `3` on unresolved ref.
+- `lathe ref planes` (REF-10): `0` on success; `2` when the manifest is missing; `3` when `--part` doesn't match.
+- `lathe ref diff` (REF-11): `0` on success (emits `summary` + structural `diff`); `2` when either manifest is missing.
+- `lathe ref copy` (REF-12): `0` on copy; `2` on bad token; `3` on unresolved; `4` when the resolved entity has no copyable artifact (e.g. a face).
+
+### Selector manifest sub-part schema (REF-6)
+
+`selector_manifest.json` now populates `parts[i].faces`, `.edges`, and `.vertices` with deterministic per-part ids derived from the authoritative topology mesh:
+
+```jsonc
+{
+  "id": "body",
+  "faces": [
+    { "id": "body.face0", "ref": "@lathe[...#part.body.face0]",
+      "centroid": [0.5, 0.5, 0.0], "normal": [0, 0, 1], "area": 1.0,
+      "meshFaceIndex": 7 }
+  ],
+  "edges": [
+    { "id": "body.edge0", "ref": "@lathe[...#part.body.edge0]",
+      "endpoints": [[0, 0, 0], [1, 0, 0]], "length": 1.0 }
+  ],
+  "vertices": [
+    { "id": "body.vertex0", "ref": "@lathe[...#part.body.vertex0]",
+      "position": [0, 0, 0], "meshVertexIndex": 3 }
+  ]
+}
+```
+
+Ids are 0-indexed per part in canonical mesh order, so the same input mesh always produces the same ids. Caps (256 faces / 512 edges / 512 vertices per part) keep the sidecar bounded; consumers that need full enumeration pull from the underlying packaged `.glb`. Richer neighbor graphs land in REF-NEW follow-up tickets.
 
 ## See also
 

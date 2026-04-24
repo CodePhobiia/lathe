@@ -164,9 +164,6 @@ def test_parse_ref_rejects_path_traversal(token):
 @pytest.mark.parametrize(
     "token",
     [
-        "@lathe[dist/foo#part.body.face12]",
-        "@lathe[dist/foo#part.body.edge7]",
-        "@lathe[dist/foo#part.body.vertex0]",
         "@lathe[dist/foo#socket.grip_main]",
         "@lathe[dist/foo#collision.body]",
         "@lathe[dist/foo#pivot.hinge_top]",
@@ -182,6 +179,16 @@ def test_phase_2_selectors_rejected_helpfully(token):
     # Error message should point at the public docs and the roadmap.
     msg = str(exc.value)
     assert "docs/refs.md" in msg or "refs.md" in msg
+
+
+def test_phase_2_subpart_now_parses():
+    # REF-6: face/edge/vertex sub-part selectors now parse to RefSelector.
+    node = parse_ref("@lathe[dist/foo#part.body.face12]")
+    assert node.selector is not None
+    assert node.selector.kind == "face"
+    assert node.selector.parent_part_id == "body"
+    assert node.selector.sub_index == 12
+    assert node.selector.id == "body.face12"
 
 
 # ---------------------------------------------------------------------------
@@ -344,11 +351,15 @@ def test_cli_ref_parse_happy():
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["ref"]["target"] == "foo"
-    assert payload["ref"]["selector"] == {"kind": "asset", "id": "bar"}
+    selector = payload["ref"]["selector"]
+    assert selector["kind"] == "asset"
+    assert selector["id"] == "bar"
 
 
 def test_cli_ref_parse_phase_2_exits_2():
-    result = _cli("parse", "@lathe[foo#part.body.face12]")
+    # After REF-6 landed, face/edge/vertex parse cleanly; the remaining
+    # Phase-2 kinds (socket/collision/pivot/material/lod) still reject.
+    result = _cli("parse", "@lathe[foo#socket.grip]")
     assert result.returncode == 2
     payload = json.loads(result.stderr)
     assert payload["ok"] is False

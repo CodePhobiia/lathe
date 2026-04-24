@@ -38,6 +38,10 @@ from .patch_cmd import run_patch
 from .plan_cmd import run_fit, run_plan, run_surface_plan
 from .publish_cmd import register as _register_publish, run_publish
 from .ref_cmd import run_ref
+from .ref_copy_cmd import run_ref_copy
+from .ref_diff_cmd import run_ref_diff
+from .ref_inspect_cmd import run_ref_inspect
+from .ref_planes_cmd import run_ref_planes
 from .snapshot_cmd import register as _register_snapshot, run_snapshot
 from .surface_cmd import run_surface
 from .telemetry_cmd import register as _register_telemetry, run_telemetry
@@ -48,6 +52,14 @@ __all__ = ["main", "collect_doctor_report", "dump_doctor_json", "format_doctor_r
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lathe", description="Lathe language reference scaffold")
+    parser.add_argument(
+        "--strict-prompt-injection",
+        action="store_true",
+        help=(
+            "SEC-8: promote prompt-injection scanner warnings (L7001-L7005) to "
+            "errors. Also settable via LATHE_STRICT_PROMPT_INJECTION=1."
+        ),
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_parse = sub.add_parser("parse", help="Parse a .lth file to raw AST JSON")
@@ -344,6 +356,39 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ref_parse = ref_sub.add_parser("parse", help="Parse an @lathe[...] token and print it as JSON")
     p_ref_parse.add_argument("token", help="The @lathe[...] token to parse, quoted")
 
+    p_ref_inspect = ref_sub.add_parser(
+        "inspect",
+        help="Parse, resolve, and print JSON facts for an @lathe[...] token (REF-9)",
+        description=(
+            "Exit codes: 0 = ok (JSON on stdout); 2 = bad token (parse error); "
+            "3 = unresolved ref."
+        ),
+    )
+    p_ref_inspect.add_argument("token", help="The @lathe[...] token to inspect, quoted")
+    p_ref_inspect.add_argument("--repo-root", default=None, help="Override repo root for resolution")
+
+    p_ref_planes = ref_sub.add_parser(
+        "planes",
+        help="List cardinal axis-aligned planes for each part's bbox (REF-10)",
+    )
+    p_ref_planes.add_argument("build_dir", help="Completed build directory")
+    p_ref_planes.add_argument("--part", default=None, help="Restrict to a single part id")
+
+    p_ref_diff = ref_sub.add_parser(
+        "diff",
+        help="Structural diff between two selector manifests (REF-11)",
+    )
+    p_ref_diff.add_argument("build_a", help="First build directory")
+    p_ref_diff.add_argument("build_b", help="Second build directory")
+
+    p_ref_copy = ref_sub.add_parser(
+        "copy",
+        help="Copy the referenced artifact to a target path (REF-12)",
+    )
+    p_ref_copy.add_argument("token", help="The @lathe[...] token to resolve and copy, quoted")
+    p_ref_copy.add_argument("target_path", help="Destination file (or directory) path")
+    p_ref_copy.add_argument("--repo-root", default=None, help="Override repo root for resolution")
+
     _register_cache(sub)
     _register_publish(sub)
     _register_snapshot(sub)
@@ -401,8 +446,12 @@ _DISPATCH = {
 def main() -> None:
     """Main.
     """
+    import os as _os
+
     parser = _build_parser()
     args = parser.parse_args()
+    if getattr(args, "strict_prompt_injection", False):
+        _os.environ["LATHE_STRICT_PROMPT_INJECTION"] = "1"
     handler = _DISPATCH.get(args.cmd)
     if handler is None:
         raise SystemExit(2)

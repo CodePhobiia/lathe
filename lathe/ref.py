@@ -1,10 +1,11 @@
 """Semantic `@lathe[...]` reference grammar, parsing, and resolution.
 
-Implements the Phase-1 (non-geometric) slice of the E1 Semantic Reference
-System. Geometric selectors (``face<n>``, ``edge<n>``, ``vertex<n>``,
-``socket.<id>``, ``collision.<id>``, ``pivot.<id>``, ``material.<id>``,
-``lod<n>.<id>``) are parsed far enough to emit a helpful Phase-2 error and
-pointed at ``docs/refs.md`` + the V0.2 roadmap; they are NOT resolved here.
+Phase-1 (non-geometric) + Phase-2 face/edge/vertex selectors (REF-6). The
+remaining Phase-2 kinds (``socket``, ``collision``, ``pivot``, ``material``,
+``lod<n>``) are parsed far enough to emit a helpful
+``phase_2_feature_not_yet_available`` error pointing at ``docs/refs.md`` +
+the V0.2 roadmap; they resolve via the REF-5 selector manifest when the
+manifest is present on disk.
 
 Public surface (stable):
 
@@ -68,21 +69,34 @@ class StaleRefWarning(UserWarning):
 # ---------------------------------------------------------------------------
 
 
-SelectorKind = Literal["asset", "variant", "stage", "diagnostic", "part"]
+SelectorKind = Literal[
+    "asset",
+    "variant",
+    "stage",
+    "diagnostic",
+    "part",
+    "face",
+    "edge",
+    "vertex",
+]
 
 
 @dataclass(frozen=True)
 class RefSelector:
     """A parsed selector fragment of an `@lathe[...]` token.
 
-    The ``kind`` discriminates the entity class; ``id`` is the matched
-    identifier (asset name, variant name, stage name, diagnostic id, or
-    part id). Phase 1 only parses these five kinds — geometric selectors
-    are rejected up front at :func:`parse_ref` with a dedicated error code.
+    ``kind`` discriminates the entity class; ``id`` is the matched identifier.
+    For sub-part geometric selectors (``face``, ``edge``, ``vertex``) the
+    ``id`` field carries the canonical stable id ``<part_id>.face<n>`` (or
+    ``.edge<n>`` / ``.vertex<n>``), ``parent_part_id`` carries the owning
+    part id, and ``sub_index`` is the integer suffix. For non-geometric
+    selectors both ``parent_part_id`` and ``sub_index`` are ``None``.
     """
 
     kind: SelectorKind
     id: str
+    parent_part_id: Optional[str] = None
+    sub_index: Optional[int] = None
 
 
 @dataclass(frozen=True)
@@ -122,6 +136,7 @@ _PHASE2_SUBPART_RE = re.compile(r"^(face|edge|vertex)(\d+)$")
 _LOD_KIND_RE = re.compile(r"^lod(\d+)$")
 
 _VALID_SELECTOR_KINDS = {"asset", "variant", "stage", "diagnostic", "part"}
+_PHASE2_SUBPART_KINDS = {"face", "edge", "vertex"}
 
 
 def _reject_path_traversal(target: str) -> None:
@@ -226,16 +241,24 @@ def _classify_selector(raw_selector: str, *, token: str) -> RefSelector:
         )
 
     if kind == "part":
-        # Sub-part suffixes (part.<id>.face<n>) mark Phase-2 geometric refs.
+        # Sub-part suffixes (part.<id>.face<n>) are the REF-6 geometric refs.
         if "." in rest:
             part_id, _, sub = rest.partition(".")
-            if _PHASE2_SUBPART_RE.match(sub):
+            if not _IDENT_RE.match(part_id):
                 raise RefParseError(
-                    "phase_2_feature_not_yet_available",
-                    f"Sub-part selectors ('part.{part_id}.{sub}') are a "
-                    "Phase-2 feature; see docs/refs.md and "
-                    "docs/next_version_roadmap.md E1 REF-6",
+                    "invalid_identifier",
+                    f"part id '{part_id}' is not a valid Lathe identifier",
                     token=token,
+                )
+            sub_match = _PHASE2_SUBPART_RE.match(sub)
+            if sub_match:
+                sub_kind = sub_match.group(1)
+                sub_index = int(sub_match.group(2))
+                return RefSelector(
+                    kind=sub_kind,  # type: ignore[arg-type]
+                    id=f"{part_id}.{sub}",
+                    parent_part_id=part_id,
+                    sub_index=sub_index,
                 )
             raise RefParseError(
                 "unknown_selector_kind",
@@ -324,14 +347,20 @@ def parse_ref(token: str) -> RefNode:
 def format_ref(node: RefNode) -> str:
     """Render a :class:`RefNode` back to its canonical ``@lathe[...]`` form.
 
-    ``format_ref(parse_ref(t)) == t`` for any Phase-1 valid token ``t`` that
-    has no surrounding whitespace.
+    ``format_ref(parse_ref(t)) == t`` for any valid token ``t`` that has no
+    surrounding whitespace, including Phase-2 sub-part selectors which
+    render as ``part.<parent>.<face|edge|vertex><n>``.
     """
 
     if node.selector is None:
         return f"{_TOKEN_PREFIX}{node.target}{_TOKEN_SUFFIX}"
+    sel = node.selector
+    if sel.kind in _PHASE2_SUBPART_KINDS:
+        return (
+            f"{_TOKEN_PREFIX}{node.target}#part.{sel.id}{_TOKEN_SUFFIX}"
+        )
     return (
-        f"{_TOKEN_PREFIX}{node.target}#{node.selector.kind}.{node.selector.id}"
+        f"{_TOKEN_PREFIX}{node.target}#{sel.kind}.{sel.id}"
         f"{_TOKEN_SUFFIX}"
     )
 
@@ -700,13 +729,113 @@ def _resolve_part(
     }
 
 
+def _resolve_sub_part_no_manifest(
+    target_path: Path,
+    report: dict[str, Any] | None,
+    selector: RefSelector,
+) -> dict[str, Any]:
+    return {
+        "ok": False,
+        "reason": "selector_manifest_required",
+        "facts": {
+            "requested": selector.id,
+            "parent_part_id": selector.parent_part_id,
+            "sub_kind": selector.kind,
+            "message": (
+                "face/edge/vertex refs require selector_manifest.json; "
+                "the target build has no manifest (pre-REF-5 build?)"
+            ),
+        },
+        "message": (
+            f"selector_manifest.json required to resolve "
+            f"part.{selector.parent_part_id}.{selector.kind}"
+            f"{selector.sub_index} — re-run `lathe build`"
+        ),
+    }
+
+
 _RESOLVERS = {
     "asset": _resolve_asset,
     "variant": _resolve_variant,
     "stage": _resolve_stage,
     "diagnostic": _resolve_diagnostic,
     "part": _resolve_part,
+    "face": _resolve_sub_part_no_manifest,
+    "edge": _resolve_sub_part_no_manifest,
+    "vertex": _resolve_sub_part_no_manifest,
 }
+
+
+def _find_part(manifest: dict[str, Any], part_id: str) -> dict[str, Any] | None:
+    parts = manifest.get("parts") or []
+    if not isinstance(parts, list):
+        return None
+    for part in parts:
+        if isinstance(part, dict) and part.get("id") == part_id:
+            return part
+    return None
+
+
+_SUBPART_FIELD = {"face": "faces", "edge": "edges", "vertex": "vertices"}
+
+
+def _resolve_sub_part_from_manifest(
+    manifest: dict[str, Any],
+    selector: RefSelector,
+) -> dict[str, Any]:
+    parent_id = selector.parent_part_id or ""
+    sub_kind = selector.kind
+    field_name = _SUBPART_FIELD[sub_kind]
+    part = _find_part(manifest, parent_id)
+    if part is None:
+        return {
+            "ok": False,
+            "reason": "part_not_found",
+            "facts": {
+                "requested_part": parent_id,
+                "available_part_ids": [
+                    p.get("id") for p in (manifest.get("parts") or [])
+                    if isinstance(p, dict)
+                ],
+                "source": "selector_manifest.json:parts",
+            },
+            "message": (
+                f"parent part '{parent_id}' not found in selector_manifest.json "
+                f"for sub-part selector '{selector.id}'"
+            ),
+        }
+    entries = part.get(field_name) or []
+    if not isinstance(entries, list):
+        entries = []
+    for entry in entries:
+        if isinstance(entry, dict) and entry.get("id") == selector.id:
+            facts = {
+                "id": selector.id,
+                "parent_part_id": parent_id,
+                "sub_index": selector.sub_index,
+                "source": f"selector_manifest.json:parts.{field_name}",
+                "ref": entry.get("ref"),
+            }
+            for key in ("centroid", "normal", "endpoints", "position", "area", "length"):
+                if key in entry:
+                    facts[key] = entry[key]
+            return {"ok": True, "facts": facts}
+    return {
+        "ok": False,
+        "reason": f"{sub_kind}_not_found",
+        "facts": {
+            "requested": selector.id,
+            "parent_part_id": parent_id,
+            f"available_{field_name}": [
+                e.get("id") for e in entries if isinstance(e, dict)
+            ][:20],
+            "source": f"selector_manifest.json:parts.{field_name}",
+        },
+        "message": (
+            f"{sub_kind} '{selector.id}' not found on part '{parent_id}' "
+            f"(part has {len(entries)} {field_name})"
+        ),
+    }
 
 
 def _resolve_from_manifest(
@@ -794,6 +923,9 @@ def _resolve_from_manifest(
                                 if isinstance(p, dict) and p.get("id") != selector.id
                             ],
                             "ref": part.get("ref"),
+                            "bbox": part.get("bbox"),
+                            "face_count": part.get("faceCount"),
+                            "material_id": part.get("materialId"),
                         },
                     }
             return {
@@ -810,6 +942,9 @@ def _resolve_from_manifest(
                     f"known parts: {[p.get('id') for p in parts if isinstance(p, dict)]}"
                 ),
             }
+
+    if selector.kind in _PHASE2_SUBPART_KINDS:
+        return _resolve_sub_part_from_manifest(manifest, selector)
 
     if selector.kind == "diagnostic":
         diagnostics = manifest.get("diagnostics") or []

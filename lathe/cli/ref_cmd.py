@@ -53,6 +53,22 @@ def run_ref(args) -> None:
     if sub == "parse":
         run_ref_parse(args)
         return
+    if sub == "inspect":
+        from .ref_inspect_cmd import run_ref_inspect
+        run_ref_inspect(args)
+        return
+    if sub == "planes":
+        from .ref_planes_cmd import run_ref_planes
+        run_ref_planes(args)
+        return
+    if sub == "diff":
+        from .ref_diff_cmd import run_ref_diff
+        run_ref_diff(args)
+        return
+    if sub == "copy":
+        from .ref_copy_cmd import run_ref_copy
+        run_ref_copy(args)
+        return
     # argparse is configured with required=True on the subparsers, so
     # reaching this branch means a programmer error rather than bad input.
     raise SystemExit(2)
