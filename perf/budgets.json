@@ -1,0 +1,69 @@
+{
+  "heroes": {
+    "courier_drone": {
+      "wall_ms": 1442.22,
+      "stages": {
+        "shape": {
+          "current_ms": null,
+          "source": "mtime_delta_first_stage_unknown",
+          "budget_ms": null
+        },
+        "topology": {
+          "current_ms": 1542.52,
+          "source": "mtime_delta",
+          "budget_ms": 1851.02
+        },
+        "uv": {
+          "current_ms": 330.89,
+          "source": "mtime_delta",
+          "budget_ms": 397.07
+        },
+        "surface": {
+          "current_ms": 136973.28,
+          "source": "mtime_delta",
+          "budget_ms": 164367.94
+        },
+        "execution": {
+          "current_ms": 2.0,
+          "source": "mtime_delta",
+          "budget_ms": 2.4
+        },
+        "rig": {
+          "current_ms": 15.0,
+          "source": "mtime_delta",
+          "budget_ms": 18.0
+        },
+        "interfaces": {
+          "current_ms": 2.0,
+          "source": "mtime_delta",
+          "budget_ms": 2.4
+        },
+        "physics": {
+          "current_ms": 3.0,
+          "source": "mtime_delta",
+          "budget_ms": 3.6
+        },
+        "optimize": {
+          "current_ms": 13.0,
+          "source": "mtime_delta",
+          "budget_ms": 15.6
+        },
+        "validate": {
+          "current_ms": 35857.98,
+          "source": "mtime_delta",
+          "budget_ms": 43029.58
+        },
+        "package": {
+          "current_ms": 8956.4,
+          "source": "mtime_delta",
+          "budget_ms": 10747.68
+        }
+      },
+      "score": 0.879435,
+      "threshold": 0.86,
+      "certified": true
+    }
+  },
+  "budget_headroom": 1.2,
+  "updated_utc": "2026-04-24T11:39:54.327561+00:00"
+}
