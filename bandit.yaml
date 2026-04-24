@@ -1,0 +1,57 @@
+# Bandit configuration for Lathe (SEC-5).
+# Docs: https://bandit.readthedocs.io/en/latest/config.html
+#
+# Usage:
+#   bandit -c bandit.yaml -r lathe/
+#   pre-commit run bandit --all-files
+
+# Bandit scans the lathe package; tests and scaffold fixtures are excluded.
+exclude_dirs:
+  - tests
+  - .venv
+  - .venv_old_broken
+  - build
+  - dist
+  - dist_*
+  - htmlcov
+  - .hypothesis
+  - .pytest_cache
+  - .ruff_cache
+  - .import_linter_cache
+  - examples
+  - warm_*
+  - tmp_*
+  - cache_probe_*
+  - v05_*
+
+# Gate on MEDIUM+ severity / MEDIUM+ confidence. LOW-severity noise
+# (e.g. hardcoded strings that look like secrets in tests) is filtered
+# out by pre-commit per-file-ignores.
+# The CLI equivalent flags that the CI workflow passes are:
+#   --severity-level medium --confidence-level medium
+
+# Skip rules that would flag legitimate Lathe patterns. Each skip is
+# justified so it survives review:
+#
+#   B101 (assert_used) — Lathe uses assert liberally as precondition
+#       checks in internal helpers; those modules ship with -O disabled.
+#   B404, B603 (subprocess) — Lathe shells out to Blender / git / uv
+#       from the bridge layer. Command strings are constructed from
+#       validated, non-user-controlled argv lists (see lathe/bridge/).
+#   B311 (random) — deterministic/seeded randomness for procedural
+#       geometry, never used for cryptography.
+#   B310 (urlopen) — the only production `urlopen` call lives in
+#       lathe/net.py::_guarded_request, which validates scheme, enforces
+#       a host allowlist, resolves DNS, and rejects private/loopback/
+#       link-local addresses *before* opening the connection. CodeQL's
+#       security-extended pack catches the same family of issues with
+#       better context awareness and remains enabled.
+#
+# Real security issues (eval, exec, yaml.load, pickle on untrusted
+# input, SSRF-adjacent requests) stay enabled.
+skips:
+  - B101
+  - B310
+  - B311
+  - B404
+  - B603

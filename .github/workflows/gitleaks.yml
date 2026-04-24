@@ -1,0 +1,52 @@
+name: Gitleaks (history baseline)
+#
+# SEC-3 companion workflow: a scheduled, full-history gitleaks sweep. The
+# per-push gate lives in security.yml; this run catches regressions in
+# older history (e.g. a secret merged through a path the PR scan missed)
+# and surfaces them as an issue rather than failing a push.
+#
+# Configured separately so the scheduled run can use different permissions
+# (issues: write) without escalating the PR-time job.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Monday 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  history-scan:
+    name: gitleaks (full history)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks (full history)
+        id: gitleaks
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
+          GITLEAKS_ENABLE_SUMMARY: "true"
+
+      - name: Open issue on finding
+        if: steps.gitleaks.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "gitleaks: secrets detected in history ($(date -u +%Y-%m-%d))" \
+            --label security,secrets \
+            --body "Scheduled gitleaks history sweep reported findings. See workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. Rotate any exposed credentials before patching."
+
+      - name: Propagate failure
+        if: steps.gitleaks.outcome == 'failure'
+        run: exit 1

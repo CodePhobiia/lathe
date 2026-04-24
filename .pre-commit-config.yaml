@@ -28,3 +28,13 @@ repos:
     rev: v8.18.4
     hooks:
       - id: gitleaks
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        args: ["--configfile", "bandit.yaml", "--severity-level", "medium", "--confidence-level", "medium"]
+        # Bandit config exclusions already cover tests/examples; restrict
+        # the hook to the lathe package so incidental scripts don't block
+        # commits.
+        files: ^lathe/.*\.py$

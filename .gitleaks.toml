@@ -1,0 +1,72 @@
+# Gitleaks configuration for Lathe (SEC-3).
+#
+# Extends the gitleaks v8 default ruleset (AWS keys, GitHub tokens, generic
+# API keys, private keys, etc.) with Lathe-specific patterns for the runtime
+# providers the project wires in (Hunyuan HTTP, VGGT, Codex ImageGen).
+#
+# Usage:
+#   pre-commit run gitleaks --all-files
+#   gitleaks detect --config=.gitleaks.toml --source=. --verbose
+#   gitleaks protect --config=.gitleaks.toml --staged            # pre-commit mode
+
+[extend]
+# Inherit the curated default ruleset instead of replacing it.
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Lathe-specific secret patterns.
+# ---------------------------------------------------------------------------
+
+[[rules]]
+id = "lathe-hunyuan-api-key"
+description = "Hunyuan3D HTTP provider API key"
+regex = '''(?i)(hunyuan[_-]?(api[_-]?key|token|secret))\s*[:=]\s*['"][A-Za-z0-9_\-]{24,}['"]'''
+tags = ["lathe", "provider", "hunyuan"]
+
+[[rules]]
+id = "lathe-vggt-api-key"
+description = "VGGT remote inference endpoint credential"
+regex = '''(?i)(vggt[_-]?(api[_-]?key|token|secret))\s*[:=]\s*['"][A-Za-z0-9_\-]{24,}['"]'''
+tags = ["lathe", "provider", "vggt"]
+
+[[rules]]
+id = "lathe-codex-imagegen-key"
+description = "Codex ImageGen surface backend key"
+regex = '''(?i)(codex[_-]?imagegen[_-]?(api[_-]?key|token|secret))\s*[:=]\s*['"][A-Za-z0-9_\-]{24,}['"]'''
+tags = ["lathe", "provider", "codex"]
+
+[[rules]]
+id = "lathe-generic-provider-bearer"
+description = "Bearer token assigned to a provider env var"
+regex = '''(?i)(HUNYUAN|VGGT|CODEX|LATHE|OPENAI|ANTHROPIC|HYPER3D)_(?:API_?KEY|TOKEN|SECRET)\s*=\s*['"]?[A-Za-z0-9_\-]{24,}['"]?'''
+tags = ["lathe", "env"]
+
+# ---------------------------------------------------------------------------
+# Allowlist — test fixtures, documentation examples, and example payloads.
+# ---------------------------------------------------------------------------
+
+[allowlist]
+description = "Docs/tests/examples contain illustrative placeholder credentials."
+paths = [
+  '''(^|/)tests/''',
+  '''(^|/)examples/''',
+  '''(^|/)docs/''',
+  '''(^|/)\\.env\\.example$''',
+  '''(^|/)\\.gitleaks\\.toml$''',
+  '''(^|/)CHANGELOG\\.md$''',
+  '''(^|/)\\.lathe_lark_cache$''',
+]
+
+regexes = [
+  # Canonical placeholder tokens used in docs/examples/env templates.
+  '''(?i)(your[_-]?api[_-]?key|replace[_-]?me|example[_-]?token|placeholder|dummy|xxx+|fake|sk-test|AKIAIOSFODNN7EXAMPLE)''',
+  # Generic "redacted" markers.
+  '''(?i)<[a-z0-9_\-]{3,}>''',
+]
+
+stopwords = [
+  "example",
+  "placeholder",
+  "dummy",
+  "sample",
+]

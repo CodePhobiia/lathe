@@ -1,0 +1,88 @@
+name: Security
+
+# SEC-3 / SEC-5: SAST + secret scanning gates.
+#
+# Runs three independent jobs — gitleaks (secrets), bandit (Python SAST
+# focused on stdlib misuse), and semgrep (multi-pack rule engine). Each
+# fails the build on new findings; see docs/security/ci_gates.md for how
+# to diagnose + silence false positives.
+#
+# CodeQL runs in codeql.yml on its own schedule (weekly + on push) because
+# it has different permissions requirements and long runtimes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history on main so the push-event scan sees every commit;
+          # PR events are reduced to the diff automatically by gitleaks.
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # No GITLEAKS_LICENSE: the action runs in open-source mode on
+          # public repos without a license key.
+
+  bandit:
+    name: bandit (Python SAST)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install bandit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "bandit[toml]==1.7.9"
+
+      - name: Run bandit
+        run: |
+          bandit \
+            --configfile bandit.yaml \
+            --severity-level medium \
+            --confidence-level medium \
+            --recursive lathe/
+
+  semgrep:
+    name: semgrep (multi-pack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Semgrep recommends its own container to guarantee rule compatibility.
+    container:
+      image: returntocorp/semgrep:1.86.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run semgrep ci
+        env:
+          SEMGREP_RULES: >-
+            p/python
+            p/security-audit
+            p/owasp-top-ten
+        run: semgrep ci --error --config .semgrep.yml
