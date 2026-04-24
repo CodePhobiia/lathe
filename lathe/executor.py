@@ -16,10 +16,10 @@ from __future__ import annotations
 
 import json
 import shutil
-import tempfile
 from pathlib import Path
 from typing import Any
 
+from .cache import lathe_cache_dir
 from .capabilities import probe_topology_backend  # noqa: F401 — re-export for test mocking
 from .checker import check_program
 from .core.common import dump_json, hash_obj, relpath
@@ -64,7 +64,7 @@ STAGE_ORDER = [
 ]
 
 
-BUILD_CACHE_ROOT = Path(tempfile.gettempdir()) / "lathe_build_cache"
+BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
 BUILD_CACHE_VERSION = "v10_rc2"
 
 

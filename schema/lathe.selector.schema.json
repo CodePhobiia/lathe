@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/lathe.selector.schema.json",
+  "title": "Lathe Selector Manifest",
+  "description": "Sidecar manifest emitted alongside every certified Lathe build. Every addressable entity (part, socket, pivot, collision, LOD, material, diagnostic, face/edge/vertex in Phase 2) has a stable id whose canonical form is the corresponding @lathe[...] token. REF-4 of the V0.2 E1 Semantic Reference System. Phase 1 ships the schema only; the REF-5 writer lands in a follow-up wave. See docs/refs.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "latheVersion",
+    "sourcePath",
+    "asset",
+    "variant",
+    "buildHash",
+    "packageHash",
+    "coordinateSystem",
+    "tables",
+    "parts",
+    "sockets",
+    "pivots",
+    "collisions",
+    "lods",
+    "materials",
+    "diagnostics",
+    "relations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Major schema version. Increments are breaking."
+    },
+    "latheVersion": {
+      "type": "string",
+      "description": "Lathe package version that wrote this manifest (lathe.__version__).",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
+    },
+    "sourcePath": {
+      "type": "string",
+      "description": "Repo-relative path to the .lth source that produced the build."
+    },
+    "asset": {
+      "type": "string",
+      "description": "Asset declaration name (matches build_report.json.asset)."
+    },
+    "variant": {
+      "type": ["string", "null"],
+      "description": "Variant name if the build was materialized from a variant, else null."
+    },
+    "buildHash": {
+      "type": "string",
+      "description": "Deterministic hash of the materialized build inputs (source + refs + runtime config).",
+      "pattern": "^[0-9a-f]{8,}$"
+    },
+    "packageHash": {
+      "type": "string",
+      "description": "Hash of the packaged output artifacts (.usda/.glb).",
+      "pattern": "^[0-9a-f]{8,}$"
+    },
+    "coordinateSystem": {
+      "type": "object",
+      "description": "Frame of reference for all geometric data in this manifest.",
+      "additionalProperties": false,
+      "required": ["upAxis", "unit"],
+      "properties": {
+        "upAxis": {
+          "type": "string",
+          "enum": ["Y", "Z", "-Y", "-Z"]
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["m", "cm", "mm", "in"]
+        },
+        "handedness": {
+          "type": "string",
+          "enum": ["right", "left"],
+          "description": "Default: right (OpenUSD convention)."
+        }
+      }
+    },
+    "tables": {
+      "type": "object",
+      "description": "Optional lookup tables keyed by stable id. Consumers may use these to resolve refs without re-reading bundle.json.",
+      "additionalProperties": { "type": "object" }
+    },
+    "parts": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Addressable mesh parts. Empty on asset kinds that do not expose parts.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#part\\.[^\\]]+\\]$" },
+          "name": { "type": "string" },
+          "materialId": { "type": "string" },
+          "bbox": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 6,
+            "maxItems": 6,
+            "description": "[minX, minY, minZ, maxX, maxY, maxZ] in manifest units."
+          },
+          "faceCount": { "type": "integer", "minimum": 0 },
+          "faces": {
+            "type": "array",
+            "minItems": 0,
+            "description": "Phase 2 (REF-6). Empty in Phase 1.",
+            "items": { "type": "object" }
+          },
+          "edges": {
+            "type": "array",
+            "minItems": 0,
+            "description": "Phase 2 (REF-6). Empty in Phase 1.",
+            "items": { "type": "object" }
+          },
+          "vertices": {
+            "type": "array",
+            "minItems": 0,
+            "description": "Phase 2 (REF-6). Empty in Phase 1.",
+            "items": { "type": "object" }
+          }
+        }
+      }
+    },
+    "sockets": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#socket\\.[^\\]]+\\]$" },
+          "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "axis": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "kind": { "type": "string" },
+          "compatKind": { "type": "string" },
+          "parentPartId": { "type": "string" }
+        }
+      }
+    },
+    "pivots": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#pivot\\.[^\\]]+\\]$" },
+          "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "axis": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "kind": { "type": "string" },
+          "parentPartId": { "type": "string" }
+        }
+      }
+    },
+    "collisions": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#collision\\.[^\\]]+\\]$" },
+          "kind": { "type": "string", "enum": ["box", "sphere", "capsule", "hull", "mesh"] },
+          "parentPartId": { "type": "string" },
+          "hullCount": { "type": "integer", "minimum": 0 },
+          "volume": { "type": "number" }
+        }
+      }
+    },
+    "lods": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "ref"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 0 },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#lod[0-9]+\\..+\\]$" },
+          "partId": { "type": "string" },
+          "triangleCount": { "type": "integer", "minimum": 0 },
+          "screenSize": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "materials": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#material\\.[^\\]]+\\]$" },
+          "displayName": { "type": "string" },
+          "textureMemoryMB": { "type": "number", "minimum": 0 },
+          "textureSet": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref", "severity"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#diagnostic\\.[^\\]]+\\]$" },
+          "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+          "stage": { "type": "string" },
+          "message": { "type": "string" },
+          "code": { "type": "string" },
+          "refs": {
+            "type": "array",
+            "description": "REF-13 back-links: @lathe[...] tokens this diagnostic relates to.",
+            "items": { "type": "string", "pattern": "^@lathe\\[.+\\]$" }
+          },
+          "suggestedCommands": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "relations": {
+      "type": "object",
+      "description": "Cross-entity relations (socket <-> part, collision <-> part, LOD <-> part, etc.). Keys are relation names; values are arrays of 2-tuples of @lathe[...] tokens.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "buffers": {
+      "type": "object",
+      "description": "Phase-2 optional pointer to the compact selectors.bin file emitted by REF-6.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "sizeBytes"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "sizeBytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

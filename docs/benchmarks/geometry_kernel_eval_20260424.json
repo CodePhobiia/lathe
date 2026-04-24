@@ -1,0 +1,337 @@
+{
+  "generated_at": "2026-04-24T14:42:34.103887+00:00",
+  "heroes": {
+    "brassbound_chest": {
+      "family": "brassbound_chest",
+      "lathe_native_v1": {
+        "name": "lathe_native_v1",
+        "runs": [
+          {
+            "body_count": 11,
+            "elapsed_s": 0.5357878000068013,
+            "hash": "23c054d67b2d2570fdaa5ff77f78667512fa5da80441bb62ffa018b76469c0cb",
+            "is_watertight": true,
+            "num_tri": 1112,
+            "num_vert": 578,
+            "run": 0,
+            "search_mode": "parametric_exact_assembly",
+            "status": "ok"
+          },
+          {
+            "body_count": 11,
+            "elapsed_s": 0.47299710000515915,
+            "hash": "23c054d67b2d2570fdaa5ff77f78667512fa5da80441bb62ffa018b76469c0cb",
+            "is_watertight": true,
+            "num_tri": 1112,
+            "num_vert": 578,
+            "run": 1,
+            "search_mode": "parametric_exact_assembly",
+            "status": "ok"
+          },
+          {
+            "body_count": 11,
+            "elapsed_s": 0.44145679999201093,
+            "hash": "23c054d67b2d2570fdaa5ff77f78667512fa5da80441bb62ffa018b76469c0cb",
+            "is_watertight": true,
+            "num_tri": 1112,
+            "num_vert": 578,
+            "run": 2,
+            "search_mode": "parametric_exact_assembly",
+            "status": "ok"
+          }
+        ],
+        "summary": {
+          "body_count_stable": true,
+          "body_counts": [
+            11,
+            11,
+            11
+          ],
+          "deterministic": true,
+          "mean_triangles": 1112,
+          "mean_wall_clock_s": 0.4834139000013238,
+          "ok_run_count": 3,
+          "total_run_count": 3,
+          "unique_hashes": [
+            "23c054d67b2d2570fdaa5ff77f78667512fa5da80441bb62ffa018b76469c0cb"
+          ],
+          "watertight_rate": 1.0
+        }
+      },
+      "manifold_v1": {
+        "name": "lathe.geometry.manifold_v1",
+        "runs": [
+          {
+            "body_count": 18,
+            "elapsed_s": 0.003049299994017929,
+            "genus": -17,
+            "hash": "2ba7eea117a714f034b093f51ade665dc095611f94087c5231f893a4f66b2f68",
+            "is_watertight": true,
+            "num_tri": 1108,
+            "num_vert": 590,
+            "run": 0,
+            "status": "ok",
+            "volume": 81645.58151546738
+          },
+          {
+            "body_count": 18,
+            "elapsed_s": 0.002205500000854954,
+            "genus": -17,
+            "hash": "2ba7eea117a714f034b093f51ade665dc095611f94087c5231f893a4f66b2f68",
+            "is_watertight": true,
+            "num_tri": 1108,
+            "num_vert": 590,
+            "run": 1,
+            "status": "ok",
+            "volume": 81645.58151546738
+          },
+          {
+            "body_count": 18,
+            "elapsed_s": 0.002907200003392063,
+            "genus": -17,
+            "hash": "2ba7eea117a714f034b093f51ade665dc095611f94087c5231f893a4f66b2f68",
+            "is_watertight": true,
+            "num_tri": 1108,
+            "num_vert": 590,
+            "run": 2,
+            "status": "ok",
+            "volume": 81645.58151546738
+          }
+        ],
+        "summary": {
+          "body_count_stable": true,
+          "body_counts": [
+            18,
+            18,
+            18
+          ],
+          "deterministic": true,
+          "mean_triangles": 1108,
+          "mean_wall_clock_s": 0.002720666666088315,
+          "ok_run_count": 3,
+          "total_run_count": 3,
+          "unique_hashes": [
+            "2ba7eea117a714f034b093f51ade665dc095611f94087c5231f893a4f66b2f68"
+          ],
+          "watertight_rate": 1.0
+        }
+      },
+      "primitive_count": 136
+    },
+    "courier_drone": {
+      "family": "courier_drone",
+      "lathe_native_v1": {
+        "name": "lathe_native_v1",
+        "runs": [
+          {
+            "elapsed_s": 1.6999998479150236e-05,
+            "report_mode": "constructive_fallback",
+            "run": 0,
+            "status": "fallback"
+          },
+          {
+            "elapsed_s": 4.1000021155923605e-06,
+            "report_mode": "constructive_fallback",
+            "run": 1,
+            "status": "fallback"
+          },
+          {
+            "elapsed_s": 2.4999899324029684e-06,
+            "report_mode": "constructive_fallback",
+            "run": 2,
+            "status": "fallback"
+          }
+        ],
+        "summary": {
+          "body_count_stable": false,
+          "body_counts": [],
+          "deterministic": false,
+          "mean_triangles": 0,
+          "mean_wall_clock_s": 0.0,
+          "ok_run_count": 0,
+          "total_run_count": 3,
+          "unique_hashes": [],
+          "watertight_rate": 0.0
+        }
+      },
+      "manifold_v1": {
+        "name": "lathe.geometry.manifold_v1",
+        "runs": [
+          {
+            "body_count": 35,
+            "elapsed_s": 0.0061778999952366576,
+            "genus": -27,
+            "hash": "dc6af7e989d3dc629b0486002bc5fd209421768b000633cb25d15fac776cdc6a",
+            "is_watertight": true,
+            "num_tri": 7202,
+            "num_vert": 3657,
+            "run": 0,
+            "status": "ok",
+            "volume": 107088.91271136185
+          },
+          {
+            "body_count": 35,
+            "elapsed_s": 0.007020599994575605,
+            "genus": -27,
+            "hash": "dc6af7e989d3dc629b0486002bc5fd209421768b000633cb25d15fac776cdc6a",
+            "is_watertight": true,
+            "num_tri": 7202,
+            "num_vert": 3657,
+            "run": 1,
+            "status": "ok",
+            "volume": 107088.91271136185
+          },
+          {
+            "body_count": 35,
+            "elapsed_s": 0.008834699998260476,
+            "genus": -27,
+            "hash": "dc6af7e989d3dc629b0486002bc5fd209421768b000633cb25d15fac776cdc6a",
+            "is_watertight": true,
+            "num_tri": 7202,
+            "num_vert": 3657,
+            "run": 2,
+            "status": "ok",
+            "volume": 107088.91271136185
+          }
+        ],
+        "summary": {
+          "body_count_stable": true,
+          "body_counts": [
+            35,
+            35,
+            35
+          ],
+          "deterministic": true,
+          "mean_triangles": 7202,
+          "mean_wall_clock_s": 0.007344399996024246,
+          "ok_run_count": 3,
+          "total_run_count": 3,
+          "unique_hashes": [
+            "dc6af7e989d3dc629b0486002bc5fd209421768b000633cb25d15fac776cdc6a"
+          ],
+          "watertight_rate": 1.0
+        }
+      },
+      "primitive_count": 279
+    },
+    "mechanical_door": {
+      "family": "mechanical_door",
+      "lathe_native_v1": {
+        "name": "lathe_native_v1",
+        "runs": [
+          {
+            "body_count": 3,
+            "elapsed_s": 0.2915356999874348,
+            "hash": "7e819cc139a47125c9f22d662c7786c8bbadf65e90fe5ccb854c907c82f84dfd",
+            "is_watertight": true,
+            "num_tri": 966,
+            "num_vert": 489,
+            "run": 0,
+            "search_mode": "parametric_exact_assembly",
+            "status": "ok"
+          },
+          {
+            "body_count": 3,
+            "elapsed_s": 0.2972600999928545,
+            "hash": "7e819cc139a47125c9f22d662c7786c8bbadf65e90fe5ccb854c907c82f84dfd",
+            "is_watertight": true,
+            "num_tri": 966,
+            "num_vert": 489,
+            "run": 1,
+            "search_mode": "parametric_exact_assembly",
+            "status": "ok"
+          },
+          {
+            "body_count": 3,
+            "elapsed_s": 0.30101809999905527,
+            "hash": "7e819cc139a47125c9f22d662c7786c8bbadf65e90fe5ccb854c907c82f84dfd",
+            "is_watertight": true,
+            "num_tri": 966,
+            "num_vert": 489,
+            "run": 2,
+            "search_mode": "parametric_exact_assembly",
+            "status": "ok"
+          }
+        ],
+        "summary": {
+          "body_count_stable": true,
+          "body_counts": [
+            3,
+            3,
+            3
+          ],
+          "deterministic": true,
+          "mean_triangles": 966,
+          "mean_wall_clock_s": 0.2966046333264482,
+          "ok_run_count": 3,
+          "total_run_count": 3,
+          "unique_hashes": [
+            "7e819cc139a47125c9f22d662c7786c8bbadf65e90fe5ccb854c907c82f84dfd"
+          ],
+          "watertight_rate": 1.0
+        }
+      },
+      "manifold_v1": {
+        "name": "lathe.geometry.manifold_v1",
+        "runs": [
+          {
+            "body_count": 7,
+            "elapsed_s": 0.0033779999939724803,
+            "genus": -6,
+            "hash": "9ce216d7a2e84f4b5a51944cbd7005bfa29070913d6bd0a5a81d7f2a1c134e33",
+            "is_watertight": true,
+            "num_tri": 1054,
+            "num_vert": 541,
+            "run": 0,
+            "status": "ok",
+            "volume": 2437837.984434864
+          },
+          {
+            "body_count": 7,
+            "elapsed_s": 0.0026633999950718135,
+            "genus": -6,
+            "hash": "9ce216d7a2e84f4b5a51944cbd7005bfa29070913d6bd0a5a81d7f2a1c134e33",
+            "is_watertight": true,
+            "num_tri": 1054,
+            "num_vert": 541,
+            "run": 1,
+            "status": "ok",
+            "volume": 2437837.984434864
+          },
+          {
+            "body_count": 7,
+            "elapsed_s": 0.001937799999723211,
+            "genus": -6,
+            "hash": "9ce216d7a2e84f4b5a51944cbd7005bfa29070913d6bd0a5a81d7f2a1c134e33",
+            "is_watertight": true,
+            "num_tri": 1054,
+            "num_vert": 541,
+            "run": 2,
+            "status": "ok",
+            "volume": 2437837.984434864
+          }
+        ],
+        "summary": {
+          "body_count_stable": true,
+          "body_counts": [
+            7,
+            7,
+            7
+          ],
+          "deterministic": true,
+          "mean_triangles": 1054,
+          "mean_wall_clock_s": 0.002659733329589168,
+          "ok_run_count": 3,
+          "total_run_count": 3,
+          "unique_hashes": [
+            "9ce216d7a2e84f4b5a51944cbd7005bfa29070913d6bd0a5a81d7f2a1c134e33"
+          ],
+          "watertight_rate": 1.0
+        }
+      },
+      "primitive_count": 68
+    }
+  },
+  "manifold3d_available": true,
+  "seed": 42
+}

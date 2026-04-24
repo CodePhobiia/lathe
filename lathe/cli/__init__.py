@@ -11,6 +11,7 @@ import argparse
 from ..doctor import collect_doctor_report, dump_doctor_json, format_doctor_report
 from .bridge_cmd import run_bridge
 from .build_cmd import run_build, run_mode_build, run_render_eval
+from .cache_cmd import register as _register_cache, run_cache
 from .check_cmd import run_check
 from .doctor_cmd import (
     run_backends,
@@ -36,6 +37,7 @@ from .parse_cmd import run_normalize, run_parse, run_schema
 from .patch_cmd import run_patch
 from .plan_cmd import run_fit, run_plan, run_surface_plan
 from .publish_cmd import register as _register_publish, run_publish
+from .ref_cmd import run_ref
 from .surface_cmd import run_surface
 from .telemetry_cmd import register as _register_telemetry, run_telemetry
 from .test_cmd import run_audit, run_bench, run_test
@@ -318,6 +320,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_patch.add_argument("--value", required=True, help="Primary value for the selected patch operation")
     p_patch.add_argument("--value2", default=None, help="Secondary value for operations that need two values")
 
+    p_ref = sub.add_parser(
+        "ref",
+        help="Operate on @lathe[...] semantic references (Phase 1: non-geometric)",
+        description=(
+            "REF-1/2/3/4/8/14 (V0.2 E1 Phase 1). Parse, validate, and (later) "
+            "resolve @lathe[...] reference tokens. See docs/refs.md. "
+            "Exit codes: 0 = ok; 2 = bad token or usage error."
+        ),
+    )
+    ref_sub = p_ref.add_subparsers(dest="ref_cmd", required=True)
+    p_ref_parse = ref_sub.add_parser("parse", help="Parse an @lathe[...] token and print it as JSON")
+    p_ref_parse.add_argument("token", help="The @lathe[...] token to parse, quoted")
+
+    _register_cache(sub)
     _register_publish(sub)
     _register_telemetry(sub)
 
@@ -358,6 +374,8 @@ _DISPATCH = {
     "surface-validate": run_surface,
     "surface-repair": run_surface,
     "build": run_build,
+    "cache": run_cache,
+    "ref": run_ref,
     "publish": run_publish,
     "telemetry": run_telemetry,
     "render-eval": run_render_eval,
