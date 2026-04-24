@@ -23,7 +23,7 @@ Exhaustive ticketed expansion of every actionable recommendation across the thre
 | E3 | Real Game-Ready Stages | research, cad | 12 | P0 | 3–5 weeks |
 | E4 | Certification Reports + Studio + Viewer | all 3 | 10 | P1 | 2–4 weeks |
 | E5 | Standards-Grade Packaging | research | 10 | P1 | 2–3 weeks |
-| E6 | Engine Integration (Godot-first + others) | research, cad, forgecad | 8 | P1 | 2–3 weeks |
+| E6 | Engine Integration (Godot-first + others) | research, cad, forgecad | 7 | P1 | 2–3 weeks |
 | E7 | Provider Proposal Harness | research, forgecad | 6 | P1 | 1–2 weeks |
 | E8 | Parameter Robustness | forgecad | 5 | P2 | 1 week |
 | E9 | v0.2 Language Extensions | forgecad | 8 | P2 | 6–10 weeks |
@@ -31,11 +31,11 @@ Exhaustive ticketed expansion of every actionable recommendation across the thre
 | E11 | Example + Benchmark Corpus Discipline | forgecad | 7 | P1 | 1–2 weeks |
 | E12 | SDF / Experimental Lane | forgecad | 4 | P3 | 2 weeks |
 | E13 | DX & Tooling Polish | research, forgecad | 8 | P2 | 2–3 weeks |
-| E14 | Security Cross-Ref (already in plan_completeness) | — | — | — | see SEC-1..8 |
+| E14 | Security — cross-ref + 2 net-new | research | 2 | P1 | 3–5 days |
 | E15 | Performance & Scalability | research | 5 | P2 | 1–2 weeks |
 | E16 | Ops & GTM Cross-Ref (already in plan_completeness) | — | — | — | see OPS-*, GTM-* |
 
-**Total net-new tickets: 114** across 12 substantive epics (E14 + E16 cross-reference existing work without adding new tickets).
+**Total net-new tickets: 115** across 13 substantive epics (E16 remains cross-reference only; ENG-1 removed — Godot AssetLib submission is tracked as `plan_completeness.md` GTM-5/BL-44 and not re-listed here).
 
 ---
 
@@ -147,16 +147,16 @@ Exhaustive ticketed expansion of every actionable recommendation across the thre
 
 **Source:** all three docs converge here.
 
-**Problem.** Certification is Lathe's core differentiator, but the output is raw JSON. Users can't inspect why a build passed or failed without reading bundles. There's no browser-native iteration loop. Our `lathe serve` (BL-36) is minimal static-file serving.
+**Problem.** BL-36 (Wave 4.IV.d, commit `8b650df`) shipped a working terminal + HTML report at `lathe/reports/` + a static artifact viewer at `lathe/viewer/` + `--report {terminal,html,json}` flag + `docs/error_codes.md` (22 rows). Those are MVP-grade: the HTML report lacks dimension callouts, cut-plane/section renders, LOD/collision/material inventory, and ref-aware navigation. The terminal report is a one-shot render, not interactive. The viewer is static-file serving with no part tree, no diagnostic panel, no URL state. There's no browser-native iteration loop (editor + viewport + variant controls + live rebuild). This epic **extends** the BL-36 foundation rather than rebuilding it.
 
-**Target outcome.** Every build emits `report.html` beside `build_report.json` with pass/fail summary, per-validator table, diagnostics grouped by severity, artifact links, and reproduction commands. A `lathe studio` browser IDE wraps the existing compiler pipeline with source pane + normalized pane + diagnostics + preview viewport + variant sliders. URL state makes every view shareable.
+**Target outcome.** `report.html` adds ref-aware navigation, dimension callouts, section-cut renders, LOD/collision/material/socket inventory tables, and reproduction commands. Terminal report gains interactive expand/collapse + jump-to-ref. A `lathe studio` browser IDE (net-new, not in BL-36) wraps the compiler pipeline with source pane + normalized pane + diagnostics + preview viewport + variant sliders. URL state makes every view shareable.
 
 **Tickets.**
 
 | ID | Title | Acceptance | Effort | Deps |
 |---|---|---|---|---|
-| RPT-1 | HTML report expansion: dimensions + cut planes + LOD/collision/material inventory | Sections: Build Summary / Source / Backend Selection / Stage Trace / Geometry Metrics / LODs / Materials / Collision / Sockets / Refs / Warnings / Artifacts / Reproduction Commands | M | REF-5 |
-| RPT-2 | Terminal colored report (extends BL-36) | Interactive terminal UI with expand/collapse + jump-to-ref | S | — |
+| RPT-1 | **Extend** BL-36 HTML report with ref-aware navigation + dimension callouts + section views + inventory tables | New sections added to existing `lathe/reports/html.py`: Geometry Metrics / LODs / Materials / Collision / Sockets / Refs table / Reproduction Commands / Section-cut renders. Existing sections retained. | M | REF-5 |
+| RPT-2 | **Extend** BL-36 terminal report with interactive expand/collapse + jump-to-ref | Current `lathe/reports/terminal.py` is a one-shot render; add interactive mode via `rich.live` (or fallback) with collapsible sections and ref jumps | S | REF-5 |
 | RPT-3 | Report determinism | Generated from machine-readable cert data; stable across rebuilds; presentation layer only | S | RPT-1 |
 | RPT-4 | Deterministic snapshots | `front / side / top / iso / wireframe / collision_overlay / LOD_comparison / UV_layout / section_cut` | M | STAGE-10 |
 | RPT-5 | `lathe snapshot` CLI command | `lathe snapshot <build_dir> --view iso --out ./foo.png` | S | RPT-4 |
@@ -201,15 +201,14 @@ Exhaustive ticketed expansion of every actionable recommendation across the thre
 
 **Source:** research-findings (Godot-first thesis) + cad-research + forgecad.
 
-**Problem.** BL-44 Godot AssetLib submission is deferred. Current addon is MVP-grade (runtime GLTFDocument + polling watcher + basic enrichment). Real engine integration needs editor-import-plugin + thumbnail regen + build-trace viewer + certified-state indicator.
+**Problem.** BL-44 **Godot AssetLib submission is tracked in `plan_completeness.md` as GTM-5/BL-44** and is not re-listed here (the epic-map rule forbids duplicating). Current addon (commit `e4f4a96`, Wave 5.I) is MVP-grade: runtime GLTFDocument + 2s polling watcher + basic enrichment. Real engine integration needs a Godot EditorImportPlugin + thumbnail regen + build-trace viewer integration + certified-state indicator + fsnotify watcher, plus eventual Unreal/Unity parity.
 
-**Target outcome.** `lathe-godot` on the Godot AssetLib. Users install via AssetLib → open a demo project → run `lathe build` → asset appears enriched (sockets as Marker3D, collision as CollisionShape3D, LODs wired, cert panel visible). 90-second screen-capture flow is reproducible.
+**Target outcome.** Users install `lathe-godot` via AssetLib (GTM-5) → open a demo project → run `lathe build` → asset appears enriched (sockets as Marker3D, collision as CollisionShape3D, LODs wired, cert panel visible). 90-second screen-capture flow reproducible. Eventual Unreal/Unity plugins with the same import surface.
 
 **Tickets.**
 
 | ID | Title | Acceptance | Effort | Deps |
 |---|---|---|---|---|
-| ENG-1 | Godot AssetLib submission (BL-44) | Listed + downloadable from AssetLib | S | — |
 | ENG-2 | `EditorImportPlugin` replacement | Replace runtime GLTFDocument with native Godot ImportPlugin | M | — |
 | ENG-3 | Godot thumbnail regen | Auto-generate Godot-facing thumbnails per asset | S | ENG-2 |
 | ENG-4 | Build-trace viewer integration | Dock button → opens `lathe inspect <build_dir>` in external shell | S | — |
@@ -217,6 +216,8 @@ Exhaustive ticketed expansion of every actionable recommendation across the thre
 | ENG-6 | Certified-state indicator per scene | Badge on nodes imported from Lathe: ✓ certified / ⚠ outdated / ✗ failed | M | ENG-2 |
 | ENG-7 | Unreal integration (later scope) | Unreal plugin with equivalent import surface | XXL | STAGE-10 |
 | ENG-8 | Unity integration (later scope) | Unity package with equivalent import surface | XXL | STAGE-10 |
+
+**Note.** ENG-1 slot is intentionally skipped — the "Godot AssetLib submission" deliverable lives at `plan_completeness.md` GTM-5/BL-44. Keeping two ownership locations would violate this doc's "cross-reference and don't duplicate" rule.
 
 ---
 
@@ -254,7 +255,7 @@ Exhaustive ticketed expansion of every actionable recommendation across the thre
 | ID | Title | Acceptance | Effort | Deps |
 |---|---|---|---|---|
 | PARAM-1 | `lathe scan-variants <file> <asset> --samples N` | Runs normalize/check/plan/build/certify per variant; summary table grouped by stage + diagnostic | M | — |
-| PARAM-2 | `lathe scan-params <file> <asset> --profile P --samples N` | Same but sampling parameter ranges (needs LANG-1) | S | LANG-1 |
+| PARAM-2 | `lathe scan-params <file> <asset> --profile P --samples N` | Same but sampling parameter ranges (needs LANG-NEW-1) | S | LANG-NEW-1 |
 | PARAM-3 | Per-sample pipeline run harness | Shared infra for PARAM-1 + PARAM-2 | S | — |
 | PARAM-4 | Failure grouping by stage + diagnostic code | Output: markdown table with stage × diagnostic → count of failed variants | S | PARAM-3 |
 | PARAM-5 | Failed-config reproducible fixture emit | Each failed config written as `tests/fixtures/scan_failures/<hash>.lth` | S | PARAM-4 |
@@ -289,7 +290,7 @@ These are breaking language changes; require coordinated update across spec + gr
 | LANG-NEW-7 | `joint` types (revolute/prismatic/fixed/coupling) | Grammar: `joint "hinge" { type: revolute; parent: "body"; child: "arm"; axis_ref: "@lathe[...]"; limits: [-90deg, 0deg] }` | M | LANG-NEW-6 |
 | LANG-NEW-8 | v0.2 coordinated migration | Update spec/grammar/schema/parser/normalizer/resolver/checker/examples/tests in one PR per AGENTS.md rule | XL | LANG-NEW-1 through LANG-NEW-7 |
 
-**Note.** Some LANG-* already exist in `plan_completeness.md` (LANG-1..3). Those are the earlier skeletons; the *-NEW-* variants here are the full scope forgecad implies.
+**Note.** `LANG-NEW-*` are net-new tickets. `plan_completeness.md` does **not** define `LANG-1..3`; the `-NEW-` suffix is retained to signal "full coordinated language migration" scope and to avoid ambiguity if a future minor language tweak gets a plain `LANG-1` ID.
 
 ---
 
@@ -383,16 +384,16 @@ These are breaking language changes; require coordinated update across spec + gr
 
 ---
 
-## E14. Security Cross-Ref
+## E14. Security — cross-ref + 2 net-new
 
-See `docs/plan_completeness.md` SEC-1..8 for path hardening, binary parser hardening, gitleaks, SBOM, CodeQL/Bandit/Semgrep/Trivy, threat model, Blender sandbox, `.lth` prompt-injection. These are the P0-before-public items and already tracked.
+See `docs/plan_completeness.md` SEC-1..8 for path hardening, binary parser hardening, gitleaks, SBOM, CodeQL/Bandit/Semgrep/Trivy, threat model, Blender sandbox, and `.lth` prompt-injection. Those 8 are already tracked there as P0-before-public and are **not** re-listed here.
 
-Additional items implied by the research docs but not yet in plan_completeness:
+Two additional items implied by the research docs that are **not** in `plan_completeness.md` and count as net-new tickets for this roadmap:
 
-| ID | Title | Notes |
-|---|---|---|
-| SEC-NEW-1 | Provider-output sandbox | When learned provider returns a mesh, treat as untrusted until size/format/sanity checks pass; extends SEC-2 binary-parser-hardening | M |
-| SEC-NEW-2 | Signed build reproducibility | Every certified build signed with ed25519 + reproducibility hash published; ties to BL-31 publish runner | M |
+| ID | Title | Acceptance | Effort | Deps |
+|---|---|---|---|---|
+| SEC-NEW-1 | Provider-output sandbox | Learned-provider mesh output is treated as untrusted until size / format / sanity checks pass; extends `plan_completeness.md` SEC-2 binary-parser-hardening specifically for provider-produced artifacts | M | — |
+| SEC-NEW-2 | Signed build reproducibility | Every certified build signed with ed25519 + reproducibility hash published; ties to BL-31 publish runner | M | — |
 
 ---
 
@@ -455,29 +456,66 @@ Cleanest critical path:
 
 ### V0.2 release — target 2–3 months
 
-**Theme.** Production-grade geometry + real game-ready stages + reports.
+**Theme.** Production-grade geometry + real game-ready stages + reports + Phase-1 refs (the non-geometric slice).
 
-Tickets in scope: all of `plan_completeness.md` P0 (OPS-1, SEC-1/2/3), E2 (robust geometry — GEO-1..8), E3 (real stages — STAGE-1..12), E4 MVP (RPT-1..6 without the full studio), E6 Godot AssetLib (ENG-1..6), E11 partial (BENCH-NEW-1 + BENCH-NEW-2 + BENCH-NEW-7), E14 security (plan_completeness SEC-4..8), E15 cache (PERF-1, PERF-2, PERF-4).
+Dependency audit against the epic ticket rows:
 
-Effort estimate: **12–16 engineer-weeks**.
+- `STAGE-3` (socket) + `STAGE-4` (pivot) depend on `REF-5` (selector manifest writer).
+- `RPT-1` (HTML report expansion) depends on `REF-5`.
+- `STAGE-6` (rig: hinge / slider / revolute joints) depends on `REF-5` **and** `LANG-NEW-6` (assembly block) — the latter is v0.2 language work scheduled for V0.5.
+- `RPT-6` (`snapshot --align-ref`) depends on `REF-9` (ref inspect with face normals), which depends on `REF-6` (face/edge extraction, heavy, deferred to V0.3).
 
-Acceptance: Every hero certifies without hidden fallback. 10th hero (satchel) on soft stack. Full HTML report for every build. `lathe-godot` on AssetLib. PyPI first release (V0.2.0 tag). Blog post #1 published.
+To make V0.2 executable without waiting on V0.3/V0.5:
+
+- **Pull a Phase-1 refs slice into V0.2.** The non-geometric refs (REF-1, REF-2, REF-3, REF-4, REF-5, REF-7, REF-8, REF-13, REF-14) are cheap (~2–3 weeks) and unblock STAGE-3, STAGE-4, and RPT-1. Phase-2 refs (face/edge extraction, REF-6 + REF-9..12 + REF-15 + REF-16) stay in V0.3.
+- **Defer STAGE-6 full rig/joint semantics to V0.5.** It legitimately needs LANG-NEW-6.
+- **Defer RPT-6 `--align-ref` to V0.3.** It legitimately needs REF-9.
+
+Tickets in scope for V0.2:
+
+- `plan_completeness.md` P0: `OPS-1`, `SEC-1`, `SEC-2`, `SEC-3`.
+- **E1 Phase-1 refs slice** (non-geometric): `REF-1`, `REF-2`, `REF-3`, `REF-4`, `REF-5`, `REF-7`, `REF-8`, `REF-13`, `REF-14` — 9 tickets.
+- **E2 robust geometry**: `GEO-1..8` — 8 tickets.
+- **E3 real stages minus STAGE-6**: `STAGE-1..5` + `STAGE-7..12` — 11 tickets. STAGE-6 moves to V0.5.
+- **E4 reports-only slice**: `RPT-1..5`. RPT-6 moves to V0.3; RPT-7..10 studio moves to V0.3. 5 tickets.
+- **E6 Godot maturity**: `ENG-2..6` — 5 tickets. (ENG-1 AssetLib submission is `plan_completeness.md` GTM-5.)
+- **E11 partial**: `BENCH-NEW-1`, `BENCH-NEW-2`, `BENCH-NEW-7` — 3 tickets.
+- **E14 security net-new**: `SEC-NEW-1`, `SEC-NEW-2` + `plan_completeness.md` `SEC-4..8`.
+- **E15 cache**: `PERF-1`, `PERF-2`, `PERF-4` — 3 tickets.
+
+Effort estimate: **14–18 engineer-weeks** (was 12–16; the Phase-1 refs slice adds ~2 weeks net after the STAGE-6 and RPT-6 removals offset some).
+
+Acceptance: Every hero certifies without hidden fallback. 10th hero (satchel) on soft stack. HTML report gains ref-aware navigation + inventory tables. `@lathe[...]` refs resolvable for non-geometric entities (build/asset/variant/stage/part/socket/collision/material/diagnostic). `lathe-godot` on AssetLib (via GTM-5). PyPI first release (V0.2.0 tag). Blog post #1 published.
 
 ### V0.3 release — target +3 months (5–6 months cumulative)
 
-**Theme.** Semantic refs + studio + standards + agent-first.
+**Theme.** Phase-2 refs (geometry extraction) + full studio + standards + agent-first.
 
-Tickets in scope: E1 (full semantic refs — REF-1..16), E4 full studio (RPT-7..10), E5 (STD-NEW-1..10), E7 (PROV-1..6), E10 (AGENT-1..7), E11 (BENCH-NEW-3..6), E13 partial (DXPOL-1, DXPOL-6, DXPOL-8), E15 (PERF-3, PERF-5).
+Tickets in scope:
+
+- **E1 Phase-2+3 refs**: `REF-6`, `REF-9`, `REF-10`, `REF-11`, `REF-12`, `REF-15`, `REF-16` — 7 tickets.
+- **E4 full studio + align-ref**: `RPT-6`, `RPT-7`, `RPT-8`, `RPT-9`, `RPT-10` — 5 tickets.
+- **E5 standards packaging**: `STD-NEW-1..10` — 10 tickets.
+- **E7 provider harness**: `PROV-1..6` — 6 tickets.
+- **E10 agent workflow**: `AGENT-1..7` — 7 tickets.
+- **E11 remainder**: `BENCH-NEW-3..6` — 4 tickets.
+- **E13 partial**: `DXPOL-1`, `DXPOL-6`, `DXPOL-8` — 3 tickets.
+- **E15 perf**: `PERF-3`, `PERF-5` — 2 tickets.
 
 Effort estimate: **12–15 engineer-weeks**.
 
-Acceptance: Every build addressable via `@lathe[...]`. Studio in browser. glTF Validator + usdchecker green on all heroes. Provider benchmark published. Agent skills live on Claude Code / Continue / Cursor. LLM scorecard published. Blog post #3 (benchmark) published. 3 design-partner LOIs signed.
+Acceptance: Every build addressable via `@lathe[...]` including faces/edges. Studio in browser with part-tree + diagnostic panel + URL state. glTF Validator + usdchecker green on all heroes. Provider benchmark published with same-asset × N-provider comparison. Agent skills live on Claude Code / Continue / Cursor. LLM scorecard published. Blog post #3 (benchmark) published. 3 design-partner LOIs signed.
 
 ### V0.5 release — target +3 months (8–9 months cumulative)
 
-**Theme.** v0.2 language extensions + parameter robustness + LSP.
+**Theme.** v0.2 language extensions + parameter robustness + LSP + deferred STAGE-6.
 
-Tickets in scope: E9 (LANG-NEW-1..8 full coordinated migration), E8 (PARAM-1..5), E13 (DXPOL-4, DXPOL-5, DXPOL-7).
+Tickets in scope:
+
+- **E9 v0.2 language**: `LANG-NEW-1..8` full coordinated migration — 8 tickets.
+- **E8 parameter robustness**: `PARAM-1..5` — 5 tickets. (PARAM-2 unblocks once LANG-NEW-1 lands.)
+- **STAGE-6** full rig/joint semantics deferred from V0.2 — 1 ticket. Unblocks once LANG-NEW-6 lands.
+- **E13 DX polish**: `DXPOL-4`, `DXPOL-5`, `DXPOL-7` — 3 tickets.
 
 Effort estimate: **10–14 engineer-weeks** (LANG-NEW-8 dominates).
 
@@ -504,7 +542,7 @@ Acceptance: SDF experimental lane live. Pyodide playground on web. Hosted regist
 | E3 Game-ready stages | 12 | 3–5 |
 | E4 Reports/Studio | 10 | 2–4 |
 | E5 Standards | 10 | 2–3 |
-| E6 Engine integration | 8 | 2–3 (+6+ for Unreal/Unity) |
+| E6 Engine integration | 7 | 2–3 (+6+ for Unreal/Unity) |
 | E7 Providers | 6 | 1–2 |
 | E8 Parameter robustness | 5 | 1 |
 | E9 v0.2 language | 8 | 6–10 |
@@ -512,10 +550,11 @@ Acceptance: SDF experimental lane live. Pyodide playground on web. Hosted regist
 | E11 Corpus discipline | 7 | 1–2 |
 | E12 SDF experimental | 4 | 2 |
 | E13 DX polish | 8 | 2–3 |
+| E14 Security net-new | 2 | <1 |
 | E15 Performance | 5 | 1–2 |
-| **Net-new total** | **114** | **30–50 engineer-weeks** |
+| **Net-new total** | **115** | **30–51 engineer-weeks** |
 
-Plus `plan_completeness.md` carries an additional 44 tickets for original-plan residuals. Combined grand total: **158 tickets**, roughly 45–65 engineer-weeks of work from current state to full V1.0.
+Plus `plan_completeness.md` carries an additional 44 tickets for original-plan residuals. Combined grand total: **159 tickets**, roughly 45–65 engineer-weeks of work from current state to full V1.0.
 
 ---
 
@@ -538,6 +577,7 @@ Which research doc motivates which ticket (quick-scan table). "C" = cad-research
 | E11 Corpus | BENCH-NEW-1..7 |  | ✓ |  |
 | E12 SDF | SDF-NEW-1..4 |  | ✓ |  |
 | E13 DX | DXPOL-1..8 |  | ✓ | ✓ |
+| E14 Security-NEW | SEC-NEW-1..2 |  |  | ✓ |
 | E15 Perf | PERF-1..5 |  |  | ✓ |
 
 ---
@@ -580,4 +620,4 @@ Each should be resolved with a short ADR (`docs/adr/000N-<topic>.md`) before the
 
 ---
 
-*Authored 2026-04-24. Source research: three GPT/Codex studies on text-to-cad, ForgeCAD, and direct Lathe audit. 114 net-new tickets across 12 substantive epics + 2 cross-reference epics. Total Lathe backlog across all sources: 158 tickets → 45–65 engineer-weeks to V1.0.*
+*Authored 2026-04-24; revised with dependency-respecting V0.2/V0.3/V0.5 slice + corrected counts. Source research: three GPT/Codex studies on text-to-cad, ForgeCAD, and direct Lathe audit. **115** net-new tickets across **13** substantive epics + 1 cross-reference epic (E16). Total Lathe backlog across all sources: **159** tickets → 45–65 engineer-weeks to V1.0. V0.2 critical-path starts with a Phase-1 refs slice (REF-1..5, REF-7, REF-8, REF-13, REF-14) alongside E2 + E3 so STAGE-3/4 and RPT-1 aren't blocked on V0.3 work.*
