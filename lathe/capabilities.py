@@ -12,7 +12,9 @@ import urllib.error
 from pathlib import Path
 from typing import Any
 
+from lathe.errors import LatheConfigError
 from lathe.net import NetGuardError, safe_urlopen
+from lathe.validation import validate_json_bytes
 
 
 _HUNYUAN_PROBE_MAX_BODY_BYTES = 64 * 1024
@@ -421,8 +423,20 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
         return {**base, "code": "request_failed", "message": str(exc)}
 
     body = response.body.decode("utf-8", errors="replace")
-    # TODO(security): trust-boundary JSON ingress; route through lathe/validation.py::validate_json with hunyuan_probe.schema.json in Wave 4.
-    payload = json.loads(body) if body.strip().startswith(("{", "[")) else {"raw": body}
+    if body.strip().startswith(("{", "[")):
+        try:
+            payload = validate_json_bytes(
+                body,
+                "hunyuan_probe",
+                source=base_url + "/health",
+                max_bytes=_HUNYUAN_PROBE_MAX_BODY_BYTES,
+            )
+        except LatheConfigError as exc:
+            return {**base, "status": response.status, "code": "invalid_health_payload", "message": str(exc)}
+        if not isinstance(payload, dict):
+            payload = {"raw": body[:_HUNYUAN_PROBE_MAX_BODY_BYTES]}
+    else:
+        payload = {"raw": body}
     return {**base, "available": True, "status": response.status, "code": "ok", "health": payload}
 
 
