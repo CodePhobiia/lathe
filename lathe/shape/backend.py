@@ -68,6 +68,7 @@ def run_shape_backend(
         candidates_count=candidates_count,
         conditioning=conditioning,
         mode=mode,
+        runtime_config=runtime_config,
     )
     if asset_graph.authoring.get("self_reliant_target") and mode in {"generate", "assemble", "adapt"} and not explicit_provider:
         provider_result = {

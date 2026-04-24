@@ -18,6 +18,7 @@ from ...fit_ir import FitIR
 from ...kit_ir import KitIR
 from ...reference_ir import ReferenceIR
 from ...repair_policy import RepairPolicyIR
+from ...errors import ShapeBundleError
 from ...shape_backend import (
     collect_shape_conditioning as _shape_collect_conditioning,
     run_shape_backend as _shape_run_backend,
@@ -163,6 +164,29 @@ def run(executor: Any) -> dict[str, Any]:
             "attempted_shape_provider_version": provider_report.get("selected_provider_version"),
         },
     }
+    watertight_flags = [bool(c.get("mesh_stats", {}).get("watertight", False)) for c in candidates]
+    watertight_rate = float(sum(watertight_flags)) / float(len(watertight_flags)) if watertight_flags else 0.0
+    bundle_stats = {
+        "candidate_count": len(candidates),
+        "watertight_candidate_count": int(sum(watertight_flags)),
+        "watertight_rate": round(watertight_rate, 6),
+        "geometry_kernel": scaffold_report.get("geometry_kernel"),
+    }
+    bundle["bundle_stats"] = bundle_stats
+
+    geometry_strict = bool(shape_cfg.get("geometry_strict", False))
+    if geometry_strict and watertight_rate < 1.0:
+        raise ShapeBundleError(
+            "not_watertight",
+            details={
+                **bundle_stats,
+                "strict": True,
+                "candidate_ids_non_watertight": [
+                    candidates[i]["candidate_id"] for i, ok in enumerate(watertight_flags) if not ok
+                ],
+            },
+        )
+
     executor.runtime["shape"] = {
         "bundle": bundle,
         "selected": selected,

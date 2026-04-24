@@ -110,6 +110,10 @@ lathe = "lathe.cli:main"
 "lathe.provider.shape.hunyuan2_1_http_v1" = "lathe.providers.adapters.hunyuan:hunyuan_provider"
 "lathe.provider.shape.vggt_local_v1" = "lathe.providers.adapters.vggt:vggt_provider"
 
+[project.entry-points."lathe.geometry_kernels"]
+"lathe.geometry.manifold_v1" = "lathe.geometry.manifold_kernel:manifold_kernel"
+"lathe.geometry.reference_v1" = "lathe.geometry.reference_kernel:reference_kernel"
+
 [project.entry-points."lathe.validators"]
 "lathe.validator.semantic_quality" = "lathe.validators.semantic_quality:evaluate_semantic_quality"
 "lathe.validator.visual_quality" = "lathe.validators.visual_quality:evaluate_visual_quality"

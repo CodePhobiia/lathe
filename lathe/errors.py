@@ -162,6 +162,17 @@ class ShapeMeshLoadError(ShapeProviderError):
     """
 
 
+class ShapeBundleError(BackendError):
+    """Raised when the shape-stage bundle fails a gate check (e.g. strict watertightness)."""
+
+    def __init__(self, code: str, details: dict[str, Any] | None = None) -> None:
+        details = details or {}
+        message = f"shape bundle gate failed [{code}]: {details}"
+        super().__init__(message)
+        self.code = code
+        self.details = details
+
+
 class TopologyAdapterError(BackendError):
     """Reserved for topology-adapter failures (Blender, future adapters)."""
 
@@ -235,6 +246,7 @@ __all__ = [
     "ShapeProviderUnavailable",
     "ShapeProviderExecutionError",
     "ShapeMeshLoadError",
+    "ShapeBundleError",
     "TopologyAdapterError",
     "UVAdapterError",
     "LatheExecutionError",

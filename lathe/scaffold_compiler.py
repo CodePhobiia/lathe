@@ -22,6 +22,7 @@ from .errors import ContractViolation
 from .feature_grammar import compile_feature_enhancements
 from .fidelity import infer_fidelity_profile
 from .geometry_kernel import fuse_shape_ir
+from .geometry import resolve_geometry_kernel
 from .mesh_ir import MeshIR
 from .repair_executor import execute_shape_repairs
 from .repair_planner import plan_shape_repairs
@@ -70,6 +71,100 @@ def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             )
         return _translated_cylinder(primitive.radius, primitive.height, primitive.center, primitive.axis)
     raise ValueError(f"Unsupported primitive type '{primitive.primitive_type}'")
+
+
+def _fuse_via_manifold_kernel(shape_ir: ShapeIR) -> tuple[trimesh.Trimesh, list[str]] | None:
+    """Fuse a ShapeIR into a watertight mesh using the Manifold CSG kernel.
+
+    Returns ``(mesh, face_parts)`` on success or ``None`` if Manifold is
+    unavailable or any CSG op raises. Face parts are assigned by
+    walking triangle centroids against the primitive bounding boxes;
+    this is good enough for courier_drone-class scenes and mirrors the
+    heuristic in :func:`lathe.geometry_kernel._assign_face_parts`.
+    """
+    try:
+        from .geometry.manifold_kernel import ManifoldKernel as _MK, manifold_available as _ma
+    except ImportError:
+        return None
+    if not _ma():
+        return None
+    try:
+        kernel = _MK()
+    except Exception:
+        return None
+
+    primitives = list(shape_ir.primitives)
+    if not primitives:
+        return None
+
+    part_handles: list[tuple[Any, str, str]] = []  # (handle, blend_mode, part)
+    for primitive in primitives:
+        try:
+            if primitive.primitive_type == "box":
+                handle = kernel.build_primitive(
+                    "box",
+                    extents=tuple(primitive.extents or (0.0, 0.0, 0.0)),
+                    center=tuple(primitive.center),
+                )
+            elif primitive.primitive_type == "cylinder":
+                handle = kernel.build_primitive(
+                    "cylinder",
+                    radius=float(primitive.radius or 0.0),
+                    height=float(primitive.height or 0.0),
+                    axis=primitive.axis,
+                    center=tuple(primitive.center),
+                )
+            else:
+                return None
+        except Exception:
+            return None
+        part_handles.append((handle, primitive.blend_mode or "union", primitive.part))
+
+    # Assemble: first union-positive, then subtract.
+    positives = [h for h in part_handles if h[1] != "subtract"]
+    negatives = [h for h in part_handles if h[1] == "subtract"]
+    if not positives:
+        return None
+    try:
+        acc = positives[0][0]
+        for h, _mode, _part in positives[1:]:
+            acc = kernel.union(acc, h)
+        for h, _mode, _part in negatives:
+            acc = kernel.difference(acc, h)
+        mesh = kernel.to_trimesh(acc)
+    except Exception:
+        return None
+
+    if len(mesh.faces) == 0:
+        return None
+
+    face_parts = _assign_face_parts_via_bounds(mesh, shape_ir)
+    return mesh, face_parts
+
+
+def _assign_face_parts_via_bounds(mesh: trimesh.Trimesh, shape_ir: ShapeIR) -> list[str]:
+    """Assign a part label per face by matching triangle centroids against ShapeRegion AABBs."""
+    centroids = np.asarray(mesh.triangles_center, dtype=np.float64)
+    entries: list[tuple[str, np.ndarray, np.ndarray, np.ndarray]] = []
+    for region in shape_ir.regions:
+        center = np.array(region.center, dtype=np.float64)
+        half = np.array(region.extents, dtype=np.float64) / 2.0
+        entries.append((region.part, center - half, center + half, center))
+    default_part = entries[0][0] if entries else "mesh"
+    labels: list[str] = []
+    for centroid in centroids:
+        best_part = default_part
+        best_distance = float("inf")
+        for part, bmin, bmax, center in entries:
+            extent = np.maximum((bmax - bmin) / 2.0, 1e-6)
+            delta = np.abs(centroid - center) - extent
+            outside = np.maximum(delta, 0.0)
+            distance = float(np.linalg.norm(outside / extent))
+            if distance < best_distance:
+                best_distance = distance
+                best_part = part
+        labels.append(best_part)
+    return labels
 
 
 def _native_candidate_score(asset_graph: AssetGraph, shape_ir: ShapeIR, conditioning: dict[str, Any], candidate_index: int) -> float:
@@ -150,9 +245,52 @@ def _runtime_from_shape_ir(
     feature_report: dict[str, Any],
     candidate_params: dict[str, Any],
     fidelity_profile,
+    geometry_kernel_id: str | None = None,
 ) -> dict[str, Any]:
     part_colors = {part.name: _make_color(part.name) for part in asset_graph.parts}
     fused_mesh_ir, integration_report = fuse_shape_ir(shape_ir, fidelity_profile)
+    if geometry_kernel_id and isinstance(integration_report, dict):
+        integration_report.setdefault("geometry_kernel", geometry_kernel_id)
+    if fused_mesh_ir is None and geometry_kernel_id == "lathe.geometry.manifold_v1":
+        manifold_fused = _fuse_via_manifold_kernel(shape_ir)
+        if manifold_fused is not None:
+            combined, face_parts = manifold_fused
+            integration_report = {
+                "mode": "manifold_csg",
+                "search_mode": "manifold_csg",
+                "geometry_kernel": geometry_kernel_id,
+                "body_count": int(len(combined.split(only_watertight=False))) if len(combined.faces) > 0 else 0,
+                "watertight": bool(combined.is_watertight),
+                "primitive_count": len(list(shape_ir.primitives)),
+            }
+            return {
+                "mesh": combined,
+                "face_parts": face_parts,
+                "part_colors": part_colors,
+                "units": "cm",
+                "meta": {
+                    "parts": sorted({region.part for region in shape_ir.regions}),
+                    "coarse_material_slots": max(1, len(asset_graph.materials)),
+                    "score": _native_candidate_score(asset_graph, shape_ir, conditioning, candidate_index),
+                    "selection_notes": _selection_notes(asset_graph, shape_ir, conditioning, candidate_index, fidelity_tier, feature_report.get("feature_ops_used", [])),
+                    "conditioning": {
+                        "provider": None,
+                        "reference_strength": conditioning.get("reference_strength", 0.0),
+                        "family": asset_graph.family,
+                        "native_scaffold": True,
+                        "mode": mode,
+                        "blueprint_id": shape_ir.blueprint_id,
+                    },
+                    "blueprint_id": shape_ir.blueprint_id,
+                    "primitives_used": list(shape_ir.primitives_used),
+                    "shape_assessment": dict(shape_ir.assessment),
+                    "repairs_applied": repairs_applied,
+                    "feature_report": feature_report,
+                    "candidate_params": candidate_params,
+                    "integration_report": integration_report,
+                    "mesh_ir": None,
+                },
+            }
     if fused_mesh_ir is None:
         named_meshes: list[tuple[str, trimesh.Trimesh]] = []
         face_parts = []
@@ -204,6 +342,7 @@ def compile_scaffold_candidates(
     candidates_count: int,
     conditioning: dict[str, Any],
     mode: str,
+    runtime_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Compile scaffold candidates.
 
@@ -219,6 +358,8 @@ def compile_scaffold_candidates(
     """
     candidate_records: list[dict[str, Any]] = []
     fidelity = infer_fidelity_profile(asset_graph)
+    geometry_kernel = resolve_geometry_kernel(runtime_config)
+    geometry_kernel_id = getattr(geometry_kernel, "name", None)
     source_best_of = int(asset_graph.authoring.get("space", {}).get("select", {}).get("best_of", 0) or 0)
     search_count = max(3 if fidelity.tier == "hero" else 1, candidates_count, source_best_of)
     for index in range(search_count):
@@ -285,6 +426,7 @@ def compile_scaffold_candidates(
                 feature_report=record["feature_report"],
                 candidate_params=record["candidate_params"],
                 fidelity_profile=fidelity,
+                geometry_kernel_id=geometry_kernel_id,
             )
         )
         shape_irs.append(record["shape_ir"])
@@ -322,5 +464,6 @@ def compile_scaffold_candidates(
             "shape_assessment": dict(first_ir.assessment),
             "repairs": repairs,
             "authoritative_candidate_reason": "native_assembly_blueprint",
+            "geometry_kernel": geometry_kernel_id,
         },
     }
