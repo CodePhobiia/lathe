@@ -132,7 +132,8 @@ branch = true
 omit = ["lathe/scaffolds/*", "lathe/__init__.py"]
 
 [tool.coverage.report]
-fail_under = 0  # Gate lifts to 85 in Wave 3 per plans/04_test_coverage.md
+# Ratchet gate at 65 (current measured: 69.66%); 85 target tracked as BL-39.
+fail_under = 65
 show_missing = true
 skip_covered = false
 

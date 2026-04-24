@@ -55,10 +55,23 @@ Audit surfaced only 1 trust-boundary site (`capabilities.py:425` Hunyuan probe).
 - **Scope:** `tests/contract/test_shape_handoff_v1.py` pinning the field set of the stable contract.
 - **Effort:** 0.5 day.
 
-### BL-26. Coverage gate lift
+### BL-26. Coverage gate lift — **PARTIAL** (ratchet at 65%)
 
-- **Scope:** once BL-20..BL-25 land, flip `.coveragerc` / `pyproject.toml` coverage `fail_under = 85`. Enable ruff `BLE001` and `S101` as hard rules.
-- **Effort:** 0.25 day.
+- Actual measured coverage after BL-20..BL-25: **69.66%** (line+branch). Below the 85% target.
+- Ratchet gate set to **65%** in `.coveragerc` + `pyproject.toml` to prevent regression.
+- Ruff `BLE001` + `S101` confirmed green on `lathe/` — no remaining violations after Waves 2.I/3.
+- The 85% push is filed as BL-39 (below).
+
+### BL-39. Push coverage from 69.66% to 85%+
+
+- **Source:** BL-26 ratchet follow-up; Plan 04 Phase 10 error-path coverage.
+- **Scope:** target modules below 70% line+branch coverage today:
+  - `lathe/validation.py` (51%)
+  - `lathe/executor.py`, `lathe/core/stages/*.py` — orchestration branch coverage
+  - Provider fallback paths not exercised by native-only tests
+  - Error-path coverage per Plan 04 Phase 10 (CLI subcommands, parser errors, checker rejections, resolver UnresolvedName, runtime_config malformed inputs)
+- **Acceptance:** `pytest --cov=lathe --cov-fail-under=85` green; lift ratchet to 85% in both `.coveragerc` and `pyproject.toml`.
+- **Effort:** 2–3 days.
 
 ## P2 — Plan 02 docs content (owned track)
 

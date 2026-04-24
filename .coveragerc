@@ -6,7 +6,9 @@ omit =
     lathe/__init__.py
 
 [report]
-fail_under = 0
+# Ratchet gate: prevents regression below the current measured baseline.
+# Plan 04's 85% target is tracked as BL-39 for a future Wave 5 test-backfill stage.
+fail_under = 65
 show_missing = True
 skip_covered = False
 precision = 2
