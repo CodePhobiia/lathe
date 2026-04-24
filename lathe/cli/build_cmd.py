@@ -3,12 +3,49 @@
 from __future__ import annotations
 
 import json
+import sys
 import warnings
 from pathlib import Path
 
 from ..providers.errors import ShapeProviderError
 from ..runtime_config import apply_cli_overrides, load_runtime_config
-from ._common import _dump
+from ._common import _dump, _emit_error
+
+
+def _resolve_report_format(args) -> str:
+    """Resolve ``--report`` or pick a default based on TTY status."""
+
+    explicit = getattr(args, "report", None)
+    if explicit:
+        return str(explicit).lower()
+    return "terminal" if sys.stdout.isatty() else "json"
+
+
+def _emit_report(report: dict, out_dir: Path, fmt: str) -> None:
+    """Render the resolved report format after a successful build."""
+
+    from ..reports import render_html_report, render_terminal_report, write_report
+
+    if fmt == "json":
+        _dump(report)
+        return
+    if fmt == "html":
+        path = write_report(report, out_dir, "html")
+        _dump(report)
+        print(f"HTML report: {path}", file=sys.stderr)
+        return
+    if fmt == "terminal":
+        print(render_terminal_report(report))
+        return
+    # Unknown -- structured error via _emit_error.
+    _emit_error(
+        "lathe.cli.build.invalid_report_format",
+        f"Unknown --report format: {fmt!r}",
+        "Use one of: terminal, html, json.",
+        exit_code=2,
+    )
+    # Unused but keeps linters happy about unused import
+    _ = render_html_report
 
 
 def _resolve_strict_flag(args) -> bool | None:
@@ -86,7 +123,7 @@ def run_build(args) -> None:
                     "driver": str(publish_target),
                     "message": str(publish_exc),
                 }
-        _dump(report)
+        _emit_report(report, out_dir, _resolve_report_format(args))
     except BuildError as exc:
         payload = {"ok": False, "message": str(exc), "diagnostics": exc.diagnostics}
         _dump(payload)

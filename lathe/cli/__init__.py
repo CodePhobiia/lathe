@@ -27,6 +27,7 @@ from .inspect_cmd import (
     run_inspect,
     run_inspect_blend,
     run_render_fixture,
+    run_serve,
 )
 from .library_cmd import run_library
 from .materialize_cmd import run_diff_asset, run_materialize
@@ -136,6 +137,16 @@ def _build_parser() -> argparse.ArgumentParser:
             "Driver-specific settings come from --runtime-config."
         ),
     )
+    p_build.add_argument(
+        "--report",
+        choices=["terminal", "html", "json"],
+        default=None,
+        help=(
+            "BL-36 (Plan 08 Phase 6): select the build-report output style. "
+            "Default: 'terminal' if stdout is a TTY, else 'json'. "
+            "'html' also writes report.html next to build_report.json."
+        ),
+    )
 
     p_probe_blender = sub.add_parser("probe-blender", help="Probe Blender availability and V1.3 execution capabilities")
     p_probe_blender.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
@@ -166,6 +177,26 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_inspect = sub.add_parser("inspect", help="Inspect V1.3.1 evidence from a completed build")
     p_inspect.add_argument("build_dir")
+    p_inspect.add_argument(
+        "--view",
+        action="store_true",
+        help=(
+            "BL-36 (Plan 08 Phase 7): open the build's packaged .glb in a "
+            "trimesh Scene viewer. Requires the optional 'trimesh' extra."
+        ),
+    )
+
+    p_serve = sub.add_parser(
+        "serve",
+        help="Serve a completed build's .glb via a local <model-viewer> page",
+        description=(
+            "BL-36 (Plan 08 Phase 7): start a local HTTP server that pairs the "
+            "vendored <model-viewer> viewer with a completed build's .glb. "
+            "Exit codes: 0 = clean shutdown; 2 = CLI usage error (missing dir)."
+        ),
+    )
+    p_serve.add_argument("build_dir")
+    p_serve.add_argument("--port", type=int, default=8765, help="HTTP port (default: 8765)")
 
     p_render_fixture = sub.add_parser("render-fixture", help="Report render-fixture evidence from a completed build")
     p_render_fixture.add_argument("build_dir")
@@ -298,6 +329,7 @@ _DISPATCH = {
     "explain-fit": run_explain_fit,
     "inspect-blend": run_inspect_blend,
     "inspect": run_inspect,
+    "serve": run_serve,
     "render-fixture": run_render_fixture,
     "bake-audit": run_bake_audit,
     "export-blend": run_export_blend,

@@ -1,15 +1,49 @@
-"""``lathe inspect`` / ``lathe inspect-blend`` subcommands.
+"""``lathe inspect`` / ``lathe inspect-blend`` / ``lathe serve`` subcommands.
 
 Dump human-readable views of normalized assets and retained Blender
-artefacts for debugging.
+artefacts for debugging, and serve a completed build's ``.glb`` via
+the vendored ``<model-viewer>`` web component.
 """
 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-from ._common import _dump
+from ._common import _dump, _emit_error
+
+
+def _run_view_mode(build_dir: Path) -> None:
+    """``lathe inspect <dir> --view``: open the build's .glb in trimesh."""
+
+    try:
+        import trimesh  # type: ignore
+    except ImportError:
+        _emit_error(
+            "lathe.cli.inspect.trimesh_missing",
+            "The --view mode requires the optional 'trimesh' package.",
+            "Install it with: pip install trimesh",
+            exit_code=3,
+        )
+        return
+
+    from ..viewer import _find_glb
+
+    glb = _find_glb(build_dir)
+    if glb is None or not glb.exists():
+        _emit_error(
+            "lathe.cli.inspect.no_glb",
+            f"No .glb artifact found under {build_dir}.",
+            "Run 'lathe build <file> <asset>' first, or pass a different build directory.",
+            exit_code=3,
+        )
+        return
+
+    scene = trimesh.load(str(glb), force="scene")
+    if not hasattr(scene, "show"):
+        scene = trimesh.Scene(scene)
+    scene.show()
 
 
 def run_inspect(args) -> None:
@@ -18,9 +52,32 @@ def run_inspect(args) -> None:
     Args:
         args: args argument.
     """
+    build_dir = Path(args.build_dir).resolve()
+    if getattr(args, "view", False):
+        _run_view_mode(build_dir)
+        return
+
     from ..bridge.blender_plan import inspect_completed_build
 
-    _dump(inspect_completed_build(Path(args.build_dir).resolve()))
+    _dump(inspect_completed_build(build_dir))
+
+
+def run_serve(args) -> None:
+    """``lathe serve <build_dir>``: HTTP-serve the artifact viewer."""
+
+    build_dir = Path(args.build_dir).resolve()
+    if not build_dir.is_dir():
+        _emit_error(
+            "lathe.cli.serve.missing_build_dir",
+            f"Build directory does not exist: {build_dir}",
+            "Run 'lathe build <file> <asset>' first, or pass a valid --out directory.",
+            exit_code=2,
+        )
+        return
+
+    from ..viewer import serve as _serve_viewer
+
+    _serve_viewer(build_dir, port=int(getattr(args, "port", 8765) or 8765))
 
 
 def run_inspect_blend(args) -> None:

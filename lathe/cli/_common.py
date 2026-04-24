@@ -8,12 +8,57 @@ from __future__ import annotations
 
 import glob
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 
 def _dump(data: Any) -> None:
     print(json.dumps(data, indent=2, sort_keys=False))
+
+
+_SEVERITY_ANSI = {
+    "error": "\033[1;31m",
+    "warning": "\033[1;33m",
+    "info": "\033[1;34m",
+}
+_ANSI_RESET = "\033[0m"
+
+
+def _stderr_is_tty() -> bool:
+    return bool(getattr(sys.stderr, "isatty", lambda: False)())
+
+
+def _emit_error(
+    code: str,
+    message: str,
+    next_step: str,
+    *,
+    exit_code: int = 2,
+    source_path: str | None = None,
+    source_line: int | None = None,
+    severity: str = "error",
+) -> None:
+    """Emit a structured CLI error to stderr and exit.
+
+    Writes a short, human-readable block:
+    ``lathe error [code]: message`` followed by an optional
+    ``  at <path>:<line>`` citation and a ``  Next step: <hint>`` line.
+    Color is applied when stderr is a TTY.
+    """
+
+    use_color = _stderr_is_tty()
+    tag = severity.lower()
+    prefix = _SEVERITY_ANSI.get(tag, "") if use_color else ""
+    reset = _ANSI_RESET if use_color and prefix else ""
+    lines: list[str] = []
+    lines.append(f"{prefix}lathe {tag} [{code}]{reset}: {message}")
+    if source_path:
+        citation = source_path if source_line is None else f"{source_path}:{source_line}"
+        lines.append(f"  at {citation}")
+    lines.append(f"  Next step: {next_step}")
+    print("\n".join(lines), file=sys.stderr)
+    raise SystemExit(exit_code)
 
 
 def _expand_files(patterns: list[str] | None) -> list[str]:
