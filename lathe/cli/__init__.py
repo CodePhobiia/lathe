@@ -37,6 +37,7 @@ from .patch_cmd import run_patch
 from .plan_cmd import run_fit, run_plan, run_surface_plan
 from .publish_cmd import register as _register_publish, run_publish
 from .surface_cmd import run_surface
+from .telemetry_cmd import register as _register_telemetry, run_telemetry
 from .test_cmd import run_audit, run_bench, run_test
 
 __all__ = ["main", "collect_doctor_report", "dump_doctor_json", "format_doctor_report"]
@@ -309,6 +310,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_patch.add_argument("--value2", default=None, help="Secondary value for operations that need two values")
 
     _register_publish(sub)
+    _register_telemetry(sub)
 
     return parser
 
@@ -348,6 +350,7 @@ _DISPATCH = {
     "surface-repair": run_surface,
     "build": run_build,
     "publish": run_publish,
+    "telemetry": run_telemetry,
     "render-eval": run_render_eval,
     "adapt": run_mode_build,
     "assemble": run_mode_build,

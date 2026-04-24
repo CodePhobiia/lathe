@@ -124,6 +124,12 @@ def run_build(args) -> None:
                     "message": str(publish_exc),
                 }
         _emit_report(report, out_dir, _resolve_report_format(args))
+        try:
+            from .. import telemetry as _telemetry
+
+            _telemetry.emit_build_ping(report)
+        except Exception:
+            pass
     except BuildError as exc:
         payload = {"ok": False, "message": str(exc), "diagnostics": exc.diagnostics}
         _dump(payload)
