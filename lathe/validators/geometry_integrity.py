@@ -47,36 +47,49 @@ def _get_runtime_mesh(runtime: dict[str, Any]) -> trimesh.Trimesh | None:
 def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
     """Return ``(rate, intersecting_pair_count, tested_pair_count)``.
 
-    Uses trimesh's edge-adjacency and a triangle-triangle intersection
-    sweep over non-adjacent face pairs in a bounding-box broad phase.
-    Adjacent faces share an edge or vertex and are excluded.
+    Broad phase is AABB overlap; narrow phase is a SAT + segment-pierces-
+    triangle test. Adjacent faces are excluded — adjacency is taken as
+    *shared vertex position* (not just shared index) so that seam-split
+    duplicates along part boundaries do not register as self-intersections.
     """
     faces = mesh.faces
     n_faces = int(len(faces))
     if n_faces < 2:
         return 0.0, 0, 0
 
-    adjacency_pairs: set[tuple[int, int]] = set()
-    face_adjacency = getattr(mesh, "face_adjacency", None)
-    if face_adjacency is not None and len(face_adjacency) > 0:
-        for a, b in np.asarray(face_adjacency):
-            lo, hi = (int(a), int(b)) if a < b else (int(b), int(a))
-            adjacency_pairs.add((lo, hi))
-
-    vertex_to_faces: dict[int, set[int]] = {}
-    for idx, face in enumerate(faces):
-        for vert in face:
-            vertex_to_faces.setdefault(int(vert), set()).add(idx)
-    for faces_at_vert in vertex_to_faces.values():
-        sorted_faces = sorted(faces_at_vert)
-        for i, fi in enumerate(sorted_faces):
-            for fj in sorted_faces[i + 1:]:
-                adjacency_pairs.add((fi, fj))
-
     try:
         tri_verts = mesh.vertices[faces]
     except (IndexError, ValueError):
         return 0.0, 0, 0
+
+    # Position-based vertex keys: snap each coordinate to a coarse grid so
+    # duplicated seam vertices at the same physical location fold into one
+    # bucket. This is a far more reliable "these two triangles touch" test
+    # than trimesh's face_adjacency (which is manifold-only).
+    extents = mesh.extents if hasattr(mesh, "extents") else (tri_verts.max(axis=(0, 1)) - tri_verts.min(axis=(0, 1)))
+    scale = float(max(1.0, float(np.max(extents))))
+    tol = 1e-6 * scale
+
+    def _key(point: np.ndarray) -> tuple[int, int, int]:
+        return (
+            int(round(float(point[0]) / tol)),
+            int(round(float(point[1]) / tol)),
+            int(round(float(point[2]) / tol)),
+        )
+
+    position_to_faces: dict[tuple[int, int, int], set[int]] = {}
+    for idx in range(n_faces):
+        for corner in range(3):
+            position_to_faces.setdefault(_key(tri_verts[idx, corner]), set()).add(idx)
+
+    adjacency_pairs: set[tuple[int, int]] = set()
+    for faces_at_pos in position_to_faces.values():
+        if len(faces_at_pos) < 2:
+            continue
+        sorted_faces = sorted(faces_at_pos)
+        for i_pos, fi in enumerate(sorted_faces):
+            for fj in sorted_faces[i_pos + 1:]:
+                adjacency_pairs.add((fi, fj))
 
     bounds_min = tri_verts.min(axis=1)
     bounds_max = tri_verts.max(axis=1)
@@ -113,17 +126,23 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
 def _triangles_intersect(a: np.ndarray, b: np.ndarray) -> bool:
     """Triangle-triangle intersection via separating-axis + segment test.
 
-    Returns True when the two triangles' interiors overlap or cross.
-    Coincident-edge / shared-vertex cases are already filtered out
-    upstream via the adjacency mask.
+    Returns True only when the two triangles' interiors properly cross.
+    Pairs that merely touch (shared vertex, coincident edge, coplanar
+    abutment) are excluded: the primary adjacency filter already catches
+    those for most cases, and this narrow-phase guards against the few
+    that slip through by bailing early when any corner is shared within
+    a generous tolerance.
     """
-    shared = 0
+    tol = 1e-6 * max(
+        1.0,
+        float(
+            np.max(np.abs(np.concatenate([a.ravel(), b.ravel()])))
+        ),
+    )
     for va in a:
         for vb in b:
-            if np.allclose(va, vb, atol=1e-9):
-                shared += 1
-    if shared >= 1:
-        return False
+            if np.all(np.abs(va - vb) < tol):
+                return False
 
     n_a = np.cross(a[1] - a[0], a[2] - a[0])
     n_b = np.cross(b[1] - b[0], b[2] - b[0])
@@ -132,20 +151,22 @@ def _triangles_intersect(a: np.ndarray, b: np.ndarray) -> bool:
     d_a = -float(np.dot(n_a, a[0]))
     d_b = -float(np.dot(n_b, b[0]))
 
+    # SAT over both face normals: if all of one triangle lies strictly on
+    # one side of the other's plane, they cannot cross.
+    plane_eps = tol
     dist_b_to_a = np.dot(b, n_a) + d_a
-    if np.all(dist_b_to_a > 1e-9) or np.all(dist_b_to_a < -1e-9):
+    if np.all(dist_b_to_a > plane_eps) or np.all(dist_b_to_a < -plane_eps):
         return False
     dist_a_to_b = np.dot(a, n_b) + d_b
-    if np.all(dist_a_to_b > 1e-9) or np.all(dist_a_to_b < -1e-9):
+    if np.all(dist_a_to_b > plane_eps) or np.all(dist_a_to_b < -plane_eps):
         return False
 
-    # Check if any edge of triangle b pierces triangle a's plane inside a.
     for edge_start, edge_end in ((b[0], b[1]), (b[1], b[2]), (b[2], b[0])):
-        hit = _segment_pierces_triangle(edge_start, edge_end, a, n_a, d_a)
+        hit = _segment_pierces_triangle(edge_start, edge_end, a, n_a, d_a, tol)
         if hit:
             return True
     for edge_start, edge_end in ((a[0], a[1]), (a[1], a[2]), (a[2], a[0])):
-        hit = _segment_pierces_triangle(edge_start, edge_end, b, n_b, d_b)
+        hit = _segment_pierces_triangle(edge_start, edge_end, b, n_b, d_b, tol)
         if hit:
             return True
     return False
@@ -157,28 +178,35 @@ def _segment_pierces_triangle(
     tri: np.ndarray,
     n: np.ndarray,
     d: float,
+    tol: float,
 ) -> bool:
     dir_vec = p1 - p0
     denom = float(np.dot(n, dir_vec))
     if abs(denom) < 1e-12:
         return False
     t = -(float(np.dot(n, p0)) + d) / denom
-    if t < 1e-9 or t > 1.0 - 1e-9:
+    # Require the piercing point to land strictly *inside* the segment;
+    # endpoint hits are excluded so edge-shared pairs don't register.
+    if t < tol or t > 1.0 - tol:
         return False
     hit = p0 + t * dir_vec
-    return _point_in_triangle(hit, tri, n)
+    return _point_in_triangle(hit, tri, n, tol)
 
 
-def _point_in_triangle(point: np.ndarray, tri: np.ndarray, n: np.ndarray) -> bool:
+def _point_in_triangle(
+    point: np.ndarray, tri: np.ndarray, n: np.ndarray, tol: float
+) -> bool:
     c0 = np.cross(tri[1] - tri[0], point - tri[0])
     c1 = np.cross(tri[2] - tri[1], point - tri[1])
     c2 = np.cross(tri[0] - tri[2], point - tri[2])
     s0 = float(np.dot(c0, n))
     s1 = float(np.dot(c1, n))
     s2 = float(np.dot(c2, n))
-    eps = 1e-9
-    return (s0 >= -eps and s1 >= -eps and s2 >= -eps) or (
-        s0 <= eps and s1 <= eps and s2 <= eps
+    # Strict interior: require same-sign, *not* equal to zero, so that a
+    # hit landing on a triangle's own edge doesn't count as penetration.
+    eps = tol
+    return (s0 > eps and s1 > eps and s2 > eps) or (
+        s0 < -eps and s1 < -eps and s2 < -eps
     )
 
 
