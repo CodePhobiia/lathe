@@ -1,0 +1,28 @@
+{
+  "date": "2026-04-24",
+  "asset_count": 1,
+  "runs": [
+    {
+      "asset": "control_pedestal",
+      "system": "lathe_fallback",
+      "date": "2026-04-24",
+      "result": "ok",
+      "metrics": {
+        "wall_clock_s": 2.375,
+        "peak_memory_mb": null,
+        "score": 0.842405,
+        "threshold": 0.83,
+        "certified": true,
+        "glb_sha256": "9e2ceed007dc14ad3d7c0b856bc0c1d6e0fad952689f45b3ba9c4e07aad15210",
+        "triangle_count": 56,
+        "uv_valid": true,
+        "collision_present": true,
+        "pivot_correct": true,
+        "reproducible": null,
+        "reproducibility_hashes": []
+      },
+      "diagnostics": [],
+      "note": null
+    }
+  ]
+}

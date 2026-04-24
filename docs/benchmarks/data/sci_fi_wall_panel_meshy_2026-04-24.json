@@ -1,0 +1,22 @@
+{
+  "asset": "sci_fi_wall_panel",
+  "system": "meshy",
+  "date": "2026-04-24",
+  "result": "not_run",
+  "metrics": {
+    "wall_clock_s": null,
+    "peak_memory_mb": null,
+    "score": null,
+    "threshold": null,
+    "certified": null,
+    "glb_sha256": null,
+    "triangle_count": null,
+    "uv_valid": null,
+    "collision_present": null,
+    "pivot_correct": null,
+    "reproducible": null,
+    "reproducibility_hashes": []
+  },
+  "diagnostics": [],
+  "note": "Competitor run not executed. See docs/benchmarks/competitors/meshy.md for manual run instructions and --ingest-manifest path."
+}
