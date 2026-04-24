@@ -1,19 +1,42 @@
 """Validate stage step body.
 
-Runs the five validators (semantic, visual, flow, plus runtime rule
-evaluation), computes the critic score, and decides certification.
-Extracted from ``lathe/executor.py`` during Stage 2.IV.
+Runs the validator pipeline (semantic, visual, flow) plus runtime
+rule evaluation, computes the critic score, and decides certification.
+Extracted from ``lathe/executor.py`` during Stage 2.IV; formalised into
+a :class:`ValidatorPipeline` during Plan 03 Phase 5.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from ...validators.composition import FunctionValidator, ValidatorPipeline
 from ...validators.flow_quality import evaluate_flow_quality
 from ...validators.semantic_quality import evaluate_semantic_quality
 from ...validators.visual_quality import evaluate_visual_quality
 from ..common import dump_json
 from ..evaluators import evaluate_critic, evaluate_metric, evaluate_rule
+
+
+_PIPELINE = ValidatorPipeline(
+    [
+        FunctionValidator(
+            name="semantic_quality",
+            fn=evaluate_semantic_quality,
+            stage_dependencies=["shape", "topology"],
+        ),
+        FunctionValidator(
+            name="visual_quality",
+            fn=evaluate_visual_quality,
+            stage_dependencies=["shape", "topology", "uv", "surface"],
+        ),
+        FunctionValidator(
+            name="flow_quality",
+            fn=evaluate_flow_quality,
+            stage_dependencies=["shape", "topology", "uv", "surface"],
+        ),
+    ]
+)
 
 
 def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
@@ -28,14 +51,16 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     """
     stage_dir = executor.stage_dirs["validate"]
     diagnostics: list[dict[str, Any]] = []
-    semantic_report = evaluate_semantic_quality(executor.asset, executor.runtime)
+
+    cert_bundle = _PIPELINE.run(executor.runtime, executor.asset, artifacts={})
+    semantic_report = cert_bundle["validators"]["semantic_quality"]["evidence"]
+    visual_report = cert_bundle["validators"]["visual_quality"]["evidence"]
+    flow_report = cert_bundle["validators"]["flow_quality"]["evidence"]
     executor.runtime["semantic_quality"] = semantic_report
-    diagnostics.extend(semantic_report["diagnostics"])
-    visual_report = evaluate_visual_quality(executor.asset, executor.runtime)
     executor.runtime["visual_quality"] = visual_report
-    diagnostics.extend(visual_report["diagnostics"])
-    flow_report = evaluate_flow_quality(executor.asset, executor.runtime)
     executor.runtime["flow_quality"] = flow_report
+    diagnostics.extend(semantic_report["diagnostics"])
+    diagnostics.extend(visual_report["diagnostics"])
     diagnostics.extend(flow_report["diagnostics"])
     diagnostics.extend(executor.runtime.get("execution", {}).get("bundle", {}).get("diagnostics", []))
     rule_results = []
