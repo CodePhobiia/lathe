@@ -13,6 +13,17 @@ def run_doctor(args) -> None:
         args: args argument.
     """
     from . import collect_doctor_report, dump_doctor_json, format_doctor_report
+    from ..doctor import collect_plugin_report, format_plugin_report
+
+    if getattr(args, "plugins", False):
+        report = collect_plugin_report()
+        if args.json:
+            import json
+
+            print(json.dumps(report, indent=2, sort_keys=False))
+        else:
+            print(format_plugin_report(report))
+        return
 
     runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
     report = collect_doctor_report(runtime_config)

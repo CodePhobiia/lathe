@@ -55,6 +55,7 @@ dev = [
   "build",
   "pip-audit",
   "bump-my-version",
+  "import-linter>=2.0",
 ]
 docs = [
   "mkdocs-material>=9.5",
@@ -86,6 +87,34 @@ publish = [
 
 [project.scripts]
 lathe = "lathe.cli:main"
+
+# Plan 03 Phase 2: plugin entry-point registry. Built-in backends,
+# stacks, providers, and validators are dogfooded through the same
+# entry-point surface third-party plugins will use. See
+# docs/extending.md for author-facing guidance.
+
+[project.entry-points."lathe.backends"]
+"lathe.topology.blender_hard_surface_v1" = "lathe.backends:hard_surface_topology_backend"
+"lathe.topology.blender_subdiv_v1" = "lathe.backends:subdiv_topology_backend"
+"lathe.uv.xatlas_v1" = "lathe.backends:xatlas_uv_backend"
+"lathe.package.openusd_gltf_v1" = "lathe.backends:openusd_gltf_package_backend"
+"lathe.shape.intent_mesh_handoff_v1" = "lathe.backends:intent_mesh_handoff_shape_backend"
+
+[project.entry-points."lathe.stacks"]
+"lathe.stack.hard_surface_game_asset_v1" = "lathe.backends:hard_surface_stack"
+"lathe.stack.soft_surface_prop_v1" = "lathe.backends:soft_surface_stack"
+
+[project.entry-points."lathe.providers.shape"]
+"lathe.provider.shape.reference_conditioned_v1" = "lathe.providers.adapters.reference_conditioned:reference_conditioned_provider"
+"lathe.provider.shape.hunyuan2_1_http_v1" = "lathe.providers.adapters.hunyuan:hunyuan_provider"
+"lathe.provider.shape.vggt_local_v1" = "lathe.providers.adapters.vggt:vggt_provider"
+
+[project.entry-points."lathe.validators"]
+"lathe.validator.semantic_quality" = "lathe.validators.semantic_quality:evaluate_semantic_quality"
+"lathe.validator.visual_quality" = "lathe.validators.visual_quality:evaluate_visual_quality"
+"lathe.validator.flow_quality" = "lathe.validators.flow_quality:evaluate_flow_quality"
+"lathe.validator.surface_quality" = "lathe.validators.surface_quality:evaluate_surface_quality"
+"lathe.validator.silhouette" = "lathe.validators.silhouette:compare_scaffold_signature"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -178,6 +207,7 @@ dev = [
   "build",
   "pip-audit",
   "bump-my-version",
+  "import-linter>=2.0",
 ]
 docs = [
   "mkdocs-material>=9.5",

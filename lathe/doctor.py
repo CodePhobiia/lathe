@@ -181,6 +181,80 @@ def format_doctor_report(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# Plugin registry report (Plan 03 Phase 2)
+# ---------------------------------------------------------------------------
+
+
+_PLUGIN_GROUPS: tuple[str, ...] = (
+    "lathe.backends",
+    "lathe.stacks",
+    "lathe.providers.shape",
+    "lathe.validators",
+)
+
+
+def collect_plugin_report() -> dict[str, Any]:
+    """Enumerate entry-point-discovered Lathe plugins.
+
+    Returns a map keyed by entry-point group, each pointing at a list of
+    ``{name, value, resolvable, error}`` records. ``resolvable=False``
+    with an ``error`` string means the entry point is declared but its
+    target cannot be imported -- the common "broken third-party plugin"
+    signal for ``lathe doctor --plugins``.
+    """
+    try:
+        from importlib.metadata import entry_points
+    except ImportError:  # pragma: no cover
+        return {"groups": {group: [] for group in _PLUGIN_GROUPS}}
+
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for group in _PLUGIN_GROUPS:
+        try:
+            eps = entry_points(group=group)
+        except TypeError:  # pragma: no cover - Python <3.10 API
+            eps = entry_points().get(group, [])  # type: ignore[attr-defined]
+        records: list[dict[str, Any]] = []
+        for ep in eps:
+            record: dict[str, Any] = {
+                "name": ep.name,
+                "value": ep.value,
+                "resolvable": False,
+                "error": None,
+            }
+            try:
+                ep.load()
+                record["resolvable"] = True
+            except Exception as exc:  # noqa: BLE001 - best-effort probe
+                record["error"] = str(exc)
+            records.append(record)
+        groups[group] = sorted(records, key=lambda item: item["name"])
+    return {"groups": groups}
+
+
+def format_plugin_report(report: dict[str, Any]) -> str:
+    """Format plugin report.
+
+    Args:
+        report: report argument.
+
+    Returns:
+        The result.
+    """
+    lines = ["Lathe Plugins (entry points)"]
+    for group, records in report["groups"].items():
+        lines.append("")
+        lines.append(f"[{group}]")
+        if not records:
+            lines.append("  (none discovered)")
+            continue
+        for item in records:
+            status = "ok" if item["resolvable"] else "unresolvable"
+            suffix = f" ({item['error']})" if item["error"] else ""
+            lines.append(f"  - {item['name']} -> {item['value']}: {status}{suffix}")
+    return "\n".join(lines)
+
+
 def dump_doctor_json(report: dict[str, Any]) -> str:
     """Dump doctor json.
 

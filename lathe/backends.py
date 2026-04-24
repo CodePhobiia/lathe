@@ -16,11 +16,14 @@ analysis.
 
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
 from typing import Any
 
 # re-export — authoritative definition lives in lathe/errors.py
 from .errors import BackendResolutionError
+
+_LOGGER = logging.getLogger(__name__)
 
 
 PACKAGE_FORMATS = ["usd", "usdz", "glb", "gltf", "fbx", "obj"]
@@ -508,6 +511,113 @@ def select_stack(asset: dict[str, Any]) -> dict[str, Any]:
     stack = _deepcopy(STACKS[chosen_id])
     stack["resolved"] = True
     return stack
+
+
+# ---------------------------------------------------------------------------
+# Plugin registry (Plan 03 Phase 2)
+# ---------------------------------------------------------------------------
+#
+# Third-party packages register extra backends, stacks, providers, or
+# validators via ``[project.entry-points]`` in their pyproject.toml. The
+# four groups are:
+#
+#   - ``lathe.backends``          -> dict registered into BACKENDS
+#   - ``lathe.stacks``            -> dict registered into STACKS
+#   - ``lathe.providers.shape``   -> dict descriptor registered into the
+#                                    shape-provider registry
+#   - ``lathe.validators``        -> callable evaluator
+#
+# Built-in backends/stacks are also exported through entry points so
+# third-party plugins have a reference implementation. The module-level
+# constants below are the stable importable names that entry points
+# resolve to.
+#
+# See ``docs/extending.md`` for author-facing guidance.
+
+# Module-level shims used by [project.entry-points."lathe.backends"] /
+# "lathe.stacks". Entry points can only reference importable symbols,
+# so we expose each built-in registry row as a top-level constant.
+hard_surface_topology_backend: dict[str, Any] = BACKENDS["lathe.topology.blender_hard_surface_v1"]
+subdiv_topology_backend: dict[str, Any] = BACKENDS["lathe.topology.blender_subdiv_v1"]
+xatlas_uv_backend: dict[str, Any] = BACKENDS["lathe.uv.xatlas_v1"]
+openusd_gltf_package_backend: dict[str, Any] = BACKENDS["lathe.package.openusd_gltf_v1"]
+intent_mesh_handoff_shape_backend: dict[str, Any] = BACKENDS["lathe.shape.intent_mesh_handoff_v1"]
+
+hard_surface_stack: dict[str, Any] = STACKS["lathe.stack.hard_surface_game_asset_v1"]
+soft_surface_stack: dict[str, Any] = STACKS["lathe.stack.soft_surface_prop_v1"]
+
+
+_PLUGIN_BACKENDS_LOADED = False
+
+
+def load_plugin_backends(*, force: bool = False) -> dict[str, list[str]]:
+    """Discover backends/stacks registered via entry points.
+
+    Scans the ``lathe.backends`` and ``lathe.stacks`` entry-point groups
+    exposed by installed distributions and merges the resolved descriptor
+    dicts into :data:`BACKENDS` / :data:`STACKS`. IDs that already exist
+    are *not* overridden (the built-in definition wins); duplicates are
+    logged at ``DEBUG`` level so plugin authors can notice collisions.
+
+    The function is idempotent: subsequent calls are a no-op unless
+    ``force=True`` is passed (mainly for tests). Missing or non-importable
+    entry points are logged and skipped so a broken third-party plugin
+    cannot prevent Lathe from starting.
+
+    Returns:
+        A ``{"backends": [...], "stacks": [...]}`` map of *added* IDs.
+    """
+    global _PLUGIN_BACKENDS_LOADED
+    added: dict[str, list[str]] = {"backends": [], "stacks": []}
+    if _PLUGIN_BACKENDS_LOADED and not force:
+        return added
+
+    try:
+        from importlib.metadata import entry_points
+    except ImportError:  # pragma: no cover
+        _PLUGIN_BACKENDS_LOADED = True
+        return added
+
+    for group, registry, bucket in (
+        ("lathe.backends", BACKENDS, "backends"),
+        ("lathe.stacks", STACKS, "stacks"),
+    ):
+        try:
+            eps = entry_points(group=group)
+        except TypeError:  # pragma: no cover - Python <3.10 API
+            eps = entry_points().get(group, [])  # type: ignore[attr-defined]
+        for ep in eps:
+            try:
+                descriptor = ep.load()
+            except Exception as exc:  # noqa: BLE001 - plugin failures are non-fatal
+                _LOGGER.warning(
+                    "lathe plugin entry-point %r (%s) failed to load: %s",
+                    ep.name,
+                    group,
+                    exc,
+                )
+                continue
+            if not isinstance(descriptor, dict) or "id" not in descriptor:
+                _LOGGER.warning(
+                    "lathe plugin entry-point %r (%s) is not a descriptor dict with an 'id' field; skipping",
+                    ep.name,
+                    group,
+                )
+                continue
+            plugin_id = descriptor["id"]
+            if plugin_id in registry:
+                _LOGGER.debug(
+                    "lathe plugin %r from %s collides with built-in %r; built-in wins",
+                    ep.name,
+                    group,
+                    plugin_id,
+                )
+                continue
+            registry[plugin_id] = descriptor
+            added[bucket].append(plugin_id)
+
+    _PLUGIN_BACKENDS_LOADED = True
+    return added
 
 
 def resolve_selected_backends(asset: dict[str, Any]) -> dict[str, Any]:

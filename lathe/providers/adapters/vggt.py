@@ -24,6 +24,15 @@ from ..mesh_ops import _mesh_quality_score, _runtime_from_mesh
 PROVIDER_ID = "lathe.provider.shape.vggt_local_v1"
 
 
+def vggt_provider() -> dict[str, str]:
+    """Entry-point shim for ``lathe.providers.shape``.
+
+    Returns the provider id so the plugin-discovery code can resolve
+    the full descriptor from :mod:`lathe.providers.registry`.
+    """
+    return {"id": PROVIDER_ID}
+
+
 def _non_material_image_refs(conditioning: dict[str, Any]) -> list[dict[str, Any]]:
     return [item for item in conditioning.get("image_refs", []) if item.get("kind") != "material"]
 

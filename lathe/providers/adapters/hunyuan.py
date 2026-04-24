@@ -24,6 +24,15 @@ from ..transport.http import (
 
 PROVIDER_ID = "lathe.provider.shape.hunyuan2_1_http_v1"
 
+
+def hunyuan_provider() -> dict[str, str]:
+    """Entry-point shim for ``lathe.providers.shape``.
+
+    Returns the provider id so the plugin-discovery code can resolve
+    the full descriptor from :mod:`lathe.providers.registry`.
+    """
+    return {"id": PROVIDER_ID}
+
 # GLB containers start with the ASCII magic ``glTF``; used for a cheap sniff
 # before the mesh loader in case the transport-level content-type check was
 # lenient (e.g. ``application/octet-stream``).

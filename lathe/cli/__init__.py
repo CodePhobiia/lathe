@@ -78,6 +78,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_doctor = sub.add_parser("doctor", help="Inspect the local Lathe environment and backend/provider availability")
     p_doctor.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
     p_doctor.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    p_doctor.add_argument(
+        "--plugins",
+        action="store_true",
+        help=(
+            "Plan 03 Phase 2: list backends, stacks, shape providers, and "
+            "validators discovered via the ``lathe.*`` entry-point groups, "
+            "with their resolvable status. Also runs under --json."
+        ),
+    )
 
     p_check = sub.add_parser("check", help="Run semantic checks")
     p_check.add_argument("file")

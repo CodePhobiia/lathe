@@ -1,0 +1,142 @@
+; import-linter configuration (Plan 03 Phase 3).
+;
+; Enforces the Lathe compiler-pipeline layering contract so the
+; frontend/core/contracts boundary stays one-directional, backend
+; siblings don't reach into each other, shared-contract modules don't
+; acquire heavy runtime dependencies, and provider adapters stay
+; isolated from the shape backend's internals.
+;
+; These contracts are seeded permissive so they land green on head
+; aababd2. They are deliberately *not* over-constrained -- future PRs
+; should tighten ``ignore_imports`` lists (and convert ``Forbidden``
+; contracts into ``Layers``) as the codebase catches up.
+;
+; Run locally:
+;   lint-imports --config .importlinter
+;   scripts/check_arch.sh
+;   scripts/check_arch.ps1
+;
+; The pytest suite in tests/test_architecture.py shells out to this
+; tool and skips cleanly when import-linter is not installed.
+
+[importlinter]
+root_packages =
+    lathe
+include_external_packages = True
+; Allow transitive re-exports from __init__.py modules while the
+; codebase is still being tidied up.  Future waves can flip this
+; to False once the layering seed list (see Contract 1 below) is
+; narrowed down.
+allow_indirect_imports = True
+
+; ---------------------------------------------------------------------
+; Contract 1: compiler-stage layering
+; ---------------------------------------------------------------------
+; Frontend (source text -> AST -> resolved asset) sits above the
+; deterministic Core (planner, executor, capabilities, runtime_config),
+; which in turn sits above the stable Contracts surface (shape,
+; providers, backends, validators).  Reverse imports are forbidden.
+;
+; allow_indirect_imports keeps the contract stable against transitive
+; re-exports from __init__.py modules while the codebase is still
+; being tidied up.
+
+[importlinter:contract:lathe-layering]
+name = Lathe frontend/core/contracts layering
+type = layers
+layers =
+    lathe.parser | lathe.normalizer | lathe.resolver | lathe.checker
+    lathe.planner | lathe.executor | lathe.capabilities | lathe.runtime_config
+    lathe.shape | lathe.providers | lathe.backends | lathe.validators
+; Plan 03 Phase 3 seed list: these are existing same-layer /
+; bottom-up edges that the layering contract would otherwise flag.
+; They are intentionally allowed today so the contract lands green;
+; future waves should migrate the callsite (or move the module to a
+; different layer) and remove the corresponding line.  Each ignore
+; must match an import that actually exists.
+ignore_imports =
+    ; --- same-layer frontend cycles (parser <-> normalizer <-> resolver <-> checker)
+    lathe.checker.assets -> lathe.resolver
+    lathe.checker -> lathe.resolver
+    lathe.checker.language -> lathe.resolver
+    lathe.resolver -> lathe.normalizer
+    ; --- executor is the top-level orchestrator; it depends on everything
+    lathe.executor -> lathe.normalizer
+    lathe.executor -> lathe.checker
+    lathe.executor -> lathe.resolver
+    lathe.executor -> lathe.runtime_config
+    lathe.executor -> lathe.planner
+    lathe.executor -> lathe.capabilities
+    ; --- planner reads resolved assets to plan the build
+    lathe.planner -> lathe.resolver
+    ; --- providers currently probes capabilities at selection time
+    lathe.providers -> lathe.capabilities
+    lathe.providers.selection -> lathe.capabilities
+    ; --- shape backend reaches up into the shape-provider mux helper
+    lathe.shape.backend -> lathe.shape_providers
+    lathe.shape_providers -> lathe.providers
+    ; --- core stages reach into capability probes for adapter dispatch
+    lathe.core.stages.execution -> lathe.blender_execution
+    lathe.blender_execution -> lathe.blender
+    lathe.blender -> lathe.blender.execution
+    lathe.blender.execution -> lathe.capabilities
+    lathe.core.stages.topology -> lathe.capabilities
+    lathe.core.stages.uv -> lathe.capabilities
+
+; ---------------------------------------------------------------------
+; Contract 2: backend-sibling independence
+; ---------------------------------------------------------------------
+; Individual backend adapters live under ``lathe.*`` siblings and must
+; not cross-import each other's implementations directly; shared
+; plumbing belongs in ``lathe.backends`` or a deliberately shared
+; helper module.  This contract is forbidden-type (vs. independence)
+; so we can keep the contract green without enumerating every sibling.
+
+[importlinter:contract:backend-sibling-isolation]
+name = Backend siblings don't import each other directly
+type = forbidden
+source_modules =
+    lathe.topology_runtime
+    lathe.uv_runtime
+    lathe.surface_runtime
+forbidden_modules =
+    lathe.shape.backend
+
+; ---------------------------------------------------------------------
+; Contract 3: contract-layer purity
+; ---------------------------------------------------------------------
+; Shared-contract modules (errors, validation, constants) must not
+; acquire heavy runtime dependencies -- they're imported at startup by
+; every subcommand.  Kept as a forbidden contract so the scope stays
+; narrow and auditable.
+
+[importlinter:contract:contract-purity]
+name = Contract modules stay free of heavy runtime deps
+type = forbidden
+source_modules =
+    lathe.errors
+    lathe.validation
+    lathe.constants
+forbidden_modules =
+    numpy
+    trimesh
+    PIL
+    urllib
+
+; ---------------------------------------------------------------------
+; Contract 4: provider adapter isolation
+; ---------------------------------------------------------------------
+; Provider adapters under ``lathe.providers.adapters`` may only reach
+; into ``lathe.providers.transport`` (HTTP / mesh-ops plumbing) and
+; never into ``lathe.shape.backend`` (the handoff contract runner).
+
+[importlinter:contract:providers-isolation]
+name = Provider adapters don't import the shape backend runner
+type = forbidden
+source_modules =
+    lathe.providers.adapters.reference_conditioned
+    lathe.providers.adapters.hunyuan
+    lathe.providers.adapters.vggt
+forbidden_modules =
+    lathe.shape.backend
+    lathe.executor
