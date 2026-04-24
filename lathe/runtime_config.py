@@ -137,6 +137,16 @@ DEFAULT_RUNTIME_CONFIG: dict[str, Any] = {
             "render_device": "cpu",
         },
     },
+    # BL-33 (Plan 08 Phase 3): autonomous multi-round repair loop. When
+    # ``autonomous`` is True (default), BuildExecutor.build invokes
+    # ``lathe.repair_loop.run_repair_loop`` after a non-certified validate
+    # pass; users can disable the loop entirely or tune its budget here.
+    "repair": {
+        "autonomous": True,
+        "max_rounds": 3,
+        "min_improvement": 0.01,
+        "budget_seconds": 180.0,
+    },
 }
 
 

@@ -159,21 +159,22 @@ class BuildExecutor:
         optimize_bundle = stage_optimize.run(self, physics_bundle)
         execution_bundle = stage_execution.run(self, optimize_bundle)
         validate_bundle = stage_validate.run(self, optimize_bundle)
+        repair_rounds: list[dict[str, Any]] = []
         if not validate_bundle["certified"]:
-            repaired = self._attempt_surface_repair(validate_bundle, topology_bundle, uv_bundle)
-            if repaired is not None:
-                surface_bundle, rig_bundle, interfaces_bundle, physics_bundle, optimize_bundle, validate_bundle = repaired
+            repair_cfg = self.runtime_config.get("repair") or {}
+            if repair_cfg.get("autonomous", True):
+                from .repair_loop import run_repair_loop
+
+                validate_bundle, repair_rounds = run_repair_loop(
+                    self,
+                    validate_bundle,
+                    max_rounds=int(repair_cfg.get("max_rounds", 3)),
+                    min_improvement=float(repair_cfg.get("min_improvement", 0.01)),
+                    budget_seconds=float(repair_cfg.get("budget_seconds", 180.0)),
+                )
+                # Refresh optimize/execution bundles in case a round regenerated the stack.
+                optimize_bundle = self.runtime.get("optimize", {}).get("bundle", optimize_bundle)
                 execution_bundle = stage_execution.run(self, optimize_bundle)
-        if not validate_bundle["certified"]:
-            reselection = self._attempt_reselect_candidates()
-            if reselection is not None:
-                topology_bundle, uv_bundle, surface_bundle, rig_bundle, interfaces_bundle, physics_bundle, optimize_bundle, validate_bundle = reselection
-                execution_bundle = stage_execution.run(self, optimize_bundle)
-                if not validate_bundle["certified"]:
-                    repaired = self._attempt_surface_repair(validate_bundle, topology_bundle, uv_bundle)
-                    if repaired is not None:
-                        surface_bundle, rig_bundle, interfaces_bundle, physics_bundle, optimize_bundle, validate_bundle = repaired
-                        execution_bundle = stage_execution.run(self, optimize_bundle)
         if not validate_bundle["certified"]:
             raise BuildError("Validation failed", diagnostics=validate_bundle["diagnostics"])
         package_bundle = stage_package.run(self, optimize_bundle, validate_bundle)
@@ -204,6 +205,7 @@ class BuildExecutor:
             "trace_path": package_bundle.get("trace_path"),
             "score": validate_bundle["score"],
             "threshold": validate_bundle["threshold"],
+            "repair_rounds": repair_rounds,
         }
         dump_json(self.out_dir / "build_report.json", report)
         self._persist_build_cache()

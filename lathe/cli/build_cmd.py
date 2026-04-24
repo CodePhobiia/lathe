@@ -58,6 +58,11 @@ def run_build(args) -> None:
             runtime_config=runtime_config,
             execution_profile_override=args.execution_profile,
         )
+        # BL-33 (Plan 08 Phase 3): ``report["repair_rounds"]`` is populated
+        # by BuildExecutor.build via run_repair_loop() when the validate
+        # stage did not certify on the first pass. Empty list on hero
+        # short-circuit paths.
+        report.setdefault("repair_rounds", [])
         publish_target = getattr(args, "publish", None)
         if publish_target:
             from ..publish import get_driver as _get_publish_driver

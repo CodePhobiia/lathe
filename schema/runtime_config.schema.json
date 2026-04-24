@@ -147,6 +147,17 @@
         }
       }
     },
+    "repair": {
+      "type": "object",
+      "description": "BL-33 (Plan 08 Phase 3): autonomous multi-round repair loop settings consumed by lathe/repair_loop.py.",
+      "additionalProperties": true,
+      "properties": {
+        "autonomous": { "type": "boolean" },
+        "max_rounds": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "min_improvement": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "budget_seconds": { "type": "number", "minimum": 1.0, "maximum": 3600.0 }
+      }
+    },
     "publish": {
       "type": "object",
       "description": "BL-31 (Plan 08 Phase 1): publish-runner target configuration consumed by lathe/core/stages/publish.py and the `lathe publish` CLI.",
