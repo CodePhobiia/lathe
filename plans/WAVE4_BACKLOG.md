@@ -97,47 +97,48 @@ docs/quickstart.md (replaced Wave 1 placeholder, 60-sec path) + docs/tutorial/fi
 - `mkdocs.yml` nav entries for new tutorials/cookbook not added (reachable via existing index files). Wave 5 nav sweep.
 - Ruff D104 (public package) ×9 + D107 (public `__init__`) ×9 residual — next docstring pass.
 
-## P3 — Plan 08 product quality (Wave 4 anchor)
+## P3 — Plan 08 product quality ✅ **Wave 4.IV COMPLETE** (all 8 tickets closed)
 
-### BL-31. Publish runner
+All of Plan 08 landed across Wave 4.IV.a–f. Full-scope sections explicitly scoped-down for session budget are noted per ticket.
 
-- **Scope:** Plan 08 Phase 1. `lathe/publish.py` + drivers (local_fs, s3 optional, supabase, git_lfs). Manifest, signing, CLI.
-- **Effort:** 1.0 week.
+### BL-31. Publish runner — **DONE** (`e09aee6`)
 
-### BL-32. Canonical formatter (`lathe fmt`)
+Driver registry (local_fs / s3 / supabase / git_lfs), ed25519 signing via cryptography, `schema/publish_manifest.schema.json`, `lathe publish <build_dir>` CLI + `build --publish <target>`.
 
-- **Scope:** Plan 08 Phase 2. Lark-tree reformatter; idempotent; preserves comments.
-- **Effort:** 0.8 week.
+### BL-32. Canonical formatter (`lathe fmt`) — **DONE** (`e09aee6`)
 
-### BL-33. Autonomous repair loop
+Token-level reformatter (794 LOC), comment preservation, idempotence verified on all examples/ + all std/. Known gap: multi-line `/* */` internal indent normalizes.
 
-- **Scope:** Plan 08 Phase 3. Multi-round validate → classify → choose → rebuild with stop conditions.
-- **Effort:** 1.0 week.
+### BL-33. Autonomous repair loop — **DONE** (`e85bbf8`)
 
-### BL-34. Second backend stack (`soft_surface_prop_v1`)
+`lathe/repair_loop.py` (415 LOC) — bounded multi-round with regression-guard rollback. 10 tests. Wired into executor replacing two ad-hoc retry blocks.
 
-- **Scope:** Plan 08 Phase 4 + Plan 03 Phase 6b. Two-stage swap (subdivision topology + soft-padding UV) + new silhouette validator. Proof of the plugin model.
-- **Effort:** 2 weeks.
+### BL-34. Second backend stack — **DONE scoped-down** (`455ac36`)
 
-### BL-35. Hero gallery + benchmark scoreboard
+`lathe.stack.soft_surface_prop_v1` registered + satchel_bag hero certifies at 0.826 / 0.60. Full-scope gaps documented in `docs/second_backend_stack.md`: real Catmull-Clark subdivision, non-planar soft-padding xatlas, per-vertex principal-curvature continuity validator — deferred as **BL-40** for a future ticket.
 
-- **Scope:** Plan 08 Phases 5, 5b. `scripts/render_gallery.py` + `docs/gallery/<asset>/*` + `docs/benchmarks/scoreboard.md` auto-generated.
-- **Effort:** 0.7 week.
+### BL-35. Hero gallery + benchmark scoreboard — **DONE** (`3227ab1`)
 
-### BL-36. User-friendly validator reports + artifact viewer + CLI error polish
+`lathe/hero_manifest.py` + `scripts/render_gallery.py` (Blender-backed 5-still turntable) + `scripts/render_scoreboard.py` + `.github/workflows/gallery.yml` nightly + 13 manifest tests.
 
-- **Scope:** Plan 08 Phases 6, 7. Rich terminal + HTML reports; `lathe inspect --view` + `lathe serve <build_dir>` with vendored `<model-viewer>`; every CLI raise-site gets an error_code.
-- **Effort:** 1.1 week.
+### BL-36. Reports + viewer + CLI error polish — **DONE** (`8b650df`)
 
-### BL-37. Strict-mode default flip
+`lathe/reports/terminal.py` + `html.py` + `lathe/viewer/static/` with vendored `<model-viewer>` + `lathe serve <build_dir>` + `--report {terminal,html,json}` + `docs/error_codes.md` (22 rows) + 17 tests.
 
-- **Scope:** Plan 08 Phase 8. Flip the default learned-provider fallback policy to strict in V0.2 (landed with DeprecationWarning in V0.1.x).
-- **Effort:** 0.3 week.
+### BL-37. Strict-mode default flip — **DONE** (`1ff9b81`)
 
-### BL-38. Playground + stability + performance
+V0.1.x mechanism landed: `--allow-fallback` flag, DeprecationWarning under learned provider with strict=False, `code="provider_fallback_blocked"` on blocked fallback. Factory default preserved until V0.2. 11 tests.
 
-- **Scope:** Plan 08 Phases 9, 10, 12. Pyodide-based playground; fuzz harness; perf budgets per stage.
-- **Effort:** 2.5 weeks.
+### BL-38. Stability + perf + playground — **DONE scoped-down** (`b38a695`)
+
+Phase 9: `tests/fuzz/test_parser_fuzz.py` + `test_normalizer_properties.py` (200 iters, scale later). Phase 10: `scripts/profile_heroes.py` + `perf/budgets.json` + `perf/README.md` (CI-gated enforcement deferred). Phase 12: `web/playground/` static concept page (Pyodide wheel build deferred as **BL-41**).
+
+### New follow-up tickets (deferred from Wave 4.IV)
+
+- **BL-40.** Real soft-surface topology + UV + full curvature validator (from BL-34 scope-down). Plan 08 Phase 4 full implementation.
+- **BL-41.** Pyodide wheel build + Monaco editor + `<model-viewer>` integration for the browser playground. Plan 08 Phase 12 full implementation.
+- **BL-42.** Scale fuzz harness to 10k iterations with durable corpus. Plan 08 Phase 9 full scope.
+- **BL-43.** Enforce perf budgets in CI with per-stage regression gate. Plan 08 Phase 10 full scope.
 
 ## Rough Wave 4 shape
 
