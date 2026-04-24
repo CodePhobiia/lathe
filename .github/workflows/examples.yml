@@ -1,0 +1,121 @@
+name: examples
+
+on:
+  pull_request:
+    paths:
+      - "examples/**"
+      - "std/**"
+      - "grammar/**"
+      - "schema/**"
+      - "lathe/**"
+      - ".github/workflows/examples.yml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: lathe check (fast)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+      - name: lathe check every example
+        run: |
+          set -e
+          FAILED=0
+          for f in examples/*.lth examples/api/*.lth examples/corpus/*.lth; do
+            [ -e "$f" ] || continue
+            echo "::group::check $f"
+            if ! python -m lathe.cli check "$f"; then
+              echo "::error file=$f::parse/check failed"
+              FAILED=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $FAILED
+
+  build-nightly:
+    # Full build matrix: certifies every example end-to-end. Only runs on
+    # the nightly cron + manual dispatch because hero builds are slow.
+    name: lathe build (nightly)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+      - name: Build every example and collect artifacts
+        env:
+          LATHE_ALLOW_EXTERNAL_OUT: "1"
+        run: |
+          set -e
+          mkdir -p tmp_examples_out
+          FAILED=0
+          INDEX=0
+          for f in examples/api/*.lth examples/corpus/*.lth; do
+            [ -e "$f" ] || continue
+            INDEX=$((INDEX+1))
+            # First `asset` line tells us the top-level asset to build.
+            ASSET=$(grep -m1 -E '^asset +[A-Za-z_][A-Za-z0-9_]*:' "$f" \
+              | awk '{print $2}' | tr -d ':')
+            OUT="tmp_examples_out/ex_${INDEX}"
+            echo "::group::build $f ($ASSET -> $OUT)"
+            if ! python -m lathe.cli build "$f" "$ASSET" --out "$OUT"; then
+              echo "::error file=$f::build failed for $ASSET"
+              FAILED=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $FAILED
+      - name: Upload build reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples-build-reports-py${{ matrix.python-version }}
+          path: |
+            tmp_examples_out/**/build_report.json
+            tmp_examples_out/**/selector_manifest.json
+            tmp_examples_out/**/stages/validate/report.json
+          if-no-files-found: ignore
+
+  corpus-pytest:
+    name: pytest corpus
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+      - name: Run corpus parametrized tests
+        env:
+          LATHE_ALLOW_EXTERNAL_OUT: "1"
+        run: |
+          python -m pytest -q tests/unit/test_example_corpus.py

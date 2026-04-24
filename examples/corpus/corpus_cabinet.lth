@@ -1,0 +1,204 @@
+module corpus.cabinets
+import std.families.service_cabinet
+
+profile service_storage_prop {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_prop uses service_storage_prop {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 24mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic cabinet_prop(a: asset) = weighted {
+  prompt_match 0.22
+  silhouette_readability 0.16
+  topology_quality 0.20
+  material_quality 0.16
+  runtime_efficiency 0.10
+  part_coherence 0.16
+}
+
+asset corpus_cabinet: hard_surface_prop from service_cabinet_family uses shipping_prop {
+  intent {
+    role = "industrial service cabinet"
+    style = ["industrial", "maintenance_bay", "utility"]
+    parts = [
+      body,
+      door_l,
+      door_r,
+      handle_l,
+      handle_r,
+      vent_panel,
+      shelf_a,
+      shelf_b,
+      foot_l,
+      foot_r,
+    ]
+    materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+    negatives = ["ornate", "organic", "fragile"]
+    scale = 1.9m
+    interactions = [open_doors, store_tools, place_in_world]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [door_split, vent_break, shelf_divider, foot_split]
+    edge_classes = [hero_bevel, support_bevel, trim_edge]
+    integration_rules = [boolean_union, preserve_door_splits, preserve_vent_panel]
+  }
+
+  features {
+    density = hero
+    allow = [inset_panel, frame_lip, trim_band, hinge_set, recessed_handle, support_bracket, vent_grille, edge_break]
+  }
+
+  surface {
+    program = service_cabinet_hero
+    patterns = [vent_slats_dense, cargo_fastener_grid]
+    palette = industrial_crate_hero_palette
+    material_zones = [painted_steel_body, rubber_trim_dark, warning_paint]
+    materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+    decals = [service_label, warning_band]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [cabinet_body_shell, cabinet_door_l, cabinet_door_r, cabinet_handle_l, cabinet_handle_r, cabinet_vent_panel, cabinet_shelf_a, cabinet_shelf_b, cabinet_foot_l, cabinet_foot_r]
+    mechanisms = [door_hinge_mechanism, door_lock_mechanism]
+  }
+
+  search {
+    use = cabinet_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 4
+      seed = 61
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 15000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = [service_label, warning_band]
+      id_map = true
+    }
+
+    rig {
+      type = rigid_mechanical
+      joints = [door_l, door_r]
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [tool_anchor]
+      anchors = [floor_contact]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 6
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 24mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = cabinet_prop
+    threshold = 0.82
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        reauthor_surface_layer,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+}
+
+test corpus_cabinet_language_surface {
+  asset = corpus_cabinet
+  assert from == service_cabinet_family
+  assert surface.program == service_cabinet_hero
+  assert space.use == cabinet_hero_search
+}
+
+benchmark corpus_cabinet_hero_language {
+  asset = corpus_cabinet
+  must_pass = true
+  assert score >= threshold
+}

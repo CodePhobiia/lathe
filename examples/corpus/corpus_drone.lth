@@ -1,0 +1,229 @@
+module corpus.drones
+import std.families.courier_drone
+import std.benchmarks.hero_nearmiss
+
+profile unreal_interactable_prop {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+profile mobile_runtime {
+  defaults {
+    build.optimize.lods = 3
+    build.surface.resolution = 2048px
+  }
+
+  ensure material_slots(max: 2)
+  ensure texture_budget(max: 16mb)
+}
+
+contract shipping_prop uses unreal_interactable_prop {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 32mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic hero_prop(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.15
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.15
+}
+
+asset corpus_drone: mechanical_assembly uses shipping_prop {
+  refs {
+    images = [
+      "refs/courier_front.png",
+      "refs/courier_side.png",
+      "refs/materials.jpg",
+    ]
+  }
+
+  intent {
+    role = "last-mile courier drone"
+    style = ["premium", "industrial", "near-future"]
+    parts = [
+      body,
+      rotor_fl,
+      rotor_fr,
+      rotor_rl,
+      rotor_rr,
+      cargo_door,
+      landing_leg_l,
+      landing_leg_r,
+    ]
+    materials = ["anodized_aluminum", "carbon_fiber", "amber_glass"]
+    negatives = ["military", "toy_like", "fragile"]
+    scale = 0.9m
+    interactions = [pickup, open_cargo_door, dock_battery]
+  }
+
+  geometry {
+    seam_classes = [cargo_break, pod_split, service_panel]
+    edge_classes = [hero_bevel, pod_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_rotor_mounts]
+  }
+
+  features {
+    density = hero
+    allow = [trim_band, vent_grille, rotor_shroud, support_bracket, edge_break]
+  }
+
+  surface {
+    palette = courier_premium
+    material_zones = [anodized_aluminum_body, carbon_fiber_trim, amber_glass_lens]
+    materials = [anodized_aluminum_body, carbon_fiber_trim, amber_glass_lens]
+    decals = [serials, warning_labels]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    family = courier_drone_family
+    components = [courier_body, rotor_front_left, rotor_front_right, rotor_rear_left, rotor_rear_right, cargo_door_panel, landing_leg_left, landing_leg_right]
+    mechanisms = [rotor_spin_mechanism]
+  }
+
+  space {
+    use = drone_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 12
+      seed = 42
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 18000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm, emissive]
+      resolution = 4096px
+      bakes = [ao, curvature, id]
+      decals = ["serials", "warning_labels"]
+      id_map = true
+    }
+
+    rig {
+      type = rigid_mechanical
+      joints = [rotor_fl, rotor_fr, rotor_rl, rotor_rr, cargo_door]
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [battery_slot, underslung_mount]
+      anchors = [floor_contact]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 10
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 3
+      texture_budget = 32mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = hero_prop
+    threshold = 0.86
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "props/drones/corpus_drone"
+    version = "0.1.0"
+    tags = ["drone", "courier", "mechanical"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}
+
+variant courier_drone_mobile on corpus_drone {
+  append uses = mobile_runtime
+  set build.surface.resolution = 2048px
+  set build.optimize.texture_budget = 16mb
+  set build.optimize.draw_calls = 2
+  set validate.threshold = 0.82
+}
+
+test corpus_drone_language_surface {
+  asset = corpus_drone
+  assert assembly.family == courier_drone_family
+  assert surface.palette == courier_premium
+  assert space.use == drone_hero_search
+}
