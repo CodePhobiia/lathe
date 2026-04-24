@@ -3,6 +3,15 @@
 Registers stable stack IDs (``lathe.stack.hard_surface_game_asset_v1``
 and friends) and provides the compatibility matrix the checker uses
 to reject mis-wired plans before runtime.
+
+Second stack scope note (BL-34, Plan 08 Phase 4, Wave 4.IV.e scope-down):
+``lathe.stack.soft_surface_prop_v1`` is registered as a *proof of the
+plugin model*. The topology adapter ``lathe.topology.blender_subdiv_v1``
+delegates to the hard-surface Blender adapter today and the UV stage
+reuses xatlas in a soft-padding mode hook. Real subdivision-surface
+topology with curvature continuity and full soft-padding UV is deferred
+to a future ticket; see ``docs/second_backend_stack.md`` for the gap
+analysis.
 """
 
 from __future__ import annotations
@@ -122,6 +131,49 @@ BACKENDS: dict[str, dict[str, Any]] = {
             },
         },
     },
+    "lathe.topology.blender_subdiv_v1": {
+        "id": "lathe.topology.blender_subdiv_v1",
+        "version": "0.1.0",
+        "stage": "topology",
+        "toolchain": ["reference_runtime", "trimesh"],
+        "runtime_executor": "lathe.runtime.topology.cleanup_v1",
+        "determinism_class": "deterministic",
+        "supported_asset_kinds": ["hard_surface_prop", "env_module", "mechanical_assembly"],
+        "supported_retopo": ["auto", "none", "reference"],
+        "supported_preserve": ["soft_folds", "seams", "part_borders"],
+        "contract": {
+            "summary": (
+                "Subdivision-surface topology adapter for soft-surface props. "
+                "Proof-of-plugin-model under BL-34 (Plan 08 Phase 4, scoped). "
+                "Delegates to the hard-surface Blender adapter today; the full "
+                "curvature-continuity subdiv pass is deferred."
+            ),
+            "inputs": {
+                "required": ["shape_bundle", "build.topology.retopo", "build.topology.ngons"],
+                "optional": [
+                    "build.topology.target_quads",
+                    "build.topology.target_tris",
+                    "build.topology.preserve",
+                ],
+            },
+            "outputs": {
+                "artifact": "topology_bundle",
+                "required_fields": [
+                    "mesh_uri",
+                    "mesh_stats.vertex_count",
+                    "mesh_stats.triangle_count",
+                    "normals",
+                    "part_groups",
+                    "provenance.backend_id",
+                ],
+                "guarantees": [
+                    "one authoritative post-cleanup mesh",
+                    "part names preserved where possible",
+                    "topology report available for downstream soft-silhouette validation",
+                ],
+            },
+        },
+    },
     "lathe.uv.xatlas_v1": {
         "id": "lathe.uv.xatlas_v1",
         "version": "1.0.0",
@@ -226,7 +278,38 @@ STACKS: dict[str, dict[str, Any]] = {
             "package.formats must be subset of [usd, glb, gltf, obj]",
         ],
         "selection_reason": "Best first stack for hard-surface props because it isolates the AI-native step to shape generation and keeps productionization deterministic downstream.",
-    }
+    },
+    "lathe.stack.soft_surface_prop_v1": {
+        "id": "lathe.stack.soft_surface_prop_v1",
+        "name": "Soft-surface prop v1",
+        "description": (
+            "Second backend stack registered as a proof of the plugin model "
+            "(BL-34 / Plan 08 Phase 4, scoped). Reuses the shape handoff "
+            "contract and UV/package backends; binds a subdivision-topology "
+            "adapter for soft-surface silhouettes."
+        ),
+        "supported_asset_kinds": ["hard_surface_prop", "env_module", "mechanical_assembly"],
+        "supported_package_formats": ["usd", "glb", "gltf", "obj"],
+        "stage_backends": {
+            "shape": "lathe.shape.intent_mesh_handoff_v1",
+            "topology": "lathe.topology.blender_subdiv_v1",
+            "uv": "lathe.uv.xatlas_v1",
+            "package": "lathe.package.openusd_gltf_v1",
+        },
+        "constraints": [
+            "uv.tile_mode must be zero_to_one",
+            "uv.unwrap must be auto",
+            "package.formats must be subset of [usd, glb, gltf, obj]",
+        ],
+        "selection_reason": (
+            "Selected when the asset opts into a subdivision-style topology "
+            "backend (``build.topology.backend = lathe.topology.blender_subdiv_v1``). "
+            "Proof-of-plugin-model; the soft-silhouette validator and "
+            "soft-padding UV mode are intentionally scaffolded -- see "
+            "docs/second_backend_stack.md for the gap analysis."
+        ),
+        "scope_status": "proof_of_plugin_model",
+    },
 }
 
 
@@ -362,8 +445,45 @@ def evaluate_stack(stack_id: str, asset: dict[str, Any]) -> tuple[bool, list[str
     return (not reasons), reasons
 
 
+def _explicit_stage_bindings(asset: dict[str, Any]) -> dict[str, str]:
+    """Return explicit ``build.<stage>.backend`` / ``package.backend`` overrides.
+
+    Used by :func:`select_stack` to prefer stacks whose default stage
+    bindings match the asset's explicit overrides. This is what lets an
+    asset opt into a non-default stack (e.g. ``soft_surface_prop_v1``)
+    without a language-surface change.
+    """
+    explicit: dict[str, str] = {}
+    for stage in BACKEND_SELECTION_STAGES:
+        value = _get_explicit_backend_id(asset, stage)
+        if value != "auto":
+            explicit[stage] = value
+    return explicit
+
+
+def _stack_match_score(stack: dict[str, Any], explicit: dict[str, str]) -> int:
+    """Rank a stack by how many explicit bindings align with its defaults.
+
+    Higher is better. Ties are broken alphabetically by stack id (see
+    :func:`select_stack`), which keeps the legacy hard-surface stack as
+    the default when no explicit bindings are set.
+    """
+    bindings = stack.get("stage_backends", {})
+    return sum(1 for stage, backend_id in explicit.items() if bindings.get(stage) == backend_id)
+
+
 def select_stack(asset: dict[str, Any]) -> dict[str, Any]:
     """Select stack.
+
+    Order of preference (BL-34, Plan 08 Phase 4):
+
+    1. Compatible stacks whose default stage bindings match the asset's
+       explicit ``build.<stage>.backend`` overrides score higher. This
+       is how an asset opts into the second stack without a language
+       surface change.
+    2. Ties fall back to alphabetical stack id (legacy behavior --
+       ``hard_surface_game_asset_v1`` wins when no explicit overrides
+       are set).
 
     Args:
         asset: asset argument.
@@ -371,15 +491,23 @@ def select_stack(asset: dict[str, Any]) -> dict[str, Any]:
     Returns:
         The result.
     """
+    explicit = _explicit_stage_bindings(asset)
+    compatible: list[tuple[int, str]] = []
     for stack_id in sorted(STACKS):
-        ok, reasons = evaluate_stack(stack_id, asset)
+        ok, _reasons = evaluate_stack(stack_id, asset)
         if ok:
-            stack = _deepcopy(STACKS[stack_id])
-            stack["resolved"] = True
-            return stack
-    raise BackendResolutionError(
-        "No builtin backend stack matches the asset configuration"
-    )
+            score = _stack_match_score(STACKS[stack_id], explicit)
+            compatible.append((score, stack_id))
+    if not compatible:
+        raise BackendResolutionError(
+            "No builtin backend stack matches the asset configuration"
+        )
+    # Sort by -score, then stack_id (alphabetical). The first stack wins.
+    compatible.sort(key=lambda item: (-item[0], item[1]))
+    chosen_id = compatible[0][1]
+    stack = _deepcopy(STACKS[chosen_id])
+    stack["resolved"] = True
+    return stack
 
 
 def resolve_selected_backends(asset: dict[str, Any]) -> dict[str, Any]:

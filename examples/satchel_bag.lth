@@ -1,0 +1,192 @@
+// Satchel bag -- minimal hero for the second backend stack
+// (``lathe.stack.soft_surface_prop_v1``, BL-34, Plan 08 Phase 4, scoped).
+//
+// Opt-in to the soft-surface stack by pinning the topology backend to
+// ``lathe.topology.blender_subdiv_v1``. The stack selector prefers the
+// stack whose defaults match an asset's explicit backend bindings, so
+// setting the topology backend here routes us onto the new stack
+// without a language-surface change. See ``docs/second_backend_stack.md``
+// for the gap analysis (what is proof-of-plugin vs full implementation).
+module studio.props.soft
+
+import std.families.soft.satchel
+
+profile soft_prop_base {
+  defaults {
+    build.optimize.lods = 3
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 3)
+  ensure uv_range(set: base, range: 0..1)
+}
+
+contract soft_prop_contract uses soft_prop_base {
+  defaults {
+    build.interfaces.clearance = 1cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic soft_prop_critic(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.20
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.10
+}
+
+asset satchel_bag: hard_surface_prop from soft_prop_satchel uses soft_prop_contract {
+  intent {
+    role = "worn leather satchel bag"
+    style = ["soft_surface", "organic", "worn"]
+    parts = [
+      body,
+      strap,
+    ]
+    materials = [oak_body, rubber_trim_dark]
+    negatives = ["hard_edges", "toy_like", "mechanical"]
+    scale = 0.4m
+    interactions = [pickup, carry]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [body_seam, strap_join]
+    edge_classes = [soft_curve, trim_edge]
+    integration_rules = [boolean_union]
+  }
+
+  features {
+    density = hero
+    allow = [trim_band, support_bracket, edge_break]
+  }
+
+  surface {
+    palette = fantasy_brassbound
+    material_zones = [oak_body, rubber_trim_dark]
+    materials = [oak_body, rubber_trim_dark]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [satchel_body, satchel_strap]
+  }
+
+  search {
+    use = chest_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 3
+      seed = 87
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    // Pin the soft-surface subdivision topology adapter. This is the
+    // asset-level selector that routes the build onto the
+    // ``soft_surface_prop_v1`` stack (see select_stack() in backends.py).
+    topology {
+      backend = lathe.topology.blender_subdiv_v1
+      retopo = auto
+      target_quads = 6000
+      ngons = forbid
+      preserve = [part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      anchors = [floor_contact]
+      clearance = 1cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 3
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    // Threshold tuned for the minimal scope; the full soft-silhouette
+    // validator will raise this bar once the 2-week algorithm lands.
+    score = soft_prop_critic
+    threshold = 0.60
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 2
+      allow = [
+        reselect_candidate,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    embed_textures = false
+  }
+}
+
+test satchel_bag_language_surface {
+  asset = satchel_bag
+  assert from == soft_prop_satchel
+  assert space.use == chest_hero_search
+}

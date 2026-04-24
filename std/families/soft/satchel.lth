@@ -1,0 +1,51 @@
+// doc:
+//   purpose: soft-surface family for the satchel_bag hero (minimal two-part rounded bag + strap).
+//           This family is the proof-of-plugin-model hero for the
+//           ``lathe.stack.soft_surface_prop_v1`` backend stack (BL-34,
+//           Plan 08 Phase 4, Wave 4.IV.e scope-down).
+//   exports: family soft_prop_satchel
+//   depends_on: std.components.soft.satchel, std.palettes.hero_palettes, std.repair.hero_hardsurface, std.spaces.hero_spaces
+//   used_by: examples/satchel_bag.lth
+//   stability: proof_of_plugin_model
+//   layer: V0.1 (BL-34 second-stack proof)
+module std.families.soft.satchel
+import std.components.soft.satchel
+import std.palettes.hero_palettes
+import std.repair.hero_hardsurface
+import std.spaces.hero_spaces
+
+family soft_prop_satchel: hard_surface_prop {
+  runtime_family = satchel_bag
+  blueprint_id = lathe.blueprint.hard_surface_prop_generic_v1
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [body_seam, strap_join]
+    edge_classes = [soft_curve, trim_edge]
+    integration_rules = [boolean_union]
+  }
+
+  features {
+    allow = [trim_band, support_bracket, edge_break]
+    density = hero
+  }
+
+  surface {
+    palette = fantasy_brassbound
+    materials = [oak_body, rubber_trim_dark]
+    material_zones = [oak_body, rubber_trim_dark]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [satchel_body, satchel_strap]
+  }
+
+  search {
+    use = chest_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+}

@@ -1,0 +1,26 @@
+// doc:
+//   purpose: component definitions for the satchel_bag soft-surface hero (body + strap).
+//   exports: components satchel_body, satchel_strap
+//   depends_on: none (authored material zones from std.materials.hero_materials)
+//   used_by: std.families.soft.satchel (transitively examples/satchel_bag.lth)
+//   stability: proof_of_plugin_model
+//   layer: V0.1 (BL-34 second-stack proof)
+module std.components.soft.satchel
+
+component satchel_body {
+  part = body
+  tags = [body, shell, soft]
+  material_zone = oak_body
+  geometry {
+    component_type = shell
+  }
+}
+
+component satchel_strap {
+  part = strap
+  tags = [strap, trim, soft]
+  material_zone = rubber_trim_dark
+  geometry {
+    component_type = handle
+  }
+}
