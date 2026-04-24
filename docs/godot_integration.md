@@ -96,6 +96,53 @@ Use the **Asset** drop-down to switch between builds under
 `res://lathe_out/`; **Refresh** rescans the directory if you copied in a
 new asset while the editor was open.
 
+## fsnotify watcher (ENG-5)
+
+`fsnotify_watcher.gd` is a second polling watcher that tracks
+reproducibility-critical sidecars — `.lathe_snapshot.json` and
+`selector_manifest.json` — rather than `manifest.json`. Whenever an mtime
+advances on either file it emits:
+
+```
+build_updated(asset_id: String, snapshot_hash: String)
+```
+
+The build-trace viewer, certified-state indicator, and thumbnail regen
+listen for this signal so they refresh even when `manifest.json` mtime
+happens not to change across a rebuild (e.g. a re-validation pass that
+keeps outputs identical but updates the snapshot).
+
+The watcher is gated by the editor setting `lathe/fsnotify_enabled`
+(default **true**). Toggle it from **Editor → Editor Settings → Lathe →
+fsnotify enabled**; in code, call `set_enabled(false)` on the
+`LatheFsnotifyWatcher` child node. Poll interval is 2s and matches
+`lathe_watcher.gd`; the implementation is cross-platform via
+`FileAccess.get_modified_time` rather than a native inotify/ReadDirW hook.
+
+## Certified-state indicator (ENG-6)
+
+A compact bottom-panel widget ("Lathe Cert") reads the most recent
+`.lathe_snapshot.json` + co-located `build_report.json` and renders:
+
+| Dot    | Label                                 | Meaning                     |
+|--------|---------------------------------------|-----------------------------|
+| Green  | `<asset>: certified true @ <score>`   | Build passed certification. |
+| Red    | `<asset>: certified false @ <score>`  | Build failed certification. |
+| Gray   | `Lathe: no build`                     | No snapshot on disk.        |
+
+Clicking **Open** emits `asset_focus_requested`, which `plugin.gd` routes
+to `build_trace_viewer.focus_asset(<id>)` so the stage timeline,
+diagnostics, and per-build PASS/FAIL badge flip to the right asset in one
+click.
+
+The indicator refreshes on both `asset_imported` (from `lathe_watcher.gd`)
+and `build_updated` (from `fsnotify_watcher.gd`) so it tracks a fresh
+build without waiting on either watcher alone.
+
+The build-trace viewer's header also carries a `[PASS] <score>` or
+`[FAIL] <score>` badge next to the kernel + snapshot label, colored to
+match — so per-build certified state is visible without leaving the dock.
+
 ## Troubleshooting
 
 - **Dock shows nothing.** Verify `res://lathe_out/<asset>/manifest.json`
@@ -118,8 +165,10 @@ editors/godot/lathe-addon/
 ├── plugin.gd                   # registers dock, watcher, importer, trace viewer, thumb regen
 ├── editor_import_plugin.gd     # ENG-2: native EditorImportPlugin for .lathe_snapshot.json
 ├── thumbnail_regen.gd          # ENG-3: render-to-PNG thumbnail regenerator
-├── build_trace_viewer.gd       # ENG-4: dock logic
+├── build_trace_viewer.gd       # ENG-4: dock logic (+ ENG-6 PASS/FAIL header badge)
 ├── build_trace_viewer.tscn     # ENG-4: dock scene layout
+├── fsnotify_watcher.gd         # ENG-5: snapshot/selector sidecar watcher
+├── certified_state_indicator.gd # ENG-6: bottom-panel certified-state widget
 ├── lathe_dock.gd               # (unchanged) PASS/FAIL bottom panel
 ├── lathe_importer.gd           # (unchanged) scene enrichment on loaded .glb
 ├── lathe_watcher.gd            # (unchanged) manifest.json poller
@@ -128,8 +177,12 @@ editors/godot/lathe-addon/
 
 editors/godot/tests/
 ├── README.md                   # manual verification steps
-├── smoke_import.tscn           # smoke scene for snapshot import
-└── smoke_import.gd             # prints resolved snapshot metadata
+├── smoke_import.tscn           # ENG-2 snapshot-import smoke
+├── smoke_import.gd
+├── smoke_fsnotify.tscn         # ENG-5 fsnotify watcher smoke
+├── smoke_fsnotify.gd
+├── smoke_certified.tscn        # ENG-6 certified-state indicator smoke
+└── smoke_certified.gd
 ```
 
 ## Scope — still out
@@ -138,6 +191,8 @@ editors/godot/tests/
 - `.glb` **ingest** still uses Godot's stock importer plus post-load
   enrichment. Typed Position3D sockets at *import-time* (instead of
   post-load) is the next tier for ENG-2.
-- Per-node certified-state badges (ENG-6) are planned but not in this
-  milestone.
-- No headless / GUT-backed automated tests yet (tracked with ENG-5/6).
+- Native inotify / ReadDirectoryChangesW — the ENG-5 watcher is still
+  polling (2s) via `FileAccess.get_modified_time`. Good enough for
+  editor-tempo feedback; a native binding is the next tier.
+- No headless / GUT-backed automated tests yet — the Wave 6.VI smoke
+  scenes (`smoke_fsnotify.tscn`, `smoke_certified.tscn`) are manual-only.

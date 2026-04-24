@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxqlatheSmokeFsnotify"]
+
+[ext_resource type="Script" path="res://editors/godot/tests/smoke_fsnotify.gd" id="1_smoke_fsn"]
+
+[node name="SmokeFsnotify" type="Node"]
+script = ExtResource("1_smoke_fsn")

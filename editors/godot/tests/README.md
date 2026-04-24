@@ -41,7 +41,39 @@ scenes meant to be opened in the Godot editor.
 3. Re-importing an unchanged build does **not** produce a new thumbnail
    (mtime check).
 
-## Smoke 4 — Build-trace viewer
+## Smoke 4.5 — fsnotify watcher (ENG-5)
+
+1. Open `smoke_fsnotify.tscn` and press Play (F6 for this scene).
+2. In a separate shell, re-save a sidecar inside any Lathe build:
+   ```bash
+   touch <godot-project>/lathe_out/courier_drone/.lathe_snapshot.json
+   # or: touch .../selector_manifest.json
+   ```
+3. Within ~2 seconds the Output log prints:
+   ```
+   [smoke_fsnotify] build_updated asset=courier_drone snapshot=<10-char>
+   ```
+4. Toggle **Editor Settings → Lathe → fsnotify enabled = off** and touch
+   the sidecar again — no new `build_updated` line should appear.
+
+## Smoke 4.6 — Certified-state indicator (ENG-6)
+
+1. Ensure `res://lathe_out/courier_drone/` contains a recent build with a
+   populated `build_report.json` (`certified: true`, score ≈ 0.88 for
+   the reference courier_drone fixture).
+2. Open `smoke_certified.tscn` and press Play (F6).
+3. The centered widget should render a **green** dot and a label like:
+   ```
+   courier_drone: certified true @ 0.880
+   ```
+4. Output log prints `[smoke_certified] asset=courier_drone label=...`.
+5. Click **Open**; `[smoke_certified] asset_focus_requested courier_drone`
+   appears in the log (in the editor at runtime, this routes to
+   `build_trace_viewer.focus_asset`).
+6. Negative path: rename `.lathe_snapshot.json` temporarily — the
+   indicator should fall back to a **gray** dot and `Lathe: no build`.
+
+## Smoke 5 — Build-trace viewer
 
 1. Open the "Lathe Build Trace" dock.
 2. The asset drop-down lists every `res://lathe_out/<asset>/` that has a
@@ -56,11 +88,15 @@ scenes meant to be opened in the Godot editor.
 
 ## Files in this folder
 
-| File                  | Purpose                                                       |
-|-----------------------|---------------------------------------------------------------|
-| `smoke_import.tscn`   | Loads a snapshot Resource and prints its meta.                |
-| `smoke_import.gd`     | Script driving the above.                                     |
-| `README.md`           | You are here.                                                 |
+| File                    | Purpose                                                     |
+|-------------------------|-------------------------------------------------------------|
+| `smoke_import.tscn`     | Loads a snapshot Resource and prints its meta (ENG-2).      |
+| `smoke_import.gd`       | Script driving the above.                                   |
+| `smoke_fsnotify.tscn`   | Instances fsnotify watcher, logs each `build_updated` (ENG-5). |
+| `smoke_fsnotify.gd`     | Script driving the above.                                   |
+| `smoke_certified.tscn`  | Instances certified-state indicator and logs its state (ENG-6). |
+| `smoke_certified.gd`    | Script driving the above.                                   |
+| `README.md`             | You are here.                                               |
 
 These tests are intentionally manual. Automating them would require GUT
-or headless Godot CI, both tracked as follow-up items under ENG-5/6.
+or headless Godot CI; both remain follow-up items.

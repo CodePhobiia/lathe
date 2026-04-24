@@ -69,6 +69,32 @@ func on_asset_imported(record: Dictionary) -> void:
 		_load_build(build_dir)
 
 
+func on_build_updated(asset_id: String, _snapshot_hash: String) -> void:
+	if asset_id.is_empty():
+		return
+	var build_dir := "%s/%s" % [WATCH_DIR, asset_id]
+	if not DirAccess.dir_exists_absolute(build_dir):
+		return
+	_known_assets[asset_id] = build_dir
+	_refresh_asset_picker()
+	if _current_build_dir.is_empty() or _current_build_dir == build_dir:
+		_load_build(build_dir)
+
+
+func focus_asset(asset_id: String) -> void:
+	if asset_id.is_empty():
+		return
+	_rescan_assets()
+	if not _known_assets.has(asset_id):
+		return
+	if _asset_picker != null:
+		for i in range(_asset_picker.item_count):
+			if _asset_picker.get_item_text(i) == asset_id:
+				_asset_picker.select(i)
+				break
+	_load_build(_known_assets[asset_id])
+
+
 func _on_refresh_pressed() -> void:
 	_rescan_assets()
 
@@ -151,7 +177,14 @@ func _render_header(report: Dictionary, snapshot: Dictionary) -> void:
 		var hash_suffix := ""
 		if not snap_hash.is_empty():
 			hash_suffix = "  ·  snapshot %s" % snap_hash.substr(0, 10)
-		_kernel_label.text = "Kernel: %s%s" % [kernel, hash_suffix]
+		var certified := bool(report.get("certified", false))
+		var cert_score := 0.0
+		var cert_dict: Variant = report.get("certification", {})
+		if cert_dict is Dictionary:
+			cert_score = float((cert_dict as Dictionary).get("score", 0.0))
+		var badge := "  ·  %s %.3f" % ["[PASS]" if certified else "[FAIL]", cert_score]
+		_kernel_label.text = "Kernel: %s%s%s" % [kernel, hash_suffix, badge]
+		_kernel_label.modulate = Color(0.55, 0.9, 0.55) if certified else Color(0.95, 0.55, 0.55)
 
 	if _watertight_label != null:
 		var rate := _find_float(report, ["validation", "watertight_rate"])
