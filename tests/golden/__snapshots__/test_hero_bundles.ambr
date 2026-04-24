@@ -27,6 +27,8 @@
           'uri': 'stages/package/brassbound_chest.glb',
         }),
       ]),
+      'repair_rounds': list([
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -42,7 +44,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -370,6 +379,19 @@
           'uri': 'stages/package/console_terminal.glb',
         }),
       ]),
+      'repair_rounds': list([
+        dict({
+          'action': 'local_repair',
+          'after_score': 0.855031,
+          'before_score': 0.852007,
+          'diagnostics_delta': dict({
+            'visual_surface_authoring_quality_failed': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 1,
+        }),
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -385,7 +407,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -713,6 +742,19 @@
           'uri': 'stages/package/control_pedestal.glb',
         }),
       ]),
+      'repair_rounds': list([
+        dict({
+          'action': 'local_repair',
+          'after_score': 0.842405,
+          'before_score': 0.838286,
+          'diagnostics_delta': dict({
+            'visual_surface_authoring_quality_failed': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 1,
+        }),
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -728,7 +770,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -1056,6 +1105,8 @@
           'uri': 'stages/package/courier_drone.glb',
         }),
       ]),
+      'repair_rounds': list([
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -1071,7 +1122,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -1399,6 +1457,33 @@
           'uri': 'stages/package/industrial_crate.glb',
         }),
       ]),
+      'repair_rounds': list([
+        dict({
+          'action': 'local_repair',
+          'after_score': 0.754212,
+          'before_score': 0.752404,
+          'diagnostics_delta': dict({
+            'visual_surface_authoring_quality_failed': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 1,
+        }),
+        dict({
+          'action': 'reselect_candidate',
+          'after_score': 0.884758,
+          'before_score': 0.754212,
+          'diagnostics_delta': dict({
+            'semantic_adjacency_score_failed': -1,
+            'semantic_part_coverage_failed': -1,
+            'semantic_silhouette_fidelity_failed': -1,
+            'toy_or_primitive_detected': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 2,
+        }),
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -1414,7 +1499,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -1742,6 +1834,19 @@
           'uri': 'stages/package/mechanical_door.glb',
         }),
       ]),
+      'repair_rounds': list([
+        dict({
+          'action': 'local_repair',
+          'after_score': 0.876905,
+          'before_score': 0.874002,
+          'diagnostics_delta': dict({
+            'visual_surface_authoring_quality_failed': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 1,
+        }),
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -1757,7 +1862,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -2085,6 +2197,8 @@
           'uri': 'stages/package/sci_fi_wall_panel.glb',
         }),
       ]),
+      'repair_rounds': list([
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -2100,7 +2214,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -2428,6 +2549,19 @@
           'uri': 'stages/package/service_cabinet.glb',
         }),
       ]),
+      'repair_rounds': list([
+        dict({
+          'action': 'reselect_candidate',
+          'after_score': 0.820871,
+          'before_score': 0.801222,
+          'diagnostics_delta': dict({
+            'semantic_symmetry_score_failed': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 1,
+        }),
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -2443,7 +2577,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -2771,6 +2912,19 @@
           'uri': 'stages/package/supply_container.glb',
         }),
       ]),
+      'repair_rounds': list([
+        dict({
+          'action': 'local_repair',
+          'after_score': 0.871784,
+          'before_score': 0.870671,
+          'diagnostics_delta': dict({
+            'visual_surface_authoring_quality_failed': -1,
+          }),
+          'elapsed_ms': '<LATENCY>',
+          'rollback': False,
+          'round_index': 1,
+        }),
+      ]),
       'runtime_config': dict({
         'execution': dict({
           'blender': dict({
@@ -2786,7 +2940,14 @@
             'trusted': False,
           }),
         }),
+        'repair': dict({
+          'autonomous': True,
+          'budget_seconds': 180.0,
+          'max_rounds': 3,
+          'min_improvement': 0.01,
+        }),
         'shape': dict({
+          'allow_fallback': False,
           'provider': 'auto',
           'providers': dict({
           }),
@@ -3096,7 +3257,7 @@
     'stages/rig/bundle.json': '85b96341951623c136d1d1e8146acd0b66d95a308841bd7f10cd2d413be2a7d0',
     'stages/shape/bundle.json': 'de4cfb720e2839deb5c6267c5664df5a37bdf4e3cf5c155d40798def53b4be94',
     'stages/surface/bundle.json': '765d2b36111525bb8f229474b95da7fc2c667a92695fc7fafc28e6cef4f379df',
-    'stages/topology/bundle.json': '8b6e71985956d5b3fd7864b0446015756f2f9e0cf4092425185c750a30ac6a5c',
+    'stages/topology/bundle.json': 'ce1dc5cd7d4eec20982ee4b16e9433cfacd5405aeca90a8361623147e0145c87',
     'stages/uv/bundle.json': '3f5cd565713b504493d0c78569a70ad0d12bc519e9238d4d295af59d7d9cb987',
     'stages/validate/report.json': 'cd689178eff8f05de41740ba564c885cb730d49e60f36a6b8480e5f4607c14e3',
   })
@@ -3141,7 +3302,7 @@
     'stages/rig/bundle.json': 'c0bbd8063bc70a0b79e39013b2041a5585b7ed6db7329da75f3df6b232d1cebb',
     'stages/shape/bundle.json': '7aa2df5fa50c505b57a602af9e18ebc5b242b22adada00135dbfb19368798b34',
     'stages/surface/bundle.json': 'ced51bf1ee178f0c64bc6e398b596bb18f87c23842c4befe407901c4f3874466',
-    'stages/topology/bundle.json': '4e8ac14666e12715bc460218a0e9167a2fb12b0ba9fd91796c22be815afb7939',
+    'stages/topology/bundle.json': '29eae87c83e47e87eb9f63dae7d3c3a08c47ad7e42db57d16c93d09f4c8dd848',
     'stages/uv/bundle.json': '3c8add42dfc5bb50d7e86a6bf123c5b64c5408bc101ee991a669c46540390c28',
     'stages/validate/report.json': 'c904542a14535774250ad133f27d296f7b823a60b0b352d28eeb66b196319298',
   })
@@ -3154,11 +3315,11 @@
     'stages/package/bundle.json': '2b7eaa3c9ee0a3a4e7bdd16e80537927ce136614e505a82320cc529eeee0799f',
     'stages/physics/bundle.json': '8f5d0c4195e45b92b557b59a987ad05b2927f22c4cdee905a18c1f3d5f513d93',
     'stages/rig/bundle.json': '10432e75e1d9475e1fc3718cdf007bf9b34ed86db28d0c080b65db8888ab672d',
-    'stages/shape/bundle.json': '2c07d9bfc2d2feeaa9d4122a8b5b9a202c08a36027d20f25c7d67e65c832257b',
+    'stages/shape/bundle.json': '1a188dd9341d6a9aeae7e929abb9005bec4e4e86f8369067755536fffae43112',
     'stages/surface/bundle.json': '57367968e782ec8009c904e4c9a51da99f5550550c6bc993f5afa551593df598',
-    'stages/topology/bundle.json': 'eda846bcab2c131bd8a2183481a3f8cf2d01a735aa841544a4064698d1d2f8e8',
+    'stages/topology/bundle.json': 'be48746eaebcd9fb76547ac6461d7f26c04398ca4cf6b311cab05a9a16764995',
     'stages/uv/bundle.json': 'c941ec80a67ed0a89039277a8acefe21d150b3b2184472a207f588ec0cd3b550',
-    'stages/validate/report.json': '42d8416ac24a0e4a129b1362ad683626c676c16cbb2d43e6e549c3a6b634e5c4',
+    'stages/validate/report.json': '6ca657cb3e06681bbe0b374926718b03350e5ee36eb2eaadfb29c61bdc11ce38',
   })
 # ---
 # name: test_hero_stage_bundle_hashes_snapshot[mechanical_door]
@@ -3171,7 +3332,7 @@
     'stages/rig/bundle.json': 'f1bb9e5f3aac0ba3022c24028854a3cd45097699e8ddde9dd87392ccc45c9df3',
     'stages/shape/bundle.json': '3fbfb8cb8d6aae5375c1969381d3a7b80509ffb6f853408713060aaa239b449b',
     'stages/surface/bundle.json': '5bf701a26bb66745aeff8cf70929c250b43172bf2efe16d5a013ba32a8efee9e',
-    'stages/topology/bundle.json': '5d241a38f71cc007d10b2669fdf248304ef5b9053ab8062d155b88749686355f',
+    'stages/topology/bundle.json': '545c2168976853dd467d11946ac227607a162bc31d56a8c1ac78a725211599e2',
     'stages/uv/bundle.json': '92fd8097d16f1d278c70b2b127995cdb84052e4b93ce6ee3967e4d5b0a44619d',
     'stages/validate/report.json': 'cbfd9377b0dd5b7a69f4a044724dfa11e267586fe5cd93ab4bf4790b571007a0',
   })
@@ -3186,7 +3347,7 @@
     'stages/rig/bundle.json': '10432e75e1d9475e1fc3718cdf007bf9b34ed86db28d0c080b65db8888ab672d',
     'stages/shape/bundle.json': 'e86b2b724825b7f7fef4d8ea7831cdd500a23f6216b5871de20dc1f50f4116b9',
     'stages/surface/bundle.json': '024abd6684a905eee450775ff11a1e48fcbe95a13ec2eddf94ad6da88415ce0e',
-    'stages/topology/bundle.json': 'cc60d9c009646d0785db0a8039cb015736842c98ade4843109ace2bc4dcf0094',
+    'stages/topology/bundle.json': '95ab847cb3aa32bb5d11efebb518559b9888dfc054d8c15a0644463985bdd6fe',
     'stages/uv/bundle.json': '4455f55b23db65a7dac2e10fc8c6d8690a3627a6dac9ad3f7aae1aae0ee54152',
     'stages/validate/report.json': '3bdb6d0a914067e8adcf5ce6737bf0cf645ac439698a4fc5d164388b3ba12056',
   })
@@ -3199,11 +3360,11 @@
     'stages/package/bundle.json': '9f3e77b40b1bd5060fab3a04ea8c143c4f76e6d154e3214e238ed7c9edd3eaf0',
     'stages/physics/bundle.json': '54f5ecada62e520ab8002b8b8199fd9b1431517e278808260a8f75d73858c2fc',
     'stages/rig/bundle.json': 'c7524a1d86b9b0a0c0cdd845741be6fc39dd79077f252225878cad4ad1d58b27',
-    'stages/shape/bundle.json': '1ba10923bc2ca5f2671a18510811b3e7d8459a937fb09fdf0bdf6c1df3b02761',
+    'stages/shape/bundle.json': '10e7d92f4a2308a7707c73e58f3e1c3182fa66f24c60d43366cd7a1ada5b4e5d',
     'stages/surface/bundle.json': 'd9c69293399d95d76bd1366496212eadd68c2c7ffd668bf7778cc497c80f8f8d',
     'stages/topology/bundle.json': '6fd70ea00949359679d14c8538d3bd41888c1fdb30460f22d615a0867a680516',
     'stages/uv/bundle.json': '47e0abf2e221f2efba290fbb4113a9692e1e56e2489eda67942900d44dba78d8',
-    'stages/validate/report.json': 'e68e5d3deca53184530bec71eb831b229217865eb7230b40d0ac4c9837b18cf5',
+    'stages/validate/report.json': '9837e8a0a5b016d304c6c7004e461b21c535d320429a3369dd28153336dae75c',
   })
 # ---
 # name: test_hero_stage_bundle_hashes_snapshot[supply_container]
@@ -3216,7 +3377,7 @@
     'stages/rig/bundle.json': '10432e75e1d9475e1fc3718cdf007bf9b34ed86db28d0c080b65db8888ab672d',
     'stages/shape/bundle.json': '1c5dde808d11d3d2f8abca23337be8bb71481858f79dd724fc7a3496f816f71b',
     'stages/surface/bundle.json': '6ea1f9de346edceb5b8219b8d73a6b95891d74278a2d4d1ecd3b79273f1e4abc',
-    'stages/topology/bundle.json': 'f90fd14be36426d682ef4184c7124559e25a4c7e33de58f4434010a93ea152d8',
+    'stages/topology/bundle.json': 'bc85960fd8aa83716fe9f5d8badbcf040b7e2352263cf2b99463688fa0647728',
     'stages/uv/bundle.json': '6c35fc057977ed6e1e9bec69d15cffa6e9e932009faa487c7d40715933900aa4',
     'stages/validate/report.json': '3f8d324ffeb8d13d72618f473f10b9f2cff1330632f79d291314dd289fdffaf1',
   })
@@ -4657,7 +4818,7 @@
       }),
       dict({
         'candidate_id': 'candidate_01',
-        'reason': 'reselected_after_validation_failure',
+        'reason': 'repair_loop_reselect',
         'score': 0.96,
       }),
     ]),
@@ -5706,7 +5867,7 @@
     'reselection_attempts': list([
       dict({
         'candidate_id': 'candidate_01',
-        'reason': 'reselected_after_validation_failure',
+        'reason': 'repair_loop_reselect',
         'score': 0.96,
       }),
     ]),
