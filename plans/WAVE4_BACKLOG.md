@@ -73,27 +73,29 @@ Audit surfaced only 1 trust-boundary site (`capabilities.py:425` Hunyuan probe).
 - **Acceptance:** `pytest --cov=lathe --cov-fail-under=85` green; lift ratchet to 85% in both `.coveragerc` and `pyproject.toml`.
 - **Effort:** 2–3 days.
 
-## P2 — Plan 02 docs content (owned track)
+## P2 — Plan 02 docs content ✅ **Wave 4.III COMPLETE**
 
-### BL-27. Tutorial ladder
+### BL-27. Tutorial ladder — **DONE** (`fffb636`)
 
-- **Scope:** Plan 02 Phase 5 — `docs/quickstart.md` (fully fleshed), `docs/tutorial/first_asset.md`, `docs/tutorial/second_asset_reconstruct.md`, `docs/tutorial/deep_dive.md`.
-- **Effort:** 2 days.
+docs/quickstart.md (replaced Wave 1 placeholder, 60-sec path) + docs/tutorial/first_asset.md (~15-min bookshelf walkthrough, 9 steps) + docs/tutorial/second_asset_reconstruct.md (~20-min reconstruct flow over reconstruct_courier_from_views.lth) + docs/tutorial/deep_dive.md (manifesto→PRD→spec reading map) + examples/tutorial_bookshelf.lth (parses clean, lathe check ok).
 
-### BL-28. Cookbook
+### BL-28. Cookbook — **DONE** (`235074c`)
 
-- **Scope:** Plan 02 Phase 8 — 13 runnable recipes under `docs/cookbook/`.
-- **Effort:** 1.5 days.
+14 files under docs/cookbook/: 10 primary recipes (generate, reconstruct, kit_assembly, mobile_adapt, surface_control, variant_patching, custom_backend, runtime_config, certification_debug, blender_bridge) + 3 reference pages (runtime_config_schema, reading_a_trace, per_validator) + landing index.
 
-### BL-29. stdlib doc blocks
+### BL-29. stdlib doc blocks — **DONE** (`3732320`)
 
-- **Scope:** Plan 02 Phase 7 — `# doc:` comment block on each of the ~21 `.lth` files under `std/`. Auto-generated index via `docs/gen_stdlib_index.py`.
-- **Effort:** 1.5 days.
+30 `.lth` files under std/ (not 21 — reviewer-docs count was wrong) each gained a leading `// doc:` block with purpose/exports/depends_on/used_by/stability/layer. All 30 parse clean; docs/gen_stdlib_index.py hook verified via local replica.
 
-### BL-30. Inline docstring sweep
+### BL-30. Inline docstring sweep — **DONE** (`bfc33e5`)
 
-- **Scope:** Plan 02 Phase 9 — Google-style docstrings on every public symbol. Enable ruff `D` rules.
-- **Effort:** 1 day.
+103 files under lathe/ touched. 78 module-level docstrings + 395 Google-style public-symbol docstrings. Ruff D100/D101/D102/D103/D205/D400 on priority list: **440 → 0**. 102 residual violations in non-priority modules (scaffolds, adapters, transport, a handful of runtimes) flagged for follow-up. Pytest 742/742 preserved.
+
+### Minor carryover from Wave 4.III
+
+- `mkdocs-material` not installed in `.venv`; `mkdocs build --strict` was not run during Wave 4.III. Install + verify in Wave 5 tooling track.
+- `mkdocs.yml` nav entries for new tutorials/cookbook not added (reachable via existing index files). Wave 5 nav sweep.
+- Ruff D104 (public package) ×9 + D107 (public `__init__`) ×9 residual — next docstring pass.
 
 ## P3 — Plan 08 product quality (Wave 4 anchor)
 
