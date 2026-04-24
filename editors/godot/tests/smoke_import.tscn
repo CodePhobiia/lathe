@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxqlatheSmokeImport"]
+
+[ext_resource type="Script" path="res://editors/godot/tests/smoke_import.gd" id="1_smoke"]
+
+[node name="SmokeImport" type="Node"]
+script = ExtResource("1_smoke")

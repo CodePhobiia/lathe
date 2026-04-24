@@ -1,0 +1,85 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxqlatheBuildTraceViewer"]
+
+[ext_resource type="Script" path="res://addons/lathe-addon/build_trace_viewer.gd" id="1_trace"]
+
+[node name="BuildTraceViewer" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(320, 240)
+script = ExtResource("1_trace")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Toolbar" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="AssetLabel" type="Label" parent="Layout/Toolbar"]
+layout_mode = 2
+text = "Asset:"
+
+[node name="AssetPicker" type="OptionButton" parent="Layout/Toolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefreshButton" type="Button" parent="Layout/Toolbar"]
+layout_mode = 2
+text = "Refresh"
+
+[node name="OpenReportButton" type="Button" parent="Layout/Toolbar"]
+layout_mode = 2
+text = "Open HTML Report"
+
+[node name="Header" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="KernelLabel" type="Label" parent="Layout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kernel: —"
+
+[node name="WatertightLabel" type="Label" parent="Layout/Header"]
+layout_mode = 2
+text = "Watertight: n/a"
+
+[node name="Split" type="HSplitContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 160
+
+[node name="StagesBox" type="VBoxContainer" parent="Layout/Split"]
+layout_mode = 2
+
+[node name="StagesHeader" type="Label" parent="Layout/Split/StagesBox"]
+layout_mode = 2
+text = "Stages"
+
+[node name="StageTree" type="Tree" parent="Layout/Split/StagesBox"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 4
+column_titles_visible = true
+hide_root = true
+
+[node name="DiagnosticsBox" type="VBoxContainer" parent="Layout/Split"]
+layout_mode = 2
+
+[node name="DiagnosticsHeader" type="Label" parent="Layout/Split/DiagnosticsBox"]
+layout_mode = 2
+text = "Diagnostics"
+
+[node name="DiagnosticsTree" type="Tree" parent="Layout/Split/DiagnosticsBox"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+column_titles_visible = true
+hide_root = true
