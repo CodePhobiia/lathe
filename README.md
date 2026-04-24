@@ -44,11 +44,19 @@ This repository is a working **reference compiler scaffold** for Lathe v0.1. The
 ## What is intentionally still a scaffold
 
 - live learned inference is optional and depends on an external model runtime being available
-- bounded semantic repair execution now exists for the native shape lane, but full multi-round autonomous repair loops are still not implemented
-- publish runner is still not implemented
-- canonical text formatting is still not implemented
 
 That is deliberate. The compiler contract comes first; learned runtimes plug into it.
+
+**Previously-scaffolded items all closed in Wave 4 (V0.1.x):**
+
+- Publish runner — `lathe/publish.py` with local_fs / s3 / supabase / git_lfs drivers + ed25519-signed manifests (BL-31).
+- Canonical text formatting — `lathe fmt` token-level reformatter with comment preservation + idempotence (BL-32).
+- Multi-round autonomous repair — `lathe/repair_loop.py` with regression guard + rollback + bounded rounds (BL-33).
+- Second backend stack — `lathe.stack.soft_surface_prop_v1` as a plugin-model proof with its own topology adapter + silhouette validator (BL-34; full soft-surface UV + curvature continuity deferred — see `docs/second_backend_stack.md`).
+- Hero output gallery + benchmark scoreboard — `scripts/render_gallery.py` + `scripts/render_scoreboard.py` + nightly workflow (BL-35).
+- Rich reports + artifact viewer + CLI error polish — `lathe/reports/`, `lathe/viewer/`, `docs/error_codes.md`, `--report {terminal,html,json}`, `lathe serve` (BL-36).
+- Strict-mode default flip mechanism — `--allow-fallback` flag + DeprecationWarning in V0.1.x; actual default flip in V0.2 (BL-37).
+- Stability fuzz + perf baseline budgets + playground concept (BL-38; full 10k-iter fuzz + CI-gated perf + Pyodide in-browser Lathe deferred).
 
 ## Install
 
