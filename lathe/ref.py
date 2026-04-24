@@ -366,6 +366,21 @@ def _build_report(target_path: Path) -> dict[str, Any] | None:
     return _load_json(report_path)
 
 
+def _selector_manifest(target_path: Path) -> dict[str, Any] | None:
+    """Load ``selector_manifest.json`` from ``target_path`` if present.
+
+    Returns the parsed dict when the sidecar exists and is valid JSON, else
+    ``None``. The manifest is the authoritative REF-5 source; callers prefer
+    it over ``build_report.json`` for selector lookup.
+    """
+
+    manifest_path = target_path / "selector_manifest.json"
+    if not manifest_path.exists():
+        return None
+    payload = _load_json(manifest_path)
+    return payload if isinstance(payload, dict) else None
+
+
 def _collect_stage_bundles(report: dict[str, Any]) -> dict[str, Any]:
     bundles = report.get("stage_bundles")
     return bundles if isinstance(bundles, dict) else {}
@@ -410,18 +425,71 @@ def _part_ids_from_shape_bundle(target_path: Path) -> list[str]:
     return [str(p) for p in labels if isinstance(p, (str, int))]
 
 
-def _maybe_stale_warning(target_path: Path, selector: Optional[RefSelector]) -> None:
-    """Emit a :class:`StaleRefWarning` when the build dir shows obvious drift."""
+def _maybe_stale_warning(
+    target_path: Path,
+    selector: Optional[RefSelector],
+    *,
+    manifest: dict[str, Any] | None = None,
+    expected_build_hash: str | None = None,
+) -> None:
+    """Emit a :class:`StaleRefWarning` when the build dir shows obvious drift.
 
+    Three drift modes are detected:
+
+    1. Neither ``selector_manifest.json`` nor ``build_report.json`` exists at
+       ``target_path``. (The build is incomplete or the dir is mislabelled.)
+    2. The caller supplied ``expected_build_hash`` and it does not match the
+       ``buildHash`` recorded in ``selector_manifest.json``.
+    3. The ref's ``asset.<id>`` / ``variant.<id>`` selector does not match the
+       asset/variant name recorded in the manifest (preferred) or
+       ``build_report.json`` (fallback).
+    """
+
+    manifest_path = target_path / "selector_manifest.json"
     report_path = target_path / "build_report.json"
-    if not report_path.exists():
+    if not manifest_path.exists() and not report_path.exists():
         warnings.warn(
-            f"@lathe[{target_path}] has no build_report.json — ref may be stale "
-            "(is the build complete?)",
+            f"@lathe[{target_path}] has no selector_manifest.json or "
+            "build_report.json — ref may be stale (is the build complete?)",
             StaleRefWarning,
             stacklevel=3,
         )
         return
+
+    # Manifest-based drift checks (REF-7: authoritative source).
+    if manifest is not None:
+        if expected_build_hash is not None:
+            actual = manifest.get("buildHash")
+            if isinstance(actual, str) and actual != expected_build_hash:
+                warnings.warn(
+                    f"@lathe[{target_path}] buildHash '{actual}' does not "
+                    f"match expected '{expected_build_hash}' — ref may be stale",
+                    StaleRefWarning,
+                    stacklevel=3,
+                )
+        if selector is not None and selector.kind == "asset":
+            asset_in_manifest = manifest.get("asset")
+            if asset_in_manifest and asset_in_manifest != selector.id:
+                warnings.warn(
+                    f"@lathe[{target_path}#asset.{selector.id}] does not match "
+                    f"selector_manifest.json asset '{asset_in_manifest}' — ref "
+                    "may be stale",
+                    StaleRefWarning,
+                    stacklevel=3,
+                )
+        if selector is not None and selector.kind == "variant":
+            variant_in_manifest = manifest.get("variant")
+            if variant_in_manifest and variant_in_manifest != selector.id:
+                warnings.warn(
+                    f"@lathe[{target_path}#variant.{selector.id}] does not "
+                    f"match selector_manifest.json variant "
+                    f"'{variant_in_manifest}' — ref may be stale",
+                    StaleRefWarning,
+                    stacklevel=3,
+                )
+        return
+
+    # Fallback: only build_report.json is available (pre-REF-5 builds).
     if selector is None or selector.kind != "asset":
         return
     report = _load_json(report_path)
@@ -641,18 +709,162 @@ _RESOLVERS = {
 }
 
 
-def resolve_ref(node: RefNode, *, repo_root: Path | str | None = None) -> dict[str, Any]:
+def _resolve_from_manifest(
+    manifest: dict[str, Any],
+    selector: Optional[RefSelector],
+) -> dict[str, Any] | None:
+    """Resolve a selector directly against the REF-5 selector manifest.
+
+    Returns ``None`` when the manifest does not yet know how to resolve this
+    selector kind (falls back to the legacy ``build_report.json`` path).
+    """
+
+    if selector is None:
+        return {
+            "ok": True,
+            "facts": {
+                "asset": manifest.get("asset"),
+                "variant": manifest.get("variant"),
+                "build_hash": manifest.get("buildHash"),
+                "package_hash": manifest.get("packageHash"),
+                "schema_version": manifest.get("schemaVersion"),
+                "source": "selector_manifest.json",
+            },
+        }
+
+    if selector.kind == "asset":
+        asset_name = manifest.get("asset")
+        if asset_name == selector.id:
+            return {
+                "ok": True,
+                "facts": {
+                    "asset": selector.id,
+                    "variant": manifest.get("variant"),
+                    "build_hash": manifest.get("buildHash"),
+                    "source": "selector_manifest.json",
+                },
+            }
+        return {
+            "ok": False,
+            "reason": "asset_not_in_build",
+            "facts": {
+                "build_asset": asset_name,
+                "requested": selector.id,
+                "source": "selector_manifest.json",
+            },
+            "message": (
+                f"selector_manifest.json reports asset '{asset_name}', not "
+                f"'{selector.id}'"
+            ),
+        }
+
+    if selector.kind == "variant":
+        variant_name = manifest.get("variant")
+        matches = variant_name == selector.id or manifest.get("asset") == selector.id
+        return {
+            "ok": bool(matches),
+            "reason": None if matches else "variant_not_in_build",
+            "facts": {
+                "variant": selector.id,
+                "manifest_variant": variant_name,
+                "build_asset": manifest.get("asset"),
+                "source": "selector_manifest.json",
+            },
+            "message": None
+            if matches
+            else (
+                f"selector_manifest.json reports variant "
+                f"'{variant_name}' / asset '{manifest.get('asset')}', which "
+                f"does not match '{selector.id}'"
+            ),
+        }
+
+    if selector.kind == "part":
+        parts = manifest.get("parts") or []
+        if isinstance(parts, list):
+            for part in parts:
+                if isinstance(part, dict) and part.get("id") == selector.id:
+                    return {
+                        "ok": True,
+                        "facts": {
+                            "part_id": selector.id,
+                            "source": "selector_manifest.json:parts",
+                            "sibling_parts": [
+                                p.get("id") for p in parts
+                                if isinstance(p, dict) and p.get("id") != selector.id
+                            ],
+                            "ref": part.get("ref"),
+                        },
+                    }
+            return {
+                "ok": False,
+                "reason": "part_not_found",
+                "facts": {
+                    "available_part_ids": [
+                        p.get("id") for p in parts if isinstance(p, dict)
+                    ],
+                    "source": "selector_manifest.json:parts",
+                },
+                "message": (
+                    f"part '{selector.id}' not found in selector_manifest.json; "
+                    f"known parts: {[p.get('id') for p in parts if isinstance(p, dict)]}"
+                ),
+            }
+
+    if selector.kind == "diagnostic":
+        diagnostics = manifest.get("diagnostics") or []
+        if isinstance(diagnostics, list):
+            for diag in diagnostics:
+                if isinstance(diag, dict) and diag.get("id") == selector.id:
+                    return {
+                        "ok": True,
+                        "facts": {
+                            "id": diag.get("id"),
+                            "severity": diag.get("severity"),
+                            "stage": diag.get("stage"),
+                            "message": diag.get("message"),
+                            "source": "selector_manifest.json:diagnostics",
+                        },
+                    }
+            return {
+                "ok": False,
+                "reason": "diagnostic_not_found",
+                "facts": {
+                    "available_diagnostic_ids": [
+                        d.get("id") for d in diagnostics if isinstance(d, dict)
+                    ],
+                    "source": "selector_manifest.json:diagnostics",
+                },
+                "message": (
+                    f"diagnostic '{selector.id}' not found in "
+                    "selector_manifest.json"
+                ),
+            }
+
+    # Stage selectors still resolve against build_report.json in Phase 1.
+    return None
+
+
+def resolve_ref(
+    node: RefNode,
+    *,
+    repo_root: Path | str | None = None,
+    expected_build_hash: str | None = None,
+) -> dict[str, Any]:
     """Resolve a parsed ref to a fact payload.
 
     Phase-1 behaviour:
 
-    * Whole-build refs and ``asset``/``variant``/``stage``/``diagnostic``/
-      ``part`` selectors resolve against ``build_report.json`` and the
-      shape bundle for part lists.
+    * If ``selector_manifest.json`` is present it is the authoritative source
+      for ``asset``/``variant``/``part``/``diagnostic`` lookups (REF-5).
+    * ``stage`` selectors still read ``build_report.json`` (stages are not
+      serialised into the manifest's top level).
     * ``source`` targets (``.lth`` files) are detected but currently only
       return a path-existence fact — selector resolution against a source
       file is a REF-5 deliverable in the next wave.
     * Stale-ref drift emits a :class:`StaleRefWarning`; it does NOT raise.
+      Callers may pass ``expected_build_hash`` to trigger a ``buildHash``
+      mismatch warning.
 
     Returns a JSON-serialisable dict with stable keys: ``ok``, ``ref``,
     ``target_path``, ``target_kind``, ``selector_kind``, ``selector_id``,
@@ -702,20 +914,32 @@ def resolve_ref(node: RefNode, *, repo_root: Path | str | None = None) -> dict[s
         return base
 
     # target_kind == "build"
+    manifest = _selector_manifest(target_path)
     report = _build_report(target_path)
-    _maybe_stale_warning(target_path, node.selector)
+    _maybe_stale_warning(
+        target_path,
+        node.selector,
+        manifest=manifest,
+        expected_build_hash=expected_build_hash,
+    )
 
-    if node.selector is None:
-        result = _resolve_whole_build(target_path, report)
-    else:
-        resolver = _RESOLVERS.get(node.selector.kind)
-        if resolver is None:
-            # Shouldn't happen — parse_ref rejects unknown kinds — but keep
-            # the API defensive rather than crash on a malformed RefNode.
-            raise RefResolutionError(
-                f"no resolver for selector kind '{node.selector.kind}'"
-            )
-        result = resolver(target_path, report, node.selector)
+    # Prefer the selector manifest for selectors it can resolve.
+    result: dict[str, Any] | None = None
+    if manifest is not None:
+        result = _resolve_from_manifest(manifest, node.selector)
+
+    if result is None:
+        if node.selector is None:
+            result = _resolve_whole_build(target_path, report)
+        else:
+            resolver = _RESOLVERS.get(node.selector.kind)
+            if resolver is None:
+                # Shouldn't happen — parse_ref rejects unknown kinds — but keep
+                # the API defensive rather than crash on a malformed RefNode.
+                raise RefResolutionError(
+                    f"no resolver for selector kind '{node.selector.kind}'"
+                )
+            result = resolver(target_path, report, node.selector)
 
     base["ok"] = bool(result.get("ok"))
     facts = result.get("facts") or {}
