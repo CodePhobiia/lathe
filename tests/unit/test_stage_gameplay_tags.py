@@ -27,16 +27,28 @@ def test_declared_tags_in_catalog_pass():
     assert sorted(report["evidence"]["valid_tags"]) == ["door", "kinematic"]
 
 
-def test_unknown_tag_emits_l6410_error():
+def test_unknown_tag_emits_l6410_warning_by_default():
     asset = {"publish": {"tags": ["kinematic", "bomb"]}}
+    report = _evaluate(asset)
+    warns = [d for d in report["diagnostics"] if d.get("severity") == "warning"]
+    assert len(warns) == 1
+    assert warns[0]["code"] == "L6410"
+    assert "bomb" in warns[0]["message"]
+    assert "kinematic" in warns[0]["details"]["allowed"]
+    assert report["passes"] is True
+
+
+def test_unknown_tag_escalates_to_error_under_strict_mode():
+    asset = {
+        "publish": {"tags": ["kinematic", "bomb"]},
+        "build": {"strict_gameplay_tags": True},
+    }
     report = _evaluate(asset)
     assert report["passes"] is False
     errs = [d for d in report["diagnostics"] if d.get("severity") == "error"]
     assert len(errs) == 1
     assert errs[0]["code"] == "L6410"
     assert "bomb" in errs[0]["message"]
-    # Allowed catalog is surfaced for operator feedback.
-    assert "kinematic" in errs[0]["details"]["allowed"]
 
 
 def test_multiple_unknown_tags_produce_one_diagnostic_each():

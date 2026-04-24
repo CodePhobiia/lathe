@@ -164,13 +164,20 @@ def build_gameplay_tag_validator() -> "FunctionValidator":
                 valid.append(tag)
             else:
                 unknown.append(tag)
+        # V0.2 rollout: unknown tags are warnings by default to avoid
+        # breaking assets authored pre-catalog. Assets opt in to strict
+        # enforcement via asset.build.strict_gameplay_tags=true (planned
+        # flip in V0.3). Without the opt-in, L6410 fires at warning
+        # severity and does not block certification.
+        strict_tags = bool(asset.get("build", {}).get("strict_gameplay_tags", False))
+        severity = "error" if strict_tags else "warning"
         for tag in unknown:
             diagnostics.append(
                 {
                     "code": "L6410",
                     "id": "L6410",
                     "name": "unknown_gameplay_tag",
-                    "severity": "error",
+                    "severity": severity,
                     "phase": "validate",
                     "stage": "validate",
                     "validator": "gameplay_tags",
