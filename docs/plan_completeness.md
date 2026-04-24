@@ -2,6 +2,8 @@
 
 As of 2026-04-24, 74 commits on `main` + tag `v0.1.0`. This document is the **honest state** of what's shipped vs what's open across the 10 original plans from the repository review.
 
+**V0.2 update (2026-04-25):** 21 additional commits on `main` have landed every V0.2 epic from `docs/next_version_roadmap.md` save **OPS-1** (push to public GitHub — requires a credentialed human action). Version bumped to `0.2.0rc1` in `pyproject.toml`. 922 tests pass on the core suite. See `CHANGELOG.md` § `[0.2.0-rc.1]` for the per-epic breakdown.
+
 "Touched" ≠ "done." Use this doc when planning future waves; don't trust the session-scale `WAVE{N}_BACKLOG.md` files alone.
 
 ## Per-plan completeness
