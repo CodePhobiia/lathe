@@ -46,6 +46,7 @@ from lathe.hero_manifest import HEROES, Hero  # noqa: E402
 
 PERF_DIR = _REPO_ROOT / "perf"
 BUDGETS_PATH = PERF_DIR / "budgets.json"
+MANIFEST_PATH = PERF_DIR / "manifest.json"
 TMP_OUT_ROOT = _REPO_ROOT / "tmp_profile"
 
 # Stages we attempt to time (matches the canonical ``stages/`` subdirs
@@ -198,8 +199,100 @@ def _load_existing_budgets() -> Dict[str, Any]:
     return json.loads(BUDGETS_PATH.read_text(encoding="utf-8"))
 
 
+def _load_manifest() -> Optional[Dict[str, Any]]:
+    """Load the hand-authored ``perf/manifest.json`` if present (PERF-4)."""
+    if not MANIFEST_PATH.exists():
+        return None
+    return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+
+def _manifest_rows(hero_name: str, current: Dict[str, Any], manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Compute pass/warn/fail rows for ``hero_name`` against the manifest.
+
+    A row has: {stage, current_ms, ms_max, status}. status is one of:
+      - "pass": current_ms <= ms_max
+      - "warn": current_ms > 0.9 * ms_max but <= ms_max (heads-up; still passes)
+      - "fail": current_ms > ms_max
+      - "skip": no budget or no measurement for this stage
+    A synthetic row for "__total__" against total_ms_max is included.
+    """
+    rows: List[Dict[str, Any]] = []
+    hero_entry = manifest.get("heroes", {}).get(hero_name)
+    if not hero_entry:
+        rows.append({
+            "stage": "__hero__",
+            "current_ms": None,
+            "ms_max": None,
+            "status": "skip",
+            "reason": f"hero {hero_name!r} not listed in perf/manifest.json",
+        })
+        return rows
+
+    stage_budgets = hero_entry.get("stages", {}) or {}
+    for stage in STAGE_ORDER:
+        info = current.get("stages", {}).get(stage) or {}
+        cur = info.get("current_ms")
+        budget_entry = stage_budgets.get(stage) or {}
+        ms_max = budget_entry.get("ms_max")
+        if cur is None or ms_max is None:
+            rows.append({
+                "stage": stage,
+                "current_ms": cur,
+                "ms_max": ms_max,
+                "status": "skip",
+            })
+            continue
+        if cur > ms_max:
+            status = "fail"
+        elif cur > 0.9 * ms_max:
+            status = "warn"
+        else:
+            status = "pass"
+        rows.append({
+            "stage": stage,
+            "current_ms": cur,
+            "ms_max": ms_max,
+            "status": status,
+        })
+
+    total_max = hero_entry.get("total_ms_max")
+    wall_ms = current.get("wall_ms")
+    if isinstance(total_max, (int, float)) and isinstance(wall_ms, (int, float)):
+        if wall_ms > total_max:
+            tstatus = "fail"
+        elif wall_ms > 0.9 * total_max:
+            tstatus = "warn"
+        else:
+            tstatus = "pass"
+        rows.append({
+            "stage": "__total__",
+            "current_ms": wall_ms,
+            "ms_max": total_max,
+            "status": tstatus,
+        })
+    return rows
+
+
+def _print_rows(hero_name: str, rows: List[Dict[str, Any]], stream=sys.stderr) -> None:
+    """Print a short per-hero per-stage table to ``stream``."""
+    print(f"[{hero_name}]", file=stream)
+    for row in rows:
+        stage = row["stage"]
+        cur = row["current_ms"]
+        ms_max = row["ms_max"]
+        status = row["status"]
+        cur_s = f"{cur:>10.2f}" if isinstance(cur, (int, float)) else f"{'--':>10}"
+        max_s = f"{ms_max:>10.2f}" if isinstance(ms_max, (int, float)) else f"{'--':>10}"
+        tag = f"[{status.upper():<4}]"
+        print(f"  {tag} {stage:<12} {cur_s} ms / {max_s} ms", file=stream)
+
+
 def _verify(hero_name: str, current: Dict[str, Any], budgets: Dict[str, Any]) -> List[str]:
-    """Return a list of regression messages for ``hero_name``."""
+    """Return a list of regression messages for ``hero_name``.
+
+    Legacy verifier (BL-43) — still supported for back-compat with
+    inferred ``budgets.json``. Prefer ``_manifest_rows`` for PERF-4.
+    """
     msgs: List[str] = []
     hero_budget = budgets.get("heroes", {}).get(hero_name)
     if not hero_budget:
@@ -245,9 +338,19 @@ def main() -> int:
     )
     parser.add_argument("--only", type=str, default=None, help="Restrict to a single hero by name")
     parser.add_argument("--out-root", type=Path, default=TMP_OUT_ROOT, help="Where to write transient build outputs (default: tmp_profile/)")
+    parser.add_argument(
+        "--manifest",
+        action="store_true",
+        help=(
+            "PERF-4 (V0.2, Wave 6.VI): verify against hand-authored "
+            "perf/manifest.json budgets (ms_max) instead of inferred "
+            "perf/budgets.json. Emits per-hero per-stage pass/warn/fail "
+            "rows and exits non-zero on any 'fail'."
+        ),
+    )
     args = parser.parse_args()
 
-    if not args.verify:
+    if not args.verify and not args.manifest:
         args.write = True  # default
 
     PERF_DIR.mkdir(parents=True, exist_ok=True)
@@ -260,6 +363,29 @@ def main() -> int:
     for hero in heroes:
         print(f"  -> {hero.asset_name}", file=sys.stderr)
         measurements[hero.asset_name] = _profile_hero(hero, args.out_root)
+
+    if args.manifest:
+        manifest = _load_manifest()
+        if manifest is None:
+            print(
+                f"perf/manifest.json not found at {MANIFEST_PATH} — create it (PERF-4) before running --manifest",
+                file=sys.stderr,
+            )
+            return 2
+        any_fail = False
+        for name, m in measurements.items():
+            rows = _manifest_rows(name, m, manifest)
+            _print_rows(name, rows)
+            if any(r.get("status") == "fail" for r in rows):
+                any_fail = True
+        if any_fail and args.fail_on_regression:
+            print("PERF-4: one or more stages over ms_max.", file=sys.stderr)
+            return 2
+        if any_fail:
+            print("(--no-fail-on-regression set; exiting 0 despite fails)", file=sys.stderr)
+            return 0
+        print("PERF-4: all stages within manifest budgets.", file=sys.stderr)
+        return 0
 
     if args.verify:
         existing = _load_existing_budgets()

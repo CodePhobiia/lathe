@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "authored_at": "2026-04-25",
+  "note": "PERF-4 (V0.2, Wave 6.VI): hand-authored per-hero per-stage wall-time budgets (ms). These replace the inferred current_ms * BUDGET_HEADROOM values from BL-38 with explicit authored ceilings. Values target ~2x the observed Wave 6 measurements so routine jitter does not page; a single regression >budget is a real signal. Stages not listed are unbudgeted (warn-only).",
+  "budget_headroom": 1.0,
+  "heroes": {
+    "courier_drone": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "brassbound_chest": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "industrial_crate": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "mechanical_door": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "console_terminal": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "sci_fi_wall_panel": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "service_cabinet": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "control_pedestal": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    },
+    "supply_container": {
+      "total_ms_max": 200000,
+      "stages": {
+        "shape": {"ms_max": 6000},
+        "topology": {"ms_max": 4000},
+        "uv": {"ms_max": 1000},
+        "surface": {"ms_max": 280000},
+        "execution": {"ms_max": 50},
+        "rig": {"ms_max": 100},
+        "interfaces": {"ms_max": 50},
+        "physics": {"ms_max": 50},
+        "optimize": {"ms_max": 200},
+        "validate": {"ms_max": 80000},
+        "package": {"ms_max": 20000}
+      }
+    }
+  }
+}

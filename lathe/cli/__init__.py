@@ -13,6 +13,7 @@ from .bridge_cmd import run_bridge
 from .build_cmd import run_build, run_mode_build, run_render_eval
 from .cache_cmd import register as _register_cache, run_cache
 from .check_cmd import run_check
+from .diff_cmd import register as _register_diff, run_diff
 from .doctor_cmd import (
     run_backends,
     run_doctor,
@@ -390,6 +391,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ref_copy.add_argument("--repo-root", default=None, help="Override repo root for resolution")
 
     _register_cache(sub)
+    _register_diff(sub)
     _register_publish(sub)
     _register_snapshot(sub)
     _register_telemetry(sub)
@@ -432,6 +434,7 @@ _DISPATCH = {
     "surface-repair": run_surface,
     "build": run_build,
     "cache": run_cache,
+    "diff": run_diff,
     "ref": run_ref,
     "snapshot": run_snapshot,
     "publish": run_publish,
