@@ -121,4 +121,4 @@ For the full field inventory, see [Reading a trace](reading_a_trace.md).
 - [Architecture pipeline](../architecture/pipeline.md) — the deterministic-vs-probabilistic stage map.
 - [Architecture — Shape stage](../architecture/shape_stage.md) — how intent flows into `ShapeIR`.
 - [Tutorial — Author your first `.lth` asset](../tutorial/first_asset.md) — builds a simpler bookshelf from scratch.
-- [Spec — Lathe v0.1](../../spec/lathe-v0.1.md) — language surface reference.
+- [Spec — Lathe v0.1](../spec/lathe-v0.1.md) — language surface reference.

@@ -28,12 +28,19 @@ All three are united by the same ``_assert_parser_invariant`` helper.
 """
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import pytest
 from hypothesis import HealthCheck, given, settings, strategies as st
 
 from lathe.parser import LatheParseError, parse_text
+
+
+# Scale knob (BL-42): default 200 (fast, PR CI / local smoke);
+# nightly cron sets LATHE_FUZZ_EXTENDED=1 for the full 10k sweep.
+_EXTENDED = os.environ.get("LATHE_FUZZ_EXTENDED") == "1"
+MAX_EXAMPLES = 10000 if _EXTENDED else 200
 
 
 # -- invariant -----------------------------------------------------------
@@ -127,21 +134,21 @@ def _random_program_skeleton(draw: Any) -> str:
 
 
 @given(source=st.text(max_size=200))
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_parser_invariant_random_text(source: str) -> None:
     """Property: random text never crashes the parser uncleanly."""
     _assert_parser_invariant(source)
 
 
 @given(source=_random_token_stream())
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_parser_invariant_random_tokens(source: str) -> None:
     """Property: arbitrary token streams never crash the parser uncleanly."""
     _assert_parser_invariant(source)
 
 
 @given(source=_random_program_skeleton())
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_parser_invariant_program_skeleton(source: str) -> None:
     """Property: well-formed-ish skeletons either parse or raise cleanly."""
     _assert_parser_invariant(source)

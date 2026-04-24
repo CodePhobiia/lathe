@@ -231,6 +231,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--write", action="store_true", help="Refresh budgets.json from current measurements (default if no other mode)")
     parser.add_argument("--verify", action="store_true", help="Compare current run against existing budgets.json; fail on regression > 20%%")
+    parser.add_argument(
+        "--fail-on-regression",
+        action="store_true",
+        default=True,
+        help="Exit non-zero when --verify detects a regression (default: true). Pair with --no-fail-on-regression to make --verify report-only.",
+    )
+    parser.add_argument(
+        "--no-fail-on-regression",
+        dest="fail_on_regression",
+        action="store_false",
+        help="When set, --verify prints regressions but exits 0 (report-only mode).",
+    )
     parser.add_argument("--only", type=str, default=None, help="Restrict to a single hero by name")
     parser.add_argument("--out-root", type=Path, default=TMP_OUT_ROOT, help="Where to write transient build outputs (default: tmp_profile/)")
     args = parser.parse_args()
@@ -258,7 +270,10 @@ def main() -> int:
             print("REGRESSIONS DETECTED:", file=sys.stderr)
             for msg in regressions:
                 print(f"  - {msg}", file=sys.stderr)
-            return 2
+            if args.fail_on_regression:
+                return 2
+            print("(--no-fail-on-regression set; exiting 0 despite regressions)", file=sys.stderr)
+            return 0
         print("All stages within budget.", file=sys.stderr)
         return 0
 

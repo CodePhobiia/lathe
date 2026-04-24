@@ -5,7 +5,7 @@ Lathe uses [`uv`](https://docs.astral.sh/uv/) as the authoritative lock tool; `u
 ## Upgrade cadence
 
 - **Monthly baseline upgrade.** Once per month, run `uv lock --upgrade` on a fresh branch and commit the resulting lock changes as a dedicated PR. Include a brief summary of notable version jumps in the PR description.
-- **Security upgrades are not bound to the monthly cadence.** When `pip-audit` or GitHub Advisory data flags a vulnerable dependency, upgrade immediately on its own PR per the [Security policy](../SECURITY.md).
+- **Security upgrades are not bound to the monthly cadence.** When `pip-audit` or GitHub Advisory data flags a vulnerable dependency, upgrade immediately on its own PR per the [Security policy](SECURITY.md).
 - **Transitive-only bumps** can be rolled into the monthly baseline PR; **direct-dependency major bumps** should get their own PR with a targeted test run.
 
 ## Adding a new dependency
@@ -16,6 +16,6 @@ Lathe uses [`uv`](https://docs.astral.sh/uv/) as the authoritative lock tool; `u
 
 ## Cross-links
 
-- [Security policy](../SECURITY.md) — vulnerability reporting and response SLAs.
+- [Security policy](SECURITY.md) — vulnerability reporting and response SLAs.
 - Plan 06 (Maintenance) — the operational security / dependency workflow that this policy aligns with.
 - [Versioning](versioning.md) — how dependency bumps translate into package version bumps.

@@ -1,0 +1,48 @@
+name: Perf gate
+
+# BL-43 — compare per-hero, per-stage build timings against
+# perf/budgets.json and fail the job if any stage regresses by >20%.
+# The verify script itself is scripts/profile_heroes.py (BL-38).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  perf-verify:
+    name: Hero perf verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Lathe (dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+
+      - name: Verify hero timings against budgets
+        run: |
+          python scripts/profile_heroes.py --verify --fail-on-regression
+
+      - name: Upload historical perf record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heroes-perf-${{ github.run_id }}
+          path: perf/heroes_*.json
+          if-no-files-found: ignore
+          retention-days: 90

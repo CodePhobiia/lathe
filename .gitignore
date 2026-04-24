@@ -42,6 +42,9 @@ external/vggt/
 .DS_Store
 Thumbs.db
 
+# mkdocs rendered site
+site/
+
 # Blender scratch
 *.blend1
 

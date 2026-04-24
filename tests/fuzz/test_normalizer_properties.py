@@ -16,6 +16,7 @@ strategy could.
 """
 from __future__ import annotations
 
+import os
 from copy import deepcopy
 from typing import Any
 
@@ -24,6 +25,12 @@ from hypothesis import HealthCheck, given, settings, strategies as st
 
 from lathe.normalizer import normalize_asset, normalize_program
 from lathe.parser import parse_text
+
+
+# Scale knob (BL-42): default 200 (fast, PR CI / local smoke);
+# nightly cron sets LATHE_FUZZ_EXTENDED=1 for the full 10k sweep.
+_EXTENDED = os.environ.get("LATHE_FUZZ_EXTENDED") == "1"
+MAX_EXAMPLES = 10000 if _EXTENDED else 200
 
 
 # -- helpers -------------------------------------------------------------
@@ -170,14 +177,14 @@ def _random_program(draw: Any) -> dict:
 
 
 @given(program=_random_program())
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
+@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 def test_normalize_program_idempotent(program: dict) -> None:
     """Property: ``normalize_program(normalize_program(x)) == normalize_program(x)``."""
     _assert_idempotent_program(program)
 
 
 @given(asset=_random_asset_node())
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
+@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 def test_normalize_asset_idempotent(asset: dict) -> None:
     """Property: ``normalize_asset(normalize_asset(x)) == normalize_asset(x)``."""
     _assert_idempotent_asset(asset)
