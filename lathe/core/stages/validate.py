@@ -53,15 +53,18 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     diagnostics: list[dict[str, Any]] = []
 
     cert_bundle = _PIPELINE.run(executor.runtime, executor.asset, artifacts={})
-    semantic_report = cert_bundle["validators"]["semantic_quality"]["evidence"]
-    visual_report = cert_bundle["validators"]["visual_quality"]["evidence"]
-    flow_report = cert_bundle["validators"]["flow_quality"]["evidence"]
+    semantic_entry = cert_bundle["validators"]["semantic_quality"]
+    visual_entry = cert_bundle["validators"]["visual_quality"]
+    flow_entry = cert_bundle["validators"]["flow_quality"]
+    semantic_report = semantic_entry["evidence"]
+    visual_report = visual_entry["evidence"]
+    flow_report = flow_entry["evidence"]
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
-    diagnostics.extend(semantic_report["diagnostics"])
-    diagnostics.extend(visual_report["diagnostics"])
-    diagnostics.extend(flow_report["diagnostics"])
+    diagnostics.extend(semantic_entry["diagnostics"])
+    diagnostics.extend(visual_entry["diagnostics"])
+    diagnostics.extend(flow_entry["diagnostics"])
     diagnostics.extend(executor.runtime.get("execution", {}).get("bundle", {}).get("diagnostics", []))
     rule_results = []
     for rule in executor.asset["validate"].get("rules", []):
