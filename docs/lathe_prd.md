@@ -1,5 +1,18 @@
 # Product Requirements Document
 
+**Version:** 0.2.0rc1 (pre-release reference compiler scaffold)
+**Last reviewed:** 2026-04-28
+**Product owner:** Tal Merri (@talmerri)
+**Reviewer:** requires-human (no second reviewer named yet — backup needed before any GA discussion)
+
+## Problem in one sentence
+
+Current AI-driven 3D pipelines produce visually plausible meshes that game engines and asset pipelines cannot directly use, because topology, UVs, sockets, collision, budgets, and certification are afterthoughts.
+
+## Target user in one sentence
+
+Indie game developers and small-team technical artists who need predictable, reviewable, certifiable 3D assets without running a full art pipeline.
+
 ## Product
 
 Lathe
@@ -11,6 +24,8 @@ Lathe 1.0: Standalone Production 3D Asset Compiler
 ## Document purpose
 
 This PRD defines the target product shape for Lathe as a standalone system capable of compiling Lathe programs into production-ready 3D assets. It is intended for research, product, and platform engineering teams working on long-horizon capability development.
+
+The current shipping version (`0.2.0rc1`) is a pre-release reference compiler scaffold. It is NOT production-ready, NOT stable, and NOT GA. Where this PRD describes longer-horizon goals (1.0, standalone, learned parity), those are aspirations against the M1–M5 engineering milestones in `docs/roadmap_public.md`, not commitments for the 0.2.0rc1 release. The "Requirement status (v0.2.0rc1)" section near the end is the single source of truth for what 0.2.0rc1 actually does today.
 
 ## Executive summary
 
@@ -418,6 +433,132 @@ The research team should consider Lathe successful when:
 - manual cleanup is materially reduced
 - teams can trust the build result as a real production signal
 
+## Requirement status (v0.2.0rc1)
+
+This section tags every requirement above against the actual state of the code on the v0.2.0rc1 release branch (base commit `30f9186`). Status legend:
+
+- `supported` — code path is shipped, exercised by tests/CI, documented, and safe to recommend for the conservative offline build.
+- `preview` — code path is shipped and tested at smoke-test depth; rough edges remain; suitable for early adopters who tolerate breakage and report bugs.
+- `experimental` — code path is shipped behind opt-in runtime config; depends on optional tools / external services; failures are expected and traceable, not silent.
+- `future` — not in 0.2.0rc1; tracked on the roadmap; do not claim or ship.
+- `rejected` — explicitly out of scope; will not ship in this product.
+
+If a requirement has no test or doc evidence, it is marked `gap:` and is currently a documentation hole that the readiness pass must close or accept as an exception.
+
+### 1. Language and source model
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| Stable textual language (`.lth`) | `supported` | `grammar/lathe.lark`, `spec/lathe-v0.1.md`, `tests/test_language_v08.py`, `tests/test_language_v13.py` |
+| Normalized machine-readable AST | `supported` | `schema/lathe.schema.json`, `lathe/normalizer.py`, `tests/test_lathe.py` |
+| Deterministic parsing and normalization | `supported` | `lathe/parser.py`, `lathe/normalizer.py`, `tests/test_roundtrip.py` |
+| Stable declaration kinds (asset, variant, profile, contract, critic, stage) | `supported` | `docs/language_reference.md`, `tests/contract/test_stable_backend_contracts.py` |
+| Diffable, reviewable source | `supported` | grammar is line-oriented; `examples/*.lth` checked into repo |
+| Semantics preserved across backend changes | `supported` | `tests/contract/test_shape_handoff_v1.py`, `docs/adr/0001-shape-handoff-contract.md` |
+| Canonical defaults reduce ambiguity | `supported` | `lathe/defaults.py`, `lathe/normalizer.py` |
+| `fmt` canonical formatter | `future` | gap: no `lathe fmt` subcommand exists; tracked as scaffold limitation in `CLAUDE.md` |
+
+### 2. Standalone asset compilation
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| End-to-end compile through stage pipeline | `supported` (hero families) | `lathe/executor.py`, `STAGE_ORDER`, `tests/golden/test_hero_bundles.py` |
+| Each stage has explicit inputs/outputs | `supported` | `docs/architecture/pipeline.md`, `docs/architecture/stage_contracts.md` |
+| Each stage emits traceable artifacts | `supported` | `tests/golden/test_artifact_contract_snapshots.py`, build trace manifest |
+| Builds return clear pass/fail | `supported` | `tests/test_build.py`, `lathe check`/`lathe build` exit codes |
+| `publish` runner | `preview` | `lathe/publish/__init__.py` ships local_fs/s3/supabase/git_lfs drivers; CLAUDE.md lists publish as scaffold; signing skipped when key/lib absent |
+| Multi-round autonomous repair loop | `future` | gap: CLAUDE.md explicitly notes "full multi-round autonomous repair loops are intentionally still scaffolds" |
+
+### 3. Shape generation and reconstruction
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| `generate` flow | `supported` (fallback) | `examples/courier_drone.lth`, hero examples, `lathe/shape_backend.py` |
+| `reconstruct` flow | `preview` | reconstruct example exists; certification thresholds vary by example |
+| `adapt` flow | `preview` | `lathe/fit_ir.py`, V1.1 docs; less test coverage than generate |
+| `assemble` flow | `preview` | `lathe/assembly_kernel.py`, hero `brassbound_chest` exercises assembly |
+| Multiple candidates when appropriate | `supported` | shape provider mux returns candidates, `tests/test_shape_providers.py` |
+| Controllable fidelity and repair posture | `preview` | repair policy declarations parse and route; bounded loop is `future` |
+| Text/image/mesh-conditioned modes | `preview` | reference-conditioned fallback ships; learned conditioning is `experimental` |
+| Symmetry/proportions/interfaces preservation | `preview` | `lathe/conformance.py`, semantic validators; quality varies by family |
+
+### 4. Deterministic downstream quality
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| Topology cleanup / retopology | `supported` (with explicit fallback) | `lathe.topology.blender_hard_surface_v1` attempted; deterministic ref path actual when Blender absent; `docs/adr/0002-blender-and-xatlas-fallback-policy.md` |
+| UV generation including lightmap UVs | `supported` (with explicit fallback) | `lathe.uv.xatlas_v1` attempted; deterministic box atlas actual when xatlas absent |
+| Collision generation | `supported` | `lathe/validators/`, packaging emits collision metadata for hero examples |
+| Pivots/sockets/anchors | `supported` | hero examples define and emit sockets; `tests/golden/test_hero_bundles.py` |
+| Optimization and LOD derivation | `preview` | LOD derivation present but coverage is family-dependent |
+| Packaging/export | `supported` | `lathe.package.openusd_gltf_v1`, `tests/golden/test_artifact_contract_snapshots.py` |
+| Backward-compatible bundle contracts | `supported` | `docs/adr/0009-public-contract-index.md`, `tests/contract/` |
+| Explicit fallback (never hidden) | `supported` | attempted-vs-actual recorded in trace; `docs/architecture/backends.md` |
+
+### 5. Validation and repair
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| Explicit `ensure` constraints | `supported` | parser/normalizer accept; checker enforces |
+| Critic / `prefer` scoring | `supported` | `lathe/validators/`, `tests/test_semantic_quality.py`, `tests/test_visual_quality.py` |
+| Certification thresholds | `supported` | per-family thresholds in `examples/*.lth`; visual/semantic/flow validators |
+| Repair policy and permitted repairs | `preview` | repair declarations parse; bounded multi-round loop `future` |
+| Repairs are concrete and traceable | `preview` | trace records single-pass repairs; multi-round trace is `future` |
+| Distinguish reselect / repair / regenerate | `preview` | logic exists in shape mux; documentation thin |
+
+### 6. Packaging and exports
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| Target formats (`usd`, `glb`, `gltf`, `obj`) | `supported` | `lathe/package/`, `tests/golden/test_hero_bundles.py` |
+| Manifests | `supported` | package + trace manifests; `schema/publish_manifest.schema.json` |
+| Traces | `supported` | `lathe/executor.py` writes trace artifacts |
+| Previews | `supported` | preview renders for hero families |
+| Normalized-source references | `supported` | resolved AST + source hash in manifest |
+| Deterministic outputs | `supported` (caveat: shape stage stochastic) | `docs/deterministic_builds.md`; downstream stages deterministic once shape selected |
+
+### 7. Provenance and reproducibility
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| Source/normalized hashes | `supported` | recorded in trace manifest |
+| Refs consumed | `supported` | recorded in trace manifest; `examples/refs/` |
+| Selected and attempted providers/backends | `supported` | attempted-vs-actual fields; `docs/architecture/backends.md` |
+| Stage execution metadata | `supported` | per-stage trace entries |
+| Repairs applied | `preview` | single-pass recorded; multi-round `future` |
+| Output hashes | `supported` | manifest records artifact hashes |
+| Provenance survives fallback paths | `supported` | by design; `docs/adr/0001-shape-handoff-contract.md` |
+| Signed reproducibility receipts | `preview` | `lathe/publish/signed_repro.py` ships; signing skipped when key/library absent |
+
+### 8. Runtime accessibility
+
+| Sub-requirement | Status | Evidence |
+|---|---|---|
+| Offline fallback | `supported` | default path; no runtime config required |
+| Local learned providers (VGGT) | `experimental` | `examples/runtime_configs/vggt_local.json`; requires local model/runtime install |
+| Hosted/external providers (Hunyuan HTTP) | `experimental` | `examples/runtime_configs/hunyuan_http.json`; requires reachable HTTP service |
+| Hybrid (auto-learned routing) | `preview` | `examples/runtime_configs/auto_learned.json` |
+| Capability detection (`lathe doctor`) | `supported` | `lathe/cli/`, `tests/test_doctor.py` |
+| Runtime availability diagnosable | `supported` | doctor output, attempted-vs-actual trace |
+| Inaccessible runtimes not faked as functioning | `supported` | fallback is explicit; `docs/release/known-limitations.md` defects list forbids hidden fallback |
+
+### Distribution, GTM, and surrounding capabilities
+
+| Capability | Status | Evidence |
+|---|---|---|
+| PyPI package availability | `future` | `0.2.0rc1` bumped in `pyproject.toml`; PyPI Trusted Publishing not yet configured (`requires-human`) |
+| Godot AssetLib listing | `future` | tracked as `plan_completeness.md` GTM-5 / BL-44; Godot integration code present, listing not submitted |
+| Hosted asset registry | `future` | tracked for V0.8 in `docs/roadmap_public.md`; not in 0.2.0rc1 |
+| CI certification SaaS | `future` | tracked for V1.0 in `docs/roadmap_public.md`; not in 0.2.0rc1 |
+| Pyodide / browser playground | `future` | not in 0.2.0rc1 |
+| Public benchmark with raw data | `future` | benchmarks exist (`tests/test_benchmarks.py`, `lathe bench`); public publication of raw data is V0.5 |
+| Telemetry — opt-in event collection | `preview` | `docs/telemetry.md` exists; live dashboards `requires-human` per evidence packet |
+| Discord community | `future` | not launched; moderation owner not named; tracked in GTM backlog |
+| Design-partner LOIs | `future` (`requires-human`) | none signed; tracked for V0.3 in `docs/roadmap_public.md` |
+| Soft-surface stack (`soft_surface_prop_v1`) | `future` | second backend stack tracked for V1.0; only `hard_surface_game_asset_v1` ships now |
+| Full mypy strict | `future` | mypy runs in CI but not strict-mode across the codebase |
+| Python 3.13 / 3.14 support | `rejected` | `requires-python = ">=3.11"`; 3.13+ unsupported per `docs/release/support-matrix.md` |
+
 ## Final product statement
 
 Lathe should become the programming language and compiler for production 3D assets.
@@ -427,3 +568,5 @@ Not a model demo.
 Not a mesh toy.
 
 A real system that turns intent into certifiable asset builds.
+
+For v0.2.0rc1, that mission is partially realized in the conservative offline lane on the hero families. Anything beyond that — learned parity, hosted services, GA claims — is roadmap, not release.

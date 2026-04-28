@@ -1,0 +1,388 @@
+{
+  "asset": "reconstruct_courier_from_views",
+  "kind": "mechanical_assembly",
+  "out_dir": "D:\\lathe_v0_1\\.claude\\worktrees\\readiness-pass-v020rc1\\tmp_gallery_phase7\\04-reconstruct\\reconstruct_courier_from_views",
+  "certified": true,
+  "backend_stack": {
+    "id": "lathe.stack.hard_surface_game_asset_v1",
+    "name": "Hard-surface game asset v1",
+    "description": "Single probabilistic shape handoff followed by deterministic hard-surface cleanup, UVing, and packaging.",
+    "selection_reason": "Best first stack for hard-surface props because it isolates the AI-native step to shape generation and keeps productionization deterministic downstream."
+  },
+  "selected_backends": {
+    "shape": {
+      "id": "lathe.shape.intent_mesh_handoff_v1",
+      "version": "2.0.0",
+      "determinism_class": "seeded",
+      "toolchain": [
+        "reference_runtime",
+        "trimesh",
+        "Pillow"
+      ],
+      "runtime_executor": "lathe.runtime.shape.provider_mux_v2",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Reference-conditioned AI handoff boundary that turns Lathe intent and available refs into one or more mesh candidates for generate, reconstruct, adapt, or assemble modes.",
+        "inputs": {
+          "required": [
+            "kind",
+            "intent.role",
+            "build.shape.mode"
+          ],
+          "optional": [
+            "refs.images",
+            "refs.meshes",
+            "refs.assets",
+            "intent.parts",
+            "intent.materials",
+            "intent.negatives",
+            "build.shape.candidates",
+            "build.shape.seed",
+            "build.shape.symmetry",
+            "build.shape.preserve"
+          ],
+          "mode_requirements": {
+            "generate": [
+              "intent.role"
+            ],
+            "reconstruct": [
+              "one_of(refs.images, refs.meshes)"
+            ],
+            "adapt": [
+              "one_of(refs.meshes, refs.assets)"
+            ],
+            "assemble": [
+              "refs.assets"
+            ]
+          }
+        },
+        "outputs": {
+          "artifact": "shape_bundle",
+          "required_fields": [
+            "candidates[].mesh_uri",
+            "candidates[].units",
+            "candidates[].frame",
+            "candidates[].candidate_id",
+            "provenance.backend_id",
+            "provenance.backend_version"
+          ],
+          "optional_fields": [
+            "candidates[].part_labels",
+            "candidates[].coarse_material_slots",
+            "candidates[].preview_images",
+            "provenance.seed",
+            "provenance.external_job_id",
+            "provenance.consumed_refs",
+            "conditioning_report"
+          ],
+          "guarantees": [
+            "returns at least one mesh candidate",
+            "declares source units and frame for every candidate",
+            "retains mapping back to source refs and seed when available"
+          ]
+        }
+      }
+    },
+    "topology": {
+      "id": "lathe.topology.blender_hard_surface_v1",
+      "version": "1.0.0",
+      "determinism_class": "deterministic",
+      "toolchain": [
+        "reference_runtime",
+        "trimesh"
+      ],
+      "runtime_executor": "lathe.runtime.topology.cleanup_v1",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Headless Blender cleanup and hard-surface retopo pass for a single authoritative production mesh.",
+        "inputs": {
+          "required": [
+            "shape_bundle",
+            "build.topology.retopo",
+            "build.topology.ngons"
+          ],
+          "optional": [
+            "build.topology.target_quads",
+            "build.topology.target_tris",
+            "build.topology.preserve"
+          ]
+        },
+        "outputs": {
+          "artifact": "topology_bundle",
+          "required_fields": [
+            "mesh_uri",
+            "mesh_stats.vertex_count",
+            "mesh_stats.triangle_count",
+            "normals",
+            "part_groups",
+            "provenance.backend_id"
+          ],
+          "guarantees": [
+            "one authoritative post-cleanup mesh",
+            "part names preserved where possible",
+            "topology report available for downstream validation"
+          ]
+        }
+      }
+    },
+    "uv": {
+      "id": "lathe.uv.xatlas_v1",
+      "version": "1.0.0",
+      "determinism_class": "deterministic",
+      "toolchain": [
+        "xatlas",
+        "trimesh"
+      ],
+      "runtime_executor": "lathe.runtime.uv.xatlas_v1",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Atlas generation and unique UV unwrapping for game-ready texture and lightmap channels.",
+        "inputs": {
+          "required": [
+            "topology_bundle",
+            "build.uv.sets",
+            "build.uv.tile_mode",
+            "build.uv.padding"
+          ],
+          "optional": [
+            "build.uv.texel_density",
+            "build.uv.pack_rotate"
+          ]
+        },
+        "outputs": {
+          "artifact": "uv_bundle",
+          "required_fields": [
+            "mesh_uri",
+            "uv_sets[].name",
+            "uv_sets[].coverage",
+            "packing_report.chart_count",
+            "provenance.backend_id"
+          ],
+          "guarantees": [
+            "base UVs are uniquely unwrapped into 0..1 space",
+            "lightmap UV set is emitted when requested",
+            "packing report is available for diagnostics"
+          ]
+        }
+      }
+    },
+    "package": {
+      "id": "lathe.package.openusd_gltf_v1",
+      "version": "1.0.0",
+      "determinism_class": "deterministic",
+      "toolchain": [
+        "trimesh",
+        "Pillow",
+        "openusd_text"
+      ],
+      "runtime_executor": "lathe.runtime.package.bundle_v1",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Authoritative packaging pass that emits interchange USD plus runtime-oriented glTF/GLB/OBJ deliverables and manifests.",
+        "inputs": {
+          "required": [
+            "optimized_asset",
+            "package.formats",
+            "package.manifest",
+            "package.include_trace"
+          ],
+          "optional": [
+            "package.previews",
+            "package.embed_textures",
+            "publish.registry",
+            "publish.version"
+          ]
+        },
+        "outputs": {
+          "artifact": "package_bundle",
+          "required_fields": [
+            "outputs[].format",
+            "outputs[].uri",
+            "manifest_path",
+            "normalized_source_path",
+            "trace_path"
+          ],
+          "guarantees": [
+            "USD package root is written when usd is requested",
+            "GLB/glTF exports are generated with runtime delivery metadata",
+            "package manifest and trace manifest are always emitted when enabled"
+          ]
+        }
+      },
+      "format_routes": {
+        "usd": "openusd_text",
+        "glb": "trimesh_glb",
+        "gltf": "trimesh_gltf",
+        "obj": "trimesh_obj"
+      }
+    }
+  },
+  "runtime_config": {
+    "shape": {
+      "provider": "auto",
+      "strict": false,
+      "allow_fallback": false,
+      "providers": {}
+    },
+    "topology": {
+      "adapter": "auto",
+      "strict": false,
+      "blender": {
+        "path": null,
+        "timeout_s": 300
+      }
+    },
+    "uv": {
+      "adapter": "auto",
+      "strict": false,
+      "xatlas": {
+        "resolution": 2048
+      }
+    },
+    "surface": {
+      "codex_imagegen": {
+        "mode": "fallback_deterministic",
+        "request_dir": "imagegen_requests",
+        "output_dir": "imagegen_outputs"
+      }
+    },
+    "execution": {
+      "blender": {
+        "path": null,
+        "strict": false,
+        "allow_autoexec": false,
+        "trusted": false,
+        "preserve_blend": "on_failure",
+        "asset_libraries": [],
+        "addons": [],
+        "render_device": "cpu"
+      }
+    },
+    "repair": {
+      "autonomous": true,
+      "max_rounds": 3,
+      "min_improvement": 0.01,
+      "budget_seconds": 180.0
+    }
+  },
+  "stage_bundles": {
+    "shape": "stages/shape/bundle.json",
+    "topology": "stages/topology/bundle.json",
+    "uv": "stages/uv/bundle.json",
+    "surface": "stages/surface/bundle.json",
+    "execution": "stages/execution/bundle.json",
+    "rig": "stages/rig/bundle.json",
+    "interfaces": "stages/interfaces/bundle.json",
+    "physics": "stages/physics/bundle.json",
+    "optimize": "stages/optimize/bundle.json",
+    "validate": "stages/validate/report.json",
+    "package": "stages/package/bundle.json"
+  },
+  "outputs": [
+    {
+      "format": "usd",
+      "uri": "stages/package/reconstruct_courier_from_views.usda",
+      "sha256": "223c030ec1f593228c7e271a07a109c7ecb43aab8d0629200ee82a16f17f325e",
+      "size_bytes": 638643
+    },
+    {
+      "format": "glb",
+      "uri": "stages/package/reconstruct_courier_from_views.glb",
+      "sha256": "c2b5fef0e1c2697bfdb643a259cd5e7049d2c77f03eee4a3342b3f3a9a7a8ad5",
+      "size_bytes": 217772
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_0.glb",
+      "sha256": "c2b5fef0e1c2697bfdb643a259cd5e7049d2c77f03eee4a3342b3f3a9a7a8ad5",
+      "size_bytes": 217772
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_1.glb",
+      "sha256": "4be4f565a088759806488386f4d75daf20e64d8ec6196052d11758a617c7870c",
+      "size_bytes": 78424
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_2.glb",
+      "sha256": "3576c1982c0a4e5f6afc361ff8c17fb5342b4adf18c9b5df775213b01243c40c",
+      "size_bytes": 36304
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_3.glb",
+      "sha256": "100bf1a156066974bfd468de011ae737a678732e0d981923e6a26d2d9fe7798d",
+      "size_bytes": 14312
+    },
+    {
+      "format": "collision_hull",
+      "uri": "stages/package/collision_hull.glb",
+      "sha256": "ada14e4316a8ac0c315202e6f53a201dfa9bdd15b72ef52b2b55a9da27d29aaa",
+      "size_bytes": 4772
+    },
+    {
+      "format": "collision_parts",
+      "uri": "stages/package/collision_parts.glb",
+      "sha256": "8fa815504d542b6eae6ceee22ecb79a7e0f3f6df4818cf0a4cc01bbf50232127",
+      "size_bytes": 22784
+    }
+  ],
+  "manifest_path": "stages/package/package_manifest.json",
+  "trace_path": "stages/package/trace_manifest.json",
+  "score": 0.87873,
+  "threshold": 0.86,
+  "repair_rounds": [],
+  "optimize": {
+    "lod_manifest_path": "stages/optimize/lod_manifest.json",
+    "lods": [
+      {
+        "name": "lod0",
+        "mesh_uri": "stages/optimize/lod_0.glb",
+        "triangle_count": 4680,
+        "vertex_count": 8010,
+        "decimation": "source",
+        "distance_min": 0.0,
+        "distance_max": 10.0,
+        "screen_coverage": 1.0
+      },
+      {
+        "name": "lod1",
+        "mesh_uri": "stages/optimize/lod_1.glb",
+        "triangle_count": 2340,
+        "vertex_count": 4130,
+        "decimation": "quadric_edge_collapse",
+        "distance_min": 10.0,
+        "distance_max": 30.0,
+        "screen_coverage": 0.4
+      },
+      {
+        "name": "lod2",
+        "mesh_uri": "stages/optimize/lod_2.glb",
+        "triangle_count": 1170,
+        "vertex_count": 1790,
+        "decimation": "quadric_edge_collapse",
+        "distance_min": 30.0,
+        "distance_max": 100.0,
+        "screen_coverage": 0.15
+      },
+      {
+        "name": "lod3",
+        "mesh_uri": "stages/optimize/lod_3.glb",
+        "triangle_count": 468,
+        "vertex_count": 660,
+        "decimation": "quadric_edge_collapse",
+        "distance_min": 100.0,
+        "distance_max": null,
+        "screen_coverage": 0.05
+      }
+    ],
+    "collision": {
+      "hull_uri": "stages/optimize/collision_hull.glb",
+      "parts_uri": "stages/optimize/collision_parts.glb",
+      "manifest_path": "stages/optimize/collision_manifest.json",
+      "hull_tris": 220,
+      "parts_count": 8
+    }
+  }
+}

@@ -1,0 +1,7 @@
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+Working... ---------------------------------------- 100% 0:00:07
+[json]	INFO	JSON output written to file: docs/release/evidence-bundle-v0.2.0rc1/bandit.json
+exit_code=1

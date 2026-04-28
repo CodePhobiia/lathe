@@ -1,0 +1,1247 @@
+# Phase 3: build sdist + wheel
+# Captured: 2026-04-28
+# Interpreter: /d/lathe_v0_1/.venv/Scripts/python.exe (Python 3.13.13)
+
+## command: /d/lathe_v0_1/.venv/Scripts/python.exe -m build --outdir tmp_release_dist
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=68
+  - wheel
+* Getting build dependencies for sdist...
+C:\Users\talme\AppData\Local\Temp\build-env-jehyny04\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+!!
+
+        ********************************************************************************
+        Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+
+        By 2027-Feb-18, you need to update your project and remove deprecated calls
+        or your builds will no longer be supported.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  corresp(dist, value, root_dir)
+C:\Users\talme\AppData\Local\Temp\build-env-jehyny04\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  dist._finalize_license_expression()
+C:\Users\talme\AppData\Local\Temp\build-env-jehyny04\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  self._finalize_license_expression()
+running egg_info
+creating lathe.egg-info
+writing lathe.egg-info\PKG-INFO
+writing dependency_links to lathe.egg-info\dependency_links.txt
+writing entry points to lathe.egg-info\entry_points.txt
+writing requirements to lathe.egg-info\requires.txt
+writing top-level names to lathe.egg-info\top_level.txt
+writing manifest file 'lathe.egg-info\SOURCES.txt'
+reading manifest file 'lathe.egg-info\SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file 'lathe.egg-info\SOURCES.txt'
+* Building sdist...
+C:\Users\talme\AppData\Local\Temp\build-env-jehyny04\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+!!
+
+        ********************************************************************************
+        Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+
+        By 2027-Feb-18, you need to update your project and remove deprecated calls
+        or your builds will no longer be supported.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  corresp(dist, value, root_dir)
+C:\Users\talme\AppData\Local\Temp\build-env-jehyny04\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  dist._finalize_license_expression()
+C:\Users\talme\AppData\Local\Temp\build-env-jehyny04\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  self._finalize_license_expression()
+running sdist
+running egg_info
+writing lathe.egg-info\PKG-INFO
+writing dependency_links to lathe.egg-info\dependency_links.txt
+writing entry points to lathe.egg-info\entry_points.txt
+writing requirements to lathe.egg-info\requires.txt
+writing top-level names to lathe.egg-info\top_level.txt
+reading manifest file 'lathe.egg-info\SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file 'lathe.egg-info\SOURCES.txt'
+running check
+creating lathe-0.2.0rc1
+creating lathe-0.2.0rc1\lathe
+creating lathe-0.2.0rc1\lathe.egg-info
+creating lathe-0.2.0rc1\lathe\adapters
+creating lathe-0.2.0rc1\lathe\benchmarks
+creating lathe-0.2.0rc1\lathe\blender
+creating lathe-0.2.0rc1\lathe\blueprints
+creating lathe-0.2.0rc1\lathe\bridge
+creating lathe-0.2.0rc1\lathe\checker
+creating lathe-0.2.0rc1\lathe\cli
+creating lathe-0.2.0rc1\lathe\core
+creating lathe-0.2.0rc1\lathe\core\stages
+creating lathe-0.2.0rc1\lathe\engine_manifests
+creating lathe-0.2.0rc1\lathe\feature_ops
+creating lathe-0.2.0rc1\lathe\geometry
+creating lathe-0.2.0rc1\lathe\inspection
+creating lathe-0.2.0rc1\lathe\lsp
+creating lathe-0.2.0rc1\lathe\parser
+creating lathe-0.2.0rc1\lathe\providers
+creating lathe-0.2.0rc1\lathe\providers\adapters
+creating lathe-0.2.0rc1\lathe\providers\transport
+creating lathe-0.2.0rc1\lathe\publish
+creating lathe-0.2.0rc1\lathe\repair
+creating lathe-0.2.0rc1\lathe\reports
+creating lathe-0.2.0rc1\lathe\sandbox
+creating lathe-0.2.0rc1\lathe\scaffolds
+creating lathe-0.2.0rc1\lathe\shape
+creating lathe-0.2.0rc1\lathe\shape\geometry
+creating lathe-0.2.0rc1\lathe\stages
+creating lathe-0.2.0rc1\lathe\validators
+creating lathe-0.2.0rc1\lathe\viewer
+creating lathe-0.2.0rc1\tests
+copying files to lathe-0.2.0rc1...
+copying LICENSE -> lathe-0.2.0rc1
+copying README.md -> lathe-0.2.0rc1
+copying pyproject.toml -> lathe-0.2.0rc1
+copying lathe\__init__.py -> lathe-0.2.0rc1\lathe
+copying lathe\assembly_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\assembly_kernel.py -> lathe-0.2.0rc1\lathe
+copying lathe\asset_graph.py -> lathe-0.2.0rc1\lathe
+copying lathe\atlas_assembler.py -> lathe-0.2.0rc1\lathe
+copying lathe\backends.py -> lathe-0.2.0rc1\lathe
+copying lathe\bake_runtime.py -> lathe-0.2.0rc1\lathe
+copying lathe\bench_runtime.py -> lathe-0.2.0rc1\lathe
+copying lathe\blender_execution.py -> lathe-0.2.0rc1\lathe
+copying lathe\cache.py -> lathe-0.2.0rc1\lathe
+copying lathe\cache_paths.py -> lathe-0.2.0rc1\lathe
+copying lathe\candidate_search.py -> lathe-0.2.0rc1\lathe
+copying lathe\capabilities.py -> lathe-0.2.0rc1\lathe
+copying lathe\codex_imagegen_bridge.py -> lathe-0.2.0rc1\lathe
+copying lathe\conformance.py -> lathe-0.2.0rc1\lathe
+copying lathe\constants.py -> lathe-0.2.0rc1\lathe
+copying lathe\defaults.py -> lathe-0.2.0rc1\lathe
+copying lathe\doctor.py -> lathe-0.2.0rc1\lathe
+copying lathe\errors.py -> lathe-0.2.0rc1\lathe
+copying lathe\eval_harness.py -> lathe-0.2.0rc1\lathe
+copying lathe\exact_solids.py -> lathe-0.2.0rc1\lathe
+copying lathe\executor.py -> lathe-0.2.0rc1\lathe
+copying lathe\feature_fusion.py -> lathe-0.2.0rc1\lathe
+copying lathe\feature_grammar.py -> lathe-0.2.0rc1\lathe
+copying lathe\feature_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\fidelity.py -> lathe-0.2.0rc1\lathe
+copying lathe\fit_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\formatter.py -> lathe-0.2.0rc1\lathe
+copying lathe\geometry_kernel.py -> lathe-0.2.0rc1\lathe
+copying lathe\hero_manifest.py -> lathe-0.2.0rc1\lathe
+copying lathe\highlow.py -> lathe-0.2.0rc1\lathe
+copying lathe\interface_entries.py -> lathe-0.2.0rc1\lathe
+copying lathe\kit_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\logging_utils.py -> lathe-0.2.0rc1\lathe
+copying lathe\materials.py -> lathe-0.2.0rc1\lathe
+copying lathe\mesh_finalize.py -> lathe-0.2.0rc1\lathe
+copying lathe\mesh_ingest.py -> lathe-0.2.0rc1\lathe
+copying lathe\mesh_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\net.py -> lathe-0.2.0rc1\lathe
+copying lathe\normalizer.py -> lathe-0.2.0rc1\lathe
+copying lathe\patch_api.py -> lathe-0.2.0rc1\lathe
+copying lathe\paths.py -> lathe-0.2.0rc1\lathe
+copying lathe\pbr_deriver.py -> lathe-0.2.0rc1\lathe
+copying lathe\planner.py -> lathe-0.2.0rc1\lathe
+copying lathe\proposals.py -> lathe-0.2.0rc1\lathe
+copying lathe\ref.py -> lathe-0.2.0rc1\lathe
+copying lathe\reference_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\render_eval.py -> lathe-0.2.0rc1\lathe
+copying lathe\repair_executor.py -> lathe-0.2.0rc1\lathe
+copying lathe\repair_loop.py -> lathe-0.2.0rc1\lathe
+copying lathe\repair_planner.py -> lathe-0.2.0rc1\lathe
+copying lathe\repair_policy.py -> lathe-0.2.0rc1\lathe
+copying lathe\resolver.py -> lathe-0.2.0rc1\lathe
+copying lathe\reuse_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\runtime_config.py -> lathe-0.2.0rc1\lathe
+copying lathe\scaffold_compiler.py -> lathe-0.2.0rc1\lathe
+copying lathe\schema.py -> lathe-0.2.0rc1\lathe
+copying lathe\security.py -> lathe-0.2.0rc1\lathe
+copying lathe\selector_manifest.py -> lathe-0.2.0rc1\lathe
+copying lathe\shape_backend.py -> lathe-0.2.0rc1\lathe
+copying lathe\shape_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\shape_providers.py -> lathe-0.2.0rc1\lathe
+copying lathe\snapshot.py -> lathe-0.2.0rc1\lathe
+copying lathe\solid_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\stage_contracts.py -> lathe-0.2.0rc1\lathe
+copying lathe\subproc.py -> lathe-0.2.0rc1\lathe
+copying lathe\surface_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\surface_runtime.py -> lathe-0.2.0rc1\lathe
+copying lathe\telemetry.py -> lathe-0.2.0rc1\lathe
+copying lathe\test_runtime.py -> lathe-0.2.0rc1\lathe
+copying lathe\texture_control_pack.py -> lathe-0.2.0rc1\lathe
+copying lathe\topology_runtime.py -> lathe-0.2.0rc1\lathe
+copying lathe\transfer_ir.py -> lathe-0.2.0rc1\lathe
+copying lathe\utils.py -> lathe-0.2.0rc1\lathe
+copying lathe\uv_runtime.py -> lathe-0.2.0rc1\lathe
+copying lathe\validation.py -> lathe-0.2.0rc1\lathe
+copying lathe.egg-info\PKG-INFO -> lathe-0.2.0rc1\lathe.egg-info
+copying lathe.egg-info\SOURCES.txt -> lathe-0.2.0rc1\lathe.egg-info
+copying lathe.egg-info\dependency_links.txt -> lathe-0.2.0rc1\lathe.egg-info
+copying lathe.egg-info\entry_points.txt -> lathe-0.2.0rc1\lathe.egg-info
+copying lathe.egg-info\requires.txt -> lathe-0.2.0rc1\lathe.egg-info
+copying lathe.egg-info\top_level.txt -> lathe-0.2.0rc1\lathe.egg-info
+copying lathe\adapters\__init__.py -> lathe-0.2.0rc1\lathe\adapters
+copying lathe\adapters\blender_subdiv.py -> lathe-0.2.0rc1\lathe\adapters
+copying lathe\adapters\manifold_kernel.py -> lathe-0.2.0rc1\lathe\adapters
+copying lathe\benchmarks\__init__.py -> lathe-0.2.0rc1\lathe\benchmarks
+copying lathe\blender\__init__.py -> lathe-0.2.0rc1\lathe\blender
+copying lathe\blender\drivers.py -> lathe-0.2.0rc1\lathe\blender
+copying lathe\blender\execution.py -> lathe-0.2.0rc1\lathe\blender
+copying lathe\blender\plan_adapter.py -> lathe-0.2.0rc1\lathe\blender
+copying lathe\blender\render.py -> lathe-0.2.0rc1\lathe\blender
+copying lathe\blender\results.py -> lathe-0.2.0rc1\lathe\blender
+copying lathe\blueprints\__init__.py -> lathe-0.2.0rc1\lathe\blueprints
+copying lathe\blueprints\common.py -> lathe-0.2.0rc1\lathe\blueprints
+copying lathe\blueprints\containers.py -> lathe-0.2.0rc1\lathe\blueprints
+copying lathe\blueprints\generic.py -> lathe-0.2.0rc1\lathe\blueprints
+copying lathe\blueprints\mechanical.py -> lathe-0.2.0rc1\lathe\blueprints
+copying lathe\blueprints\panels.py -> lathe-0.2.0rc1\lathe\blueprints
+copying lathe\bridge\__init__.py -> lathe-0.2.0rc1\lathe\bridge
+copying lathe\bridge\blender_plan.py -> lathe-0.2.0rc1\lathe\bridge
+copying lathe\checker\__init__.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\assets.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\cross_stage.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\declarations.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\interfaces.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\language.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\surface.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\checker\utils.py -> lathe-0.2.0rc1\lathe\checker
+copying lathe\cli\__init__.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\__main__.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\_common.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\bridge_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\build_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\cache_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\check_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\completions_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\diff_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\doctor_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\fmt_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\inspect_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\library_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\materialize_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\parse_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\patch_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\plan_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\publish_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\ref_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\ref_copy_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\ref_diff_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\ref_inspect_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\ref_planes_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\snapshot_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\surface_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\telemetry_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\cli\test_cmd.py -> lathe-0.2.0rc1\lathe\cli
+copying lathe\core\__init__.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\common.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\errors.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\evaluators.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\geometry.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\io.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\mesh.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\rendering.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\seeding.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\uv_ops.py -> lathe-0.2.0rc1\lathe\core
+copying lathe\core\stages\__init__.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\execution.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\interfaces.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\optimize.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\package.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\physics.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\publish.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\rig.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\shape.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\surface.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\topology.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\uv.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\core\stages\validate.py -> lathe-0.2.0rc1\lathe\core\stages
+copying lathe\engine_manifests\__init__.py -> lathe-0.2.0rc1\lathe\engine_manifests
+copying lathe\engine_manifests\godot.py -> lathe-0.2.0rc1\lathe\engine_manifests
+copying lathe\engine_manifests\godot_import_contract.py -> lathe-0.2.0rc1\lathe\engine_manifests
+copying lathe\engine_manifests\unity.py -> lathe-0.2.0rc1\lathe\engine_manifests
+copying lathe\engine_manifests\unreal.py -> lathe-0.2.0rc1\lathe\engine_manifests
+copying lathe\feature_ops\__init__.py -> lathe-0.2.0rc1\lathe\feature_ops
+copying lathe\geometry\__init__.py -> lathe-0.2.0rc1\lathe\geometry
+copying lathe\geometry\kernel.py -> lathe-0.2.0rc1\lathe\geometry
+copying lathe\geometry\manifold_kernel.py -> lathe-0.2.0rc1\lathe\geometry
+copying lathe\geometry\reference_kernel.py -> lathe-0.2.0rc1\lathe\geometry
+copying lathe\inspection\__init__.py -> lathe-0.2.0rc1\lathe\inspection
+copying lathe\inspection\evidence.py -> lathe-0.2.0rc1\lathe\inspection
+copying lathe\lsp\__init__.py -> lathe-0.2.0rc1\lathe\lsp
+copying lathe\parser\__init__.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\fast_parser.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\fast_parser_expr.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\grammar.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\imports.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\prompt_injection.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\tokens.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\transformer.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\transformer_blocks.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\parser\transformer_expr.py -> lathe-0.2.0rc1\lathe\parser
+copying lathe\providers\__init__.py -> lathe-0.2.0rc1\lathe\providers
+copying lathe\providers\errors.py -> lathe-0.2.0rc1\lathe\providers
+copying lathe\providers\mesh_ops.py -> lathe-0.2.0rc1\lathe\providers
+copying lathe\providers\registry.py -> lathe-0.2.0rc1\lathe\providers
+copying lathe\providers\selection.py -> lathe-0.2.0rc1\lathe\providers
+copying lathe\providers\adapters\__init__.py -> lathe-0.2.0rc1\lathe\providers\adapters
+copying lathe\providers\adapters\hunyuan.py -> lathe-0.2.0rc1\lathe\providers\adapters
+copying lathe\providers\adapters\reference_conditioned.py -> lathe-0.2.0rc1\lathe\providers\adapters
+copying lathe\providers\adapters\vggt.py -> lathe-0.2.0rc1\lathe\providers\adapters
+copying lathe\providers\transport\__init__.py -> lathe-0.2.0rc1\lathe\providers\transport
+copying lathe\providers\transport\http.py -> lathe-0.2.0rc1\lathe\providers\transport
+copying lathe\publish\__init__.py -> lathe-0.2.0rc1\lathe\publish
+copying lathe\publish\signed_repro.py -> lathe-0.2.0rc1\lathe\publish
+copying lathe\repair\__init__.py -> lathe-0.2.0rc1\lathe\repair
+copying lathe\repair\surface_repair.py -> lathe-0.2.0rc1\lathe\repair
+copying lathe\reports\__init__.py -> lathe-0.2.0rc1\lathe\reports
+copying lathe\reports\html.py -> lathe-0.2.0rc1\lathe\reports
+copying lathe\reports\terminal.py -> lathe-0.2.0rc1\lathe\reports
+copying lathe\sandbox\__init__.py -> lathe-0.2.0rc1\lathe\sandbox
+copying lathe\sandbox\blender.py -> lathe-0.2.0rc1\lathe\sandbox
+copying lathe\scaffolds\__init__.py -> lathe-0.2.0rc1\lathe\scaffolds
+copying lathe\scaffolds\chest.py -> lathe-0.2.0rc1\lathe\scaffolds
+copying lathe\scaffolds\drone.py -> lathe-0.2.0rc1\lathe\scaffolds
+copying lathe\scaffolds\wall_panel.py -> lathe-0.2.0rc1\lathe\scaffolds
+copying lathe\shape\__init__.py -> lathe-0.2.0rc1\lathe\shape
+copying lathe\shape\backend.py -> lathe-0.2.0rc1\lathe\shape
+copying lathe\shape\geometry\__init__.py -> lathe-0.2.0rc1\lathe\shape\geometry
+copying lathe\shape\geometry\conditioning.py -> lathe-0.2.0rc1\lathe\shape\geometry
+copying lathe\shape\geometry\primitives.py -> lathe-0.2.0rc1\lathe\shape\geometry
+copying lathe\stages\__init__.py -> lathe-0.2.0rc1\lathe\stages
+copying lathe\stages\budgets.py -> lathe-0.2.0rc1\lathe\stages
+copying lathe\stages\collision.py -> lathe-0.2.0rc1\lathe\stages
+copying lathe\stages\lod.py -> lathe-0.2.0rc1\lathe\stages
+copying lathe\validators\__init__.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\composition.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\flow_quality.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\geometry_integrity.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\semantic_quality.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\silhouette.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\soft_silhouette.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\surface_quality.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\urdf_validation.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\validators\visual_quality.py -> lathe-0.2.0rc1\lathe\validators
+copying lathe\viewer\__init__.py -> lathe-0.2.0rc1\lathe\viewer
+copying tests\test_architecture.py -> lathe-0.2.0rc1\tests
+copying tests\test_backends.py -> lathe-0.2.0rc1\tests
+copying tests\test_benchmarks.py -> lathe-0.2.0rc1\tests
+copying tests\test_build.py -> lathe-0.2.0rc1\tests
+copying tests\test_doctor.py -> lathe-0.2.0rc1\tests
+copying tests\test_gallery.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v08.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v09.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v10.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v11.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v12.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v13.py -> lathe-0.2.0rc1\tests
+copying tests\test_language_v13_1.py -> lathe-0.2.0rc1\tests
+copying tests\test_lathe.py -> lathe-0.2.0rc1\tests
+copying tests\test_remediation_metadata.py -> lathe-0.2.0rc1\tests
+copying tests\test_roundtrip.py -> lathe-0.2.0rc1\tests
+copying tests\test_semantic_quality.py -> lathe-0.2.0rc1\tests
+copying tests\test_shape_providers.py -> lathe-0.2.0rc1\tests
+copying tests\test_stack_soft_surface.py -> lathe-0.2.0rc1\tests
+copying tests\test_visual_quality.py -> lathe-0.2.0rc1\tests
+copying lathe.egg-info\SOURCES.txt -> lathe-0.2.0rc1\lathe.egg-info
+Writing lathe-0.2.0rc1\setup.cfg
+Creating tar archive
+removing 'lathe-0.2.0rc1' (and everything under it)
+* Building wheel from sdist
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=68
+  - wheel
+* Getting build dependencies for wheel...
+C:\Users\talme\AppData\Local\Temp\build-env-kmrvbjmq\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+!!
+
+        ********************************************************************************
+        Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+
+        By 2027-Feb-18, you need to update your project and remove deprecated calls
+        or your builds will no longer be supported.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  corresp(dist, value, root_dir)
+C:\Users\talme\AppData\Local\Temp\build-env-kmrvbjmq\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  dist._finalize_license_expression()
+C:\Users\talme\AppData\Local\Temp\build-env-kmrvbjmq\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  self._finalize_license_expression()
+running egg_info
+writing lathe.egg-info\PKG-INFO
+writing dependency_links to lathe.egg-info\dependency_links.txt
+writing entry points to lathe.egg-info\entry_points.txt
+writing requirements to lathe.egg-info\requires.txt
+writing top-level names to lathe.egg-info\top_level.txt
+reading manifest file 'lathe.egg-info\SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file 'lathe.egg-info\SOURCES.txt'
+* Building wheel...
+C:\Users\talme\AppData\Local\Temp\build-env-kmrvbjmq\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+!!
+
+        ********************************************************************************
+        Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+
+        By 2027-Feb-18, you need to update your project and remove deprecated calls
+        or your builds will no longer be supported.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  corresp(dist, value, root_dir)
+C:\Users\talme\AppData\Local\Temp\build-env-kmrvbjmq\Lib\site-packages\setuptools\config\_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  dist._finalize_license_expression()
+C:\Users\talme\AppData\Local\Temp\build-env-kmrvbjmq\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: Apache Software License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  self._finalize_license_expression()
+running bdist_wheel
+running build
+running build_py
+creating build\lib\lathe
+copying lathe\assembly_ir.py -> build\lib\lathe
+copying lathe\assembly_kernel.py -> build\lib\lathe
+copying lathe\asset_graph.py -> build\lib\lathe
+copying lathe\atlas_assembler.py -> build\lib\lathe
+copying lathe\backends.py -> build\lib\lathe
+copying lathe\bake_runtime.py -> build\lib\lathe
+copying lathe\bench_runtime.py -> build\lib\lathe
+copying lathe\blender_execution.py -> build\lib\lathe
+copying lathe\cache.py -> build\lib\lathe
+copying lathe\cache_paths.py -> build\lib\lathe
+copying lathe\candidate_search.py -> build\lib\lathe
+copying lathe\capabilities.py -> build\lib\lathe
+copying lathe\codex_imagegen_bridge.py -> build\lib\lathe
+copying lathe\conformance.py -> build\lib\lathe
+copying lathe\constants.py -> build\lib\lathe
+copying lathe\defaults.py -> build\lib\lathe
+copying lathe\doctor.py -> build\lib\lathe
+copying lathe\errors.py -> build\lib\lathe
+copying lathe\eval_harness.py -> build\lib\lathe
+copying lathe\exact_solids.py -> build\lib\lathe
+copying lathe\executor.py -> build\lib\lathe
+copying lathe\feature_fusion.py -> build\lib\lathe
+copying lathe\feature_grammar.py -> build\lib\lathe
+copying lathe\feature_ir.py -> build\lib\lathe
+copying lathe\fidelity.py -> build\lib\lathe
+copying lathe\fit_ir.py -> build\lib\lathe
+copying lathe\formatter.py -> build\lib\lathe
+copying lathe\geometry_kernel.py -> build\lib\lathe
+copying lathe\hero_manifest.py -> build\lib\lathe
+copying lathe\highlow.py -> build\lib\lathe
+copying lathe\interface_entries.py -> build\lib\lathe
+copying lathe\kit_ir.py -> build\lib\lathe
+copying lathe\logging_utils.py -> build\lib\lathe
+copying lathe\materials.py -> build\lib\lathe
+copying lathe\mesh_finalize.py -> build\lib\lathe
+copying lathe\mesh_ingest.py -> build\lib\lathe
+copying lathe\mesh_ir.py -> build\lib\lathe
+copying lathe\net.py -> build\lib\lathe
+copying lathe\normalizer.py -> build\lib\lathe
+copying lathe\patch_api.py -> build\lib\lathe
+copying lathe\paths.py -> build\lib\lathe
+copying lathe\pbr_deriver.py -> build\lib\lathe
+copying lathe\planner.py -> build\lib\lathe
+copying lathe\proposals.py -> build\lib\lathe
+copying lathe\ref.py -> build\lib\lathe
+copying lathe\reference_ir.py -> build\lib\lathe
+copying lathe\render_eval.py -> build\lib\lathe
+copying lathe\repair_executor.py -> build\lib\lathe
+copying lathe\repair_loop.py -> build\lib\lathe
+copying lathe\repair_planner.py -> build\lib\lathe
+copying lathe\repair_policy.py -> build\lib\lathe
+copying lathe\resolver.py -> build\lib\lathe
+copying lathe\reuse_ir.py -> build\lib\lathe
+copying lathe\runtime_config.py -> build\lib\lathe
+copying lathe\scaffold_compiler.py -> build\lib\lathe
+copying lathe\schema.py -> build\lib\lathe
+copying lathe\security.py -> build\lib\lathe
+copying lathe\selector_manifest.py -> build\lib\lathe
+copying lathe\shape_backend.py -> build\lib\lathe
+copying lathe\shape_ir.py -> build\lib\lathe
+copying lathe\shape_providers.py -> build\lib\lathe
+copying lathe\snapshot.py -> build\lib\lathe
+copying lathe\solid_ir.py -> build\lib\lathe
+copying lathe\stage_contracts.py -> build\lib\lathe
+copying lathe\subproc.py -> build\lib\lathe
+copying lathe\surface_ir.py -> build\lib\lathe
+copying lathe\surface_runtime.py -> build\lib\lathe
+copying lathe\telemetry.py -> build\lib\lathe
+copying lathe\test_runtime.py -> build\lib\lathe
+copying lathe\texture_control_pack.py -> build\lib\lathe
+copying lathe\topology_runtime.py -> build\lib\lathe
+copying lathe\transfer_ir.py -> build\lib\lathe
+copying lathe\utils.py -> build\lib\lathe
+copying lathe\uv_runtime.py -> build\lib\lathe
+copying lathe\validation.py -> build\lib\lathe
+copying lathe\__init__.py -> build\lib\lathe
+creating build\lib\lathe\adapters
+copying lathe\adapters\blender_subdiv.py -> build\lib\lathe\adapters
+copying lathe\adapters\manifold_kernel.py -> build\lib\lathe\adapters
+copying lathe\adapters\__init__.py -> build\lib\lathe\adapters
+creating build\lib\lathe\benchmarks
+copying lathe\benchmarks\__init__.py -> build\lib\lathe\benchmarks
+creating build\lib\lathe\blender
+copying lathe\blender\drivers.py -> build\lib\lathe\blender
+copying lathe\blender\execution.py -> build\lib\lathe\blender
+copying lathe\blender\plan_adapter.py -> build\lib\lathe\blender
+copying lathe\blender\render.py -> build\lib\lathe\blender
+copying lathe\blender\results.py -> build\lib\lathe\blender
+copying lathe\blender\__init__.py -> build\lib\lathe\blender
+creating build\lib\lathe\blueprints
+copying lathe\blueprints\common.py -> build\lib\lathe\blueprints
+copying lathe\blueprints\containers.py -> build\lib\lathe\blueprints
+copying lathe\blueprints\generic.py -> build\lib\lathe\blueprints
+copying lathe\blueprints\mechanical.py -> build\lib\lathe\blueprints
+copying lathe\blueprints\panels.py -> build\lib\lathe\blueprints
+copying lathe\blueprints\__init__.py -> build\lib\lathe\blueprints
+creating build\lib\lathe\bridge
+copying lathe\bridge\blender_plan.py -> build\lib\lathe\bridge
+copying lathe\bridge\__init__.py -> build\lib\lathe\bridge
+creating build\lib\lathe\checker
+copying lathe\checker\assets.py -> build\lib\lathe\checker
+copying lathe\checker\cross_stage.py -> build\lib\lathe\checker
+copying lathe\checker\declarations.py -> build\lib\lathe\checker
+copying lathe\checker\interfaces.py -> build\lib\lathe\checker
+copying lathe\checker\language.py -> build\lib\lathe\checker
+copying lathe\checker\surface.py -> build\lib\lathe\checker
+copying lathe\checker\utils.py -> build\lib\lathe\checker
+copying lathe\checker\__init__.py -> build\lib\lathe\checker
+creating build\lib\lathe\cli
+copying lathe\cli\bridge_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\build_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\cache_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\check_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\completions_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\diff_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\doctor_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\fmt_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\inspect_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\library_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\materialize_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\parse_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\patch_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\plan_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\publish_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\ref_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\ref_copy_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\ref_diff_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\ref_inspect_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\ref_planes_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\snapshot_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\surface_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\telemetry_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\test_cmd.py -> build\lib\lathe\cli
+copying lathe\cli\_common.py -> build\lib\lathe\cli
+copying lathe\cli\__init__.py -> build\lib\lathe\cli
+copying lathe\cli\__main__.py -> build\lib\lathe\cli
+creating build\lib\lathe\core
+copying lathe\core\common.py -> build\lib\lathe\core
+copying lathe\core\errors.py -> build\lib\lathe\core
+copying lathe\core\evaluators.py -> build\lib\lathe\core
+copying lathe\core\geometry.py -> build\lib\lathe\core
+copying lathe\core\io.py -> build\lib\lathe\core
+copying lathe\core\mesh.py -> build\lib\lathe\core
+copying lathe\core\rendering.py -> build\lib\lathe\core
+copying lathe\core\seeding.py -> build\lib\lathe\core
+copying lathe\core\uv_ops.py -> build\lib\lathe\core
+copying lathe\core\__init__.py -> build\lib\lathe\core
+creating build\lib\lathe\engine_manifests
+copying lathe\engine_manifests\godot.py -> build\lib\lathe\engine_manifests
+copying lathe\engine_manifests\godot_import_contract.py -> build\lib\lathe\engine_manifests
+copying lathe\engine_manifests\unity.py -> build\lib\lathe\engine_manifests
+copying lathe\engine_manifests\unreal.py -> build\lib\lathe\engine_manifests
+copying lathe\engine_manifests\__init__.py -> build\lib\lathe\engine_manifests
+creating build\lib\lathe\feature_ops
+copying lathe\feature_ops\__init__.py -> build\lib\lathe\feature_ops
+creating build\lib\lathe\geometry
+copying lathe\geometry\kernel.py -> build\lib\lathe\geometry
+copying lathe\geometry\manifold_kernel.py -> build\lib\lathe\geometry
+copying lathe\geometry\reference_kernel.py -> build\lib\lathe\geometry
+copying lathe\geometry\__init__.py -> build\lib\lathe\geometry
+creating build\lib\lathe\inspection
+copying lathe\inspection\evidence.py -> build\lib\lathe\inspection
+copying lathe\inspection\__init__.py -> build\lib\lathe\inspection
+creating build\lib\lathe\lsp
+copying lathe\lsp\__init__.py -> build\lib\lathe\lsp
+creating build\lib\lathe\parser
+copying lathe\parser\fast_parser.py -> build\lib\lathe\parser
+copying lathe\parser\fast_parser_expr.py -> build\lib\lathe\parser
+copying lathe\parser\grammar.py -> build\lib\lathe\parser
+copying lathe\parser\imports.py -> build\lib\lathe\parser
+copying lathe\parser\prompt_injection.py -> build\lib\lathe\parser
+copying lathe\parser\tokens.py -> build\lib\lathe\parser
+copying lathe\parser\transformer.py -> build\lib\lathe\parser
+copying lathe\parser\transformer_blocks.py -> build\lib\lathe\parser
+copying lathe\parser\transformer_expr.py -> build\lib\lathe\parser
+copying lathe\parser\__init__.py -> build\lib\lathe\parser
+creating build\lib\lathe\providers
+copying lathe\providers\errors.py -> build\lib\lathe\providers
+copying lathe\providers\mesh_ops.py -> build\lib\lathe\providers
+copying lathe\providers\registry.py -> build\lib\lathe\providers
+copying lathe\providers\selection.py -> build\lib\lathe\providers
+copying lathe\providers\__init__.py -> build\lib\lathe\providers
+creating build\lib\lathe\publish
+copying lathe\publish\signed_repro.py -> build\lib\lathe\publish
+copying lathe\publish\__init__.py -> build\lib\lathe\publish
+creating build\lib\lathe\repair
+copying lathe\repair\surface_repair.py -> build\lib\lathe\repair
+copying lathe\repair\__init__.py -> build\lib\lathe\repair
+creating build\lib\lathe\reports
+copying lathe\reports\html.py -> build\lib\lathe\reports
+copying lathe\reports\terminal.py -> build\lib\lathe\reports
+copying lathe\reports\__init__.py -> build\lib\lathe\reports
+creating build\lib\lathe\sandbox
+copying lathe\sandbox\blender.py -> build\lib\lathe\sandbox
+copying lathe\sandbox\__init__.py -> build\lib\lathe\sandbox
+creating build\lib\lathe\scaffolds
+copying lathe\scaffolds\chest.py -> build\lib\lathe\scaffolds
+copying lathe\scaffolds\drone.py -> build\lib\lathe\scaffolds
+copying lathe\scaffolds\wall_panel.py -> build\lib\lathe\scaffolds
+copying lathe\scaffolds\__init__.py -> build\lib\lathe\scaffolds
+creating build\lib\lathe\shape
+copying lathe\shape\backend.py -> build\lib\lathe\shape
+copying lathe\shape\__init__.py -> build\lib\lathe\shape
+creating build\lib\lathe\stages
+copying lathe\stages\budgets.py -> build\lib\lathe\stages
+copying lathe\stages\collision.py -> build\lib\lathe\stages
+copying lathe\stages\lod.py -> build\lib\lathe\stages
+copying lathe\stages\__init__.py -> build\lib\lathe\stages
+creating build\lib\lathe\validators
+copying lathe\validators\composition.py -> build\lib\lathe\validators
+copying lathe\validators\flow_quality.py -> build\lib\lathe\validators
+copying lathe\validators\geometry_integrity.py -> build\lib\lathe\validators
+copying lathe\validators\semantic_quality.py -> build\lib\lathe\validators
+copying lathe\validators\silhouette.py -> build\lib\lathe\validators
+copying lathe\validators\soft_silhouette.py -> build\lib\lathe\validators
+copying lathe\validators\surface_quality.py -> build\lib\lathe\validators
+copying lathe\validators\urdf_validation.py -> build\lib\lathe\validators
+copying lathe\validators\visual_quality.py -> build\lib\lathe\validators
+copying lathe\validators\__init__.py -> build\lib\lathe\validators
+creating build\lib\lathe\viewer
+copying lathe\viewer\__init__.py -> build\lib\lathe\viewer
+creating build\lib\lathe\core\stages
+copying lathe\core\stages\execution.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\interfaces.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\optimize.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\package.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\physics.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\publish.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\rig.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\shape.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\surface.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\topology.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\uv.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\validate.py -> build\lib\lathe\core\stages
+copying lathe\core\stages\__init__.py -> build\lib\lathe\core\stages
+creating build\lib\lathe\providers\adapters
+copying lathe\providers\adapters\hunyuan.py -> build\lib\lathe\providers\adapters
+copying lathe\providers\adapters\reference_conditioned.py -> build\lib\lathe\providers\adapters
+copying lathe\providers\adapters\vggt.py -> build\lib\lathe\providers\adapters
+copying lathe\providers\adapters\__init__.py -> build\lib\lathe\providers\adapters
+creating build\lib\lathe\providers\transport
+copying lathe\providers\transport\http.py -> build\lib\lathe\providers\transport
+copying lathe\providers\transport\__init__.py -> build\lib\lathe\providers\transport
+creating build\lib\lathe\shape\geometry
+copying lathe\shape\geometry\conditioning.py -> build\lib\lathe\shape\geometry
+copying lathe\shape\geometry\primitives.py -> build\lib\lathe\shape\geometry
+copying lathe\shape\geometry\__init__.py -> build\lib\lathe\shape\geometry
+running egg_info
+writing lathe.egg-info\PKG-INFO
+writing dependency_links to lathe.egg-info\dependency_links.txt
+writing entry points to lathe.egg-info\entry_points.txt
+writing requirements to lathe.egg-info\requires.txt
+writing top-level names to lathe.egg-info\top_level.txt
+reading manifest file 'lathe.egg-info\SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file 'lathe.egg-info\SOURCES.txt'
+installing to build\bdist.win-amd64\wheel
+running install
+running install_lib
+creating build\bdist.win-amd64\wheel
+creating build\bdist.win-amd64\wheel\lathe
+creating build\bdist.win-amd64\wheel\lathe\adapters
+copying build\lib\lathe\adapters\blender_subdiv.py -> build\bdist.win-amd64\wheel\.\lathe\adapters
+copying build\lib\lathe\adapters\manifold_kernel.py -> build\bdist.win-amd64\wheel\.\lathe\adapters
+copying build\lib\lathe\adapters\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\adapters
+copying build\lib\lathe\assembly_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\assembly_kernel.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\asset_graph.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\atlas_assembler.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\backends.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\bake_runtime.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\benchmarks
+copying build\lib\lathe\benchmarks\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\benchmarks
+copying build\lib\lathe\bench_runtime.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\blender
+copying build\lib\lathe\blender\drivers.py -> build\bdist.win-amd64\wheel\.\lathe\blender
+copying build\lib\lathe\blender\execution.py -> build\bdist.win-amd64\wheel\.\lathe\blender
+copying build\lib\lathe\blender\plan_adapter.py -> build\bdist.win-amd64\wheel\.\lathe\blender
+copying build\lib\lathe\blender\render.py -> build\bdist.win-amd64\wheel\.\lathe\blender
+copying build\lib\lathe\blender\results.py -> build\bdist.win-amd64\wheel\.\lathe\blender
+copying build\lib\lathe\blender\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\blender
+copying build\lib\lathe\blender_execution.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\blueprints
+copying build\lib\lathe\blueprints\common.py -> build\bdist.win-amd64\wheel\.\lathe\blueprints
+copying build\lib\lathe\blueprints\containers.py -> build\bdist.win-amd64\wheel\.\lathe\blueprints
+copying build\lib\lathe\blueprints\generic.py -> build\bdist.win-amd64\wheel\.\lathe\blueprints
+copying build\lib\lathe\blueprints\mechanical.py -> build\bdist.win-amd64\wheel\.\lathe\blueprints
+copying build\lib\lathe\blueprints\panels.py -> build\bdist.win-amd64\wheel\.\lathe\blueprints
+copying build\lib\lathe\blueprints\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\blueprints
+creating build\bdist.win-amd64\wheel\lathe\bridge
+copying build\lib\lathe\bridge\blender_plan.py -> build\bdist.win-amd64\wheel\.\lathe\bridge
+copying build\lib\lathe\bridge\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\bridge
+copying build\lib\lathe\cache.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\cache_paths.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\candidate_search.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\capabilities.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\checker
+copying build\lib\lathe\checker\assets.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\cross_stage.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\declarations.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\interfaces.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\language.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\surface.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\utils.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+copying build\lib\lathe\checker\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\checker
+creating build\bdist.win-amd64\wheel\lathe\cli
+copying build\lib\lathe\cli\bridge_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\build_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\cache_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\check_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\completions_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\diff_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\doctor_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\fmt_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\inspect_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\library_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\materialize_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\parse_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\patch_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\plan_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\publish_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\ref_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\ref_copy_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\ref_diff_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\ref_inspect_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\ref_planes_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\snapshot_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\surface_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\telemetry_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\test_cmd.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\_common.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\cli\__main__.py -> build\bdist.win-amd64\wheel\.\lathe\cli
+copying build\lib\lathe\codex_imagegen_bridge.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\conformance.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\constants.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\core
+copying build\lib\lathe\core\common.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\errors.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\evaluators.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\geometry.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\io.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\mesh.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\rendering.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\seeding.py -> build\bdist.win-amd64\wheel\.\lathe\core
+creating build\bdist.win-amd64\wheel\lathe\core\stages
+copying build\lib\lathe\core\stages\execution.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\interfaces.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\optimize.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\package.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\physics.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\publish.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\rig.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\shape.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\surface.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\topology.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\uv.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\validate.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\stages\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\core\stages
+copying build\lib\lathe\core\uv_ops.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\core\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\core
+copying build\lib\lathe\defaults.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\doctor.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\engine_manifests
+copying build\lib\lathe\engine_manifests\godot.py -> build\bdist.win-amd64\wheel\.\lathe\engine_manifests
+copying build\lib\lathe\engine_manifests\godot_import_contract.py -> build\bdist.win-amd64\wheel\.\lathe\engine_manifests
+copying build\lib\lathe\engine_manifests\unity.py -> build\bdist.win-amd64\wheel\.\lathe\engine_manifests
+copying build\lib\lathe\engine_manifests\unreal.py -> build\bdist.win-amd64\wheel\.\lathe\engine_manifests
+copying build\lib\lathe\engine_manifests\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\engine_manifests
+copying build\lib\lathe\errors.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\eval_harness.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\exact_solids.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\executor.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\feature_fusion.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\feature_grammar.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\feature_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\feature_ops
+copying build\lib\lathe\feature_ops\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\feature_ops
+copying build\lib\lathe\fidelity.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\fit_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\formatter.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\geometry
+copying build\lib\lathe\geometry\kernel.py -> build\bdist.win-amd64\wheel\.\lathe\geometry
+copying build\lib\lathe\geometry\manifold_kernel.py -> build\bdist.win-amd64\wheel\.\lathe\geometry
+copying build\lib\lathe\geometry\reference_kernel.py -> build\bdist.win-amd64\wheel\.\lathe\geometry
+copying build\lib\lathe\geometry\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\geometry
+copying build\lib\lathe\geometry_kernel.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\hero_manifest.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\highlow.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\inspection
+copying build\lib\lathe\inspection\evidence.py -> build\bdist.win-amd64\wheel\.\lathe\inspection
+copying build\lib\lathe\inspection\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\inspection
+copying build\lib\lathe\interface_entries.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\kit_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\logging_utils.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\lsp
+copying build\lib\lathe\lsp\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\lsp
+copying build\lib\lathe\materials.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\mesh_finalize.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\mesh_ingest.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\mesh_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\net.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\normalizer.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\parser
+copying build\lib\lathe\parser\fast_parser.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\fast_parser_expr.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\grammar.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\imports.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\prompt_injection.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\tokens.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\transformer.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\transformer_blocks.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\transformer_expr.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\parser\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\parser
+copying build\lib\lathe\patch_api.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\paths.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\pbr_deriver.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\planner.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\proposals.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\providers
+creating build\bdist.win-amd64\wheel\lathe\providers\adapters
+copying build\lib\lathe\providers\adapters\hunyuan.py -> build\bdist.win-amd64\wheel\.\lathe\providers\adapters
+copying build\lib\lathe\providers\adapters\reference_conditioned.py -> build\bdist.win-amd64\wheel\.\lathe\providers\adapters
+copying build\lib\lathe\providers\adapters\vggt.py -> build\bdist.win-amd64\wheel\.\lathe\providers\adapters
+copying build\lib\lathe\providers\adapters\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\providers\adapters
+copying build\lib\lathe\providers\errors.py -> build\bdist.win-amd64\wheel\.\lathe\providers
+copying build\lib\lathe\providers\mesh_ops.py -> build\bdist.win-amd64\wheel\.\lathe\providers
+copying build\lib\lathe\providers\registry.py -> build\bdist.win-amd64\wheel\.\lathe\providers
+copying build\lib\lathe\providers\selection.py -> build\bdist.win-amd64\wheel\.\lathe\providers
+creating build\bdist.win-amd64\wheel\lathe\providers\transport
+copying build\lib\lathe\providers\transport\http.py -> build\bdist.win-amd64\wheel\.\lathe\providers\transport
+copying build\lib\lathe\providers\transport\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\providers\transport
+copying build\lib\lathe\providers\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\providers
+creating build\bdist.win-amd64\wheel\lathe\publish
+copying build\lib\lathe\publish\signed_repro.py -> build\bdist.win-amd64\wheel\.\lathe\publish
+copying build\lib\lathe\publish\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\publish
+copying build\lib\lathe\ref.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\reference_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\render_eval.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\repair
+copying build\lib\lathe\repair\surface_repair.py -> build\bdist.win-amd64\wheel\.\lathe\repair
+copying build\lib\lathe\repair\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\repair
+copying build\lib\lathe\repair_executor.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\repair_loop.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\repair_planner.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\repair_policy.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\reports
+copying build\lib\lathe\reports\html.py -> build\bdist.win-amd64\wheel\.\lathe\reports
+copying build\lib\lathe\reports\terminal.py -> build\bdist.win-amd64\wheel\.\lathe\reports
+copying build\lib\lathe\reports\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\reports
+copying build\lib\lathe\resolver.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\reuse_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\runtime_config.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\sandbox
+copying build\lib\lathe\sandbox\blender.py -> build\bdist.win-amd64\wheel\.\lathe\sandbox
+copying build\lib\lathe\sandbox\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\sandbox
+creating build\bdist.win-amd64\wheel\lathe\scaffolds
+copying build\lib\lathe\scaffolds\chest.py -> build\bdist.win-amd64\wheel\.\lathe\scaffolds
+copying build\lib\lathe\scaffolds\drone.py -> build\bdist.win-amd64\wheel\.\lathe\scaffolds
+copying build\lib\lathe\scaffolds\wall_panel.py -> build\bdist.win-amd64\wheel\.\lathe\scaffolds
+copying build\lib\lathe\scaffolds\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\scaffolds
+copying build\lib\lathe\scaffold_compiler.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\schema.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\security.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\selector_manifest.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\shape
+copying build\lib\lathe\shape\backend.py -> build\bdist.win-amd64\wheel\.\lathe\shape
+creating build\bdist.win-amd64\wheel\lathe\shape\geometry
+copying build\lib\lathe\shape\geometry\conditioning.py -> build\bdist.win-amd64\wheel\.\lathe\shape\geometry
+copying build\lib\lathe\shape\geometry\primitives.py -> build\bdist.win-amd64\wheel\.\lathe\shape\geometry
+copying build\lib\lathe\shape\geometry\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\shape\geometry
+copying build\lib\lathe\shape\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\shape
+copying build\lib\lathe\shape_backend.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\shape_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\shape_providers.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\snapshot.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\solid_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\stages
+copying build\lib\lathe\stages\budgets.py -> build\bdist.win-amd64\wheel\.\lathe\stages
+copying build\lib\lathe\stages\collision.py -> build\bdist.win-amd64\wheel\.\lathe\stages
+copying build\lib\lathe\stages\lod.py -> build\bdist.win-amd64\wheel\.\lathe\stages
+copying build\lib\lathe\stages\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\stages
+copying build\lib\lathe\stage_contracts.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\subproc.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\surface_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\surface_runtime.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\telemetry.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\test_runtime.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\texture_control_pack.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\topology_runtime.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\transfer_ir.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\utils.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\uv_runtime.py -> build\bdist.win-amd64\wheel\.\lathe
+copying build\lib\lathe\validation.py -> build\bdist.win-amd64\wheel\.\lathe
+creating build\bdist.win-amd64\wheel\lathe\validators
+copying build\lib\lathe\validators\composition.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\flow_quality.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\geometry_integrity.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\semantic_quality.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\silhouette.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\soft_silhouette.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\surface_quality.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\urdf_validation.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\visual_quality.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+copying build\lib\lathe\validators\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\validators
+creating build\bdist.win-amd64\wheel\lathe\viewer
+copying build\lib\lathe\viewer\__init__.py -> build\bdist.win-amd64\wheel\.\lathe\viewer
+copying build\lib\lathe\__init__.py -> build\bdist.win-amd64\wheel\.\lathe
+running install_egg_info
+Copying lathe.egg-info to build\bdist.win-amd64\wheel\.\lathe-0.2.0rc1-py3.13.egg-info
+running install_scripts
+creating build\bdist.win-amd64\wheel\lathe-0.2.0rc1.dist-info\WHEEL
+creating 'D:\\lathe_v0_1\\.claude\\worktrees\\readiness-pass-v020rc1\\tmp_release_dist\\.tmp-pzp0n0ew\\lathe-0.2.0rc1-py3-none-any.whl' and adding 'build\\bdist.win-amd64\\wheel' to it
+adding 'lathe/__init__.py'
+adding 'lathe/assembly_ir.py'
+adding 'lathe/assembly_kernel.py'
+adding 'lathe/asset_graph.py'
+adding 'lathe/atlas_assembler.py'
+adding 'lathe/backends.py'
+adding 'lathe/bake_runtime.py'
+adding 'lathe/bench_runtime.py'
+adding 'lathe/blender_execution.py'
+adding 'lathe/cache.py'
+adding 'lathe/cache_paths.py'
+adding 'lathe/candidate_search.py'
+adding 'lathe/capabilities.py'
+adding 'lathe/codex_imagegen_bridge.py'
+adding 'lathe/conformance.py'
+adding 'lathe/constants.py'
+adding 'lathe/defaults.py'
+adding 'lathe/doctor.py'
+adding 'lathe/errors.py'
+adding 'lathe/eval_harness.py'
+adding 'lathe/exact_solids.py'
+adding 'lathe/executor.py'
+adding 'lathe/feature_fusion.py'
+adding 'lathe/feature_grammar.py'
+adding 'lathe/feature_ir.py'
+adding 'lathe/fidelity.py'
+adding 'lathe/fit_ir.py'
+adding 'lathe/formatter.py'
+adding 'lathe/geometry_kernel.py'
+adding 'lathe/hero_manifest.py'
+adding 'lathe/highlow.py'
+adding 'lathe/interface_entries.py'
+adding 'lathe/kit_ir.py'
+adding 'lathe/logging_utils.py'
+adding 'lathe/materials.py'
+adding 'lathe/mesh_finalize.py'
+adding 'lathe/mesh_ingest.py'
+adding 'lathe/mesh_ir.py'
+adding 'lathe/net.py'
+adding 'lathe/normalizer.py'
+adding 'lathe/patch_api.py'
+adding 'lathe/paths.py'
+adding 'lathe/pbr_deriver.py'
+adding 'lathe/planner.py'
+adding 'lathe/proposals.py'
+adding 'lathe/ref.py'
+adding 'lathe/reference_ir.py'
+adding 'lathe/render_eval.py'
+adding 'lathe/repair_executor.py'
+adding 'lathe/repair_loop.py'
+adding 'lathe/repair_planner.py'
+adding 'lathe/repair_policy.py'
+adding 'lathe/resolver.py'
+adding 'lathe/reuse_ir.py'
+adding 'lathe/runtime_config.py'
+adding 'lathe/scaffold_compiler.py'
+adding 'lathe/schema.py'
+adding 'lathe/security.py'
+adding 'lathe/selector_manifest.py'
+adding 'lathe/shape_backend.py'
+adding 'lathe/shape_ir.py'
+adding 'lathe/shape_providers.py'
+adding 'lathe/snapshot.py'
+adding 'lathe/solid_ir.py'
+adding 'lathe/stage_contracts.py'
+adding 'lathe/subproc.py'
+adding 'lathe/surface_ir.py'
+adding 'lathe/surface_runtime.py'
+adding 'lathe/telemetry.py'
+adding 'lathe/test_runtime.py'
+adding 'lathe/texture_control_pack.py'
+adding 'lathe/topology_runtime.py'
+adding 'lathe/transfer_ir.py'
+adding 'lathe/utils.py'
+adding 'lathe/uv_runtime.py'
+adding 'lathe/validation.py'
+adding 'lathe/adapters/__init__.py'
+adding 'lathe/adapters/blender_subdiv.py'
+adding 'lathe/adapters/manifold_kernel.py'
+adding 'lathe/benchmarks/__init__.py'
+adding 'lathe/blender/__init__.py'
+adding 'lathe/blender/drivers.py'
+adding 'lathe/blender/execution.py'
+adding 'lathe/blender/plan_adapter.py'
+adding 'lathe/blender/render.py'
+adding 'lathe/blender/results.py'
+adding 'lathe/blueprints/__init__.py'
+adding 'lathe/blueprints/common.py'
+adding 'lathe/blueprints/containers.py'
+adding 'lathe/blueprints/generic.py'
+adding 'lathe/blueprints/mechanical.py'
+adding 'lathe/blueprints/panels.py'
+adding 'lathe/bridge/__init__.py'
+adding 'lathe/bridge/blender_plan.py'
+adding 'lathe/checker/__init__.py'
+adding 'lathe/checker/assets.py'
+adding 'lathe/checker/cross_stage.py'
+adding 'lathe/checker/declarations.py'
+adding 'lathe/checker/interfaces.py'
+adding 'lathe/checker/language.py'
+adding 'lathe/checker/surface.py'
+adding 'lathe/checker/utils.py'
+adding 'lathe/cli/__init__.py'
+adding 'lathe/cli/__main__.py'
+adding 'lathe/cli/_common.py'
+adding 'lathe/cli/bridge_cmd.py'
+adding 'lathe/cli/build_cmd.py'
+adding 'lathe/cli/cache_cmd.py'
+adding 'lathe/cli/check_cmd.py'
+adding 'lathe/cli/completions_cmd.py'
+adding 'lathe/cli/diff_cmd.py'
+adding 'lathe/cli/doctor_cmd.py'
+adding 'lathe/cli/fmt_cmd.py'
+adding 'lathe/cli/inspect_cmd.py'
+adding 'lathe/cli/library_cmd.py'
+adding 'lathe/cli/materialize_cmd.py'
+adding 'lathe/cli/parse_cmd.py'
+adding 'lathe/cli/patch_cmd.py'
+adding 'lathe/cli/plan_cmd.py'
+adding 'lathe/cli/publish_cmd.py'
+adding 'lathe/cli/ref_cmd.py'
+adding 'lathe/cli/ref_copy_cmd.py'
+adding 'lathe/cli/ref_diff_cmd.py'
+adding 'lathe/cli/ref_inspect_cmd.py'
+adding 'lathe/cli/ref_planes_cmd.py'
+adding 'lathe/cli/snapshot_cmd.py'
+adding 'lathe/cli/surface_cmd.py'
+adding 'lathe/cli/telemetry_cmd.py'
+adding 'lathe/cli/test_cmd.py'
+adding 'lathe/core/__init__.py'
+adding 'lathe/core/common.py'
+adding 'lathe/core/errors.py'
+adding 'lathe/core/evaluators.py'
+adding 'lathe/core/geometry.py'
+adding 'lathe/core/io.py'
+adding 'lathe/core/mesh.py'
+adding 'lathe/core/rendering.py'
+adding 'lathe/core/seeding.py'
+adding 'lathe/core/uv_ops.py'
+adding 'lathe/core/stages/__init__.py'
+adding 'lathe/core/stages/execution.py'
+adding 'lathe/core/stages/interfaces.py'
+adding 'lathe/core/stages/optimize.py'
+adding 'lathe/core/stages/package.py'
+adding 'lathe/core/stages/physics.py'
+adding 'lathe/core/stages/publish.py'
+adding 'lathe/core/stages/rig.py'
+adding 'lathe/core/stages/shape.py'
+adding 'lathe/core/stages/surface.py'
+adding 'lathe/core/stages/topology.py'
+adding 'lathe/core/stages/uv.py'
+adding 'lathe/core/stages/validate.py'
+adding 'lathe/engine_manifests/__init__.py'
+adding 'lathe/engine_manifests/godot.py'
+adding 'lathe/engine_manifests/godot_import_contract.py'
+adding 'lathe/engine_manifests/unity.py'
+adding 'lathe/engine_manifests/unreal.py'
+adding 'lathe/feature_ops/__init__.py'
+adding 'lathe/geometry/__init__.py'
+adding 'lathe/geometry/kernel.py'
+adding 'lathe/geometry/manifold_kernel.py'
+adding 'lathe/geometry/reference_kernel.py'
+adding 'lathe/inspection/__init__.py'
+adding 'lathe/inspection/evidence.py'
+adding 'lathe/lsp/__init__.py'
+adding 'lathe/parser/__init__.py'
+adding 'lathe/parser/fast_parser.py'
+adding 'lathe/parser/fast_parser_expr.py'
+adding 'lathe/parser/grammar.py'
+adding 'lathe/parser/imports.py'
+adding 'lathe/parser/prompt_injection.py'
+adding 'lathe/parser/tokens.py'
+adding 'lathe/parser/transformer.py'
+adding 'lathe/parser/transformer_blocks.py'
+adding 'lathe/parser/transformer_expr.py'
+adding 'lathe/providers/__init__.py'
+adding 'lathe/providers/errors.py'
+adding 'lathe/providers/mesh_ops.py'
+adding 'lathe/providers/registry.py'
+adding 'lathe/providers/selection.py'
+adding 'lathe/providers/adapters/__init__.py'
+adding 'lathe/providers/adapters/hunyuan.py'
+adding 'lathe/providers/adapters/reference_conditioned.py'
+adding 'lathe/providers/adapters/vggt.py'
+adding 'lathe/providers/transport/__init__.py'
+adding 'lathe/providers/transport/http.py'
+adding 'lathe/publish/__init__.py'
+adding 'lathe/publish/signed_repro.py'
+adding 'lathe/repair/__init__.py'
+adding 'lathe/repair/surface_repair.py'
+adding 'lathe/reports/__init__.py'
+adding 'lathe/reports/html.py'
+adding 'lathe/reports/terminal.py'
+adding 'lathe/sandbox/__init__.py'
+adding 'lathe/sandbox/blender.py'
+adding 'lathe/scaffolds/__init__.py'
+adding 'lathe/scaffolds/chest.py'
+adding 'lathe/scaffolds/drone.py'
+adding 'lathe/scaffolds/wall_panel.py'
+adding 'lathe/shape/__init__.py'
+adding 'lathe/shape/backend.py'
+adding 'lathe/shape/geometry/__init__.py'
+adding 'lathe/shape/geometry/conditioning.py'
+adding 'lathe/shape/geometry/primitives.py'
+adding 'lathe/stages/__init__.py'
+adding 'lathe/stages/budgets.py'
+adding 'lathe/stages/collision.py'
+adding 'lathe/stages/lod.py'
+adding 'lathe/validators/__init__.py'
+adding 'lathe/validators/composition.py'
+adding 'lathe/validators/flow_quality.py'
+adding 'lathe/validators/geometry_integrity.py'
+adding 'lathe/validators/semantic_quality.py'
+adding 'lathe/validators/silhouette.py'
+adding 'lathe/validators/soft_silhouette.py'
+adding 'lathe/validators/surface_quality.py'
+adding 'lathe/validators/urdf_validation.py'
+adding 'lathe/validators/visual_quality.py'
+adding 'lathe/viewer/__init__.py'
+adding 'lathe-0.2.0rc1.dist-info/licenses/LICENSE'
+adding 'lathe-0.2.0rc1.dist-info/METADATA'
+adding 'lathe-0.2.0rc1.dist-info/WHEEL'
+adding 'lathe-0.2.0rc1.dist-info/entry_points.txt'
+adding 'lathe-0.2.0rc1.dist-info/top_level.txt'
+adding 'lathe-0.2.0rc1.dist-info/RECORD'
+removing build\bdist.win-amd64\wheel
+Successfully built lathe-0.2.0rc1.tar.gz and lathe-0.2.0rc1-py3-none-any.whl
+
+## exit_code: 0
+
+## ls tmp_release_dist/
+total 896
+drwxr-xr-x 1 talme 197610      0 Apr 28 14:53 .
+drwxr-xr-x 1 talme 197610      0 Apr 28 14:52 ..
+-rw-r--r-- 1 talme 197610 477969 Apr 28 14:53 lathe-0.2.0rc1-py3-none-any.whl
+-rw-r--r-- 1 talme 197610 426839 Apr 28 14:52 lathe-0.2.0rc1.tar.gz

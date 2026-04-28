@@ -1,0 +1,18 @@
+Name: pip
+Version: 26.0.1
+Summary: The PyPA recommended tool for installing Python packages.
+Home-page: https://pip.pypa.io/
+Author: 
+Author-email: The pip developers <distutils-sig@python.org>
+License-Expression: MIT
+Location: D:\lathe_v0_1\.venv\Lib\site-packages
+Requires: 
+Required-by: pip-api, pip-tools
+Requirement already satisfied: pip in D:\lathe_v0_1\.venv\Lib\site-packages (26.0.1)
+Collecting pip
+  Using cached pip-26.1-py3-none-any.whl.metadata (4.6 kB)
+Would install pip-26.1
+
+[notice] A new release of pip is available: 26.0.1 -> 26.1
+[notice] To update, run: D:\lathe_v0_1\.venv\Scripts\python.exe -m pip install --upgrade pip
+exit_code=0

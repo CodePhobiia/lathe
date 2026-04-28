@@ -1,0 +1,67 @@
+runtime-posture cold/warm/recovery evidence transcript
+captured: 2026-04-28
+platform: Windows 10 (10.0.19045), Python 3.14.0, lathe 0.2.0rc1 worktree
+working directory: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1
+
+=== COLD START ===
+command: (rm -rf .lathe_lark_cache .pytest_cache .ruff_cache) && python -m lathe.cli check examples/courier_drone.lth
+output: {"ok": true, "diagnostics": []}
+elapsed: 2503 ms
+
+=== WARM START ===
+command: python -m lathe.cli check examples/courier_drone.lth  (immediately after cold start)
+output: {"ok": true, "diagnostics": []}
+elapsed: 1872 ms
+
+=== LATHE DOCTOR ===
+command: python -m lathe.cli doctor
+elapsed: 13515 ms
+summary: Blender ok, xatlas missing, torch ok (cuda_available=False), VGGT unavailable,
+  Hunyuan unavailable (http://localhost:8081 refused connection).
+  Deterministic backends: topology blender_subprocess real_available=True fallback_available=True,
+  uv reference_box real_available=False fallback_available=True,
+  package reference_package real_available=True fallback_available=False.
+
+=== FIRST BUILD (cache miss, reference path) ===
+command: python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist_test
+certified: true
+score: 0.88039 / threshold: 0.86
+outputs sha256[0]: 5e88598952ceef8f7ab32c7a9b35e282b5cff4e99ee5d562c03672bdeafbcde4 (usd, 1429288 bytes)
+elapsed: 2418 ms
+cache_version: v10_rc2
+
+=== SECOND BUILD (cache hit, copytree restore) ===
+command: python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist_test2
+certified: true
+outputs sha256[0]: 5e88598952ceef8f7ab32c7a9b35e282b5cff4e99ee5d562c03672bdeafbcde4  (identical)
+elapsed: 2494 ms
+
+=== IDEMPOTENCY VERIFICATION ===
+third build: sha256 5e88598952ceef8f... cert=True
+fourth build: sha256 5e88598952ceef8f... cert=True
+conclusion: builds are deterministic and idempotent across multiple invocations.
+
+=== CACHE CORRUPTION RECOVERY ===
+test: corrupted manifest.json in a cache entry (wrote '{bad json corrupted')
+result: lathe check unaffected (exit 0)
+result: lathe build proceeded as cache miss, produced certified build
+conclusion: corrupt manifest triggers silent cache miss + clean rebuild. Corrupt entry persists.
+
+=== PARALLEL BUILDS — SEPARATE OUTPUT DIRS ===
+command: two concurrent builds into dist_par1 and dist_par2
+result: both succeeded, both sha256 5e88598952ceef8f... (identical)
+conclusion: separate-dir parallel builds are safe.
+
+=== PARALLEL BUILDS — SAME OUTPUT DIR ===
+command: two concurrent builds into same dir (dist_same)
+result: p1 succeeded (sha256 5e88598952ceef8f...)
+result: p2 error: lathe error [lathe.cli.permission_denied]: Permission denied:
+  D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\dist_same\courier_drone
+conclusion: same-dir concurrent builds fail with OS-level Permission denied (Windows).
+  No clean diagnostic gate exists. requires-human item recorded in runtime-posture doc.
+
+=== RECOVERY FROM INTERRUPTED BUILD ===
+status: requires-human (process-kill simulation not safe in sandboxed runner)
+procedure: run `lathe build` in terminal, kill Python mid-run, verify partial out_dir
+  has no build_report.json, re-run to confirm clean rebuild. Cache staging (mkdtemp +
+  rename in executor.py:467-497) should leave cache either complete or absent.

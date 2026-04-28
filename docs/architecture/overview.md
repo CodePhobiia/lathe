@@ -67,3 +67,30 @@ See [Pipeline](pipeline.md) for the stage-level flow, [Shape stage](shape_stage.
 for the internals of the probabilistic stage, [Backends](backends.md) for the
 stack-binding / fallback semantics, and [Public contracts and internal
 boundaries](contracts.md) for the public surface map.
+
+## Currency check (2026-04-28)
+
+This document was reviewed against the v0.2.0rc1 release branch (base commit
+`30f9186`) on 2026-04-28 as part of the readiness remediation pass and is
+substantively current. The C4 L1 / L2 diagrams, boundary rule, and cross-doc
+links all reflect the shipped code.
+
+Sections that need follow-up (tracked, not contradictions):
+
+- The L2 component view shows `validators/*` as a single block. The actual
+  composition (semantic, visual, flow, surface, silhouette) is detailed in
+  `docs/adr/0006-validator-composition.md` — consider expanding the L2 inset
+  in a future revision when validator wiring becomes a more common
+  reader question.
+- The diagram does not depict the Codex/Blender bridge added in V1.3.1
+  (`lathe/bridge/blender_plan.py`, `lathe bridge doctor|plan`). It is an
+  optional execution-planning surface, not part of the core compile path,
+  so excluding it here is defensible — but a small "Optional bridges" note
+  would help new readers.
+- `docs/architecture/technical-design-v0.2.0rc1.md` (added in this pass) is
+  the canonical place for release-window failure modes, single points of
+  failure, and storage posture; this overview deliberately stays
+  release-version-neutral.
+
+No claims in this overview were found to contradict the current code. No
+edits required for the v0.2.0rc1 release-evidence packet.

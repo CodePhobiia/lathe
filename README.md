@@ -4,6 +4,13 @@ Lathe is a declarative programming language and compiler/runtime for turning 3D 
 
 This repository is a working **reference compiler scaffold** for Lathe v0.1. The current milestone is a native **parametric hard-surface assembly compiler** under the stable `lathe.shape.intent_mesh_handoff_v1` contract. Learned providers still exist, but they are optional proposal sources inside Lathe’s compiler flow rather than the product center.
 
+## Privacy and security
+
+- Telemetry is **disabled by default** in v0.2.0rc1. No data leaves the machine unless a user explicitly runs `lathe telemetry enable`.
+- [Privacy notice](docs/privacy.md) — opt-in payload allowlist, what is never collected, opt-out path.
+- [Security policy](SECURITY.md) — vulnerability reporting, response SLA, safe-harbor scope.
+- [Terms applicability](docs/terms.md) — Apache-2.0 governs use; no hosted ToS in this pre-release.
+
 ## Current release state
 
 - Package/runtime version: `0.2.0rc1` (`pyproject.toml` and `lathe.__version__`).

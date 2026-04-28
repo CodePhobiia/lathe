@@ -1,0 +1,16 @@
+# Phase 6: semgrep p/python scan attempt
+# Captured: 2026-04-28
+# Worktree: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\
+
+## command: D:\lathe_v0_1\.venv\Scripts\semgrep.exe --config p/python --json --output docs/release/evidence-bundle-v0.2.0rc1/semgrep-python.json
+## status: tool not installed in venv
+
+## command: which semgrep
+## status: not found on PATH
+
+## known constraint: semgrep on Windows is not officially supported — the upstream project recommends WSL or Linux containers.
+
+## disposition: requires-human (H40)
+## CI authority: .github/workflows/security.yml runs semgrep in the canonical (Linux) lane.
+## Action for human: rely on the CI run once the branch is pushed (GitHub Actions semgrep job),
+##   or run locally inside WSL with `pip install semgrep` then rerun.

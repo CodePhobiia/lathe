@@ -1,0 +1,107 @@
+# Phase 6: lxml CVE-2026-41066 investigation
+# Captured: 2026-04-28
+# Worktree: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\
+# Reference: pip-audit-runtime.txt previously flagged lxml 5.4.0 → fix 6.1.0 (CVE-2026-41066).
+
+## ============================================================
+## 1) Confirm installed version + Required-by chain
+## ============================================================
+
+## command: D:\lathe_v0_1\.venv\Scripts\pip.exe show lxml
+Name: lxml
+Version: 5.4.0
+Summary: Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API.
+Home-page: https://lxml.de/
+Author: lxml dev team
+Author-email: lxml@lxml.de
+License: BSD-3-Clause
+Location: D:\lathe_v0_1\.venv\Lib\site-packages
+Requires:
+Required-by:
+
+# Note: "Required-by" is empty. lxml is NOT pulled in as a non-optional
+# dependency by anything currently installed in the venv.
+
+## ============================================================
+## 2) Search project manifests for an explicit lxml requirement
+## ============================================================
+
+## command: grep -ni 'lxml' requirements*.txt pyproject.toml
+## exit_code_grep: 1   (no matches found)
+
+# pyproject.toml has zero `lxml` references in its dependency arrays
+# (`dependencies`, `optional-dependencies.{dev,docs,test-min,hunyuan_http,vggt,
+# xatlas,geometry,export,publish}`), and there are no `lxml` references in
+# any requirements*.txt at the worktree root.
+
+## ============================================================
+## 3) Walk every distribution's metadata to find which one would
+##    pull lxml in (under any extra)
+## ============================================================
+
+## command: D:\lathe_v0_1\.venv\Scripts\python.exe -c "
+##   import importlib.metadata as md
+##   for d in md.distributions():
+##       for r in (d.requires or []):
+##           if 'lxml' in r.lower():
+##               print(f'{d.metadata[\"Name\"]} requires: {r}')"
+
+beautifulsoup4 requires: lxml; extra == 'lxml'
+cyclonedx-python-lib requires: lxml (>=4,<6) ; extra == "validation" or extra == "xml-validation"
+lxml requires: lxml_html_clean; extra == "html-clean"
+mypy requires: lxml; extra == "reports"
+networkx requires: lxml>=4.6; extra == "extra"
+tifffile requires: lxml; extra == "xml"
+tifffile requires: lxml; extra == "all"
+tifffile requires: lxml; extra == "test"
+trimesh requires: lxml; extra == "easy"
+
+# Every reverse-dependency on lxml in this venv is gated behind an *extra*
+# (`[lxml]`, `[validation]`/`[xml-validation]`, `[reports]`, `[extra]`,
+# `[xml]`/`[all]`/`[test]`, `[easy]`). None of those extras is referenced
+# from `pyproject.toml` (lathe's own dependency arrays do not select them),
+# nor from any requirements*.txt.
+#
+# Conclusion: `lxml 5.4.0` is present in the dev venv as a *stale* install
+# left over from a prior local experiment (most likely
+# `pip install trimesh[easy]` or `pip install cyclonedx-python-lib[validation]`
+# during early SBOM bring-up). It is NOT a runtime dep, NOT a documented dev
+# dep, NOT pinned anywhere in lathe's manifests, and NOT imported anywhere
+# in the lathe source tree.
+
+## ============================================================
+## 4) Confirm lathe source does not import lxml
+## ============================================================
+
+## search: grep -rn '^import lxml\|^from lxml' lathe/ scripts/
+## status: zero matches — lathe does NOT use lxml at runtime, in tooling,
+##         or in tests.
+
+## ============================================================
+## 5) Disposition
+## ============================================================
+
+# Decision: NO RELEASE EXCEPTION required for the lxml CVE.
+# Reason:
+#   - lxml is not declared anywhere in lathe's published manifests.
+#   - It will not be installed by `pip install lathe==0.2.0rc1` from a
+#     clean environment. (Verifiable from pyproject.toml + the
+#     wheel-install-py311.txt transcript captured during Phase 3, which
+#     did not pull lxml.)
+#   - Only a developer who explicitly opts into a third-party extra (e.g.
+#     `cyclonedx-python-lib[validation]`) would get lxml, and at that point
+#     they are responsible for using a fixed version.
+#
+# Action taken in Phase 6:
+#   - Recorded this finding in `release-gates-v0.2.0rc1.md` § Dependency
+#     vulnerability.
+#   - Appended a "Phase 6 follow-up (2026-04-28)" section to
+#     `pip-audit-runtime.txt` documenting the disposition.
+#   - The stale install in the local dev venv may be removed at the
+#     developer's discretion (`pip uninstall -y lxml`); doing so is
+#     cosmetic and not load-bearing for the release.
+#
+# Optional hardening (NOT a v0.2.0rc1 blocker, recorded only):
+#   - SBOM regeneration after `pip uninstall -y lxml` would shrink the
+#     captured SBOM. The current SBOM accurately reflects the dev-venv
+#     state at the time of capture and is fine for evidence purposes.

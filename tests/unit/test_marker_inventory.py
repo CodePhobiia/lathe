@@ -35,6 +35,10 @@ TRACKED_MARKERS = {
     ),
     "docs/plan_completeness.md": ("lathe/lsp/` is a stub",),
     "docs/release/asset-provenance.md": ("placeholder.png",),
+    "docs/release/evidence-bundle-v0.2.0rc1/mypy.txt": (
+        "missing stub packages",
+        "library stub for module",
+    ),
     "docs/security/ci_gates.md": ("placeholder (e.g.",),
     "docs/templates/gallery_index.html.j2": (".placeholder",),
     "lathe/mesh_ingest.py": ("NotImplementedError",),

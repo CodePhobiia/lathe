@@ -159,9 +159,9 @@ Legend: **M** = mitigated today, **R** = residual risk (tracked as
 | Guard                                         | Where it lives                                              |
 |-----------------------------------------------|-------------------------------------------------------------|
 | Path-traversal hardening                      | `lathe/paths.py::safe_resolve` (SEC-1)                      |
-| Mesh parser hardening                         | `lathe/parser/binary.py` guards (SEC-2)                     |
+| Mesh parser hardening                         | `lathe/mesh_ingest.py` guards (SEC-2; doc-fix 2026-04-28)   |
 | Gitleaks + SBOM + CodeQL + Bandit + Semgrep   | `.github/workflows/security.yml`, `codeql.yml` (SEC-3/4/5)  |
-| Provider HTTP sandbox                         | `lathe/providers/sandbox.py` (SEC-NEW-1)                    |
+| Provider HTTP sandbox                         | `lathe/providers/transport/http.py` + `lathe/net.py::safe_urlopen` (SEC-NEW-1; doc-fix 2026-04-28) |
 | Blender subprocess sandbox                    | `lathe/sandbox/blender.py` (SEC-7, this ticket)             |
 | Prompt-injection static scanner               | `lathe/parser/prompt_injection.py` (SEC-8, this ticket)     |
 | Signed reproducibility receipts               | `lathe/publish/signed_repro.py` (SEC-NEW-2, this ticket)    |
@@ -184,3 +184,34 @@ Blender subprocess sandbox behavior and known limits.
 Refresh on every tagged release. Any new external ingress (new provider,
 new publish driver, new subprocess) must add a row to the relevant
 section of this document before merge.
+
+## Document path-fix log (2026-04-28, v0.2.0rc1 readiness pass — Phase 9)
+
+The following stale references in this document were corrected during
+the v0.2.0rc1 readiness remediation pass (no feature was removed; only
+file paths were stale):
+
+- **`lathe/providers/sandbox.py` → `lathe/providers/transport/http.py` + `lathe/net.py::safe_urlopen`.**
+  The "provider sandbox" SEC-NEW-1 control was renamed/relocated. The
+  transport-layer guards (timeout caps, retry/backoff with bounded
+  attempts, scheme/host allowlist, redirect blocking, TLS verification,
+  body-size cap) live in `lathe/providers/transport/http.py` (the thin
+  Hunyuan-flavored wrapper) plus the underlying `lathe/net.py::safe_urlopen`
+  (the cross-cutting host-allowlist + safety-cap implementation). The
+  per-provider retry/backoff visible at `lathe/providers/transport/http.py:38-128`
+  is the v0.2.0rc1 expression of the SEC-NEW-1 control.
+- **`lathe/parser/binary.py` → `lathe/mesh_ingest.py`.** The SEC-2 mesh
+  parser hardening (format allowlist, magic-byte sniff, byte cap, post-load
+  sanity checks) lives in `lathe/mesh_ingest.py`. The historical
+  `lathe/parser/binary.py` location was retired during the
+  `lathe/parser/` package split; the controls were preserved.
+
+No `requires-fix-before-launch:` paths were introduced by this fix —
+both controls remain implemented, only their on-disk locations had
+drifted from the doc.
+
+## Sign-off
+- Reviewed: 2026-04-28
+- Reviewer: Tal Merri (self-assessment, solo maintainer)
+- Counsel review: requires-human
+- Next review: 2026-05-28 or T+30 post-launch (whichever later)

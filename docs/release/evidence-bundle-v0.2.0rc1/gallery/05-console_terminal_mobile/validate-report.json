@@ -1,0 +1,393 @@
+{
+  "certified": true,
+  "threshold": 0.82,
+  "score": 0.870164,
+  "semantic_quality": {
+    "family": "console_terminal",
+    "blueprint_id": "lathe.blueprint.hard_surface_console_terminal_v2",
+    "metrics": {
+      "part_coverage": 1.0,
+      "silhouette_fidelity": 0.873192,
+      "symmetry_score": 1.0,
+      "component_score": 1.0,
+      "interface_score": 1.0,
+      "adjacency_score": 0.714286,
+      "fragmentation_penalty": 0.0,
+      "structural_richness": 0.761154,
+      "toy_detected": false
+    },
+    "thresholds": {
+      "part_coverage": 0.84,
+      "silhouette_fidelity": 0.78,
+      "symmetry_score": 0.62,
+      "interface_score": 0.64,
+      "structural_richness": 0.66,
+      "adjacency_score": 0.68,
+      "maximum_fragmentation_penalty": 0.24
+    },
+    "diagnostics": []
+  },
+  "visual_quality": {
+    "family": "console_terminal",
+    "blueprint_id": "lathe.blueprint.hard_surface_console_terminal_v2",
+    "metrics": {
+      "detail_density": 0.727119,
+      "silhouette_complexity": 0.946497,
+      "edge_readability": 0.755473,
+      "attachment_integration_quality": 0.754762,
+      "support_plausibility": 0.76,
+      "feature_coherence": 0.846089,
+      "geometry_integration_quality": 0.975199,
+      "surface_authoring_quality": 0.876693,
+      "primitive_likeness_penalty": 0.165541,
+      "assembled_primitives_penalty": 0.129399,
+      "render_silhouette_complexity": 1.0,
+      "render_primitive_penalty": 0.103069,
+      "render_assembly_artifact_penalty": 0.0,
+      "render_shading_variance": 0.113649,
+      "bevel_continuity": 0.815402,
+      "seam_quality": 0.871429,
+      "stair_step_penalty": 0.235944,
+      "boolean_scar_penalty": 0.103333,
+      "shading_continuity": 0.641662,
+      "geometry_dihedral_continuity": 0.605786,
+      "geometry_feature_edge_persistence": 0.955145,
+      "geometry_stair_step_penalty": 0.235944,
+      "geometry_tiny_face_penalty": 0.172222,
+      "texture_entropy": 0.866267,
+      "normal_richness": 1.0,
+      "roughness_variation": 0.844279,
+      "material_zone_coherence": 0.792396,
+      "decal_coherence": 0.840615,
+      "bake_cleanliness": 0.859532,
+      "highlow_distinction_quality": 1.0,
+      "surface_texture_entropy": 0.866267,
+      "surface_chroma_variation": 0.815398,
+      "surface_normal_richness": 1.0,
+      "surface_roughness_variation": 0.844279,
+      "surface_bake_cleanliness": 0.859532,
+      "surface_material_zone_coherence": 0.792396,
+      "surface_emissive_coherence": 0.636151,
+      "surface_highlow_realness": 1.0
+    },
+    "thresholds": {
+      "detail_density": 0.7,
+      "silhouette_complexity": 0.68,
+      "edge_readability": 0.66,
+      "attachment_integration_quality": 0.7,
+      "support_plausibility": 0.6,
+      "feature_coherence": 0.68,
+      "geometry_integration_quality": 0.8,
+      "surface_authoring_quality": 0.72,
+      "maximum_primitive_likeness_penalty": 0.22,
+      "maximum_assembled_primitives_penalty": 0.24
+    },
+    "render_report": {
+      "views": {
+        "front": {
+          "area": 4555.0,
+          "bbox_area": 5203.0,
+          "perimeter": 656.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 0.071131,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.038273
+        },
+        "side": {
+          "area": 3494.0,
+          "bbox_area": 4235.0,
+          "perimeter": 624.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 0.106039,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.06676
+        },
+        "iso": {
+          "area": 5169.0,
+          "bbox_area": 6534.0,
+          "perimeter": 700.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 0.132037,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.235914
+        }
+      },
+      "metrics": {
+        "render_silhouette_complexity": 1.0,
+        "render_primitive_penalty": 0.103069,
+        "render_assembly_artifact_penalty": 0.0,
+        "render_component_clutter": 0.166667,
+        "render_shading_variance": 0.113649
+      }
+    },
+    "diagnostics": []
+  },
+  "flow_quality": {
+    "mode": "adapt",
+    "metrics": {
+      "semantic_preservation_quality": 0.977175,
+      "profile_retarget_quality": 0.980271,
+      "transfer_integrity": 0.834327
+    },
+    "thresholds": {
+      "semantic_preservation_quality": 0.58,
+      "profile_retarget_quality": 0.55,
+      "transfer_integrity": 0.5
+    },
+    "diagnostics": []
+  },
+  "geometry_integrity": {
+    "metrics": {
+      "self_intersection_rate": 0.0,
+      "normal_consistency": 1.0,
+      "body_count_stability": 1.0
+    },
+    "evidence": {
+      "evaluated": true,
+      "intersecting_pairs": 0,
+      "tested_pairs": 30,
+      "is_winding_consistent": true,
+      "inconsistent_edge_adjacencies": 0,
+      "edge_adjacencies": 54,
+      "body_count_stability_check": false,
+      "observed_body_counts": [],
+      "geometry_strict": false
+    },
+    "diagnostics": []
+  },
+  "urdf_validation": {
+    "metrics": {
+      "gated_off": true
+    },
+    "joint_count": 0,
+    "moving_part_count": 0,
+    "diagnostics": []
+  },
+  "rule_results": [
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "units",
+        "args": [
+          {
+            "name": null,
+            "value": "cm"
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "manifold",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "watertight",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "material_slots",
+        "args": [
+          {
+            "name": "max",
+            "value": 4
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "uv_range",
+        "args": [
+          {
+            "name": "set",
+            "value": "base"
+          },
+          {
+            "name": "range",
+            "value": {
+              "type": "range",
+              "from": 0,
+              "to": 1
+            }
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "lightmap_uvs",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "collision_proxy",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "pivots",
+        "args": [
+          {
+            "name": "policy",
+            "value": "studio_standard"
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "names",
+        "args": [
+          {
+            "name": "policy",
+            "value": "studio_standard"
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "texel_density",
+        "args": [
+          {
+            "name": "target",
+            "value": {
+              "type": "unit",
+              "value": 512,
+              "unit": "px_per_m"
+            }
+          },
+          {
+            "name": "tolerance",
+            "value": 0.1
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "runtime_budget",
+        "args": [
+          {
+            "name": "draw_calls",
+            "value": 2
+          },
+          {
+            "name": "texture_memory",
+            "value": {
+              "type": "unit",
+              "value": 8,
+              "unit": "mb"
+            }
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    }
+  ],
+  "diagnostics": [],
+  "repair_policy": {
+    "mode": "auto_until_pass",
+    "max_rounds": 4,
+    "allow": [
+      "reselect_candidate",
+      "reduce_tris",
+      "repack_uvs",
+      "rebake_maps",
+      "reauthor_surface_layer",
+      "generate_lods",
+      "enforce_symmetry",
+      "seal_mesh",
+      "retopo_auto",
+      "normalize_pivots",
+      "create_collision_proxy"
+    ],
+    "deny": [
+      "rebuild_shape"
+    ]
+  },
+  "repair_suggestions": [],
+  "failure_summary": {
+    "status": "passed",
+    "score": 0.870164,
+    "threshold": 0.82,
+    "score_deficit": 0.0,
+    "error_count": 0,
+    "blocking_diagnostics": [],
+    "next_steps": []
+  },
+  "semantic_repairs_applied": [],
+  "reselection_attempts": []
+}
