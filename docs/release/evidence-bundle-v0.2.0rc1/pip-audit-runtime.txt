@@ -51,3 +51,34 @@ lathe distribution marked as editable
 vggt  distribution marked as editable
 
 ## skip_editable_no_strict_exit_code: 1
+
+## ============================================================
+## Phase 6 follow-up (2026-04-28)
+## ============================================================
+
+# Disposition of the two CVEs flagged by the runtime pip-audit lane:
+#
+# 1) lxml 5.4.0 / CVE-2026-41066 (fix: 6.1.0)
+#    Status: NOT a release blocker. NO release exception required.
+#    Rationale: lxml is not declared in pyproject.toml (no `dependencies`,
+#    no `optional-dependencies` selecting an `[lxml]`-style extra) and is
+#    not in any requirements*.txt. It is also not imported anywhere in
+#    the lathe source tree. The `lxml 5.4.0` line in the SBOM/audit comes
+#    from a stale dev-venv install that pre-dates the v0.2.0rc1 manifest
+#    freeze. A clean `pip install lathe==0.2.0rc1` does not pull lxml.
+#    Full investigation transcript: lxml-investigation.txt.
+#
+# 2) pip 26.0.1 / CVE-2026-3219 (fix: not yet published per pip-audit)
+#    Status: release exception EXC-PHASE6-PIPCVE-001 (see decision-log-v0.2.0rc1.md).
+#    Rationale: pip-audit reports no Fix Versions for this CVE.
+#    Newer pip 26.1 is installable but does NOT carry a documented
+#    advisory-fix marker for CVE-2026-3219 in the pip-audit database
+#    consulted in this run. Upgrading to 26.1 is therefore opportunistic,
+#    not curative, and is not done in this pass to keep the release-window
+#    venv state stable. pip is build/install tooling local to the venv,
+#    not a Lathe runtime dependency, so the CVE does not affect users of
+#    `pip install lathe==0.2.0rc1`. See pip-version.txt for the version
+#    transcript.
+#
+# Both findings remain visible in the original `pip-audit --skip-editable`
+# output above; nothing is hidden, no audit transcript is rewritten.

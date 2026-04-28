@@ -1,0 +1,79 @@
+{
+  "asset_id": "console_terminal_mobile",
+  "kind": "hard_surface_prop",
+  "contracts": [
+    "mobile_shipping_prop"
+  ],
+  "profiles": [
+    "mobile_runtime"
+  ],
+  "version": "auto_patch",
+  "formats": [
+    "usd",
+    "glb"
+  ],
+  "outputs": [
+    {
+      "format": "usd",
+      "uri": "stages/package/console_terminal_mobile.usda",
+      "sha256": "cb08e51594c0dfd4ae075df277ac1036a37ff20eb1a070fac25a52beb60ef2dc",
+      "size_bytes": 4054
+    },
+    {
+      "format": "glb",
+      "uri": "stages/package/console_terminal_mobile.glb",
+      "sha256": "55c1260f3862ebb15d4ebcb04a370111a34e292d401db71ba35b8e4f3de4557a",
+      "size_bytes": 2704
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_0.glb",
+      "sha256": "55c1260f3862ebb15d4ebcb04a370111a34e292d401db71ba35b8e4f3de4557a",
+      "size_bytes": 2704
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_1.glb",
+      "sha256": "61a893752f523ad43dd7a98bb2deff7c005934ad5c566d0474f0183e25cb535c",
+      "size_bytes": 1320
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_2.glb",
+      "sha256": "256f6cd3b3a68dd731dddb8124427c38c41a15bd42e6128aec344557743fd490",
+      "size_bytes": 1080
+    },
+    {
+      "format": "collision_hull",
+      "uri": "stages/package/collision_hull.glb",
+      "sha256": "168b2fa2bbc1e8ade4168f51817ac919cb76ddce733ce81bc5ad10d9579baac0",
+      "size_bytes": 1460
+    },
+    {
+      "format": "collision_parts",
+      "uri": "stages/package/collision_parts.glb",
+      "sha256": "97cc44e049011cd128570eb9e814193f17f40b2bf2c24b11e080f55ad4c74c67",
+      "size_bytes": 1444
+    }
+  ],
+  "output_hashes": {
+    "stages/package/console_terminal_mobile.usda": "cb08e51594c0dfd4ae075df277ac1036a37ff20eb1a070fac25a52beb60ef2dc",
+    "stages/package/console_terminal_mobile.glb": "55c1260f3862ebb15d4ebcb04a370111a34e292d401db71ba35b8e4f3de4557a",
+    "stages/package/lod_0.glb": "55c1260f3862ebb15d4ebcb04a370111a34e292d401db71ba35b8e4f3de4557a",
+    "stages/package/lod_1.glb": "61a893752f523ad43dd7a98bb2deff7c005934ad5c566d0474f0183e25cb535c",
+    "stages/package/lod_2.glb": "256f6cd3b3a68dd731dddb8124427c38c41a15bd42e6128aec344557743fd490",
+    "stages/package/collision_hull.glb": "168b2fa2bbc1e8ade4168f51817ac919cb76ddce733ce81bc5ad10d9579baac0",
+    "stages/package/collision_parts.glb": "97cc44e049011cd128570eb9e814193f17f40b2bf2c24b11e080f55ad4c74c67"
+  },
+  "previews": [
+    "stages/package/previews/turntable.png",
+    "stages/package/previews/wireframe.png",
+    "stages/package/previews/material_ids.png",
+    "stages/package/previews/uv_layout.png",
+    "stages/package/previews/collision.png",
+    "stages/package/previews/lod_sheet.png"
+  ],
+  "trace_path": "stages/package/trace_manifest.json",
+  "normalized_source_path": "normalized_program.json",
+  "build_timestamp": null
+}

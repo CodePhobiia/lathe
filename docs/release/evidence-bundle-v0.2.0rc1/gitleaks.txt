@@ -1,0 +1,16 @@
+# Phase 6: gitleaks scan attempt
+# Captured: 2026-04-28
+# Worktree: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\
+
+## command: which gitleaks
+## status: not found on PATH
+## also tried: D:\lathe_v0_1\.venv\Scripts\gitleaks.exe — not present
+
+## fallback: npx --yes gitleaks detect --source . --no-banner --report-format json --report-path docs/release/evidence-bundle-v0.2.0rc1/gitleaks-report.json
+## status: not attempted in this run — Phase 6 worker policy is to record requires-human rather than burn time on a scanner install on a Windows host.
+
+## disposition: requires-human (H39)
+## CI authority: .github/workflows/gitleaks.yml drives the canonical run on push.
+## Action for human: install gitleaks locally (e.g. `scoop install gitleaks` or `choco install gitleaks`)
+##   then rerun the command above and capture the output here, OR rely on the CI workflow result
+##   once the branch is pushed and link the GitHub Actions run URL.

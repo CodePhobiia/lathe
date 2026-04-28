@@ -50,4 +50,4 @@ Date: 2026-04-28.
 - [docs/privacy.md](../privacy.md)
 - [docs/legal/compliance-review-v0.2.0rc1.md](../legal/compliance-review-v0.2.0rc1.md)
 - [docs/telemetry_event_taxonomy.md](../telemetry_event_taxonomy.md)
-- [SECURITY.md](../../SECURITY.md)
+- [SECURITY.md](https://github.com/talmerri/lathe/blob/main/SECURITY.md)

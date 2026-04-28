@@ -1,0 +1,52 @@
+# Phase 9: gitleaks full-history scan attempt
+# Captured: 2026-04-28
+# Worktree: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\
+# Distinct from Phase 6's working-tree-only attempt: this is the full
+# `--log-opts="--all"` history pass over every reachable commit (105
+# commits at time of scan).
+
+## Attempt 1: native gitleaks binary
+## command: gitleaks detect --source . --no-banner --report-format json \
+##           --report-path docs/release/evidence-bundle-v0.2.0rc1/gitleaks-history.json \
+##           --log-opts="--all"
+## status: command not found on PATH (exit 127)
+## host: Windows 10 Home Single Language 10.0.19045
+## notes: gitleaks is not installed on this host. Confirmed via `which gitleaks`
+##        and absence in D:\lathe_v0_1\.venv\Scripts\.
+
+## Attempt 2: npx fallback
+## command: npx --yes gitleaks detect --source . --no-banner --report-format json \
+##           --report-path docs/release/evidence-bundle-v0.2.0rc1/gitleaks-history.json \
+##           --log-opts="--all"
+## status: npm error "could not determine executable to run"
+## notes: gitleaks is not published as an npm package in a way npx can fetch
+##        directly; this fallback was always best-effort.
+
+## Disposition: requires-human (H40 — distinct from Phase 6's H39 which covered
+##              the working-tree-only run). Both scans must be performed by a
+##              host with gitleaks installed, OR the CI workflow output must
+##              be linked.
+
+## CI authority
+## .github/workflows/gitleaks.yml runs on push/PR. Once this branch is pushed,
+## the CI run with the canonical gitleaks rules will produce an authoritative
+## artifact. Link that GitHub Actions run URL here when available.
+
+## Recommended local install for the human pass
+## - scoop:    `scoop install gitleaks`
+## - choco:    `choco install gitleaks`
+## - go:       `go install github.com/gitleaks/gitleaks/v8@latest`
+## - manual:   download from https://github.com/gitleaks/gitleaks/releases
+##             and place gitleaks.exe on PATH.
+## After install, rerun BOTH commands from this file and capture stdout +
+## the report-path JSON into docs/release/evidence-bundle-v0.2.0rc1/.
+
+## Phase 9 secret-hygiene cross-references
+## (recorded in docs/security/secret-hygiene-v0.2.0rc1.md):
+## - .env.example: placeholders only — confirmed by read.
+## - examples/runtime_configs/*.json: placeholders only (localhost / .example
+##   hosts) — confirmed by read.
+## - tmp_gallery_phase7/<asset>/build_report.json: SKIPPED — Phase 7 gallery
+##   artifacts not yet present at scan time.
+## - logs / provider tokens / PII: covered by Phase 2 telemetry verification
+##   (15/15 PASS) and by tests/unit/test_safe_logging.py.

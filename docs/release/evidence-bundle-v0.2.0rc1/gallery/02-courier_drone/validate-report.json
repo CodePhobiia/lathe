@@ -1,0 +1,531 @@
+{
+  "certified": true,
+  "threshold": 0.86,
+  "score": 0.879435,
+  "semantic_quality": {
+    "family": "courier_drone",
+    "blueprint_id": "lathe.blueprint.mechanical_quad_drone_v1",
+    "metrics": {
+      "part_coverage": 1.0,
+      "silhouette_fidelity": 0.903366,
+      "symmetry_score": 1.0,
+      "component_score": 0.82,
+      "interface_score": 1.0,
+      "adjacency_score": 1.0,
+      "fragmentation_penalty": 0.18,
+      "structural_richness": 0.964,
+      "toy_detected": false
+    },
+    "thresholds": {
+      "part_coverage": 0.9,
+      "silhouette_fidelity": 0.8,
+      "symmetry_score": 0.82,
+      "interface_score": 0.68,
+      "structural_richness": 0.72,
+      "adjacency_score": 0.74,
+      "maximum_fragmentation_penalty": 0.2
+    },
+    "diagnostics": []
+  },
+  "visual_quality": {
+    "family": "courier_drone",
+    "blueprint_id": "lathe.blueprint.mechanical_quad_drone_v1",
+    "metrics": {
+      "detail_density": 1.0,
+      "silhouette_complexity": 0.833098,
+      "edge_readability": 0.813798,
+      "attachment_integration_quality": 1.0,
+      "support_plausibility": 1.0,
+      "feature_coherence": 0.96276,
+      "geometry_integration_quality": 1.0,
+      "surface_authoring_quality": 0.732517,
+      "primitive_likeness_penalty": 0.115261,
+      "assembled_primitives_penalty": 0.004469,
+      "render_silhouette_complexity": 1.0,
+      "render_primitive_penalty": 0.91941,
+      "render_assembly_artifact_penalty": 0.0,
+      "render_shading_variance": 0.117306,
+      "bevel_continuity": 0.85099,
+      "seam_quality": 1.0,
+      "stair_step_penalty": 0.106301,
+      "boolean_scar_penalty": 0.117641,
+      "shading_continuity": 0.691107,
+      "geometry_dihedral_continuity": 0.693333,
+      "geometry_feature_edge_persistence": 0.956095,
+      "geometry_stair_step_penalty": 0.106301,
+      "geometry_tiny_face_penalty": 0.196068,
+      "texture_entropy": 0.702895,
+      "normal_richness": 1.0,
+      "roughness_variation": 0.46981,
+      "material_zone_coherence": 0.918152,
+      "decal_coherence": 0.68561,
+      "bake_cleanliness": 0.858616,
+      "highlow_distinction_quality": 0.45,
+      "surface_texture_entropy": 0.702895,
+      "surface_chroma_variation": 0.68811,
+      "surface_normal_richness": 1.0,
+      "surface_roughness_variation": 0.46981,
+      "surface_bake_cleanliness": 0.858616,
+      "surface_material_zone_coherence": 0.918152,
+      "surface_emissive_coherence": 0.8,
+      "surface_highlow_realness": 0.45
+    },
+    "thresholds": {
+      "detail_density": 0.74,
+      "silhouette_complexity": 0.7,
+      "edge_readability": 0.7,
+      "attachment_integration_quality": 0.76,
+      "support_plausibility": 0.64,
+      "feature_coherence": 0.72,
+      "geometry_integration_quality": 0.85,
+      "surface_authoring_quality": 0.7,
+      "maximum_primitive_likeness_penalty": 0.18,
+      "maximum_assembled_primitives_penalty": 0.18
+    },
+    "render_report": {
+      "views": {
+        "front": {
+          "area": 2015.0,
+          "bbox_area": 5324.0,
+          "perimeter": 964.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 0.821092,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.032466
+        },
+        "side": {
+          "area": 1726.0,
+          "bbox_area": 4961.0,
+          "perimeter": 856.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 0.937138,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.033962
+        },
+        "iso": {
+          "area": 2902.0,
+          "bbox_area": 9317.0,
+          "perimeter": 1384.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 1.0,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.28549
+        }
+      },
+      "metrics": {
+        "render_silhouette_complexity": 1.0,
+        "render_primitive_penalty": 0.91941,
+        "render_assembly_artifact_penalty": 0.0,
+        "render_component_clutter": 0.166667,
+        "render_shading_variance": 0.117306
+      }
+    },
+    "diagnostics": []
+  },
+  "flow_quality": {
+    "mode": "generate",
+    "metrics": {},
+    "thresholds": {},
+    "diagnostics": []
+  },
+  "geometry_integrity": {
+    "metrics": {
+      "self_intersection_rate": 0.001352,
+      "normal_consistency": 1.0,
+      "body_count_stability": 1.0
+    },
+    "evidence": {
+      "evaluated": true,
+      "intersecting_pairs": 14807,
+      "tested_pairs": 42376,
+      "is_winding_consistent": true,
+      "inconsistent_edge_adjacencies": 0,
+      "edge_adjacencies": 7020,
+      "body_count_stability_check": false,
+      "observed_body_counts": [],
+      "geometry_strict": false
+    },
+    "diagnostics": [
+      {
+        "code": "L6201",
+        "name": "self_intersecting",
+        "severity": "warning",
+        "phase": "validate",
+        "asset": "courier_drone",
+        "stage": "validate",
+        "path": "validate.geometry_integrity.self_intersection_rate",
+        "message": "Geometry integrity detected 14807 self-intersecting face pair(s) out of 42376 tested",
+        "details": {
+          "metric": "self_intersection_rate",
+          "intersecting_pairs": 14807,
+          "tested_pairs": 42376,
+          "rate": 0.0013523782384650092
+        },
+        "suggested_repairs": [
+          "repair_self_intersections"
+        ]
+      }
+    ]
+  },
+  "urdf_validation": {
+    "metrics": {
+      "gated_off": true
+    },
+    "joint_count": 0,
+    "moving_part_count": 0,
+    "diagnostics": []
+  },
+  "rule_results": [
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "units",
+        "args": [
+          {
+            "name": null,
+            "value": "cm"
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "manifold",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "watertight",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "material_slots",
+        "args": [
+          {
+            "name": "max",
+            "value": 4
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "uv_range",
+        "args": [
+          {
+            "name": "set",
+            "value": "base"
+          },
+          {
+            "name": "range",
+            "value": {
+              "type": "range",
+              "from": 0,
+              "to": 1
+            }
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "lightmap_uvs",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": "collision_proxy",
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "pivots",
+        "args": [
+          {
+            "name": "policy",
+            "value": "studio_standard"
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "names",
+        "args": [
+          {
+            "name": "policy",
+            "value": "studio_standard"
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "texel_density",
+        "args": [
+          {
+            "name": "target",
+            "value": {
+              "type": "unit",
+              "value": 512,
+              "unit": "px_per_m"
+            }
+          },
+          {
+            "name": "tolerance",
+            "value": 0.1
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "ensure",
+      "expr": {
+        "type": "call",
+        "name": "runtime_budget",
+        "args": [
+          {
+            "name": "draw_calls",
+            "value": 3
+          },
+          {
+            "name": "texture_memory",
+            "value": {
+              "type": "unit",
+              "value": 32,
+              "unit": "mb"
+            }
+          }
+        ]
+      },
+      "passed": true,
+      "detail": {
+        "message": "Rule passed",
+        "value": true
+      }
+    },
+    {
+      "kind": "prefer",
+      "expr": "silhouette_readability",
+      "score": 0.872364,
+      "weight": 0.3
+    },
+    {
+      "kind": "prefer",
+      "expr": "part_coherence",
+      "score": 0.9856,
+      "weight": 0.2
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "L6201",
+      "name": "self_intersecting",
+      "severity": "warning",
+      "phase": "validate",
+      "asset": "courier_drone",
+      "stage": "validate",
+      "path": "validate.geometry_integrity.self_intersection_rate",
+      "message": "Geometry integrity detected 14807 self-intersecting face pair(s) out of 42376 tested",
+      "details": {
+        "metric": "self_intersection_rate",
+        "intersecting_pairs": 14807,
+        "tested_pairs": 42376,
+        "rate": 0.0013523782384650092
+      },
+      "suggested_repairs": [
+        "repair_self_intersections"
+      ]
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'drone'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "drone",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'courier'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "courier",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'mechanical'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "mechanical",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    }
+  ],
+  "repair_policy": {
+    "mode": "auto_until_pass",
+    "max_rounds": 4,
+    "allow": [
+      "reselect_candidate",
+      "enforce_symmetry",
+      "seal_mesh",
+      "retopo_auto",
+      "reduce_tris",
+      "repack_uvs",
+      "rebake_maps",
+      "normalize_pivots",
+      "create_collision_proxy",
+      "generate_lods",
+      "reauthor_surface_layer"
+    ],
+    "deny": [
+      "rebuild_shape"
+    ]
+  },
+  "repair_suggestions": [
+    "repair_self_intersections"
+  ],
+  "semantic_repairs_applied": [
+    {
+      "action": "restore_hinge_alignment",
+      "target": "cargo_door",
+      "reason": "articulated asset declares hinges but the blueprint has no hinge region",
+      "details": {},
+      "applied": true
+    }
+  ],
+  "reselection_attempts": []
+}

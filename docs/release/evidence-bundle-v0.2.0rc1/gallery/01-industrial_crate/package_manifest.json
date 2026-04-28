@@ -1,0 +1,86 @@
+{
+  "asset_id": "industrial_crate",
+  "kind": "hard_surface_prop",
+  "contracts": [
+    "shipping_prop"
+  ],
+  "profiles": [
+    "unreal_shipping_prop"
+  ],
+  "version": "0.1.0",
+  "formats": [
+    "usd",
+    "glb"
+  ],
+  "outputs": [
+    {
+      "format": "usd",
+      "uri": "stages/package/industrial_crate.usda",
+      "sha256": "2f4d45fc525c88b4592b70569389f102e795d85507eb4bcc263cd8c2879d780d",
+      "size_bytes": 233724
+    },
+    {
+      "format": "glb",
+      "uri": "stages/package/industrial_crate.glb",
+      "sha256": "47cb8cad3a3d40e594c49fc5ef261962d2e794e0e5cc8831db27f7da00bda7a8",
+      "size_bytes": 81264
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_0.glb",
+      "sha256": "47cb8cad3a3d40e594c49fc5ef261962d2e794e0e5cc8831db27f7da00bda7a8",
+      "size_bytes": 81264
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_1.glb",
+      "sha256": "ed62e493ebef9fc4af10643da5cfd0ba3057b3b26c295c0a157ba329ff372a37",
+      "size_bytes": 30844
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_2.glb",
+      "sha256": "7923fec7f3375275dd16787c799de57a6d19ed0bac7e793d8081e37b7486300c",
+      "size_bytes": 16392
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_3.glb",
+      "sha256": "87a70e7c7454fb8ef896d4fd08024832141c41616b98c10d61c51714866e7c88",
+      "size_bytes": 8096
+    },
+    {
+      "format": "collision_hull",
+      "uri": "stages/package/collision_hull.glb",
+      "sha256": "b559c00d87eb85a65738aefafa5ed91b544a66c52712c99d9a3fd17bc6e76517",
+      "size_bytes": 5572
+    },
+    {
+      "format": "collision_parts",
+      "uri": "stages/package/collision_parts.glb",
+      "sha256": "e0387184f3fd9fd2305da19cbc9a7e26314e1fb8b41897e58f8ae17e105b0828",
+      "size_bytes": 9672
+    }
+  ],
+  "output_hashes": {
+    "stages/package/industrial_crate.usda": "2f4d45fc525c88b4592b70569389f102e795d85507eb4bcc263cd8c2879d780d",
+    "stages/package/industrial_crate.glb": "47cb8cad3a3d40e594c49fc5ef261962d2e794e0e5cc8831db27f7da00bda7a8",
+    "stages/package/lod_0.glb": "47cb8cad3a3d40e594c49fc5ef261962d2e794e0e5cc8831db27f7da00bda7a8",
+    "stages/package/lod_1.glb": "ed62e493ebef9fc4af10643da5cfd0ba3057b3b26c295c0a157ba329ff372a37",
+    "stages/package/lod_2.glb": "7923fec7f3375275dd16787c799de57a6d19ed0bac7e793d8081e37b7486300c",
+    "stages/package/lod_3.glb": "87a70e7c7454fb8ef896d4fd08024832141c41616b98c10d61c51714866e7c88",
+    "stages/package/collision_hull.glb": "b559c00d87eb85a65738aefafa5ed91b544a66c52712c99d9a3fd17bc6e76517",
+    "stages/package/collision_parts.glb": "e0387184f3fd9fd2305da19cbc9a7e26314e1fb8b41897e58f8ae17e105b0828"
+  },
+  "previews": [
+    "stages/package/previews/turntable.png",
+    "stages/package/previews/wireframe.png",
+    "stages/package/previews/material_ids.png",
+    "stages/package/previews/uv_layout.png",
+    "stages/package/previews/collision.png",
+    "stages/package/previews/lod_sheet.png"
+  ],
+  "trace_path": "stages/package/trace_manifest.json",
+  "normalized_source_path": "normalized_program.json",
+  "build_timestamp": null
+}

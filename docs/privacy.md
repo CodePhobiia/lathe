@@ -121,7 +121,7 @@ status) before any public dashboard or aggregated-statistics claim is made.`
 
 ## Bug bounty / responsible disclosure
 
-See [SECURITY.md](../SECURITY.md). Safe-harbor language is included there;
+See [SECURITY.md](https://github.com/talmerri/lathe/blob/main/SECURITY.md). Safe-harbor language is included there;
 `requires-human: counsel review of the safe-harbor language before public
 launch.`
 

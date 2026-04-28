@@ -18,7 +18,7 @@ exists. The governing instruments for v0.2.0rc1 are:
 
 - **[LICENSE](../LICENSE)** — Apache License 2.0 governs use, reproduction,
   modification, and redistribution of the Lathe code and reference compiler.
-- **[SECURITY.md](../SECURITY.md)** — governs vulnerability disclosure,
+- **[SECURITY.md](https://github.com/talmerri/lathe/blob/main/SECURITY.md)** — governs vulnerability disclosure,
   coordinated-disclosure window, and safe-harbor scope.
 - **[docs/privacy.md](privacy.md)** — governs telemetry behavior, opt-in
   consent capture, and the allowlisted payload shape.

@@ -1,0 +1,161 @@
+
+ \u2502  \u26a0  Warning from the Material for MkDocs team
+ \u2502
+ \u2502  MkDocs 2.0, the underlying framework of Material for MkDocs,
+ \u2502  will introduce backward-incompatible changes, including:
+ \u2502
+ \u2502  × All plugins will stop working – the plugin system has been removed
+ \u2502  × All theme overrides will break – the theming system has been rewritten
+ \u2502  × No migration path exists – existing projects cannot be upgraded
+ \u2502  × Closed contribution model – community members can't report bugs
+ \u2502  × Currently unlicensed – unsuitable for production use
+ \u2502
+ \u2502  Our full analysis:
+ \u2502
+ \u2502  https://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/
+
+----------------------------------------------------------------
+
+WARNING: MkDocs may break support for all existing plugins and themes soon!
+
+The owner of MkDocs has completely abandoned maintenance of the project, and instead is planning to publish a "version 2" which will not support any existing themes, plugins or even your configuration files. This v2 may eventually replace what you download with `pip install mkdocs`, suddenly breaking the build of your existing site.
+
+To avoid these risks, switch to ProperDocs, a continuation of MkDocs 1.x and a drop-in replacement that supports your current MkDocs setup.
+Simply install it with `pip install properdocs` and build your site with `properdocs build` instead of the MkDocs equivalents.
+
+Alternatively, to just skip this warning in the future, you can set the environment variable `DISABLE_MKDOCS_2_WARNING=true`.
+
+For more info visit https://github.com/ProperDocs/properdocs/discussions/33 and https://properdocs.org/
+
+(This warning was initiated by one of the plugins that you depend on.)
+
+----------------------------------------------------------------
+INFO    -  MERMAID2  - Initialization arguments: {}
+INFO    -  MERMAID2  - Using javascript library (10.4.0):
+   https://unpkg.com/mermaid@10.4.0/dist/mermaid.esm.min.mjs
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\tmp_release_site
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - anchor_catalog.md
+  - budgets.md
+  - cache.md
+  - codex_integration.md
+  - competitive_landscape.md
+  - distribution.md
+  - engine_handoff.md
+  - error_codes.md
+  - examples_catalog.md
+  - exception_inventory.md
+  - extending.md
+  - first_backend_stack.md
+  - gameplay_tags.md
+  - geometry_kernel_eval.md
+  - godot_integration.md
+  - icp.md
+  - jtbd.md
+  - lathe_manifesto.md
+  - lathe_prd.md
+  - local_golden_path.md
+  - marker_inventory.md
+  - next_version_roadmap.md
+  - perf_budgets.md
+  - personas.md
+  - plan_completeness.md
+  - pull_request_template.md
+  - refs.md
+  - risk_register.md
+  - roadmap_public.md
+  - second_backend_stack.md
+  - telemetry.md
+  - telemetry_event_taxonomy.md
+  - v08_migration_guide.md
+  - architecture\technical-design-v0.2.0rc1.md
+  - benchmarks\methodology.md
+  - benchmarks\scoreboard.md
+  - benchmarks\v0_5_five_asset_study.md
+  - benchmarks\competitors\blender_by_hand.md
+  - benchmarks\competitors\houdini_hda.md
+  - benchmarks\competitors\hunyuan.md
+  - benchmarks\competitors\luma.md
+  - benchmarks\competitors\meshy.md
+  - benchmarks\competitors\quixel.md
+  - blog\01_the_build_passed.md
+  - blog\02_3d_asset_generation_is_a_compiler_problem.md
+  - blog\03_five_asset_benchmark.md
+  - blog\04_godot_integration_walkthrough.md
+  - blog\05_certification_as_the_product.md
+  - business\design_partners.md
+  - business\monetization.md
+  - business\outreach_template.md
+  - business\unit_economics.md
+  - community\early_access.md
+  - integrations\godot.md
+  - integrations\agents\agents_md_listing.md
+  - integrations\agents\claude_code_skill.md
+  - integrations\agents\continue_rules.md
+  - integrations\agents\cursor_rules.md
+  - integrations\agents\devin_tool.md
+  - integrations\agents\openhands_tool.md
+  - legal\compliance-review-v0.2.0rc1.md
+  - ops\README.md
+  - ops\on-call.md
+  - ops\runbooks\README.md
+  - ops\runbooks\canonical-build-failure.md
+  - ops\runbooks\corrupted-release-artifact.md
+  - ops\runbooks\dependency-cve.md
+  - ops\runbooks\docs-site-broken.md
+  - ops\runbooks\github-actions-outage.md
+  - ops\runbooks\godot-addon-load-failure.md
+  - ops\runbooks\install-failure.md
+  - ops\runbooks\lathe-doctor-false-result.md
+  - ops\runbooks\learned-provider-fallback-complaint.md
+  - ops\runbooks\missing-generated-artifact.md
+  - ops\runbooks\provider-unavailable.md
+  - ops\runbooks\pypi-release-failure.md
+  - ops\runbooks\security-vulnerability-report.md
+  - ops\runbooks\suspected-secret-exposure.md
+  - ops\runbooks\telemetry-privacy-complaint.md
+  - release\decision-log-v0.2.0rc1.md
+  - release\evidence-v0.2.0rc1.md
+  - release\known-bugs-v0.2.0rc1.md
+  - release\launch-narrative-v0.2.0rc1.md
+  - release\launch-plan-v0.2.0rc1.md
+  - release\rollback-plan-v0.2.0rc1.md
+  - release\telemetry-verification-v0.2.0rc1.md
+  - release\test-report-v0.2.0rc1.md
+  - research\beta-feedback-v0.2.0rc1.md
+  - research\interviews\README.md
+  - security\blender_sandbox.md
+  - security\ci_gates.md
+  - security\json_ingress_audit.md
+  - security\prompt_injection.md
+  - security\threat_model.md
+  - support\readiness-checklist.md
+  - talks\manifesto_keynote.md
+  - walkthroughs\README.md
+  - walkthroughs\01_godot_indie_crate_family.md
+  - walkthroughs\02_studio_door_contract.md
+  - walkthroughs\03_agent_authored_panel.md
+WARNING -  Doc file 'privacy.md' contains a link '../SECURITY.md', but the target is not found among documentation files. Did you mean 'SECURITY.md'?
+INFO    -  Doc file 'terms.md' contains an unrecognized relative link '../LICENSE', it was left as is.
+WARNING -  Doc file 'terms.md' contains a link '../SECURITY.md', but the target is not found among documentation files. Did you mean 'SECURITY.md'?
+INFO    -  Doc file 'benchmarks/v0_5_five_asset_study.md' contains an unrecognized relative link './data/', it was left as is.
+WARNING -  Doc file 'release/telemetry-verification-v0.2.0rc1.md' contains a link '../../SECURITY.md', but the target '../SECURITY.md' is not found among documentation files. Did you mean '../SECURITY.md'?
+INFO    -  MERMAID2  - Found superfences config: {'custom_fences': [{'name': 'mermaid', 'class': 'mermaid', 'format': functools.partial(<function fence_mermaid at 0x000002809CCB5300>, custom=True)}]}
+INFO    -  MERMAID2  - Found 'fence_mermaid_custom' function: activate custom loader for superfences
+INFO    -  MERMAID2  - Custom loader activated
+INFO    -  MERMAID2  - Page 'Backends': found 1 diagrams, adding scripts
+INFO    -  MERMAID2  - Custom loader activated
+INFO    -  MERMAID2  - Page 'Overview': found 2 diagrams, adding scripts
+INFO    -  MERMAID2  - Custom loader activated
+INFO    -  MERMAID2  - Page 'Pipeline': found 1 diagrams, adding scripts
+INFO    -  MERMAID2  - Custom loader activated
+INFO    -  MERMAID2  - Page 'Shape stage': found 1 diagrams, adding scripts
+INFO    -  MERMAID2  - Custom loader activated
+INFO    -  MERMAID2  - Page 'Lathe Threat Model (SEC-6, V0.2 P0)': found 1 diagrams, adding scripts
+
+Aborted with 3 warnings in strict mode!
+exit_code=1
