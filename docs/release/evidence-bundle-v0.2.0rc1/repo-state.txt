@@ -1,0 +1,21 @@
+# Phase 3 repo-state snapshot
+# Captured: 2026-04-28 (UTC-local)
+# Note: this is a worktree at .claude/worktrees/readiness-pass-v020rc1/
+# requires-human: clean-checkout rerun belongs to a fresh `git clone` post-tag
+
+## git status --short
+?? docs/release/evidence-bundle-v0.2.0rc1/
+
+## git rev-parse HEAD
+eb1cd49a4705c342a7ad2db7c37fea3866f269e6
+
+## git log --oneline -5
+eb1cd49 chore(release): v0.2.0rc1 readiness pass — Phase 1 complete
+af145b6 chore(release): seed v0.2.0rc1 readiness pass — Phase 0 complete
+76381d7 chore(gitignore): ignore worktree directories
+30f9186 chore: harden repository quality gates
+1202774 chore(release): bump to 0.2.0rc1 + CHANGELOG entry (V0.2 code-complete)
+
+## git remote -v
+origin	https://github.com/talmerri/lathe.git (fetch)
+origin	https://github.com/talmerri/lathe.git (push)

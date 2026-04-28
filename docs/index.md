@@ -33,5 +33,9 @@ Scaffolded nav:
   language, provider, security, and release changes.
 - [Security policy](https://github.com/talmerri/lathe/blob/main/SECURITY.md) - vulnerability reporting, response SLA,
   safe harbor, and supported versions.
+- [Privacy notice](privacy.md) - telemetry disabled by default, opt-in payload
+  allowlist, opt-out path, retention.
+- [Terms applicability](terms.md) - Apache-2.0 governs use; no hosted ToS in
+  this pre-release scaffold.
 - [Release quality](release/index.md) - release gates, support matrix,
   exceptions, limitations, and regression-test policy.

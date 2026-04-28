@@ -76,3 +76,41 @@ See `docs/release/rollback-plan-v0.2.0rc1.md` for the exact commands.
 4. **Who decides:** Tal Merri. Backup: **requires-human**.
 5. **What gets pulled:** if Godot AssetLib submission is active, request removal from AssetLib while fix is prepared.
 6. **Where to update users:** pinned GitHub issue; `docs/godot_integration.md` known-issues section; AssetLib listing description update.
+
+## Post-launch operating cadence (first 14 days)
+
+The first 14 days after any public-launch milestone (closed beta, soft launch, GA — `out of scope` for v0.2.0rc1 but defined here so the cadence is ready when v0.2.0 final lands) follow this rhythm. Pre-release v0.2.0rc1 itself is not a "public launch" — it is an artifact build for internal review — so the cadence is applied prospectively.
+
+| Day | Activity | Owner | Output |
+|-----|----------|-------|--------|
+| Day 0 (launch) | Pinned launch announcement; on-call active; status check every 2 h for first 8 h | Tal Merri / **requires-human:** backup | Announcement issue + 4 status comments |
+| Day 1 | Triage all open issues; classify P0/P1/P2/P3; respond to all P0 within 24 h ack SLA | Tal Merri | Triage comment on every open issue |
+| Day 2 | Status post on GitHub Discussions / pinned issue summarizing first-day blockers | Tal Merri | Day-2 status post |
+| Day 3 | First-week retro starts; collect every blocker into beta-feedback-v0.2.0rc1.md | Tal Merri | Updated beta-feedback |
+| Day 7 | Public week-1 retrospective post: install funnel, top 3 blockers, P0/P1 closure rate, hotfix delivery | Tal Merri / **requires-human:** content review | Week-1 retrospective post |
+| Day 10 | Mid-window risk-register review: re-score every risk against actual launch data | Tal Merri | Updated risk_register.md |
+| Day 14 | End-of-window go/no-go for next phase (closed beta → soft launch, soft launch → GA): hold meeting, record verdict | Tal Merri + **requires-human:** named decision panel | Decision-log entry |
+
+If any P0 is open at Day 14, the next-phase go decision is automatically NO until the P0 closes or the rollback procedure fires.
+
+### Hotfix capacity reservation
+
+The launch-window team reserves **40% of one maintainer-week of capacity (≈16 h / week of one solo maintainer's 40 h equivalent, or ≈3 h / week of the actual hobby budget)** for hotfix work during days 0–14. This is enforced by:
+
+1. Pre-blocking the hotfix slots on the maintainer's calendar before launch day.
+2. Refusing to merge non-hotfix PRs during the reserved slots.
+3. Falling back to **`requires-human:`** named backup if reserved slots are exhausted; if no backup exists, the launch is paused per RISK-015 / RISK-007.
+
+For v0.2.0rc1 specifically (which is NOT a public launch), the reservation is **0%** — it activates at the first public-launch milestone.
+
+### Post-launch sprint plan (skeleton)
+
+The two-week post-launch sprint focuses exclusively on what the launch surfaces. Backlog rules:
+
+- **Hotfix lane (40% capacity, days 0–14):** any P0 from the launch funnel; CVE response; install-broken or cert-broken on a supported matrix cell; documented telemetry/privacy regression.
+- **Stabilization lane (40% capacity, days 0–14):** every P1 from the launch funnel; doc fixes for confused-user issues; FAQ / runbook gaps surfaced by support.
+- **Forward-progress lane (20% capacity, days 0–14):** highest-priority post-launch roadmap item *only if* both hotfix and stabilization lanes are clear for the day. NOT default.
+
+The sprint plan is reviewed at Day 7 retro and adjusted at Day 14. **`requires-human:`** name a sprint owner and a content reviewer for the Day-7 retro post before any public-launch milestone fires.
+
+This is a skeleton. The first-real-launch sprint plan is drafted from this skeleton at the end of Phase 18 in the readiness pass.

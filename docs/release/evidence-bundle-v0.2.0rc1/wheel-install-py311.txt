@@ -1,0 +1,174 @@
+# Phase 3: wheel install verification — Python 3.11 leg
+# Captured: 2026-04-28
+
+## HOST PYTHON AVAILABILITY:
+## - py -V:3.14: present (system default)
+## - py -V:3.13: present (Store)
+## - py -V:3.11: NOT INSTALLED on this host
+## - py -V:3.12: NOT INSTALLED on this host
+##
+## requires-human: rerun this on a Python 3.11 host (Linux/macOS CI)
+## Surrogate: using py -V:3.13 (Store) since pyproject says >=3.11.
+## This still validates wheel installability + module import + CLI
+## but does NOT cover 3.11-specific behavior.
+
+## command: py -V:3.13 -m venv tmp_release_install_311
+## venv_create_exit_code: 0
+
+## venv python version:
+Python 3.13.13
+
+## command: tmp_release_install_311/Scripts/python.exe -m pip install tmp_release_dist/lathe-0.2.0rc1-py3-none-any.whl
+Processing .\tmp_release_dist\lathe-0.2.0rc1-py3-none-any.whl
+Collecting lark>=1.1 (from lathe==0.2.0rc1)
+  Using cached lark-1.3.1-py3-none-any.whl.metadata (1.8 kB)
+Collecting jsonschema>=4.0 (from lathe==0.2.0rc1)
+  Using cached jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+Collecting numpy>=1.26 (from lathe==0.2.0rc1)
+  Using cached numpy-2.4.4-cp313-cp313-win_amd64.whl.metadata (6.6 kB)
+Collecting Pillow>=10.0 (from lathe==0.2.0rc1)
+  Using cached pillow-12.2.0-cp313-cp313-win_amd64.whl.metadata (9.0 kB)
+Collecting trimesh>=4.0 (from lathe==0.2.0rc1)
+  Using cached trimesh-4.12.1-py3-none-any.whl.metadata (13 kB)
+Collecting attrs>=22.2.0 (from jsonschema>=4.0->lathe==0.2.0rc1)
+  Using cached attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.0->lathe==0.2.0rc1)
+  Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+Collecting referencing>=0.28.4 (from jsonschema>=4.0->lathe==0.2.0rc1)
+  Using cached referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+Collecting rpds-py>=0.25.0 (from jsonschema>=4.0->lathe==0.2.0rc1)
+  Using cached rpds_py-0.30.0-cp313-cp313-win_amd64.whl.metadata (4.2 kB)
+Using cached jsonschema-4.26.0-py3-none-any.whl (90 kB)
+Using cached attrs-26.1.0-py3-none-any.whl (67 kB)
+Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+Using cached lark-1.3.1-py3-none-any.whl (113 kB)
+Using cached numpy-2.4.4-cp313-cp313-win_amd64.whl (12.3 MB)
+Using cached pillow-12.2.0-cp313-cp313-win_amd64.whl (7.1 MB)
+Using cached referencing-0.37.0-py3-none-any.whl (26 kB)
+Using cached rpds_py-0.30.0-cp313-cp313-win_amd64.whl (240 kB)
+Using cached trimesh-4.12.1-py3-none-any.whl (741 kB)
+Installing collected packages: rpds-py, Pillow, numpy, lark, attrs, trimesh, referencing, jsonschema-specifications, jsonschema, lathe
+
+Successfully installed Pillow-12.2.0 attrs-26.1.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 lark-1.3.1 lathe-0.2.0rc1 numpy-2.4.4 referencing-0.37.0 rpds-py-0.30.0 trimesh-4.12.1
+
+[notice] A new release of pip is available: 26.0.1 -> 26.1
+[notice] To update, run: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\tmp_release_install_311\Scripts\python.exe -m pip install --upgrade pip
+## pip_install_exit_code: 0
+
+## command: tmp_release_install_311/Scripts/python.exe -m lathe.cli doctor
+Lathe Doctor
+OS: Windows-10-10.0.19045-SP0
+Shell: D:\Git\bin\bash.exe
+Python: 3.13.13 (tags/v3.13.13:01104ce, Apr  7 2026, 19:25:48) [MSC v.1944 64 bit (AMD64)]
+Interpreter: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\tmp_release_install_311\Scripts\python.exe
+Virtualenv active: True
+Lathe editable install: True
+
+Packages:
+- lark: ok (1.3.1)
+- jsonschema: ok (4.26.0)
+- numpy: ok (2.4.4)
+- Pillow: ok (12.2.0)
+- trimesh: ok (4.12.1)
+- pytest: missing (n/a)
+- xatlas: missing (n/a)
+- torch: missing (n/a)
+- torchvision: missing (n/a)
+- vggt: missing (n/a)
+
+Setup checks:
+- python_version: ok (Lathe requires Python 3.11 or newer.)
+- virtualenv_active: ok (No active virtual environment was detected.)
+- pip_available: ok (pip was not found on PATH.)
+- git_available: ok (git was not found on PATH.)
+- base_dependencies: ok (One or more required Python packages are missing.)
+- editable_install: ok (Lathe is importable but not installed in editable/source mode.)
+- dev_dependencies: warning (Developer test tooling is missing.)
+- cwd_writable: ok (The current working directory does not appear writable.)
+
+Blender: ok (C:\Users\talme\AppData\Local\Microsoft\WindowsApps\blender.CMD)
+xatlas: missing (not_installed)
+torch/CUDA: missing (cuda_available=False)
+VGGT: unavailable (device=cpu)
+Hunyuan health: unavailable (http://localhost:8081)
+
+Shape providers:
+- lathe.provider.shape.hunyuan2_1_http_v1: unavailable ([WinError 10061] No connection could be made because the target machine actively refused it)
+- lathe.provider.shape.reference_conditioned_v1: ok (ok)
+- lathe.provider.shape.vggt_local_v1: unavailable (torch is not installed; torchvision is not installed; vggt package is not installed)
+
+Deterministic backends:
+- lathe.topology.blender_hard_surface_v1: ok (selected=blender_subprocess, real_available=True, fallback_available=True)
+- lathe.uv.xatlas_v1: ok (selected=reference_box, real_available=False, fallback_available=True)
+- lathe.package.openusd_gltf_v1: ok (selected=reference_package, real_available=True, fallback_available=False)
+
+Recommended actions:
+- Install developer tooling: .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+- Try the optional UV extra after build tools are present: .\.venv\Scripts\python.exe -m pip install -e ".[xatlas]"
+- Install PyTorch only if you want local ML runtimes: .\.venv\Scripts\python.exe -m pip install -e ".[vggt]"
+- Install the official VGGT package manually from source after torch: git clone https://github.com/facebookresearch/vggt.git external\vggt && .\.venv\Scripts\python.exe -m pip install -e .\external\vggt
+- Start or fix the configured Hunyuan HTTP server and verify that GET /health responds before requesting the real provider.
+## doctor_module_exit_code: 0
+
+## command: tmp_release_install_311/Scripts/lathe.exe doctor
+Lathe Doctor
+OS: Windows-10-10.0.19045-SP0
+Shell: D:\Git\bin\bash.exe
+Python: 3.13.13 (tags/v3.13.13:01104ce, Apr  7 2026, 19:25:48) [MSC v.1944 64 bit (AMD64)]
+Interpreter: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\tmp_release_install_311\Scripts\python.exe
+Virtualenv active: True
+Lathe editable install: True
+
+Packages:
+- lark: ok (1.3.1)
+- jsonschema: ok (4.26.0)
+- numpy: ok (2.4.4)
+- Pillow: ok (12.2.0)
+- trimesh: ok (4.12.1)
+- pytest: missing (n/a)
+- xatlas: missing (n/a)
+- torch: missing (n/a)
+- torchvision: missing (n/a)
+- vggt: missing (n/a)
+
+Setup checks:
+- python_version: ok (Lathe requires Python 3.11 or newer.)
+- virtualenv_active: ok (No active virtual environment was detected.)
+- pip_available: ok (pip was not found on PATH.)
+- git_available: ok (git was not found on PATH.)
+- base_dependencies: ok (One or more required Python packages are missing.)
+- editable_install: ok (Lathe is importable but not installed in editable/source mode.)
+- dev_dependencies: warning (Developer test tooling is missing.)
+- cwd_writable: ok (The current working directory does not appear writable.)
+
+Blender: ok (C:\Users\talme\AppData\Local\Microsoft\WindowsApps\blender.CMD)
+xatlas: missing (not_installed)
+torch/CUDA: missing (cuda_available=False)
+VGGT: unavailable (device=cpu)
+Hunyuan health: unavailable (http://localhost:8081)
+
+Shape providers:
+- lathe.provider.shape.hunyuan2_1_http_v1: unavailable ([WinError 10061] No connection could be made because the target machine actively refused it)
+- lathe.provider.shape.reference_conditioned_v1: ok (ok)
+- lathe.provider.shape.vggt_local_v1: unavailable (torch is not installed; torchvision is not installed; vggt package is not installed)
+
+Deterministic backends:
+- lathe.topology.blender_hard_surface_v1: ok (selected=blender_subprocess, real_available=True, fallback_available=True)
+- lathe.uv.xatlas_v1: ok (selected=reference_box, real_available=False, fallback_available=True)
+- lathe.package.openusd_gltf_v1: ok (selected=reference_package, real_available=True, fallback_available=False)
+
+Recommended actions:
+- Install developer tooling: .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+- Try the optional UV extra after build tools are present: .\.venv\Scripts\python.exe -m pip install -e ".[xatlas]"
+- Install PyTorch only if you want local ML runtimes: .\.venv\Scripts\python.exe -m pip install -e ".[vggt]"
+- Install the official VGGT package manually from source after torch: git clone https://github.com/facebookresearch/vggt.git external\vggt && .\.venv\Scripts\python.exe -m pip install -e .\external\vggt
+- Start or fix the configured Hunyuan HTTP server and verify that GET /health responds before requesting the real provider.
+## doctor_console_exit_code: 0
+
+## .lathe_lark_cache check in venv site-packages:
+## .lathe_lark_cache: ABSENT (PASS)
+
+## ============================================================
+## Cleanup
+## ============================================================
+## removed tmp_release_install_311/

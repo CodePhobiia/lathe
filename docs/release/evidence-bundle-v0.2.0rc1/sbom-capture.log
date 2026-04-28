@@ -1,0 +1,13 @@
+# Phase 3: SBOM (CycloneDX) capture log
+# Captured: 2026-04-28
+# Tool: /d/lathe_v0_1/.venv/Scripts/python.exe -m cyclonedx_py
+
+## command: /d/lathe_v0_1/.venv/Scripts/python.exe -m cyclonedx_py environment -o docs/release/evidence-bundle-v0.2.0rc1/sbom.json --output-format JSON
+## json_exit_code: 0
+
+## command: /d/lathe_v0_1/.venv/Scripts/python.exe -m cyclonedx_py environment -o docs/release/evidence-bundle-v0.2.0rc1/sbom.xml --output-format XML
+## xml_exit_code: 0
+
+## resulting file sizes:
+-rw-r--r-- 1 talme 197610 317419 Apr 28 14:54 docs/release/evidence-bundle-v0.2.0rc1/sbom.json
+-rw-r--r-- 1 talme 197610 333907 Apr 28 14:54 docs/release/evidence-bundle-v0.2.0rc1/sbom.xml

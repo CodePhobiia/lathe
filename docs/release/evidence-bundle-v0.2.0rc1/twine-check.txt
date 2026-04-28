@@ -1,0 +1,9 @@
+# Phase 3: twine check tmp_release_dist/*
+# Captured: 2026-04-28
+# Tool: /d/lathe_v0_1/.venv/Scripts/twine.exe
+
+## command: /d/lathe_v0_1/.venv/Scripts/twine.exe check tmp_release_dist/*
+Checking tmp_release_dist/lathe-0.2.0rc1-py3-none-any.whl: PASSED
+Checking tmp_release_dist/lathe-0.2.0rc1.tar.gz: PASSED
+
+## exit_code: 0

@@ -1,0 +1,11 @@
+# Phase 3: scripts/check_release_metadata.py --expected-tag v0.2.0-rc.1
+# Captured: 2026-04-28
+# Interpreter: /d/lathe_v0_1/.venv/Scripts/python.exe (Python 3.13.13)
+# Worktree: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1
+# Note: --require-current-tag SKIPPED — that flag only applies to actually-tagged commits
+#       (requires-human: rerun on a tagged commit when v0.2.0-rc.1 is cut)
+
+## command: /d/lathe_v0_1/.venv/Scripts/python.exe scripts/check_release_metadata.py --expected-tag v0.2.0-rc.1
+release metadata check passed for v0.2.0-rc.1
+
+## exit_code: 0

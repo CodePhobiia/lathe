@@ -1,0 +1,11 @@
+# Phase 3: scripts/check_dependency_sync.py
+# Captured: 2026-04-28
+# Interpreter: /d/lathe_v0_1/.venv/Scripts/python.exe (Python 3.13.13)
+# Worktree: D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1
+
+## command: /d/lathe_v0_1/.venv/Scripts/python.exe scripts/check_dependency_sync.py
+uv.lock: ok
+requirements.txt: ok
+requirements-dev.txt: ok
+
+## exit_code: 0

@@ -206,6 +206,89 @@ Reference SECURITY.md for disclosure timeline (90-day coordinated disclosure win
 
 ---
 
+## Rollback triggers — explicit objective conditions
+
+A rollback decision is triggered when ANY of the following objective
+conditions is met. The on-call must declare the trigger in the pinned
+GitHub issue, then execute the kill-switch procedure for the affected
+surface within the decision-to-visible-reversal target above.
+
+| ID | Trigger | Threshold | Initial response | Owner |
+|---|---|---|---|---|
+| TR-01 | P0 security issue | Any reproducible CVSS ≥ 7.0 issue affecting the published wheel or runtime; OR active exploitation reported | Yank wheel + open GHSA + docs banner | Tal Merri / RISK-002 |
+| TR-02 | P0 legal/privacy issue | Counsel or regulator notice; OR confirmed user-data leak even if accidental | Yank wheel + docs banner + privacy-complaint runbook | Tal Merri / RISK-001 |
+| TR-03 | Package install failure | ≥3 independent install-failure reports for the same wheel on a supported Win/macOS/Linux × Python 3.11/3.12 cell within 24 h | Yank wheel + pinned issue + install-failure runbook | Tal Merri / RISK-006 |
+| TR-04 | Critical build failure | `lathe build` of any canonical hero family (`brassbound_chest`, `industrial_crate`, `mechanical_door`, `console_terminal`, `courier_drone`, `sci_fi_wall_panel`, `service_cabinet`, `control_pedestal`, `supply_container`) crashes on a clean install on a supported matrix cell | Yank wheel + canonical-build-failure runbook | Tal Merri / RISK-006 |
+| TR-05 | Canonical gallery certification failure | Gallery rebuild from clean checkout shows ≥1 hero family losing certification when the same example certified at release-tag time | Yank wheel + roll-back to last-good gallery + reproduce locally | Tal Merri / RISK-006 |
+| TR-06 | Corrupted release artifact | SHA256 mismatch between `evidence-bundle-v0.2.0rc1/SHA256SUMS.txt` and the wheel/sdist served by PyPI; OR user reports `pip install` integrity failure with the published hash | Yank wheel + corrupted-release-artifact runbook + republish | Tal Merri / RISK-011 |
+| TR-07 | Misleading telemetry / privacy complaint | Any reproducible report that telemetry was emitted without explicit opt-in; OR payload-allowlist violation (a payload field outside the documented allowlist) found in code or in a captured request | Yank wheel + telemetry-privacy-complaint runbook + docs banner | Tal Merri / RISK-001 / RISK-008 |
+| TR-08 | Support response breach | Acknowledgement SLA missed on a P0 (security/privacy/install-broken/cert-broken); OR launch-week response-time targets breached for ≥48 h | Pause new releases + post on-call status update + reassign to backup (`requires-human:` named backup) | Tal Merri / RISK-007 / RISK-015 |
+| TR-09 | CI release-gate regression | A required check on the release branch flips red after the release tag is pushed but before launch; OR a previously-passing required check is silently dropped from required status | Hold launch + restore required check + replay gate | Tal Merri / RISK-012 / RISK-017 |
+| TR-10 | Platform-policy rejection | Godot AssetLib submission rejected; OR PyPI policy notice on the published project; OR GitHub policy notice on the repository | Address feedback per platform-policy-rejection path; if rejected from a launch-critical surface, hold launch | Tal Merri / RISK-013 |
+
+Triggers are OR'd: a single condition is enough to fire the rollback
+decision. Triggers can be detected by automated check (CI / pip-audit /
+gitleaks / external monitor) or by a human report; either source is
+authoritative.
+
+## README warning update procedure
+
+For incidents that require a high-visibility user warning beyond the
+docs banner (e.g., the docs site itself is down), update the README:
+
+1. Add a top-of-README admonition block:
+
+```markdown
+> [!CAUTION]
+> **v0.2.0rc1 has been yanked from PyPI.** Reason: <one line>.
+> Track the incident at <github.com/talmerri/lathe/issues/N>.
+> Recommended action: <upgrade to v0.2.0rc1.post1 once available
+> / pin to v0.2.0rc0 / wait for next release>.
+```
+
+2. Commit on `main` (not on a feature branch — the README banner must
+   be visible immediately).
+
+3. After the incident is fully resolved, REMOVE the admonition block in
+   a separate commit referencing the incident postmortem.
+
+The README warning is the channel of last resort; prefer the docs banner
+for incidents where the docs site is healthy.
+
+## Comms dry-run (paper exercise, 2026-04-28)
+
+To satisfy the "Dry-run rollback communications without executing
+destructive release changes" requirement, the following exercise was
+performed on paper (no PyPI / GitHub Release / docs / Discord changes
+were made; the artifacts are recorded as drafts):
+
+- **Scenario:** TR-07 (misleading telemetry) reported by a beta user at
+  09:00 local time on a launch day.
+- **Decision-to-visible-reversal:** PyPI yank (4h), docs banner (1h),
+  GitHub pinned issue (30m), README admonition (30m).
+- **Drafts produced (paper-only, not posted anywhere):**
+  - PyPI yank reason text: "v0.2.0rc1 has been yanked while we
+    investigate a reported telemetry-emission issue. The default config
+    has telemetry disabled; we are reproducing the report and will
+    follow up within 24 h."
+  - Docs banner draft: see `docs/ops/runbooks/telemetry-privacy-complaint.md`
+    (when Phase 5 lands the runbook, the banner draft lives in the
+    runbook's "Communication" section).
+  - GitHub pinned issue draft: see `docs/release/rollback-plan-v0.2.0rc1.md`
+    "Pinned public issue" template above; filled with the TR-07 trigger.
+  - README admonition draft: see template in this file.
+  - Discord announcement: **`requires-human:`** no Discord launched yet
+    — draft would point to the GitHub issue once channel exists.
+- **Outcome of dry-run:** the procedures are coherent. Two follow-up
+  items recorded as `requires-human` in `docs/release/evidence-v0.2.0rc1.md`:
+  (1) name a backup PyPI release authority before public launch,
+  (2) confirm the docs CI workflow rebuilds + publishes the announcement
+  bar within 1 h of merge.
+
+The dry-run does not replace a real incident-comms exercise once a
+backup owner is named. A real exercise (still without destructive
+changes) is scheduled into the Phase 18 re-review.
+
 ## What is irreversible after launch
 
 The following actions cannot be fully undone once executed:

@@ -200,10 +200,65 @@ evidence pointers.
 
 ### Phase 3 — P1 release evidence
 
-- Evidence packet (this file).
-- Version/metadata script run transcripts: pending.
-- Dependency lock + SBOM evidence: pending.
-- Wheel/sdist signing or recorded exception: pending.
+Local-Windows transcripts captured 2026-04-28 in
+`docs/release/evidence-bundle-v0.2.0rc1/`. Host-side limits — the
+worktree-resident venv is Python 3.13.13, the host has neither
+Python 3.11 nor Python 3.12 installed, and the bundle is built from
+a worktree (not a fresh `git clone` of a tagged commit). Every row
+therefore carries a `requires-human` follow-up for the truly clean
+clean-checkout / multi-Python rerun a CI runner provides.
+
+| Gate | Local-Win-3.13 status | Transcript | Clean-checkout rerun |
+|------|------------------------|------------|----------------------|
+| repo-state | captured | `evidence-bundle-v0.2.0rc1/repo-state.txt` | `requires-human` after release branch lands and `git tag v0.2.0-rc.1` |
+| release-metadata (`--expected-tag`) | pass | `evidence-bundle-v0.2.0rc1/release-metadata-3.11.txt` | `requires-human` (Python 3.11 + Python 3.12 legs + tagged-commit rerun with `--require-current-tag`) |
+| dependency-sync | pass | `evidence-bundle-v0.2.0rc1/dep-sync.txt` | `requires-human` (CI rerun on Linux) |
+| pip-audit (runtime, `-r requirements.txt`) | partial — see notes | `evidence-bundle-v0.2.0rc1/pip-audit-runtime.txt` | `requires-human` (CI: `.github/workflows/pip-audit.yml`) |
+| pip-audit (dev, `-r requirements-dev.txt`) | partial — see notes | `evidence-bundle-v0.2.0rc1/pip-audit-dev.txt` | `requires-human` (CI rerun) |
+| build (sdist + wheel) | pass | `evidence-bundle-v0.2.0rc1/build.txt` | `requires-human` (clean-checkout rebuild for release artifacts) |
+| twine check | pass | `evidence-bundle-v0.2.0rc1/twine-check.txt` | `requires-human` (rerun against post-clean-checkout artifacts) |
+| SHA256 sums | captured | `evidence-bundle-v0.2.0rc1/SHA256SUMS.txt` | `requires-human` (post-clean-checkout rebuild) |
+| wheel-contents (no `.lathe_lark_cache`, no `tests/`) | pass | `evidence-bundle-v0.2.0rc1/wheel-contents.txt` | `requires-human` (rerun against clean-checkout wheel) |
+| SBOM (CycloneDX JSON + XML) | captured | `evidence-bundle-v0.2.0rc1/sbom.json`, `evidence-bundle-v0.2.0rc1/sbom.xml` | `requires-human` (CI: `.github/workflows/sbom.yml` against clean checkout) |
+| wheel install — Python 3.11 | deferred (host lacks 3.11) | — | `requires-human` (Linux/macOS CI on Python 3.11) |
+| wheel install — Python 3.13 surrogate | pass | `evidence-bundle-v0.2.0rc1/wheel-install-py311.txt` | `requires-human` (intended target is 3.11; this is a surrogate) |
+| wheel install — Python 3.12 | deferred (host lacks 3.12) | — | `requires-human` (rerun on a Python 3.12 host) |
+| signed wheel/sdist | not signed | — | `requires-human` OR record release exception `EXC-PHASE3-SIGN-001` (see decision log) |
+| signed tag | not tagged | — | `requires-human` OR record release exception `EXC-PHASE3-SIGN-001` |
+| PyPI Trusted Publishing | not configured | — | `requires-human` (PyPI account holder — see `EXC-PHASE3-PYPI-TP-002`) |
+
+Notes:
+
+- `pip-audit -r requirements*.txt --strict` cannot run inside this
+  worktree because both requirements files start with `-e .` and
+  pip-audit's hashes-required mode rejects an editable install with
+  no single hashable file. The transcripts capture the failed
+  primary command, then a documented fallback to
+  `pip-audit --skip-editable` against the active venv. The
+  fallback reports two known vulnerabilities: `pip 26.0.1
+  CVE-2026-3219` (the Phase 6 gate) and `lxml 5.4.0 CVE-2026-41066`
+  (new finding — see Phase 9 follow-up). Both transcripts skip the
+  in-tree `lathe` and editable `vggt` packages.
+- The wheel-install transcript was captured with Python 3.13
+  (Windows Store) because Python 3.11 / 3.12 are not installed on
+  this host. The wheel installs cleanly, `python -m lathe.cli
+  doctor` and the `lathe` console script both succeed, and
+  `.lathe_lark_cache` does NOT appear in the install venv's
+  site-packages. The 3.11-specific and 3.12-specific legs are
+  `requires-human`.
+- The repo HEAD captured (`eb1cd49`) is on
+  `worktree-readiness-pass-v020rc1`, NOT on a release tag. The
+  release-metadata script accepted `--expected-tag v0.2.0-rc.1`
+  with the looser check; `--require-current-tag` is
+  `requires-human` because that flag only succeeds on a tagged
+  commit.
+- New `requires-human` items added by this run beyond the H1..H32
+  inventory from Phase 1: H33 (rerun pip-audit on a non-worktree
+  clone where `-e .` is not in requirements files), H34 (Python
+  3.11 wheel-install leg), H35 (Python 3.12 wheel-install leg),
+  H36 (clean-checkout rebuild for release SHA256SUMS), H37
+  (`lxml 5.4.0` CVE-2026-41066 triage — Phase 9), H38 (CycloneDX
+  CI-driven SBOM rerun against a non-editable install).
 
 ### Phase 4 — Risk, rollback, kill-switch
 

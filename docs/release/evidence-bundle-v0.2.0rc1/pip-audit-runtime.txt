@@ -1,0 +1,53 @@
+# Phase 3: pip-audit --strict --no-deps -r requirements.txt
+# Captured: 2026-04-28
+# Tool: /d/lathe_v0_1/.venv/Scripts/pip-audit.exe
+
+## command: /d/lathe_v0_1/.venv/Scripts/pip-audit.exe --strict --no-deps -r requirements.txt
+WARNING:pip_audit._cli:--no-deps is supported, but users are encouraged to fully hash their pinned dependencies
+WARNING:pip_audit._cli:Consider using a tool like `pip-compile`: https://pip-tools.readthedocs.io/en/latest/#using-hashes
+ERROR:pip_audit._virtual_env:internal pip failure: ERROR: The editable requirement file:///D:/lathe_v0_1/.claude/worktrees/readiness-pass-v020rc1 (from -r requirements.txt (line 3)) cannot be installed when requiring hashes, because there is no single file to hash.
+
+ERROR:pip_audit._cli:Failed to install packages: ['C:\\Users\\talme\\AppData\\Local\\Temp\\tmpkpg1rdgf\\Scripts\\python.exe', '-m', 'pip', 'install', '--no-input', '--keyring-provider=subprocess', '--dry-run', '--report', 'C:\\Users\\talme\\AppData\\Local\\Temp\\tmpru7qzybz\\tmpl4zq_ava', '-r', 'requirements.txt']
+
+## exit_code: 1
+
+## ============================================================
+## FALLBACK: requirements-file mode rejected the editable -e .
+## entry. Re-running against the active venv as documented in
+## the brief.
+## ============================================================
+
+## command: /d/lathe_v0_1/.venv/Scripts/pip-audit.exe --strict
+ERROR:pip_audit._cli:lathe: Dependency not found on PyPI and could not be audited: lathe (0.2.0rc1)
+
+## fallback_exit_code: 1
+
+## ============================================================
+## SECOND FALLBACK: --strict with --ignore-vuln stance,
+## using --skip-editable to avoid the local editable-install fail.
+## ============================================================
+
+## command: /d/lathe_v0_1/.venv/Scripts/pip-audit.exe --strict --skip-editable
+ERROR:pip_audit._cli:lathe: distribution marked as editable
+
+## skip_editable_exit_code: 1
+
+## ============================================================
+## THIRD FALLBACK: drop --strict (it conflicts with --skip-editable).
+## --skip-editable is the right way to exclude the in-tree lathe pkg
+## that is installed editable into the venv. Vulnerability findings
+## (if any) still appear; --strict exit-on-skip is what we lose.
+## ============================================================
+
+## command: /d/lathe_v0_1/.venv/Scripts/pip-audit.exe --skip-editable
+Found 2 known vulnerabilities in 2 packages
+Name Version ID             Fix Versions
+---- ------- -------------- ------------
+lxml 5.4.0   CVE-2026-41066 6.1.0
+pip  26.0.1  CVE-2026-3219
+Name  Skip Reason
+----- -------------------------------
+lathe distribution marked as editable
+vggt  distribution marked as editable
+
+## skip_editable_no_strict_exit_code: 1

@@ -195,3 +195,6 @@ nav:
       - Release-note value guidance: release/release-note-value-guidance.md
       - Support matrix: release/support-matrix.md
       - Known limitations: release/known-limitations.md
+  - Legal and privacy:
+      - Privacy notice: privacy.md
+      - Terms applicability: terms.md

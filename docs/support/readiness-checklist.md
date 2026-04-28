@@ -429,3 +429,69 @@ When promotion fires, the issue is moved to the `release-blocker`
 template (or re-tagged) and the maintainer evaluates yank under
 `docs/release/rollback-plan-v0.2.0rc1.md`. The decision and evidence
 are recorded in `docs/release/decision-log-v0.2.0rc1.md`.
+
+## Phase 5 verification (2026-04-28)
+
+### Labels state
+
+`.github/labels.yml` exists and defines the canonical label set.
+
+| Label | Defined locally? | Note |
+|---|---|---|
+| `release-blocker` | yes (`labels.yml` line 51) | — |
+| `flaky-test` | yes (`labels.yml` line 54) | — |
+| `security` | yes (`labels.yml` line 48) | — |
+| `bug` | yes (`labels.yml` line 3) | — |
+| `enhancement` | yes (`labels.yml` line 6) | — |
+| `docs` | yes (`labels.yml` line 36) | — |
+| `question` | **no** | `requires-human: add to labels.yml then sync` |
+| `release-exception` | **no** | `requires-human: add to labels.yml then sync` |
+
+To verify remote label state against this table, run with an authenticated `gh` CLI:
+
+```bash
+gh label list --repo talmerri/lathe --limit 100
+```
+
+### Issue templates
+
+Templates exist under `.github/ISSUE_TEMPLATE/`:
+
+- `bug_report.yml` — required fields present.
+- `feature_request.yml` — required fields present.
+- `lth_authoring_help.yml` — required fields present.
+- `release_blocker.yml` — **requires-fix-before-launch**: the template captures `target-release`, `blocked-gate`, `evidence`, and `proposed-resolution`, but is missing three required fields mandated by the release-readiness checklist:
+  1. **severity** — `P0`/`P1`/`P2`/`P3` dropdown, mapped to the response-time targets below. `required: true`.
+  2. **owner** — GitHub handle accountable for resolution (default @talmerri). `required: true`.
+  3. **rollback-or-exception** — `fix before release` / `accept release exception` / `roll back` / `not yet decided`. `required: true`.
+
+  File path: `.github/ISSUE_TEMPLATE/release_blocker.yml`. Do not modify until confirmed safe; record as a tracked item for the next merge window.
+
+- `config.yml` — chooser config (not a template). No required fields applicable.
+
+Remote render check for all templates: `requires-human: open each template URL on the GitHub web UI before wider distribution`.
+
+### Response-time targets (mirrored from FAQ)
+
+| Priority | Acknowledgement | Resolution | Rationale |
+|---|---|---|---|
+| **P0** — security, privacy/telemetry leak, broken install, certification path broken | 24 h | 24 h fix or workaround | Immediate user harm or legal exposure; must resolve before any additional distribution. |
+| **P1** — degraded feature, provider failure, hero-family regression, blocking docs error | 24 h ack | 3 business days | Significant user impact; resolution within a normal sprint cycle. |
+| **P2** — non-blocking bug, cosmetic issue | Best-effort | Weekly review queue | Low-urgency; batched to avoid churn on the solo-maintainer queue. |
+| **P3** — enhancement, tracked nice-to-have | Best-effort | Monthly review queue | Future work; no immediate user harm. |
+
+Security-specific SLAs (from `SECURITY.md`): 3 business days ack, 10 business days triage, 90 days fix + advisory. P0 ack (24 h) supersedes the 3-business-day ack when a known exploit path is confirmed.
+
+### Escalation triggers (mirrored from FAQ)
+
+The following conditions automatically promote an issue to release blocker:
+
+1. ≥3 independent reports of the same install failure on the same OS + Python version within 72 h.
+2. Any reproducible security issue with a known exploit path (single report sufficient).
+3. Any reproducible privacy or telemetry leak — telemetry firing while opt-in is disabled, or undocumented fields sent (single report sufficient).
+4. Any "certification passes but engine import is broken" report (single reproducible case).
+5. Any regression to a hero-family example (`brassbound_chest`, `industrial_crate`, `mechanical_door`, `console_terminal`, `sci_fi_wall_panel`, `service_cabinet`, `control_pedestal`, `supply_container`) on a stock-config build.
+
+### Runbooks cross-reference
+
+All 15 runbooks are now in `docs/ops/runbooks/`. Index: `docs/ops/runbooks/README.md`.
