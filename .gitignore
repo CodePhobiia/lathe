@@ -32,6 +32,10 @@ warm_*/
 v05_*/
 cache_probe_*/
 
+# Git worktrees (used by Claude Code session isolation)
+.worktrees/
+.claude/worktrees/
+
 # Parser cache (25MB, regenerates on first parse)
 .lathe_lark_cache/
 .lathe_lark_cache
