@@ -51,7 +51,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Root
 # ---------------------------------------------------------------------------
@@ -231,27 +230,27 @@ class ContractViolation(LatheError):
 
 
 __all__ = [
-    "LatheError",
-    "LatheConfigError",
-    "RuntimeConfigError",
-    "LatheParseError",
-    "DuplicateFieldError",
-    "NormalizationError",
-    "ResolutionError",
-    "UnresolvedNameError",
-    "CheckerError",
     "BackendError",
     "BackendResolutionError",
-    "ShapeProviderError",
-    "ShapeProviderUnavailable",
-    "ShapeProviderExecutionError",
-    "ShapeMeshLoadError",
+    "BlenderExecutionError",
+    "BuildError",
+    "CheckerError",
+    "ContractViolation",
+    "DuplicateFieldError",
+    "LatheConfigError",
+    "LatheError",
+    "LatheExecutionError",
+    "LatheParseError",
+    "NormalizationError",
+    "PatchAPIError",
+    "ResolutionError",
+    "RuntimeConfigError",
     "ShapeBundleError",
+    "ShapeMeshLoadError",
+    "ShapeProviderError",
+    "ShapeProviderExecutionError",
+    "ShapeProviderUnavailable",
     "TopologyAdapterError",
     "UVAdapterError",
-    "LatheExecutionError",
-    "BuildError",
-    "BlenderExecutionError",
-    "PatchAPIError",
-    "ContractViolation",
+    "UnresolvedNameError",
 ]

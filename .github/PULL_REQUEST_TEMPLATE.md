@@ -13,9 +13,10 @@ Check every box that applies. Language-contract changes must land as a single co
 - [ ] Kept at least one runnable `generate` example and one runnable `reconstruct` example.
 - [ ] Did **not** weaken any validator (`semantic_quality`, `visual_quality`, `flow_quality`, `surface_quality`, `silhouette`) unless the PR explicitly describes the intent and justification.
 - [ ] Preserved stable backend IDs, the shape bundle contract, and downstream topology/UV/packaging contracts unless this is an explicit migration.
-- [ ] Ran `python -m pytest -q` locally.
+- [ ] Ran the fast pytest partition locally, or explained why a broader/narrower partition was appropriate.
 - [ ] Ran `python -m lathe.cli check` on any example touched.
 - [ ] Updated `CHANGELOG.md` under `[Unreleased]`.
+- [ ] Followed the specialist review requirements in `docs/review_requirements.md` for language, provider, security, or release-sensitive changes.
 - [ ] Signed commits with DCO (`Signed-off-by: Name <email>`).
 
 ## Stages touched

@@ -23,9 +23,11 @@ from lathe.test_runtime import evaluate_test_expr
 
 class TestRunsSimpleTestBlock(unittest.TestCase):
     def test_program_with_no_tests_returns_ok_and_zero_total(self) -> None:
-        with mock.patch.object(test_runtime, "parse_file", return_value={"tests": []}), \
-             mock.patch.object(test_runtime, "check_program", return_value=[]), \
-             mock.patch.object(test_runtime, "Resolver"):
+        with (
+            mock.patch.object(test_runtime, "parse_file", return_value={"tests": []}),
+            mock.patch.object(test_runtime, "check_program", return_value=[]),
+            mock.patch.object(test_runtime, "Resolver"),
+        ):
             summary = test_runtime.run_lathe_tests(["fake.lth"])
         self.assertTrue(summary["ok"])
         self.assertEqual(summary["total"], 0)
@@ -34,9 +36,11 @@ class TestRunsSimpleTestBlock(unittest.TestCase):
 
 class TestReportsPassFail(unittest.TestCase):
     def test_summary_carries_pass_fail_keys(self) -> None:
-        with mock.patch.object(test_runtime, "parse_file", return_value={"tests": []}), \
-             mock.patch.object(test_runtime, "check_program", return_value=[]), \
-             mock.patch.object(test_runtime, "Resolver"):
+        with (
+            mock.patch.object(test_runtime, "parse_file", return_value={"tests": []}),
+            mock.patch.object(test_runtime, "check_program", return_value=[]),
+            mock.patch.object(test_runtime, "Resolver"),
+        ):
             summary = test_runtime.run_lathe_tests(["fake.lth"])
         for key in ("ok", "total", "passed", "failed", "results"):
             self.assertIn(key, summary)
@@ -62,9 +66,11 @@ class TestAssertionFailure(unittest.TestCase):
                 }
             ]
         }
-        with mock.patch.object(test_runtime, "parse_file", return_value=program), \
-             mock.patch.object(test_runtime, "check_program", return_value=[]), \
-             mock.patch.object(test_runtime, "Resolver"):
+        with (
+            mock.patch.object(test_runtime, "parse_file", return_value=program),
+            mock.patch.object(test_runtime, "check_program", return_value=[]),
+            mock.patch.object(test_runtime, "Resolver"),
+        ):
             summary = test_runtime.run_lathe_tests(["fake.lth"])
         self.assertEqual(summary["total"], 1)
         self.assertEqual(summary["passed"], 0)
@@ -85,9 +91,11 @@ class TestHonorsSetupTeardown(unittest.TestCase):
                 }
             ]
         }
-        with mock.patch.object(test_runtime, "parse_file", return_value=program), \
-             mock.patch.object(test_runtime, "check_program", return_value=[]), \
-             mock.patch.object(test_runtime, "Resolver"):
+        with (
+            mock.patch.object(test_runtime, "parse_file", return_value=program),
+            mock.patch.object(test_runtime, "check_program", return_value=[]),
+            mock.patch.object(test_runtime, "Resolver"),
+        ):
             summary = test_runtime.run_lathe_tests(["fake.lth"])
         self.assertFalse(summary["results"][0]["passed"])
 
@@ -120,9 +128,11 @@ class TestOutputShapeValid(unittest.TestCase):
                 }
             ]
         }
-        with mock.patch.object(test_runtime, "parse_file", return_value=program), \
-             mock.patch.object(test_runtime, "check_program", return_value=[]), \
-             mock.patch.object(test_runtime, "Resolver"):
+        with (
+            mock.patch.object(test_runtime, "parse_file", return_value=program),
+            mock.patch.object(test_runtime, "check_program", return_value=[]),
+            mock.patch.object(test_runtime, "Resolver"),
+        ):
             summary = test_runtime.run_lathe_tests(["fake.lth"])
         entry = summary["results"][0]
         for key in (
@@ -144,9 +154,7 @@ class TestEvaluateExprBuiltins(unittest.TestCase):
         ctx = {"items": [1, 2, 3], "values": {"score": 0.9}}
         # len([1,2,3]) == 3
         self.assertEqual(
-            evaluate_test_expr(
-                {"type": "call", "name": "len", "args": [{"value": "items"}]}, ctx
-            ),
+            evaluate_test_expr({"type": "call", "name": "len", "args": [{"value": "items"}]}, ctx),
             3,
         )
         # contains([1,2,3], 2) == True
@@ -161,9 +169,7 @@ class TestEvaluateExprBuiltins(unittest.TestCase):
             )
         )
         # ``not`` unary on a falsy literal returns True
-        self.assertTrue(
-            evaluate_test_expr({"type": "unary", "op": "not", "value": False}, ctx)
-        )
+        self.assertTrue(evaluate_test_expr({"type": "unary", "op": "not", "value": False}, ctx))
 
 
 if __name__ == "__main__":

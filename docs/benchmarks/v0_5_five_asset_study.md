@@ -81,7 +81,7 @@ mux logs both under `shape_backend_report.provider_attempted` vs.
 | Quixel Megascans | pending | [`competitors/quixel.md`](./competitors/quixel.md) |
 | Blender (by hand) | pending | [`competitors/blender_by_hand.md`](./competitors/blender_by_hand.md) |
 
-Every competitor row is a `not_run` stub in
+Every competitor row is a `not_run` entry in
 `data/<asset>_<system>_2026-04-24.json`. The per-run JSON carries a `note`
 field pointing back at the corresponding instruction file.
 

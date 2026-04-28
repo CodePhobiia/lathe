@@ -15,10 +15,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PIL import Image
-
 from lathe.texture_control_pack import write_surface_control_pack
-
+from PIL import Image
 
 SIZE = 32
 
@@ -29,8 +27,20 @@ def _solid(mode: str, color: object) -> Image.Image:
 
 def _zones() -> list[dict[str, object]]:
     return [
-        {"part": "body", "material": "aluminum", "metallic": 1.0, "roughness": 0.5, "basecolor": [110, 120, 130]},
-        {"part": "screen", "material": "glass", "metallic": 0.0, "roughness": 0.2, "basecolor": [40, 80, 200]},
+        {
+            "part": "body",
+            "material": "aluminum",
+            "metallic": 1.0,
+            "roughness": 0.5,
+            "basecolor": [110, 120, 130],
+        },
+        {
+            "part": "screen",
+            "material": "glass",
+            "metallic": 0.0,
+            "roughness": 0.2,
+            "basecolor": [40, 80, 200],
+        },
     ]
 
 
@@ -48,7 +58,12 @@ def _source_surface() -> dict[str, object]:
     }
 
 
-def _call(out_dir: Path, *, zones: list[dict[str, object]] | None = None, source_surface: dict[str, object] | None = None) -> dict[str, object]:
+def _call(
+    out_dir: Path,
+    *,
+    zones: list[dict[str, object]] | None = None,
+    source_surface: dict[str, object] | None = None,
+) -> dict[str, object]:
     return write_surface_control_pack(
         out_dir=out_dir,
         size=SIZE,
@@ -72,13 +87,17 @@ class TestWriteSurfaceControlPack:
 
     def test_manifest_pins_schema_and_resolution(self, tmp_path: Path) -> None:
         _call(tmp_path)
-        manifest = json.loads((tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8")
+        )
         assert manifest["schema"] == "lathe.surface_control_pack.v1"
         assert manifest["target_resolution"] == SIZE
 
     def test_manifest_includes_per_zone_constraints(self, tmp_path: Path) -> None:
         _call(tmp_path)
-        manifest = json.loads((tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8")
+        )
         constraints = manifest["per_zone_constraints"]
         assert "body" in constraints and "screen" in constraints
         assert constraints["body"]["metallic"] == 1.0
@@ -86,7 +105,9 @@ class TestWriteSurfaceControlPack:
 
     def test_manifest_propagates_semantic_descriptors(self, tmp_path: Path) -> None:
         _call(tmp_path)
-        manifest = json.loads((tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8")
+        )
         descriptors = manifest["semantic_descriptors"]
         assert descriptors["surface_program"] == "std.surface.program.console_v1"
         assert descriptors["policy"] == "std.surface.policy.game_pbr_v1"
@@ -96,7 +117,9 @@ class TestWriteSurfaceControlPack:
 
     def test_pack_with_empty_zones_still_writes_manifest(self, tmp_path: Path) -> None:
         result = _call(tmp_path, zones=[])
-        manifest = json.loads((tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8")
+        )
         assert manifest["material_zones"] == []
         assert manifest["per_zone_constraints"] == {}
         # Images written even when zones empty.
@@ -104,9 +127,17 @@ class TestWriteSurfaceControlPack:
         assert "ao" in result["images"]
 
     def test_pack_with_empty_descriptors_falls_back_to_defaults(self, tmp_path: Path) -> None:
-        empty_source = {"program": "", "policy": "", "decal_libraries": [], "mask_programs": [], "trim_sheets": []}
+        empty_source = {
+            "program": "",
+            "policy": "",
+            "decal_libraries": [],
+            "mask_programs": [],
+            "trim_sheets": [],
+        }
         _call(tmp_path, source_surface=empty_source)
-        manifest = json.loads((tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (tmp_path / "surface_control_pack" / "manifest.json").read_text(encoding="utf-8")
+        )
         descriptors = manifest["semantic_descriptors"]
         assert descriptors["surface_program"] == ""
         assert descriptors["decal_libraries"] == []

@@ -41,7 +41,9 @@ def _fidelity(tier: str) -> FidelityProfile:
     )
 
 
-def _box(*, component: str | None = None, rounding: float = 0.0, blend_mode: str | None = None) -> ShapePrimitive:
+def _box(
+    *, component: str | None = None, rounding: float = 0.0, blend_mode: str | None = None
+) -> ShapePrimitive:
     return ShapePrimitive(
         primitive_type="box",
         part="body",

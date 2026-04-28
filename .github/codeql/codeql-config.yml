@@ -1,0 +1,19 @@
+name: Lathe CodeQL
+
+paths:
+  - lathe
+  - scripts
+  - tests
+  - docs
+  - .github/workflows
+
+paths-ignore:
+  - external/**
+  - site/**
+  - _codex_tmp/**
+  - "**/__pycache__/**"
+  - "**/*.pyc"
+  - .venv/**
+  - .venv_old_broken/**
+  - dist/**
+  - build/**

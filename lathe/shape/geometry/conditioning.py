@@ -7,18 +7,51 @@ provider mux under the ``lathe.shape.intent_mesh_handoff_v1`` contract.
 from __future__ import annotations
 
 import hashlib
+import warnings
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
-from .primitives import (
-    SUPPORTED_MESH_EXTS,
-    _clamp,
-    _characteristic_scale_cm,
-    _load_mesh_file,
+from ...mesh_ingest import DEFAULT_MAX_BYTES, ShapeMeshLoadError
+from ...paths import PathGuardError, safe_resolve
+from ...security import InputClass, TrustLevel, boundary_policy, ingress_boundary
+from .primitives import SUPPORTED_MESH_EXTS, _load_mesh_file
+
+_ALLOWED_IMAGE_REF_EXTS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
+_MAX_IMAGE_REF_BYTES = 16 * 1024 * 1024
+_MAX_IMAGE_REF_PIXELS = 16_000_000
+_MAX_MESH_REF_BYTES = DEFAULT_MAX_BYTES
+_EXTERNAL_IMAGE_BOUNDARY = boundary_policy(
+    name="shape_conditioning_image_refs",
+    input_class=InputClass.EXTERNAL_IMAGE,
+    trust_level=TrustLevel.UNTRUSTED,
+    controls=(
+        "safe_project_relative_path",
+        "format_allowlist",
+        "byte_cap",
+        "pixel_cap",
+        "pillow_exception_narrowing",
+    ),
 )
+_EXTERNAL_MESH_REF_BOUNDARY = boundary_policy(
+    name="shape_conditioning_mesh_refs",
+    input_class=InputClass.EXTERNAL_MESH,
+    trust_level=TrustLevel.UNTRUSTED,
+    controls=(
+        "safe_project_relative_path",
+        "format_allowlist",
+        "byte_cap",
+        "safe_mesh_loader",
+    ),
+)
+
+
+class _ImageRefRejected(ValueError):
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
 
 
 def _make_color(name: str) -> tuple[int, int, int]:
@@ -26,26 +59,68 @@ def _make_color(name: str) -> tuple[int, int, int]:
     return (80 + digest[0] % 140, 80 + digest[1] % 140, 80 + digest[2] % 140)
 
 
-def _resolve_ref_path(source_root: Path, value: Any) -> Path | None:
+def _path_rejection_code(exc: PathGuardError) -> str:
+    message = str(exc)
+    if "absolute path" in message:
+        return "absolute_path_rejected"
+    if "escapes root" in message or "path components" in message:
+        return "path_traversal_rejected"
+    return "invalid_path"
+
+
+def _resolve_ref_path(source_root: Path, value: Any) -> tuple[Path | None, str | None]:
+    try:
+        resolved = safe_resolve(source_root, str(_raw_ref_value(value)))
+    except PathGuardError as exc:
+        return None, _path_rejection_code(exc)
+    except (TypeError, ValueError, OSError):
+        return None, "invalid_path"
+    if resolved.exists() and resolved.is_file():
+        return resolved, None
+    return None, "missing"
+
+
+def _raw_ref_value(value: Any) -> Any:
     if isinstance(value, dict) and value.get("type") == "call":
         args = value.get("args", [])
         if args:
-            value = args[0].get("value")
+            return args[0].get("value")
+    return value
+
+
+def _resolve_image_ref_path(source_root: Path, value: Any) -> tuple[Path | None, str | None]:
     try:
-        path = Path(str(value))
+        resolved = safe_resolve(source_root, str(_raw_ref_value(value)))
+    except PathGuardError as exc:
+        return None, _path_rejection_code(exc)
     except (TypeError, ValueError, OSError):
-        # str(value) can fail when value's __str__ is misbehaving; Path()
-        # raises ValueError/OSError for path strings the OS can't represent.
-        return None
-    if not path.is_absolute():
-        path = source_root / path
+        return None, "invalid_path"
+    if not resolved.exists() or not resolved.is_file():
+        return None, "missing"
+    if resolved.suffix.lower() not in _ALLOWED_IMAGE_REF_EXTS:
+        return None, "unsupported_image_format"
     try:
-        resolved = path.resolve()
+        size = resolved.stat().st_size
     except OSError:
-        return None
-    if resolved.exists() and resolved.is_file():
-        return resolved
-    return None
+        return None, "stat_failed"
+    if size > _MAX_IMAGE_REF_BYTES:
+        return None, "image_file_too_large"
+    return resolved, None
+
+
+def _resolve_mesh_ref_path(source_root: Path, value: Any) -> tuple[Path | None, str | None]:
+    resolved, rejected = _resolve_ref_path(source_root, value)
+    if resolved is None:
+        return None, rejected
+    if resolved.suffix.lower() not in SUPPORTED_MESH_EXTS:
+        return None, "unsupported_mesh_format"
+    try:
+        size = resolved.stat().st_size
+    except OSError:
+        return None, "stat_failed"
+    if size > _MAX_MESH_REF_BYTES:
+        return None, "mesh_file_too_large"
+    return resolved, None
 
 
 def _image_kind_hint(path: Path) -> str:
@@ -93,7 +168,20 @@ def _dominant_palette(rgb_pixels: np.ndarray, count: int = 3) -> list[list[int]]
 
 
 def _analyze_image_ref(path: Path) -> dict[str, Any]:
-    image = Image.open(path).convert("RGBA")
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(path) as opened:
+                if (int(opened.width) * int(opened.height)) > _MAX_IMAGE_REF_PIXELS:
+                    raise _ImageRefRejected(
+                        "image_dimensions_too_large",
+                        "image dimensions exceed the configured limit",
+                    )
+                image = opened.convert("RGBA")
+    except _ImageRefRejected:
+        raise
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise _ImageRefRejected("invalid_image", f"image could not be decoded: {exc}") from exc
     rgba = np.asarray(image, dtype=np.uint8)
     mask = _image_mask(image)
     ys, xs = np.where(mask)
@@ -124,13 +212,14 @@ def _analyze_mesh_ref(path: Path) -> dict[str, Any] | None:
     extents = bounds[1] - bounds[0]
     return {
         "path": str(path),
-        "vertex_count": int(len(mesh.vertices)),
-        "triangle_count": int(len(mesh.faces)),
+        "vertex_count": len(mesh.vertices),
+        "triangle_count": len(mesh.faces),
         "extents": [round(float(v), 6) for v in extents],
         "watertight": bool(mesh.is_watertight),
     }
 
 
+@ingress_boundary(_EXTERNAL_IMAGE_BOUNDARY, _EXTERNAL_MESH_REF_BOUNDARY)
 def collect_shape_conditioning(asset: dict[str, Any], source_root: Path) -> dict[str, Any]:
     refs = asset.get("refs", {})
     consumed_refs: list[dict[str, Any]] = []
@@ -140,41 +229,67 @@ def collect_shape_conditioning(asset: dict[str, Any], source_root: Path) -> dict
 
     for group in ("images", "materials"):
         for value in refs.get(group, []):
-            resolved = _resolve_ref_path(source_root, value)
+            resolved, rejected_reason = _resolve_image_ref_path(source_root, value)
             entry = {
                 "group": group,
                 "value": value,
                 "resolved": str(resolved) if resolved else None,
                 "exists": bool(resolved),
             }
+            if rejected_reason and rejected_reason != "missing":
+                entry["rejected_reason"] = rejected_reason
             if resolved is not None:
-                analysis = _analyze_image_ref(resolved)
-                entry["kind"] = analysis["kind"]
-                if group == "materials" or analysis["kind"] == "material":
-                    material_refs.append(analysis)
+                try:
+                    analysis = _analyze_image_ref(resolved)
+                except _ImageRefRejected as exc:
+                    entry["exists"] = False
+                    entry["rejected_reason"] = exc.code
                 else:
-                    image_refs.append(analysis)
+                    entry["kind"] = analysis["kind"]
+                    if group == "materials" or analysis["kind"] == "material":
+                        material_refs.append(analysis)
+                    else:
+                        image_refs.append(analysis)
             consumed_refs.append(entry)
 
     for group in ("meshes", "assets"):
         for value in refs.get(group, []):
-            resolved = _resolve_ref_path(source_root, value)
+            if group == "meshes":
+                resolved, rejected_reason = _resolve_mesh_ref_path(source_root, value)
+            else:
+                resolved, rejected_reason = _resolve_ref_path(source_root, value)
             entry = {
                 "group": group,
                 "value": value,
                 "resolved": str(resolved) if resolved else None,
                 "exists": bool(resolved),
             }
+            if rejected_reason and rejected_reason != "missing":
+                entry["rejected_reason"] = rejected_reason
             if resolved is not None and resolved.suffix.lower() in SUPPORTED_MESH_EXTS:
-                analysis = _analyze_mesh_ref(resolved)
+                try:
+                    analysis = _analyze_mesh_ref(resolved)
+                except ShapeMeshLoadError as exc:
+                    entry["exists"] = False
+                    entry["rejected_reason"] = exc.code
+                    analysis = None
                 if analysis is not None:
                     mesh_refs.append(analysis)
                     entry["kind"] = "mesh"
             consumed_refs.append(entry)
 
-    front = next((item for item in image_refs if item["kind"] == "front"), image_refs[0] if image_refs else None)
-    side = next((item for item in image_refs if item["kind"] == "side"), image_refs[1] if len(image_refs) > 1 else front)
-    material = material_refs[0] if material_refs else next((item for item in image_refs if item["kind"] == "material"), None)
+    front = next(
+        (item for item in image_refs if item["kind"] == "front"), image_refs[0] if image_refs else None
+    )
+    side = next(
+        (item for item in image_refs if item["kind"] == "side"),
+        image_refs[1] if len(image_refs) > 1 else front,
+    )
+    material = (
+        material_refs[0]
+        if material_refs
+        else next((item for item in image_refs if item["kind"] == "material"), None)
+    )
 
     combined_palette: list[list[int]] = []
     for source in [material, front, side, *image_refs]:
@@ -187,7 +302,9 @@ def collect_shape_conditioning(asset: dict[str, Any], source_root: Path) -> dict
             break
 
     total_declared = sum(len(refs.get(key, [])) for key in ("images", "materials", "meshes", "assets"))
-    reference_strength = round(float((len(image_refs) + len(material_refs) + len(mesh_refs)) / max(1, total_declared)), 6)
+    reference_strength = round(
+        float((len(image_refs) + len(material_refs) + len(mesh_refs)) / max(1, total_declared)), 6
+    )
     return {
         "source_root": str(source_root),
         "consumed_refs": consumed_refs,
@@ -204,7 +321,9 @@ def collect_shape_conditioning(asset: dict[str, Any], source_root: Path) -> dict
     }
 
 
-def _conditioned_part_colors(parts: list[str], conditioning: dict[str, Any]) -> dict[str, tuple[int, int, int]]:
+def _conditioned_part_colors(
+    parts: list[str], conditioning: dict[str, Any]
+) -> dict[str, tuple[int, int, int]]:
     palette = conditioning.get("palette", [])
     brightness = conditioning.get("material_brightness")
     out: dict[str, tuple[int, int, int]] = {}
@@ -227,16 +346,3 @@ def _conditioned_part_colors(parts: list[str], conditioning: dict[str, Any]) -> 
             continue
         out[part] = _make_color(part)
     return out
-
-
-def _conditioned_body_extents(asset: dict[str, Any], conditioning: dict[str, Any], rng: np.random.Generator) -> np.ndarray:
-    scale_cm = _characteristic_scale_cm(asset)
-    front_aspect = float(conditioning.get("front_aspect") or 1.55)
-    side_aspect = float(conditioning.get("side_aspect") or 1.75)
-    fill = float(conditioning.get("front_fill_ratio") or conditioning.get("side_fill_ratio") or 0.58)
-    style = [str(item).lower() for item in asset.get("intent", {}).get("style", [])]
-    slim_bias = 0.04 if any(token in style for token in ("premium", "near-future")) else 0.0
-    width = scale_cm * _clamp(0.22 + 0.12 * front_aspect - slim_bias + float(rng.uniform(-0.02, 0.02)), 0.22, 0.56)
-    height = scale_cm * _clamp(0.11 + 0.14 / max(0.8, front_aspect) + 0.03 * (1.0 - fill) + float(rng.uniform(-0.015, 0.015)), 0.10, 0.28)
-    depth = scale_cm * _clamp(0.28 + 0.12 * side_aspect - slim_bias + float(rng.uniform(-0.03, 0.03)), 0.28, 0.82)
-    return np.array([width, height, depth], dtype=float)

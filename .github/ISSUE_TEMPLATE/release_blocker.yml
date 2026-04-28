@@ -1,0 +1,50 @@
+name: Release blocker
+description: Report a defect or missing gate that should block a release.
+title: "[release-blocker] <short description>"
+labels: [release-blocker]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this only when a release must stop until this is fixed or an
+        explicit release exception is accepted.
+
+  - type: input
+    id: target-release
+    attributes:
+      label: Target release or milestone
+      placeholder: "v0.2-rc-hardening"
+    validations:
+      required: true
+  - type: dropdown
+    id: blocked-gate
+    attributes:
+      label: Blocked gate
+      options:
+        - tests
+        - docs
+        - security
+        - canonical examples
+        - package metadata
+        - release artifact
+        - product quality
+        - support policy
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Link the failing workflow, command output, report, or release checklist item.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-resolution
+    attributes:
+      label: Proposed resolution or exception
+      description: Describe the fix, rollback, or release exception needed.
+    validations:
+      required: true

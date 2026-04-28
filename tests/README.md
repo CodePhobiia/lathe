@@ -90,16 +90,40 @@ importable by tests that opt in explicitly.
 ## Running
 
 ```bash
-# Full suite.
+# Default fast local suite. Dedicated slow/golden/property/fuzz lanes are
+# excluded from default collection so minimal installs do not import their
+# optional test dependencies.
 python -m pytest -q
 
 # Only skip-safe tests (no optional extras expected):
 python -m pytest -q -m "not requires_blender and not requires_xatlas and not requires_torch"
 
+# Dedicated lanes.
+python -m pytest -q -m "contract or golden" tests/contract tests/golden
+python -m pytest -q -m property tests/property
+python -m pytest -q -m fuzz tests/fuzz
+python -m pytest -q -m slow
+
 # CI-full matrix leg (fails loudly if extras are missing):
 LATHE_CI_FULL=1 python -m pytest -q
 ```
 
-Coverage is configured via `.coveragerc` at the repo root. The
-`fail_under` gate is at `0` today and will be raised to `85` in Wave 3
-(Plan 04 Phase 2).
+## Coverage ratchet
+
+Coverage has one enforced threshold: `65%`, mirrored in `.coveragerc` and
+`pyproject.toml`. CI and `just ci-coverage` use that configured threshold and
+must not pass `--cov-fail-under` on the command line.
+
+Raise the gate only after the default coverage lane has stayed above the next
+target with normal skips and no local-only services. The staged targets are
+`70%`, `75%`, `80%`, and then the BL-39 release target of `85%`.
+
+Per-package ratchet reviews should look at the lowest-package groups first:
+CLI command modules, provider adapters, executor/runtime orchestration, and
+surface/reporting modules. The staged review gates are: no active top-level
+package below `35%` before raising the global gate to `70%`; language-core and
+validator packages at `65%` plus CLI/provider/runtime packages at `45%` before
+raising to `75%`; executor/core-stage/reporting packages at `60%` before
+raising to `80%`; and no active top-level package below `70%` before raising to
+`85%`. Do not lower the global threshold to compensate for a package
+regression; add focused tests for the regressed package instead.

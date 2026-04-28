@@ -40,9 +40,7 @@ def register(sub: argparse._SubParsersAction) -> None:
 
 def _run_enable(args) -> None:
     if not getattr(args, "yes", False):
-        sys.stdout.write(
-            "This will enable anonymous opt-in telemetry. Proceed? [y/N] "
-        )
+        sys.stdout.write("This will enable anonymous opt-in telemetry. Proceed? [y/N] ")
         sys.stdout.flush()
         try:
             resp = sys.stdin.readline().strip().lower()

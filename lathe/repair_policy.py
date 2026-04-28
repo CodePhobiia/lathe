@@ -13,7 +13,7 @@ class RepairPolicyIR:
     deny: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "RepairPolicyIR":
+    def from_asset(cls, asset: dict[str, Any]) -> RepairPolicyIR:
         repair_policy = asset.get("repair_policy", {})
         return cls(
             use=str(repair_policy.get("use", "")),

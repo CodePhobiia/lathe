@@ -6,6 +6,8 @@ As of 2026-04-24, 74 commits on `main` + tag `v0.1.0`. This document is the **ho
 
 "Touched" ≠ "done." Use this doc when planning future waves; don't trust the session-scale `WAVE{N}_BACKLOG.md` files alone.
 
+**Correction (2026-04-25):** Package/runtime metadata is aligned at `0.2.0rc1`; the public language contract remains v0.1. Local collection currently reports roughly 1.2k tests depending on installed extras and Python version, not 922. The suite is intentionally partitioned into fast, golden, property, fuzz, and example-corpus lanes because a single unpartitioned full run is too slow for the PR matrix.
+
 ## Per-plan completeness
 
 | Plan | Status | Score |
@@ -73,8 +75,8 @@ As of 2026-04-24, 74 commits on `main` + tag `v0.1.0`. This document is the **ho
 
 **Done.** Git repo exists with 74 commits + tag `v0.1.0`. `.github/workflows/` has ci, lint, coverage, release, docs, pip-audit, lathe-smoke, stale, fuzz, perf, gallery. Governance files: `CODEOWNERS`, `PULL_REQUEST_TEMPLATE`, 4 issue templates, `dependabot.yml`, `labels.yml`, `FUNDING.yml`, `CITATION.cff`.
 
-**Open — operational side is untouched.**
-- **OPS-1.** Push to GitHub remote. Repo is local-only; no one can see it.
+**Open — operational side is still early.**
+- **OPS-1.** Public remote operations. `origin` is configured, but release/branch-protection/docs-site operations still need to be proven on GitHub.
 - **OPS-2.** First PyPI release via trusted publishing. `release.yml` workflow exists; never triggered.
 - **OPS-3.** GitHub Pages for docs site. `docs.yml` workflow exists; not deployed.
 - **OPS-4.** Issue triage cadence. No issues filed, no triage happening.

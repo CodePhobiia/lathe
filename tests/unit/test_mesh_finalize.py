@@ -16,19 +16,16 @@ import unittest
 
 import numpy as np
 import trimesh
-
 from lathe.mesh_finalize import finalize_mesh_ir
 from lathe.mesh_ir import MeshIR
-from lathe.shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
+from lathe.shape_ir import ShapeIR, ShapeRegion
 
 
 def _unit_box_mesh() -> trimesh.Trimesh:
     return trimesh.creation.box(extents=(2.0, 2.0, 2.0))
 
 
-def _region(
-    *, name: str = "r_body", part: str = "body", component: str = "hull"
-) -> ShapeRegion:
+def _region(*, name: str = "r_body", part: str = "body", component: str = "hull") -> ShapeRegion:
     return ShapeRegion(
         name=name,
         part=part,
@@ -131,9 +128,7 @@ class FinalizeMeshIRTests(unittest.TestCase):
         self.assertEqual(mesh_ir_default.metadata, {})
 
         payload = {"integration_report": {"mode": "exact"}, "seed": 42}
-        mesh_ir_meta = finalize_mesh_ir(
-            mesh, shape_ir, ["body"] * len(mesh.faces), metadata=payload
-        )
+        mesh_ir_meta = finalize_mesh_ir(mesh, shape_ir, ["body"] * len(mesh.faces), metadata=payload)
         self.assertEqual(mesh_ir_meta.metadata, payload)
 
     def test_vertices_are_rounded_to_six_decimals(self) -> None:

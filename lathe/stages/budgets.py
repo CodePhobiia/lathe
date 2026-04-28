@@ -21,9 +21,9 @@ crashing.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
-
+from typing import Any
 
 DEFAULT_TEXTURE_MEMORY_BUDGET_MB: float = 128.0
 DEFAULT_MATERIAL_COUNT_BUDGET: int = 16
@@ -83,11 +83,13 @@ class BudgetReport:
     draw_calls: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
-        overall = _overall_status([
-            self.texture_memory.get("status", "skipped"),
-            self.materials.get("status", "skipped"),
-            self.draw_calls.get("status", "skipped"),
-        ])
+        overall = _overall_status(
+            [
+                self.texture_memory.get("status", "skipped"),
+                self.materials.get("status", "skipped"),
+                self.draw_calls.get("status", "skipped"),
+            ]
+        )
         return {
             "schemaVersion": 1,
             "texture_memory": self.texture_memory,
@@ -110,7 +112,6 @@ def evaluate(
     ``asset`` is the materialized asset dict; ``runtime`` is the executor's
     per-stage runtime dict. Neither is mutated.
     """
-
     cfg = _optimize_cfg(asset)
     surface_bundle = _get_surface_bundle(runtime)
     optimize_bundle = _get_optimize_bundle(runtime)
@@ -223,7 +224,6 @@ def _bpp_for(fmt: str) -> float:
 
 def _unique_material_names(surface_bundle: Mapping[str, Any]) -> list[str]:
     """Derive the unique, deterministic material-name list from a surface bundle."""
-
     zones = surface_bundle.get("material_zones") if isinstance(surface_bundle, Mapping) else None
     seen: list[str] = []
     if isinstance(zones, list):
@@ -268,7 +268,6 @@ def _budget_mb_to_bytes(value: Any, default_mb: float) -> int:
     ``{"value": N, "unit": "mb"|"mib"|"kb"|"kib"|"gb"|"gib"}`` as emitted by
     the Lathe normalizer for asset fields like ``texture_budget``.
     """
-
     if isinstance(value, Mapping):
         raw = value.get("value")
         unit = str(value.get("unit") or "mb").lower()
@@ -302,11 +301,7 @@ def _evaluate_texture_memory(
     )
 
     # Prefer explicit per-material data if present ({materials:[{maps:[{W,H,format}]}]}).
-    materials_explicit = (
-        surface_bundle.get("materials")
-        if isinstance(surface_bundle, Mapping)
-        else None
-    )
+    materials_explicit = surface_bundle.get("materials") if isinstance(surface_bundle, Mapping) else None
     per_material: list[dict[str, Any]] = []
     estimated_total = 0
     considered = False
@@ -332,7 +327,7 @@ def _evaluate_texture_memory(
             estimated_total += mat_bytes
 
     if not considered:
-        # Heuristic path: resolution × channel-aware bpp × (distinct materials).
+        # Heuristic path: resolution x channel-aware bpp x distinct materials.
         resolution = _resolution_px(surface_bundle)
         maps = surface_bundle.get("maps") if isinstance(surface_bundle, Mapping) else None
         if not isinstance(maps, list):
@@ -340,7 +335,9 @@ def _evaluate_texture_memory(
         default_bpp = _bpp_for(_infer_format(surface_bundle))
         materials = _unique_material_names(surface_bundle)
         material_slots = surface_bundle.get("material_slots") if isinstance(surface_bundle, Mapping) else None
-        slot_count = len(materials) or (int(material_slots) if isinstance(material_slots, int) and material_slots > 0 else 0)
+        slot_count = len(materials) or (
+            int(material_slots) if isinstance(material_slots, int) and material_slots > 0 else 0
+        )
         if resolution is None or not maps or slot_count == 0:
             return (
                 {
@@ -378,9 +375,7 @@ def _evaluate_texture_memory(
             "severity": _severity_for_status(status),
             "phase": "optimize",
             "stage": "optimize",
-            "message": (
-                f"texture memory {estimated_total} bytes exceeds budget {budget_bytes} bytes"
-            ),
+            "message": (f"texture memory {estimated_total} bytes exceeds budget {budget_bytes} bytes"),
             "details": {
                 "budget_bytes": int(budget_bytes),
                 "estimated_bytes": int(estimated_total),
@@ -487,10 +482,7 @@ def _evaluate_draw_calls(
         )
 
     mat_count = len(materials)
-    breakdown = [
-        {"lod": i, "count": int(mat_count)}
-        for i in range(lod_count)
-    ]
+    breakdown = [{"lod": i, "count": int(mat_count)} for i in range(lod_count)]
     estimated = int(mat_count * lod_count)
     status = _status_for(float(estimated), float(budget))
     report = {
@@ -518,12 +510,12 @@ def _evaluate_draw_calls(
 
 
 __all__ = [
-    "BudgetReport",
-    "DEFAULT_TEXTURE_MEMORY_BUDGET_MB",
-    "DEFAULT_MATERIAL_COUNT_BUDGET",
     "DEFAULT_DRAW_CALL_BUDGET",
-    "L_TEXTURE_MEMORY_OVER_BUDGET",
-    "L_MATERIAL_COUNT_OVER_BUDGET",
+    "DEFAULT_MATERIAL_COUNT_BUDGET",
+    "DEFAULT_TEXTURE_MEMORY_BUDGET_MB",
     "L_DRAW_CALL_OVER_BUDGET",
+    "L_MATERIAL_COUNT_OVER_BUDGET",
+    "L_TEXTURE_MEMORY_OVER_BUDGET",
+    "BudgetReport",
     "evaluate",
 ]

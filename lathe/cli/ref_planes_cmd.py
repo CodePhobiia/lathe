@@ -10,7 +10,6 @@ import json
 import sys
 from pathlib import Path
 
-
 _FACE_AXES = (
     ("+X", (1.0, 0.0, 0.0), 3),
     ("-X", (-1.0, 0.0, 0.0), 0),
@@ -34,24 +33,30 @@ def _planes_for_part(part: dict) -> list[dict]:
         origin = list(center)
         axis_idx = {"X": 0, "Y": 1, "Z": 2}[label[1]]
         origin[axis_idx] = value
-        planes.append({
-            "label": f"{part.get('id')}.{label}",
-            "face": label,
-            "normal": list(normal),
-            "origin": [round(v, 6) for v in origin],
-        })
+        planes.append(
+            {
+                "label": f"{part.get('id')}.{label}",
+                "face": label,
+                "normal": list(normal),
+                "origin": [round(v, 6) for v in origin],
+            }
+        )
     return planes
 
 
 def run_ref_planes(args) -> None:
+    """List cardinal planes for selector-manifest parts."""
     build_dir = Path(args.build_dir)
     manifest_path = build_dir / "selector_manifest.json"
     if not manifest_path.exists():
         print(
-            json.dumps({
-                "ok": False,
-                "error": f"selector_manifest.json not found under {build_dir}",
-            }, indent=2),
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": f"selector_manifest.json not found under {build_dir}",
+                },
+                indent=2,
+            ),
             file=sys.stderr,
         )
         raise SystemExit(2)
@@ -59,7 +64,7 @@ def run_ref_planes(args) -> None:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         print(json.dumps({"ok": False, "error": f"invalid manifest JSON: {exc}"}), file=sys.stderr)
-        raise SystemExit(2)
+        raise SystemExit(2) from exc
 
     filter_part = getattr(args, "part", None)
     parts = manifest.get("parts") or []
@@ -70,20 +75,33 @@ def run_ref_planes(args) -> None:
         if filter_part and part.get("id") != filter_part:
             continue
         planes = _planes_for_part(part)
-        out_parts.append({
-            "id": part.get("id"),
-            "bbox": part.get("bbox"),
-            "planes": planes,
-        })
+        out_parts.append(
+            {
+                "id": part.get("id"),
+                "bbox": part.get("bbox"),
+                "planes": planes,
+            }
+        )
     if filter_part and not out_parts:
-        print(json.dumps({
-            "ok": False,
-            "error": f"part '{filter_part}' not found",
-            "available": [p.get("id") for p in parts if isinstance(p, dict)],
-        }, indent=2), file=sys.stderr)
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": f"part '{filter_part}' not found",
+                    "available": [p.get("id") for p in parts if isinstance(p, dict)],
+                },
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
         raise SystemExit(3)
-    print(json.dumps({
-        "ok": True,
-        "build_dir": str(build_dir),
-        "parts": out_parts,
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "build_dir": str(build_dir),
+                "parts": out_parts,
+            },
+            indent=2,
+        )
+    )

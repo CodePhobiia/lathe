@@ -1,6 +1,6 @@
 # Luma (Genie / AI) — manual run instructions
 
-_Status: stub. No Luma runs have been executed in this study yet._
+_Status: not_run. No Luma runs have been executed in this study yet._
 
 Luma offers text-to-3D ("Genie") and NeRF-derived mesh capture. For this
 5-asset study we use the text-to-3D pathway because none of the 5 assets are

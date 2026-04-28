@@ -74,7 +74,7 @@ The `fit_profile` controls the part-by-part conformance step that runs after ini
 .\.venv\Scripts\python.exe -m lathe.cli build examples/reconstruct_courier_from_views.lth reconstruct_courier_from_views --out dist_reconstruct
 ```
 
-Without a `--runtime-config`, the shape provider falls back to `lathe.provider.shape.reference_conditioned_v1`. Open `dist_reconstruct/reconstruct_courier_from_views/trace.json` and search for `"attempted"` and `"actual"` — you will see the attempted learned provider recorded alongside the actual deterministic fallback. That's the shape bundle being honest about what ran.
+Without a `--runtime-config`, the shape provider falls back to `lathe.provider.shape.reference_conditioned_v1`. Open `dist_reconstruct/reconstruct_courier_from_views/stages/package/trace_manifest.json` and search for `"attempted"` and `"actual"` — you will see the attempted learned provider recorded alongside the actual deterministic fallback. That's the shape bundle being honest about what ran.
 
 To exercise a real reconstructor if you have the dependencies installed, opt in via:
 
@@ -105,12 +105,12 @@ Build the generate variant of the same subject and diff the packages:
 .\.venv\Scripts\python.exe -m lathe.cli build examples/courier_drone.lth courier_drone --out dist_generate
 ```
 
-Open both `manifest.json` files and compare:
+Open both `stages/package/package_manifest.json` files and compare:
 
 - **`stages/shape/`** — generate wrote candidate variations; reconstruct wrote a single conformance-fit result.
-- **`trace.json`** — different providers attempted, possibly the same fallback actually ran.
-- **`previews/turntable.png`** — reconstruct should track the reference silhouette closely; generate is free to reinterpret.
-- **`validate/report.json`** — reconstruct carries `reconstruct_honesty_score`; generate carries a higher weight on `prompt_match`.
+- **`stages/package/trace_manifest.json`** — different providers attempted, possibly the same fallback actually ran.
+- **`stages/package/previews/turntable.png`** — reconstruct should track the reference silhouette closely; generate is free to reinterpret.
+- **`stages/validate/report.json`** — reconstruct carries `reconstruct_honesty_score`; generate carries a higher weight on `prompt_match`.
 
 Picking between flows in practice:
 

@@ -12,7 +12,6 @@ No torch dependency — pure numpy. Deterministic under a fixed seed.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterator
 
 import numpy as np
 import pytest
@@ -87,8 +86,6 @@ def vggt_stub_factory():
         width: int = 8,
         seed: int = 1234,
     ) -> VggtStubPointCloud:
-        return _make_plane_views(
-            num_views=num_views, height=height, width=width, seed=seed
-        )
+        return _make_plane_views(num_views=num_views, height=height, width=width, seed=seed)
 
     return _build

@@ -6,20 +6,31 @@ omit =
     lathe/__init__.py
 
 [report]
-# Ratchet gate: prevents regression below the current measured baseline.
-# Plan 04's 85% target is tracked as BL-39 for a future Wave 5 test-backfill stage.
+# Shared coverage ratchet. Keep this in sync with pyproject.toml; CI must not
+# override it with --cov-fail-under. BL-39 tracks the long-term 85% target.
 fail_under = 65
 show_missing = True
 skip_covered = False
 precision = 2
 exclude_lines =
     pragma: no cover
-    raise NotImplementedError
-    if TYPE_CHECKING:
-    if __name__ == .__main__.:
 
 [html]
 directory = htmlcov
 
 [xml]
 output = coverage.xml
+
+[lathe:coverage_gates]
+# Local package ratchets enforced by tests/unit/test_coverage_policy.py when
+# LATHE_COVERAGE_GATE_XML points at an explicit coverage XML report.
+parser = 60|lathe/parser
+resolver = 90|lathe/resolver.py
+checker = 70|lathe/checker
+planner = 90|lathe/planner.py
+provider_config = 75|lathe/runtime_config.py,lathe/providers/registry.py,lathe/providers/selection.py
+sandboxing = 55|lathe/sandbox,lathe/subproc.py
+cache = 70|lathe/cache.py
+cli = 35|lathe/cli
+telemetry = 80|lathe/telemetry.py
+security = 75|lathe/parser/prompt_injection.py,lathe/net.py,lathe/publish/signed_repro.py

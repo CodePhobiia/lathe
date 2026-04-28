@@ -15,6 +15,6 @@ topology adapter plugged in via the BL-34 second-stack proof.
 
 from __future__ import annotations
 
-from . import blender_subdiv  # noqa: F401  -- register side effects
+from . import blender_subdiv
 
 __all__ = ["blender_subdiv"]

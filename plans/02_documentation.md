@@ -117,4 +117,3 @@ Amendments applied by `amender-docs` based on `plans/reviews/02_documentation_re
 7. Phase 7 item #25 — dropped the grammar-comment-support check (no-op: `grammar/lathe.lark:257-263` already defines `//` and `/* */` tokens). Replaced with a one-line note.
 8. Phase 8 item #26 — added three recipes: (11) `runtime_config_schema.md` reference docs mirroring the Plan 07 JSON schema; (12) `reading_a_trace.md` covering `build_report.json` / attempted-vs-actual provider records / IR fields; (13) per-validator reference pages under `docs/api/validators/` (one per `lathe/validators/*.py`). Recipe count updated from ten to thirteen.
 9. Effort estimate raised from ~10 to ~11 engineer-days to account for runtime-heavy cookbook recipes 5/7/8/10.
-

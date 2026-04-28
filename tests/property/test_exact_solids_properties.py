@@ -12,7 +12,7 @@ surface:
   translate(v1) ∘ translate(v2) ∘ translate(v3) yields the same mesh
   regardless of grouping — translations form an associative group on
   ``trimesh.Trimesh``.
-- Transform invertibility: translate by +v then −v restores the origin
+- Transform invertibility: translate by +v then -v restores the origin
   mesh to within ``1e-6`` tolerance.
 - Translate-then-translate-inverse on ``_translated_box`` recovers the
   canonical centered box — translation is invertible on the primitive
@@ -27,9 +27,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import trimesh
-
 from lathe.exact_solids import _translated_box, _translated_cylinder
 
+pytestmark = pytest.mark.property
 
 TRANSLATION_TRIPLES = [
     pytest.param(
@@ -91,7 +91,7 @@ def test_translate_composition_is_associative(triple: tuple[np.ndarray, np.ndarr
     ],
 )
 def test_translate_is_invertible_within_tolerance(vector: np.ndarray) -> None:
-    """Translating by +v then −v restores the original mesh to within
+    """Translating by +v then -v restores the original mesh to within
     1e-6 tolerance. Translation is its own inverse under negation.
     """
     base = trimesh.creation.box(extents=(2.0, 2.0, 2.0))
@@ -110,7 +110,7 @@ def test_translate_is_invertible_within_tolerance(vector: np.ndarray) -> None:
     ],
 )
 def test_translated_box_translate_inverse_restores_origin(center: tuple[float, float, float]) -> None:
-    """_translated_box at `center`, shifted by −center, must sit centered
+    """_translated_box at `center`, shifted by -center, must sit centered
     at the origin — the primitive constructor's translation is invertible.
     """
     extents = (2.0, 2.0, 2.0)
@@ -137,8 +137,10 @@ def test_translated_box_translate_inverse_restores_origin(center: tuple[float, f
         pytest.param((1.0, 2.0, 3.0), id="offset"),
     ],
 )
-def test_translated_cylinder_translate_inverse_restores_origin(axis: str, center: tuple[float, float, float]) -> None:
-    """_translated_cylinder at `center`, shifted by −center, recovers a
+def test_translated_cylinder_translate_inverse_restores_origin(
+    axis: str, center: tuple[float, float, float]
+) -> None:
+    """_translated_cylinder at `center`, shifted by -center, recovers a
     cylinder whose bounding-box midpoint is at the origin. Construction
     translation is invertible for cylinders regardless of axis.
     """

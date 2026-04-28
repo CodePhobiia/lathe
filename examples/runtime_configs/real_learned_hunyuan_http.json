@@ -1,0 +1,31 @@
+{
+  "shape": {
+    "provider": "hunyuan2_1_http",
+    "strict": true,
+    "allow_fallback": false,
+    "providers": {
+      "hunyuan2_1_http": {
+        "base_url": "https://hunyuan.internal.example",
+        "timeout_s": 600,
+        "url_allowlist": [
+          "hunyuan.internal.example"
+        ],
+        "remove_background": true,
+        "texture": false,
+        "octree_resolution": 256,
+        "num_inference_steps": 5,
+        "guidance_scale": 5.0,
+        "face_count": 40000,
+        "type": "glb"
+      }
+    }
+  },
+  "topology": {
+    "adapter": "auto",
+    "strict": true
+  },
+  "uv": {
+    "adapter": "auto",
+    "strict": true
+  }
+}

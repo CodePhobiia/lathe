@@ -71,6 +71,7 @@ def _discover_assets() -> list[tuple[Path, str]]:
     _discover_assets(),
     ids=lambda v: v if isinstance(v, str) else v.name,
 )
+@pytest.mark.slow
 def test_example_builds(tmp_path: Path, lth_path: Path, asset: str) -> None:
     """Every example must parse + build; certified assets in EXPECTED_CERTIFY
     must have ``certified`` True.

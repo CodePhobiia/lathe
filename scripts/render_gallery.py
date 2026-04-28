@@ -17,6 +17,7 @@ For each hero in `lathe.hero_manifest.HEROES`:
 Generated output under `docs/gallery/<asset>/` is git-ignored — CI uploads
 it as an artifact or pushes to `gh-pages` separately.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -27,14 +28,13 @@ import string
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
 
 # Allow importing the lathe package when invoked as a script.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from lathe.hero_manifest import HEROES, Hero  # noqa: E402
+from lathe.hero_manifest import HEROES, Hero
 
 GALLERY_DIR = _REPO_ROOT / "docs" / "gallery"
 TEMPLATE_PATH = _REPO_ROOT / "docs" / "templates" / "gallery_index.html.j2"
@@ -45,15 +45,14 @@ def _load_template() -> string.Template:
     return string.Template(TEMPLATE_PATH.read_text(encoding="utf-8"))
 
 
-def _find_blender() -> Optional[str]:
+def _find_blender() -> str | None:
     env_path = os.environ.get("LATHE_BLENDER_PATH")
     if env_path and Path(env_path).exists():
         return env_path
-    which = shutil.which("blender")
-    return which
+    return shutil.which("blender")
 
 
-def _run_build(hero: Hero, asset_dir: Path) -> Dict:
+def _run_build(hero: Hero, asset_dir: Path) -> dict:
     """Run `lathe build` so build artifacts land inside ``asset_dir``.
 
     `python -m lathe.cli build <src> <asset> --out <dir>` creates
@@ -94,7 +93,7 @@ def _run_build(hero: Hero, asset_dir: Path) -> Dict:
     return json.loads(report_path.read_text(encoding="utf-8"))
 
 
-def _find_glb(out_dir: Path, report: Dict) -> Optional[Path]:
+def _find_glb(out_dir: Path, report: dict) -> Path | None:
     for output in report.get("outputs", []) or []:
         rel = output.get("path") if isinstance(output, dict) else None
         if rel and rel.lower().endswith(".glb"):
@@ -106,7 +105,7 @@ def _find_glb(out_dir: Path, report: Dict) -> Optional[Path]:
     return None
 
 
-def _render_with_blender(blender: str, glb: Path, render_dir: Path) -> List[Path]:
+def _render_with_blender(blender: str, glb: Path, render_dir: Path) -> list[Path]:
     render_dir.mkdir(parents=True, exist_ok=True)
     cmd = [
         blender,
@@ -131,18 +130,16 @@ def _render_with_blender(blender: str, glb: Path, render_dir: Path) -> List[Path
 
 def render_hero_page(
     hero: Hero,
-    report: Dict,
-    glb: Optional[Path],
-    renders: List[Path],
+    report: dict,
+    glb: Path | None,
+    renders: list[Path],
     template: string.Template,
     out_dir: Path,
 ) -> Path:
+    """Render one hero gallery page."""
     certified = bool(report.get("certified"))
     if renders:
-        imgs = "\n".join(
-            f'    <a href="{r.name}"><img src="{r.name}" alt="{r.stem}"></a>'
-            for r in renders
-        )
+        imgs = "\n".join(f'    <a href="{r.name}"><img src="{r.name}" alt="{r.stem}"></a>' for r in renders)
         renders_block = f'<div class="renders">\n{imgs}\n</div>'
     else:
         renders_block = (
@@ -164,18 +161,15 @@ def render_hero_page(
     return page_path
 
 
-def render_landing(results: List[Dict]) -> Path:
+def render_landing(results: list[dict]) -> Path:
+    """Render the gallery landing page."""
     rows = []
     for r in results:
         cert = "yes" if r["certified"] else "no"
         cert_class = "yes" if r["certified"] else "no"
-        preview = (
-            f'<a href="{r["asset_name"]}/index.html">view</a>'
-            if r["has_page"]
-            else "—"
-        )
+        preview = f'<a href="{r["asset_name"]}/index.html">view</a>' if r["has_page"] else "—"
         rows.append(
-            f'<tr><td>{r["asset_name"]}</td>'
+            f"<tr><td>{r['asset_name']}</td>"
             f"<td>{r['family']}</td>"
             f"<td><code>{r['score']:.6f}</code></td>"
             f"<td><code>{r['threshold']:.2f}</code></td>"
@@ -210,7 +204,8 @@ def render_landing(results: List[Dict]) -> Path:
     return landing_path
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
+    """Run the gallery renderer CLI."""
     parser = argparse.ArgumentParser(description="Render the hero output gallery.")
     parser.add_argument(
         "--skip-build",
@@ -232,11 +227,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         wanted = set(args.only)
         heroes = [h for h in HEROES if h.asset_name in wanted]
 
-    results: List[Dict] = []
+    results: list[dict] = []
     for hero in heroes:
         asset_dir = GALLERY_DIR / hero.asset_name
         asset_dir.mkdir(parents=True, exist_ok=True)
-        report: Dict
+        report: dict
         if args.skip_build and (asset_dir / "build_report.json").exists():
             report = json.loads((asset_dir / "build_report.json").read_text(encoding="utf-8"))
         else:
@@ -261,7 +256,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         glb = _find_glb(asset_dir, report)
         render_dir = asset_dir / "renders"
-        renders: List[Path] = []
+        renders: list[Path] = []
         if blender and glb is not None and BLENDER_SCRIPT.exists():
             renders = _render_with_blender(blender, glb, render_dir)
         else:

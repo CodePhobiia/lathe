@@ -1,8 +1,10 @@
+"""Public lazy exports for the Lathe package."""
+
 from __future__ import annotations
 
 import importlib
 
-__version__ = "0.1.0"
+__version__ = "0.2.0rc1"
 
 _LAZY_EXPORTS = {
     "build_asset": ("lathe.executor", "build_asset"),
@@ -18,7 +20,19 @@ _LAZY_EXPORTS = {
     "parse_text": ("lathe.parser", "parse_text"),
 }
 
-__all__ = sorted(_LAZY_EXPORTS)
+__all__ = [
+    "build_asset",
+    "build_plan",
+    "check_program",
+    "get_schema",
+    "list_backends",
+    "list_stacks",
+    "materialize_asset",
+    "normalize_asset",
+    "normalize_program",
+    "parse_file",
+    "parse_text",
+]
 
 
 def __getattr__(name: str) -> object:

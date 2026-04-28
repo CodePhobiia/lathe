@@ -13,11 +13,12 @@ from typing import Any
 @dataclass
 class FeatureIR:
     """FeatureIR."""
+
     geometry: dict[str, Any] = field(default_factory=dict)
     features: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "FeatureIR":
+    def from_asset(cls, asset: dict[str, Any]) -> FeatureIR:
         """From asset.
 
         Args:

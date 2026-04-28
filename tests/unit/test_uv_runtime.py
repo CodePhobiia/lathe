@@ -16,9 +16,9 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from lathe.uv_runtime import derive_uv_semantics
-from tests.fixtures.mock_xatlas import mock_xatlas_atlas  # noqa: F401  (pytest fixture)
+
+pytest_plugins = ("tests.fixtures.mock_xatlas",)
 
 
 def _topology_bundle(
@@ -27,15 +27,17 @@ def _topology_bundle(
     panel_seams: list[str] | None = None,
     top_level_seams: list[str] | None = None,
 ) -> dict[str, Any]:
-    bake_groups = bake_groups if bake_groups is not None else [
-        {"name": "bg_panel", "part": "body", "material_boundary": True},
-        {"name": "bg_hull", "part": "body", "material_boundary": False},
-        {"name": "bg_lid", "part": "lid", "material_boundary": True},
-    ]
+    bake_groups = (
+        bake_groups
+        if bake_groups is not None
+        else [
+            {"name": "bg_panel", "part": "body", "material_boundary": True},
+            {"name": "bg_hull", "part": "body", "material_boundary": False},
+            {"name": "bg_lid", "part": "lid", "material_boundary": True},
+        ]
+    )
     panel_seams = panel_seams if panel_seams is not None else ["bg_panel", "bg_lid"]
-    bundle: dict[str, Any] = {
-        "feature_semantics": {"bake_groups": bake_groups, "panel_seams": panel_seams}
-    }
+    bundle: dict[str, Any] = {"feature_semantics": {"bake_groups": bake_groups, "panel_seams": panel_seams}}
     if top_level_seams is not None:
         bundle["panel_seams"] = top_level_seams
     return bundle

@@ -42,7 +42,7 @@ Alongside the specs, the architecture pages give you a running-code view of the 
 | --------------------------------------------------------- | ------------------------------------------------------------------------ |
 | New to Lathe, want the big picture                         | manifesto → v0.1 spec → V1.0 spec                                        |
 | Writing assets, want the language surface                  | v0.1 spec → [first_asset](first_asset.md)                                |
-| Debugging a failed build                                   | [pipeline](../architecture/pipeline.md) → relevant stage spec → `trace.json` |
+| Debugging a failed build                                   | [pipeline](../architecture/pipeline.md) → relevant stage spec → `stages/package/trace_manifest.json` |
 | Building a reference-driven asset                          | V1.1 spec → [reconstruct tutorial](second_asset_reconstruct.md)          |
 | Customizing surface authoring                              | V1.2 spec → `std/surface_programs/`                                       |
 | Setting up the Blender/Codex bridge                        | V1.3 spec → V1.3.1 spec → [`docs/codex_integration.md`](../codex_integration.md) |
@@ -50,10 +50,9 @@ Alongside the specs, the architecture pages give you a running-code view of the 
 
 ## Intentional scaffolds
 
-These are still scaffolds in v0.1 — spec language may describe the target shape, but the runner is not fully wired:
+These areas are still early in v0.2 — spec language may describe the target shape, but the runner is not fully wired:
 
-- `publish` runner — publication registry integrations.
-- Canonical `fmt` — a stable code formatter for `.lth` sources.
+- Live external publish destinations — implemented behind explicit target config, not part of the default smoke path.
 - Full multi-round autonomous repair loops — partial implementation lands progressively across later specs.
 
 When reading, treat these as roadmap markers, not as claims of current behavior.

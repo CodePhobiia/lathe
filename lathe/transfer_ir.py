@@ -13,12 +13,13 @@ from typing import Any
 @dataclass
 class TransferIR:
     """TransferIR."""
+
     values: dict[str, Any] = field(default_factory=dict)
     adapt_policy: dict[str, Any] = field(default_factory=dict)
     transfer_rules: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "TransferIR":
+    def from_asset(cls, asset: dict[str, Any]) -> TransferIR:
         """From asset.
 
         Args:

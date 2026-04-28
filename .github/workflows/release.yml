@@ -4,32 +4,225 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    name: Build sdist + wheel
+  quality:
+    name: Tests, lint, docs, package metadata
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install build tooling
+
+      - name: Install project
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build
-      - name: Build distribution
-        run: python -m build
-      - name: Upload dist artifacts
+          python -m pip install -e ".[dev,docs]"
+
+      - name: Ruff
+        run: python -m ruff check .
+
+      - name: Pytest
+        run: python -m pytest -q
+
+      - name: Docs
+        run: mkdocs build --strict --site-dir site
+
+      - name: Package metadata
+        run: |
+          python -m pip install build twine
+          python -m build
+          twine check dist/*
+
+      - name: Upload checked distribution
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: release-dist
           path: dist/
+
+  dependency-audit:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pip-audit
+
+      - name: Audit requirements
+        run: |
+          set -euo pipefail
+          grep -vE '^-e[[:space:]]+\.' requirements.txt > /tmp/lathe-requirements-audit.txt
+          grep -vE '^-e[[:space:]]+\.' requirements-dev.txt > /tmp/lathe-requirements-dev-audit.txt
+          pip-audit --strict --no-deps --requirement /tmp/lathe-requirements-audit.txt
+          pip-audit --strict --no-deps --requirement /tmp/lathe-requirements-dev-audit.txt
+
+  sast:
+    name: Bandit and Gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Bandit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "bandit[toml]==1.7.9"
+          bandit --configfile bandit.yaml --severity-level medium --confidence-level medium --recursive lathe/
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  semgrep:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: returntocorp/semgrep:1.86.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run semgrep
+        run: |
+          semgrep \
+            --error \
+            --config p/python \
+            --config p/security-audit \
+            --config p/owasp-top-ten \
+            lathe/
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended,security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+  build:
+    name: Build sdist + wheel
+    needs:
+      - quality
+      - dependency-audit
+      - sast
+      - semgrep
+      - codeql
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
+
+      - name: Verify package artifacts are present
+        run: |
+          test -n "$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -name '*.whl' -print -quit)"
+
+  sbom:
+    name: Generate SBOM
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install wheel and CycloneDX
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install dist/*.whl
+          python -m pip install "cyclonedx-bom==4.5.0"
+
+      - name: Generate SBOM
+        run: |
+          cyclonedx-py environment --output-format JSON --schema-version 1.5 --outfile dist/sbom.json
+          cyclonedx-py environment --output-format XML --schema-version 1.5 --outfile dist/sbom.xml
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            dist/sbom.json
+            dist/sbom.xml
+
+      - name: Attach SBOM to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" dist/sbom.json dist/sbom.xml --clobber
 
   publish:
     name: Publish to PyPI (Trusted Publishing)
-    needs: build
+    needs:
+      - build
+      - sbom
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -42,7 +235,7 @@ jobs:
       - name: Download dist artifacts
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: release-dist
           path: dist/
 
       - name: Publish to PyPI via Trusted Publishing + SLSA attestations

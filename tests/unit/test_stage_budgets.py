@@ -9,21 +9,17 @@ end-to-end selector-manifest integration via the courier_drone build.
 from __future__ import annotations
 
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
 
 import jsonschema
-
+import pytest
 from lathe.stages import budgets as budgets_mod
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
-BUDGET_SCHEMA = json.loads(
-    (REPO_ROOT / "schema" / "budget_manifest.schema.json").read_text(encoding="utf-8")
-)
+BUDGET_SCHEMA = json.loads((REPO_ROOT / "schema" / "budget_manifest.schema.json").read_text(encoding="utf-8"))
 SELECTOR_SCHEMA = json.loads(
     (REPO_ROOT / "schema" / "lathe.selector.schema.json").read_text(encoding="utf-8")
 )
@@ -37,9 +33,7 @@ def _surface_bundle_with_materials(count: int, *, resolution: int = 2048, maps: 
     return {
         "surface": {
             "bundle": {
-                "material_zones": [
-                    {"part": f"p{i}", "material": f"mat_{i}"} for i in range(count)
-                ],
+                "material_zones": [{"part": f"p{i}", "material": f"mat_{i}"} for i in range(count)],
                 "maps": [f"channel_{i}" for i in range(maps)],
                 "material_slots": count,
                 "surface_manifest": {
@@ -128,7 +122,7 @@ class DrawCallBudgetTests(unittest.TestCase):
         asset = _asset(draw_call_budget=64)
         # 4 materials x 4 LODs = 16 draw calls, under 64.
         runtime = _runtime_with_optimize(_surface_bundle_with_materials(4), lods=4)
-        report, diags = budgets_mod.evaluate(asset, runtime)
+        report, _diags = budgets_mod.evaluate(asset, runtime)
         self.assertEqual(report["draw_calls"]["status"], "pass")
         self.assertEqual(report["draw_calls"]["estimated"], 16)
         self.assertEqual(len(report["draw_calls"]["breakdown"]), 4)
@@ -137,7 +131,7 @@ class DrawCallBudgetTests(unittest.TestCase):
         # 6 materials x 4 LODs = 24 draw calls, budget 20 => 20% over => warning.
         asset = _asset(draw_call_budget=20)
         runtime = _runtime_with_optimize(_surface_bundle_with_materials(6), lods=4)
-        report, diags = budgets_mod.evaluate(asset, runtime)
+        report, _diags = budgets_mod.evaluate(asset, runtime)
         self.assertEqual(report["draw_calls"]["status"], "warning")
 
     def test_severe_over_budget(self) -> None:
@@ -228,6 +222,7 @@ class SelectorManifestIntegrationTests(unittest.TestCase):
         jsonschema.Draft202012Validator(SELECTOR_SCHEMA).validate(manifest)
 
 
+@pytest.mark.slow
 class EndToEndCourierDroneTests(unittest.TestCase):
     """End-to-end: run a full build, verify budget_report.json on disk and
     the selector manifest carries the budgets block."""

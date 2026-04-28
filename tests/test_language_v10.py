@@ -6,7 +6,6 @@ from pathlib import Path
 from lathe.normalizer import normalize_program
 from lathe.parser import parse_file
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 

@@ -25,7 +25,7 @@ def relpath(root: Path, path: Path | None) -> str | None:
     """
     if path is None:
         return None
-    return str(path.relative_to(root))
+    return path.relative_to(root).as_posix()
 
 
 def dump_json(path: Path, data: Any) -> None:
@@ -214,9 +214,17 @@ def characteristic_scale_cm(asset: dict[str, Any]) -> float:
         The result.
     """
     intent = asset.get("intent", {})
-    if "dimensions" in intent and isinstance(intent["dimensions"], dict) and intent["dimensions"].get("type") == "call":
+    if (
+        "dimensions" in intent
+        and isinstance(intent["dimensions"], dict)
+        and intent["dimensions"].get("type") == "call"
+    ):
         args = intent["dimensions"].get("args", [])
-        values = [unit_to_cm(item["value"]) for item in args if isinstance(item, dict) and item.get("value") is not None]
+        values = [
+            unit_to_cm(item["value"])
+            for item in args
+            if isinstance(item, dict) and item.get("value") is not None
+        ]
         if values:
             return max(values)
     if "scale" in intent:

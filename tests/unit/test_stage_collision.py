@@ -8,9 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import trimesh
-
 from lathe.stages import collision as collision_mod
-
 
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "collision_manifest.schema.json"
 
@@ -66,11 +64,13 @@ def test_combine_hulls_produces_nonempty_mesh(two_box_scene: tuple[trimesh.Trime
     mesh, face_parts = two_box_scene
     proxies = collision_mod.per_part_hulls(mesh, face_parts)
     combined = collision_mod.combine_hulls(proxies)
-    assert int(len(combined.faces)) == sum(int(len(p.mesh.faces)) for p in proxies)
-    assert int(len(combined.vertices)) == sum(int(len(p.mesh.vertices)) for p in proxies)
+    assert len(combined.faces) == sum(len(p.mesh.faces) for p in proxies)
+    assert len(combined.vertices) == sum(len(p.mesh.vertices) for p in proxies)
 
 
-def test_manifest_validates_against_schema(box: trimesh.Trimesh, two_box_scene: tuple[trimesh.Trimesh, list[str]]) -> None:
+def test_manifest_validates_against_schema(
+    box: trimesh.Trimesh, two_box_scene: tuple[trimesh.Trimesh, list[str]]
+) -> None:
     jsonschema = pytest.importorskip("jsonschema")
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     mesh, face_parts = two_box_scene
@@ -81,8 +81,8 @@ def test_manifest_validates_against_schema(box: trimesh.Trimesh, two_box_scene: 
         "proxies": [
             {
                 "name": "hull",
-                "tris": int(len(hull.mesh.faces)),
-                "verts": int(len(hull.mesh.vertices)),
+                "tris": len(hull.mesh.faces),
+                "verts": len(hull.mesh.vertices),
                 "aabb": {"min": list(hull.aabb_min), "max": list(hull.aabb_max)},
                 "path": "stages/optimize/collision_hull.glb",
             },
@@ -92,8 +92,8 @@ def test_manifest_validates_against_schema(box: trimesh.Trimesh, two_box_scene: 
                 "subproxies": [
                     {
                         "name": p.name,
-                        "tris": int(len(p.mesh.faces)),
-                        "verts": int(len(p.mesh.vertices)),
+                        "tris": len(p.mesh.faces),
+                        "verts": len(p.mesh.vertices),
                         "aabb": {"min": list(p.aabb_min), "max": list(p.aabb_max)},
                     }
                     for p in parts

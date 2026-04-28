@@ -1,7 +1,7 @@
 """Opt-in anonymous build-ping telemetry.
 
 Plan 09 Phase 10b. Default MUST be disabled; emission is failure-silent.
-Payload excludes asset content, paths, and environment variables.
+Payload excludes asset content, paths, raw salts, and environment variables.
 
 Persistence
 -----------
@@ -21,10 +21,9 @@ States
   hex ``user_salt``.
 - ``disabled``: config file with ``enabled=False``; salt is preserved.
 
-The persistent ``user_salt`` lets the ingest side correlate pings from the
-same installation without revealing who sent them: ``build_id_hash`` is
-``sha256(salt + build_id)[:16]``, so a ping cannot be linked to a user
-without access to the local salt.
+The persistent ``user_salt`` stays local.  It is used only to derive
+``build_id_hash`` as ``sha256(salt + build_id)[:16]`` so ingest cannot
+recompute or link build identities without access to the local salt.
 """
 
 from __future__ import annotations
@@ -37,7 +36,6 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
-
 
 TELEMETRY_INGEST_URL: str = "https://telemetry.lathe.dev/ingest"
 _TELEMETRY_TIMEOUT_S: float = 2.0
@@ -86,7 +84,16 @@ def _read_config() -> dict[str, Any] | None:
 def _write_config(data: dict[str, Any]) -> None:
     path = _config_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+    tmp_path = path.with_name(f".{path.name}.{secrets.token_hex(4)}.tmp")
+    try:
+        tmp_path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+        tmp_path.replace(path)
+    finally:
+        try:
+            tmp_path.unlink()
+        except FileNotFoundError:
+            if tmp_path.exists():
+                raise
 
 
 def is_enabled() -> bool:
@@ -164,6 +171,7 @@ def clear() -> bool:
 def _lathe_version() -> str:
     try:
         from . import __version__ as v
+
         return str(v)
     except ImportError:
         return "0.0.0"
@@ -182,12 +190,56 @@ def _extract_build_id(build_report: dict) -> str:
         val = build_report.get(key)
         if isinstance(val, str) and val:
             return val
+    outputs = []
+    for item in build_report.get("outputs") or []:
+        if not isinstance(item, dict):
+            continue
+        outputs.append(
+            {
+                "format": item.get("format"),
+                "sha256": item.get("sha256"),
+                "size_bytes": item.get("size_bytes"),
+            }
+        )
+    fingerprint_source = {
+        "kind": build_report.get("kind"),
+        "backend_stack": _extract_stack_id(build_report),
+        "certified": _extract_certified(build_report),
+        "outputs": sorted(outputs, key=lambda item: (str(item.get("format")), str(item.get("sha256")))),
+    }
+    if any(fingerprint_source.values()):
+        encoded = json.dumps(fingerprint_source, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
     return ""
+
+
+def _extract_stack_id(build_report: dict) -> str:
+    backend_stack = build_report.get("backend_stack")
+    if isinstance(backend_stack, dict):
+        stack_id = backend_stack.get("id")
+        if isinstance(stack_id, str):
+            return stack_id
+    for key in ("stack_id", "backend_id"):
+        val = build_report.get(key)
+        if isinstance(val, str) and val:
+            return val
+    return ""
+
+
+def _extract_certified(build_report: dict) -> bool | None:
+    certified = build_report.get("certified")
+    if isinstance(certified, bool):
+        return certified
+    ok = build_report.get("ok")
+    if isinstance(ok, bool):
+        return ok
+    return None
 
 
 def _build_payload(build_report: dict, *, salt: str) -> dict[str, Any]:
     build_id = _extract_build_id(build_report)
-    stack_id = build_report.get("stack_id") or build_report.get("backend_id") or ""
+    stack_id = _extract_stack_id(build_report)
+    certified = _extract_certified(build_report)
     exit_code = build_report.get("exit_code", 0 if build_report.get("ok", True) else 1)
     wall_ms = build_report.get("wall_ms")
     if wall_ms is None:
@@ -197,10 +249,11 @@ def _build_payload(build_report: dict, *, salt: str) -> dict[str, Any]:
     except (TypeError, ValueError):
         wall_ms = 0
     return {
-        "salt": salt,
         "lathe_version": _lathe_version(),
         "build_id_hash": _hash_build_id(salt, build_id) if build_id else "",
+        "build_kind": str(build_report.get("kind") or ""),
         "stack_id": str(stack_id),
+        "certified": certified,
         "exit_code": int(exit_code) if isinstance(exit_code, (int, bool)) else 0,
         "wall_ms": wall_ms,
     }
@@ -232,14 +285,15 @@ def emit_build_ping(build_report: dict) -> bool:
             timeout_s=_TELEMETRY_TIMEOUT_S,
             max_bytes=_TELEMETRY_MAX_BYTES,
             expect_content_type=None,
+            allowlist=["telemetry.lathe.dev"],
         )
 
         try:
             cfg["last_ping_ts"] = int(time.time())
             _write_config(cfg)
-        except Exception:
-            pass
+        except (OSError, TypeError, ValueError):
+            return True
 
         return True
-    except Exception:
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError):
         return False

@@ -15,16 +15,15 @@ from types import SimpleNamespace
 import jsonschema
 import pytest
 import trimesh
-
-from lathe.checker.interfaces import check_interfaces, SOCKET_TYPES, PIVOT_TYPES
+from lathe.checker.interfaces import PIVOT_TYPES, SOCKET_TYPES, check_interfaces
 from lathe.core.mesh import RuntimeMesh
 from lathe.core.stages.interfaces import (
-    DEFAULT_PIVOT_TYPE,
     DEFAULT_SOCKET_TYPE,
+)
+from lathe.core.stages.interfaces import (
     run as run_interfaces,
 )
 from lathe.selector_manifest import build_selector_manifest, write_selector_manifest
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "schema" / "lathe.selector.schema.json"
@@ -90,6 +89,43 @@ def test_socket_without_type_defaults_and_warns(tmp_path):
     assert socket["socket_type"] == DEFAULT_SOCKET_TYPE
     dep_warnings = [w for w in recorded if issubclass(w.category, DeprecationWarning)]
     assert any("battery_slot" in str(w.message) for w in dep_warnings)
+
+
+def test_source_call_socket_and_pivot_entries_are_coerced(tmp_path):
+    cfg = {
+        "sockets": [
+            {
+                "type": "call",
+                "name": "socket",
+                "args": [
+                    {"name": "id", "value": "power_socket"},
+                    {"name": "socket_type", "value": "port"},
+                ],
+            }
+        ],
+        "pivots": [
+            {
+                "type": "call",
+                "name": "pivot",
+                "args": [
+                    {"name": "id", "value": "floor_contact"},
+                    {"name": "pivot_type", "value": "contact"},
+                ],
+            }
+        ],
+        "anchors": [],
+    }
+    executor = _make_executor(tmp_path, cfg)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        bundle = run_interfaces(executor, rig_bundle={})
+
+    assert bundle["sockets"][0]["id"] == "power_socket"
+    assert bundle["sockets"][0]["socket_type"] == "port"
+    pivot = bundle["pivots"][0]
+    assert pivot["id"] == "floor_contact"
+    assert pivot["pivot_type"] == "contact"
+    assert pivot["position"][1] == pytest.approx(-1.0)
 
 
 def test_pivot_with_type_contact_round_trips(tmp_path, schema_validator):
@@ -174,7 +210,7 @@ def test_socket_aabb_matches_position(tmp_path):
     assert abs(cy - pos[1]) < 1e-6
     assert abs(cz - pos[2]) < 1e-6
     # AABB has positive extent in every axis.
-    for a, b in zip(aabb["min"], aabb["max"]):
+    for a, b in zip(aabb["min"], aabb["max"], strict=True):
         assert b >= a
 
 
@@ -208,13 +244,51 @@ def test_checker_flags_unknown_socket_type():
     assert "attach" in msg  # lists valid types
 
 
+def test_checker_flags_interface_constructor_mismatch():
+    asset = {
+        "name": "demo",
+        "build": {
+            "interfaces": {
+                "sockets": [
+                    {
+                        "type": "call",
+                        "name": "pivot",
+                        "args": [
+                            {"name": "id", "value": "floor_contact"},
+                            {"name": "pivot_type", "value": "contact"},
+                        ],
+                    }
+                ],
+                "pivots": [],
+                "anchors": [],
+            }
+        },
+    }
+    checker = _CheckerStub()
+    check_interfaces(checker, asset)
+    codes = [d["code"] for d in checker.diagnostics]
+    assert "L4704" in codes
+    msg = next(d["message"] for d in checker.diagnostics if d["code"] == "L4704")
+    assert "constructor 'pivot'" in msg
+    assert "Use socket(...)" in msg
+
+
 def test_checker_flags_duplicate_anchor_id_across_socket_and_pivot():
     asset = {
         "name": "demo",
         "build": {
             "interfaces": {
                 "sockets": [{"id": "shared", "socket_type": "attach"}],
-                "pivots": [{"id": "shared", "pivot_type": "center"}],
+                "pivots": [
+                    {
+                        "type": "call",
+                        "name": "pivot",
+                        "args": [
+                            {"name": "id", "value": "shared"},
+                            {"name": "pivot_type", "value": "center"},
+                        ],
+                    }
+                ],
                 "anchors": [],
             }
         },
@@ -233,12 +307,8 @@ def test_checker_accepts_all_catalogued_types():
         "name": "demo",
         "build": {
             "interfaces": {
-                "sockets": [
-                    {"id": f"s_{t}", "socket_type": t} for t in SOCKET_TYPES
-                ],
-                "pivots": [
-                    {"id": f"p_{t}", "pivot_type": t} for t in PIVOT_TYPES
-                ],
+                "sockets": [{"id": f"s_{t}", "socket_type": t} for t in SOCKET_TYPES],
+                "pivots": [{"id": f"p_{t}", "pivot_type": t} for t in PIVOT_TYPES],
                 "anchors": [],
             }
         },
@@ -254,9 +324,7 @@ def test_checker_accepts_all_catalogued_types():
 # ---------------------------------------------------------------------------
 
 
-def test_selector_manifest_includes_typed_sockets_and_pivots(
-    tmp_path, schema_validator
-):
+def test_selector_manifest_includes_typed_sockets_and_pivots(tmp_path, schema_validator):
     cfg = {
         "sockets": [
             {"id": "battery_slot", "socket_type": "slot"},
@@ -299,16 +367,15 @@ def test_selector_manifest_includes_typed_sockets_and_pivots(
     assert reloaded["sockets"][0]["socketType"] in {"slot", "rail"}
 
 
-def test_end_to_end_courier_drone_has_typed_manifest():
+@pytest.mark.slow
+def test_end_to_end_courier_drone_has_typed_manifest(tmp_path):
     """courier_drone must certify with at least one socket carrying a type."""
+    import os
     import subprocess
     import sys
 
-    build_out = REPO_ROOT / "tmp_stages3_e2e" / "courier_drone"
-    if build_out.exists():
-        import shutil
-
-        shutil.rmtree(build_out.parent)
+    out_root = tmp_path / "tmp_stages3_e2e"
+    build_out = out_root / "courier_drone"
 
     cmd = [
         sys.executable,
@@ -318,12 +385,13 @@ def test_end_to_end_courier_drone_has_typed_manifest():
         "examples/courier_drone.lth",
         "courier_drone",
         "--out",
-        "tmp_stages3_e2e",
+        str(out_root),
     ]
     result = subprocess.run(
         cmd,
         cwd=str(REPO_ROOT),
         capture_output=True,
+        env={**os.environ, "LATHE_ALLOW_EXTERNAL_OUT": "1"},
         text=True,
         timeout=300,
     )
@@ -333,16 +401,14 @@ def test_end_to_end_courier_drone_has_typed_manifest():
     manifest_path = build_out / "selector_manifest.json"
     assert manifest_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    # Sockets must have socketType populated (courier_drone declares two legacy
-    # string-form sockets; after STAGE-3 they default to "attach").
+    # Sockets must have socketType populated from typed source declarations.
     assert manifest["sockets"], "courier_drone must declare sockets"
     for sock in manifest["sockets"]:
         assert "socketType" in sock
         assert sock["socketType"] in set(SOCKET_TYPES)
         assert "transform" in sock
         assert "aabb" in sock
-    # Pivots must be populated via legacy-anchor migration (floor_contact) plus
-    # any explicit pivots; each carries a pivotType.
+    # Pivots must be populated from explicit typed declarations.
     assert manifest["pivots"], "courier_drone should now emit at least one pivot"
     for piv in manifest["pivots"]:
         assert "pivotType" in piv

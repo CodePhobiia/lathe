@@ -1,19 +1,16 @@
 {
-  "name": "Lathe (Blender-backed)",
-  "build": {
-    "dockerfile": "../docker/Dockerfile.blender",
-    "context": ".."
-  },
+  "name": "Lathe",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
   "workspaceFolder": "/workspaces/lathe",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/lathe,type=bind,consistency=cached",
-  "remoteUser": "lathe",
+  "remoteUser": "vscode",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "moby": true
     }
   },
-  "postCreateCommand": "just bootstrap",
+  "postCreateCommand": "bash scripts/bootstrap_local.sh --dev --export",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -33,11 +30,8 @@
       }
     }
   },
-  "containerEnv": {
-    "LATHE_BLENDER_PATH": "/opt/blender/blender"
-  },
   "forwardPorts": [],
   "mounts": [
-    "source=${localWorkspaceFolder}/.devcontainer/cache,target=/home/lathe/.cache,type=bind,consistency=cached"
+    "source=${localWorkspaceFolder}/.devcontainer/cache,target=/home/vscode/.cache,type=bind,consistency=cached"
   ]
 }

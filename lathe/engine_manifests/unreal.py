@@ -22,7 +22,6 @@ from typing import Any
 
 def emit_unreal_manifest(context: dict[str, Any], asset_name: str) -> str:
     """Build the Unreal sidecar JSON as a string (caller writes to disk)."""
-
     root: dict[str, Any] = {
         "schemaVersion": 1,
         "engine": "unreal",
@@ -57,14 +56,10 @@ def _build_components(context: dict[str, Any]) -> list[dict[str, Any]]:
                 "meshUri": lod.get("mesh_uri"),
                 "minDrawDistance": float(lod.get("distance_min", 0.0) or 0.0),
                 "ldMaxDrawDistance": (
-                    -1.0
-                    if lod.get("distance_max") is None
-                    else float(lod.get("distance_max"))
+                    -1.0 if lod.get("distance_max") is None else float(lod.get("distance_max"))
                 ),
                 "screenSize": (
-                    None
-                    if lod.get("screen_coverage") is None
-                    else float(lod.get("screen_coverage"))
+                    None if lod.get("screen_coverage") is None else float(lod.get("screen_coverage"))
                 ),
                 "triangleCount": int(lod.get("triangle_count") or 0),
             }

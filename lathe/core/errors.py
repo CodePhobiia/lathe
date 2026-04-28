@@ -54,4 +54,64 @@ def runtime_stage_error(
     )
 
 
-__all__ = ["BuildError", "runtime_stage_error"]
+def contract_version_stage_error(
+    asset_name: str,
+    stage: str,
+    backend_id: str,
+    message: str,
+    *,
+    details: dict[str, Any] | None = None,
+) -> BuildError:
+    """Return a build error for an unsupported stage/bundle contract version."""
+    return BuildError(
+        message,
+        diagnostics=[
+            {
+                "code": "L5102",
+                "name": "unsupported_stage_contract_version",
+                "severity": "error",
+                "phase": "build",
+                "asset": asset_name,
+                "stage": stage,
+                "path": f"stages.{stage}.bundle",
+                "message": message,
+                "details": {**(details or {}), "backend_id": backend_id},
+                "suggested_repairs": [],
+            }
+        ],
+    )
+
+
+def shape_handoff_contract_error(
+    asset_name: str,
+    backend_id: str,
+    message: str,
+    *,
+    details: dict[str, Any] | None = None,
+) -> BuildError:
+    """Return a build error for an unsupported shape handoff contract version."""
+    return BuildError(
+        message,
+        diagnostics=[
+            {
+                "code": "L5103",
+                "name": "unsupported_shape_handoff_contract_version",
+                "severity": "error",
+                "phase": "build",
+                "asset": asset_name,
+                "stage": "shape",
+                "path": "build.shape.backend",
+                "message": message,
+                "details": {**(details or {}), "backend_id": backend_id},
+                "suggested_repairs": [],
+            }
+        ],
+    )
+
+
+__all__ = [
+    "BuildError",
+    "contract_version_stage_error",
+    "runtime_stage_error",
+    "shape_handoff_contract_error",
+]

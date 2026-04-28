@@ -16,9 +16,10 @@ Provides:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from types import SimpleNamespace
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 
@@ -113,9 +114,7 @@ def blender_subprocess_stub(
     try:
         import lathe.blender_execution as _blender_exec
 
-        monkeypatch.setattr(
-            _blender_exec.subprocess, "run", stub, raising=True
-        )
+        monkeypatch.setattr(_blender_exec.subprocess, "run", stub, raising=True)
     except (ImportError, AttributeError):
         pass
     return stub

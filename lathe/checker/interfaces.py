@@ -13,8 +13,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from .utils import diag
+from lathe.interface_entries import coerce_interface_entry, interface_constructor
 
+from .utils import diag
 
 SOCKET_TYPES = (
     "attach",
@@ -41,20 +42,45 @@ PIVOT_TYPES = (
 
 
 def _entry_id(entry: Any, fallback: str) -> str:
-    if isinstance(entry, str):
-        return entry
-    if isinstance(entry, dict):
-        return str(entry.get("id") or entry.get("name") or fallback)
-    return fallback
+    coerced = coerce_interface_entry(entry)
+    return str(coerced.get("id") or coerced.get("name") or fallback)
 
 
 def _entry_type(entry: Any) -> str | None:
-    if isinstance(entry, dict):
-        raw = entry.get("socket_type") or entry.get("pivot_type") or entry.get("type")
-        if raw is None:
-            return None
-        return str(raw)
-    return None
+    coerced = coerce_interface_entry(entry)
+    raw = coerced.get("socket_type") or coerced.get("pivot_type") or coerced.get("type")
+    if raw is None:
+        return None
+    return str(raw)
+
+
+def _check_constructor(
+    checker: Any,
+    *,
+    asset_name: str | None,
+    entry: Any,
+    expected: str,
+    path: str,
+) -> bool:
+    constructor = interface_constructor(entry)
+    if constructor is None or constructor == expected:
+        return True
+    checker.diagnostics.append(
+        diag(
+            "L4704",
+            "interface_constructor_mismatch",
+            "error",
+            "typecheck",
+            (
+                f"Interface entry uses constructor '{constructor}' in a {expected}s "
+                f"list. Use {expected}(...) here."
+            ),
+            asset=asset_name,
+            path=path,
+            details={"constructor": constructor, "expected": expected},
+        )
+    )
+    return False
 
 
 def check_interfaces(
@@ -71,6 +97,14 @@ def check_interfaces(
 
     # Unknown socket_type
     for idx, entry in enumerate(sockets):
+        if not _check_constructor(
+            checker,
+            asset_name=asset_name,
+            entry=entry,
+            expected="socket",
+            path=f"build.interfaces.sockets[{idx}]",
+        ):
+            continue
         t = _entry_type(entry)
         if t is not None and t not in SOCKET_TYPES:
             sid = _entry_id(entry, f"sockets[{idx}]")
@@ -92,6 +126,14 @@ def check_interfaces(
 
     # Unknown pivot_type
     for idx, entry in enumerate(pivots):
+        if not _check_constructor(
+            checker,
+            asset_name=asset_name,
+            entry=entry,
+            expected="pivot",
+            path=f"build.interfaces.pivots[{idx}]",
+        ):
+            continue
         t = _entry_type(entry)
         if t is not None and t not in PIVOT_TYPES:
             pid = _entry_id(entry, f"pivots[{idx}]")
@@ -101,10 +143,7 @@ def check_interfaces(
                     "unknown_pivot_type",
                     "error",
                     "typecheck",
-                    (
-                        f"Pivot '{pid}' has unknown pivot_type '{t}'. "
-                        f"Valid types: {', '.join(PIVOT_TYPES)}."
-                    ),
+                    (f"Pivot '{pid}' has unknown pivot_type '{t}'. Valid types: {', '.join(PIVOT_TYPES)}."),
                     asset=asset_name,
                     path=f"build.interfaces.pivots[{idx}].pivot_type",
                     details={"valid_types": list(PIVOT_TYPES)},
@@ -138,7 +177,11 @@ def check_interfaces(
                         ),
                         asset=asset_name,
                         path=f"build.interfaces.{label}s[{idx}]",
-                        details={"id": aid, "first_declaration": prior, "second_declaration": f"{label}s[{idx}]"},
+                        details={
+                            "id": aid,
+                            "first_declaration": prior,
+                            "second_declaration": f"{label}s[{idx}]",
+                        },
                     )
                 )
             else:

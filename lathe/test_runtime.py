@@ -31,7 +31,11 @@ def evaluate_test_expr(expr: Any, context: dict[str, Any]) -> Any:
         if etype == "call":
             name = expr["name"]
             args = [evaluate_test_expr(item["value"], context) for item in expr.get("args", [])]
-            kwargs = {item["name"]: evaluate_test_expr(item["value"], context) for item in expr.get("args", []) if item.get("name")}
+            kwargs = {
+                item["name"]: evaluate_test_expr(item["value"], context)
+                for item in expr.get("args", [])
+                if item.get("name")
+            }
             if name == "exists":
                 target = kwargs.get("path", args[0] if args else "")
                 return bool(isinstance(target, str) and has_path(context, target))
@@ -44,7 +48,10 @@ def evaluate_test_expr(expr: Any, context: dict[str, Any]) -> Any:
                 return needle in haystack
             raise ValueError(f"Unsupported test builtin '{name}'")
         if etype == "range":
-            return {"from": evaluate_test_expr(expr["from"], context), "to": evaluate_test_expr(expr["to"], context)}
+            return {
+                "from": evaluate_test_expr(expr["from"], context),
+                "to": evaluate_test_expr(expr["to"], context),
+            }
         if etype == "unary":
             value = evaluate_test_expr(expr["value"], context)
             if expr["op"] == "not":

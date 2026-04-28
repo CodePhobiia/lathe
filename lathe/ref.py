@@ -26,12 +26,11 @@ from __future__ import annotations
 import json
 import re
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from .errors import LatheError
-
 
 # ---------------------------------------------------------------------------
 # Exceptions and warning categories
@@ -95,8 +94,8 @@ class RefSelector:
 
     kind: SelectorKind
     id: str
-    parent_part_id: Optional[str] = None
-    sub_index: Optional[int] = None
+    parent_part_id: str | None = None
+    sub_index: int | None = None
 
 
 @dataclass(frozen=True)
@@ -111,7 +110,7 @@ class RefNode:
 
     raw: str
     target: str
-    selector: Optional[RefSelector] = None
+    selector: RefSelector | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +146,6 @@ def _reject_path_traversal(target: str) -> None:
     we only reject tokens that *look* traversal-shaped so the downstream
     resolver never has to reason about them.
     """
-
     stripped = target.strip()
     if not stripped:
         raise RefParseError(
@@ -158,8 +156,7 @@ def _reject_path_traversal(target: str) -> None:
     if ".." in stripped.split("/") or ".." in stripped.split("\\"):
         raise RefParseError(
             "path_traversal_rejected",
-            "@lathe[...] target must not contain '..' path components; "
-            "see docs/refs.md for path rules",
+            "@lathe[...] target must not contain '..' path components; see docs/refs.md for path rules",
             token=target,
         )
     if stripped.startswith("\\\\?\\") or stripped.startswith("\\\\"):
@@ -171,15 +168,13 @@ def _reject_path_traversal(target: str) -> None:
     if re.match(r"^[A-Za-z]:[\\/]", stripped):
         raise RefParseError(
             "path_traversal_rejected",
-            "@lathe[...] target must be repo-relative (no absolute Windows "
-            "drive paths); see docs/refs.md",
+            "@lathe[...] target must be repo-relative (no absolute Windows drive paths); see docs/refs.md",
             token=target,
         )
     if stripped.startswith("/"):
         raise RefParseError(
             "path_traversal_rejected",
-            "@lathe[...] target must be repo-relative (no absolute POSIX "
-            "paths); see docs/refs.md",
+            "@lathe[...] target must be repo-relative (no absolute POSIX paths); see docs/refs.md",
             token=target,
         )
 
@@ -195,7 +190,6 @@ def _classify_selector(raw_selector: str, *, token: str) -> RefSelector:
     * ``socket.<id>``, ``collision.<id>``, ``pivot.<id>``, ``material.<id>``,
       ``lod<n>.<id>`` → Phase-2 error.
     """
-
     if not raw_selector:
         raise RefParseError(
             "empty_selector",
@@ -216,8 +210,7 @@ def _classify_selector(raw_selector: str, *, token: str) -> RefSelector:
             )
         raise RefParseError(
             "unknown_selector_kind",
-            f"@lathe[...] selector '{raw_selector}' is missing an id "
-            "(expected '<kind>.<id>')",
+            f"@lathe[...] selector '{raw_selector}' is missing an id (expected '<kind>.<id>')",
             token=token,
         )
 
@@ -297,8 +290,9 @@ def _classify_selector(raw_selector: str, *, token: str) -> RefSelector:
 # ---------------------------------------------------------------------------
 
 
-_TOKEN_PREFIX = "@lathe["
-_TOKEN_SUFFIX = "]"
+# Lathe ref syntax markers, not secrets.
+_TOKEN_PREFIX = "@lathe["  # noqa: S105  # nosec B105
+_TOKEN_SUFFIX = "]"  # noqa: S105  # nosec B105
 
 
 def parse_ref(token: str) -> RefNode:
@@ -308,7 +302,6 @@ def parse_ref(token: str) -> RefNode:
     Raises :class:`RefParseError` with a stable ``code`` on invalid tokens
     and on Phase-2 (geometric) selector shapes.
     """
-
     if not isinstance(token, str):  # defensive: surfacing happens in tests
         raise RefParseError("not_a_string", "ref token must be a string", token=str(token))
 
@@ -351,18 +344,12 @@ def format_ref(node: RefNode) -> str:
     surrounding whitespace, including Phase-2 sub-part selectors which
     render as ``part.<parent>.<face|edge|vertex><n>``.
     """
-
     if node.selector is None:
         return f"{_TOKEN_PREFIX}{node.target}{_TOKEN_SUFFIX}"
     sel = node.selector
     if sel.kind in _PHASE2_SUBPART_KINDS:
-        return (
-            f"{_TOKEN_PREFIX}{node.target}#part.{sel.id}{_TOKEN_SUFFIX}"
-        )
-    return (
-        f"{_TOKEN_PREFIX}{node.target}#{sel.kind}.{sel.id}"
-        f"{_TOKEN_SUFFIX}"
-    )
+        return f"{_TOKEN_PREFIX}{node.target}#part.{sel.id}{_TOKEN_SUFFIX}"
+    return f"{_TOKEN_PREFIX}{node.target}#{sel.kind}.{sel.id}{_TOKEN_SUFFIX}"
 
 
 # ---------------------------------------------------------------------------
@@ -402,7 +389,6 @@ def _selector_manifest(target_path: Path) -> dict[str, Any] | None:
     ``None``. The manifest is the authoritative REF-5 source; callers prefer
     it over ``build_report.json`` for selector lookup.
     """
-
     manifest_path = target_path / "selector_manifest.json"
     if not manifest_path.exists():
         return None
@@ -456,7 +442,7 @@ def _part_ids_from_shape_bundle(target_path: Path) -> list[str]:
 
 def _maybe_stale_warning(
     target_path: Path,
-    selector: Optional[RefSelector],
+    selector: RefSelector | None,
     *,
     manifest: dict[str, Any] | None = None,
     expected_build_hash: str | None = None,
@@ -473,7 +459,6 @@ def _maybe_stale_warning(
        asset/variant name recorded in the manifest (preferred) or
        ``build_report.json`` (fallback).
     """
-
     manifest_path = target_path / "selector_manifest.json"
     report_path = target_path / "build_report.json"
     if not manifest_path.exists() and not report_path.exists():
@@ -576,10 +561,7 @@ def _resolve_asset(
         return {
             "ok": False,
             "reason": "asset_not_in_build",
-            "message": (
-                f"build_report.json reports asset '{asset_name}', not "
-                f"'{selector.id}'"
-            ),
+            "message": (f"build_report.json reports asset '{asset_name}', not '{selector.id}'"),
             "facts": {"build_asset": asset_name, "requested": selector.id},
         }
     return {
@@ -653,8 +635,7 @@ def _resolve_stage(
     facts = {
         "stage": selector.id,
         "stage_dir": str(stage_dir) if stage_dir.exists() else None,
-        "backend_id": stage_bundle.get("backend_id")
-        or (stage_bundle.get("backend") or {}).get("id")
+        "backend_id": stage_bundle.get("backend_id") or (stage_bundle.get("backend") or {}).get("id")
         if isinstance(stage_bundle, dict)
         else None,
     }
@@ -794,8 +775,7 @@ def _resolve_sub_part_from_manifest(
             "facts": {
                 "requested_part": parent_id,
                 "available_part_ids": [
-                    p.get("id") for p in (manifest.get("parts") or [])
-                    if isinstance(p, dict)
+                    p.get("id") for p in (manifest.get("parts") or []) if isinstance(p, dict)
                 ],
                 "source": "selector_manifest.json:parts",
             },
@@ -826,9 +806,7 @@ def _resolve_sub_part_from_manifest(
         "facts": {
             "requested": selector.id,
             "parent_part_id": parent_id,
-            f"available_{field_name}": [
-                e.get("id") for e in entries if isinstance(e, dict)
-            ][:20],
+            f"available_{field_name}": [e.get("id") for e in entries if isinstance(e, dict)][:20],
             "source": f"selector_manifest.json:parts.{field_name}",
         },
         "message": (
@@ -840,14 +818,13 @@ def _resolve_sub_part_from_manifest(
 
 def _resolve_from_manifest(
     manifest: dict[str, Any],
-    selector: Optional[RefSelector],
+    selector: RefSelector | None,
 ) -> dict[str, Any] | None:
     """Resolve a selector directly against the REF-5 selector manifest.
 
     Returns ``None`` when the manifest does not yet know how to resolve this
     selector kind (falls back to the legacy ``build_report.json`` path).
     """
-
     if selector is None:
         return {
             "ok": True,
@@ -881,10 +858,7 @@ def _resolve_from_manifest(
                 "requested": selector.id,
                 "source": "selector_manifest.json",
             },
-            "message": (
-                f"selector_manifest.json reports asset '{asset_name}', not "
-                f"'{selector.id}'"
-            ),
+            "message": (f"selector_manifest.json reports asset '{asset_name}', not '{selector.id}'"),
         }
 
     if selector.kind == "variant":
@@ -919,7 +893,8 @@ def _resolve_from_manifest(
                             "part_id": selector.id,
                             "source": "selector_manifest.json:parts",
                             "sibling_parts": [
-                                p.get("id") for p in parts
+                                p.get("id")
+                                for p in parts
                                 if isinstance(p, dict) and p.get("id") != selector.id
                             ],
                             "ref": part.get("ref"),
@@ -932,9 +907,7 @@ def _resolve_from_manifest(
                 "ok": False,
                 "reason": "part_not_found",
                 "facts": {
-                    "available_part_ids": [
-                        p.get("id") for p in parts if isinstance(p, dict)
-                    ],
+                    "available_part_ids": [p.get("id") for p in parts if isinstance(p, dict)],
                     "source": "selector_manifest.json:parts",
                 },
                 "message": (
@@ -965,15 +938,10 @@ def _resolve_from_manifest(
                 "ok": False,
                 "reason": "diagnostic_not_found",
                 "facts": {
-                    "available_diagnostic_ids": [
-                        d.get("id") for d in diagnostics if isinstance(d, dict)
-                    ],
+                    "available_diagnostic_ids": [d.get("id") for d in diagnostics if isinstance(d, dict)],
                     "source": "selector_manifest.json:diagnostics",
                 },
-                "message": (
-                    f"diagnostic '{selector.id}' not found in "
-                    "selector_manifest.json"
-                ),
+                "message": (f"diagnostic '{selector.id}' not found in selector_manifest.json"),
             }
 
     # Stage selectors still resolve against build_report.json in Phase 1.
@@ -1005,7 +973,6 @@ def resolve_ref(
     ``target_path``, ``target_kind``, ``selector_kind``, ``selector_id``,
     and ``facts``.
     """
-
     if not isinstance(node, RefNode):
         raise TypeError("resolve_ref expects a RefNode — call parse_ref(token) first")
 
@@ -1029,9 +996,7 @@ def resolve_ref(
                 "ok": False,
                 "facts": {
                     "reason": "target_not_found",
-                    "message": (
-                        f"target path {target_path} does not exist on disk"
-                    ),
+                    "message": (f"target path {target_path} does not exist on disk"),
                 },
             }
         )
@@ -1071,9 +1036,7 @@ def resolve_ref(
             if resolver is None:
                 # Shouldn't happen — parse_ref rejects unknown kinds — but keep
                 # the API defensive rather than crash on a malformed RefNode.
-                raise RefResolutionError(
-                    f"no resolver for selector kind '{node.selector.kind}'"
-                )
+                raise RefResolutionError(f"no resolver for selector kind '{node.selector.kind}'")
             result = resolver(target_path, report, node.selector)
 
     base["ok"] = bool(result.get("ok"))
@@ -1087,13 +1050,13 @@ def resolve_ref(
 
 
 __all__ = [
-    "RefNode",
-    "RefSelector",
     "RefError",
+    "RefNode",
     "RefParseError",
     "RefResolutionError",
+    "RefSelector",
     "StaleRefWarning",
-    "parse_ref",
     "format_ref",
+    "parse_ref",
     "resolve_ref",
 ]

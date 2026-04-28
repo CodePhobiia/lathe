@@ -15,6 +15,8 @@ extends Control
 ## the user inspect historic builds that are still on disk.
 
 const WATCH_DIR := "res://lathe_out"
+const CURRENT_MANIFEST_REL := "stages/package/package_manifest.json"
+const LEGACY_MANIFEST_REL := "manifest.json"
 
 const _SEVERITY_COLORS := {
 	"info": Color(0.55, 0.75, 1.0),
@@ -62,7 +64,7 @@ func on_asset_imported(record: Dictionary) -> void:
 	var manifest_path: String = record.get("manifest_path", "")
 	if asset_id.is_empty() or manifest_path.is_empty():
 		return
-	var build_dir := manifest_path.get_base_dir()
+	var build_dir := _build_dir_for_manifest(manifest_path)
 	_known_assets[asset_id] = build_dir
 	_refresh_asset_picker()
 	if _current_build_dir.is_empty() or _current_build_dir == build_dir:
@@ -130,11 +132,28 @@ func _rescan_assets() -> void:
 	while entry != "":
 		if entry != "." and entry != ".." and dir.current_is_dir():
 			var build_dir := "%s/%s" % [WATCH_DIR, entry]
-			if FileAccess.file_exists("%s/manifest.json" % build_dir):
+			if not _manifest_path_for_build(build_dir).is_empty():
 				_known_assets[entry] = build_dir
 		entry = dir.get_next()
 	dir.list_dir_end()
 	_refresh_asset_picker()
+
+
+func _manifest_path_for_build(build_dir: String) -> String:
+	var current := "%s/%s" % [build_dir, CURRENT_MANIFEST_REL]
+	if FileAccess.file_exists(current):
+		return current
+	var legacy := "%s/%s" % [build_dir, LEGACY_MANIFEST_REL]
+	if FileAccess.file_exists(legacy):
+		return legacy
+	return ""
+
+
+func _build_dir_for_manifest(manifest_path: String) -> String:
+	var current_suffix := "/%s" % CURRENT_MANIFEST_REL
+	if manifest_path.ends_with(current_suffix):
+		return manifest_path.substr(0, manifest_path.length() - current_suffix.length())
+	return manifest_path.get_base_dir()
 
 
 func _refresh_asset_picker() -> void:

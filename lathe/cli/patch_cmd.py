@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ._common import _dump
+from ._common import _dump, _emit_error
 
 
 def run_patch(args) -> None:
@@ -32,15 +32,44 @@ def run_patch(args) -> None:
         payload = update_material_palette(program, args.target, args.value)
     elif args.op == "widen_search_bounds":
         if args.value2 is None:
-            raise SystemExit("--value2 is required for widen_search_bounds")
+            _emit_error(
+                "lathe.cli.patch.missing_value2",
+                "--value2 is required for widen_search_bounds",
+                "Re-run with --value2 LOWER:UPPER, for example --value2 0.8:1.2.",
+                exit_code=2,
+                source_path=str(args.file),
+            )
         if ":" not in args.value2:
-            raise SystemExit("--value2 must be LOWER:UPPER for widen_search_bounds")
+            _emit_error(
+                "lathe.cli.patch.invalid_value2",
+                "--value2 must be LOWER:UPPER for widen_search_bounds",
+                "Re-run with --value2 LOWER:UPPER using numeric lower and upper bounds.",
+                exit_code=2,
+                source_path=str(args.file),
+            )
         lower_text, upper_text = args.value2.split(":", 1)
-        payload = widen_search_bounds(program, args.target, args.value, float(lower_text), float(upper_text))
+        try:
+            lower = float(lower_text)
+            upper = float(upper_text)
+        except ValueError:
+            _emit_error(
+                "lathe.cli.patch.invalid_value2",
+                "--value2 must contain numeric LOWER:UPPER bounds for widen_search_bounds",
+                "Re-run with --value2 LOWER:UPPER, for example --value2 0.8:1.2.",
+                exit_code=2,
+                source_path=str(args.file),
+            )
+        payload = widen_search_bounds(program, args.target, args.value, lower, upper)
     elif args.op == "freeze_dimension":
         payload = freeze_dimension(program, args.target, args.value)
     elif args.op == "add_benchmark_fixture":
         payload = add_benchmark_fixture(program, args.target, args.value)
     else:
-        raise SystemExit(2)
+        _emit_error(
+            "lathe.cli.patch.unknown_op",
+            f"Unsupported patch op: {args.op}",
+            "See lathe patch --help for supported operations.",
+            exit_code=2,
+            source_path=str(args.file),
+        )
     _dump(payload)

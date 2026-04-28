@@ -16,7 +16,6 @@ import unittest
 from dataclasses import replace
 
 import numpy as np
-
 from lathe.assembly_kernel import compile_assembly_blueprint
 from lathe.asset_graph import build_asset_graph
 from lathe.blueprints import resolve_blueprint
@@ -106,7 +105,9 @@ class CompileFeatureEnhancementsTests(unittest.TestCase):
         )
         self.assertGreaterEqual(len(report["feature_ops_used"]), 2)
         # drone-specific: rotor_arm ops always run ribs + edge_break
-        self.assertTrue(any("edge" in name or "rib" in name or "shroud" in name for name in report["feature_ops_used"]))
+        self.assertTrue(
+            any("edge" in name or "rib" in name or "shroud" in name for name in report["feature_ops_used"])
+        )
 
     def test_empty_regions_yield_zero_features(self) -> None:
         graph = _crate_graph()
@@ -144,7 +145,10 @@ class CompileFeatureEnhancementsTests(unittest.TestCase):
         fidelity = infer_fidelity_profile(graph)
         with self.assertRaises(AttributeError):
             compile_feature_enhancements(
-                graph, object(), fidelity=fidelity, params=_params(graph, fidelity)  # type: ignore[arg-type]
+                graph,
+                object(),
+                fidelity=fidelity,
+                params=_params(graph, fidelity),  # type: ignore[arg-type]
             )
 
     def test_fidelity_tier_affects_feature_count(self) -> None:
@@ -158,18 +162,12 @@ class CompileFeatureEnhancementsTests(unittest.TestCase):
 
         blockout = replace(base_fidelity, tier="blockout")
         hero = replace(base_fidelity, tier="hero", trim_complexity=5)
-        _, report_block = compile_feature_enhancements(
-            graph, shape_ir, fidelity=blockout, params=params
-        )
-        _, report_hero = compile_feature_enhancements(
-            graph, shape_ir, fidelity=hero, params=params
-        )
+        _, report_block = compile_feature_enhancements(graph, shape_ir, fidelity=blockout, params=params)
+        _, report_hero = compile_feature_enhancements(graph, shape_ir, fidelity=hero, params=params)
         # hero tier's `feature_count = 6` branch includes additional
         # fastener strips on shells; blockout's `feature_count = 2`
         # branch skips them. Hero must be >= blockout.
-        self.assertGreaterEqual(
-            report_hero["feature_count_added"], report_block["feature_count_added"]
-        )
+        self.assertGreaterEqual(report_hero["feature_count_added"], report_block["feature_count_added"])
 
 
 if __name__ == "__main__":

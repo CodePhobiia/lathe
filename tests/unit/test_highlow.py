@@ -64,9 +64,7 @@ class HighLowSerializationTests(unittest.TestCase):
         self.assertEqual(rebuilt, rel)
 
     def test_to_dict_keys_match_dataclass_fields(self) -> None:
-        rel = HighLowRelation(
-            high_mesh_uri="h", low_mesh_uri="l", bake_cage_offset_cm=0.0, source="s"
-        )
+        rel = HighLowRelation(high_mesh_uri="h", low_mesh_uri="l", bake_cage_offset_cm=0.0, source="s")
         payload = rel.to_dict()
         expected = {f.name for f in fields(HighLowRelation)}
         self.assertEqual(set(payload.keys()), expected)
@@ -91,12 +89,22 @@ class HighLowEdgeCaseTests(unittest.TestCase):
         # (it lives in surface_runtime), only that callers can supply a value
         # consistent with their own monotone-improvement rule.
         small = HighLowRelation(
-            high_mesh_uri="h", low_mesh_uri="l", bake_cage_offset_cm=0.0, source="s",
-            high_triangle_count=1000, low_triangle_count=900, distinction_ratio=0.1,
+            high_mesh_uri="h",
+            low_mesh_uri="l",
+            bake_cage_offset_cm=0.0,
+            source="s",
+            high_triangle_count=1000,
+            low_triangle_count=900,
+            distinction_ratio=0.1,
         )
         large = HighLowRelation(
-            high_mesh_uri="h", low_mesh_uri="l", bake_cage_offset_cm=0.0, source="s",
-            high_triangle_count=1000, low_triangle_count=200, distinction_ratio=0.8,
+            high_mesh_uri="h",
+            low_mesh_uri="l",
+            bake_cage_offset_cm=0.0,
+            source="s",
+            high_triangle_count=1000,
+            low_triangle_count=200,
+            distinction_ratio=0.8,
         )
         self.assertLess(small.distinction_ratio, large.distinction_ratio)
 
@@ -104,9 +112,7 @@ class HighLowEdgeCaseTests(unittest.TestCase):
         # Constructing with empty URIs should not raise — validation is the
         # caller's responsibility — but to_dict should preserve the empty
         # strings rather than silently substituting placeholders.
-        rel = HighLowRelation(
-            high_mesh_uri="", low_mesh_uri="", bake_cage_offset_cm=0.0, source=""
-        )
+        rel = HighLowRelation(high_mesh_uri="", low_mesh_uri="", bake_cage_offset_cm=0.0, source="")
         payload = rel.to_dict()
         self.assertEqual(payload["high_mesh_uri"], "")
         self.assertEqual(payload["low_mesh_uri"], "")

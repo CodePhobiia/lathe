@@ -9,6 +9,16 @@ A GTM version cannot ship before its underlying engineering milestone lands, but
 
 All dates below are **relative** (Month N after V0.1 internal freeze). Absolute dates land when Wave 0 is committed and the V0.1 tag is cut.
 
+## Maintained milestone bands
+
+The release roadmap is maintained in three planning horizons:
+
+| Horizon | Milestones | Maintenance rule |
+|---|---|---|
+| Near term | V0.2 release-candidate hardening and V0.3 Godot alpha | Review every release-candidate cut and keep release blockers in the matching GitHub milestone. |
+| Mid term | V0.5 public OSS launch and V0.8 provider registry beta | Review monthly against product-value evidence and design-partner feedback. |
+| Long term | V1.0 GA | Review after each public milestone and keep scope limited to stable contracts, external references, and release support. |
+
 ## Mapping table
 
 | GTM (public) | Engineering (PRD) | GTM-specific exit criteria | Target (relative) |
@@ -31,7 +41,7 @@ All dates below are **relative** (Month N after V0.1 internal freeze). Absolute 
 
 ### V0.1 (now) — Month 0
 
-- [ ] Wave 0 Foundation: git init, LICENSE, CHANGELOG, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY stub, `v0.1.0` tag.
+- [ ] Wave 0 Foundation: git init, LICENSE, CHANGELOG, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY baseline, `v0.1.0` tag.
 - [ ] Wave 1 additive scaffolding complete (CI, docs, DX, tests, vision).
 - [x] Manifesto + PRD published internally.
 - [x] Personas / ICP / JTBD drafted (this commit).

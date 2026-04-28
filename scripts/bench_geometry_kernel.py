@@ -47,6 +47,7 @@ except ImportError:
     ManifoldKernel = None  # type: ignore[assignment]
 
     def manifold_available() -> bool:  # type: ignore[misc]
+        """Return whether the optional Manifold backend is importable."""
         return False
 
 
@@ -65,8 +66,7 @@ def _canonical_triangle_hash(vertices: np.ndarray, faces: np.ndarray) -> str:
     tris = vertices[faces].reshape(-1, 9)
     tris = np.round(tris, decimals=6)
     ordered = np.asarray(sorted(tuple(row) for row in tris))
-    digest = hashlib.sha256(ordered.tobytes()).hexdigest()
-    return digest
+    return hashlib.sha256(ordered.tobytes()).hexdigest()
 
 
 def _load_shape_ir(hero: str, seed: int) -> tuple[ShapeIR, Any]:
@@ -96,29 +96,34 @@ def _bench_lathe_native(shape_ir: ShapeIR, fidelity: Any) -> dict[str, Any]:
         mesh_ir, report = fuse_shape_ir(shape_ir, fidelity)
         elapsed = time.perf_counter() - t0
         if mesh_ir is None:
-            runs.append({
-                "run": run,
-                "status": "fallback",
-                "report_mode": report.get("mode"),
-                "elapsed_s": elapsed,
-            })
+            runs.append(
+                {
+                    "run": run,
+                    "status": "fallback",
+                    "report_mode": report.get("mode"),
+                    "elapsed_s": elapsed,
+                }
+            )
             continue
         vertices = np.asarray(mesh_ir.vertices, dtype=np.float64)
         faces = np.asarray(mesh_ir.faces, dtype=np.int64)
         # Re-compute watertight via trimesh view without mutating mesh_ir.
         import trimesh
+
         tm = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
-        runs.append({
-            "run": run,
-            "status": "ok",
-            "elapsed_s": elapsed,
-            "num_tri": int(len(faces)),
-            "num_vert": int(len(vertices)),
-            "body_count": int(tm.body_count) if hasattr(tm, "body_count") else _body_count_trimesh(tm),
-            "is_watertight": bool(tm.is_watertight),
-            "hash": _canonical_triangle_hash(vertices, faces),
-            "search_mode": report.get("search_mode"),
-        })
+        runs.append(
+            {
+                "run": run,
+                "status": "ok",
+                "elapsed_s": elapsed,
+                "num_tri": len(faces),
+                "num_vert": len(vertices),
+                "body_count": int(tm.body_count) if hasattr(tm, "body_count") else _body_count_trimesh(tm),
+                "is_watertight": bool(tm.is_watertight),
+                "hash": _canonical_triangle_hash(vertices, faces),
+                "search_mode": report.get("search_mode"),
+            }
+        )
     return _summarize("lathe_native_v1", runs)
 
 
@@ -146,41 +151,47 @@ def _bench_manifold(shape_ir: ShapeIR) -> dict[str, Any]:
             result = _fuse_via_manifold(kernel, shape_ir.primitives)
         except Exception as exc:
             elapsed = time.perf_counter() - t0
-            runs.append({
-                "run": run,
-                "status": "error",
-                "error": f"{type(exc).__name__}: {exc}",
-                "elapsed_s": elapsed,
-            })
+            runs.append(
+                {
+                    "run": run,
+                    "status": "error",
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "elapsed_s": elapsed,
+                }
+            )
             continue
         elapsed = time.perf_counter() - t0
         if result.is_empty():
-            runs.append({
-                "run": run,
-                "status": "empty",
-                "elapsed_s": elapsed,
-            })
+            runs.append(
+                {
+                    "run": run,
+                    "status": "empty",
+                    "elapsed_s": elapsed,
+                }
+            )
             continue
         tm = kernel.to_trimesh(result)
-        runs.append({
-            "run": run,
-            "status": "ok",
-            "elapsed_s": elapsed,
-            "num_tri": result.num_tri(),
-            "num_vert": result.num_vert(),
-            "body_count": kernel.body_count(result),
-            "is_watertight": kernel.is_watertight(result),
-            "hash": _canonical_triangle_hash(
-                np.asarray(tm.vertices, dtype=np.float64),
-                np.asarray(tm.faces, dtype=np.int64),
-            ),
-            "volume": float(result.volume()),
-            "genus": result.genus(),
-        })
+        runs.append(
+            {
+                "run": run,
+                "status": "ok",
+                "elapsed_s": elapsed,
+                "num_tri": result.num_tri(),
+                "num_vert": result.num_vert(),
+                "body_count": kernel.body_count(result),
+                "is_watertight": kernel.is_watertight(result),
+                "hash": _canonical_triangle_hash(
+                    np.asarray(tm.vertices, dtype=np.float64),
+                    np.asarray(tm.faces, dtype=np.int64),
+                ),
+                "volume": float(result.volume()),
+                "genus": result.genus(),
+            }
+        )
     return _summarize("lathe.geometry.manifold_v1", runs)
 
 
-def _fuse_via_manifold(kernel: "ManifoldKernel", primitives: list[ShapePrimitive]) -> Any:
+def _fuse_via_manifold(kernel: ManifoldKernel, primitives: list[ShapePrimitive]) -> Any:
     """Reduce a list of ShapePrimitive into a single Manifold via CSG.
 
     Primitives with blend_mode == "subtract" are applied as differences
@@ -199,16 +210,13 @@ def _fuse_via_manifold(kernel: "ManifoldKernel", primitives: list[ShapePrimitive
                 continue
             acc = mesh
             continue
-        if prim.blend_mode == "subtract":
-            acc = kernel.difference(acc, mesh)
-        else:
-            acc = kernel.union(acc, mesh)
+        acc = kernel.difference(acc, mesh) if prim.blend_mode == "subtract" else kernel.union(acc, mesh)
     if acc is None:
         raise ValueError("no positive primitives to fuse")
     return acc
 
 
-def _primitive_to_manifold(kernel: "ManifoldKernel", prim: ShapePrimitive) -> Any:
+def _primitive_to_manifold(kernel: ManifoldKernel, prim: ShapePrimitive) -> Any:
     if prim.primitive_type == "box":
         if prim.extents is None:
             return None
@@ -217,30 +225,24 @@ def _primitive_to_manifold(kernel: "ManifoldKernel", prim: ShapePrimitive) -> An
         if prim.radius is None or prim.height is None:
             return None
         return kernel.build_primitive(
-            "cylinder", radius=prim.radius, height=prim.height,
-            axis=prim.axis, center=prim.center,
+            "cylinder",
+            radius=prim.radius,
+            height=prim.height,
+            axis=prim.axis,
+            center=prim.center,
         )
     return None
 
 
 def _summarize(name: str, runs: list[dict[str, Any]]) -> dict[str, Any]:
     ok_runs = [r for r in runs if r.get("status") == "ok"]
-    watertight_rate = (
-        sum(1 for r in ok_runs if r.get("is_watertight")) / len(ok_runs)
-        if ok_runs else 0.0
-    )
+    watertight_rate = sum(1 for r in ok_runs if r.get("is_watertight")) / len(ok_runs) if ok_runs else 0.0
     body_counts = [r.get("body_count") for r in ok_runs]
     body_stable = len(set(body_counts)) <= 1 if body_counts else False
     hashes = [r.get("hash") for r in ok_runs]
     deterministic = len(set(hashes)) <= 1 if hashes else False
-    mean_tri = (
-        int(sum(r.get("num_tri", 0) for r in ok_runs) / len(ok_runs))
-        if ok_runs else 0
-    )
-    mean_elapsed = (
-        sum(r.get("elapsed_s", 0.0) for r in ok_runs) / len(ok_runs)
-        if ok_runs else 0.0
-    )
+    mean_tri = int(sum(r.get("num_tri", 0) for r in ok_runs) / len(ok_runs)) if ok_runs else 0
+    mean_elapsed = sum(r.get("elapsed_s", 0.0) for r in ok_runs) / len(ok_runs) if ok_runs else 0.0
     summary = {
         "ok_run_count": len(ok_runs),
         "total_run_count": len(runs),
@@ -256,8 +258,9 @@ def _summarize(name: str, runs: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def run_bench(heroes: list[str], seed: int) -> dict[str, Any]:
+    """Run the geometry-kernel comparison for the requested heroes."""
     results: dict[str, Any] = {
-        "generated_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+        "generated_at": _dt.datetime.now(_dt.UTC).isoformat(),
         "seed": seed,
         "manifold3d_available": manifold_available(),
         "heroes": {},
@@ -298,6 +301,7 @@ def run_bench(heroes: list[str], seed: int) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the benchmark CLI and write its JSON report."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--only",
@@ -319,7 +323,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.output:
         out_path = Path(args.output)
     else:
-        date = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%d")
+        date = _dt.datetime.now(_dt.UTC).strftime("%Y%m%d")
         out_path = REPO_ROOT / "docs" / "benchmarks" / f"geometry_kernel_eval_{date}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")

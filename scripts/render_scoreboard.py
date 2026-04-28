@@ -14,6 +14,7 @@ For each hero we extract: score, threshold, certified, build_time_s (if
 present), and the `.glb` SHA256. Missing heroes render as `n/a` so the
 table always has exactly as many rows as `HEROES`.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -22,13 +23,12 @@ import hashlib
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from lathe.hero_manifest import HEROES, Hero  # noqa: E402
+from lathe.hero_manifest import HEROES, Hero
 
 DATA_DIR = _REPO_ROOT / "docs" / "benchmarks" / "data"
 SCOREBOARD_PATH = _REPO_ROOT / "docs" / "benchmarks" / "scoreboard.md"
@@ -42,7 +42,7 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def _find_glb(build_dir: Path, report: Dict) -> Optional[Path]:
+def _find_glb(build_dir: Path, report: dict) -> Path | None:
     for output in report.get("outputs", []) or []:
         rel = output.get("path") if isinstance(output, dict) else None
         if rel and rel.lower().endswith(".glb"):
@@ -54,7 +54,7 @@ def _find_glb(build_dir: Path, report: Dict) -> Optional[Path]:
     return None
 
 
-def _read_snapshot(hero: Hero) -> Optional[Dict]:
+def _read_snapshot(hero: Hero) -> dict | None:
     snap_path = DATA_DIR / f"{hero.asset_name}.json"
     if not snap_path.exists():
         return None
@@ -64,7 +64,7 @@ def _read_snapshot(hero: Hero) -> Optional[Dict]:
         return None
 
 
-def _read_build_report(build_dir: Path, hero: Hero) -> Optional[Dict]:
+def _read_build_report(build_dir: Path, hero: Hero) -> dict | None:
     report_path = build_dir / hero.asset_name / "build_report.json"
     if not report_path.exists():
         return None
@@ -82,8 +82,9 @@ def _read_build_report(build_dir: Path, hero: Hero) -> Optional[Dict]:
     }
 
 
-def collect_row(hero: Hero, build_dir: Path) -> Dict:
-    row: Dict = {
+def collect_row(hero: Hero, build_dir: Path) -> dict:
+    """Collect the scoreboard row for one hero."""
+    row: dict = {
         "asset_name": hero.asset_name,
         "family": hero.family,
         "threshold": hero.threshold,
@@ -113,7 +114,7 @@ def collect_row(hero: Hero, build_dir: Path) -> Dict:
     return row
 
 
-def _fmt_score(v: Optional[float]) -> str:
+def _fmt_score(v: float | None) -> str:
     return "n/a" if v is None else f"{float(v):.6f}"
 
 
@@ -121,7 +122,7 @@ def _fmt_threshold(v: float) -> str:
     return f"{v:.2f}"
 
 
-def _fmt_certified(v: Optional[bool]) -> str:
+def _fmt_certified(v: bool | None) -> str:
     if v is None:
         return "n/a"
     return "yes" if v else "no"
@@ -136,13 +137,14 @@ def _fmt_time(v) -> str:
         return "n/a"
 
 
-def _fmt_hash(v: Optional[str]) -> str:
+def _fmt_hash(v: str | None) -> str:
     if not v:
         return "n/a"
     return f"`{v[:16]}…`"
 
 
-def render_markdown(rows: List[Dict], now: _dt.datetime) -> str:
+def render_markdown(rows: list[dict], now: _dt.datetime) -> str:
+    """Render scoreboard rows as markdown."""
     lines = [
         "# Lathe hero scoreboard",
         "",
@@ -172,7 +174,8 @@ def render_markdown(rows: List[Dict], now: _dt.datetime) -> str:
     return "\n".join(lines)
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
+    """Run the scoreboard renderer CLI."""
     parser = argparse.ArgumentParser(description="Render the hero scoreboard.")
     parser.add_argument(
         "--build-dir",
@@ -189,7 +192,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     rows = [collect_row(hero, args.build_dir) for hero in HEROES]
-    markdown = render_markdown(rows, _dt.datetime.now(_dt.timezone.utc))
+    markdown = render_markdown(rows, _dt.datetime.now(_dt.UTC))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(markdown, encoding="utf-8")
     print(f"[scoreboard] wrote {args.out} ({len(rows)} heroes)")

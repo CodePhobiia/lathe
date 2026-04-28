@@ -54,7 +54,7 @@ Phase-2 shapes are **parsed** (to produce a clear error) but **not resolved**. `
 {
   "ok": true,
   "ref": "@lathe[dist/courier_drone#asset.courier_drone]",
-  "target_path": "D:/lathe_v0_1/dist/courier_drone",
+  "target_path": "<repo>/dist/courier_drone",
   "target_kind": "build",
   "selector_kind": "asset",
   "selector_id": "courier_drone",

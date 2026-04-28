@@ -13,8 +13,11 @@ import hashlib
 import json
 import unittest
 
+import pytest
 from lathe.backends import BACKENDS, STACKS, get_backend
 from lathe.providers import PROVIDERS
+
+pytestmark = pytest.mark.contract
 
 
 CONTRACT_ID = "lathe.shape.intent_mesh_handoff_v1"
@@ -22,45 +25,49 @@ CONTRACT_ID = "lathe.shape.intent_mesh_handoff_v1"
 # Pinned outer field set of BACKENDS[CONTRACT_ID]. Sourced from the current
 # ground truth in ``lathe/backends.py`` head 11abfa0. Add an entry here only
 # when intentionally extending the contract surface; never silently widen.
-PINNED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
-    "id",
-    "version",
-    "stage",
-    "toolchain",
-    "runtime_executor",
-    "determinism_class",
-    "supported_asset_kinds",
-    "supported_shape_modes",
-    "supported_preserve",
-    "provider_slots",
-    "contract",
-})
+PINNED_TOP_LEVEL_KEYS: frozenset[str] = frozenset(
+    {
+        "id",
+        "version",
+        "stage",
+        "toolchain",
+        "runtime_executor",
+        "determinism_class",
+        "supported_asset_kinds",
+        "supported_shape_modes",
+        "supported_preserve",
+        "provider_slots",
+        "contract",
+    }
+)
 
 # Pinned set of fields inside the inner ``contract`` block.
-PINNED_INNER_CONTRACT_KEYS: frozenset[str] = frozenset({
-    "summary",
-    "inputs",
-    "outputs",
-})
+PINNED_INNER_CONTRACT_KEYS: frozenset[str] = frozenset(
+    {
+        "summary",
+        "inputs",
+        "outputs",
+    }
+)
 
 # Pinned required-output-fields the bundle must declare downstream consumers
 # can rely on. Never quietly remove an entry here without a migration.
-PINNED_REQUIRED_OUTPUT_FIELDS: frozenset[str] = frozenset({
-    "candidates[].mesh_uri",
-    "candidates[].units",
-    "candidates[].frame",
-    "candidates[].candidate_id",
-    "provenance.backend_id",
-    "provenance.backend_version",
-})
+PINNED_REQUIRED_OUTPUT_FIELDS: frozenset[str] = frozenset(
+    {
+        "candidates[].mesh_uri",
+        "candidates[].units",
+        "candidates[].frame",
+        "candidates[].candidate_id",
+        "provenance.backend_id",
+        "provenance.backend_version",
+    }
+)
 
 # SHA-256 of the canonical-JSON-serialized contract dict at head 11abfa0.
 # When this fails: the contract bytes drifted. Read the diff carefully —
 # downstream is wired to the existing shape — then update this pin AND
 # the field-set frozensets above to match.
-PINNED_CONTRACT_SHA256 = (
-    "51e02c6ed7e524cca42d0e638aa936da222af5a006358bd1d4e931aea671b085"
-)
+PINNED_CONTRACT_SHA256 = "51e02c6ed7e524cca42d0e638aa936da222af5a006358bd1d4e931aea671b085"
 
 
 def _canonical_bytes(payload: object) -> bytes:
@@ -104,10 +111,7 @@ class ShapeHandoffV1FieldSetTests(unittest.TestCase):
         removed = PINNED_INNER_CONTRACT_KEYS - actual
         self.assertFalse(
             added or removed,
-            msg=(
-                f"Inner contract block drifted. Added: {sorted(added)}; "
-                f"Removed: {sorted(removed)}."
-            ),
+            msg=(f"Inner contract block drifted. Added: {sorted(added)}; Removed: {sorted(removed)}."),
         )
 
     def test_required_output_fields_superset_of_pin(self) -> None:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 EVIDENCE_CLASSES = [
     "geometry_evidence",
     "topology_evidence",
@@ -83,11 +82,15 @@ def build_validation_evidence_ir(
             "sources": ["stages/uv/bundle.json"],
         },
         "bake_evidence": {
-            "available": bool(bake_plan.get("maps") or surface_bundle.get("surface_control_pack", {}).get("bake_maps")),
+            "available": bool(
+                bake_plan.get("maps") or surface_bundle.get("surface_control_pack", {}).get("bake_maps")
+            ),
             "sources": ["stages/execution/bake_plan_ir.json", "stages/surface/bundle.json"],
         },
         "surface_evidence": {
-            "available": bool(surface_bundle.get("surface_validation_ir") or surface_bundle.get("surface_backend_report")),
+            "available": bool(
+                surface_bundle.get("surface_validation_ir") or surface_bundle.get("surface_backend_report")
+            ),
             "sources": ["stages/surface/bundle.json"],
         },
         "package_export_evidence": {

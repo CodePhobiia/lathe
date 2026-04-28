@@ -19,14 +19,14 @@ from __future__ import annotations
 
 import json
 import threading
+from collections.abc import Iterator
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Iterator
 
 import pytest
 
 
 class _MockHunyuanHandler(BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         if self.path == "/health":
             body = json.dumps({"status": "ok"}).encode("utf-8")
             self.send_response(200)
@@ -37,7 +37,7 @@ class _MockHunyuanHandler(BaseHTTPRequestHandler):
             return
         self.send_error(404)
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         if self.path != "/generate":
             self.send_error(404)
             return
@@ -70,7 +70,7 @@ class _MockHunyuanHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A003
+    def log_message(self, format: str, *args: object) -> None:
         return
 
 

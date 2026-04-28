@@ -17,11 +17,11 @@ import sys
 import urllib.error
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from lathe.errors import LatheConfigError
 from lathe.net import NetGuardError, safe_urlopen
 from lathe.validation import validate_json_bytes
-
 
 _HUNYUAN_PROBE_MAX_BODY_BYTES = 64 * 1024
 _HUNYUAN_PROBE_MAX_TIMEOUT_S = 5.0
@@ -29,7 +29,7 @@ _HUNYUAN_PROBE_MAX_TIMEOUT_S = 5.0
 _NETGUARD_TO_PROBE_CODE: dict[str, str] = {
     "invalid_url": "invalid_url",
     "scheme_insecure": "scheme_insecure",
-    "host_not_allowlisted": "scheme_insecure",
+    "host_not_allowlisted": "host_not_allowlisted",
     "dns_resolution_failed": "dns_resolution_failed",
     "private_ip_rejected": "private_ip_rejected",
     "unexpected_media_type": "unexpected_content_type",
@@ -46,6 +46,20 @@ DEFAULT_BLENDER_PATHS = [
     Path(r"C:\Program Files\Blender Foundation\Blender 4.5\blender.exe"),
     Path(r"C:\Program Files\Blender Foundation\Blender 4.4\blender.exe"),
 ]
+_LOOPBACK_HOSTS: frozenset[str] = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def _is_loopback_host(host: str) -> bool:
+    return host.strip("[]").lower() in _LOOPBACK_HOSTS
+
+
+def _hunyuan_probe_allowlist(base_url: str, configured: Any) -> list[str] | None:
+    if isinstance(configured, list) and configured:
+        return [str(item) for item in configured]
+    hostname = urlsplit(base_url).hostname or ""
+    if _is_loopback_host(hostname):
+        return [hostname]
+    return None
 
 
 def _distribution_version(name: str) -> str | None:
@@ -86,7 +100,13 @@ def _run_command(args: list[str], *, timeout_s: int = 10) -> dict[str, Any]:
     except FileNotFoundError as exc:
         return {"ok": False, "error": str(exc), "code": "not_found"}
     except subprocess.TimeoutExpired as exc:
-        return {"ok": False, "error": f"Timed out after {timeout_s}s", "code": "timeout", "stdout": exc.stdout, "stderr": exc.stderr}
+        return {
+            "ok": False,
+            "error": f"Timed out after {timeout_s}s",
+            "code": "timeout",
+            "stdout": exc.stdout,
+            "stderr": exc.stderr,
+        }
     return {
         "ok": proc.returncode == 0,
         "returncode": proc.returncode,
@@ -231,7 +251,8 @@ def environment_report() -> dict[str, Any]:
             "vswhere": _find_vswhere(),
             "cl": shutil.which("cl") or _find_vs_msvc_tool("cl.exe"),
             "nmake": shutil.which("nmake") or _find_vs_msvc_tool("nmake.exe"),
-            "cmake": shutil.which("cmake") or _find_vs_tool(r"Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"),
+            "cmake": shutil.which("cmake")
+            or _find_vs_tool(r"Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"),
             "vsdevcmd": _find_vs_tool(r"Common7\Tools\VsDevCmd.bat"),
             "nvidia-smi": shutil.which("nvidia-smi"),
         },
@@ -239,8 +260,8 @@ def environment_report() -> dict[str, Any]:
 
 
 def _candidate_blender_paths(runtime_config: dict[str, Any] | None = None) -> list[Path]:
-    topology_cfg = ((runtime_config or {}).get("topology", {}).get("blender", {}))
-    execution_cfg = ((runtime_config or {}).get("execution", {}).get("blender", {}))
+    topology_cfg = (runtime_config or {}).get("topology", {}).get("blender", {})
+    execution_cfg = (runtime_config or {}).get("execution", {}).get("blender", {})
     override = execution_cfg.get("path") or topology_cfg.get("path")
     candidates: list[Path] = []
     if override:
@@ -269,11 +290,10 @@ def probe_blender(runtime_config: dict[str, Any] | None = None) -> dict[str, Any
     Returns:
         The result.
     """
-    execution_cfg = ((runtime_config or {}).get("execution", {}).get("blender", {}))
+    execution_cfg = (runtime_config or {}).get("execution", {}).get("blender", {})
     python_module_available = _module_available("bpy")
     asset_libraries = [
-        {"path": str(p), "available": Path(p).exists()}
-        for p in execution_cfg.get("asset_libraries", [])
+        {"path": str(p), "available": Path(p).exists()} for p in execution_cfg.get("asset_libraries", [])
     ]
     addons = [{"name": str(name), "declared": True} for name in execution_cfg.get("addons", [])]
     supported_modes = ["background_cli"] + (["python_module"] if python_module_available else [])
@@ -295,8 +315,14 @@ def probe_blender(runtime_config: dict[str, Any] | None = None) -> dict[str, Any
                 "code": result.get("code", "version_failed"),
                 "message": result.get("error") or result.get("stderr") or "Failed to query Blender version",
             }
-        first_line = next((line.strip() for line in result.get("stdout", "").splitlines() if line.strip()), "")
-        version = first_line.replace("Blender", "", 1).strip() if first_line.lower().startswith("blender") else first_line
+        first_line = next(
+            (line.strip() for line in result.get("stdout", "").splitlines() if line.strip()), ""
+        )
+        version = (
+            first_line.replace("Blender", "", 1).strip()
+            if first_line.lower().startswith("blender")
+            else first_line
+        )
         return {
             **base,
             "available": True,
@@ -351,25 +377,37 @@ def probe_torch() -> dict[str, Any]:
     """
     base_unavailable = {"available": False, "cuda_available": False, "cuda_version": None, "devices": []}
     if not _module_available("torch"):
-        return {**base_unavailable, "version": None, "code": "not_installed", "message": "torch is not installed"}
+        return {
+            **base_unavailable,
+            "version": None,
+            "code": "not_installed",
+            "message": "torch is not installed",
+        }
     try:
         import torch
     except (ImportError, OSError, RuntimeError) as exc:
         # OSError covers DLL/shared-lib load failures; RuntimeError covers torch's
         # C-extension init errors (e.g., CUDA init) that surface at import.
-        return {**base_unavailable, "version": _distribution_version("torch"), "code": "import_failed", "message": str(exc)}
+        return {
+            **base_unavailable,
+            "version": _distribution_version("torch"),
+            "code": "import_failed",
+            "message": str(exc),
+        }
 
     cuda_available = bool(torch.cuda.is_available())
     devices: list[dict[str, Any]] = []
     if cuda_available:
         for index in range(torch.cuda.device_count()):
             props = torch.cuda.get_device_properties(index)
-            devices.append({
-                "index": index,
-                "name": props.name,
-                "total_memory_bytes": int(props.total_memory),
-                "compute_capability": f"{props.major}.{props.minor}",
-            })
+            devices.append(
+                {
+                    "index": index,
+                    "name": props.name,
+                    "total_memory_bytes": int(props.total_memory),
+                    "compute_capability": f"{props.major}.{props.minor}",
+                }
+            )
     return {
         "available": True,
         "version": getattr(torch, "__version__", _distribution_version("torch")),
@@ -391,7 +429,11 @@ def probe_nvidia_smi() -> dict[str, Any]:
         return {"available": False, "code": "not_found"}
     result = _run_command([nvidia_smi], timeout_s=15)
     if not result["ok"]:
-        return {"available": False, "code": result.get("code", "failed"), "message": result.get("error") or result.get("stderr")}
+        return {
+            "available": False,
+            "code": result.get("code", "failed"),
+            "message": result.get("error") or result.get("stderr"),
+        }
     lines = [line.rstrip() for line in result.get("stdout", "").splitlines() if line.strip()]
     return {
         "available": True,
@@ -410,7 +452,7 @@ def probe_vggt(runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
         The result.
     """
     torch_report = probe_torch()
-    cfg = ((runtime_config or {}).get("shape", {}).get("providers", {}).get("vggt_local", {}))
+    cfg = (runtime_config or {}).get("shape", {}).get("providers", {}).get("vggt_local", {})
     weights = str(cfg.get("weights", DEFAULT_VGGT_WEIGHTS))
     device_requested = str(cfg.get("device", "auto"))
     vggt_available = _module_available("vggt")
@@ -461,10 +503,14 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
     Returns:
         The result.
     """
-    provider_cfg = ((runtime_config or {}).get("shape", {}).get("providers", {}).get("hunyuan2_1_http", {}))
+    provider_cfg = (runtime_config or {}).get("shape", {}).get("providers", {}).get("hunyuan2_1_http", {})
     base_url = str(provider_cfg.get("base_url", DEFAULT_HUNYUAN_BASE_URL)).rstrip("/")
+    url_allowlist = _hunyuan_probe_allowlist(base_url, provider_cfg.get("url_allowlist"))
     configured_timeout = float(provider_cfg.get("health_timeout_s", 5))
-    timeout_s = min(configured_timeout if configured_timeout > 0 else _HUNYUAN_PROBE_MAX_TIMEOUT_S, _HUNYUAN_PROBE_MAX_TIMEOUT_S)
+    timeout_s = min(
+        configured_timeout if configured_timeout > 0 else _HUNYUAN_PROBE_MAX_TIMEOUT_S,
+        _HUNYUAN_PROBE_MAX_TIMEOUT_S,
+    )
     if not base_url:
         return {"configured": False, "available": False, "code": "missing_base_url"}
 
@@ -476,6 +522,7 @@ def probe_hunyuan_endpoint(runtime_config: dict[str, Any] | None = None) -> dict
             timeout_s=timeout_s,
             max_bytes=_HUNYUAN_PROBE_MAX_BODY_BYTES,
             expect_content_type=("application/json", "text/json"),
+            allowlist=url_allowlist,
         )
     except NetGuardError as exc:
         probe_code = _NETGUARD_TO_PROBE_CODE.get(exc.code, "request_failed")
@@ -553,9 +600,13 @@ def probe_topology_backend(runtime_config: dict[str, Any] | None = None) -> dict
         The result.
     """
     return _backend_report(
-        runtime_config, "topology", "lathe.topology.blender_hard_surface_v1",
-        "blender_subprocess", {"blender"},
-        "reference_cleanup", {"cleanup", "reference_cleanup"},
+        runtime_config,
+        "topology",
+        "lathe.topology.blender_hard_surface_v1",
+        "blender_subprocess",
+        {"blender"},
+        "reference_cleanup",
+        {"cleanup", "reference_cleanup"},
         probe_blender(runtime_config),
     )
 
@@ -570,9 +621,13 @@ def probe_uv_backend(runtime_config: dict[str, Any] | None = None) -> dict[str, 
         The result.
     """
     return _backend_report(
-        runtime_config, "uv", "lathe.uv.xatlas_v1",
-        "xatlas", {"xatlas"},
-        "reference_box", {"box", "reference_box"},
+        runtime_config,
+        "uv",
+        "lathe.uv.xatlas_v1",
+        "xatlas",
+        {"xatlas"},
+        "reference_box",
+        {"box", "reference_box"},
         probe_xatlas(),
     )
 

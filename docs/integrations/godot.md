@@ -22,8 +22,9 @@ engine-side integration because:
   Persona C (solo hobbyist / small studio, per `docs/personas.md`) overlaps
   heavily with Godot AssetLib users.
 
-Unity and Unreal remain on the roadmap; the pipeline contract (manifest.json +
-`.glb` + `build_report.json`) was chosen to keep those ports thin.
+Unity and Unreal remain on the roadmap; the pipeline contract
+(`stages/package/package_manifest.json` + `.glb` + `build_report.json`) was
+chosen to keep those ports thin.
 
 ## How the addon works
 
@@ -33,30 +34,34 @@ into a Godot project at `res://addons/lathe-addon/`:
 1. **`plugin.gd`** registers a bottom-dock control (`lathe_dock.gd`) and a
    `Node`-based watcher (`lathe_watcher.gd`) when the editor starts.
 2. **`lathe_watcher.gd`** polls `res://lathe_out/` every 2 seconds. For each
-   child directory that contains a `manifest.json`, it tracks the file's
-   modified time; when it changes, it hands the manifest path to the importer.
-3. **`lathe_importer.gd`** reads `manifest.json`, resolves the `.glb` entry in
-   `outputs[]`, and loads it via `GLTFDocument.append_from_file`. It then
+   child directory that contains `stages/package/package_manifest.json`, it
+   tracks the file's modified time; when it changes, it hands the manifest path
+   to the importer. Legacy root `manifest.json` builds are still accepted as a
+   fallback.
+3. **`lathe_importer.gd`** reads `stages/package/package_manifest.json`,
+   resolves the `.glb` entry in `outputs[]`, and loads it via
+   `GLTFDocument.append_from_file`. It then
    performs three enrichment passes on the loaded scene:
    - Nodes whose names begin with `socket_` or `anchor_` become `Marker3D`
      (transform preserved).
    - `MeshInstance3D` nodes named `collision_*` are converted to a
      `StaticBody3D` with a `CollisionShape3D` holding a convex hull of the
      source mesh.
-   - `MeshInstance3D` nodes receive `lod_bias` values from `manifest.lods[]`
-     (traversal order).
+   - `MeshInstance3D` nodes receive `lod_bias` values from
+     `package_manifest.lods[]` (traversal order).
    It then packs and saves a `.tscn` alongside the `.glb` so the scene can be
    dropped into other scenes as a `PackedScene`.
 4. The importer emits a record (`certified`, `score`, `threshold`,
    `scene_path`) which the dock renders as a PASS/FAIL table.
 
 Certification status is read from the sibling `build_report.json`
-(`certification.score` / `certification.threshold` / top-level `certified`),
-matching the fields produced by `lathe.executor` after the `validate` stage.
+(`score` / `threshold` / top-level `certified`, with a nested
+`certification` fallback for older reports), matching the fields produced by
+`lathe.executor` after the `validate` stage.
 
 ## Installation
 
-1. Build a Lathe asset and make sure the manifest is on disk:
+1. Build a Lathe asset and make sure the package manifest is on disk:
    ```bash
    python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist
    ```

@@ -5,10 +5,10 @@ runtime config is supplied, a learned provider stack) and records one JSON
 result per (asset, system, date) plus a summary JSON.
 
 Competitor systems (Meshy, Hunyuan-via-API, Luma, Houdini HDA + SideFX Labs,
-Quixel Megascans, Blender-by-hand) are **stubs**: this harness never fabricates
-metrics for them. The stub path writes `result="not_run"` with a pointer to the
-corresponding `docs/benchmarks/competitors/<name>.md` file that a human follows
-manually.
+Quixel Megascans, Blender-by-hand) are recorded as explicit `not_run` entries:
+this harness never fabricates metrics for them. Each manual-run entry includes
+a pointer to the corresponding `docs/benchmarks/competitors/<name>.md` file
+that a human follows manually.
 
 Outputs:
     docs/benchmarks/data/<asset>_<system>_<date>.json     one per run
@@ -20,9 +20,11 @@ Usage:
     python scripts/run_benchmark.py --runtime-config examples/runtime_configs/auto_learned.json
     python scripts/run_benchmark.py --verify docs/benchmarks/data/baseline.json
 """
+
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as _dt
 import hashlib
 import json
@@ -31,7 +33,6 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
 
 try:
     import psutil  # type: ignore
@@ -47,9 +48,12 @@ COMPETITORS_DIR = _REPO_ROOT / "docs" / "benchmarks" / "competitors"
 
 
 def _pick_python() -> str:
-    """Prefer the repo's .venv interpreter (CLAUDE.md says that's canonical on
+    """Prefer the repo's .venv interpreter.
+
+    CLAUDE.md says that interpreter is canonical on
     Windows) over whatever sys.executable happens to be, since this script may
-    be invoked from a bare system python that doesn't have lathe's deps."""
+    be invoked from a bare system python that doesn't have lathe's deps.
+    """
     venv_py = _REPO_ROOT / ".venv" / "Scripts" / "python.exe"
     if venv_py.exists():
         return str(venv_py)
@@ -61,7 +65,7 @@ def _pick_python() -> str:
 
 _PYTHON = _pick_python()
 
-REFERENCE_ASSETS: List[Dict[str, str]] = [
+REFERENCE_ASSETS: list[dict[str, str]] = [
     {"name": "industrial_crate", "source": "examples/industrial_crate.lth", "family": "container"},
     {"name": "sci_fi_wall_panel", "source": "examples/sci_fi_wall_panel.lth", "family": "architecture"},
     {"name": "mechanical_door", "source": "examples/mechanical_door.lth", "family": "architecture"},
@@ -69,7 +73,7 @@ REFERENCE_ASSETS: List[Dict[str, str]] = [
     {"name": "service_cabinet", "source": "examples/service_cabinet.lth", "family": "architecture"},
 ]
 
-COMPETITOR_SYSTEMS: List[str] = [
+COMPETITOR_SYSTEMS: list[str] = [
     "meshy",
     "hunyuan",
     "luma",
@@ -87,22 +91,22 @@ class RunResult:
     system: str
     date: str
     result: str  # "ok" | "failed" | "not_run"
-    wall_clock_s: Optional[float] = None
-    peak_memory_mb: Optional[float] = None
-    score: Optional[float] = None
-    threshold: Optional[float] = None
-    certified: Optional[bool] = None
-    glb_sha256: Optional[str] = None
-    triangle_count: Optional[int] = None
-    uv_valid: Optional[bool] = None
-    collision_present: Optional[bool] = None
-    pivot_correct: Optional[bool] = None
-    reproducibility_hashes: List[str] = field(default_factory=list)
-    reproducible: Optional[bool] = None
-    diagnostics: List[str] = field(default_factory=list)
-    note: Optional[str] = None
+    wall_clock_s: float | None = None
+    peak_memory_mb: float | None = None
+    score: float | None = None
+    threshold: float | None = None
+    certified: bool | None = None
+    glb_sha256: str | None = None
+    triangle_count: int | None = None
+    uv_valid: bool | None = None
+    collision_present: bool | None = None
+    pivot_correct: bool | None = None
+    reproducibility_hashes: list[str] = field(default_factory=list)
+    reproducible: bool | None = None
+    diagnostics: list[str] = field(default_factory=list)
+    note: str | None = None
 
-    def as_dict(self) -> Dict:
+    def as_dict(self) -> dict:
         return {
             "asset": self.asset,
             "system": self.system,
@@ -135,7 +139,7 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def _peak_rss_mb(proc: "subprocess.Popen") -> Optional[float]:
+def _peak_rss_mb(proc: subprocess.Popen) -> float | None:
     """Best-effort peak RSS in MB for a running subprocess, or None if unavailable."""
     if psutil is None:
         return None
@@ -146,12 +150,9 @@ def _peak_rss_mb(proc: "subprocess.Popen") -> Optional[float]:
             try:
                 rss = p.memory_info().rss
                 for child in p.children(recursive=True):
-                    try:
+                    with contextlib.suppress(psutil.Error):
                         rss += child.memory_info().rss
-                    except psutil.Error:
-                        pass
-                if rss > peak:
-                    peak = rss
+                peak = max(peak, rss)
             except psutil.Error:
                 break
             time.sleep(0.1)
@@ -161,9 +162,9 @@ def _peak_rss_mb(proc: "subprocess.Popen") -> Optional[float]:
 
 
 def _run_lathe_build(
-    asset: Dict[str, str],
+    asset: dict[str, str],
     out_root: Path,
-    runtime_config: Optional[str],
+    runtime_config: str | None,
     system_label: str,
 ) -> RunResult:
     """Run `python -m lathe.cli build` and collect metrics from build_report.json."""
@@ -195,7 +196,7 @@ def _run_lathe_build(
             stderr=subprocess.PIPE,
         )
         peak_mem = _peak_rss_mb(proc)
-        stdout, stderr = proc.communicate(timeout=600)
+        _stdout, stderr = proc.communicate(timeout=600)
         returncode = proc.returncode
     except subprocess.TimeoutExpired:
         proc.kill()
@@ -239,7 +240,7 @@ def _run_lathe_build(
     return result
 
 
-def _find_glb_output(build_dir: Path, report: Dict) -> Optional[Path]:
+def _find_glb_output(build_dir: Path, report: dict) -> Path | None:
     for output in report.get("outputs") or []:
         if not isinstance(output, dict):
             continue
@@ -254,7 +255,7 @@ def _find_glb_output(build_dir: Path, report: Dict) -> Optional[Path]:
     return None
 
 
-def _populate_stage_metrics(result: RunResult, build_dir: Path, report: Dict) -> None:
+def _populate_stage_metrics(result: RunResult, build_dir: Path, report: dict) -> None:
     stages = report.get("stage_bundles") or {}
 
     topo_rel = stages.get("topology")
@@ -308,12 +309,12 @@ def _populate_stage_metrics(result: RunResult, build_dir: Path, report: Dict) ->
 
 
 def _run_reproducibility_check(
-    asset: Dict[str, str],
-    runtime_config: Optional[str],
+    asset: dict[str, str],
+    runtime_config: str | None,
     rounds: int,
-) -> (List[str], Optional[bool]):
+) -> (list[str], bool | None):
     """Re-run build `rounds` times into scratch dirs, collect .glb sha256 each time."""
-    hashes: List[str] = []
+    hashes: list[str] = []
     for i in range(rounds):
         scratch = _REPO_ROOT / f"tmp_bench_repro_{asset['name']}_{i}"
         cmd = [
@@ -349,7 +350,7 @@ def _run_reproducibility_check(
     return hashes, len(set(hashes)) == 1
 
 
-def _competitor_stub(asset: Dict[str, str], system: str) -> RunResult:
+def _competitor_not_run_result(asset: dict[str, str], system: str) -> RunResult:
     date = _dt.date.today().isoformat()
     return RunResult(
         asset=asset["name"],
@@ -371,8 +372,10 @@ def _write_run(result: RunResult) -> Path:
     return out
 
 
-def _verify_against_baseline(results: List[RunResult], baseline_path: Path) -> int:
-    """Compare current results to a baseline snapshot. Returns non-zero exit code
+def _verify_against_baseline(results: list[RunResult], baseline_path: Path) -> int:
+    """Compare current results to a baseline snapshot.
+
+    Returns non-zero exit code
     if any regression (score drop >0.02 or certified flipped true→false) is found.
     """
     try:
@@ -381,7 +384,7 @@ def _verify_against_baseline(results: List[RunResult], baseline_path: Path) -> i
         print(f"could not read baseline: {exc}", file=sys.stderr)
         return 2
     base_runs = {(r["asset"], r["system"]): r for r in baseline.get("runs", [])}
-    regressions: List[str] = []
+    regressions: list[str] = []
     for r in results:
         base = base_runs.get((r.asset, r.system))
         if not base or base.get("result") != "ok" or r.result != "ok":
@@ -390,9 +393,8 @@ def _verify_against_baseline(results: List[RunResult], baseline_path: Path) -> i
         if bm.get("certified") and not r.certified:
             regressions.append(f"{r.asset}/{r.system}: certified regressed true->false")
         bs = bm.get("score")
-        if isinstance(bs, (int, float)) and r.score is not None:
-            if r.score < bs - 0.02:
-                regressions.append(f"{r.asset}/{r.system}: score {bs:.4f} -> {r.score:.4f}")
+        if isinstance(bs, (int, float)) and r.score is not None and r.score < bs - 0.02:
+            regressions.append(f"{r.asset}/{r.system}: score {bs:.4f} -> {r.score:.4f}")
     if regressions:
         for msg in regressions:
             print(f"REGRESSION: {msg}")
@@ -402,6 +404,7 @@ def _verify_against_baseline(results: List[RunResult], baseline_path: Path) -> i
 
 
 def main() -> int:
+    """Run the benchmark harness CLI."""
     parser = argparse.ArgumentParser(description="5-asset Lathe vs. competitor benchmark harness.")
     parser.add_argument(
         "--only",
@@ -412,7 +415,7 @@ def main() -> int:
     parser.add_argument(
         "--lathe-only",
         action="store_true",
-        help="Skip competitor stubs; only run Lathe paths.",
+        help="Skip competitor not_run entries; only run Lathe paths.",
     )
     parser.add_argument(
         "--runtime-config",
@@ -445,7 +448,7 @@ def main() -> int:
         return 2
 
     out_root = Path(args.out_root)
-    all_results: List[RunResult] = []
+    all_results: list[RunResult] = []
 
     for asset in selected:
         print(f"=== {asset['name']} ===", file=sys.stderr)
@@ -480,9 +483,9 @@ def main() -> int:
 
         if not args.lathe_only:
             for sys_name in COMPETITOR_SYSTEMS:
-                stub = _competitor_stub(asset, sys_name)
-                _write_run(stub)
-                all_results.append(stub)
+                not_run = _competitor_not_run_result(asset, sys_name)
+                _write_run(not_run)
+                all_results.append(not_run)
 
     date = _dt.date.today().isoformat()
     summary = {

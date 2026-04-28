@@ -14,6 +14,7 @@ from typing import Any
 @dataclass
 class ShapePrimitive:
     """ShapePrimitive."""
+
     primitive_type: str
     part: str
     center: tuple[float, float, float]
@@ -39,6 +40,7 @@ class ShapePrimitive:
 @dataclass
 class ShapeRegion:
     """ShapeRegion."""
+
     name: str
     part: str
     component: str
@@ -62,6 +64,7 @@ class ShapeRegion:
 @dataclass
 class ShapeIR:
     """ShapeIR."""
+
     asset_name: str
     family: str
     blueprint_id: str

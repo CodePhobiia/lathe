@@ -7,15 +7,20 @@ build_trace pipeline (including stage-execution telemetry collation).
 
 from __future__ import annotations
 
+import importlib.metadata
+import warnings
 from typing import Any
 
+from ...engine_manifests import ADAPTERS as _ENGINE_ADAPTERS
+from ...engine_manifests import manifest_filename as _engine_manifest_filename
+from ...errors import BuildError
+from ...paths import PathGuardError, safe_resolve
+from ...security import redact_secrets
+from ...selector_manifest import build_selector_manifest, write_selector_manifest
 from ..common import dump_json, hash_obj, hash_ref, output_entry, relpath
 from ..io import export_glb, export_gltf, export_obj, write_usda
 from ..mesh import RuntimeMesh
 from ..rendering import render_lod_sheet, render_mesh_preview, render_uv_layout
-from ...engine_manifests import ADAPTERS as _ENGINE_ADAPTERS, manifest_filename as _engine_manifest_filename
-from ...selector_manifest import build_selector_manifest, write_selector_manifest
-
 
 STAGE_ORDER_FOR_TRACE = [
     "shape",
@@ -30,6 +35,38 @@ STAGE_ORDER_FOR_TRACE = [
     "validate",
     "package",
 ]
+
+
+def _compiler_version() -> str:
+    imported_version: str | None = None
+    try:
+        from ... import __version__ as source_version
+    except ImportError:
+        imported_version = None
+    else:
+        imported_version = str(source_version)
+
+    if imported_version:
+        return imported_version
+    try:
+        return importlib.metadata.version("lathe")
+    except importlib.metadata.PackageNotFoundError:
+        return "unknown"
+
+
+def _resolve_packaged_source(out_dir: Any, uri: Any) -> Any | None:
+    try:
+        src = safe_resolve(out_dir, str(uri))
+    except (PathGuardError, TypeError, ValueError, OSError):
+        return None
+    return src if src.exists() and src.is_file() else None
+
+
+def _copy_package_artifact(src: Any, dst: Any) -> None:
+    if dst.exists() and dst.resolve() != src.resolve():
+        raise FileExistsError(f"package artifact already exists: {dst}")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_bytes(src.read_bytes())
 
 
 def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[str, Any]) -> dict[str, Any]:
@@ -59,7 +96,9 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
     if "gltf" in package_cfg.get("formats", []):
         gltf_paths = export_gltf(mesh, stage_dir, executor.asset_name)
         for path in gltf_paths:
-            outputs.append(output_entry(executor.out_dir, path, "gltf" if path.suffix == ".gltf" else "gltf_resource"))
+            outputs.append(
+                output_entry(executor.out_dir, path, "gltf" if path.suffix == ".gltf" else "gltf_resource")
+            )
     if "obj" in package_cfg.get("formats", []):
         obj_path = stage_dir / f"{executor.asset_name}.obj"
         export_obj(mesh, obj_path)
@@ -72,22 +111,22 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         src_uri = entry.get("mesh_uri")
         if not src_uri:
             continue
-        src = executor.out_dir / src_uri
-        if not src.exists():
+        src = _resolve_packaged_source(executor.out_dir, src_uri)
+        if src is None:
             continue
         dst = stage_dir / src.name
-        dst.write_bytes(src.read_bytes())
+        _copy_package_artifact(src, dst)
         outputs.append(output_entry(executor.out_dir, dst, "lod_glb"))
     collision_info = optimize_bundle_local.get("collision") or {}
     for kind_key, kind_name in (("hull_uri", "collision_hull"), ("parts_uri", "collision_parts")):
         src_rel = collision_info.get(kind_key)
         if not src_rel:
             continue
-        src = executor.out_dir / src_rel
-        if not src.exists():
+        src = _resolve_packaged_source(executor.out_dir, src_rel)
+        if src is None:
             continue
         dst = stage_dir / src.name
-        dst.write_bytes(src.read_bytes())
+        _copy_package_artifact(src, dst)
         outputs.append(output_entry(executor.out_dir, dst, kind_name))
 
     # STAGE-10: engine-specific manifests (godot/unity/unreal). Emitted at the
@@ -103,9 +142,16 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
             optimize_bundle=optimize_bundle_local,
         )
         for engine_id, emit_fn in _ENGINE_ADAPTERS.items():
+            payload: str | None = None
             try:
                 payload = emit_fn(engine_context, executor.asset_name)
-            except Exception:  # noqa: BLE001 — best-effort sidecar, never fail the build
+            except Exception as exc:
+                warnings.warn(
+                    f"{engine_id} engine manifest could not be written for asset "
+                    f"'{executor.asset_name}': {exc}",
+                    stacklevel=2,
+                )
+            if payload is None:
                 continue
             filename = _engine_manifest_filename(engine_id, executor.asset_name)
             target = executor.out_dir / filename
@@ -142,7 +188,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         path = preview_dir / "collision.png"
         collision_mesh = RuntimeMesh(
             mesh=executor.runtime["physics"]["collision_mesh"],
-            face_parts=["collision"] * int(len(executor.runtime["physics"]["collision_mesh"].faces)),
+            face_parts=["collision"] * len(executor.runtime["physics"]["collision_mesh"].faces),
             part_colors={"collision": (220, 92, 60)},
             units="cm",
         )
@@ -150,7 +196,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         previews.append(relpath(executor.out_dir, path))
     if "lod_sheet" in requested_previews:
         path = preview_dir / "lod_sheet.png"
-        render_lod_sheet(optimize_runtime, int(len(optimize_bundle["lods"])), path)
+        render_lod_sheet(optimize_runtime, len(optimize_bundle["lods"]), path)
         previews.append(relpath(executor.out_dir, path))
 
     manifest = {
@@ -170,7 +216,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
     trace_path = None
     if package_cfg.get("include_trace", True):
         trace_path = stage_dir / "trace_manifest.json"
-        trace = _build_trace(executor, outputs, previews, validate_bundle)
+        trace = redact_secrets(_build_trace(executor, outputs, previews, validate_bundle))
         dump_json(trace_path, trace)
         manifest["trace_path"] = relpath(executor.out_dir, trace_path)
     manifest_path = stage_dir / "package_manifest.json"
@@ -204,7 +250,6 @@ def _build_engine_context(
     Keeps adapter inputs free of executor-specific types — every value is
     JSON-serialisable. Resolves the main glb uri from ``outputs``.
     """
-
     main_glb = next(
         (entry.get("uri") for entry in outputs if entry.get("format") == "glb"),
         None,
@@ -234,10 +279,7 @@ def _build_engine_context(
             "id": sock.get("id") or sock.get("name"),
             "origin": sock.get("origin") or sock.get("position") or [0.0, 0.0, 0.0],
             "axis": sock.get("axis") or [0.0, 1.0, 0.0],
-            "socket_type": sock.get("socket_type")
-            or sock.get("socketType")
-            or sock.get("kind")
-            or "attach",
+            "socket_type": sock.get("socket_type") or sock.get("socketType") or sock.get("kind") or "attach",
             "kind": sock.get("kind"),
             "parent_part_id": sock.get("parent_part_id") or sock.get("parentPartId"),
         }
@@ -320,10 +362,10 @@ def _build_engine_context(
 def _write_selector_manifest(executor: Any, validate_bundle: dict[str, Any]) -> Any:
     """Assemble + write ``selector_manifest.json`` alongside the build outputs.
 
-    Keeps the package stage resilient: a schema/IO failure surfaces a warning
-    rather than aborting an otherwise-certified build.
+    Selector manifests are part of the packaged artifact contract. A schema/IO
+    failure must fail the package stage instead of returning a success-shaped
+    build without the downstream selection artifact.
     """
-
     try:
         source_path = executor.program.get("_source_path") or ""
         variant_name = None
@@ -344,35 +386,48 @@ def _write_selector_manifest(executor: Any, validate_bundle: dict[str, Any]) -> 
             repo_root=None,
         )
         return write_selector_manifest(manifest, executor.out_dir)
-    except Exception as exc:  # noqa: BLE001 — best-effort sidecar
-        import warnings
+    except Exception as exc:
+        message = f"selector_manifest.json could not be written for asset '{executor.asset_name}': {exc}"
+        diagnostics = [
+            {
+                "code": "LPKG_SELECTOR_MANIFEST_WRITE_FAILED",
+                "severity": "error",
+                "phase": "package",
+                "asset": executor.asset_name,
+                "stage": "package",
+                "path": "selector_manifest.json",
+                "message": message,
+            }
+        ]
+        raise BuildError(message, diagnostics) from exc
 
-        warnings.warn(
-            f"selector_manifest.json could not be written for asset "
-            f"'{executor.asset_name}': {exc}",
-            stacklevel=2,
-        )
-        return None
 
-
-def _build_trace(executor: Any, outputs: list[dict[str, Any]], previews: list[str], validate_bundle: dict[str, Any]) -> dict[str, Any]:
+def _build_trace(
+    executor: Any, outputs: list[dict[str, Any]], previews: list[str], validate_bundle: dict[str, Any]
+) -> dict[str, Any]:
     refs = []
     for group_name, group_values in executor.asset.get("refs", {}).items():
         if not isinstance(group_values, list):
             continue
         for value in group_values:
-            refs.append({
-                "group": group_name,
-                "value": value,
-                "sha256": hash_ref(value),
-            })
+            refs.append(
+                {
+                    "group": group_name,
+                    "value": value,
+                    "sha256": hash_ref(value),
+                }
+            )
     return {
         "asset_id": executor.asset_name,
         "source_hash": hash_obj(executor.program),
         "normalized_hash": hash_obj(executor.normalized_program),
-        "compiler_version": "0.1.0",
-        "backend_versions": {stage: data["id"] + "@" + data["version"] for stage, data in executor.selected_backends.items()},
-        "determinism_by_stage": {stage: data["determinism_class"] for stage, data in executor.selected_backends.items()},
+        "compiler_version": _compiler_version(),
+        "backend_versions": {
+            stage: data["id"] + "@" + data["version"] for stage, data in executor.selected_backends.items()
+        },
+        "determinism_by_stage": {
+            stage: data["determinism_class"] for stage, data in executor.selected_backends.items()
+        },
         "refs_with_hashes": refs,
         "uses": list(executor.asset.get("uses", [])),
         "stage_configs": {
@@ -389,7 +444,10 @@ def _build_trace(executor: Any, outputs: list[dict[str, Any]], previews: list[st
             "publish": executor.asset["publish"],
         },
         "stage_outputs": {
-            stage: relpath(executor.out_dir, executor.stage_dirs[stage] / ("report.json" if stage == "validate" else "bundle.json"))
+            stage: relpath(
+                executor.out_dir,
+                executor.stage_dirs[stage] / ("report.json" if stage == "validate" else "bundle.json"),
+            )
             for stage in STAGE_ORDER_FOR_TRACE
         },
         "stage_execution": {
@@ -397,12 +455,16 @@ def _build_trace(executor: Any, outputs: list[dict[str, Any]], previews: list[st
                 "provider_report": executor.runtime["shape"]["bundle"].get("provider_report"),
                 "blueprint_id": executor.runtime["shape"]["bundle"].get("blueprint_id"),
                 "primitives_used": executor.runtime["shape"]["bundle"].get("primitives_used", []),
-                "proposal_sources_attempted": executor.runtime["shape"]["bundle"].get("proposal_sources_attempted", []),
+                "proposal_sources_attempted": executor.runtime["shape"]["bundle"].get(
+                    "proposal_sources_attempted", []
+                ),
                 "proposal_sources_used": executor.runtime["shape"]["bundle"].get("proposal_sources_used", []),
                 "accepted_deltas": executor.runtime["shape"]["bundle"].get("accepted_deltas", []),
                 "rejected_deltas": executor.runtime["shape"]["bundle"].get("rejected_deltas", []),
                 "conformance_failures": executor.runtime["shape"]["bundle"].get("conformance_failures", []),
-                "authoritative_candidate_reason": executor.runtime["shape"]["bundle"].get("authoritative_candidate_reason"),
+                "authoritative_candidate_reason": executor.runtime["shape"]["bundle"].get(
+                    "authoritative_candidate_reason"
+                ),
                 "shape_assessment": executor.runtime["shape"]["bundle"].get("shape_assessment", {}),
                 "reference_ir": executor.runtime["shape"]["bundle"].get("reference_ir", {}),
                 "fit_ir": executor.runtime["shape"]["bundle"].get("fit_ir", {}),
@@ -412,12 +474,20 @@ def _build_trace(executor: Any, outputs: list[dict[str, Any]], previews: list[st
             "topology": executor.runtime["topology"]["bundle"].get("adapter_report"),
             "uv": executor.runtime["uv"]["bundle"].get("adapter_report"),
             "surface": {
-                "surface_backend_report": executor.runtime["surface"]["bundle"].get("surface_backend_report", {}),
+                "surface_backend_report": executor.runtime["surface"]["bundle"].get(
+                    "surface_backend_report", {}
+                ),
                 "surface_control_pack": executor.runtime["surface"]["bundle"].get("surface_control_pack", {}),
-                "codex_imagegen_requests": executor.runtime["surface"]["bundle"].get("codex_imagegen_requests", {}),
-                "codex_imagegen_outputs": executor.runtime["surface"]["bundle"].get("codex_imagegen_outputs", {}),
+                "codex_imagegen_requests": executor.runtime["surface"]["bundle"].get(
+                    "codex_imagegen_requests", {}
+                ),
+                "codex_imagegen_outputs": executor.runtime["surface"]["bundle"].get(
+                    "codex_imagegen_outputs", {}
+                ),
                 "atlas_assembly_ir": executor.runtime["surface"]["bundle"].get("atlas_assembly_ir", {}),
-                "surface_validation_ir": executor.runtime["surface"]["bundle"].get("surface_validation_ir", {}),
+                "surface_validation_ir": executor.runtime["surface"]["bundle"].get(
+                    "surface_validation_ir", {}
+                ),
                 "surface_repair_ir": executor.runtime["surface"]["bundle"].get("surface_repair_ir", {}),
             },
             "execution": executor.runtime.get("execution", {}).get("bundle", {}),
@@ -429,5 +499,7 @@ def _build_trace(executor: Any, outputs: list[dict[str, Any]], previews: list[st
         "diagnostics": validate_bundle["diagnostics"],
         "package_outputs": outputs,
         "previews": previews,
-        "approval_state": "pending_required_approval" if executor.asset["publish"].get("approval") == "required" else "not_required",
+        "approval_state": "pending_required_approval"
+        if executor.asset["publish"].get("approval") == "required"
+        else "not_required",
     }

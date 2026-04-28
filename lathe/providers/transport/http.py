@@ -5,22 +5,26 @@ Thin wrapper around :func:`lathe.net.safe_urlopen` that maps the generic
 preserves the retry/timing-metadata shape previously returned by
 ``_hunyuan_request``.
 """
+
 from __future__ import annotations
 
 import json
 import time
 import urllib.error
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
-from ..errors import ShapeProviderExecutionError
 from ...net import DEFAULT_MAX_BYTES, NetGuardError, SafeResponse, safe_urlopen
+from ..errors import ShapeProviderExecutionError
 
 
 def hunyuan_transient_status(status: int) -> bool:
+    """Return whether a Hunyuan HTTP status is retryable."""
     return status in {408, 425, 429, 500, 502, 503, 504}
 
 
 def hunyuan_safe_text(payload: bytes, *, limit: int = 400) -> str:
+    """Decode a bounded response prefix for provider diagnostics."""
     return payload.decode("utf-8", errors="replace")[:limit]
 
 

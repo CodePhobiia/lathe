@@ -8,6 +8,7 @@ Covers:
 * writer refusal on invalid payload,
 * graceful handling of absent optimize / interfaces runtimes,
 * variant=None serializes as JSON null,
+* invalid explicit build/package hashes fail instead of being rewritten,
 * ``resolve_ref`` prefers ``selector_manifest.json`` when present,
 * stale-ref warning on buildHash mismatch,
 * fallback to ``build_report.json`` when selector manifest absent,
@@ -22,14 +23,12 @@ from pathlib import Path
 
 import jsonschema
 import pytest
-
 from lathe.ref import StaleRefWarning, parse_ref, resolve_ref
 from lathe.selector_manifest import (
     SelectorManifestError,
     build_selector_manifest,
     write_selector_manifest,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "schema" / "lathe.selector.schema.json"
@@ -100,9 +99,7 @@ def _full_runtime() -> dict[str, object]:
                         "parent_part_id": "body",
                     }
                 ],
-                "pivots": [
-                    {"id": "hinge_top", "origin": [0.0, 1.5, 0.0], "axis": [0.0, 1.0, 0.0]}
-                ],
+                "pivots": [{"id": "hinge_top", "origin": [0.0, 1.5, 0.0], "axis": [0.0, 1.0, 0.0]}],
             },
         },
         "optimize": {
@@ -216,6 +213,53 @@ def test_build_selector_manifest_variant_none_serializes_as_null(tmp_path):
     assert reloaded["variant"] is None
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"build_hash": "build-not-a-digest"}, "buildHash"),
+        ({"build_hash": "0123abcd" * 4, "package_hash": "package-not-a-digest"}, "packageHash"),
+    ],
+)
+def test_build_selector_manifest_rejects_invalid_explicit_hashes(tmp_path, kwargs, message):
+    args = {
+        "asset_name": "x",
+        "variant_name": None,
+        "source_path": "examples/x.lth",
+        "build_hash": "0123abcd" * 4,
+        "runtime": {},
+        "build_dir": tmp_path / "x",
+    }
+    args.update(kwargs)
+
+    with pytest.raises(SelectorManifestError) as exc:
+        build_selector_manifest(**args)
+
+    assert message in str(exc.value)
+    assert "digest" in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    "runtime",
+    [
+        {"package": {"bundle": {"package_hash": "invalid-package-hash"}}},
+        {"package": {"bundle": {"outputs": [{"format": "glb", "sha256": "invalid-output-hash"}]}}},
+    ],
+)
+def test_build_selector_manifest_rejects_invalid_runtime_package_hashes(tmp_path, runtime):
+    with pytest.raises(SelectorManifestError) as exc:
+        build_selector_manifest(
+            asset_name="x",
+            variant_name=None,
+            source_path="examples/x.lth",
+            build_hash="0123abcd" * 4,
+            runtime=runtime,
+            build_dir=tmp_path / "x",
+        )
+
+    assert "runtime.package.bundle" in str(exc.value)
+    assert "digest" in str(exc.value)
+
+
 # ---------------------------------------------------------------------------
 # write_selector_manifest
 # ---------------------------------------------------------------------------
@@ -252,6 +296,28 @@ def test_write_selector_manifest_rejects_invalid(tmp_path):
         write_selector_manifest(broken, build_dir)
     assert "selector_manifest.json failed schema validation" in str(exc.value)
     # File must not have been written.
+    assert not (build_dir / "selector_manifest.json").exists()
+
+
+def test_write_selector_manifest_rejects_unsupported_schema_version_with_code(tmp_path):
+    build_dir = tmp_path / "build"
+    manifest = build_selector_manifest(
+        asset_name="demo",
+        variant_name=None,
+        source_path="examples/demo.lth",
+        build_hash="abcd1234" * 4,
+        runtime=_full_runtime(),
+        build_dir=build_dir,
+    )
+    manifest["schemaVersion"] = 2
+
+    with pytest.raises(SelectorManifestError) as exc:
+        write_selector_manifest(manifest, build_dir)
+
+    assert exc.value.code == "L7201"
+    assert "unsupported_selector_manifest_version" in str(exc.value)
+    assert "schemaVersion '2'" in str(exc.value)
+    assert "supported: 1" in str(exc.value)
     assert not (build_dir / "selector_manifest.json").exists()
 
 
@@ -390,15 +456,19 @@ def test_end_to_end_manifest_resolves(tmp_path):
         build_dir=build_dir,
     )
     write_selector_manifest(manifest, build_dir)
-    (build_dir / "build_report.json").write_text(json.dumps({
-        "asset": "e2e",
-        "kind": "mechanical_assembly",
-        "certified": True,
-        "backend_stack": {"id": "lathe.stack.hard_surface_game_asset_v1"},
-        "stage_bundles": {},
-        "diagnostics": [],
-        "outputs": [],
-    }))
+    (build_dir / "build_report.json").write_text(
+        json.dumps(
+            {
+                "asset": "e2e",
+                "kind": "mechanical_assembly",
+                "certified": True,
+                "backend_stack": {"id": "lathe.stack.hard_surface_game_asset_v1"},
+                "stage_bundles": {},
+                "diagnostics": [],
+                "outputs": [],
+            }
+        )
+    )
     node = parse_ref("@lathe[e2e#part.wing]")
     result = resolve_ref(node, repo_root=tmp_path)
     assert result["ok"] is True

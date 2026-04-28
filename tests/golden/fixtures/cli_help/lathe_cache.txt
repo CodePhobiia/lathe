@@ -1,0 +1,15 @@
+usage: lathe cache [-h] {status,clean,migrate,warm} ...
+
+Inspect, clean, and warm the user-level Lathe build cache. The cache lives under
+``LATHE_CACHE_DIR`` if set, otherwise the platform's standard user cache directory (see
+docs/cache.md).
+
+positional arguments:
+  {status,clean,migrate,warm}
+    status              Summarize cache entries and total size
+    clean               Delete cache entries
+    migrate             Backfill cache metadata manifests
+    warm                Build an asset (no-op if already cached)
+
+options:
+  -h, --help            show this help message and exit

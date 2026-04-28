@@ -5,6 +5,7 @@ These helpers don't talk to any provider; they operate on in-memory
 module so the adapter packages can import them without pulling in provider
 configuration or network code.
 """
+
 from __future__ import annotations
 
 import logging
@@ -14,18 +15,26 @@ from typing import Any
 import numpy as np
 import trimesh
 
+from ..logging_utils import debug as log_debug
+from ..logging_utils import warning as log_warning
 from ..mesh_ingest import safe_load_mesh
 from .errors import ShapeMeshLoadError, ShapeProviderExecutionError
 
-
 logger = logging.getLogger(__name__)
+_DIM_MATERIAL_BRIGHTNESS_THRESHOLD = 0.45
+_HIGH_FACE_COUNT_THRESHOLD = 60_000
+
+
+class _UnitLiteralTypeError(TypeError):
+    def __init__(self, value: Any) -> None:
+        super().__init__(f"Expected unit literal, got {value!r}")
 
 
 def _unit_to_cm(value: Any) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     if not isinstance(value, dict) or value.get("type") != "unit":
-        raise TypeError(f"Expected unit literal, got {value!r}")
+        raise _UnitLiteralTypeError(value)
     amount = float(value["value"])
     unit = value["unit"]
     if unit == "mm":
@@ -39,9 +48,14 @@ def _unit_to_cm(value: Any) -> float:
 
 def _characteristic_scale_cm(asset: dict[str, Any]) -> float:
     intent = asset.get("intent", {})
-    if "dimensions" in intent and isinstance(intent["dimensions"], dict) and intent["dimensions"].get("type") == "call":
-        args = intent["dimensions"].get("args", [])
-        values = [_unit_to_cm(item["value"]) for item in args if isinstance(item, dict) and item.get("value") is not None]
+    dimensions = intent.get("dimensions")
+    if isinstance(dimensions, dict) and dimensions.get("type") == "call":
+        args = dimensions.get("args", [])
+        values = [
+            _unit_to_cm(item["value"])
+            for item in args
+            if isinstance(item, dict) and item.get("value") is not None
+        ]
         if values:
             return max(values)
     if "scale" in intent:
@@ -60,7 +74,10 @@ def _root_name(parts: list[str]) -> str:
     return body_names[0] if body_names else (parts[0] if parts else "body")
 
 
-def _conditioned_part_colors(parts: list[str], conditioning: dict[str, Any]) -> dict[str, tuple[int, int, int]]:
+def _conditioned_part_colors(
+    parts: list[str],
+    conditioning: dict[str, Any],
+) -> dict[str, tuple[int, int, int]]:
     palette = conditioning.get("palette", [])
     brightness = conditioning.get("material_brightness")
     out: dict[str, tuple[int, int, int]] = {}
@@ -77,7 +94,7 @@ def _conditioned_part_colors(parts: list[str], conditioning: dict[str, Any]) -> 
             rgb = palette[min(palette_index, len(palette) - 1)]
             palette_index += 1
             color = [int(v) for v in rgb]
-            if brightness is not None and brightness < 0.45:
+            if brightness is not None and brightness < _DIM_MATERIAL_BRIGHTNESS_THRESHOLD:
                 color = [max(45, int(v * 0.9)) for v in color]
             out[part] = tuple(color)
             continue
@@ -110,7 +127,14 @@ def _load_mesh_file(path: Path) -> trimesh.Trimesh | None:
     try:
         loaded = safe_load_mesh(Path(path))
     except ShapeMeshLoadError as exc:
-        logger.warning("Safe mesh ingest rejected %s (%s)", path, exc.code)
+        log_warning(
+            logger,
+            "lathe.providers.mesh_ingest.rejected",
+            "Safe mesh ingest rejected {path} ({code})",
+            path=path,
+            code=exc.code,
+            details=exc.details or {},
+        )
         raise ShapeProviderExecutionError(
             "lathe.provider.shape",
             f"Cannot load mesh: {path}",
@@ -134,7 +158,12 @@ def _mesh_body_count(mesh: trimesh.Trimesh) -> int:
     try:
         return int(mesh.body_count)
     except (AttributeError, IndexError, ValueError) as exc:
-        logger.debug("body_count fallback engaged for mesh: %s", type(exc).__name__)
+        log_debug(
+            logger,
+            "lathe.providers.mesh_body_count.fallback",
+            "body_count fallback engaged for mesh: {error_type}",
+            error_type=type(exc).__name__,
+        )
     faces = np.asarray(mesh.faces, dtype=np.int64)
     if len(faces) == 0:
         return 0
@@ -171,7 +200,7 @@ def _mesh_quality_score(mesh: trimesh.Trimesh) -> float:
     body_count = _mesh_body_count(mesh)
     if body_count >= 1:
         score += 0.03
-    if len(mesh.faces) > 60000:
+    if len(mesh.faces) > _HIGH_FACE_COUNT_THRESHOLD:
         score -= 0.05
     return max(0.35, min(0.98, round(score, 6)))
 
@@ -191,10 +220,12 @@ def _runtime_from_mesh(
     parts = list(asset.get("intent", {}).get("parts", [])) or ["body"]
     root = _root_name(parts)
     mesh = _normalize_mesh_to_scale(mesh, _characteristic_scale_cm(asset))
-    face_parts = [root] * int(len(mesh.faces))
+    face_parts = [root] * len(mesh.faces)
     part_colors = _conditioned_part_colors(parts, conditioning)
-    score = score_override if score_override is not None else round(
-        min(0.99, _mesh_quality_score(mesh) + provider_bias - 0.01 * candidate_index), 6
+    score = (
+        score_override
+        if score_override is not None
+        else round(min(0.99, _mesh_quality_score(mesh) + provider_bias - 0.01 * candidate_index), 6)
     )
     return {
         "mesh": mesh,

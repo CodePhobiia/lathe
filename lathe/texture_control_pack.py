@@ -108,4 +108,8 @@ def write_surface_control_pack(
     }
     manifest_path = pack_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    return {"manifest_uri": relative_uri(out_dir, manifest_path), "images": manifest["images"], "required_maps": required_maps}
+    return {
+        "manifest_uri": relative_uri(out_dir, manifest_path),
+        "images": manifest["images"],
+        "required_maps": required_maps,
+    }

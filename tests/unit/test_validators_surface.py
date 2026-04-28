@@ -13,6 +13,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+import pytest
 from lathe.executor import build_asset
 from lathe.parser import parse_file
 from lathe.validators.surface_quality import (
@@ -21,8 +22,8 @@ from lathe.validators.surface_quality import (
     evaluate_surface_quality,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.slow
 _BUILT_DIR: Path | None = None
 _BUILT_TMP: tempfile.TemporaryDirectory | None = None
 _BUILT_ASSET: dict[str, Any] | None = None
@@ -46,7 +47,9 @@ def _ensure_built() -> tuple[Path, dict[str, Any], dict[str, Any]]:
     build_asset(program, "courier_drone", out)
     _BUILT_DIR = out
     _BUILT_ASSET = json.loads((out / "materialized_asset.json").read_text(encoding="utf-8"))
-    _BUILT_SURFACE_BUNDLE = json.loads((out / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+    _BUILT_SURFACE_BUNDLE = json.loads(
+        (out / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+    )
     return _BUILT_DIR, _BUILT_ASSET, _BUILT_SURFACE_BUNDLE
 
 
@@ -85,16 +88,13 @@ class SurfaceQualityRejectsBadBundleTests(unittest.TestCase):
             self.assertEqual(diag["stage"], "surface")
             self.assertEqual(diag["asset"], "empty_asset")
 
-    def test_non_hero_backend_id_produces_zeroed_metrics(self) -> None:
+    def test_non_hero_backend_id_uses_available_map_evidence(self) -> None:
         asset, runtime = _baseline_runtime()
         runtime["surface"]["bundle"]["backend_id"] = "lathe.surface.other_fallback_v0"
         report = evaluate_surface_quality(asset, runtime)
-        self.assertFalse(report["ok"])
-        names = {d["name"] for d in report["diagnostics"]}
-        # All threshold-driven diagnostics should fire because metrics reset to zero.
-        self.assertIn("surface_surface_authoring_quality_failed", names)
-        self.assertIn("surface_surface_material_zone_coherence_failed", names)
-        self.assertEqual(report["metrics"]["surface_authoring_quality"], 0.0)
+        self.assertTrue(report["ok"], f"unexpected diagnostics: {[d['name'] for d in report['diagnostics']]}")
+        self.assertGreater(report["metrics"]["surface_authoring_quality"], 0.0)
+        self.assertGreater(report["metrics"]["surface_material_zone_coherence"], 0.0)
 
     def test_missing_image_map_directory_zeroes_evidence(self) -> None:
         asset, runtime = _baseline_runtime()

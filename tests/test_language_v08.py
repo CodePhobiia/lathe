@@ -10,7 +10,6 @@ from lathe.patch_api import freeze_dimension, update_material_palette
 from lathe.resolver import materialize_asset
 from lathe.test_runtime import run_lathe_tests
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CHEST_EXAMPLE = ROOT / "examples" / "brassbound_chest.lth"
 DRONE_EXAMPLE = ROOT / "examples" / "courier_drone.lth"
@@ -24,7 +23,9 @@ class LatheV08LanguageTests(unittest.TestCase):
         self.assertTrue(any(item["name"] == "fantasy_brassbound" for item in program["palettes"]))
         self.assertTrue(any(item["name"] == "hero_hardsurface_repair" for item in program["repair_policies"]))
         self.assertTrue(any(item["name"] == "chest_hero_search" for item in program["spaces"]))
-        self.assertTrue(any(item["name"] == "legacy_brassbound_chest_v06_fixture" for item in program["fixtures"]))
+        self.assertTrue(
+            any(item["name"] == "legacy_brassbound_chest_v06_fixture" for item in program["fixtures"])
+        )
 
     def test_materialize_asset_lowers_source_family_surface_space_and_repair(self) -> None:
         program = parse_file(DRONE_EXAMPLE)

@@ -70,9 +70,7 @@ class EvaluateRenderViewsTests(unittest.TestCase):
         per_view = result["views"]
         complexities = [per_view[v]["complexity"] for v in ("front", "side")]
         expected = round(sum(complexities) / 2, 6)
-        self.assertAlmostEqual(
-            result["metrics"]["render_silhouette_complexity"], expected, places=5
-        )
+        self.assertAlmostEqual(result["metrics"]["render_silhouette_complexity"], expected, places=5)
 
     def test_single_tiny_part_flags_primitive_like(self) -> None:
         runtime = {

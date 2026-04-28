@@ -23,7 +23,6 @@ from ...validators.visual_quality import evaluate_visual_quality
 from ..common import dump_json
 from ..evaluators import evaluate_critic, evaluate_metric, evaluate_rule
 
-
 _PIPELINE = ValidatorPipeline(
     [
         FunctionValidator(
@@ -52,6 +51,60 @@ _PIPELINE = ValidatorPipeline(
 )
 
 
+def _diagnostic_next_step(diag: dict[str, Any]) -> str:
+    repairs = [str(item) for item in diag.get("suggested_repairs", []) if item]
+    if repairs:
+        return f"Apply or inspect suggested repair `{repairs[0]}`."
+    path = diag.get("path")
+    if path:
+        return f"Inspect `{path}` and rerun `lathe check` before rebuilding."
+    stage = diag.get("stage") or diag.get("phase") or "validate"
+    return f"Inspect the `{stage}` report section for the failing metric and rerun the build."
+
+
+def _failure_summary(
+    *,
+    certified: bool,
+    score: float,
+    threshold: float,
+    diagnostics: list[dict[str, Any]],
+    repair_suggestions: list[str],
+) -> dict[str, Any]:
+    errors = [item for item in diagnostics if item.get("severity") == "error"]
+    blocking = []
+    for diag in errors[:5]:
+        blocking.append(
+            {
+                "code": diag.get("code"),
+                "name": diag.get("name"),
+                "stage": diag.get("stage") or diag.get("phase"),
+                "path": diag.get("path"),
+                "message": diag.get("message"),
+                "suggested_repairs": list(diag.get("suggested_repairs", [])),
+                "next_step": _diagnostic_next_step(diag),
+            }
+        )
+
+    score_deficit = max(0.0, threshold - score)
+    next_steps: list[str] = []
+    if score_deficit > 0:
+        next_steps.append(f"Raise validation score by at least {score_deficit:.3f} to meet threshold.")
+    for repair in repair_suggestions[:5]:
+        next_steps.append(f"Run or apply repair `{repair}`.")
+    if errors and not next_steps:
+        next_steps.append(_diagnostic_next_step(errors[0]))
+
+    return {
+        "status": "passed" if certified else "failed",
+        "score": round(score, 6),
+        "threshold": threshold,
+        "score_deficit": round(score_deficit, 6),
+        "error_count": len(errors),
+        "blocking_diagnostics": blocking,
+        "next_steps": next_steps,
+    }
+
+
 def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     """Run.
 
@@ -70,12 +123,24 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     visual_entry = cert_bundle["validators"]["visual_quality"]
     flow_entry = cert_bundle["validators"]["flow_quality"]
     integrity_entry = cert_bundle["validators"]["geometry_integrity"]
-    urdf_entry = cert_bundle["validators"].get("urdf_validation", {
-        "evidence": {}, "diagnostics": [], "passes": True, "score": 1.0,
-    })
-    gameplay_tag_entry = cert_bundle["validators"].get("gameplay_tags", {
-        "evidence": {}, "diagnostics": [], "passes": True, "score": 1.0,
-    })
+    urdf_entry = cert_bundle["validators"].get(
+        "urdf_validation",
+        {
+            "evidence": {},
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
+    gameplay_tag_entry = cert_bundle["validators"].get(
+        "gameplay_tags",
+        {
+            "evidence": {},
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -99,21 +164,33 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             passed, detail = evaluate_rule(rule["expr"], executor.asset, executor.runtime)
             rule_results.append({"kind": "ensure", "expr": rule["expr"], "passed": passed, "detail": detail})
             if not passed:
-                diagnostics.append({
-                    "code": "L6100",
-                    "name": "ensure_failed",
-                    "severity": "error",
-                    "phase": "validate",
-                    "asset": executor.asset_name,
-                    "stage": detail.get("stage"),
-                    "path": detail.get("path"),
-                    "message": detail.get("message", f"Validation rule failed: {rule['expr']}"),
-                    "details": detail,
-                    "suggested_repairs": detail.get("suggested_repairs", []),
-                })
+                diagnostics.append(
+                    {
+                        "code": "L6100",
+                        "name": "ensure_failed",
+                        "severity": "error",
+                        "phase": "validate",
+                        "asset": executor.asset_name,
+                        "stage": detail.get("stage"),
+                        "path": detail.get("path"),
+                        "message": detail.get(
+                            "message",
+                            f"Validation rule failed: {rule['expr']}",
+                        ),
+                        "details": detail,
+                        "suggested_repairs": detail.get("suggested_repairs", []),
+                    }
+                )
         else:
             score = evaluate_metric(rule["expr"], executor.asset, executor.runtime)
-            rule_results.append({"kind": "prefer", "expr": rule["expr"], "score": score, "weight": rule.get("weight", 1.0)})
+            rule_results.append(
+                {
+                    "kind": "prefer",
+                    "expr": rule["expr"],
+                    "score": score,
+                    "weight": rule.get("weight", 1.0),
+                }
+            )
 
     threshold = float(executor.asset["validate"].get("threshold", 0.80))
     score = evaluate_critic(
@@ -124,6 +201,9 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         executor.asset["validate"].get("rules", []),
     )
     certified = not any(item.get("severity") == "error" for item in diagnostics) and score >= threshold
+    repair_suggestions = sorted(
+        {repair for diag in diagnostics for repair in diag.get("suggested_repairs", [])}
+    )
     report = {
         "certified": certified,
         "threshold": threshold,
@@ -136,12 +216,20 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),
-        "repair_suggestions": sorted({repair for diag in diagnostics for repair in diag.get("suggested_repairs", [])}),
+        "repair_suggestions": repair_suggestions,
+        "failure_summary": _failure_summary(
+            certified=certified,
+            score=score,
+            threshold=threshold,
+            diagnostics=diagnostics,
+            repair_suggestions=repair_suggestions,
+        ),
         "semantic_repairs_applied": next(
             (
                 candidate.get("repairs_applied", [])
-                for candidate in executor.runtime["shape"]["bundle"].get("candidates", [])
-                if candidate.get("candidate_id") == executor.runtime["shape"]["bundle"].get("selected_candidate_id")
+                for candidate in executor.runtime.get("shape", {}).get("bundle", {}).get("candidates", [])
+                if candidate.get("candidate_id")
+                == executor.runtime.get("shape", {}).get("bundle", {}).get("selected_candidate_id")
             ),
             [],
         ),

@@ -9,7 +9,6 @@ behavior.
 
 from __future__ import annotations
 
-import copy
 import unittest
 from typing import Any
 
@@ -19,20 +18,40 @@ from lathe.validators.flow_quality import evaluate_flow_quality
 def _base_asset(mode: str) -> dict[str, Any]:
     return {
         "name": "unit_flow_asset",
-        "build": {"shape": {"mode": mode}, "optimize": {"lods": True, "draw_calls": True, "texture_budget": True}},
+        "build": {
+            "shape": {"mode": mode},
+            "optimize": {"lods": True, "draw_calls": True, "texture_budget": True},
+        },
         "intent": {"parts": ["a", "b"]},
         "transfer": {
-            "resolved_adapt_policy": {"name": "p1", "values": {"preserve": ["silhouette", "interfaces", "part_a", "part_b"]}},
+            "resolved_adapt_policy": {
+                "name": "p1",
+                "values": {"preserve": ["silhouette", "interfaces", "part_a", "part_b"]},
+            },
             "resolved_transfer_rules": [{"from": "src", "to": "dst"}, {"from": "a", "to": "b"}],
         },
         "assembly": {
             "components": ["mod_a", "mod_b"],
-            "resolved_kit": {"name": "kit1", "values": {"modules": ["mod_a", "mod_b"], "snap_grid": True, "allowed_joins": ["socket", "bolt", "weld"]}},
+            "resolved_kit": {
+                "name": "kit1",
+                "values": {
+                    "modules": ["mod_a", "mod_b"],
+                    "snap_grid": True,
+                    "allowed_joins": ["socket", "bolt", "weld"],
+                },
+            },
         },
         "constraints": {
-            "resolved_assembly_policy": {"name": "pol1", "values": {"allow": ["socket", "bolt"], "clearance": 0.5, "snap_grid": True}},
+            "resolved_assembly_policy": {
+                "name": "pol1",
+                "values": {"allow": ["socket", "bolt"], "clearance": 0.5, "snap_grid": True},
+            },
         },
-        "refs": {"resolved_reference_sets": [{"name": "ref1"}], "images": ["a.png", "b.png"], "meshes": ["m.glb"]},
+        "refs": {
+            "resolved_reference_sets": [{"name": "ref1"}],
+            "images": ["a.png", "b.png"],
+            "meshes": ["m.glb"],
+        },
         "fit": {
             "resolved_reconstruct_policy": {"name": "rec1"},
             "resolved_fit_profile": {"name": "fit1"},
@@ -72,7 +91,10 @@ class FlowQualityCertifiedTests(unittest.TestCase):
         report = evaluate_flow_quality(asset, runtime)
         self.assertEqual(report["mode"], "reconstruct")
         self.assertEqual(report["diagnostics"], [])
-        self.assertGreaterEqual(report["metrics"]["reconstruct_honesty_score"], report["thresholds"]["reconstruct_honesty_score"])
+        self.assertGreaterEqual(
+            report["metrics"]["reconstruct_honesty_score"],
+            report["thresholds"]["reconstruct_honesty_score"],
+        )
 
     def test_assemble_flow_with_kit_and_policy_emits_no_diagnostics(self) -> None:
         asset = _base_asset("assemble")
@@ -109,12 +131,19 @@ class FlowQualityRejectsBadBundleTests(unittest.TestCase):
         asset["fit"] = {}
         asset["validate"] = {}
         runtime = _good_runtime("reconstruct")
-        runtime["shape"]["bundle"]["conditioning_report"] = {"reference_strength": 0.0, "image_refs": [], "mesh_refs": []}
+        runtime["shape"]["bundle"]["conditioning_report"] = {
+            "reference_strength": 0.0,
+            "image_refs": [],
+            "mesh_refs": [],
+        }
         runtime["semantic_quality"]["metrics"] = {k: 0.0 for k in runtime["semantic_quality"]["metrics"]}
         report = evaluate_flow_quality(asset, runtime)
         names = {d["name"] for d in report["diagnostics"]}
         self.assertIn("flow_reconstruct_honesty_score_failed", names)
-        self.assertLess(report["metrics"]["reconstruct_honesty_score"], report["thresholds"]["reconstruct_honesty_score"])
+        self.assertLess(
+            report["metrics"]["reconstruct_honesty_score"],
+            report["thresholds"]["reconstruct_honesty_score"],
+        )
 
     def test_adapt_semantic_preservation_fails_when_metrics_zeroed(self) -> None:
         asset = _base_asset("adapt")
@@ -146,7 +175,11 @@ class FlowQualityRejectsBadBundleTests(unittest.TestCase):
         asset["refs"] = {}
         asset["fit"] = {}
         runtime = _good_runtime("reconstruct")
-        runtime["shape"]["bundle"]["conditioning_report"] = {"reference_strength": 0.0, "image_refs": [], "mesh_refs": []}
+        runtime["shape"]["bundle"]["conditioning_report"] = {
+            "reference_strength": 0.0,
+            "image_refs": [],
+            "mesh_refs": [],
+        }
         runtime["semantic_quality"]["metrics"] = {k: 0.0 for k in runtime["semantic_quality"]["metrics"]}
         report = evaluate_flow_quality(asset, runtime)
         self.assertTrue(report["diagnostics"])

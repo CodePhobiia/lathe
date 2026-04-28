@@ -77,9 +77,10 @@ without being sanctimonious. Concrete example in every abstract paragraph.
   provider config.
 - Show the `.lth` source. Annotate it in three short passes: intent,
   contract, build constraints.
-- Show the command. Show the output directory listing. Call out the
-  `manifest.json`, the `trace.json`, the `certification.json`, and the
-  packaged `.glb` and `.usd`.
+- Show the command. Show the output directory listing. Call out
+  `stages/package/package_manifest.json`,
+  `stages/package/trace_manifest.json`, `stages/validate/report.json`,
+  and the packaged `.glb` and `.usda`.
 - Drop the `.glb` into a Godot scene live (or in a pre-recorded clip).
   Confirm the pivot is correct, the socket markers line up, the LODs
   switch at their declared distances.
@@ -141,7 +142,8 @@ without being sanctimonious. Concrete example in every abstract paragraph.
 2. Drop the produced `.glb` into your engine of choice and confirm it
    loads cleanly. Ten minutes.
 3. Open an issue if the build fails on your asset, with the `.lth` source
-   and the `trace.json` attached. One hour if it reveals a real bug.
+   and `stages/package/trace_manifest.json` attached. One hour if it
+   reveals a real bug.
 4. Author a `.lth` file for one asset in your current project backlog.
    Measure whether the certified build is good enough to ship. An
    afternoon.

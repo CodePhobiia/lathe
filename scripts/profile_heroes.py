@@ -24,25 +24,26 @@ This is the **proof-of-concept** scope from Plan 08 Phase 10. Full
 per-stage instrumentation in the executor and CI gate enforcement are
 Wave 5 items — see ``perf/README.md``.
 """
+
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from lathe.hero_manifest import HEROES, Hero  # noqa: E402
+from lathe.hero_manifest import HEROES, Hero
 
 PERF_DIR = _REPO_ROOT / "perf"
 BUDGETS_PATH = PERF_DIR / "budgets.json"
@@ -72,10 +73,10 @@ BUDGET_HEADROOM = 1.2
 
 
 def _utc_today() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now(UTC).strftime("%Y-%m-%d")
 
 
-def _run_build(hero: Hero, out_root: Path) -> Dict[str, Any]:
+def _run_build(hero: Hero, out_root: Path) -> dict[str, Any]:
     """Run the build CLI for ``hero``. Returns the parsed build_report.json."""
     out_dir = out_root / hero.asset_name
     if out_dir.exists():
@@ -110,56 +111,86 @@ def _run_build(hero: Hero, out_root: Path) -> Dict[str, Any]:
     return json.loads(report_path.read_text(encoding="utf-8"))
 
 
-def _stage_bundle_paths(out_dir: Path) -> Dict[str, Path]:
+def _stage_bundle_paths(out_dir: Path) -> dict[str, Path]:
     """Map stage name -> bundle path (or report.json for validate)."""
     base = out_dir / "stages"
-    paths: Dict[str, Path] = {}
+    paths: dict[str, Path] = {}
     for stage in STAGE_ORDER:
-        if stage == "validate":
-            p = base / stage / "report.json"
-        else:
-            p = base / stage / "bundle.json"
+        p = base / stage / "report.json" if stage == "validate" else base / stage / "bundle.json"
         if p.exists():
             paths[stage] = p
     return paths
 
 
-def _per_stage_timings(report: Dict[str, Any], out_dir: Path) -> Dict[str, Dict[str, Any]]:
+def _mtimes_within_build_window(
+    mtimes: list[tuple[str, float]],
+    build_started_wall_s: float | None,
+    build_finished_wall_s: float | None,
+) -> bool:
+    """Return whether bundle mtimes are credible for this profile run."""
+    if not mtimes or build_started_wall_s is None or build_finished_wall_s is None:
+        return True
+    # Filesystems can round mtimes and subprocess startup can straddle a
+    # boundary, but cached artifacts copied with preserved mtimes are often
+    # minutes or days outside the current run. Treat those as unmeasured.
+    tolerance_s = 2.0
+    lower = build_started_wall_s - tolerance_s
+    upper = build_finished_wall_s + tolerance_s
+    return all(lower <= mtime <= upper for _, mtime in mtimes)
+
+
+def _per_stage_timings(
+    report: dict[str, Any],
+    out_dir: Path,
+    *,
+    build_started_wall_s: float | None = None,
+    build_finished_wall_s: float | None = None,
+) -> dict[str, dict[str, Any]]:
     """Recover per-stage elapsed_ms.
 
     Prefers ``report["stages"][<stage>]["elapsed_ms"]`` if BL-33/BL-36 wired
     it; otherwise computes coarse mtime deltas between consecutive stage
     bundles and tags ``source="mtime_delta"``.
     """
-    out: Dict[str, Dict[str, Any]] = {}
+    out: dict[str, dict[str, Any]] = {}
     structured = report.get("stages") if isinstance(report.get("stages"), dict) else None
 
     bundle_paths = _stage_bundle_paths(out_dir)
     # mtime fallback: order stages by their bundle mtime; first-stage
     # delta is undefined so we attribute (mtime[shape] - build start) =
     # report["build_started_ts"] if present, else 0 (recorded as None).
-    mtimes: List[tuple[str, float]] = sorted(
+    mtimes: list[tuple[str, float]] = sorted(
         [(s, p.stat().st_mtime) for s, p in bundle_paths.items()],
         key=lambda t: t[1],
     )
-    deltas: Dict[str, float] = {}
-    for i, (stage, mt) in enumerate(mtimes):
-        if i == 0:
-            # No prior bundle; we mark this as the "first stage delta unknown" case.
-            deltas[stage] = float("nan")
-        else:
-            deltas[stage] = max(0.0, (mt - mtimes[i - 1][1]) * 1000.0)
+    mtimes_trusted = _mtimes_within_build_window(mtimes, build_started_wall_s, build_finished_wall_s)
+    deltas: dict[str, float] = {}
+    if mtimes_trusted:
+        for i, (stage, mt) in enumerate(mtimes):
+            if i == 0:
+                # No prior bundle; we mark this as the "first stage delta unknown" case.
+                deltas[stage] = float("nan")
+            else:
+                deltas[stage] = max(0.0, (mt - mtimes[i - 1][1]) * 1000.0)
 
     for stage in STAGE_ORDER:
-        if structured and stage in structured and isinstance(structured[stage], dict) and "elapsed_ms" in structured[stage]:
+        if (
+            structured
+            and stage in structured
+            and isinstance(structured[stage], dict)
+            and "elapsed_ms" in structured[stage]
+        ):
             out[stage] = {
                 "current_ms": float(structured[stage]["elapsed_ms"]),
                 "source": "build_report",
             }
             continue
+        if stage in bundle_paths and not mtimes_trusted:
+            out[stage] = {"current_ms": None, "source": "mtime_delta_untrusted_cache_mtime"}
+            continue
         if stage in deltas:
             d = deltas[stage]
-            if d != d:  # NaN: first-stage, unknown
+            if math.isnan(d):  # first-stage, unknown
                 out[stage] = {"current_ms": None, "source": "mtime_delta_first_stage_unknown"}
             else:
                 out[stage] = {"current_ms": round(d, 2), "source": "mtime_delta"}
@@ -168,22 +199,31 @@ def _per_stage_timings(report: Dict[str, Any], out_dir: Path) -> Dict[str, Dict[
     return out
 
 
-def _budgetize(stage_timings: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+def _budgetize(stage_timings: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """Attach a ``budget_ms`` field = current_ms * BUDGET_HEADROOM."""
-    out: Dict[str, Dict[str, Any]] = {}
+    out: dict[str, dict[str, Any]] = {}
     for stage, info in stage_timings.items():
         cur = info.get("current_ms")
-        budget = round(cur * BUDGET_HEADROOM, 2) if isinstance(cur, (int, float)) and cur is not None else None
+        budget = (
+            round(cur * BUDGET_HEADROOM, 2) if isinstance(cur, (int, float)) and cur is not None else None
+        )
         out[stage] = {**info, "budget_ms": budget}
     return out
 
 
-def _profile_hero(hero: Hero, out_root: Path) -> Dict[str, Any]:
+def _profile_hero(hero: Hero, out_root: Path) -> dict[str, Any]:
+    t0_wall = time.time()
     t0 = time.perf_counter()
     report = _run_build(hero, out_root)
     wall_ms = (time.perf_counter() - t0) * 1000.0
+    t1_wall = time.time()
     out_dir = out_root / hero.asset_name
-    timings = _per_stage_timings(report, out_dir)
+    timings = _per_stage_timings(
+        report,
+        out_dir,
+        build_started_wall_s=t0_wall,
+        build_finished_wall_s=t1_wall,
+    )
     return {
         "wall_ms": round(wall_ms, 2),
         "stages": _budgetize(timings),
@@ -193,20 +233,20 @@ def _profile_hero(hero: Hero, out_root: Path) -> Dict[str, Any]:
     }
 
 
-def _load_existing_budgets() -> Dict[str, Any]:
+def _load_existing_budgets() -> dict[str, Any]:
     if not BUDGETS_PATH.exists():
         return {"heroes": {}}
     return json.loads(BUDGETS_PATH.read_text(encoding="utf-8"))
 
 
-def _load_manifest() -> Optional[Dict[str, Any]]:
+def _load_manifest() -> dict[str, Any] | None:
     """Load the hand-authored ``perf/manifest.json`` if present (PERF-4)."""
     if not MANIFEST_PATH.exists():
         return None
     return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
 
-def _manifest_rows(hero_name: str, current: Dict[str, Any], manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _manifest_rows(hero_name: str, current: dict[str, Any], manifest: dict[str, Any]) -> list[dict[str, Any]]:
     """Compute pass/warn/fail rows for ``hero_name`` against the manifest.
 
     A row has: {stage, current_ms, ms_max, status}. status is one of:
@@ -216,16 +256,18 @@ def _manifest_rows(hero_name: str, current: Dict[str, Any], manifest: Dict[str, 
       - "skip": no budget or no measurement for this stage
     A synthetic row for "__total__" against total_ms_max is included.
     """
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     hero_entry = manifest.get("heroes", {}).get(hero_name)
     if not hero_entry:
-        rows.append({
-            "stage": "__hero__",
-            "current_ms": None,
-            "ms_max": None,
-            "status": "skip",
-            "reason": f"hero {hero_name!r} not listed in perf/manifest.json",
-        })
+        rows.append(
+            {
+                "stage": "__hero__",
+                "current_ms": None,
+                "ms_max": None,
+                "status": "skip",
+                "reason": f"hero {hero_name!r} not listed in perf/manifest.json",
+            }
+        )
         return rows
 
     stage_budgets = hero_entry.get("stages", {}) or {}
@@ -235,12 +277,14 @@ def _manifest_rows(hero_name: str, current: Dict[str, Any], manifest: Dict[str, 
         budget_entry = stage_budgets.get(stage) or {}
         ms_max = budget_entry.get("ms_max")
         if cur is None or ms_max is None:
-            rows.append({
-                "stage": stage,
-                "current_ms": cur,
-                "ms_max": ms_max,
-                "status": "skip",
-            })
+            rows.append(
+                {
+                    "stage": stage,
+                    "current_ms": cur,
+                    "ms_max": ms_max,
+                    "status": "skip",
+                }
+            )
             continue
         if cur > ms_max:
             status = "fail"
@@ -248,12 +292,14 @@ def _manifest_rows(hero_name: str, current: Dict[str, Any], manifest: Dict[str, 
             status = "warn"
         else:
             status = "pass"
-        rows.append({
-            "stage": stage,
-            "current_ms": cur,
-            "ms_max": ms_max,
-            "status": status,
-        })
+        rows.append(
+            {
+                "stage": stage,
+                "current_ms": cur,
+                "ms_max": ms_max,
+                "status": status,
+            }
+        )
 
     total_max = hero_entry.get("total_ms_max")
     wall_ms = current.get("wall_ms")
@@ -264,16 +310,18 @@ def _manifest_rows(hero_name: str, current: Dict[str, Any], manifest: Dict[str, 
             tstatus = "warn"
         else:
             tstatus = "pass"
-        rows.append({
-            "stage": "__total__",
-            "current_ms": wall_ms,
-            "ms_max": total_max,
-            "status": tstatus,
-        })
+        rows.append(
+            {
+                "stage": "__total__",
+                "current_ms": wall_ms,
+                "ms_max": total_max,
+                "status": tstatus,
+            }
+        )
     return rows
 
 
-def _print_rows(hero_name: str, rows: List[Dict[str, Any]], stream=sys.stderr) -> None:
+def _print_rows(hero_name: str, rows: list[dict[str, Any]], stream=sys.stderr) -> None:
     """Print a short per-hero per-stage table to ``stream``."""
     print(f"[{hero_name}]", file=stream)
     for row in rows:
@@ -287,13 +335,13 @@ def _print_rows(hero_name: str, rows: List[Dict[str, Any]], stream=sys.stderr) -
         print(f"  {tag} {stage:<12} {cur_s} ms / {max_s} ms", file=stream)
 
 
-def _verify(hero_name: str, current: Dict[str, Any], budgets: Dict[str, Any]) -> List[str]:
+def _verify(hero_name: str, current: dict[str, Any], budgets: dict[str, Any]) -> list[str]:
     """Return a list of regression messages for ``hero_name``.
 
     Legacy verifier (BL-43) — still supported for back-compat with
     inferred ``budgets.json``. Prefer ``_manifest_rows`` for PERF-4.
     """
-    msgs: List[str] = []
+    msgs: list[str] = []
     hero_budget = budgets.get("heroes", {}).get(hero_name)
     if not hero_budget:
         msgs.append(f"{hero_name}: no recorded budget — run --write to baseline")
@@ -311,7 +359,7 @@ def _verify(hero_name: str, current: Dict[str, Any], budgets: Dict[str, Any]) ->
     return msgs
 
 
-def _heroes_filtered(only: Optional[str]) -> List[Hero]:
+def _heroes_filtered(only: str | None) -> list[Hero]:
     if only:
         matching = [h for h in HEROES if h.asset_name == only]
         if not matching:
@@ -321,14 +369,26 @@ def _heroes_filtered(only: Optional[str]) -> List[Hero]:
 
 
 def main() -> int:
+    """Profile hero builds and optionally verify performance budgets."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    parser.add_argument("--write", action="store_true", help="Refresh budgets.json from current measurements (default if no other mode)")
-    parser.add_argument("--verify", action="store_true", help="Compare current run against existing budgets.json; fail on regression > 20%%")
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Refresh budgets.json from current measurements (default if no other mode)",
+    )
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="Compare current run against existing budgets.json; fail on regression > 20%%",
+    )
     parser.add_argument(
         "--fail-on-regression",
         action="store_true",
         default=True,
-        help="Exit non-zero when --verify detects a regression (default: true). Pair with --no-fail-on-regression to make --verify report-only.",
+        help=(
+            "Exit non-zero when --verify detects a regression (default: true). "
+            "Pair with --no-fail-on-regression to make --verify report-only."
+        ),
     )
     parser.add_argument(
         "--no-fail-on-regression",
@@ -337,7 +397,12 @@ def main() -> int:
         help="When set, --verify prints regressions but exits 0 (report-only mode).",
     )
     parser.add_argument("--only", type=str, default=None, help="Restrict to a single hero by name")
-    parser.add_argument("--out-root", type=Path, default=TMP_OUT_ROOT, help="Where to write transient build outputs (default: tmp_profile/)")
+    parser.add_argument(
+        "--out-root",
+        type=Path,
+        default=TMP_OUT_ROOT,
+        help="Where to write transient build outputs (default: tmp_profile/)",
+    )
     parser.add_argument(
         "--manifest",
         action="store_true",
@@ -359,7 +424,7 @@ def main() -> int:
     heroes = _heroes_filtered(args.only)
     print(f"profile_heroes: profiling {len(heroes)} hero(s)", file=sys.stderr)
 
-    measurements: Dict[str, Dict[str, Any]] = {}
+    measurements: dict[str, dict[str, Any]] = {}
     for hero in heroes:
         print(f"  -> {hero.asset_name}", file=sys.stderr)
         measurements[hero.asset_name] = _profile_hero(hero, args.out_root)
@@ -368,7 +433,8 @@ def main() -> int:
         manifest = _load_manifest()
         if manifest is None:
             print(
-                f"perf/manifest.json not found at {MANIFEST_PATH} — create it (PERF-4) before running --manifest",
+                f"perf/manifest.json not found at {MANIFEST_PATH} — create it "
+                "(PERF-4) before running --manifest",
                 file=sys.stderr,
             )
             return 2
@@ -389,7 +455,7 @@ def main() -> int:
 
     if args.verify:
         existing = _load_existing_budgets()
-        regressions: List[str] = []
+        regressions: list[str] = []
         for name, m in measurements.items():
             regressions.extend(_verify(name, m, existing))
         if regressions:
@@ -410,14 +476,14 @@ def main() -> int:
     for name, m in measurements.items():
         budgets["heroes"][name] = m
     budgets["budget_headroom"] = BUDGET_HEADROOM
-    budgets["updated_utc"] = datetime.now(timezone.utc).isoformat()
+    budgets["updated_utc"] = datetime.now(UTC).isoformat()
     BUDGETS_PATH.write_text(json.dumps(budgets, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {BUDGETS_PATH}", file=sys.stderr)
 
     # Historical record
     hist_path = PERF_DIR / f"heroes_{_utc_today()}.json"
     hist_path.write_text(
-        json.dumps({"heroes": measurements, "recorded_utc": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n",
+        json.dumps({"heroes": measurements, "recorded_utc": datetime.now(UTC).isoformat()}, indent=2) + "\n",
         encoding="utf-8",
     )
     print(f"wrote {hist_path}", file=sys.stderr)

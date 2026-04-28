@@ -24,7 +24,9 @@ def _snapshot(
         "latheVersion": lathe_version,
         "sourcePath": source_path,
         "buildHash": build_hash,
-        "stages": stages if stages is not None else {
+        "stages": stages
+        if stages is not None
+        else {
             "shape": "a" * 64,
             "topology": "b" * 64,
             "uv": "c" * 64,

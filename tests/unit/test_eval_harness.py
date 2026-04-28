@@ -87,9 +87,15 @@ class LoadBenchmarkCatalogTests(unittest.TestCase):
 class RunBenchmarkSuiteTests(unittest.TestCase):
     def _patched_run(self, catalog: dict, positives: list[dict], negatives: list[dict]) -> dict:
         neg_iter = iter(negatives)
-        with mock.patch.object(eval_harness, "load_benchmark_catalog", return_value=catalog), \
-             mock.patch.object(eval_harness, "_positive_scorecard", side_effect=positives), \
-             mock.patch.object(eval_harness, "_negative_scorecard", side_effect=lambda *a, **k: next(neg_iter)):
+        with (
+            mock.patch.object(eval_harness, "load_benchmark_catalog", return_value=catalog),
+            mock.patch.object(eval_harness, "_positive_scorecard", side_effect=positives),
+            mock.patch.object(
+                eval_harness,
+                "_negative_scorecard",
+                side_effect=lambda *a, **k: next(neg_iter),
+            ),
+        ):
             return eval_harness.run_benchmark_suite("/workspace/does-not-matter")
 
     def test_basic_eval_reports_rates(self) -> None:
@@ -129,9 +135,7 @@ class RunBenchmarkSuiteTests(unittest.TestCase):
             "negative": [{"name": "x", "asset": "x", "file": "x.lth"}],
             "near_miss": [],
         }
-        report = self._patched_run(
-            catalog, [], [_negative_scorecard(asset="x", ok=True)]
-        )
+        report = self._patched_run(catalog, [], [_negative_scorecard(asset="x", ok=True)])
         self.assertEqual(report["negative_fail_rate"], 0.0)
 
     def test_report_shape_has_all_sections(self) -> None:

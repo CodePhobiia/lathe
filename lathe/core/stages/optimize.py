@@ -11,20 +11,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..common import dump_json, relpath
-from ..io import export_glb
-from ..mesh import RuntimeMesh
 from ...stages import budgets as budgets_mod
 from ...stages import collision as collision_mod
 from ...stages import lod as lod_mod
-
+from ..common import dump_json, relpath
+from ..io import export_glb
+from ..mesh import RuntimeMesh
 
 DEFAULT_LOD_RATIOS: tuple[float, ...] = (1.0, 0.5, 0.25, 0.1)
 
 
 def _resolve_lod_ratios(asset_cfg: dict[str, Any], runtime_cfg: dict[str, Any]) -> list[float]:
     """Resolve LOD ratios with precedence: runtime_config > asset build > defaults."""
-
     runtime_opt = runtime_cfg.get("optimize") if isinstance(runtime_cfg, dict) else None
     if isinstance(runtime_opt, dict):
         ratios = runtime_opt.get("lod_ratios")
@@ -50,7 +48,6 @@ def _resolve_lod_config(asset_cfg: dict[str, Any]) -> list[dict[str, Any]] | Non
     Missing keys on any entry fall back to the LOD module's defaults inferred
     from ``DEFAULT_DISTANCE_BANDS`` / ``DEFAULT_SCREEN_COVERAGE``.
     """
-
     raw = asset_cfg.get("lod_config")
     if not isinstance(raw, list):
         return None
@@ -88,11 +85,13 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
     lod_manifest_entries: list[dict[str, Any]] = []
     diagnostics: list[dict[str, Any]] = []
     if len(uv_runtime.mesh.faces) == 0:
-        diagnostics.append({
-            "code": "LOD_EMPTY_INPUT",
-            "level": "warning",
-            "message": "uv stage mesh is empty; only LOD0 emitted.",
-        })
+        diagnostics.append(
+            {
+                "code": "LOD_EMPTY_INPUT",
+                "level": "warning",
+                "message": "uv stage mesh is empty; only LOD0 emitted.",
+            }
+        )
 
     for result in lod_results:
         lod_path = stage_dir / f"lod_{result.level}.glb"
@@ -110,16 +109,18 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
         }
         lod_manifest_entries.append(entry)
         # Back-compat shape for downstream code expecting ``lods`` list entries.
-        lods.append({
-            "name": f"lod{result.level}",
-            "mesh_uri": rel,
-            "triangle_count": result.tris,
-            "vertex_count": result.verts,
-            "decimation": "quadric_edge_collapse" if result.ratio < 1.0 else "source",
-            "distance_min": result.distance_min,
-            "distance_max": result.distance_max,
-            "screen_coverage": result.screen_coverage,
-        })
+        lods.append(
+            {
+                "name": f"lod{result.level}",
+                "mesh_uri": rel,
+                "triangle_count": result.tris,
+                "vertex_count": result.verts,
+                "decimation": "quadric_edge_collapse" if result.ratio < 1.0 else "source",
+                "distance_min": result.distance_min,
+                "distance_max": result.distance_max,
+                "screen_coverage": result.screen_coverage,
+            }
+        )
 
     lod_manifest = {
         "schemaVersion": 1,
@@ -143,8 +144,8 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
         "proxies": [
             {
                 "name": "hull",
-                "tris": int(len(single.mesh.faces)),
-                "verts": int(len(single.mesh.vertices)),
+                "tris": len(single.mesh.faces),
+                "verts": len(single.mesh.vertices),
                 "aabb": {"min": list(single.aabb_min), "max": list(single.aabb_max)},
                 "path": relpath(executor.out_dir, single_path),
             },
@@ -154,8 +155,8 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
                 "subproxies": [
                     {
                         "name": p.name,
-                        "tris": int(len(p.mesh.faces)),
-                        "verts": int(len(p.mesh.vertices)),
+                        "tris": len(p.mesh.faces),
+                        "verts": len(p.mesh.vertices),
                         "aabb": {"min": list(p.aabb_min), "max": list(p.aabb_max)},
                     }
                     for p in part_proxies
@@ -176,7 +177,7 @@ def run(executor: Any, physics_bundle: dict[str, Any]) -> dict[str, Any]:
             "hull_uri": relpath(executor.out_dir, single_path),
             "parts_uri": relpath(executor.out_dir, parts_path),
             "manifest_path": relpath(executor.out_dir, collision_manifest_path),
-            "hull_tris": int(len(single.mesh.faces)),
+            "hull_tris": len(single.mesh.faces),
             "parts_count": len(part_proxies),
         },
         "draw_calls": draw_calls,

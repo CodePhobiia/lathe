@@ -17,21 +17,20 @@ jobs:
       - uses: actions/stale@v9
         with:
           days-before-issue-stale: 60
-          days-before-issue-close: 14
+          days-before-issue-close: -1
           days-before-pr-stale: 30
           days-before-pr-close: 14
           stale-issue-label: stale
           stale-pr-label: stale
-          exempt-issue-labels: "security,language-contract,help-wanted,good-first-issue"
-          exempt-pr-labels: "security,language-contract,help-wanted,good-first-issue"
+          exempt-issue-labels: "security,release-blocker,language-contract,deps,help-wanted,good-first-issue"
+          exempt-pr-labels: "security,release-blocker,language-contract,deps,help-wanted,good-first-issue"
           stale-issue-message: >
             This issue has been idle for 60 days and is being marked stale.
-            It will close in 14 days without further activity. Add a comment
-            to keep it open, or apply an exempt label if this should remain.
+            Issues are not closed automatically only because they are old.
+            Please add fresh context if this is still actionable, or apply an
+            exempt label if this should remain visible for release planning.
           stale-pr-message: >
             This PR has been idle for 30 days and is being marked stale.
             It will close in 14 days without further activity.
-          close-issue-message: >
-            Closing as stale. Please reopen with fresh context if still relevant.
           close-pr-message: >
             Closing as stale. Please reopen and rebase when ready to resume.

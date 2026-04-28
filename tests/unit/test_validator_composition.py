@@ -36,11 +36,14 @@ class _StaticValidator:
         self.stage_dependencies = list(stage_dependencies or [])
         self.weight = weight
 
-    def evaluate(self, runtime: dict[str, Any], asset: dict[str, Any], artifacts: dict[str, Any]) -> ValidatorReport:
+    def evaluate(
+        self,
+        runtime: dict[str, Any],
+        asset: dict[str, Any],
+        artifacts: dict[str, Any],
+    ) -> ValidatorReport:
         diag: list[dict[str, Any]] = (
-            []
-            if self._passes
-            else [{"code": "TEST", "severity": "error", "message": "fail"}]
+            [] if self._passes else [{"code": "TEST", "severity": "error", "message": "fail"}]
         )
         return ValidatorReport(
             name=self.name,
@@ -165,6 +168,43 @@ class ValidatorPipelineTests(unittest.TestCase):
         pipeline.run({}, {}, {})
         self.assertIsNotNone(seen["first_visible_to_second"])
         self.assertEqual(seen["first_visible_to_second"]["metrics"]["first_metric"], 0.42)
+
+    def test_pipeline_fails_closed_when_stage_dependency_is_missing(self) -> None:
+        calls: list[str] = []
+
+        def fake(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+            calls.append("called")
+            return {"metrics": {"score": 1.0}, "diagnostics": []}
+
+        pipeline = ValidatorPipeline(
+            [FunctionValidator(name="topology_guarded", fn=fake, stage_dependencies=["topology"])]
+        )
+        bundle = pipeline.run({}, {"name": "faulty_asset"}, {})
+
+        self.assertEqual(calls, [])
+        self.assertFalse(bundle["certified"])
+        self.assertEqual(bundle["score"], 0.0)
+        report = bundle["validators"]["topology_guarded"]
+        self.assertFalse(report["passes"])
+        self.assertEqual(report["score"], 0.0)
+        self.assertEqual(report["diagnostics"][0]["code"], "L6001")
+        self.assertEqual(report["diagnostics"][0]["severity"], "error")
+        self.assertEqual(report["diagnostics"][0]["details"]["missing_dependencies"], ["topology"])
+
+    def test_pipeline_fails_closed_when_stage_bundle_is_corrupt(self) -> None:
+        def fake(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
+            return {"metrics": {"score": 1.0}, "diagnostics": []}
+
+        pipeline = ValidatorPipeline(
+            [FunctionValidator(name="shape_guarded", fn=fake, stage_dependencies=["shape"])]
+        )
+        bundle = pipeline.run({"shape": {"bundle": None}}, {"name": "faulty_asset"}, {})
+
+        self.assertFalse(bundle["certified"])
+        report = bundle["validators"]["shape_guarded"]
+        self.assertFalse(report["passes"])
+        self.assertEqual(report["diagnostics"][0]["name"], "missing_stage_dependency")
+        self.assertEqual(report["diagnostics"][0]["path"], "runtime.shape.bundle")
 
 
 if __name__ == "__main__":  # pragma: no cover

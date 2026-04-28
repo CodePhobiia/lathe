@@ -21,13 +21,27 @@ from copy import deepcopy
 from typing import Any
 
 # re-export — authoritative definition lives in lathe/errors.py
+from . import stage_contracts as _stage_contracts
 from .errors import BackendResolutionError
+from .logging_utils import debug as log_debug
+from .logging_utils import warning as log_warning
+from .stage_contracts import (
+    assert_supported_backend_contract_version,
+    backend_contract_version_issue,
+)
 
 _LOGGER = logging.getLogger(__name__)
+
+SUPPORTED_BACKEND_CONTRACT_VERSIONS = _stage_contracts.SUPPORTED_BACKEND_CONTRACT_VERSIONS
 
 
 PACKAGE_FORMATS = ["usd", "usdz", "glb", "gltf", "fbx", "obj"]
 BACKEND_SELECTION_STAGES = ["shape", "topology", "uv", "package"]
+
+
+def supported_backend_contract_versions(backend_id: str) -> tuple[str, ...]:
+    """Return supported contract versions for ``backend_id``."""
+    return tuple(_stage_contracts.supported_backend_contract_versions(backend_id))
 
 
 BACKENDS: dict[str, dict[str, Any]] = {
@@ -181,8 +195,8 @@ BACKENDS: dict[str, dict[str, Any]] = {
         "id": "lathe.uv.xatlas_v1",
         "version": "1.0.0",
         "stage": "uv",
-        "toolchain": ["reference_runtime", "trimesh"],
-        "runtime_executor": "lathe.runtime.uv.box_atlas_v1",
+        "toolchain": ["xatlas", "trimesh"],
+        "runtime_executor": "lathe.runtime.uv.xatlas_v1",
         "determinism_class": "deterministic",
         "supported_asset_kinds": ["hard_surface_prop", "env_module", "mechanical_assembly"],
         "supported_tile_modes": ["zero_to_one"],
@@ -260,7 +274,6 @@ BACKENDS: dict[str, dict[str, Any]] = {
         },
     },
 }
-
 
 STACKS: dict[str, dict[str, Any]] = {
     "lathe.stack.hard_surface_game_asset_v1": {
@@ -352,6 +365,24 @@ def get_backend(backend_id: str) -> dict[str, Any]:
     return _deepcopy(BACKENDS[backend_id])
 
 
+def stage_bundle_contract_version_issue(stage: str, bundle: dict[str, Any]) -> str | None:
+    """Validate the backend contract version recorded in an emitted stage bundle."""
+    backend_id = bundle.get("backend_id")
+    version = bundle.get("backend_version")
+    provenance = bundle.get("provenance")
+    if isinstance(provenance, dict):
+        backend_id = backend_id or provenance.get("backend_id")
+        version = version or provenance.get("backend_version")
+    if not isinstance(backend_id, str) or not backend_id:
+        return f"{stage} bundle is missing backend_id"
+    if backend_id not in BACKENDS:
+        return f"{stage} bundle references unknown backend '{backend_id}'"
+    expected_stage = BACKENDS[backend_id].get("stage")
+    if expected_stage != stage:
+        return f"{stage} bundle backend stage mismatch: expected {stage}, got {expected_stage}"
+    return backend_contract_version_issue(backend_id, version)
+
+
 def _get_stage_config(asset: dict[str, Any], stage: str) -> dict[str, Any]:
     if stage == "package":
         return asset.get("package", {})
@@ -379,6 +410,9 @@ def evaluate_backend(backend_id: str, asset: dict[str, Any], stage: str) -> tupl
     """
     backend = get_backend(backend_id)
     reasons: list[str] = []
+    version_issue = backend_contract_version_issue(backend["id"], backend.get("version"))
+    if version_issue is not None:
+        reasons.append(version_issue)
     if backend["stage"] != stage:
         reasons.append(f"backend stage mismatch: expected {stage}, got {backend['stage']}")
     if asset.get("kind") not in backend.get("supported_asset_kinds", []):
@@ -502,9 +536,7 @@ def select_stack(asset: dict[str, Any]) -> dict[str, Any]:
             score = _stack_match_score(STACKS[stack_id], explicit)
             compatible.append((score, stack_id))
     if not compatible:
-        raise BackendResolutionError(
-            "No builtin backend stack matches the asset configuration"
-        )
+        raise BackendResolutionError("No builtin backend stack matches the asset configuration")
     # Sort by -score, then stack_id (alphabetical). The first stack wins.
     compatible.sort(key=lambda item: (-item[0], item[1]))
     chosen_id = compatible[0][1]
@@ -589,28 +621,37 @@ def load_plugin_backends(*, force: bool = False) -> dict[str, list[str]]:
         for ep in eps:
             try:
                 descriptor = ep.load()
-            except Exception as exc:  # noqa: BLE001 - plugin failures are non-fatal
-                _LOGGER.warning(
-                    "lathe plugin entry-point %r (%s) failed to load: %s",
-                    ep.name,
-                    group,
-                    exc,
+            except Exception as exc:
+                log_warning(
+                    _LOGGER,
+                    "lathe.plugin.entry_point_load_failed",
+                    "lathe plugin entry-point {entry_point!r} ({group}) failed to load: {error}",
+                    entry_point=ep.name,
+                    group=group,
+                    error=exc,
                 )
                 continue
             if not isinstance(descriptor, dict) or "id" not in descriptor:
-                _LOGGER.warning(
-                    "lathe plugin entry-point %r (%s) is not a descriptor dict with an 'id' field; skipping",
-                    ep.name,
-                    group,
+                log_warning(
+                    _LOGGER,
+                    "lathe.plugin.invalid_descriptor",
+                    "lathe plugin entry-point {entry_point!r} ({group}) is not a descriptor dict "
+                    "with an 'id' field; skipping",
+                    entry_point=ep.name,
+                    group=group,
+                    descriptor_type=type(descriptor).__name__,
                 )
                 continue
             plugin_id = descriptor["id"]
             if plugin_id in registry:
-                _LOGGER.debug(
-                    "lathe plugin %r from %s collides with built-in %r; built-in wins",
-                    ep.name,
-                    group,
-                    plugin_id,
+                log_debug(
+                    _LOGGER,
+                    "lathe.plugin.builtin_collision",
+                    "lathe plugin {entry_point!r} from {group} collides with built-in {plugin_id!r}; "
+                    "built-in wins",
+                    entry_point=ep.name,
+                    group=group,
+                    plugin_id=plugin_id,
                 )
                 continue
             registry[plugin_id] = descriptor
@@ -635,6 +676,11 @@ def resolve_selected_backends(asset: dict[str, Any]) -> dict[str, Any]:
         explicit = _get_explicit_backend_id(asset, stage)
         backend_id = explicit if explicit != "auto" else stack["stage_backends"][stage]
         backend = get_backend(backend_id)
+        assert_supported_backend_contract_version(
+            backend["id"],
+            backend.get("version"),
+            context=f"{stage} backend contract",
+        )
         selected[stage] = {
             "id": backend["id"],
             "version": backend["version"],

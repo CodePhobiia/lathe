@@ -66,18 +66,21 @@ The first build populates `dist/courier_drone/` with:
 ```
 dist/courier_drone/
   build_report.json            <- aggregate trace (read this first)
-  normalized.json              <- resolved asset AST
+  materialized_asset.json      <- resolved asset AST
+  normalized_program.json      <- normalized source program
   plan.json                    <- effective build plan
+  selector_manifest.json       <- canonical gameplay/import sidecar
   stages/
     shape/bundle.json          <- candidates + provenance
     topology/bundle.json
     uv/bundle.json
     surface/bundle.json
+    validate/report.json       <- certification details
     package/bundle.json
-  outputs/
-    courier_drone.usd          <- interchange USD
-    courier_drone.glb          <- runtime GLB
-    manifest.json
+    package/package_manifest.json
+    package/trace_manifest.json
+    package/courier_drone.usda <- interchange USD
+    package/courier_drone.glb  <- runtime GLB
 ```
 
 ### Step 5 — inspect the certification
@@ -121,4 +124,4 @@ For the full field inventory, see [Reading a trace](reading_a_trace.md).
 - [Architecture pipeline](../architecture/pipeline.md) — the deterministic-vs-probabilistic stage map.
 - [Architecture — Shape stage](../architecture/shape_stage.md) — how intent flows into `ShapeIR`.
 - [Tutorial — Author your first `.lth` asset](../tutorial/first_asset.md) — builds a simpler bookshelf from scratch.
-- [Spec — Lathe v0.1](../spec/lathe-v0.1.md) — language surface reference.
+- [Spec — Lathe v0.1](https://github.com/talmerri/lathe/blob/main/spec/lathe-v0.1.md) — language surface reference.

@@ -157,7 +157,7 @@ Each stage has its own fallback policy:
 
 | Stage | Fallback |
 |---|---|
-| `shape` | always falls back to `lathe.provider.shape.reference_conditioned_v1` unless `--strict-shape-provider` is set. |
+| `shape` | always falls back to `lathe.provider.shape.reference_conditioned_v1` unless `--strict` or `shape.strict=true` is set. The older `--strict-shape-provider` alias is deprecated and retained only for compatibility. |
 | `topology` | falls back to `lathe.topology.reference_v1` when Blender is unavailable or the adapter errors with `strict: false`. |
 | `uv` | falls back to `lathe.uv.reference_v1` when xatlas is unavailable or strict mode is off. |
 | `package` | does not fall back — missing toolchain is a hard error. |

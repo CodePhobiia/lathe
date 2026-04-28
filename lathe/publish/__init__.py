@@ -34,22 +34,40 @@ import hashlib
 import json
 import logging
 import os
+import re
+import shutil
+import urllib.parse
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-from ..core.common import dump_json
+from .. import __version__ as _lathe_version_value
+from ..logging_utils import warning as log_warning
 from ..net import NetGuardError, safe_urlopen
+from ..paths import PathGuardError, safe_resolve
+from ..security import redact_secrets
 from ..subproc import run_sandboxed
+from .signed_repro import (
+    ReproReceipt,
+    ReproVerifyError,
+    sign_receipt,
+    verify_receipt,
+)
 
 try:  # Optional dep — ships under the ``[publish]`` extra.
+    from cryptography.exceptions import InvalidSignature as _InvalidSignature
+    from cryptography.hazmat.primitives import serialization as _serialization
     from cryptography.hazmat.primitives.asymmetric import ed25519 as _ed25519
+
     _CRYPTOGRAPHY_OK = True
 except ImportError:  # pragma: no cover - exercised only when extra absent
+    _InvalidSignature = None  # type: ignore[assignment]
     _ed25519 = None  # type: ignore[assignment]
+    _serialization = None  # type: ignore[assignment]
     _CRYPTOGRAPHY_OK = False
 
 try:  # Optional dep — S3 driver only.
     import boto3 as _boto3  # type: ignore[import-not-found]
+
     _BOTO3_OK = True
 except ImportError:
     _boto3 = None  # type: ignore[assignment]
@@ -57,25 +75,51 @@ except ImportError:
 
 
 __all__ = [
-    "PublishDriver",
-    "LocalFSDriver",
-    "S3Driver",
-    "SupabaseDriver",
-    "GitLFSDriver",
     "PUBLISH_DRIVERS",
-    "get_driver",
-    "register_driver",
-    "build_manifest",
-    "sign_manifest",
-    "verify_signature",
+    "GitLFSDriver",
+    "GitLFSPublishError",
+    "LocalFSDriver",
+    "PublishDriver",
+    "PublishManifestError",
     "ReproReceipt",
     "ReproVerifyError",
+    "S3Driver",
+    "SupabaseDriver",
+    "build_manifest",
+    "get_driver",
+    "register_driver",
+    "sign_manifest",
     "sign_receipt",
     "verify_receipt",
+    "verify_signature",
 ]
 
 
 _LOG = logging.getLogger(__name__)
+_MAX_PUBLISH_ARTIFACT_BYTES = 512 * 1024 * 1024
+_RAW_ED25519_PRIVATE_KEY_BYTES = 32
+_SAFE_OBJECT_SEGMENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._=-]*$")
+_SAFE_BUCKET_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,62}$")
+_SIGNATURE_VERIFY_ERRORS: tuple[type[BaseException], ...] = (
+    (_InvalidSignature,) if _InvalidSignature is not None else ()
+)
+
+
+class GitLFSPublishError(RuntimeError):
+    """Raised when a git-lfs publish step fails."""
+
+    def __init__(self, step: str, returncode: int, stderr_tail: str) -> None:
+        message = f"git-lfs publish step failed: {step} exited {returncode}"
+        if stderr_tail:
+            message = f"{message}: {stderr_tail[-400:]}"
+        super().__init__(message)
+        self.step = step
+        self.returncode = int(returncode)
+        self.stderr_tail = stderr_tail[-400:] if stderr_tail else ""
+
+
+class PublishManifestError(ValueError):
+    """Raised when a build's package manifest references invalid artifacts."""
 
 
 @runtime_checkable
@@ -100,10 +144,142 @@ def _sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
+def _resolve_build_artifact(build_dir: Path, uri: Any) -> Path:
+    raw_uri = str(uri)
+    try:
+        path = safe_resolve(build_dir, raw_uri)
+    except (PathGuardError, TypeError, ValueError, OSError) as exc:
+        message = f"publish package artifact URI is unsafe: {raw_uri!r}"
+        raise PublishManifestError(message) from exc
+    if not path.exists() or not path.is_file():
+        message = f"publish package artifact is missing: {raw_uri!r}"
+        raise PublishManifestError(message)
+    try:
+        if path.stat().st_size > _MAX_PUBLISH_ARTIFACT_BYTES:
+            message = f"publish package artifact exceeds size limit: {raw_uri!r}"
+            raise PublishManifestError(message)
+    except OSError as exc:
+        message = f"publish package artifact cannot be inspected: {raw_uri!r}"
+        raise PublishManifestError(message) from exc
+    return path
+
+
+def _host_allowlist(target_config: dict[str, Any], driver_name: str) -> set[str]:
+    raw_allowlist = target_config.get("url_allowlist")
+    if not isinstance(raw_allowlist, list):
+        message = f"{driver_name} requires target_config['url_allowlist'] with the destination host"
+        raise ValueError(message)
+    allowlist = {str(item).strip().lower() for item in raw_allowlist if str(item).strip()}
+    if not allowlist:
+        message = f"{driver_name} requires target_config['url_allowlist'] with the destination host"
+        raise ValueError(message)
+    return allowlist
+
+
+def _require_host_allowlisted(host: str, allowlist: set[str], driver_name: str) -> None:
+    normalized = host.strip().lower()
+    if normalized not in allowlist:
+        message = f"{driver_name} destination host must be present in target_config['url_allowlist']"
+        raise ValueError(message)
+
+
+def _s3_endpoint_host(target_config: dict[str, Any]) -> tuple[str | None, str]:
+    endpoint_url = target_config.get("endpoint_url")
+    if endpoint_url:
+        text = str(endpoint_url).strip().rstrip("/")
+        parsed = urllib.parse.urlsplit(text)
+        if (
+            parsed.scheme.lower() not in {"http", "https"}
+            or not parsed.hostname
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+        ):
+            message = "S3Driver endpoint_url must be an http(s) origin URL without path, query, or fragment"
+            raise ValueError(message)
+        return text, parsed.hostname.lower()
+    region = str(target_config.get("region") or "").strip()
+    if region and region != "us-east-1":
+        return None, f"s3.{region}.amazonaws.com"
+    return None, "s3.amazonaws.com"
+
+
+def _target_subdir(root: Path, asset: Any, version: Any) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    try:
+        return safe_resolve(root, f"{asset}/{version}")
+    except PathGuardError as exc:
+        message = "publish target asset/version must stay under target_dir"
+        raise ValueError(message) from exc
+
+
+def _copy_no_overwrite(src: Path, dst: Path) -> None:
+    if dst.exists():
+        message = f"publish destination already exists: {dst}"
+        raise FileExistsError(message)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dst)
+
+
+def _write_text_no_overwrite(path: Path, text: str) -> None:
+    if path.exists():
+        message = f"publish destination already exists: {path}"
+        raise FileExistsError(message)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _safe_object_key(*parts: Any) -> str:
+    raw_parts = [str(part).strip("/") for part in parts if str(part).strip("/")]
+    key = "/".join(raw_parts)
+    key_parts = key.split("/") if key else []
+    if not key or any(
+        part in {"", ".", ".."}
+        or "\\" in part
+        or any(ord(char) < 32 or ord(char) == 127 for char in part)
+        or not _SAFE_OBJECT_SEGMENT_RE.fullmatch(part)
+        for part in key_parts
+    ):
+        message = "publish object key contains unsafe path components"
+        raise ValueError(message)
+    return key
+
+
+def _safe_bucket_name(bucket: Any) -> str:
+    value = str(bucket).strip()
+    if not value or not _SAFE_BUCKET_RE.fullmatch(value):
+        message = "publish bucket name contains unsafe characters"
+        raise ValueError(message)
+    return value
+
+
+def _quote_object_key(key: str) -> str:
+    return "/".join(urllib.parse.quote(part, safe="") for part in key.split("/"))
+
+
+def _supabase_base_url(raw: Any) -> str:
+    text = str(raw).strip().rstrip("/")
+    parsed = urllib.parse.urlsplit(text)
+    if (
+        parsed.scheme.lower() not in {"http", "https"}
+        or parsed.query
+        or parsed.fragment
+        or not parsed.netloc
+        or parsed.path not in {"", "/"}
+    ):
+        message = "Supabase base_url must be an http(s) origin URL without path, query, or fragment"
+        raise ValueError(message)
+    return text
+
+
+def _private_key_permissions_unsafe(key_file: Path) -> bool:
+    if os.name != "posix":
+        return False
+    return bool(key_file.stat().st_mode & 0o077)
+
+
 def _git_sha(cwd: Path | None = None) -> str | None:
     """Best-effort ``git rev-parse HEAD``. Returns ``None`` when unavailable."""
-    import shutil
-
     git = shutil.which("git")
     if git is None:
         return None
@@ -122,12 +298,7 @@ def _git_sha(cwd: Path | None = None) -> str | None:
 
 
 def _lathe_version() -> str:
-    try:
-        from .. import __version__ as version
-
-        return str(version)
-    except ImportError:  # pragma: no cover - defensive
-        return "0.1.0"
+    return str(_lathe_version_value)
 
 
 def _load_package_manifest(build_dir: Path) -> dict[str, Any]:
@@ -200,14 +371,10 @@ def build_manifest(
             continue
         uri = entry.get("uri") or entry.get("path")
         if not uri:
-            continue
-        abs_path = build_dir / uri
-        if abs_path.exists():
-            sha = entry.get("sha256") or _sha256_of(abs_path)
-            size = entry.get("size_bytes") or abs_path.stat().st_size
-        else:
-            sha = entry.get("sha256") or ""
-            size = entry.get("size_bytes") or 0
+            raise PublishManifestError("publish package manifest output is missing a uri")
+        abs_path = _resolve_build_artifact(build_dir, uri)
+        sha = entry.get("sha256") or _sha256_of(abs_path)
+        size = entry.get("size_bytes") or abs_path.stat().st_size
         package_formats.append(
             {
                 "format": str(entry.get("format", "")),
@@ -233,7 +400,7 @@ def build_manifest(
     }
     if extra:
         manifest.update(extra)
-    return manifest
+    return redact_secrets(manifest)
 
 
 def sign_manifest(
@@ -255,7 +422,11 @@ def sign_manifest(
             "algorithm": "ed25519",
             "skipped_reason": "no_signing_key_configured",
         }
-        _LOG.warning("publish: no signing key configured; emitting unsigned manifest")
+        log_warning(
+            _LOG,
+            "lathe.publish.signing_key_not_configured",
+            "publish: no signing key configured; emitting unsigned manifest",
+        )
         return manifest
 
     if not _CRYPTOGRAPHY_OK:
@@ -263,9 +434,11 @@ def sign_manifest(
             "algorithm": "ed25519",
             "skipped_reason": "cryptography_not_installed",
         }
-        _LOG.warning(
+        log_warning(
+            _LOG,
+            "lathe.publish.cryptography_unavailable",
             "publish: cryptography package not available; emitting unsigned manifest. "
-            "Install the 'publish' extra to enable signing."
+            "Install the 'publish' extra to enable signing.",
         )
         return manifest
 
@@ -274,20 +447,38 @@ def sign_manifest(
         manifest["signature"] = {
             "algorithm": "ed25519",
             "skipped_reason": "signing_key_missing",
-            "key_path": str(key_file),
         }
-        _LOG.warning("publish: configured signing key does not exist: %s", key_file)
+        log_warning(
+            _LOG,
+            "lathe.publish.signing_key_missing",
+            "publish: configured signing key does not exist",
+            key_path=key_file,
+        )
+        return manifest
+
+    try:
+        unsafe_permissions = _private_key_permissions_unsafe(key_file)
+    except OSError:
+        unsafe_permissions = True
+    if unsafe_permissions:
+        manifest["signature"] = {
+            "algorithm": "ed25519",
+            "skipped_reason": "signing_key_permissions_unsafe",
+        }
+        log_warning(
+            _LOG,
+            "lathe.publish.signing_key_permissions_unsafe",
+            "publish: configured signing key has unsafe permissions; emitting unsigned manifest",
+        )
         return manifest
 
     raw = key_file.read_bytes()
     # Keys are stored as 32 raw bytes OR as a PEM-encoded PKCS#8 blob.
     try:
-        if len(raw) == 32:
+        if len(raw) == _RAW_ED25519_PRIVATE_KEY_BYTES:
             private_key = _ed25519.Ed25519PrivateKey.from_private_bytes(raw)
         else:
-            from cryptography.hazmat.primitives import serialization
-
-            private_key = serialization.load_pem_private_key(raw, password=None)
+            private_key = _serialization.load_pem_private_key(raw, password=None)
     except (ValueError, TypeError) as exc:
         manifest["signature"] = {
             "algorithm": "ed25519",
@@ -302,11 +493,9 @@ def sign_manifest(
     ).encode("utf-8")
     signature = private_key.sign(payload)
 
-    from cryptography.hazmat.primitives import serialization
-
     public_bytes = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw,
+        encoding=_serialization.Encoding.Raw,
+        format=_serialization.PublicFormat.Raw,
     )
     manifest["signature"] = {
         "algorithm": "ed25519",
@@ -323,7 +512,8 @@ def verify_signature(manifest: dict[str, Any]) -> bool:
     signing was skipped). Raises ``RuntimeError`` if cryptography is absent.
     """
     if not _CRYPTOGRAPHY_OK:
-        raise RuntimeError("cryptography is not installed; cannot verify signature")
+        message = "cryptography is not installed; cannot verify signature"
+        raise RuntimeError(message)
     sig = manifest.get("signature") or {}
     if not isinstance(sig, dict) or "value_hex" not in sig or "public_key_hex" not in sig:
         return False
@@ -339,7 +529,7 @@ def verify_signature(manifest: dict[str, Any]) -> bool:
     ).encode("utf-8")
     try:
         public_key.verify(signature, payload)
-    except Exception:  # noqa: BLE001 - cryptography raises InvalidSignature
+    except _SIGNATURE_VERIFY_ERRORS:
         return False
     return True
 
@@ -363,15 +553,14 @@ class LocalFSDriver:
 
     def publish(self, build_dir: Path, target_config: dict[str, Any]) -> dict[str, Any]:
         """Write manifest + signature to ``target_config['target_dir']``."""
-        import shutil
-
         build_dir = Path(build_dir)
         target_dir_cfg = target_config.get("target_dir")
         if not target_dir_cfg:
-            raise ValueError("LocalFSDriver requires target_config['target_dir']")
+            message = "LocalFSDriver requires target_config['target_dir']"
+            raise ValueError(message)
         asset = target_config.get("asset") or build_dir.name
         version = str(target_config.get("version") or "0.1.0")
-        target_dir = Path(target_dir_cfg) / asset / version
+        target_dir = _target_subdir(Path(target_dir_cfg), asset, version)
         target_dir.mkdir(parents=True, exist_ok=True)
 
         manifest = build_manifest(build_dir, asset=asset)
@@ -380,21 +569,23 @@ class LocalFSDriver:
         # Copy referenced package artifacts into the target directory.
         copied: list[str] = []
         for entry in manifest.get("package_formats", []):
-            src = build_dir / entry["uri"]
-            if not src.exists():
-                continue
+            src = _resolve_build_artifact(build_dir, entry["uri"])
             dst = target_dir / Path(entry["uri"]).name
-            shutil.copy2(src, dst)
+            _copy_no_overwrite(src, dst)
             copied.append(str(dst))
 
         manifest_path = target_dir / "manifest.json"
-        dump_json(manifest_path, manifest)
+        _write_text_no_overwrite(
+            manifest_path,
+            json.dumps(redact_secrets(manifest), indent=2, sort_keys=False),
+        )
 
         signature_path: Path | None = None
         sig = manifest.get("signature") or {}
         if isinstance(sig, dict) and sig.get("value_hex"):
             signature_path = target_dir / "manifest.sig"
-            signature_path.write_text(
+            _write_text_no_overwrite(
+                signature_path,
                 json.dumps(
                     {
                         "algorithm": sig.get("algorithm", "ed25519"),
@@ -403,7 +594,6 @@ class LocalFSDriver:
                     },
                     indent=2,
                 ),
-                encoding="utf-8",
             )
 
         # SEC-NEW-2: emit signed reproducibility receipt when requested.
@@ -418,7 +608,12 @@ class LocalFSDriver:
                 )
                 receipt_uri = str(receipt_path)
             except ReproVerifyError as exc:
-                _LOG.warning("publish: reproducibility receipt skipped: %s", exc)
+                log_warning(
+                    _LOG,
+                    "lathe.publish.repro_receipt_skipped",
+                    "publish: reproducibility receipt skipped: {error}",
+                    error=exc,
+                )
 
         return {
             "driver": self.name,
@@ -443,31 +638,35 @@ class S3Driver:
         compatible boto3 pin). Raises a clear error when absent.
         """
         if not _BOTO3_OK:
-            raise RuntimeError(
-                "S3Driver requires boto3; install with `pip install boto3` or the 'publish' extra"
-            )
+            message = "S3Driver requires boto3; install with `pip install boto3` or the 'publish' extra"
+            raise RuntimeError(message)
         bucket = target_config.get("bucket")
         if not bucket:
-            raise ValueError("S3Driver requires target_config['bucket']")
+            message = "S3Driver requires target_config['bucket']"
+            raise ValueError(message)
         prefix = str(target_config.get("prefix") or "").strip("/")
         asset = target_config.get("asset") or Path(build_dir).name
         version = str(target_config.get("version") or "0.1.0")
-        base_key = "/".join(p for p in [prefix, asset, version] if p)
+        base_key = _safe_object_key(prefix, asset, version)
+        url_allowlist = _host_allowlist(target_config, "S3Driver")
+        endpoint_url, endpoint_host = _s3_endpoint_host(target_config)
+        _require_host_allowlisted(endpoint_host, url_allowlist, "S3Driver")
 
         manifest = build_manifest(Path(build_dir), asset=asset)
         manifest = sign_manifest(manifest, signing_key_path=target_config.get("signing_key"))
 
-        client = _boto3.client("s3", region_name=target_config.get("region"))
+        client_kwargs = {"region_name": target_config.get("region")}
+        if endpoint_url:
+            client_kwargs["endpoint_url"] = endpoint_url
+        client = _boto3.client("s3", **client_kwargs)
         uploaded: list[str] = []
         for entry in manifest.get("package_formats", []):
-            src = Path(build_dir) / entry["uri"]
-            if not src.exists():
-                continue
-            key = f"{base_key}/{Path(entry['uri']).name}"
+            src = _resolve_build_artifact(Path(build_dir), entry["uri"])
+            key = _safe_object_key(base_key, Path(entry["uri"]).name)
             client.upload_file(str(src), bucket, key)
             uploaded.append(f"s3://{bucket}/{key}")
 
-        manifest_key = f"{base_key}/manifest.json"
+        manifest_key = _safe_object_key(base_key, "manifest.json")
         client.put_object(
             Bucket=bucket,
             Key=manifest_key,
@@ -477,7 +676,7 @@ class S3Driver:
         signature_uri: str | None = None
         sig = manifest.get("signature") or {}
         if isinstance(sig, dict) and sig.get("value_hex"):
-            sig_key = f"{base_key}/manifest.sig"
+            sig_key = _safe_object_key(base_key, "manifest.sig")
             client.put_object(
                 Bucket=bucket,
                 Key=sig_key,
@@ -512,23 +711,31 @@ class SupabaseDriver:
         """Upload manifest + package files via Supabase Storage PUTs.
 
         ``target_config`` keys: ``base_url``, ``bucket``, ``service_key``
-        (or env ``LATHE_SUPABASE_KEY``), optional ``asset``, ``version``,
-        ``prefix``, ``timeout_s``.
+        (or env ``LATHE_SUPABASE_KEY``), ``url_allowlist``, optional
+        ``asset``, ``version``, ``prefix``, ``timeout_s``.
         """
         base_url = target_config.get("base_url")
         bucket = target_config.get("bucket")
         if not base_url or not bucket:
-            raise ValueError("SupabaseDriver requires target_config['base_url'] and ['bucket']")
+            message = "SupabaseDriver requires target_config['base_url'] and ['bucket']"
+            raise ValueError(message)
+        base_url = _supabase_base_url(base_url)
+        bucket = _safe_bucket_name(bucket)
+        url_allowlist = _host_allowlist(target_config, "SupabaseDriver")
+        _require_host_allowlisted(
+            urllib.parse.urlsplit(base_url).hostname or "",
+            url_allowlist,
+            "SupabaseDriver",
+        )
         service_key = target_config.get("service_key") or os.getenv("LATHE_SUPABASE_KEY")
         if not service_key:
-            raise ValueError(
-                "SupabaseDriver requires target_config['service_key'] or env LATHE_SUPABASE_KEY"
-            )
+            message = "SupabaseDriver requires target_config['service_key'] or env LATHE_SUPABASE_KEY"
+            raise ValueError(message)
         prefix = str(target_config.get("prefix") or "").strip("/")
         asset = target_config.get("asset") or Path(build_dir).name
         version = str(target_config.get("version") or "0.1.0")
         timeout_s = float(target_config.get("timeout_s") or 30.0)
-        base_path = "/".join(p for p in [prefix, asset, version] if p)
+        base_path = _safe_object_key(prefix, asset, version)
 
         headers = {
             "Authorization": f"Bearer {service_key}",
@@ -539,7 +746,9 @@ class SupabaseDriver:
         manifest = sign_manifest(manifest, signing_key_path=target_config.get("signing_key"))
 
         def _put(object_key: str, body: bytes, content_type: str) -> str:
-            url = f"{str(base_url).rstrip('/')}/storage/v1/object/{bucket}/{object_key}"
+            quoted_bucket = urllib.parse.quote(bucket, safe="")
+            quoted_key = _quote_object_key(object_key)
+            url = f"{base_url}/storage/v1/object/{quoted_bucket}/{quoted_key}"
             try:
                 safe_urlopen(
                     url,
@@ -548,20 +757,20 @@ class SupabaseDriver:
                     headers={**headers, "Content-Type": content_type},
                     timeout_s=timeout_s,
                     expect_content_type=("application/json", "text/plain", "application/*"),
+                    allowlist=sorted(url_allowlist),
                 )
             except NetGuardError as exc:
-                raise RuntimeError(f"Supabase upload failed ({url}): {exc}") from exc
-            return f"{str(base_url).rstrip('/')}/storage/v1/object/public/{bucket}/{object_key}"
+                message = f"Supabase upload failed ({url}): {exc}"
+                raise RuntimeError(message) from exc
+            return f"{base_url}/storage/v1/object/public/{quoted_bucket}/{quoted_key}"
 
         uploaded: list[str] = []
         for entry in manifest.get("package_formats", []):
-            src = Path(build_dir) / entry["uri"]
-            if not src.exists():
-                continue
-            object_key = f"{base_path}/{Path(entry['uri']).name}" if base_path else Path(entry["uri"]).name
+            src = _resolve_build_artifact(Path(build_dir), entry["uri"])
+            object_key = _safe_object_key(base_path, Path(entry["uri"]).name)
             uploaded.append(_put(object_key, src.read_bytes(), "application/octet-stream"))
 
-        manifest_key = f"{base_path}/manifest.json" if base_path else "manifest.json"
+        manifest_key = _safe_object_key(base_path, "manifest.json")
         manifest_uri = _put(
             manifest_key,
             json.dumps(manifest, indent=2).encode("utf-8"),
@@ -570,7 +779,7 @@ class SupabaseDriver:
         signature_uri: str | None = None
         sig = manifest.get("signature") or {}
         if isinstance(sig, dict) and sig.get("value_hex"):
-            sig_key = f"{base_path}/manifest.sig" if base_path else "manifest.sig"
+            sig_key = _safe_object_key(base_path, "manifest.sig")
             signature_uri = _put(
                 sig_key,
                 json.dumps(
@@ -606,11 +815,10 @@ class GitLFSDriver:
         default ``main``), ``remote`` (optional, default ``origin``), ``asset``,
         ``version``, ``signing_key``, ``timeout_s``.
         """
-        import shutil
-
         repo_dir_cfg = target_config.get("repo_dir")
         if not repo_dir_cfg:
-            raise ValueError("GitLFSDriver requires target_config['repo_dir']")
+            message = "GitLFSDriver requires target_config['repo_dir']"
+            raise ValueError(message)
         repo_dir = Path(repo_dir_cfg).resolve()
         branch = str(target_config.get("branch") or "main")
         remote = str(target_config.get("remote") or "origin")
@@ -620,9 +828,10 @@ class GitLFSDriver:
 
         git_exe = shutil.which("git")
         if git_exe is None:
-            raise RuntimeError("GitLFSDriver requires `git` on PATH")
+            message = "GitLFSDriver requires `git` on PATH"
+            raise RuntimeError(message)
 
-        target_dir = repo_dir / asset / version
+        target_dir = _target_subdir(repo_dir, asset, version)
         target_dir.mkdir(parents=True, exist_ok=True)
 
         manifest = build_manifest(Path(build_dir), asset=asset)
@@ -630,20 +839,22 @@ class GitLFSDriver:
 
         copied: list[str] = []
         for entry in manifest.get("package_formats", []):
-            src = Path(build_dir) / entry["uri"]
-            if not src.exists():
-                continue
+            src = _resolve_build_artifact(Path(build_dir), entry["uri"])
             dst = target_dir / Path(entry["uri"]).name
-            shutil.copy2(src, dst)
+            _copy_no_overwrite(src, dst)
             copied.append(str(dst))
 
         manifest_path = target_dir / "manifest.json"
-        dump_json(manifest_path, manifest)
+        _write_text_no_overwrite(
+            manifest_path,
+            json.dumps(redact_secrets(manifest), indent=2, sort_keys=False),
+        )
         signature_path: Path | None = None
         sig = manifest.get("signature") or {}
         if isinstance(sig, dict) and sig.get("value_hex"):
             signature_path = target_dir / "manifest.sig"
-            signature_path.write_text(
+            _write_text_no_overwrite(
+                signature_path,
                 json.dumps(
                     {
                         "algorithm": sig.get("algorithm", "ed25519"),
@@ -652,10 +863,9 @@ class GitLFSDriver:
                     },
                     indent=2,
                 ),
-                encoding="utf-8",
             )
 
-        rel_dir = f"{asset}/{version}"
+        rel_dir = _safe_object_key(asset, version)
         commands = [
             [git_exe, "lfs", "track", f"{rel_dir}/*"],
             [git_exe, "add", ".gitattributes", rel_dir],
@@ -665,6 +875,9 @@ class GitLFSDriver:
         step_reports: list[dict[str, Any]] = []
         for argv in commands:
             result = run_sandboxed(argv, cwd=repo_dir, timeout_s=timeout_s)
+            step = " ".join(
+                Path(str(part)).name if index == 0 else str(part) for index, part in enumerate(argv[:2])
+            )
             step_reports.append(
                 {
                     "argv": argv,
@@ -673,6 +886,8 @@ class GitLFSDriver:
                     "stderr_tail": result.stderr_tail[-400:] if result.stderr_tail else "",
                 }
             )
+            if not result.ok:
+                raise GitLFSPublishError(step, result.returncode, result.stderr_tail)
 
         return {
             "driver": self.name,
@@ -705,25 +920,14 @@ def register_driver(target_id: str, driver: PublishDriver) -> None:
     Overwrites any existing driver registered under the same id.
     """
     if not isinstance(target_id, str) or not target_id:
-        raise ValueError("register_driver: target_id must be a non-empty string")
+        message = "register_driver: target_id must be a non-empty string"
+        raise ValueError(message)
     PUBLISH_DRIVERS[target_id] = driver
 
 
 def get_driver(target_id: str) -> PublishDriver:
     """Look up a publish driver by id. Raises ``ValueError`` if unknown."""
     if target_id not in PUBLISH_DRIVERS:
-        raise ValueError(
-            f"Unknown publish target '{target_id}'. Known drivers: "
-            f"{sorted(PUBLISH_DRIVERS)}"
-        )
+        message = f"Unknown publish target '{target_id}'. Known drivers: {sorted(PUBLISH_DRIVERS)}"
+        raise ValueError(message)
     return PUBLISH_DRIVERS[target_id]
-
-
-# Re-exports for SEC-NEW-2. Placed at the end so ``sign_receipt`` can
-# reference ``build_manifest`` / ``sign_manifest`` without ordering gymnastics.
-from .signed_repro import (  # noqa: E402 - intentional late import
-    ReproReceipt,
-    ReproVerifyError,
-    sign_receipt,
-    verify_receipt,
-)

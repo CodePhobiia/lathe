@@ -10,7 +10,7 @@ from typing import Any
 
 
 def _ratio_signature(extents: list[float]) -> list[float]:
-    largest = max(1e-6, max(extents))
+    largest = max(1e-06, *extents)
     return [float(value) / largest for value in extents]
 
 
@@ -29,7 +29,11 @@ def _profile_bins(values: list[float]) -> list[float]:
     return [item / total for item in bins]
 
 
-def compare_scaffold_signature(scaffold_signature: dict[str, Any], actual_extents: list[float], part_groups: list[dict[str, Any]] | None = None) -> float:
+def compare_scaffold_signature(
+    scaffold_signature: dict[str, Any],
+    actual_extents: list[float],
+    part_groups: list[dict[str, Any]] | None = None,
+) -> float:
     """Compare scaffold signature.
 
     Args:
@@ -44,7 +48,9 @@ def compare_scaffold_signature(scaffold_signature: dict[str, Any], actual_extent
     if not expected_ratio:
         return 0.5
     actual_ratio = _ratio_signature(actual_extents)
-    diff = sum(abs(left - right) for left, right in zip(expected_ratio, actual_ratio)) / max(1, len(expected_ratio))
+    diff = sum(abs(left - right) for left, right in zip(expected_ratio, actual_ratio, strict=False)) / max(
+        1, len(expected_ratio)
+    )
     ratio_score = max(0.0, min(1.0, 1.0 - diff / 0.45))
     if not part_groups:
         return round(ratio_score, 6)
@@ -62,11 +68,13 @@ def compare_scaffold_signature(scaffold_signature: dict[str, Any], actual_extent
     ys = [point[1] for point in centers]
     zs = [point[2] for point in centers]
     actual_spread = [
-        (max(xs) - min(xs)) / max(1e-6, max(actual_extents)) if xs else 0.0,
-        (max(ys) - min(ys)) / max(1e-6, max(actual_extents)) if ys else 0.0,
-        (max(zs) - min(zs)) / max(1e-6, max(actual_extents)) if zs else 0.0,
+        (max(xs) - min(xs)) / max(1e-06, *actual_extents) if xs else 0.0,
+        (max(ys) - min(ys)) / max(1e-06, *actual_extents) if ys else 0.0,
+        (max(zs) - min(zs)) / max(1e-06, *actual_extents) if zs else 0.0,
     ]
-    spread_diff = sum(abs(left - right) for left, right in zip(region_spread, actual_spread)) / max(1, len(region_spread))
+    spread_diff = sum(
+        abs(left - right) for left, right in zip(region_spread, actual_spread, strict=False)
+    ) / max(1, len(region_spread))
     spread_score = max(0.0, min(1.0, 1.0 - spread_diff / 0.75))
 
     expected_profiles = [
@@ -76,10 +84,19 @@ def compare_scaffold_signature(scaffold_signature: dict[str, Any], actual_extent
     ]
     actual_profiles = [_profile_bins(xs), _profile_bins(ys), _profile_bins(zs)]
     profile_diffs = []
-    for expected, actual in zip(expected_profiles, actual_profiles):
-        profile_diffs.append(sum(abs(left - right) for left, right in zip(expected, actual)) / max(1, len(expected)))
-    profile_score = max(0.0, min(1.0, 1.0 - (sum(profile_diffs) / max(1, len(profile_diffs))) / 0.70))
+    for expected, actual in zip(expected_profiles, actual_profiles, strict=False):
+        profile_diffs.append(
+            sum(abs(left - right) for left, right in zip(expected, actual, strict=False))
+            / max(1, len(expected))
+        )
+    profile_score = max(
+        0.0,
+        min(1.0, 1.0 - (sum(profile_diffs) / max(1, len(profile_diffs))) / 0.70),
+    )
 
     expected_regions = int(scaffold_signature.get("expected_region_count", len(part_groups)))
     region_score = min(1.0, len(part_groups) / max(1, expected_regions))
-    return round((0.42 * ratio_score) + (0.24 * spread_score) + (0.24 * profile_score) + (0.10 * region_score), 6)
+    return round(
+        (0.42 * ratio_score) + (0.24 * spread_score) + (0.24 * profile_score) + (0.10 * region_score),
+        6,
+    )

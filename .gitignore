@@ -12,9 +12,15 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .hypothesis/
+.tmp_tests/
+_codex_tmp/
+.claude/scheduled_tasks.lock
 
 # Coverage
 .coverage
+.coverage.*
+coverage.json
+coverage.lcov
 coverage.xml
 htmlcov/
 

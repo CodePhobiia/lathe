@@ -136,8 +136,8 @@ asset corpus_supply: hard_surface_prop from supply_container_family uses shippin
     }
 
     interfaces {
-      sockets = [cargo_anchor]
-      anchors = [floor_contact]
+      sockets = [socket(id: cargo_anchor, socket_type: attach)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

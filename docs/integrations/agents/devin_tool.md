@@ -13,8 +13,8 @@ tool_name: Lathe
 tagline: Declarative, certifiable 3D-asset compiler with a stable intent contract.
 category: game-dev / asset-pipeline / 3d
 install: pip install lathe
-homepage: https://github.com/<org>/lathe  # placeholder until V0.5 public
-doc_url: https://<org>.github.io/lathe/   # placeholder
+homepage: https://github.com/talmerri/lathe
+doc_url: https://talmerri.github.io/lathe/
 primary_commands:
   - lathe check <file.lth>
   - lathe plan <file.lth> <asset_id>
@@ -28,7 +28,7 @@ trigger_phrases:
 
 pass_fail_signal: >-
   Exit code 0 on certified pass, non-zero on fail. Failures are formatted as
-  `[stage:rule] value (reason) at: file:line`. A `dist/<asset_id>/trace.json`
+  `[stage:rule] value (reason) at: file:line`. A `dist/<asset_id>/stages/package/trace_manifest.json`
   is written on success with stage-by-stage records (attempted vs actual
   provider).
 
@@ -55,7 +55,7 @@ Given a Devin task like *"add a glass-variant to `sci_fi_wall_panel`"*:
 2. Adds a `variant glass { ... }` block patterned on the existing variants.
 3. Runs `lathe check` (fast) and `lathe build` (slow).
 4. On fail, parses `[stage:rule]` and iterates on the source.
-5. On pass, attaches `dist/<asset_id>/manifest.json` to the PR and cites the relevant trace line.
+5. On pass, attaches `dist/<asset_id>/stages/package/package_manifest.json` to the PR and cites the relevant trace line.
 
 Devin's model will frequently over-confidently write a Blender script instead. The directory entry's `when_to_use` / `when_not_to_use` blocks are specifically there to nudge the planner back to the Lathe-native path.
 

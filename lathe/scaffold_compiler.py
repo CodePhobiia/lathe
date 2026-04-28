@@ -16,14 +16,13 @@ import trimesh
 from .assembly_kernel import compile_assembly_blueprint
 from .asset_graph import AssetGraph
 from .blueprints import resolve_blueprint
-from .constants import RNG_PRIME_OFFSET
 from .candidate_search import apply_candidate_params, generate_candidate_params, objective_weights
+from .constants import RNG_PRIME_OFFSET
 from .errors import ContractViolation
 from .feature_grammar import compile_feature_enhancements
 from .fidelity import infer_fidelity_profile
-from .geometry_kernel import fuse_shape_ir
 from .geometry import resolve_geometry_kernel
-from .mesh_ir import MeshIR
+from .geometry_kernel import fuse_shape_ir
 from .repair_executor import execute_shape_repairs
 from .repair_planner import plan_shape_repairs
 from .shape_ir import ShapeIR, ShapePrimitive
@@ -38,13 +37,17 @@ def _candidate_rng(seed: int, index: int) -> np.random.Generator:
     return np.random.default_rng(seed + index * RNG_PRIME_OFFSET)
 
 
-def _translated_box(extents: tuple[float, float, float], center: tuple[float, float, float]) -> trimesh.Trimesh:
+def _translated_box(
+    extents: tuple[float, float, float], center: tuple[float, float, float]
+) -> trimesh.Trimesh:
     matrix = np.eye(4)
     matrix[:3, 3] = np.array(list(center), dtype=float)
     return trimesh.creation.box(extents=np.array(list(extents), dtype=float), transform=matrix)
 
 
-def _translated_cylinder(radius: float, height: float, center: tuple[float, float, float], axis: str) -> trimesh.Trimesh:
+def _translated_cylinder(
+    radius: float, height: float, center: tuple[float, float, float], axis: str
+) -> trimesh.Trimesh:
     mesh = trimesh.creation.cylinder(radius=radius, height=height, sections=40)
     if axis == "y":
         mesh.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2.0, [1.0, 0.0, 0.0]))
@@ -56,21 +59,34 @@ def _translated_cylinder(radius: float, height: float, center: tuple[float, floa
     return mesh
 
 
+def _missing_box_extents_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+    )
+
+
+def _missing_cylinder_dimensions_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: cylinder ShapePrimitive requires radius and height, "
+        f"got radius={primitive.radius!r}, height={primitive.height!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
+def _unsupported_primitive_type_error(primitive_type: str) -> ValueError:
+    return ValueError(f"Unsupported primitive type '{primitive_type}'")
+
+
 def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     if primitive.primitive_type == "box":
         if primitive.extents is None:
-            raise ContractViolation(
-                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
-            )
+            raise _missing_box_extents_error(primitive)
         return _translated_box(primitive.extents, primitive.center)
     if primitive.primitive_type == "cylinder":
         if primitive.radius is None or primitive.height is None:
-            raise ContractViolation(
-                f"invariant violation: cylinder ShapePrimitive requires radius and height, "
-                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
-            )
+            raise _missing_cylinder_dimensions_error(primitive)
         return _translated_cylinder(primitive.radius, primitive.height, primitive.center, primitive.axis)
-    raise ValueError(f"Unsupported primitive type '{primitive.primitive_type}'")
+    raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
 def _fuse_via_manifold_kernel(shape_ir: ShapeIR) -> tuple[trimesh.Trimesh, list[str]] | None:
@@ -83,7 +99,8 @@ def _fuse_via_manifold_kernel(shape_ir: ShapeIR) -> tuple[trimesh.Trimesh, list[
     heuristic in :func:`lathe.geometry_kernel._assign_face_parts`.
     """
     try:
-        from .geometry.manifold_kernel import ManifoldKernel as _MK, manifold_available as _ma
+        from .geometry.manifold_kernel import ManifoldKernel as _MK
+        from .geometry.manifold_kernel import manifold_available as _ma
     except ImportError:
         return None
     if not _ma():
@@ -167,15 +184,32 @@ def _assign_face_parts_via_bounds(mesh: trimesh.Trimesh, shape_ir: ShapeIR) -> l
     return labels
 
 
-def _native_candidate_score(asset_graph: AssetGraph, shape_ir: ShapeIR, conditioning: dict[str, Any], candidate_index: int) -> float:
+def _native_candidate_score(
+    asset_graph: AssetGraph, shape_ir: ShapeIR, conditioning: dict[str, Any], candidate_index: int
+) -> float:
     assessment = shape_ir.assessment
     objective_map = objective_weights(asset_graph)
     if objective_map:
         metric_values = {
             "silhouette_readability": assessment.get("silhouette_complexity", 0.0),
-            "geometry_integration_quality": min(1.0, 0.55 + 0.06 * assessment.get("edge_treatment_count", 0) + 0.04 * assessment.get("feature_coherence", 0.0)),
-            "visual_surface_quality": min(1.0, 0.45 + 0.12 * assessment.get("feature_density", 0.0) + 0.12 * assessment.get("feature_coherence", 0.0)),
-            "primitive_likeness_penalty": max(0.0, 0.48 - 0.20 * assessment.get("feature_coherence", 0.0) - 0.08 * assessment.get("edge_treatment_count", 0)),
+            "geometry_integration_quality": min(
+                1.0,
+                0.55
+                + 0.06 * assessment.get("edge_treatment_count", 0)
+                + 0.04 * assessment.get("feature_coherence", 0.0),
+            ),
+            "visual_surface_quality": min(
+                1.0,
+                0.45
+                + 0.12 * assessment.get("feature_density", 0.0)
+                + 0.12 * assessment.get("feature_coherence", 0.0),
+            ),
+            "primitive_likeness_penalty": max(
+                0.0,
+                0.48
+                - 0.20 * assessment.get("feature_coherence", 0.0)
+                - 0.08 * assessment.get("edge_treatment_count", 0),
+            ),
             "feature_density": assessment.get("feature_density", 0.0),
         }
         total = 0.0
@@ -215,7 +249,14 @@ def _needs_more_repairs(asset_graph: AssetGraph, shape_ir: ShapeIR) -> bool:
     )
 
 
-def _selection_notes(asset_graph: AssetGraph, shape_ir: ShapeIR, conditioning: dict[str, Any], candidate_index: int, fidelity_tier: str, feature_ops_used: list[str]) -> list[str]:
+def _selection_notes(
+    asset_graph: AssetGraph,
+    shape_ir: ShapeIR,
+    conditioning: dict[str, Any],
+    candidate_index: int,
+    fidelity_tier: str,
+    feature_ops_used: list[str],
+) -> list[str]:
     notes = [
         f"native assembly candidate for family='{asset_graph.family}'",
         f"blueprint_id={shape_ir.blueprint_id}",
@@ -259,7 +300,7 @@ def _runtime_from_shape_ir(
                 "mode": "manifold_csg",
                 "search_mode": "manifold_csg",
                 "geometry_kernel": geometry_kernel_id,
-                "body_count": int(len(combined.split(only_watertight=False))) if len(combined.faces) > 0 else 0,
+                "body_count": len(combined.split(only_watertight=False)) if len(combined.faces) > 0 else 0,
                 "watertight": bool(combined.is_watertight),
                 "primitive_count": len(list(shape_ir.primitives)),
             }
@@ -272,7 +313,14 @@ def _runtime_from_shape_ir(
                     "parts": sorted({region.part for region in shape_ir.regions}),
                     "coarse_material_slots": max(1, len(asset_graph.materials)),
                     "score": _native_candidate_score(asset_graph, shape_ir, conditioning, candidate_index),
-                    "selection_notes": _selection_notes(asset_graph, shape_ir, conditioning, candidate_index, fidelity_tier, feature_report.get("feature_ops_used", [])),
+                    "selection_notes": _selection_notes(
+                        asset_graph,
+                        shape_ir,
+                        conditioning,
+                        candidate_index,
+                        fidelity_tier,
+                        feature_report.get("feature_ops_used", []),
+                    ),
                     "conditioning": {
                         "provider": None,
                         "reference_strength": conditioning.get("reference_strength", 0.0),
@@ -297,8 +345,12 @@ def _runtime_from_shape_ir(
         for primitive in shape_ir.primitives:
             mesh = _primitive_mesh(primitive)
             named_meshes.append((primitive.part, mesh))
-            face_parts.extend([primitive.part] * int(len(mesh.faces)))
-        combined = trimesh.util.concatenate([mesh for _, mesh in named_meshes]) if len(named_meshes) > 1 else named_meshes[0][1]
+            face_parts.extend([primitive.part] * len(mesh.faces))
+        combined = (
+            trimesh.util.concatenate([mesh for _, mesh in named_meshes])
+            if len(named_meshes) > 1
+            else named_meshes[0][1]
+        )
         integration_report = {"mode": "constructive_fallback", "reason": "geometry kernel unavailable"}
         mesh_ir_payload = None
     else:
@@ -314,7 +366,14 @@ def _runtime_from_shape_ir(
             "parts": sorted({region.part for region in shape_ir.regions}),
             "coarse_material_slots": max(1, len(asset_graph.materials)),
             "score": _native_candidate_score(asset_graph, shape_ir, conditioning, candidate_index),
-            "selection_notes": _selection_notes(asset_graph, shape_ir, conditioning, candidate_index, fidelity_tier, feature_report.get("feature_ops_used", [])),
+            "selection_notes": _selection_notes(
+                asset_graph,
+                shape_ir,
+                conditioning,
+                candidate_index,
+                fidelity_tier,
+                feature_report.get("feature_ops_used", []),
+            ),
             "conditioning": {
                 "provider": None,
                 "reference_strength": conditioning.get("reference_strength", 0.0),
@@ -352,6 +411,7 @@ def compile_scaffold_candidates(
         candidates_count: candidates_count argument.
         conditioning: conditioning argument.
         mode: mode argument.
+        runtime_config: runtime_config argument.
 
     Returns:
         The result.
@@ -365,9 +425,13 @@ def compile_scaffold_candidates(
     for index in range(search_count):
         rng = _candidate_rng(seed, index)
         params = generate_candidate_params(asset_graph, seed=seed, candidate_index=index, fidelity=fidelity)
-        blueprint = apply_candidate_params(resolve_blueprint(asset_graph, conditioning, rng, index), params, asset_graph)
+        blueprint = apply_candidate_params(
+            resolve_blueprint(asset_graph, conditioning, rng, index), params, asset_graph
+        )
         shape_ir = compile_assembly_blueprint(asset_graph, blueprint)
-        shape_ir, feature_report = compile_feature_enhancements(asset_graph, shape_ir, fidelity=fidelity, params=params)
+        shape_ir, feature_report = compile_feature_enhancements(
+            asset_graph, shape_ir, fidelity=fidelity, params=params
+        )
         round_reports = []
         repaired_shape_ir = shape_ir
         applied_repairs: list[dict[str, Any]] = []
@@ -376,7 +440,12 @@ def compile_scaffold_candidates(
             planned_repairs = plan_shape_repairs(asset_graph, repaired_shape_ir)
             if not planned_repairs and not _needs_more_repairs(asset_graph, repaired_shape_ir):
                 break
-            repaired_shape_ir, round_applied = execute_shape_repairs(asset_graph, repaired_shape_ir, planned_repairs, max_repairs=max(1, fidelity.repair_budget - round_index))
+            repaired_shape_ir, round_applied = execute_shape_repairs(
+                asset_graph,
+                repaired_shape_ir,
+                planned_repairs,
+                max_repairs=max(1, fidelity.repair_budget - round_index),
+            )
             round_reports.append(
                 {
                     "round": round_index + 1,
@@ -390,7 +459,10 @@ def compile_scaffold_candidates(
                 break
             round_index += 1
         feature_report["shape_assessment"] = dict(repaired_shape_ir.assessment)
-        feature_report["feature_ops_used"] = sorted(set(feature_report.get("feature_ops_used", [])) | set(repaired_shape_ir.assessment.get("feature_types", [])))
+        feature_report["feature_ops_used"] = sorted(
+            set(feature_report.get("feature_ops_used", []))
+            | set(repaired_shape_ir.assessment.get("feature_types", []))
+        )
         candidate_records.append(
             {
                 "candidate_index": index,
@@ -403,8 +475,10 @@ def compile_scaffold_candidates(
             }
         )
 
-    shortlist_count = min(2 if fidelity.tier == "hero" else 2, len(candidate_records))
-    shortlisted = sorted(candidate_records, key=lambda item: (-item["pre_score"], item["candidate_index"]))[:shortlist_count]
+    shortlist_count = min(2, len(candidate_records))
+    shortlisted = sorted(candidate_records, key=lambda item: (-item["pre_score"], item["candidate_index"]))[
+        :shortlist_count
+    ]
     shortlisted = sorted(shortlisted, key=lambda item: item["candidate_index"])
 
     runtime_candidates: list[dict[str, Any]] = []

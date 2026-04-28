@@ -31,11 +31,11 @@ jobs:
       - name: Run pip-audit
         id: audit
         run: |
-          set +e
-          pip-audit --strict --requirement requirements.txt || \
-            pip-audit --strict . || exit_code=$?
-          echo "exit_code=${exit_code:-0}" >> "$GITHUB_OUTPUT"
-          exit ${exit_code:-0}
+          set -euo pipefail
+          grep -vE '^-e[[:space:]]+\.' requirements.txt > /tmp/lathe-requirements-audit.txt
+          grep -vE '^-e[[:space:]]+\.' requirements-dev.txt > /tmp/lathe-requirements-dev-audit.txt
+          pip-audit --strict --no-deps --requirement /tmp/lathe-requirements-audit.txt
+          pip-audit --strict --no-deps --requirement /tmp/lathe-requirements-dev-audit.txt
 
       - name: Open issue on failure
         if: failure() && github.event_name == 'schedule'

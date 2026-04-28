@@ -13,6 +13,7 @@ from typing import Any
 @dataclass
 class ReferenceIR:
     """ReferenceIR."""
+
     images: list[Any] = field(default_factory=list)
     meshes: list[Any] = field(default_factory=list)
     assets: list[Any] = field(default_factory=list)
@@ -21,7 +22,7 @@ class ReferenceIR:
     resolved_reference_sets: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "ReferenceIR":
+    def from_asset(cls, asset: dict[str, Any]) -> ReferenceIR:
         """From asset.
 
         Args:

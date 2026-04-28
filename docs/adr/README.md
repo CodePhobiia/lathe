@@ -28,6 +28,8 @@ Status values: `Proposed` | `Accepted` | `Superseded by NNNN` |
 | [0005](0005-layering-enforcement.md) | Enforce package layering via `import-linter` contracts | Proposed | 2026-04-23 |
 | [0006](0006-validator-composition.md) | Validator protocol and topological composition via `ValidatorPipeline` | Proposed | 2026-04-23 |
 | [0007](0007-resolver-loc-exception.md) | Accept `lathe/resolver.py` 540 LOC as a file-size exception | Accepted | 2026-04-23 |
+| [0008](0008-geometry-kernel-manifold.md) | Adopt Manifold as the primary geometry kernel | Accepted | 2026-04-24 |
+| [0009](0009-public-contract-index.md) | Maintain a public contract index for downstream boundaries | Accepted | 2026-04-25 |
 
 ## Notes
 
@@ -43,3 +45,7 @@ Status values: `Proposed` | `Accepted` | `Superseded by NNNN` |
   in the ADR's cross-references.
 - **0007** is the template for file-size-cap exceptions — follow its
   shape if a future module needs the same treatment.
+- **0008** records the geometry-kernel migration to Manifold with the
+  reference kernel retained as fallback.
+- **0009** is the index-level rule for public contracts versus
+  internal implementation boundaries.

@@ -23,10 +23,14 @@ from typing import Any
 import numpy as np
 import trimesh
 
-
 _SELF_INTERSECTION_CODE = "L6201"
 _NORMAL_CONSISTENCY_CODE = "L6202"
 _BODY_COUNT_STABILITY_CODE = "L6203"
+_MIN_TRIANGLE_PAIR_FACES = 2
+_TRIANGLE_DIMENSIONS = 2
+_TRIANGLE_VERTICES = 2
+_GEOMETRY_EPS = 1e-12
+_INCONSISTENT_NORMAL_DOT = -0.5
 
 
 def _get_runtime_mesh(runtime: dict[str, Any]) -> trimesh.Trimesh | None:
@@ -53,8 +57,8 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
     duplicates along part boundaries do not register as self-intersections.
     """
     faces = mesh.faces
-    n_faces = int(len(faces))
-    if n_faces < 2:
+    n_faces = len(faces)
+    if n_faces < _MIN_TRIANGLE_PAIR_FACES:
         return 0.0, 0, 0
 
     try:
@@ -66,15 +70,17 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
     # duplicated seam vertices at the same physical location fold into one
     # bucket. This is a far more reliable "these two triangles touch" test
     # than trimesh's face_adjacency (which is manifold-only).
-    extents = mesh.extents if hasattr(mesh, "extents") else (tri_verts.max(axis=(0, 1)) - tri_verts.min(axis=(0, 1)))
+    extents = (
+        mesh.extents if hasattr(mesh, "extents") else tri_verts.max(axis=(0, 1)) - tri_verts.min(axis=(0, 1))
+    )
     scale = float(max(1.0, float(np.max(extents))))
     tol = 1e-6 * scale
 
     def _key(point: np.ndarray) -> tuple[int, int, int]:
         return (
-            int(round(float(point[0]) / tol)),
-            int(round(float(point[1]) / tol)),
-            int(round(float(point[2]) / tol)),
+            round(float(point[0]) / tol),
+            round(float(point[1]) / tol),
+            round(float(point[2]) / tol),
         )
 
     position_to_faces: dict[tuple[int, int, int], set[int]] = {}
@@ -84,11 +90,11 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
 
     adjacency_pairs: set[tuple[int, int]] = set()
     for faces_at_pos in position_to_faces.values():
-        if len(faces_at_pos) < 2:
+        if len(faces_at_pos) < _MIN_TRIANGLE_PAIR_FACES:
             continue
         sorted_faces = sorted(faces_at_pos)
         for i_pos, fi in enumerate(sorted_faces):
-            for fj in sorted_faces[i_pos + 1:]:
+            for fj in sorted_faces[i_pos + 1 :]:
                 adjacency_pairs.add((fi, fj))
 
     bounds_min = tri_verts.min(axis=1)
@@ -102,9 +108,7 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
             break
         lo_i = bounds_min[i]
         hi_i = bounds_max[i]
-        overlap = np.all(bounds_min[i + 1:] <= hi_i, axis=1) & np.all(
-            bounds_max[i + 1:] >= lo_i, axis=1
-        )
+        overlap = np.all(bounds_min[i + 1 :] <= hi_i, axis=1) & np.all(bounds_max[i + 1 :] >= lo_i, axis=1)
         candidates = np.nonzero(overlap)[0] + (i + 1)
         for j in candidates:
             j_int = int(j)
@@ -135,9 +139,7 @@ def _triangles_intersect(a: np.ndarray, b: np.ndarray) -> bool:
     """
     tol = 1e-6 * max(
         1.0,
-        float(
-            np.max(np.abs(np.concatenate([a.ravel(), b.ravel()])))
-        ),
+        float(np.max(np.abs(np.concatenate([a.ravel(), b.ravel()])))),
     )
     for va in a:
         for vb in b:
@@ -146,7 +148,7 @@ def _triangles_intersect(a: np.ndarray, b: np.ndarray) -> bool:
 
     n_a = np.cross(a[1] - a[0], a[2] - a[0])
     n_b = np.cross(b[1] - b[0], b[2] - b[0])
-    if np.linalg.norm(n_a) < 1e-12 or np.linalg.norm(n_b) < 1e-12:
+    if np.linalg.norm(n_a) < _GEOMETRY_EPS or np.linalg.norm(n_b) < _GEOMETRY_EPS:
         return False
     d_a = -float(np.dot(n_a, a[0]))
     d_b = -float(np.dot(n_b, b[0]))
@@ -182,7 +184,7 @@ def _segment_pierces_triangle(
 ) -> bool:
     dir_vec = p1 - p0
     denom = float(np.dot(n, dir_vec))
-    if abs(denom) < 1e-12:
+    if abs(denom) < _GEOMETRY_EPS:
         return False
     t = -(float(np.dot(n, p0)) + d) / denom
     # Require the piercing point to land strictly *inside* the segment;
@@ -193,9 +195,7 @@ def _segment_pierces_triangle(
     return _point_in_triangle(hit, tri, n, tol)
 
 
-def _point_in_triangle(
-    point: np.ndarray, tri: np.ndarray, n: np.ndarray, tol: float
-) -> bool:
+def _point_in_triangle(point: np.ndarray, tri: np.ndarray, n: np.ndarray, tol: float) -> bool:
     c0 = np.cross(tri[1] - tri[0], point - tri[0])
     c1 = np.cross(tri[2] - tri[1], point - tri[1])
     c2 = np.cross(tri[0] - tri[2], point - tri[2])
@@ -205,9 +205,7 @@ def _point_in_triangle(
     # Strict interior: require same-sign, *not* equal to zero, so that a
     # hit landing on a triangle's own edge doesn't count as penetration.
     eps = tol
-    return (s0 > eps and s1 > eps and s2 > eps) or (
-        s0 < -eps and s1 < -eps and s2 < -eps
-    )
+    return (s0 > eps and s1 > eps and s2 > eps) or (s0 < -eps and s1 < -eps and s2 < -eps)
 
 
 def _normal_consistency(mesh: trimesh.Trimesh) -> tuple[float, bool, int, int]:
@@ -224,15 +222,15 @@ def _normal_consistency(mesh: trimesh.Trimesh) -> tuple[float, bool, int, int]:
         return float(score), winding_consistent, 0, 0
 
     pairs = np.asarray(face_adjacency, dtype=np.int64)
-    if pairs.ndim != 2 or pairs.shape[1] != 2 or len(pairs) == 0:
+    if pairs.ndim != _TRIANGLE_DIMENSIONS or pairs.shape[1] != _TRIANGLE_VERTICES or len(pairs) == 0:
         score = 1.0 if winding_consistent else 0.0
         return float(score), winding_consistent, 0, 0
 
     a_normals = np.asarray(face_normals[pairs[:, 0]], dtype=np.float64)
     b_normals = np.asarray(face_normals[pairs[:, 1]], dtype=np.float64)
     dots = np.einsum("ij,ij->i", a_normals, b_normals)
-    inconsistent = int(np.sum(dots < -0.5))
-    total = int(len(pairs))
+    inconsistent = int(np.sum(dots < _INCONSISTENT_NORMAL_DOT))
+    total = len(pairs)
     if total == 0:
         score = 1.0 if winding_consistent else 0.0
         return float(score), winding_consistent, 0, 0
@@ -268,8 +266,8 @@ def _body_count_stability(
             except (TypeError, AttributeError, ValueError):
                 pass
         try:
-            counts.append(int(len(mesh.split(only_watertight=False))))
-        except Exception:
+            counts.append(len(mesh.split(only_watertight=False)))
+        except (TypeError, ValueError, RuntimeError):
             counts.append(1)
 
     if not counts:
@@ -312,9 +310,7 @@ def evaluate_geometry_integrity(
 
     shape_cfg = asset.get("build", {}).get("shape", {}) or {}
     geometry_strict = bool(shape_cfg.get("geometry_strict", False))
-    body_count_stability_check = bool(
-        shape_cfg.get("body_count_stability_check", False)
-    )
+    body_count_stability_check = bool(shape_cfg.get("body_count_stability_check", False))
 
     intersection_rate, intersecting_pairs, tested_pairs = _self_intersection_rate(mesh)
     normal_score, winding_ok, bad_edges, edge_pairs = _normal_consistency(mesh)

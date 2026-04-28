@@ -57,8 +57,8 @@ Every resolver helper — `_resolve_palette`, `_resolve_material`,
 `materialize_asset`, and each reads or mutates the same `merged` dict. The
 module-level helpers (`_dedupe`, `_merge_space_spec`,
 `_merge_repair_policy_spec`, `_repair_policy_to_validate_repair`,
-`_resolve_required`, `_resolve_optional`) are small pure functions that
-exist to keep `materialize_asset` readable.
+`_resolve_optional`) are small pure functions that exist to keep
+`materialize_asset` readable.
 
 There is no seam inside this file between "uses-chain resolution" and
 "variant patching" and "reference-set resolution" that a caller ever uses

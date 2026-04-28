@@ -1,6 +1,6 @@
 # Meshy — manual run instructions
 
-_Status: stub. No Meshy runs have been executed in this study yet._
+_Status: not_run. No Meshy runs have been executed in this study yet._
 
 Meshy is a closed-SaaS text-to-3D generator. It has a web UI and an HTTP API.
 This doc is what a human operator follows to populate the Meshy column of
@@ -36,7 +36,7 @@ Use Meshy's "text-to-3D" mode, standard quality, default poly target.
 2. Also download any auto-generated PBR texture set so the import can be
    rendered in Godot for the Godot-import grade.
 
-## Ingest into the harness (manual ingest flow — TODO for wave 6)
+## Ingest into the harness (manual ingest flow planned for wave 6)
 
 As of wave 5 the harness does not yet accept a `--ingest-manifest` flag; this
 is a wave-6 addition. For now:

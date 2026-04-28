@@ -18,7 +18,6 @@ from lathe.parser import parse_file
 from lathe.reference_ir import ReferenceIR
 from lathe.resolver import materialize_asset
 
-
 ROOT = Path(__file__).resolve().parents[2]
 RECONSTRUCT_EXAMPLE = ROOT / "examples" / "reconstruct_courier_from_views.lth"
 

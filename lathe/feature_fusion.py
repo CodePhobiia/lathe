@@ -22,7 +22,15 @@ def integration_config_for_family(family: str, fidelity: FidelityProfile) -> dic
     Returns:
         The result.
     """
-    hero_family = family in {"brassbound_chest", "industrial_crate", "mechanical_door", "console_terminal", "service_cabinet", "control_pedestal", "supply_container"}
+    hero_family = family in {
+        "brassbound_chest",
+        "industrial_crate",
+        "mechanical_door",
+        "console_terminal",
+        "service_cabinet",
+        "control_pedestal",
+        "supply_container",
+    }
     pitch = 2.1 if fidelity.tier == "hero" else 2.35 if fidelity.tier == "game" else 2.6
     blur_sigma = 0.42 if fidelity.tier == "hero" else 0.28 if fidelity.tier == "game" else 0.16
     if family == "courier_drone":
@@ -33,7 +41,9 @@ def integration_config_for_family(family: str, fidelity: FidelityProfile) -> dic
         "blur_sigma": round(blur_sigma, 4),
         "hero_family": hero_family,
         "exact_finalize": hero_family,
-        "exact_mode": "component_assembly" if family in {"console_terminal", "control_pedestal", "service_cabinet"} else ("explicit_mesh" if hero_family else "sdf_voxel_fusion"),
+        "exact_mode": "component_assembly"
+        if family in {"console_terminal", "control_pedestal", "service_cabinet"}
+        else ("explicit_mesh" if hero_family else "sdf_voxel_fusion"),
     }
 
 

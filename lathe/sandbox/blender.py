@@ -6,9 +6,9 @@ guarantees aimed specifically at the Blender subprocess:
 1. **Per-host resource caps.** On Linux we apply ``RLIMIT_CPU`` +
    ``RLIMIT_AS`` via ``resource.setrlimit`` in the child's preexec_fn.
    On Windows we assign the spawned PID to a Job Object with matching
-   limits. macOS falls through to RLIMITs. All of this is best-effort:
-   on platforms where a particular knob is unavailable we log a note
-   and proceed with the base sandbox.
+   limits. macOS falls through to RLIMITs. If the configured cap hook
+   cannot be installed, the run fails closed instead of silently running
+   Blender without caps.
 2. **Per-run log files.** stdout/stderr are mirrored to sibling log
    files under the caller-supplied ``log_dir`` (defaults to ``cwd``)
    so operators can inspect a completed run even if the caller
@@ -26,14 +26,13 @@ auditable in a single place.
 from __future__ import annotations
 
 import logging
-import os
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
+from ..logging_utils import warning as log_warning
 from ..subproc import DEFAULT_STDERR_DENY_PATTERNS, SandboxResult, run_sandboxed
-
 
 DEFAULT_BLENDER_TIMEOUT_S: float = 600.0
 """Default per-call Blender timeout (seconds). Matches SEC-6 threat model.
@@ -79,42 +78,46 @@ def _write_log(log_path: Path, payload: str) -> None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path.write_text(payload, encoding="utf-8", errors="replace")
     except OSError as exc:  # pragma: no cover - disk errors are operator-visible
-        _LOG.warning("run_blender_sandboxed: failed to write log %s: %s", log_path, exc)
+        log_warning(
+            _LOG,
+            "lathe.sandbox.blender.log_write_failed",
+            "run_blender_sandboxed: failed to write log {path}: {error}",
+            path=log_path,
+            error=exc,
+        )
 
 
 def _apply_rlimits(cpu_s: int, mem_bytes: int) -> None:
     """Install CPU + address-space rlimits on POSIX hosts.
 
-    Called from within :func:`subprocess.run`'s ``preexec_fn`` by
-    attaching via the wrapper in :func:`run_blender_sandboxed`. On
-    Windows this is a no-op; the job-object path handles caps there.
+    Called from the child process via ``subprocess.Popen(preexec_fn=...)``.
+    On Windows this is a no-op; the job-object path handles caps there.
     """
     # Only imported on POSIX; ``resource`` does not exist on Windows.
-    import resource  # noqa: PLC0415 - deliberate platform guard
+    import resource
 
     try:
         resource.setrlimit(resource.RLIMIT_CPU, (cpu_s, cpu_s))
-    except (ValueError, OSError):  # pragma: no cover - hardened container may refuse
-        pass
-    try:
         resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
-    except (ValueError, OSError):  # pragma: no cover - some kernels reject AS caps
-        pass
+    except (ValueError, OSError) as exc:  # pragma: no cover - host-policy dependent
+        raise RuntimeError("failed to apply Blender subprocess resource limits") from exc
+
+
+_WINDOWS_JOB_HANDLES: list[int] = []
 
 
 def _assign_windows_job_object(pid: int, cpu_s: int, mem_bytes: int) -> bool:
-    """Best-effort Windows Job Object assignment.
+    """Assign the spawned process to a capped Windows Job Object.
 
     Returns True if the job was created and the PID was assigned; False
-    if the underlying API was unavailable. We never *fail* on this —
-    the base sandbox still runs without per-process caps, and the
-    caller learns via the structured result that caps were advisory.
+    if the underlying API was unavailable or the assignment failed. The
+    caller treats False as a hard error so Blender never runs uncapped.
     """
     if sys.platform != "win32":
         return False
     try:
-        import ctypes  # noqa: PLC0415
-        from ctypes import wintypes  # noqa: PLC0415
+        import ctypes
+        from ctypes import wintypes
     except ImportError:  # pragma: no cover
         return False
 
@@ -181,6 +184,9 @@ def _assign_windows_job_object(pid: int, cpu_s: int, mem_bytes: int) -> bool:
     OpenProcess = kernel32.OpenProcess
     OpenProcess.restype = wintypes.HANDLE
     OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    CloseHandle = kernel32.CloseHandle
+    CloseHandle.restype = wintypes.BOOL
+    CloseHandle.argtypes = [wintypes.HANDLE]
 
     job = CreateJobObjectW(None, None)
     if not job:
@@ -188,9 +194,7 @@ def _assign_windows_job_object(pid: int, cpu_s: int, mem_bytes: int) -> bool:
 
     info = _EXT_LIMIT()
     info.BasicLimitInformation.LimitFlags = (
-        JOB_OBJECT_LIMIT_PROCESS_TIME
-        | JOB_OBJECT_LIMIT_PROCESS_MEMORY
-        | JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        JOB_OBJECT_LIMIT_PROCESS_TIME | JOB_OBJECT_LIMIT_PROCESS_MEMORY | JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
     )
     # LARGE_INTEGER is in 100-ns units; cpu_s seconds → cpu_s * 10_000_000.
     info.BasicLimitInformation.PerProcessUserTimeLimit = int(cpu_s * 10_000_000)
@@ -199,12 +203,22 @@ def _assign_windows_job_object(pid: int, cpu_s: int, mem_bytes: int) -> bool:
     if not SetInformationJobObject(
         job, JobObjectExtendedLimitInformation, ctypes.byref(info), ctypes.sizeof(info)
     ):
+        CloseHandle(job)
         return False
 
     proc_handle = OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, False, pid)
     if not proc_handle:
+        CloseHandle(job)
         return False
-    return bool(AssignProcessToJobObject(job, proc_handle))
+    assigned = bool(AssignProcessToJobObject(job, proc_handle))
+    CloseHandle(proc_handle)
+    if assigned:
+        # Keep the job alive for the duration of the Python host process. Closing
+        # it immediately would trigger JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE.
+        _WINDOWS_JOB_HANDLES.append(int(job))
+    else:
+        CloseHandle(job)
+    return assigned
 
 
 def run_blender_sandboxed(
@@ -243,13 +257,21 @@ def run_blender_sandboxed(
     stdout_log = log_root / f"{log_prefix}.stdout.log"
     stderr_log = log_root / f"{log_prefix}.stderr.log"
 
-    # POSIX caps flow through ``preexec_fn``. We piggy-back on
-    # ``run_sandboxed`` by setting the env it exposes, because
-    # ``run_sandboxed`` itself does not accept preexec_fn yet — instead
-    # we export the caps so the Blender Python driver can assert them.
-    # The rlimits are also installed per-process via ``os.register_at_fork``.
+    preexec_fn = None
+    on_spawn = None
     if sys.platform != "win32":
-        _apply_rlimits(cpu_seconds, mem_limit_bytes)
+
+        def _apply_child_limits() -> None:
+            _apply_rlimits(cpu_seconds, mem_limit_bytes)
+
+        preexec_fn = _apply_child_limits
+    else:
+
+        def _assign_job_or_fail(pid: int) -> None:
+            if not _assign_windows_job_object(pid, cpu_seconds, mem_limit_bytes):
+                raise RuntimeError("failed to assign Blender subprocess to Windows Job Object")
+
+        on_spawn = _assign_job_or_fail
 
     result = run_sandboxed(
         argv,
@@ -258,6 +280,8 @@ def run_blender_sandboxed(
         extra_env=extra_env,
         expect_files=expect_files,
         stderr_deny_patterns=DEFAULT_STDERR_DENY_PATTERNS,
+        preexec_fn=preexec_fn,
+        on_spawn=on_spawn,
     )
 
     stdout_log_written: Path | None = None
@@ -283,8 +307,8 @@ def run_blender_sandboxed(
 
 
 __all__ = [
-    "BlenderSandboxResult",
     "DEFAULT_BLENDER_TIMEOUT_S",
+    "BlenderSandboxResult",
     "run_blender_sandboxed",
 ]
 

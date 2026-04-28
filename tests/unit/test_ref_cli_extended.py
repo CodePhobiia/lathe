@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -42,7 +41,9 @@ def _cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
     )
 
 
-def _write_manifest(build_dir: Path, asset: str, *, build_hash: str = "a" * 16, pkg_hash: str = "b" * 16) -> None:
+def _write_manifest(
+    build_dir: Path, asset: str, *, build_hash: str = "a" * 16, pkg_hash: str = "b" * 16
+) -> None:
     build_dir.mkdir(parents=True, exist_ok=True)
     manifest = {
         "schemaVersion": 1,
@@ -81,11 +82,19 @@ def _write_manifest(build_dir: Path, asset: str, *, build_hash: str = "a" * 16, 
         "relations": {},
     }
     (build_dir / "selector_manifest.json").write_text(json.dumps(manifest))
-    (build_dir / "build_report.json").write_text(json.dumps({
-        "asset": asset, "kind": "mechanical_assembly", "certified": True,
-        "stage_bundles": {"shape": {"backend_id": "x"}},
-        "outputs": [{"format": "glb", "uri": "stages/package/out.glb", "sha256": "0" * 64, "size_bytes": 10}],
-    }))
+    (build_dir / "build_report.json").write_text(
+        json.dumps(
+            {
+                "asset": asset,
+                "kind": "mechanical_assembly",
+                "certified": True,
+                "stage_bundles": {"shape": {"backend_id": "x"}},
+                "outputs": [
+                    {"format": "glb", "uri": "stages/package/out.glb", "sha256": "0" * 64, "size_bytes": 10}
+                ],
+            }
+        )
+    )
 
 
 @pytest.fixture()

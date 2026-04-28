@@ -16,7 +16,6 @@ import unittest
 
 import numpy as np
 import trimesh
-
 from lathe.mesh_ir import MeshIR
 
 
@@ -31,7 +30,7 @@ def _mesh_ir_from_trimesh(mesh: trimesh.Trimesh) -> MeshIR:
         family="industrial_crate",
         vertices=np.asarray(mesh.vertices, dtype=np.float64).tolist(),
         faces=faces.tolist(),
-        face_parts=["body"] * int(len(faces)),
+        face_parts=["body"] * len(faces),
     )
 
 
@@ -144,9 +143,7 @@ class MeshIRSerializationTests(unittest.TestCase):
         restored = MeshIR(**payload)
         self.assertEqual(restored.metadata, ir.metadata)
         # deeply nested values survive
-        self.assertEqual(
-            restored.metadata["integration_report"]["dims"], [32, 32, 32]
-        )
+        self.assertEqual(restored.metadata["integration_report"]["dims"], [32, 32, 32])
 
 
 if __name__ == "__main__":

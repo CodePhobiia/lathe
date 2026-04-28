@@ -22,7 +22,11 @@ Every sidecar carries `schemaVersion: 1`, `engine` (id), `engineVersion` (min su
 
 ## Godot — `lathe_for_godot.json`
 
-Consumed by an `EditorImportPlugin` (Godot 4.2+). The plugin materialises:
+Emitted for Godot 4.2+ import tooling. The current in-repo addon still drives
+its automated import from `stages/package/package_manifest.json` plus
+`build_report.json`; the `lathe_for_godot.json` sidecar is the target manifest
+contract for manifest-driven importers and is statically validated against the
+packaged artifacts. A manifest-driven importer materialises:
 
 * A `Node3D` root named `<asset>`, with `gameplay_tags` copied to the root's `meta` dict.
 * A `LODGroup`-shaped list of `MeshInstance3D` children named `LOD0..LODn`, each carrying `visibility_range_begin` / `visibility_range_end` (metres) from the LOD ladder.

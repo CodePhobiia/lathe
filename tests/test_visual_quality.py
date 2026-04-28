@@ -1,17 +1,24 @@
 from __future__ import annotations
 
 import unittest
+from functools import cache
 from pathlib import Path
 
-from lathe.eval_harness import load_benchmark_catalog, run_benchmark_suite
-
+import pytest
+from lathe.eval_harness import run_benchmark_suite
 
 ROOT = Path(__file__).resolve().parents[1]
+pytestmark = pytest.mark.slow
+
+
+@cache
+def _benchmark_result() -> dict:
+    return run_benchmark_suite(ROOT)
 
 
 class LatheVisualQualityTests(unittest.TestCase):
     def test_legacy_and_near_miss_outputs_fail_visual_quality(self) -> None:
-        result = run_benchmark_suite(ROOT)
+        result = _benchmark_result()
         legacy_by_asset = {item["asset"]: item for item in result["negative"] + result["near_miss"]}
         self.assertIn("brassbound_chest", legacy_by_asset)
         self.assertIn("courier_drone", legacy_by_asset)
@@ -28,7 +35,7 @@ class LatheVisualQualityTests(unittest.TestCase):
         self.assertIn("legacy_console_terminal_v06", near_miss_names)
 
     def test_current_positive_assets_clear_visual_quality_thresholds(self) -> None:
-        result = run_benchmark_suite(ROOT)
+        result = _benchmark_result()
         for item in result["positive"]:
             self.assertEqual(item["visual_quality"]["diagnostics"], [])
 

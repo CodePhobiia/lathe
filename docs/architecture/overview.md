@@ -54,4 +54,16 @@ flowchart TB
     validators --> bundle["Certified bundle"]
 ```
 
-See [Pipeline](pipeline.md) for the stage-level flow, [Shape stage](shape_stage.md) for the internals of the probabilistic stage, and [Backends](backends.md) for the stack-binding / fallback semantics.
+## Boundary rule
+
+Lathe's public architecture is defined by source-language compatibility,
+versioned backend/provider/stage contracts, schema-versioned manifests, and
+persisted reports. Implementation modules may move behind those boundaries as
+long as the observable contracts stay compatible. Downstream docs and tools
+should depend on the contract surfaces, not on private helpers or transient
+runtime dictionaries.
+
+See [Pipeline](pipeline.md) for the stage-level flow, [Shape stage](shape_stage.md)
+for the internals of the probabilistic stage, [Backends](backends.md) for the
+stack-binding / fallback semantics, and [Public contracts and internal
+boundaries](contracts.md) for the public surface map.

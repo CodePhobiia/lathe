@@ -7,8 +7,8 @@ exists as the canonical home for that contract so other layers can import
 the provider ID from one place, and so a future reference-conditioned
 executor has a place to land without touching selection.
 """
-from __future__ import annotations
 
+from __future__ import annotations
 
 PROVIDER_ID = "lathe.provider.shape.reference_conditioned_v1"
 

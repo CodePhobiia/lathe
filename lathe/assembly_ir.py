@@ -13,6 +13,7 @@ from typing import Any
 @dataclass
 class AssemblyIR:
     """AssemblyIR."""
+
     family: str
     components: list[str] = field(default_factory=list)
     mechanisms: list[str] = field(default_factory=list)
@@ -22,7 +23,7 @@ class AssemblyIR:
     resolved_traits: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "AssemblyIR":
+    def from_asset(cls, asset: dict[str, Any]) -> AssemblyIR:
         """From asset.
 
         Args:

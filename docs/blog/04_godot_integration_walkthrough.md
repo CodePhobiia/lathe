@@ -87,8 +87,10 @@ section. Every step is a command or a click.
   - `plan` emitted the effective build plan, so the reader can see
     which stages will run and which backends will handle each.
   - `build` ran the pipeline end-to-end, producing
-    `dist/supply_crate/` with `.glb`, `.usd`, `manifest.json`,
-    `trace.json`, and `certification.json`.
+    `dist/supply_crate/` with `build_report.json`,
+    `selector_manifest.json`, `stages/package/package_manifest.json`,
+    `stages/package/trace_manifest.json`, `stages/validate/report.json`,
+    and packaged `.glb` / `.usda` files.
 - Show the final terminal line: `build: passed`. Note that if any
   validator had failed, this line would say so and the rest of the
   walkthrough would be a debugging walkthrough instead. That is
@@ -106,9 +108,9 @@ section. Every step is a command or a click.
   be already installed and enabled — cover this in a prerequisites
   box at the top of the post, not in the walkthrough body, because
   it is a one-time setup.
-- Show the new inspector dock added by the addon. It scans for
-  `dist/*/manifest.json` files relative to the project root and
-  lists built assets with their certification status.
+- Show the new inspector dock added by the addon. It scans Lathe build
+  directories relative to the project root and lists built assets with
+  their certification status.
 - Click "Import" on `supply_crate`. The addon:
   - imports the `.glb` into `res://assets/lathe/supply_crate/`
   - creates a `.tres` material resource per material
@@ -150,8 +152,9 @@ section. Every step is a command or a click.
    Measure whether the build output is good enough to replace a
    hand-made asset. An hour or two per prop.
 4. If the addon does not cover an import case you need, open an
-   issue against the `lathe-godot` repo with the manifest and the
-   expected Godot node structure.
+   issue against the `lathe-godot` repo with
+   `stages/package/package_manifest.json` and the expected Godot node
+   structure.
 
 ### Companion assets checklist
 

@@ -1,6 +1,6 @@
 # Hunyuan3D — manual run instructions
 
-_Status: stub. No Hunyuan runs have been executed in this study yet, outside
+_Status: not_run. No Hunyuan runs have been executed in this study yet, outside
 of the existing Lathe→Hunyuan-provider path, which is measured under
 `lathe_learned`, not here._
 

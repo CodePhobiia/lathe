@@ -87,7 +87,7 @@ an `ensure + auto-repair` for this variant. All other panel variants unchanged.
 **Certification.**
 - Before: build passes with `collision.winding=inverted` (warned, not blocked).
 - After:  build passes with `collision.winding=ccw (fixed)`.
-- Trace:  `/tmp/lathe-triage/trace.json` (attached).
+- Trace:  `/tmp/lathe-triage/vents_a/stages/package/trace_manifest.json` (attached).
 
 **Test plan.**
 - [x] `lathe build` passes on `vents_a` with the fix.

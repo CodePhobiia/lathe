@@ -43,7 +43,7 @@ Exit code 0 on certified pass, non-zero on fail. Failures are formatted:
 
     [stage:rule] value (reason) at: file:line
 
-On success, `dist/<asset_id>/trace.json` holds stage-by-stage records
+On success, `dist/<asset_id>/stages/package/trace_manifest.json` holds stage-by-stage records
 (including attempted vs actual providers).
 
 ## When an agent should invoke Lathe
@@ -64,7 +64,7 @@ On success, `dist/<asset_id>/trace.json` holds stage-by-stage records
 
 - CLI subcommand names and exit-code semantics.
 - Failure format `[stage:rule] value (reason) at: file:line`.
-- `trace.json` top-level shape: `{ stages: [...], contract: "...", providers: {attempted, actual} }`.
+- `stages/package/trace_manifest.json` top-level shape: `{ stages: [...], contract: "...", providers: {attempted, actual} }`.
 - Public language surface: `profile`, `contract`, `critic`, `asset`, `variant`.
 
 ## Non-stable internals (do not depend on)

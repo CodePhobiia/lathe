@@ -21,12 +21,12 @@ from .language import (
 )
 from .utils import diag
 
-
 __all__ = ["Checker", "check_program", "diag"]
 
 
 class Checker:
     """Checker."""
+
     def __init__(self, program: dict[str, Any]) -> None:
         self.program = program
         self.resolver = Resolver(program)

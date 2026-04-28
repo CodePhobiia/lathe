@@ -10,7 +10,6 @@ from unittest import mock
 
 import numpy as np
 import trimesh
-
 from lathe.errors import ShapeMeshLoadError, ShapeProviderExecutionError
 from lathe.mesh_ingest import safe_load_mesh
 

@@ -5,14 +5,24 @@ Extracted from ``lathe/executor.py`` during Stage 2.IV.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 import trimesh
 
 from .geometry import runtime_scene_parts
 from .mesh import RuntimeMesh
+
+
+def _safe_output_path(root: Path, candidate: Path) -> Path:
+    root_resolved = root.resolve()
+    target = candidate.resolve()
+    try:
+        target.relative_to(root_resolved)
+    except ValueError as exc:
+        raise ValueError(f"export path escapes output directory: {candidate}") from exc
+    return target
 
 
 def export_glb(mesh: trimesh.Trimesh, path: Path) -> None:
@@ -40,8 +50,12 @@ def export_gltf(mesh: trimesh.Trimesh, directory: Path, asset_name: str) -> list
     """
     payload = mesh.export(file_type="gltf")
     written: list[Path] = []
+    seen: set[Path] = set()
     for name, data in payload.items():
-        out_path = directory / name.replace("model", asset_name)
+        out_path = _safe_output_path(directory, directory / name.replace("model", asset_name))
+        if out_path in seen:
+            raise FileExistsError(f"duplicate glTF export path: {out_path}")
+        seen.add(out_path)
         if isinstance(data, str):
             out_path.write_text(data, encoding="utf-8")
         else:

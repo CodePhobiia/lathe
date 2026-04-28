@@ -15,10 +15,9 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
-import pytest
-
 import lathe.shape as shape_pkg
 import lathe.shape_backend as shim
+import pytest
 from lathe import shape_backend as shim_mod
 from lathe.shape import backend as canonical
 
@@ -71,7 +70,7 @@ class TestRunShapeBackend:
             )
 
     def test_literal_string_provider_none_raises(self, tmp_path: Path) -> None:
-        with pytest.raises(ValueError, match="Invalid shape_cfg.provider"):
+        with pytest.raises(ValueError, match=r"Invalid shape_cfg[.]provider"):
             shim.run_shape_backend(
                 "lathe.shape.intent_mesh_handoff_v1",
                 _minimal_asset(),
@@ -84,7 +83,7 @@ class TestRunShapeBackend:
             )
 
     def test_literal_string_provider_null_raises(self, tmp_path: Path) -> None:
-        with pytest.raises(ValueError, match="Invalid shape_cfg.provider"):
+        with pytest.raises(ValueError, match=r"Invalid shape_cfg[.]provider"):
             shim.run_shape_backend(
                 "lathe.shape.intent_mesh_handoff_v1",
                 _minimal_asset(),
@@ -105,7 +104,12 @@ class TestRunShapeBackend:
                 "lathe.shape.backend.compile_scaffold_candidates",
                 return_value={
                     "asset_graph": type("AG", (), {"to_dict": lambda self: {}})(),
-                    "report": {"shape_irs": [], "blueprint_id": "bp", "primitives_used": [], "shape_assessment": {}},
+                    "report": {
+                        "shape_irs": [],
+                        "blueprint_id": "bp",
+                        "primitives_used": [],
+                        "shape_assessment": {},
+                    },
                     "shape_irs": [],
                 },
             ),

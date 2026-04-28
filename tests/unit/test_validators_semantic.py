@@ -14,12 +14,13 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+import pytest
 from lathe.executor import build_asset
 from lathe.parser import parse_file
 from lathe.validators.semantic_quality import evaluate_semantic_quality
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.slow
 _BUILT: dict[str, Any] | None = None
 
 
@@ -38,8 +39,12 @@ def _build_courier_drone() -> dict[str, Any]:
         out = Path(tmp) / "courier_drone"
         build_asset(program, "courier_drone", out)
         shape_bundle = json.loads((out / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-        topology_bundle = json.loads((out / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8"))
-        interfaces_bundle = json.loads((out / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8"))
+        topology_bundle = json.loads(
+            (out / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8")
+        )
+        interfaces_bundle = json.loads(
+            (out / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8")
+        )
         asset = json.loads((out / "materialized_asset.json").read_text(encoding="utf-8"))
     _BUILT = {
         "asset": asset,
@@ -64,7 +69,9 @@ class SemanticQualityCertifiedTests(unittest.TestCase):
         error_diags = [d for d in report["diagnostics"] if d.get("severity") == "error"]
         self.assertEqual(error_diags, [], f"unexpected errors: {error_diags}")
         self.assertGreaterEqual(report["metrics"]["part_coverage"], report["thresholds"]["part_coverage"])
-        self.assertGreaterEqual(report["metrics"]["structural_richness"], report["thresholds"]["structural_richness"])
+        self.assertGreaterEqual(
+            report["metrics"]["structural_richness"], report["thresholds"]["structural_richness"]
+        )
         self.assertFalse(report["metrics"]["toy_detected"])
 
 
@@ -117,7 +124,9 @@ class SemanticQualityRejectsBadBundleTests(unittest.TestCase):
         report = evaluate_semantic_quality(asset, runtime)
         names = {d["name"] for d in report["diagnostics"]}
         self.assertIn("semantic_fragmentation_failed", names)
-        self.assertGreater(report["metrics"]["fragmentation_penalty"], report["thresholds"]["maximum_fragmentation_penalty"])
+        self.assertGreater(
+            report["metrics"]["fragmentation_penalty"], report["thresholds"]["maximum_fragmentation_penalty"]
+        )
 
     def test_toy_detected_on_under_structured_bundle(self) -> None:
         asset, runtime = _baseline()

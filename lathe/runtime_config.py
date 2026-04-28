@@ -10,35 +10,100 @@ import json
 import os
 import warnings
 from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import jsonschema
 
-# re-export — authoritative definition lives in lathe/errors.py
+# re-export â€” authoritative definition lives in lathe/errors.py
 from .errors import RuntimeConfigError
-
+from .security import InputClass, TrustLevel, boundary_policy, ingress_boundary
 
 _MAX_CONFIG_BYTES = 256 * 1024
+_MAX_SNIPPET_CHARS = 120
+_SNIPPET_ELLIPSIS_CHARS = 3
 _SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema" / "runtime_config.schema.json"
-_SCHEMA_CACHE: dict[str, Any] | None = None
-_VALIDATOR_CACHE: jsonschema.Draft202012Validator | None = None
+_TRUTHY_VALUES = frozenset({"1", "true", "yes", "on"})
+_RUNTIME_CONFIG_BOUNDARY = boundary_policy(
+    name="runtime_config_file",
+    input_class=InputClass.RUNTIME_CONFIG,
+    trust_level=TrustLevel.UNTRUSTED,
+    controls=(
+        "byte_cap",
+        "utf8_decode",
+        "json_parse",
+        "object_root_required",
+        "json_schema_validation",
+    ),
+)
 
 
-def _load_schema() -> jsonschema.Draft202012Validator:
-    global _SCHEMA_CACHE, _VALIDATOR_CACHE
-    if _VALIDATOR_CACHE is not None:
-        return _VALIDATOR_CACHE
+def _schema_load_error(exc: Exception) -> RuntimeConfigError:
+    return RuntimeConfigError(f"runtime_config schema at {_SCHEMA_PATH} could not be loaded: {exc}")
+
+
+@lru_cache(maxsize=1)
+def _load_schema_payload() -> dict[str, Any]:
     try:
         schema_text = _SCHEMA_PATH.read_text(encoding="utf-8")
-        # JSON ingress — internal controlled payload from schema/runtime_config.schema.json canonical schema shipped inside this repo; safe without schema validation (this IS the schema).
-        _SCHEMA_CACHE = json.loads(schema_text)
+        # JSON ingress: internal canonical schema shipped inside this repo. This
+        # payload is the validator input, so it is trusted after JSON parsing.
+        payload = json.loads(schema_text)
     except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise RuntimeConfigError(
-            f"runtime_config schema at {_SCHEMA_PATH} could not be loaded: {exc}"
-        ) from exc
-    _VALIDATOR_CACHE = jsonschema.Draft202012Validator(_SCHEMA_CACHE)
-    return _VALIDATOR_CACHE
+        raise _schema_load_error(exc) from exc
+    return payload
+
+
+@lru_cache(maxsize=1)
+def _load_schema() -> jsonschema.Draft202012Validator:
+    return jsonschema.Draft202012Validator(_load_schema_payload())
+
+
+def _schema_validation_error(
+    source: str,
+    pointer: str,
+    message: str,
+    snippet: str,
+) -> RuntimeConfigError:
+    return RuntimeConfigError(
+        f"runtime_config {source} failed schema validation at {pointer}: {message} (value={snippet})"
+    )
+
+
+def _runtime_config_not_found_error(config_path: Path) -> RuntimeConfigError:
+    return RuntimeConfigError(f"runtime_config file not found: {config_path}")
+
+
+def _runtime_config_stat_error(config_path: Path, exc: OSError) -> RuntimeConfigError:
+    return RuntimeConfigError(f"runtime_config file could not be stat'd ({config_path}): {exc}")
+
+
+def _runtime_config_size_error(config_path: Path, size_bytes: int) -> RuntimeConfigError:
+    return RuntimeConfigError(
+        f"runtime_config file exceeds 256 KiB ({size_bytes} bytes > {_MAX_CONFIG_BYTES}): {config_path}"
+    )
+
+
+def _runtime_config_utf8_error(config_path: Path, exc: UnicodeDecodeError) -> RuntimeConfigError:
+    return RuntimeConfigError(f"runtime_config file is not valid UTF-8 ({config_path}): {exc}")
+
+
+def _runtime_config_json_error(config_path: Path, exc: json.JSONDecodeError) -> RuntimeConfigError:
+    return RuntimeConfigError(
+        f"runtime_config file contains invalid JSON ({config_path}): "
+        f"{exc.msg} at line {exc.lineno}, column {exc.colno}"
+    )
+
+
+def _runtime_config_root_error(config_path: Path, raw: Any) -> RuntimeConfigError:
+    return RuntimeConfigError(
+        f"runtime_config root must be a JSON object, got {type(raw).__name__} ({config_path})"
+    )
+
+
+def _is_truthy_env(value: str) -> bool:
+    return value.lower() in _TRUTHY_VALUES
 
 
 def _format_pointer(path_deque: Any) -> str:
@@ -70,18 +135,16 @@ def _collect_unknown_keys(raw: Any, schema: Any, prefix: str = "") -> list[str]:
 
 def _validate_runtime_config(raw: dict[str, Any], source: str) -> None:
     validator = _load_schema()
+    schema_payload = _load_schema_payload()
     errors = sorted(validator.iter_errors(raw), key=lambda e: list(e.absolute_path))
     if errors:
         first = errors[0]
         pointer = _format_pointer(first.absolute_path)
         snippet = repr(first.instance)
-        if len(snippet) > 120:
-            snippet = snippet[:117] + "..."
-        raise RuntimeConfigError(
-            f"runtime_config {source} failed schema validation at {pointer}: "
-            f"{first.message} (value={snippet})"
-        )
-    unknown_keys = _collect_unknown_keys(raw, _SCHEMA_CACHE or {})
+        if len(snippet) > _MAX_SNIPPET_CHARS:
+            snippet = snippet[: _MAX_SNIPPET_CHARS - _SNIPPET_ELLIPSIS_CHARS] + "..."
+        raise _schema_validation_error(source, pointer, first.message, snippet)
+    unknown_keys = _collect_unknown_keys(raw, schema_payload)
     if unknown_keys:
         warnings.warn(
             f"runtime_config {source} contains unknown keys (ignored, will become errors in a "
@@ -160,6 +223,7 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
     return out
 
 
+@ingress_boundary(_RUNTIME_CONFIG_BOUNDARY)
 def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
     """Load runtime config.
 
@@ -194,7 +258,7 @@ def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
                 f"runtime_config file is not valid UTF-8 ({config_path}): {exc}"
             ) from exc
         try:
-            # JSON ingress — trust-boundary user-supplied runtime_config file; validated below via _validate_runtime_config against schema/runtime_config.schema.json (BL-9 validated site).
+            # JSON ingress â€” trust-boundary user-supplied runtime_config file; validated below via _validate_runtime_config against schema/runtime_config.schema.json (BL-9 validated site).
             raw = json.loads(text)
         except json.JSONDecodeError as exc:
             raise RuntimeConfigError(
@@ -203,8 +267,7 @@ def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
             ) from exc
         if not isinstance(raw, dict):
             raise RuntimeConfigError(
-                f"runtime_config root must be a JSON object, got {type(raw).__name__} "
-                f"({config_path})"
+                f"runtime_config root must be a JSON object, got {type(raw).__name__} ({config_path})"
             )
         _validate_runtime_config(raw, source=str(config_path))
         config = _deep_merge(config, raw)
@@ -333,8 +396,10 @@ def apply_env_overrides(config: dict[str, Any]) -> dict[str, Any]:
     if xatlas_resolution:
         try:
             xatlas_cfg["resolution"] = int(xatlas_resolution)
-        except ValueError:
-            pass
+        except ValueError as exc:
+            raise RuntimeConfigError(
+                f"LATHE_XATLAS_RESOLUTION must be an integer, got {xatlas_resolution!r}"
+            ) from exc
 
     surface = merged.setdefault("surface", {})
     imagegen = surface.setdefault("codex_imagegen", {})

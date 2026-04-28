@@ -46,8 +46,8 @@ jobs:
           exit $FAILED
 
   build-nightly:
-    # Full build matrix: certifies every example end-to-end. Only runs on
-    # the nightly cron + manual dispatch because hero builds are slow.
+    # Full build matrix: certifies the API and corpus example suite end-to-end.
+    # Only runs on the nightly cron + manual dispatch because hero builds are slow.
     name: lathe build (nightly)
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e .[dev]
-      - name: Build every example and collect artifacts
+      - name: Build API and corpus examples and collect artifacts
         env:
           LATHE_ALLOW_EXTERNAL_OUT: "1"
         run: |
@@ -97,6 +97,27 @@ jobs:
             tmp_examples_out/**/selector_manifest.json
             tmp_examples_out/**/stages/validate/report.json
           if-no-files-found: ignore
+
+  pytest-build-nightly:
+    # The pytest build regression suite performs many full asset builds, so it
+    # stays out of the fast OS/Python PR matrix and runs with the nightly build
+    # lane plus manual dispatch.
+    name: pytest build regression (nightly)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+      - name: Run build-heavy pytest regression
+        run: python -m pytest -q -m slow tests/test_build.py
+      - name: Run canonical deterministic gallery regression
+        run: python -m pytest -q -m slow tests/unit/test_deterministic_build_mode.py
 
   corpus-pytest:
     name: pytest corpus

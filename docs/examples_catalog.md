@@ -20,18 +20,39 @@ clean local `.venv` build. Heroes marked `x` currently score below their
 own threshold — they are tracked so regressions surface, but are not
 expected to pass certification today.
 
+Rows marked `x` are explicitly experimental or known-limitation examples until
+the catalog, tests, and release checklist show fresh passing evidence. They are
+tracked so regressions surface, but they are not release-polish proof today.
+
 | File | Family | Tier | Features | Build | Cert |
 |------|--------|------|----------|-------|------|
 | `examples/brassbound_chest.lth` | `brassbound_chest` | T0 | hero loot chest, wood+brass PBR, lid mechanism | ~45s | o |
 | `examples/industrial_crate.lth` | `industrial_crate` | T0 | steel shipping crate, warning paint, latch | ~2s | o |
 | `examples/mechanical_door.lth` | `mechanical_door` | T0 | env module, hinged door w/ handle | ~37s | o |
 | `examples/courier_drone.lth` | `courier_drone` | T0 | quad rotor, cargo hatch, battery sockets | ~2s | o |
-| `examples/console_terminal.lth` | `console_terminal` | T0 | wall console, screen + keypad | ~75s | x |
-| `examples/control_pedestal.lth` | `control_pedestal` | T0 | operator pedestal, levers | ~95s | x |
-| `examples/sci_fi_wall_panel.lth` | `sci_fi_wall_panel` | T0 | env wall panel + vents | ~7s | x |
-| `examples/service_cabinet.lth` | `service_cabinet` | T0 | wall service cabinet w/ hinged doors | ~30s | x |
+| `examples/console_terminal.lth` | `console_terminal` | T0 | wall console, screen + keypad | ~75s | o |
+| `examples/control_pedestal.lth` | `control_pedestal` | T0 | operator pedestal, levers | ~95s | o |
+| `examples/sci_fi_wall_panel.lth` | `sci_fi_wall_panel` | T0 | env wall panel + vents | ~7s | o |
+| `examples/service_cabinet.lth` | `service_cabinet` | T0 | wall service cabinet w/ hinged doors | ~30s | o |
 | `examples/supply_container.lth` | `supply_container` | T0 | strapped field supply box | ~42s | o |
 | `examples/tutorial_bookshelf.lth` | generic | T2 | docs walkthrough — minimal features | ~3s | x |
+
+## Additional top-level examples
+
+These checked-in examples exercise preview or experimental language surfaces.
+They are runnable examples, but rows marked `x` are not release-polish proof
+until promoted into the canonical gallery or expected-certification set.
+
+| File | Asset or variant | Tier | Features | Build | Cert |
+|------|------------------|------|----------|-------|------|
+| `examples/brassbound_chest_v13_blender.lth` | `brassbound_chest_v13` | T2 | Blender-oriented V1.3 hard-surface chest experiment | varies | x |
+| `examples/brassbound_chest_v13_1_codex_blender.lth` | `brassbound_chest_v13_1` | T2 | Codex-authored V1.3.1 chest variant | varies | x |
+| `examples/console_terminal_mobile_adapt.lth` | `console_terminal_mobile` | T1 | mobile adaptation of the console terminal family | varies | o |
+| `examples/console_terminal_v12_surface.lth` | `console_terminal_v12_surface` | T2 | V1.2 governed surface authoring slice | varies | x |
+| `examples/reconstruct_courier_from_mesh.lth` | `reconstruct_courier_from_mesh` | T2 | mesh-conditioned courier reconstruction | varies | o |
+| `examples/reconstruct_courier_from_views.lth` | `reconstruct_courier_from_views` | T2 | reference-view reconstruction using checked-in images | varies | x |
+| `examples/satchel_bag.lth` | `satchel_bag` | T2 | soft-prop contract experiment | varies | x |
+| `examples/service_corridor_wall.lth` | `service_corridor_wall` | T2 | modular industrial wall-kit environment slice | varies | x |
 
 ## API examples (`examples/api/`)
 
@@ -42,7 +63,7 @@ One file per public-surface concept. Each is built on
 |------|---------|------------|-------|
 | `examples/api/primitives.lth` | part graph + feature density | `intent.parts`, `features.density`, `assembly.components` | ~2s |
 | `examples/api/csg_boolean.lth` | boolean / integration rules | `geometry.integration_rules`, `seam_classes`, `edge_classes` | ~2s |
-| `examples/api/socket.lth` | typed interface sockets | `build.interfaces.sockets`, `anchors`, `clearance` | ~2s |
+| `examples/api/socket.lth` | typed interface sockets | `build.interfaces.sockets`, `pivots`, `clearance` | ~2s |
 | `examples/api/lod_config.lth` | LOD + runtime budgets | `build.optimize.{lods, atlas, draw_calls, texture_budget}` | ~2s |
 | `examples/api/material_pbr.lth` | PBR material authoring | `surface.program`, `maps`, `bakes`, `material_zones` | ~2s |
 | `examples/api/variant.lth` | variant patch/append ops | `variant ... on`, `set`/`append`, layered `profile uses` | ~2s |
@@ -61,18 +82,18 @@ lives under an independent registry path.
 | `examples/corpus/corpus_door.lth` | `mechanical_door` | door | ~37s | o |
 | `examples/corpus/corpus_drone.lth` | `courier_drone` | vehicle / mechanical | ~2s | o |
 | `examples/corpus/corpus_supply.lth` | `supply_container` | container (strap) | ~42s | o |
-| `examples/corpus/corpus_terminal.lth` | `console_terminal` | interactable | ~75s | x |
-| `examples/corpus/corpus_pedestal.lth` | `control_pedestal` | interactable | ~95s | x |
-| `examples/corpus/corpus_wall_panel.lth` | `sci_fi_wall_panel` | decoration / env | ~7s | x |
-| `examples/corpus/corpus_cabinet.lth` | `service_cabinet` | container (wall-mount) | ~30s | x |
+| `examples/corpus/corpus_terminal.lth` | `console_terminal` | interactable | ~75s | o |
+| `examples/corpus/corpus_pedestal.lth` | `control_pedestal` | interactable | ~95s | o |
+| `examples/corpus/corpus_wall_panel.lth` | `sci_fi_wall_panel` | decoration / env | ~7s | o |
+| `examples/corpus/corpus_cabinet.lth` | `service_cabinet` | container (wall-mount) | ~30s | o |
 
 ## CI coverage
 
 `.github/workflows/examples.yml` has three jobs:
 
-- **check** — `lathe check` every example on PR (fast, ~2s/file).
-- **build-nightly** — full build + certification on every example, runs on
-  the cron schedule (and manual dispatch).
+- **check** — `lathe check` every API and corpus example on PR (fast, ~2s/file).
+- **build-nightly** — full build + certification on the API and corpus example
+  suite, runs on the cron schedule (and manual dispatch).
 - **corpus-pytest** — runs `tests/unit/test_example_corpus.py` on every PR so
   certification regressions show up before nightly.
 

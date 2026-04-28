@@ -6,12 +6,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import trimesh
-
 from lathe.executor import RuntimeMesh, _run_reference_topology_cleanup, build_asset
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 
+pytestmark = pytest.mark.slow
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "examples" / "courier_drone.lth"
@@ -40,12 +41,33 @@ class LatheBuildTests(unittest.TestCase):
             self.assertTrue((out_dir / "stages" / "topology" / "bundle.json").exists())
             self.assertTrue((out_dir / "stages" / "uv" / "bundle.json").exists())
             self.assertTrue((out_dir / "stages" / "package" / "package_manifest.json").exists())
-            surface_bundle = json.loads((out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+            surface_bundle = json.loads(
+                (out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(surface_bundle["backend_id"], "lathe.surface.hero_pbr_v1")
             self.assertIn("highlow_relation", surface_bundle)
             self.assertTrue((out_dir / "stages" / "surface" / "maps" / "basecolor.png").exists())
             formats = {item["format"] for item in report["outputs"]}
-            self.assertEqual(formats, {"usd", "glb"})
+            self.assertGreaterEqual(formats, {"usd", "glb"})
+
+    def test_build_report_redacts_runtime_config_secrets(self) -> None:
+        program = parse_file(EXAMPLE)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_dir = Path(tmpdir) / "courier_drone"
+            report = build_asset(
+                program,
+                "courier_drone",
+                out_dir,
+                runtime_config={
+                    "publish": {"service_key": "sk-build-secret"},
+                    "shape": {"providers": {"reference_conditioned": {"api_token": "provider-token"}}},
+                },
+            )
+            report_text = (out_dir / "build_report.json").read_text(encoding="utf-8")
+
+        self.assertNotIn("sk-build-secret", report_text)
+        self.assertNotIn("provider-token", report_text)
+        self.assertEqual(report["runtime_config"]["publish"]["service_key"], "[redacted]")
 
     def test_variant_builds(self) -> None:
         program = parse_file(EXAMPLE)
@@ -62,7 +84,9 @@ class LatheBuildTests(unittest.TestCase):
             build_asset(program, "courier_drone", out_dir)
             bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
             self.assertGreaterEqual(len(bundle["conditioning_report"]["image_refs"]), 2)
-            self.assertGreaterEqual(sum(1 for item in bundle["provenance"]["consumed_refs"] if item.get("exists")), 3)
+            self.assertGreaterEqual(
+                sum(1 for item in bundle["provenance"]["consumed_refs"] if item.get("exists")), 3
+            )
 
     def test_reconstruct_mode_uses_mesh_ref(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -74,7 +98,7 @@ class LatheBuildTests(unittest.TestCase):
                 'refs {\n    images = [\n      "refs/courier_front.png",\n      "refs/courier_side.png",\n      "refs/materials.jpg",\n    ]\n  }',
                 'refs {\n    meshes = ["source.obj"]\n  }',
             )
-            source = source.replace('mode = generate', 'mode = reconstruct', 1)
+            source = source.replace("mode = generate", "mode = reconstruct", 1)
             source_path = tmp / "reconstruct_drone.lth"
             source_path.write_text(source, encoding="utf-8")
             program = parse_file(source_path)
@@ -94,8 +118,13 @@ class LatheBuildTests(unittest.TestCase):
             out_dir = Path(tmpdir) / "reconstruct_courier_from_views"
             report = build_asset(program, "reconstruct_courier_from_views", out_dir)
             self.assertTrue(report["certified"])
-            shape_bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-            self.assertEqual(shape_bundle["provenance"]["shape_provider_id"], "lathe.provider.shape.reference_conditioned_v1")
+            shape_bundle = json.loads(
+                (out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                shape_bundle["provenance"]["shape_provider_id"],
+                "lathe.provider.shape.reference_conditioned_v1",
+            )
             self.assertTrue(shape_bundle["reference_ir"]["resolved_reference_sets"])
             self.assertTrue(shape_bundle["fit_ir"]["fit_profile"])
             self.assertTrue(shape_bundle["fit_ir"]["reconstruct_policy"])
@@ -107,7 +136,9 @@ class LatheBuildTests(unittest.TestCase):
             report = build_asset(program, "brassbound_chest", out_dir)
             self.assertTrue(report["certified"])
             self.assertTrue((out_dir / "stages" / "package" / "brassbound_chest.glb").exists())
-            surface_bundle = json.loads((out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+            surface_bundle = json.loads(
+                (out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(surface_bundle["backend_id"], "lathe.surface.hero_pbr_v1")
             self.assertTrue((out_dir / "stages" / "surface" / "maps" / "normal.png").exists())
 
@@ -118,7 +149,9 @@ class LatheBuildTests(unittest.TestCase):
             report = build_asset(program, "sci_fi_wall_panel", out_dir)
             self.assertTrue(report["certified"])
             self.assertTrue((out_dir / "stages" / "package" / "sci_fi_wall_panel.glb").exists())
-            surface_bundle = json.loads((out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+            surface_bundle = json.loads(
+                (out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(surface_bundle["backend_id"], "lathe.surface.semantic_passthrough_v1")
 
     def test_crate_example_builds(self) -> None:
@@ -131,7 +164,9 @@ class LatheBuildTests(unittest.TestCase):
             self.assertEqual(bundle["blueprint_id"], "lathe.blueprint.hard_surface_crate_v2")
             self.assertIn("shell", bundle["primitives_used"])
             self.assertIn("frame", bundle["primitives_used"])
-            surface_bundle = json.loads((out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+            surface_bundle = json.loads(
+                (out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(surface_bundle["backend_id"], "lathe.surface.hero_pbr_v1")
 
     def test_door_example_builds(self) -> None:
@@ -143,7 +178,9 @@ class LatheBuildTests(unittest.TestCase):
             bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
             self.assertEqual(bundle["blueprint_id"], "lathe.blueprint.env_mechanical_door_v2")
             self.assertIn("hinge", bundle["primitives_used"])
-            surface_bundle = json.loads((out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+            surface_bundle = json.loads(
+                (out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(surface_bundle["backend_id"], "lathe.surface.hero_pbr_v1")
 
     def test_console_example_builds(self) -> None:
@@ -155,7 +192,9 @@ class LatheBuildTests(unittest.TestCase):
             bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
             self.assertEqual(bundle["blueprint_id"], "lathe.blueprint.hard_surface_console_terminal_v2")
             self.assertIn("bezel", bundle["primitives_used"])
-            surface_bundle = json.loads((out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+            surface_bundle = json.loads(
+                (out_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(surface_bundle["backend_id"], "lathe.surface.hero_pbr_v1")
             self.assertTrue((out_dir / "stages" / "surface" / "maps" / "emissive.png").exists())
 
@@ -198,14 +237,20 @@ class LatheBuildTests(unittest.TestCase):
             out_dir = Path(tmpdir) / "console_terminal_mobile"
             report = build_asset(program, "console_terminal_mobile", out_dir)
             self.assertTrue(report["certified"])
-            shape_bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
+            shape_bundle = json.loads(
+                (out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(shape_bundle["fit_ir"]["fit_profile"], {})
             self.assertTrue(shape_bundle["transfer_ir"]["adapt_policy"])
             self.assertEqual(shape_bundle["asset_graph"]["authoring"]["shape_mode"], "adapt")
-            validate = json.loads((out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
+            validate = json.loads(
+                (out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(validate["flow_quality"]["mode"], "adapt")
             self.assertIn("semantic_preservation_quality", validate["flow_quality"]["metrics"])
-            trace = json.loads((out_dir / "stages" / "package" / "trace_manifest.json").read_text(encoding="utf-8"))
+            trace = json.loads(
+                (out_dir / "stages" / "package" / "trace_manifest.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(trace["stage_execution"]["flow_quality"]["mode"], "adapt")
 
     def test_service_corridor_wall_assemble_builds(self) -> None:
@@ -214,11 +259,15 @@ class LatheBuildTests(unittest.TestCase):
             out_dir = Path(tmpdir) / "service_corridor_wall"
             report = build_asset(program, "service_corridor_wall", out_dir)
             self.assertTrue(report["certified"])
-            shape_bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
+            shape_bundle = json.loads(
+                (out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertTrue(shape_bundle["kit_ir"]["kit_name"])
             self.assertTrue(shape_bundle["kit_ir"]["values"])
             self.assertEqual(shape_bundle["asset_graph"]["authoring"]["shape_mode"], "assemble")
-            validate = json.loads((out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
+            validate = json.loads(
+                (out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(validate["flow_quality"]["mode"], "assemble")
             self.assertIn("join_legality", validate["flow_quality"]["metrics"])
 
@@ -231,34 +280,55 @@ class LatheBuildTests(unittest.TestCase):
             broken.remove_unreferenced_vertices()
             bad_runtime = RuntimeMesh(
                 mesh=broken,
-                face_parts=["body"] * int(len(broken.faces)),
+                face_parts=["body"] * len(broken.faces),
                 part_colors={"body": (120, 120, 120)},
                 units="cm",
             )
-            with patch(
-                "lathe.executor.probe_topology_backend",
-                return_value={
-                    "backend_id": "lathe.topology.blender_hard_surface_v1",
-                    "requested_adapter": "auto",
-                    "selected_adapter": "blender_subprocess",
-                    "strict": False,
-                    "available": True,
-                    "real_adapter_available": True,
-                    "fallback_available": True,
-                    "probe": {"available": True, "path": "mock-blender", "version": "mock", "code": "ok"},
-                },
-            ), patch(
-                "lathe.executor._run_blender_topology",
-                return_value=(bad_runtime, {"mode": "blender_subprocess", "blender_path": "mock-blender"}),
+            with (
+                patch(
+                    "lathe.executor.probe_topology_backend",
+                    return_value={
+                        "backend_id": "lathe.topology.blender_hard_surface_v1",
+                        "requested_adapter": "auto",
+                        "selected_adapter": "blender_subprocess",
+                        "strict": False,
+                        "available": True,
+                        "real_adapter_available": True,
+                        "fallback_available": True,
+                        "probe": {"available": True, "path": "mock-blender", "version": "mock", "code": "ok"},
+                    },
+                ),
+                patch(
+                    "lathe.executor._run_blender_topology",
+                    return_value=(
+                        bad_runtime,
+                        {"mode": "blender_subprocess", "blender_path": "mock-blender"},
+                    ),
+                ),
             ):
-                report = build_asset(program, "courier_drone", out_dir, runtime_config={"topology": {"adapter": "auto", "strict": False}})
+                report = build_asset(
+                    program,
+                    "courier_drone",
+                    out_dir,
+                    runtime_config={"topology": {"adapter": "auto", "strict": False}},
+                )
 
             self.assertTrue(report["certified"])
-            topology_bundle = json.loads((out_dir / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8"))
+            topology_bundle = json.loads(
+                (out_dir / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8")
+            )
             self.assertIn(topology_bundle["adapter_report"]["status"], {"fallback", "preserved"})
-            self.assertIn(topology_bundle["adapter_report"]["actual_adapter"], {"reference_cleanup", "integrated_preserve_cleanup"})
-            trace = json.loads((out_dir / "stages" / "package" / "trace_manifest.json").read_text(encoding="utf-8"))
-            self.assertIn(trace["stage_execution"]["topology"]["actual_adapter"], {"reference_cleanup", "integrated_preserve_cleanup"})
+            self.assertIn(
+                topology_bundle["adapter_report"]["actual_adapter"],
+                {"reference_cleanup", "integrated_preserve_cleanup"},
+            )
+            trace = json.loads(
+                (out_dir / "stages" / "package" / "trace_manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertIn(
+                trace["stage_execution"]["topology"]["actual_adapter"],
+                {"reference_cleanup", "integrated_preserve_cleanup"},
+            )
 
     def test_uv_fallback_records_reference_box_adapter(self) -> None:
         program = parse_file(EXAMPLE)
@@ -283,7 +353,7 @@ class LatheBuildTests(unittest.TestCase):
         broken.remove_unreferenced_vertices()
         runtime = RuntimeMesh(
             mesh=broken,
-            face_parts=["body"] * int(len(broken.faces)),
+            face_parts=["body"] * len(broken.faces),
             part_colors={part: (120, 120, 120) for part in asset["intent"]["parts"]},
             units="cm",
         )

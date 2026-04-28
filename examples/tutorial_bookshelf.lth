@@ -2,6 +2,67 @@
 // Intentionally minimal: one profile, one contract, one critic, one asset, one variant.
 module studio.props.furniture
 
+material stained_oak_body {
+  basecolor = [126, 88, 52]
+  metallic = 0.0
+  roughness = 0.64
+  roughness_range = [0.52, 0.78]
+  emissive = [0, 0, 0]
+  surface_profile = wood_grain
+  wear = 0.12
+  normal_intensity = 0.10
+}
+
+material matte_laminate_back {
+  basecolor = [84, 72, 60]
+  metallic = 0.0
+  roughness = 0.76
+  roughness_range = [0.66, 0.86]
+  emissive = [0, 0, 0]
+  surface_profile = painted_panel
+  wear = 0.06
+  normal_intensity = 0.04
+}
+
+material shadow_gap_paint {
+  basecolor = [36, 32, 28]
+  metallic = 0.0
+  roughness = 0.70
+  roughness_range = [0.60, 0.84]
+  emissive = [0, 0, 0]
+  surface_profile = painted_panel
+  wear = 0.08
+  normal_intensity = 0.06
+}
+
+pattern vertical_oak_grain {
+  family = linear_repeat
+  spacing_cm = 3.0
+  emphasis = wood_readability
+}
+
+pattern shelf_edge_wear {
+  family = edge_repeat
+  spacing_cm = 7.5
+  emphasis = contact_wear
+}
+
+palette warm_oak_laminate {
+  materials = [stained_oak_body, matte_laminate_back, shadow_gap_paint]
+}
+
+surface_program tutorial_bookshelf_hero {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [shelf_alignment_ticks, subtle_corner_wear]
+  patterns = [vertical_oak_grain, shelf_edge_wear]
+  zones.body = stained_oak_body
+  zones.shelves = stained_oak_body
+  zones.back = matte_laminate_back
+  zones.shadow_gaps = shadow_gap_paint
+}
+
 profile interior_prop {
   defaults {
     build.optimize.lods = 3
@@ -45,7 +106,7 @@ asset bookshelf: hard_surface_prop uses furniture_prop {
     role = "three-shelf wooden bookshelf"
     style = ["warm", "domestic", "utilitarian"]
     parts = [base, shelf1, shelf2, shelf3, back]
-    materials = ["stained_oak", "matte_laminate"]
+    materials = ["stained_oak", "matte_laminate", "shadow_gap_paint"]
     negatives = ["ornate", "toy_like", "rickety"]
     scale = 1.2m
     interactions = [place, lean_on]
@@ -64,8 +125,12 @@ asset bookshelf: hard_surface_prop uses furniture_prop {
   }
 
   surface {
-    material_zones = [stained_oak_body, matte_laminate_back]
-    materials = [stained_oak_body, matte_laminate_back]
+    program = tutorial_bookshelf_hero
+    patterns = [vertical_oak_grain, shelf_edge_wear]
+    palette = warm_oak_laminate
+    material_zones = [stained_oak_body, matte_laminate_back, shadow_gap_paint]
+    materials = [stained_oak_body, matte_laminate_back, shadow_gap_paint]
+    decals = [shelf_alignment_ticks, subtle_corner_wear]
     bake = [normal, ao, curvature, id]
   }
 
@@ -97,6 +162,7 @@ asset bookshelf: hard_surface_prop uses furniture_prop {
       maps = [basecolor, normal, orm]
       resolution = 2048px
       bakes = [ao, curvature, id]
+      decals = [shelf_alignment_ticks, subtle_corner_wear]
       id_map = true
     }
 
@@ -109,7 +175,7 @@ asset bookshelf: hard_surface_prop uses furniture_prop {
 
     interfaces {
       sockets = []
-      anchors = [floor_contact]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 1cm
     }
 
@@ -161,7 +227,7 @@ asset bookshelf: hard_surface_prop uses furniture_prop {
   publish {
     registry = "props/furniture/bookshelf"
     version = "0.1.0"
-    tags = ["bookshelf", "furniture", "tutorial"]
+    tags = ["decoration", "static", "interactable"]
     visibility = studio
     approval = required
     channel = dev

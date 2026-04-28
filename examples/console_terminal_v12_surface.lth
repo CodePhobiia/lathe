@@ -120,8 +120,8 @@ asset console_terminal_v12_surface: hard_surface_prop from console_terminal_fami
     }
 
     interfaces {
-      sockets = [power_socket]
-      anchors = [floor_contact]
+      sockets = [socket(id: power_socket, socket_type: port)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

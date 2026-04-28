@@ -16,9 +16,9 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from ...logging_utils import info as log_info
 from ...publish import get_driver
 from ..common import dump_json, relpath
-
 
 _LOG = logging.getLogger(__name__)
 
@@ -48,7 +48,11 @@ def run(executor: Any, package_bundle: dict[str, Any]) -> dict[str, Any]:
 
     bundle: dict[str, Any]
     if not target:
-        _LOG.info("publish stage: no runtime_config.publish.target configured; skipping")
+        log_info(
+            _LOG,
+            "lathe.core.stages.publish.skipped",
+            "publish stage: no runtime_config.publish.target configured; skipping",
+        )
         bundle = {
             "published": False,
             "driver": None,

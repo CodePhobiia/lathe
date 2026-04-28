@@ -14,7 +14,6 @@ wires argument parsing to the formatter API.
 from __future__ import annotations
 
 import difflib
-import json
 import sys
 from pathlib import Path
 
@@ -87,9 +86,7 @@ def run_fmt(args) -> None:
     _dump(summary)
 
     exit_code = 0
-    if any_failed:
-        exit_code = 1
-    elif mode_check and any_changed:
+    if any_failed or (mode_check and any_changed):
         exit_code = 1
     raise SystemExit(exit_code)
 

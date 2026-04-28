@@ -17,8 +17,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import trimesh
-from PIL import Image
-
 from lathe.bake_runtime import (
     apply_decal_overlays,
     bake_ao_map,
@@ -31,8 +29,9 @@ from lathe.bake_runtime import (
     bake_roughness_map,
     combine_orm,
     enhance_normal_map,
+    pad_low_coverage_atlas_maps,
 )
-
+from PIL import Image, ImageDraw
 
 SIZE = 64
 
@@ -250,3 +249,53 @@ class TestMalformedInputs:
         zones = [{"part": "body", "material": "x"}]  # no basecolor key
         with pytest.raises(KeyError):
             bake_id_map(mesh, face_parts, zones, SIZE)
+
+
+class TestLowCoverageAtlasPadding:
+    def test_authors_background_pixels(self) -> None:
+        size = 32
+        id_map = Image.new("RGB", (size, size), (8, 8, 8))
+        ImageDraw.Draw(id_map).rectangle([4, 4, 11, 11], fill=(92, 102, 116))
+        material_zones = [
+            {
+                "part": "body",
+                "material": "painted_steel_body",
+                "basecolor": [92, 102, 116],
+                "roughness": 0.54,
+                "roughness_range": [0.34, 0.76],
+                "emissive": [0, 0, 0],
+                "surface_profile": "painted_panel",
+            }
+        ]
+        basecolor = Image.new("RGB", (size, size), (8, 8, 8))
+        normal = Image.new("RGB", (size, size), (128, 128, 255))
+        roughness = Image.new("L", (size, size), 148)
+        ao = Image.new("L", (size, size), 200)
+        curvature = Image.new("L", (size, size), 128)
+        emissive = Image.new("RGB", (size, size), (0, 0, 0))
+
+        (
+            padded_base,
+            padded_normal,
+            padded_roughness,
+            padded_ao,
+            padded_curvature,
+            _,
+        ) = pad_low_coverage_atlas_maps(
+            id_map=id_map,
+            material_zones=material_zones,
+            basecolor=basecolor,
+            normal=normal,
+            roughness=roughness,
+            ao=ao,
+            curvature=curvature,
+            emissive=emissive,
+        )
+
+        background_pixel = (0, 0)
+        assert padded_base.getpixel(background_pixel) != (8, 8, 8)
+        assert padded_normal.getpixel(background_pixel) != (128, 128, 255)
+        assert padded_roughness.getpixel(background_pixel) != 148
+        assert padded_ao.getpixel(background_pixel) != 200
+        assert padded_curvature.getpixel(background_pixel) != 128
+        assert float(np.std(np.asarray(padded_normal.convert("RGB"))[:, :, 0])) > 0.0

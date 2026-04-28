@@ -22,12 +22,16 @@ def check_assets_and_variants(checker: Any) -> None:
     Args:
         checker: checker argument.
     """
-    names = [decl["name"] for decl in checker.program.get("assets", [])] + [decl["name"] for decl in checker.program.get("variants", [])]
+    names = [decl["name"] for decl in checker.program.get("assets", [])] + [
+        decl["name"] for decl in checker.program.get("variants", [])
+    ]
     for name in names:
         try:
             asset = checker.resolver.materialize_asset(name)
         except ResolutionError as exc:
-            checker.diagnostics.append(diag("L2102", "resolution_error", "error", "resolve", str(exc), asset=name))
+            checker.diagnostics.append(
+                diag("L2102", "resolution_error", "error", "resolve", str(exc), asset=name)
+            )
             continue
         check_materialized_asset(checker, asset)
 
@@ -46,7 +50,15 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
 
     if not intent.get("role"):
         checker.diagnostics.append(
-            diag("L4101", "missing_role", "error", "typecheck", "Asset intent.role is required", asset=asset_name, path="intent.role")
+            diag(
+                "L4101",
+                "missing_role",
+                "error",
+                "typecheck",
+                "Asset intent.role is required",
+                asset=asset_name,
+                path="intent.role",
+            )
         )
 
     if "scale" in intent and "dimensions" in intent:
@@ -77,7 +89,11 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
         )
 
     from_family = asset.get("from")
-    if from_family and from_family not in checker.resolver.family_map and from_family not in checker.resolver.kit_map:
+    if (
+        from_family
+        and from_family not in checker.resolver.family_map
+        and from_family not in checker.resolver.kit_map
+    ):
         checker.diagnostics.append(
             diag(
                 "L5211",
@@ -288,7 +304,9 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
             )
         )
 
-    fit_profile_name = asset.get("build", {}).get("shape", {}).get("fit_profile") or asset.get("fit", {}).get("profile")
+    fit_profile_name = asset.get("build", {}).get("shape", {}).get("fit_profile") or asset.get("fit", {}).get(
+        "profile"
+    )
     if fit_profile_name and fit_profile_name not in checker.resolver.fit_profile_map:
         checker.diagnostics.append(
             diag(
@@ -301,7 +319,9 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
                 path="build.shape.fit_profile",
             )
         )
-    reconstruct_policy_name = asset.get("build", {}).get("shape", {}).get("reconstruct_policy") or asset.get("fit", {}).get("reconstruct_policy")
+    reconstruct_policy_name = asset.get("build", {}).get("shape", {}).get("reconstruct_policy") or asset.get(
+        "fit", {}
+    ).get("reconstruct_policy")
     if reconstruct_policy_name and reconstruct_policy_name not in checker.resolver.reconstruct_policy_map:
         checker.diagnostics.append(
             diag(
@@ -314,7 +334,9 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
                 path="build.shape.reconstruct_policy",
             )
         )
-    adapt_policy_name = asset.get("build", {}).get("shape", {}).get("adapt_policy") or asset.get("transfer", {}).get("adapt_policy")
+    adapt_policy_name = asset.get("build", {}).get("shape", {}).get("adapt_policy") or asset.get(
+        "transfer", {}
+    ).get("adapt_policy")
     if adapt_policy_name and adapt_policy_name not in checker.resolver.adapt_policy_map:
         checker.diagnostics.append(
             diag(
@@ -327,7 +349,9 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
                 path="build.shape.adapt_policy",
             )
         )
-    assembly_policy_name = asset.get("build", {}).get("shape", {}).get("assembly_policy") or asset.get("constraints", {}).get("assembly_policy")
+    assembly_policy_name = asset.get("build", {}).get("shape", {}).get("assembly_policy") or asset.get(
+        "constraints", {}
+    ).get("assembly_policy")
     if assembly_policy_name and assembly_policy_name not in checker.resolver.assembly_policy_map:
         checker.diagnostics.append(
             diag(
@@ -358,21 +382,55 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
     mode = shape.get("mode")
     if mode == "reconstruct" and not (refs.get("images") or refs.get("meshes")):
         checker.diagnostics.append(
-            diag("L4102", "missing_reconstruct_input", "error", "build", "reconstruct mode requires refs.images or refs.meshes", asset=asset_name, stage="shape", suggested_repairs=["rebuild_shape"])
+            diag(
+                "L4102",
+                "missing_reconstruct_input",
+                "error",
+                "build",
+                "reconstruct mode requires refs.images or refs.meshes",
+                asset=asset_name,
+                stage="shape",
+                suggested_repairs=["rebuild_shape"],
+            )
         )
     if mode == "adapt" and not (refs.get("meshes") or refs.get("assets")):
         checker.diagnostics.append(
-            diag("L4103", "missing_adapt_input", "error", "build", "adapt mode requires refs.meshes or refs.assets", asset=asset_name, stage="shape", suggested_repairs=["rebuild_shape"])
+            diag(
+                "L4103",
+                "missing_adapt_input",
+                "error",
+                "build",
+                "adapt mode requires refs.meshes or refs.assets",
+                asset=asset_name,
+                stage="shape",
+                suggested_repairs=["rebuild_shape"],
+            )
         )
     if mode == "assemble" and not refs.get("assets") and not asset.get("assembly", {}).get("resolved_kit"):
         checker.diagnostics.append(
-            diag("L4104", "missing_assemble_input", "error", "build", "assemble mode requires refs.assets", asset=asset_name, stage="shape")
+            diag(
+                "L4104",
+                "missing_assemble_input",
+                "error",
+                "build",
+                "assemble mode requires refs.assets",
+                asset=asset_name,
+                stage="shape",
+            )
         )
 
     rig = build.get("rig", {})
     if rig.get("type") == "none" and rig.get("joints"):
         checker.diagnostics.append(
-            diag("L4201", "rig_none_with_joints", "error", "typecheck", "rig.type = none requires joints to be empty", asset=asset_name, path="build.rig.joints")
+            diag(
+                "L4201",
+                "rig_none_with_joints",
+                "error",
+                "typecheck",
+                "rig.type = none requires joints to be empty",
+                asset=asset_name,
+                path="build.rig.joints",
+            )
         )
     part_names = set(intent.get("parts", []))
     for joint in rig.get("joints", []):
@@ -392,25 +450,57 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
     uv = build.get("uv", {})
     if uv.get("tile_mode") == "zero_to_one" and uv.get("udims"):
         checker.diagnostics.append(
-            diag("L4301", "udims_with_zero_to_one", "error", "typecheck", "uv.udims must be empty when tile_mode = zero_to_one", asset=asset_name, path="build.uv.udims")
+            diag(
+                "L4301",
+                "udims_with_zero_to_one",
+                "error",
+                "typecheck",
+                "uv.udims must be empty when tile_mode = zero_to_one",
+                asset=asset_name,
+                path="build.uv.udims",
+            )
         )
 
     physics = build.get("physics", {})
     if physics.get("collision") == "convex_decomp" and int(physics.get("max_hulls", 0)) < 1:
         checker.diagnostics.append(
-            diag("L4401", "invalid_max_hulls", "error", "typecheck", "physics.max_hulls must be >= 1 for convex_decomp", asset=asset_name, path="build.physics.max_hulls")
+            diag(
+                "L4401",
+                "invalid_max_hulls",
+                "error",
+                "typecheck",
+                "physics.max_hulls must be >= 1 for convex_decomp",
+                asset=asset_name,
+                path="build.physics.max_hulls",
+            )
         )
 
     threshold = validate.get("threshold", 0.80)
     if not isinstance(threshold, (int, float)) or not (0 <= float(threshold) <= 1):
         checker.diagnostics.append(
-            diag("L4501", "invalid_threshold", "error", "typecheck", "validate.threshold must be in [0,1]", asset=asset_name, path="validate.threshold")
+            diag(
+                "L4501",
+                "invalid_threshold",
+                "error",
+                "typecheck",
+                "validate.threshold must be in [0,1]",
+                asset=asset_name,
+                path="validate.threshold",
+            )
         )
 
     for rule in validate.get("rules", []):
         if rule.get("kind") == "prefer" and "weight" in rule and float(rule["weight"]) <= 0:
             checker.diagnostics.append(
-                diag("L4502", "non_positive_prefer_weight", "error", "typecheck", "prefer weights must be positive", asset=asset_name, path="validate.rules")
+                diag(
+                    "L4502",
+                    "non_positive_prefer_weight",
+                    "error",
+                    "typecheck",
+                    "prefer weights must be positive",
+                    asset=asset_name,
+                    path="validate.rules",
+                )
             )
 
     check_interfaces(checker, asset)

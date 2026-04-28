@@ -4,7 +4,11 @@
     "strict": false,
     "providers": {
       "hunyuan2_1_http": {
-        "base_url": "http://localhost:8081"
+        "base_url": "http://localhost:8081",
+        "timeout_s": 600,
+        "url_allowlist": [
+          "localhost"
+        ]
       },
       "vggt_local": {
         "weights": "facebook/VGGT-1B",

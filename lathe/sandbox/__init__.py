@@ -9,14 +9,13 @@ scrubbing + stderr scanning provided by ``run_sandboxed``.
 from __future__ import annotations
 
 from .blender import (
-    BlenderSandboxResult,
     DEFAULT_BLENDER_TIMEOUT_S,
+    BlenderSandboxResult,
     run_blender_sandboxed,
 )
 
-
 __all__ = [
-    "BlenderSandboxResult",
     "DEFAULT_BLENDER_TIMEOUT_S",
+    "BlenderSandboxResult",
     "run_blender_sandboxed",
 ]

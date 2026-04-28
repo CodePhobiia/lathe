@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import time
 import unittest
+from typing import ClassVar
 
 import numpy as np
-
 from lathe.errors import ContractViolation
 from lathe.fidelity import FidelityProfile
 from lathe.geometry_kernel import (
@@ -62,11 +62,19 @@ def _shape_ir(
     )
 
 
-def _box(part: str, center: tuple[float, float, float], extents: tuple[float, float, float] = (2.0, 2.0, 2.0)) -> ShapePrimitive:
+def _box(
+    part: str,
+    center: tuple[float, float, float],
+    extents: tuple[float, float, float] = (2.0, 2.0, 2.0),
+) -> ShapePrimitive:
     return ShapePrimitive(primitive_type="box", part=part, center=center, extents=extents)
 
 
-def _region_for(part: str, center: tuple[float, float, float], extents: tuple[float, float, float] = (2.0, 2.0, 2.0)) -> ShapeRegion:
+def _region_for(
+    part: str,
+    center: tuple[float, float, float],
+    extents: tuple[float, float, float] = (2.0, 2.0, 2.0),
+) -> ShapeRegion:
     return ShapeRegion(name=f"r_{part}", part=part, component="hull", center=center, extents=extents)
 
 
@@ -291,8 +299,8 @@ class AssignFacePartsTests(unittest.TestCase):
 
         # Fake a trimesh-like object exposing triangles_center
         class _FakeMesh:
-            faces = [0, 1]
-            triangles_center = np.array(
+            faces: ClassVar[list[int]] = [0, 1]
+            triangles_center: ClassVar[np.ndarray] = np.array(
                 [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0]], dtype=np.float64
             )
 
@@ -311,8 +319,8 @@ class AssignFacePartsTests(unittest.TestCase):
         )
 
         class _FakeMesh:
-            faces = [0]
-            triangles_center = np.array([[5.0, 50.0, 50.0]], dtype=np.float64)
+            faces: ClassVar[list[int]] = [0]
+            triangles_center: ClassVar[np.ndarray] = np.array([[5.0, 50.0, 50.0]], dtype=np.float64)
 
         parts = _assign_face_parts(_FakeMesh(), shape_ir)
         self.assertEqual(len(parts), 1)

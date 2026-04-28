@@ -1,6 +1,6 @@
 # Houdini HDA + SideFX Labs — manual run instructions
 
-_Status: stub. No Houdini runs have been executed in this study yet._
+_Status: not_run. No Houdini runs have been executed in this study yet._
 
 This is the non-AI procedural baseline: a senior TA authors an HDA (Houdini
 Digital Asset) parameterized to match the `.lth` intent, and SideFX Labs tools

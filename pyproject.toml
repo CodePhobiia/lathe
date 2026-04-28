@@ -138,7 +138,60 @@ src = ["lathe"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "SIM", "RET", "C90", "N", "D", "PL", "TRY", "BLE", "PTH", "RUF", "S"]
-ignore = ["D203", "D213", "PLR0913"]
+ignore = [
+  # Pydocstyle defaults that conflict with the Google convention.
+  "D203",
+  "D213",
+
+  # Lathe's current codebase has a large legacy style baseline. Keep Ruff
+  # enforcing import hygiene, syntax, most bug-prone constructs, and formatting
+  # while the high-churn style and boundary-pattern families below are paid
+  # down deliberately in smaller follow-up changes.
+  "BLE001",
+  "C901",
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D104",
+  "D107",
+  "D205",
+  "D301",
+  "E402",
+  "E501",
+  "N801",
+  "N802",
+  "N803",
+  "N806",
+  "N812",
+  "N814",
+  "N818",
+  "PLC0415",
+  "PLR0911",
+  "PLR0912",
+  "PLR0913",
+  "PLR0915",
+  "PLR2004",
+  "PLW1510",
+  "PLW0108",
+  "PLW0602",
+  "PLW0603",
+  "PTH100",
+  "PTH102",
+  "PTH112",
+  "PTH118",
+  "RUF005",
+  "RUF012",
+  "S603",
+  "SIM103",
+  "SIM108",
+  "SIM112",
+  "SIM117",
+  "TRY003",
+  "TRY004",
+  "TRY300",
+  "TRY301",
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 12
@@ -171,16 +224,36 @@ branch = true
 omit = ["lathe/scaffolds/*", "lathe/__init__.py"]
 
 [tool.coverage.report]
-# Ratchet gate at 65 (current measured: 69.66%); 85 target tracked as BL-39.
+# Shared coverage ratchet. Keep this in sync with .coveragerc; CI must not
+# override it with --cov-fail-under. BL-39 tracks the long-term 85% target.
 fail_under = 65
 show_missing = true
 skip_covered = false
+precision = 2
+exclude_lines = [
+  "pragma: no cover",
+]
 
 [tool.coverage.html]
 directory = "htmlcov"
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+[tool.lathe.coverage_gates]
+# Coverage.py has one native fail_under gate. These Lathe-local package gates
+# are enforced by tests/unit/test_coverage_policy.py against an explicit
+# coverage XML report.
+parser = { fail_under = 60, paths = ["lathe/parser"] }
+resolver = { fail_under = 90, paths = ["lathe/resolver.py"] }
+checker = { fail_under = 70, paths = ["lathe/checker"] }
+planner = { fail_under = 90, paths = ["lathe/planner.py"] }
+provider_config = { fail_under = 75, paths = ["lathe/runtime_config.py", "lathe/providers/registry.py", "lathe/providers/selection.py"] }
+sandboxing = { fail_under = 55, paths = ["lathe/sandbox", "lathe/subproc.py"] }
+cache = { fail_under = 70, paths = ["lathe/cache.py"] }
+cli = { fail_under = 35, paths = ["lathe/cli"] }
+telemetry = { fail_under = 80, paths = ["lathe/telemetry.py"] }
+security = { fail_under = 75, paths = ["lathe/parser/prompt_injection.py", "lathe/net.py", "lathe/publish/signed_repro.py"] }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -191,6 +264,11 @@ markers = [
   "requires_torch: skipped unless torch is importable",
   "requires_network: skipped unless LATHE_TESTS_ALLOW_NETWORK=1",
   "bug_regression: regression test for an audit finding (tests/bugs/)",
+  "contract: stable public contract tests",
+  "golden: snapshot/golden tests",
+  "property: Hypothesis/property tests",
+  "fuzz: parser/normalizer fuzz tests",
+  "slow: long-running tests kept out of the fast PR matrix",
 ]
 
 [tool.uv]

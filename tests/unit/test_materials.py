@@ -94,6 +94,18 @@ class TestAssignMaterialZones:
         assert zones_by_part["body"]["material"] == "oak"
         assert zones_by_part["body"]["surface_profile"] == "wood_grain"
 
+    def test_component_material_survives_broad_substring_zone_override(self) -> None:
+        asset = _asset(["painted_steel_body", "smoked_glass_screen"], ["screen_panel"])
+        asset["surface"]["zones"] = {"panel": "painted_steel_body", "screen": "smoked_glass_screen"}
+        asset["assembly"]["resolved_components"] = [
+            {"values": {"part": "screen_panel", "material_zone": "smoked_glass_screen"}}
+        ]
+
+        zones = assign_material_zones(asset, ["screen_panel"])
+
+        assert zones[0]["material"] == "smoked_glass_screen"
+        assert zones[0]["surface_profile"] == "screen_glass"
+
     def test_empty_materials_falls_back_to_default_body(self) -> None:
         asset = _asset([], ["body"])
         zones = assign_material_zones(asset, ["body"])
@@ -102,9 +114,7 @@ class TestAssignMaterialZones:
 
     def test_palette_resolved_palette_extends_materials(self) -> None:
         asset = _asset(["aluminum"], ["body", "frame"])
-        asset["surface"]["resolved_palette"] = {
-            "values": {"materials": ["brass"]}
-        }
+        asset["surface"]["resolved_palette"] = {"values": {"materials": ["brass"]}}
         zones = assign_material_zones(asset, ["body", "frame"])
         # palette materials extend the surface materials list; "frame"
         # is in the secondary-token set so it picks up the second entry.

@@ -86,7 +86,7 @@ Subject: `Lathe + <company>: parseable pass/fail for 3D-asset agent tasks?`
 Hi <name>,
 
 I'm <maintainer> building Lathe — a declarative 3D-asset compiler that
-emits a parseable pass/fail signal (exit code + `trace.json`) for
+emits a parseable pass/fail signal (exit code + `stages/package/trace_manifest.json`) for
 agents to consume. `.lth` source is text and diff-native; failures are
 `[stage:rule] value (reason) at: file:line`. Built so your agent can
 verify a 3D-asset change the same way it verifies a unit-test pass.
@@ -102,7 +102,7 @@ verification gap>, which is exactly the class of failure Lathe targets.
 The ask: 3-month co-dev LOI.
 - Your agents exercise Lathe on real tasks. You tell us where it
   breaks, where the trace is unreadable, what schema you wish
-  `trace.json` exposed.
+  `stages/package/trace_manifest.json` exposed.
 - Monthly 60-min sync. You get direct input on the `agents.md`
   listing + the five framework adapters (Claude Code, Continue,
   Cursor, OpenHands, Devin).

@@ -1,0 +1,59 @@
+usage: lathe [-h] [--debug-traceback] [--strict-prompt-injection]
+             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry} ...
+
+Lathe language reference scaffold
+
+positional arguments:
+  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry}
+    parse               Parse a .lth file to raw AST JSON
+    normalize           Normalize a .lth file to canonical JSON
+    fmt                 Rewrite Lathe sources in canonical form
+    schema              Emit the normalized AST JSON schema
+    backends            List builtin backend contracts and stacks
+    shape-providers     List available shape provider adapters
+    completions         Emit static shell completion scripts
+    probe-providers     Probe shape provider availability in the current runtime
+    doctor              Inspect the local Lathe environment and backend/provider availability
+    check               Run semantic checks
+    plan                Emit the effective build plan for an asset or variant
+    materialize         Materialize one asset or variant after uses and patches
+    build               Execute the first runnable backend stack and package outputs
+    probe-blender       Probe Blender availability and V1.3 execution capabilities
+    export-blend        Report or copy the retained .blend artifact for a completed build
+    inspect-blend       Inspect the retained V1.3 .blend artifact summary for a completed build
+    render-eval         Build an asset and emit V1.3 render-eval evidence
+    bridge              Operate on V1.3.1 Lathe-Blender bridge plans and diagnostics
+    inspect             Inspect V1.3.1 evidence from a completed build
+    serve               Serve a completed build's .glb via a local <model-viewer> page
+    render-fixture      Report render-fixture evidence from a completed build
+    bake-audit          Report bake evidence and missing bake diagnostics from a completed build
+    library             Operate on V1.3 library bindings
+    surface-plan        Explain V1.2 surface authoring for an asset
+    surface-build       Run the V1.2 surface stage with required upstream prerequisites
+    surface-validate    Evaluate only V1.2 surface outputs
+    surface-repair      Attempt V1.2 zone-local surface repair
+    fit                 Explain deterministic fit/reference inputs for an asset
+    adapt               Build an asset in adapt mode
+    assemble            Build an asset in assemble mode
+    reconstruct         Build an asset in reconstruct mode
+    test                Execute Lathe-defined source tests
+    bench               Execute Lathe-defined source benchmarks
+    audit               Run benchmark/style of workspace audit for the current Lathe repo
+    explain             Explain why a build passed, failed, or selected a candidate
+    explain-fit         Explain fit/reference/transfer inputs for a completed build
+    diff-asset          Diff two materialized assets
+    patch               Apply a semantic patch operation and emit normalized JSON
+    ref                 Operate on @lathe[...] semantic references (Phase 1: non-geometric)
+    cache               Inspect, clean, and warm the Lathe build cache
+    diff                Compare two .lathe_snapshot.json files (RPT-5)
+    publish             Publish a completed build to a configured target
+    snapshot            Emit a canonical hash-based snapshot for a completed build
+    telemetry           Manage opt-in anonymous build-ping telemetry
+
+options:
+  -h, --help            show this help message and exit
+  --debug-traceback     Show Python tracebacks for unexpected CLI failures. Also settable via
+                        LATHE_DEBUG_TRACEBACK=1.
+  --strict-prompt-injection
+                        SEC-8: promote prompt-injection scanner warnings (L7001-L7005) to errors.
+                        Also settable via LATHE_STRICT_PROMPT_INJECTION=1.

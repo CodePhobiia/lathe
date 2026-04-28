@@ -16,6 +16,7 @@ extends Control
 ## without snapshot mtime advancing.
 
 const WATCH_DIR := "res://lathe_out"
+const CURRENT_MANIFEST_REL := "stages/package/package_manifest.json"
 
 const _GREEN := Color(0.45, 0.85, 0.45)
 const _RED := Color(0.95, 0.4, 0.4)
@@ -77,10 +78,17 @@ func on_asset_imported(record: Dictionary) -> void:
 	_current_asset = asset_id
 	var manifest_path: String = record.get("manifest_path", "")
 	if not manifest_path.is_empty():
-		_current_build_dir = manifest_path.get_base_dir()
+		_current_build_dir = _build_dir_for_manifest(manifest_path)
 	else:
 		_current_build_dir = "%s/%s" % [WATCH_DIR, asset_id]
 	refresh()
+
+
+func _build_dir_for_manifest(manifest_path: String) -> String:
+	var current_suffix := "/%s" % CURRENT_MANIFEST_REL
+	if manifest_path.ends_with(current_suffix):
+		return manifest_path.substr(0, manifest_path.length() - current_suffix.length())
+	return manifest_path.get_base_dir()
 
 
 func refresh() -> void:

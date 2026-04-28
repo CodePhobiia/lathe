@@ -1,4 +1,4 @@
-"""Path-hardening utilities (SEC-1).
+r"""Path-hardening utilities (SEC-1).
 
 ``safe_resolve`` canonicalizes a user-supplied path under an explicit
 workspace root and rejects hostile inputs: absolute paths, ``..``
@@ -16,6 +16,7 @@ import sys
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .errors import LatheError
+from .security import InputClass, TrustLevel, boundary_policy, ingress_boundary
 
 
 class PathGuardError(LatheError):
@@ -23,9 +24,7 @@ class PathGuardError(LatheError):
 
 
 _WIN_RESERVED_NAMES = frozenset(
-    {"CON", "PRN", "AUX", "NUL"}
-    | {f"COM{i}" for i in range(1, 10)}
-    | {f"LPT{i}" for i in range(1, 10)}
+    {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {f"LPT{i}" for i in range(1, 10)}
 )
 
 # 8.3 short-name pattern: component stem contains ``~<digits>``.
@@ -33,18 +32,47 @@ _SHORT_NAME_RE = re.compile(r"~\d+")
 
 # Prefixes that reference device namespace or extended-length paths.
 _DEVICE_PREFIXES = ("\\\\?\\", "\\\\.\\", "//?/", "//./")
+_WINDOWS_DRIVE_PREFIX_LENGTH = 2
+_ERR_NUL_BYTE = "NUL byte in path"
+_ERR_DEVICE_PREFIX = "device/extended-length prefix not allowed"
+_ERR_ALT_STREAM = "alternate data stream / drive designator in component"
+_ERR_TRAILING_DOT_SPACE = "trailing dot or space in component"
+_ERR_SHORT_NAME = "8.3 short-name pattern in component"
+_ERR_RESERVED_DEVICE = "Windows reserved device name in component"
+_ERR_ABSOLUTE_PATH = "absolute path not allowed"
+
+_PATH_BOUNDARY = boundary_policy(
+    name="user_path_resolution",
+    input_class=InputClass.ASSET_REF_PATH,
+    trust_level=TrustLevel.UNTRUSTED,
+    controls=(
+        "relative_only",
+        "canonicalize_under_root",
+        "reject_traversal_escape",
+        "reject_symlink_reparse",
+        "reject_windows_device_names",
+    ),
+)
 
 
 def _reject(msg: str, user: object) -> PathGuardError:
     return PathGuardError(f"{msg}: {user!r}")
 
 
+def _symlink_error(path: Path) -> PathGuardError:
+    return PathGuardError(f"symlink/reparse point in path: {path!s}")
+
+
+def _path_escape_error(root: Path, user: str) -> PathGuardError:
+    return _reject(f"path escapes root {root!s}", user)
+
+
 def _check_raw_string(user_str: str) -> None:
     if "\x00" in user_str:
-        raise _reject("NUL byte in path", user_str)
+        raise _reject(_ERR_NUL_BYTE, user_str)
     for prefix in _DEVICE_PREFIXES:
         if user_str.startswith(prefix):
-            raise _reject("device/extended-length prefix not allowed", user_str)
+            raise _reject(_ERR_DEVICE_PREFIX, user_str)
 
 
 def _is_absolute_user_path(user_str: str) -> bool:
@@ -62,9 +90,7 @@ def _is_absolute_user_path(user_str: str) -> bool:
         return True
     # Drive-relative paths like ``C:foo`` (no separator) are still
     # suspicious — treat as absolute for rejection purposes.
-    if len(user_str) >= 2 and user_str[1] == ":" and user_str[0].isalpha():
-        return True
-    return False
+    return len(user_str) >= _WINDOWS_DRIVE_PREFIX_LENGTH and user_str[1] == ":" and user_str[0].isalpha()
 
 
 def _split_components(user_str: str) -> list[str]:
@@ -75,14 +101,14 @@ def _split_components(user_str: str) -> list[str]:
 
 def _check_component(component: str, user_str: str) -> None:
     if ":" in component:
-        raise _reject("alternate data stream / drive designator in component", user_str)
+        raise _reject(_ERR_ALT_STREAM, user_str)
     if component.endswith(".") or component.endswith(" "):
-        raise _reject("trailing dot or space in component", user_str)
+        raise _reject(_ERR_TRAILING_DOT_SPACE, user_str)
     if _SHORT_NAME_RE.search(component):
-        raise _reject("8.3 short-name pattern in component", user_str)
+        raise _reject(_ERR_SHORT_NAME, user_str)
     stem = component.split(".", 1)[0].upper()
     if stem in _WIN_RESERVED_NAMES:
-        raise _reject("Windows reserved device name in component", user_str)
+        raise _reject(_ERR_RESERVED_DEVICE, user_str)
 
 
 def _is_reparse_point(path: Path) -> bool:
@@ -121,7 +147,7 @@ def _walk_for_reparse(
     """
     for current in (candidate, *candidate.parents):
         if _is_reparse_point(current):
-            raise PathGuardError(f"symlink/reparse point in path: {current!s}")
+            raise _symlink_error(current)
         # Stop once we hit the workspace root (or above it).
         try:
             resolved_current = Path(os.path.realpath(current))
@@ -130,17 +156,19 @@ def _walk_for_reparse(
         if resolved_current == root_resolved:
             break
     if _is_reparse_point(target_resolved):
-        raise PathGuardError(f"symlink/reparse point in path: {target_resolved!s}")
+        raise _symlink_error(target_resolved)
 
 
 def _is_within(child: Path, root: Path) -> bool:
     try:
         child.relative_to(root)
-        return True
     except ValueError:
         return False
+    else:
+        return True
 
 
+@ingress_boundary(_PATH_BOUNDARY)
 def safe_resolve(
     root: Path | str,
     user: str | Path,
@@ -167,7 +195,7 @@ def safe_resolve(
     _check_raw_string(user_str)
 
     if _is_absolute_user_path(user_str):
-        raise _reject("absolute path not allowed", user_str)
+        raise _reject(_ERR_ABSOLUTE_PATH, user_str)
 
     components = _split_components(user_str)
     for component in components:
@@ -184,7 +212,7 @@ def safe_resolve(
     resolved = Path(os.path.realpath(candidate))
 
     if not _is_within(resolved, root_resolved) and resolved != root_resolved:
-        raise _reject(f"path escapes root {root_resolved!s}", user_str)
+        raise _path_escape_error(root_resolved, user_str)
 
     if not allow_symlinks:
         _walk_for_reparse(root_resolved, candidate, resolved)

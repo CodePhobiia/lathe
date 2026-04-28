@@ -5,6 +5,10 @@ forward-looking regression gate.
 
 ## Files
 
+- `manifest.json` - authored per-hero, per-stage ceilings consumed by
+  `python scripts/profile_heroes.py --manifest`. This is the CI-facing
+  regression gate for common hero builds.
+
 - `budgets.json` — current source of truth. Schema:
   ```json
   {
@@ -14,7 +18,7 @@ forward-looking regression gate.
         "stages": {
           "<stage>": {
             "current_ms": 1234.5,
-            "source": "build_report" | "mtime_delta" | "mtime_delta_first_stage_unknown" | "stage_not_present",
+            "source": "build_report" | "mtime_delta" | "mtime_delta_first_stage_unknown" | "mtime_delta_untrusted_cache_mtime" | "stage_not_present",
             "budget_ms": 1481.4
           }
         },
@@ -58,7 +62,7 @@ python scripts/profile_heroes.py --verify
 `--write` is the default mode. `--only NAME` is additive — it merges
 into the existing `budgets.json` rather than replacing it.
 
-## Wave 4.IV.f scope (current)
+## Current Gate
 
 - Script: `scripts/profile_heroes.py`.
 - Per-stage timings: opportunistic. We prefer
@@ -66,15 +70,18 @@ into the existing `budgets.json` rather than replacing it.
   wire it later) and fall back to **bundle-file mtime deltas** when the
   executor has not been instrumented yet. mtime deltas are coarse but
   monotonic enough for "did this stage just get 5x slower" detection.
-- The regression gate runs **on demand only** (`--verify`). It is **not
-  wired into CI** in Wave 4.IV.f.
+- The authored manifest gate runs in `.github/workflows/benchmarks.yml`
+  and can be run locally with `python scripts/profile_heroes.py --manifest`.
+  The legacy inferred-budget gate remains available with `--verify`.
 
 ### Known limitations
 
-- Re-profiling a hero whose build cache is warm yields stage `current_ms`
-  values from the **cached** stages, not from re-execution. The
-  resulting `wall_ms` is the cache-hit total. To baseline a clean run,
-  delete `tmp_profile/<hero>/` first.
+- Re-profiling a hero whose build cache is warm may copy stage artifacts
+  with preserved historical mtimes. Those stages are now reported as
+  `current_ms: null` with `source: "mtime_delta_untrusted_cache_mtime"`
+  instead of producing false regressions. The resulting `wall_ms` is the
+  cache-hit total. To baseline a clean run, delete `tmp_profile/<hero>/`
+  and the relevant Lathe build cache first.
 - The `shape` stage is always `current_ms: null` under mtime deltas
   because there is no prior bundle to subtract from. Real wall time is
   encoded in `wall_ms - sum(stages_after_shape)`.
@@ -87,11 +94,9 @@ into the existing `budgets.json` rather than replacing it.
    `build_report["stages"][<stage>]["elapsed_ms"]`. Drops the mtime
    fallback to "diagnostic only" status.
 2. Add `--clean` to `profile_heroes.py` to force a cache-cold rebuild.
-3. Wire `--verify` into the GitHub Actions workflow on PRs that touch
-   `lathe/` paths. Fail the workflow if any stage regresses by >20%.
-4. Move from a single global `BUDGET_HEADROOM = 1.20` to per-stage
+3. Move from a single global `BUDGET_HEADROOM = 1.20` to per-stage
    tuned headroom (e.g. shape = 1.30, validate = 1.10).
-5. Track cross-hero medians and percentiles from the
+4. Track cross-hero medians and percentiles from the
    `heroes_<UTC-date>.json` historical record; surface in the
    benchmarks scoreboard.
 

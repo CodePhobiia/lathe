@@ -12,8 +12,8 @@ def run_doctor(args) -> None:
     Args:
         args: args argument.
     """
-    from . import collect_doctor_report, dump_doctor_json, format_doctor_report
     from ..doctor import collect_plugin_report, format_plugin_report
+    from . import collect_doctor_report, dump_doctor_json, format_doctor_report
 
     if getattr(args, "plugins", False):
         report = collect_plugin_report()
@@ -25,7 +25,9 @@ def run_doctor(args) -> None:
             print(format_plugin_report(report))
         return
 
-    runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+    runtime_config = (
+        load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+    )
     report = collect_doctor_report(runtime_config)
     print(dump_doctor_json(report) if args.json else format_doctor_report(report))
 
@@ -60,7 +62,9 @@ def run_probe_providers(args) -> None:
     """
     from ..shape_providers import probe_all_shape_providers
 
-    runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+    runtime_config = (
+        load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+    )
     _dump({"shape_providers": probe_all_shape_providers(runtime_config)})
 
 
@@ -72,5 +76,7 @@ def run_probe_blender(args) -> None:
     """
     from ..capabilities import probe_blender
 
-    runtime_config = load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+    runtime_config = (
+        load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+    )
     _dump(probe_blender(runtime_config))

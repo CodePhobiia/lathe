@@ -17,10 +17,15 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Callable, Iterable, Protocol, runtime_checkable
+from collections.abc import Callable, Iterable
+from importlib import import_module
+from importlib.metadata import entry_points
+from typing import Any, Protocol, runtime_checkable
 
 import trimesh
 
+from ..logging_utils import info as log_info
+from ..logging_utils import warning as log_warning
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,12 +33,43 @@ MANIFOLD_KERNEL_ID = "lathe.geometry.manifold_v1"
 REFERENCE_KERNEL_ID = "lathe.geometry.reference_v1"
 
 
-class GeometryKernelUnavailable(RuntimeError):
+class GeometryKernelUnavailableError(RuntimeError):
     """Raised when a named kernel cannot be instantiated (deps missing)."""
 
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        kernel: str | None = None,
+        source: str | None = None,
+    ) -> None:
+        """Build an unavailable-kernel message."""
+        if message is None and kernel is not None and source is not None:
+            message = (
+                f"geometry kernel {kernel!r} requested via {source} but its backing library is not importable"
+            )
+        elif message is None:
+            message = (
+                "no geometry kernel could be instantiated; reference kernel factory failed "
+                "(this should be unreachable - the reference kernel depends only on trimesh)"
+            )
+        super().__init__(message)
 
-class UnknownGeometryKernel(KeyError):
+
+GeometryKernelUnavailable = GeometryKernelUnavailableError
+
+
+class UnknownGeometryKernelError(KeyError):
     """Raised when the requested kernel name has no registered factory."""
+
+    def __init__(self, source: str, kernel: str, registered: Iterable[str]) -> None:
+        """Build an unknown-kernel message with the known registry entries."""
+        super().__init__(
+            f"{source}={kernel!r} is not a registered kernel. Registered: {sorted(registered)!r}"
+        )
+
+
+UnknownGeometryKernel = UnknownGeometryKernelError
 
 
 @runtime_checkable
@@ -59,7 +95,7 @@ class GeometryKernel(Protocol):
         """Boolean union."""
 
     def difference(self, a: Any, b: Any) -> Any:
-        """Boolean difference (``a \\ b``)."""
+        r"""Boolean difference (``a \\ b``)."""
 
     def intersection(self, a: Any, b: Any) -> Any:
         """Boolean intersection."""
@@ -81,7 +117,7 @@ KernelFactory = Callable[[], GeometryKernel]
 
 
 _REGISTRY: dict[str, KernelFactory] = {}
-_ENTRY_POINTS_LOADED = False
+_ENTRY_POINTS_LOADED: set[str] = set()
 
 
 def register_geometry_kernel(name: str, factory: KernelFactory) -> None:
@@ -109,11 +145,11 @@ def _ensure_builtins_registered() -> None:
     module at top level for the Protocol.
     """
     if MANIFOLD_KERNEL_ID not in _REGISTRY:
-        from . import manifold_kernel as _manifold_mod
+        _manifold_mod = import_module(".manifold_kernel", __package__)
 
         register_geometry_kernel(MANIFOLD_KERNEL_ID, _manifold_mod.manifold_kernel)
     if REFERENCE_KERNEL_ID not in _REGISTRY:
-        from . import reference_kernel as _reference_mod
+        _reference_mod = import_module(".reference_kernel", __package__)
 
         register_geometry_kernel(REFERENCE_KERNEL_ID, _reference_mod.reference_kernel)
 
@@ -124,14 +160,9 @@ def _load_entry_point_kernels() -> None:
     Runs once per process. Failures are logged and ignored so a broken
     plugin cannot take down the resolver.
     """
-    global _ENTRY_POINTS_LOADED
     if _ENTRY_POINTS_LOADED:
         return
-    _ENTRY_POINTS_LOADED = True
-    try:
-        from importlib.metadata import entry_points
-    except ImportError:
-        return
+    _ENTRY_POINTS_LOADED.add("loaded")
     try:
         eps = entry_points(group="lathe.geometry_kernels")
     except TypeError:
@@ -143,8 +174,14 @@ def _load_entry_point_kernels() -> None:
             continue
         try:
             factory = ep.load()
-        except Exception as exc:  # noqa: BLE001 — plugin isolation
-            _LOGGER.warning("geometry kernel plugin %r failed to load: %s", ep.name, exc)
+        except (ImportError, AttributeError, TypeError, ValueError, RuntimeError, OSError) as exc:
+            log_warning(
+                _LOGGER,
+                "lathe.geometry.kernel.plugin_load_failed",
+                "geometry kernel plugin {entry_point!r} failed to load: {error}",
+                entry_point=ep.name,
+                error=exc,
+            )
             continue
         register_geometry_kernel(ep.name, factory)
 
@@ -156,7 +193,13 @@ def _instantiate(name: str) -> GeometryKernel | None:
     try:
         return factory()
     except GeometryKernelUnavailable as exc:
-        _LOGGER.info("geometry kernel %s unavailable: %s", name, exc)
+        log_info(
+            _LOGGER,
+            "lathe.geometry.kernel.unavailable",
+            "geometry kernel {kernel} unavailable: {error}",
+            kernel=name,
+            error=exc,
+        )
         return None
 
 
@@ -198,16 +241,22 @@ def resolve_geometry_kernel(
             env_choice = MANIFOLD_KERNEL_ID
         if env_choice not in _REGISTRY:
             raise UnknownGeometryKernel(
-                f"LATHE_GEOMETRY_BACKEND={env_choice!r} is not a registered kernel. "
-                f"Registered: {sorted(_REGISTRY)!r}"
+                "LATHE_GEOMETRY_BACKEND",
+                env_choice,
+                _REGISTRY,
             )
         kernel = _instantiate(env_choice)
         if kernel is None:
             raise GeometryKernelUnavailable(
-                f"geometry kernel {env_choice!r} requested via LATHE_GEOMETRY_BACKEND "
-                f"but its backing library is not importable"
+                kernel=env_choice,
+                source="LATHE_GEOMETRY_BACKEND",
             )
-        log.info("geometry kernel selected via env LATHE_GEOMETRY_BACKEND: %s", env_choice)
+        log_info(
+            log,
+            "lathe.geometry.kernel.selected_env",
+            "geometry kernel selected via env LATHE_GEOMETRY_BACKEND: {kernel}",
+            kernel=env_choice,
+        )
         return kernel
 
     configured = None
@@ -217,32 +266,36 @@ def resolve_geometry_kernel(
     if configured:
         if configured not in _REGISTRY:
             raise UnknownGeometryKernel(
-                f"runtime_config.runtime.geometry.backend={configured!r} is not a registered kernel. "
-                f"Registered: {sorted(_REGISTRY)!r}"
+                "runtime_config.runtime.geometry.backend",
+                configured,
+                _REGISTRY,
             )
         kernel = _instantiate(configured)
         if kernel is None:
             raise GeometryKernelUnavailable(
-                f"geometry kernel {configured!r} requested via runtime_config "
-                f"but its backing library is not importable"
+                kernel=configured,
+                source="runtime_config",
             )
-        log.info("geometry kernel selected via runtime_config: %s", configured)
+        log_info(
+            log,
+            "lathe.geometry.kernel.selected_runtime_config",
+            "geometry kernel selected via runtime_config: {kernel}",
+            kernel=configured,
+        )
         return kernel
 
     # Default: manifold when available, reference otherwise.
     preferred = _instantiate(MANIFOLD_KERNEL_ID)
     if preferred is not None:
         return preferred
-    log.info(
-        "geometry kernel %s unavailable (manifold3d not importable); "
-        "falling back to %s",
-        MANIFOLD_KERNEL_ID,
-        REFERENCE_KERNEL_ID,
+    log_info(
+        log,
+        "lathe.geometry.kernel.default_fallback",
+        "geometry kernel {preferred} unavailable (manifold3d not importable); falling back to {fallback}",
+        preferred=MANIFOLD_KERNEL_ID,
+        fallback=REFERENCE_KERNEL_ID,
     )
     fallback = _instantiate(REFERENCE_KERNEL_ID)
     if fallback is None:
-        raise GeometryKernelUnavailable(
-            "no geometry kernel could be instantiated; reference kernel factory failed "
-            "(this should be unreachable — the reference kernel depends only on trimesh)"
-        )
+        raise GeometryKernelUnavailable()
     return fallback

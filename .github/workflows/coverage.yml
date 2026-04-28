@@ -25,10 +25,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
 
-      # Wave 1: coverage reports are emitted but not gated (fail-under=0).
-      # Wave 3 will lift the gate to 85 as coverage backfill lands.
+      # Coverage uses the shared fail_under gate from .coveragerc/pyproject.
+      # Slow/golden/property/fuzz partitions are covered by dedicated lanes.
       - name: Run pytest with coverage
-        run: pytest --cov=lathe --cov-report=xml --cov-report=term --cov-fail-under=0
+        run: >-
+          python -m pytest
+          --cov=lathe
+          --cov-report=xml
+          --cov-report=term
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

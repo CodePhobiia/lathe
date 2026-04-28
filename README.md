@@ -1,8 +1,14 @@
-# Lathe v0.1
+# Lathe 0.2.0-rc.1
 
 Lathe is a declarative programming language and compiler/runtime for turning 3D asset intent into certified production-ready asset packages.
 
 This repository is a working **reference compiler scaffold** for Lathe v0.1. The current milestone is a native **parametric hard-surface assembly compiler** under the stable `lathe.shape.intent_mesh_handoff_v1` contract. Learned providers still exist, but they are optional proposal sources inside Lathe’s compiler flow rather than the product center.
+
+## Current release state
+
+- Package/runtime version: `0.2.0rc1` (`pyproject.toml` and `lathe.__version__`).
+- Public language/spec contract: v0.1 (`spec/lathe-v0.1.md` remains the compatibility anchor).
+- Stability: alpha/pre-release reference compiler scaffold. The repository has substantial tests and CI, but full local pytest can be slow; see the CI and test split below.
 
 ## What is implemented
 
@@ -47,6 +53,22 @@ This repository is a working **reference compiler scaffold** for Lathe v0.1. The
 
 That is deliberate. The compiler contract comes first; learned runtimes plug into it.
 
+## Provider Modes And Limits
+
+- Default local mode uses deterministic reference-conditioned providers and
+  fallback-capable deterministic topology/UV/package paths so clone-to-build
+  smoke tests work without external model services.
+- Learned-provider mode is opt-in through runtime config files such as
+  `examples/runtime_configs/hunyuan_http.json`; strict mode fails honestly when
+  the requested provider is unavailable.
+- Offline/fallback mode is a product feature for repeatable docs, tests, and
+  CI. It does not claim learned-generation quality, and traces identify the
+  actual provider and any degraded state.
+- Current limitations: live Hunyuan/VGGT runs require separately managed
+  services or source installs, soft-surface support is still narrower than the
+  hard-surface hero path, and full release promotion still depends on the
+  release checklist under `docs/release/`.
+
 **Previously-scaffolded items all closed in Wave 4 (V0.1.x):**
 
 - Publish runner — `lathe/publish.py` with local_fs / s3 / supabase / git_lfs drivers + ed25519-signed manifests (BL-31).
@@ -60,47 +82,140 @@ That is deliberate. The compiler contract comes first; learned runtimes plug int
 
 ## Install
 
-Base editable install:
+The recommended contributor path is the repository-local bootstrap script.
+Run it from the repository root; it creates `.venv`, upgrades pip tooling,
+installs Lathe editable, and runs `lathe doctor`.
 
-```bash
-pip install -e .
-```
-
-Practical local setup from the repository root:
-
-PowerShell:
+PowerShell on Windows:
 
 ```powershell
 scripts/bootstrap_local.ps1 -Dev -Export
 ```
 
-Bash:
+Bash on macOS/Linux, Git Bash, or WSL:
 
 ```bash
 scripts/bootstrap_local.sh --dev --export
 ```
 
-Optional extras:
+That is the one-command bootstrap for a normal development environment. The
+base editable install is still available when you intentionally want the
+smallest runtime surface:
 
-- `dev`
-  - installs `pytest`
-- `hunyuan_http`
-  - no extra Python package is required today; the real dependency is a reachable Hunyuan HTTP server
-- `vggt`
-  - installs `torch` and `torchvision`
-  - the official `vggt` package is still a manual source install in this repo flow
-- `xatlas`
-  - installs the Python `xatlas` bindings
-  - on Windows this typically requires Visual Studio Build Tools with the Desktop C++ workload
-- `export`
-  - installs `scipy` for a fuller optional mesh/export toolchain
+```bash
+pip install -e .
+```
+
+After bootstrap, the canonical smoke command is:
+
+```powershell
+scripts/lathe_smoke.ps1
+```
+
+```bash
+bash scripts/lathe_smoke.sh
+```
+
+The smoke scripts prefer the repo `.venv` interpreter, run `doctor`, check and
+plan `examples/courier_drone.lth`, run a small explicit pytest smoke partition,
+and build `courier_drone` into `tmp_lathe_smoke/`. Override the interpreter with
+`-Python .\.venv\Scripts\python.exe` in PowerShell or `PYTHON_BIN=/path/to/python`
+in bash. Override the output root with `-OutDir tmp_my_smoke` or
+`LATHE_SMOKE_OUT=tmp_my_smoke`.
+
+For a narrated product demo that walks through doctor, normalize, check, plan,
+materialize, build, and inspect:
+
+```powershell
+scripts/demo_core_workflow.ps1
+```
+
+```bash
+bash scripts/demo_core_workflow.sh
+```
+
+Use `-DryRun` or `--dry-run` to preview the exact commands without building.
+By default, the demo keeps terminal output concise and writes command outputs
+under `tmp_lathe_demo/_demo_workflow/`; add `-VerboseOutput` or
+`--verbose-output` when recording a full terminal walkthrough.
+
+Optional extras are opt-in and intentionally small:
+
+| Extra | Installs | Notes |
+| --- | --- | --- |
+| `dev` | pytest, pytest-cov, Ruff, mypy, pre-commit, Hypothesis, import-linter, release/dev tools | Needed for local tests and contributor checks. |
+| `docs` | MkDocs Material and docs plugins | Needed for `mkdocs build --strict`. |
+| `export` | scipy | Optional fuller mesh/export toolchain used by some local workflows. |
+| `geometry` | scikit-image, manifold3d | Optional geometry-kernel experiments. |
+| `hunyuan_http` | no Python packages | Requires a reachable Hunyuan HTTP server configured by runtime config. |
+| `vggt` | torch, torchvision | The official `vggt` package is still a manual source install in this repo flow. |
+| `xatlas` | xatlas Python bindings | On Windows this usually requires Visual Studio Build Tools with the Desktop C++ workload. |
+| `publish` | cryptography, boto3 | Optional publish drivers for signed/local/cloud manifest flows. |
 
 Examples:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e ".[dev,export]"
+.\.venv\Scripts\python.exe -m pip install -e ".[docs]"
 .\.venv\Scripts\python.exe -m pip install -e ".[vggt]"
 .\.venv\Scripts\python.exe -m pip install -e ".[xatlas]"
+```
+
+Windows path notes:
+
+- Use `.\.venv\Scripts\python.exe` in PowerShell.
+- Use `./.venv/Scripts/python.exe` from Git Bash on Windows.
+- POSIX shells on macOS/Linux use `./.venv/bin/python`.
+- Quote extras in PowerShell, for example `".[dev,export]"`, so the shell does not treat brackets as a glob.
+
+Generated build artifacts should go under ignored output roots such as `dist/`,
+`dist_*`, `tmp_*`, or `warm_*`. `lathe build --out dist` writes one directory
+per asset under that root, for example `dist/courier_drone/`. By default Lathe
+keeps output inside the repository safety root; set `LATHE_ALLOW_EXTERNAL_OUT=1`
+only for trusted local or CI runs that intentionally write elsewhere.
+
+## Test and lint workflow
+
+The default local pytest command runs the normal suite and excludes the dedicated
+`slow`, `golden`, `property`, and `fuzz` lanes:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Fast PR checks use a representative core smoke partition and avoid the slowest
+lanes. Build-heavy, benchmark, golden, property, fuzz, and example-corpus tests
+run in separate CI jobs/workflows so failures stay visible without forcing
+every OS/Python leg through the heaviest path. To run the build-heavy lane
+locally, use:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q -m slow tests/test_build.py
+```
+
+To run the benchmark and visual-quality lane locally, use:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q -m slow tests/test_benchmarks.py tests/test_visual_quality.py
+```
+
+The full slow marker lane is also available, but expect it to run many
+end-to-end builds:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q -m slow
+```
+
+Coverage has one enforced threshold: `65%`, configured in both `.coveragerc`
+and `pyproject.toml` and used by the CI coverage lane without command-line
+overrides. The ratchet policy is to raise that number only after the default
+coverage lane is reliably above the next target; BL-39 tracks the longer-term
+`85%` release target.
+
+Ruff is pinned through the dev dependency set. The required lint gate is currently a minimal ratchet for syntax/import-time failures and production `assert` usage while the broader historical lint backlog is paid down:
+
+```powershell
+.\.venv\Scripts\ruff.exe check .
 ```
 
 Manual VGGT source install after `torch`:
@@ -142,11 +257,50 @@ lathe explain-fit dist/reconstruct_courier_from_views
 lathe build examples/console_terminal_v12_surface.lth console_terminal_v12_surface --out dist
 ```
 
+Shell completions are dependency-free and generated from the live CLI parser:
+
+```text
+lathe completions bash > ~/.local/share/bash-completion/completions/lathe
+lathe completions zsh > "${fpath[1]}/_lathe"
+lathe completions powershell | Out-String | Invoke-Expression
+```
+
 Machine-readable diagnostics:
 
 ```bash
 lathe doctor --json
 lathe doctor --runtime-config examples/runtime_configs/hunyuan_http.json --json
+lathe build examples/courier_drone.lth courier_drone --out dist --report json
+```
+
+User-facing failures use the public CLI error contract documented in
+`docs/error_codes.md`. Normal terminal mode emits a short actionable message:
+
+```text
+lathe error [lathe.cli.file_not_found]: File not found: examples/missing.lth
+  at examples/missing.lth
+  Next step: Check the path and rerun the command from the repository root.
+```
+
+Build report JSON mode emits a machine-readable failure payload on stdout:
+
+```json
+{
+  "ok": false,
+  "code": "lathe.cli.file_not_found",
+  "message": "File not found: examples/missing.lth",
+  "severity": "error",
+  "next_step": "Check the path and rerun the command from the repository root.",
+  "diagnostics": [
+    {
+      "code": "lathe.cli.file_not_found",
+      "severity": "error",
+      "message": "File not found: examples/missing.lth",
+      "path": "examples/missing.lth"
+    }
+  ],
+  "source_path": "examples/missing.lth"
+}
 ```
 
 ## V0.8 Language Core
@@ -165,12 +319,12 @@ The repo now includes a first source stdlib and language-level authoring layer:
 
 The V0.9 hero examples now use this source surface directly:
 
-- [examples/brassbound_chest.lth](/D:/lathe_v0_1/examples/brassbound_chest.lth)
-- [examples/industrial_crate.lth](/D:/lathe_v0_1/examples/industrial_crate.lth)
-- [examples/mechanical_door.lth](/D:/lathe_v0_1/examples/mechanical_door.lth)
-- [examples/console_terminal.lth](/D:/lathe_v0_1/examples/console_terminal.lth)
+- [examples/brassbound_chest.lth](examples/brassbound_chest.lth)
+- [examples/industrial_crate.lth](examples/industrial_crate.lth)
+- [examples/mechanical_door.lth](examples/mechanical_door.lth)
+- [examples/console_terminal.lth](examples/console_terminal.lth)
 
-See [docs/v08_language_reference.md](/D:/lathe_v0_1/docs/v08_language_reference.md) for the new declarations and [docs/v08_migration_guide.md](/D:/lathe_v0_1/docs/v08_migration_guide.md) for the additive migration path from pre-V0.8 source.
+See [docs/v08_language_reference.md](docs/v08_language_reference.md) for the new declarations and [docs/v08_migration_guide.md](docs/v08_migration_guide.md) for the additive migration path from pre-V0.8 source.
 
 ## V0.9 Self-Reliant Hero Wedge
 
@@ -198,13 +352,13 @@ The repository now ships the full named V1.0 family set in source stdlib form:
 
 Current end-to-end runnable examples exist for:
 
-- [examples/brassbound_chest.lth](/D:/lathe_v0_1/examples/brassbound_chest.lth)
-- [examples/industrial_crate.lth](/D:/lathe_v0_1/examples/industrial_crate.lth)
-- [examples/mechanical_door.lth](/D:/lathe_v0_1/examples/mechanical_door.lth)
-- [examples/console_terminal.lth](/D:/lathe_v0_1/examples/console_terminal.lth)
-- [examples/service_cabinet.lth](/D:/lathe_v0_1/examples/service_cabinet.lth)
-- [examples/control_pedestal.lth](/D:/lathe_v0_1/examples/control_pedestal.lth)
-- [examples/supply_container.lth](/D:/lathe_v0_1/examples/supply_container.lth)
+- [examples/brassbound_chest.lth](examples/brassbound_chest.lth)
+- [examples/industrial_crate.lth](examples/industrial_crate.lth)
+- [examples/mechanical_door.lth](examples/mechanical_door.lth)
+- [examples/console_terminal.lth](examples/console_terminal.lth)
+- [examples/service_cabinet.lth](examples/service_cabinet.lth)
+- [examples/control_pedestal.lth](examples/control_pedestal.lth)
+- [examples/supply_container.lth](examples/supply_container.lth)
 
 ## V1.1 Asset-System Flows
 
@@ -232,9 +386,9 @@ Implemented asset blocks:
 
 Runnable examples:
 
-- [examples/console_terminal_mobile_adapt.lth](/D:/lathe_v0_1/examples/console_terminal_mobile_adapt.lth)
-- [examples/service_corridor_wall.lth](/D:/lathe_v0_1/examples/service_corridor_wall.lth)
-- [examples/reconstruct_courier_from_views.lth](/D:/lathe_v0_1/examples/reconstruct_courier_from_views.lth)
+- [examples/console_terminal_mobile_adapt.lth](examples/console_terminal_mobile_adapt.lth)
+- [examples/service_corridor_wall.lth](examples/service_corridor_wall.lth)
+- [examples/reconstruct_courier_from_views.lth](examples/reconstruct_courier_from_views.lth)
 
 V1.1 build outputs include resolved `reference_ir`, `fit_ir`, `transfer_ir`, and `kit_ir` in the shape bundle, plus flow-specific validation metrics such as `semantic_preservation_quality`, `join_legality`, and `reconstruct_honesty_score` where relevant.
 
@@ -252,7 +406,7 @@ Implemented declarations:
 
 New example:
 
-- [examples/console_terminal_v12_surface.lth](/D:/lathe_v0_1/examples/console_terminal_v12_surface.lth)
+- [examples/console_terminal_v12_surface.lth](examples/console_terminal_v12_surface.lth)
 
 Hero surface builds now emit:
 
@@ -273,7 +427,7 @@ The repo now includes a project-scoped Codex integration pack:
 - `.codex/agents/` for custom spawned agents
 - `.agents/skills/` for repo-scoped Codex skills
 - `scripts/lathe_asset_loop.sh` for the common asset loop
-- `scripts/lathe_smoke.sh` for the regression smoke test
+- `scripts/lathe_smoke.ps1` / `scripts/lathe_smoke.sh` for the local regression smoke test
 
 See `docs/codex_integration.md` for the full layout and example Codex prompts.
 

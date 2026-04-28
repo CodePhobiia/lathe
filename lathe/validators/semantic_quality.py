@@ -12,6 +12,14 @@ from typing import Any
 from ..repair_planner import suggest_repairs_for_metric
 from .silhouette import compare_scaffold_signature
 
+_TOY_STRUCTURAL_RICHNESS_MIN = 0.64
+_TOY_SILHOUETTE_FIDELITY_MIN = 0.66
+_TOY_SECONDARY_RICHNESS_MIN = 0.60
+_TOY_PART_COVERAGE_MIN = 0.60
+_TOY_FRAGMENTATION_MAX = 0.60
+_FRAGMENTATION_RELIEF_PART_COVERAGE = 0.95
+_FRAGMENTATION_RELIEF_ADJACENCY = 0.90
+
 
 def _symmetry_score(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
     groups = {group["name"]: group for group in runtime["topology"]["bundle"].get("part_groups", [])}
@@ -59,12 +67,25 @@ def _interface_score(runtime: dict[str, Any]) -> float:
     bounds = runtime["topology"]["bundle"]["mesh_stats"]
     bmin = bounds["bounds_min"]
     bmax = bounds["bounds_max"]
-    span = [max(1e-6, hi - lo) for lo, hi in zip(bmin, bmax)]
+    span = [max(1e-6, hi - lo) for lo, hi in zip(bmin, bmax, strict=False)]
     scores: list[float] = []
     for entry in runtime["interfaces"]["bundle"].get("sockets", []):
         pos = entry.get("position", [0.0, 0.0, 0.0])
-        inside = all((bmin[idx] - span[idx] * 0.05) <= pos[idx] <= (bmax[idx] + span[idx] * 0.05) for idx in range(3))
+        inside = all(
+            (bmin[idx] - span[idx] * 0.05) <= pos[idx] <= (bmax[idx] + span[idx] * 0.05) for idx in range(3)
+        )
         scores.append(1.0 if inside else 0.0)
+    for entry in runtime["interfaces"]["bundle"].get("pivots", []):
+        pos = entry.get("position", entry.get("origin", [0.0, 0.0, 0.0]))
+        if entry.get("pivot_type") in {"bottom", "contact"}:
+            near_floor = abs(pos[1] - bmin[1]) <= span[1] * 0.10
+            scores.append(1.0 if near_floor else 0.2)
+        else:
+            inside = all(
+                (bmin[idx] - span[idx] * 0.05) <= pos[idx] <= (bmax[idx] + span[idx] * 0.05)
+                for idx in range(3)
+            )
+            scores.append(1.0 if inside else 0.0)
     for entry in runtime["interfaces"]["bundle"].get("anchors", []):
         pos = entry.get("position", [0.0, 0.0, 0.0])
         near_floor = abs(pos[1] - bmin[1]) <= span[1] * 0.10
@@ -81,11 +102,13 @@ def _bbox_gap(left: dict[str, Any], right: dict[str, Any]) -> float:
         left_min = left["bounds_min"][axis]
         right_max = right["bounds_max"][axis]
         right_min = right["bounds_min"][axis]
-        gaps.append(max(0.0, max(left_min - right_max, right_min - left_max)))
+        gaps.append(max(0.0, left_min - right_max, right_min - left_max))
     return math.sqrt(sum(gap * gap for gap in gaps))
 
 
-def _adjacency_score(expected_pairs: list[dict[str, Any]], part_groups: list[dict[str, Any]], extents: list[float]) -> float:
+def _adjacency_score(
+    expected_pairs: list[dict[str, Any]], part_groups: list[dict[str, Any]], extents: list[float]
+) -> float:
     if not expected_pairs:
         return 1.0
     groups = {group["name"]: group for group in part_groups}
@@ -110,11 +133,17 @@ def _fragmentation_penalty(
     actual_part_groups: int,
 ) -> float:
     body_count = int(stats["body_count"])
-    expected_group_ratio = max(1.0, float(shape_assessment.get("region_count", expected_parts)) / max(1.0, actual_part_groups or expected_parts))
+    expected_group_ratio = max(
+        1.0,
+        float(shape_assessment.get("region_count", expected_parts))
+        / max(1.0, actual_part_groups or expected_parts),
+    )
     ratio = body_count / max(1.0, float(actual_part_groups or expected_parts))
     feature_multiplier = min(6.0, float(shape_assessment.get("feature_count", 0)) / max(1.0, expected_parts))
     safe_ratio = max(2.2, min(22.0, expected_group_ratio * (2.6 + 1.35 * feature_multiplier)))
-    configured_ceiling = float(scaffold_signature.get("fragmentation_ceiling", safe_ratio * 2.0)) / max(1.0, actual_part_groups or expected_parts)
+    configured_ceiling = float(scaffold_signature.get("fragmentation_ceiling", safe_ratio * 2.0)) / max(
+        1.0, actual_part_groups or expected_parts
+    )
     ceiling_ratio = max(safe_ratio * 1.6, safe_ratio + 0.5, configured_ceiling)
     if ratio <= safe_ratio:
         return 0.0
@@ -128,24 +157,40 @@ def _structural_richness(asset: dict[str, Any], runtime: dict[str, Any], metrics
     scaffold_report = shape_bundle.get("scaffold_report", {})
     shape_assessment = scaffold_report.get("shape_assessment", {})
     primitive_floor = float(shape_assessment.get("richness_floor", 0.0))
-    primitive_density = min(1.0, stats["triangle_count"] / max(220.0, len(asset.get("intent", {}).get("parts", [])) * 52.0))
-    region_support = min(1.0, len(runtime["topology"]["bundle"].get("part_groups", [])) / max(1, len(asset.get("intent", {}).get("parts", []))))
+    primitive_density = min(
+        1.0, stats["triangle_count"] / max(220.0, len(asset.get("intent", {}).get("parts", [])) * 52.0)
+    )
+    region_support = min(
+        1.0,
+        len(runtime["topology"]["bundle"].get("part_groups", []))
+        / max(1, len(asset.get("intent", {}).get("parts", []))),
+    )
     fragmentation_score = 1.0 - metrics["fragmentation_penalty"]
-    return round((0.28 * primitive_floor) + (0.27 * primitive_density) + (0.25 * region_support) + (0.20 * fragmentation_score), 6)
+    return round(
+        (0.28 * primitive_floor)
+        + (0.27 * primitive_density)
+        + (0.25 * region_support)
+        + (0.20 * fragmentation_score),
+        6,
+    )
 
 
 def _toy_detected(asset: dict[str, Any], runtime: dict[str, Any], metrics: dict[str, Any]) -> bool:
     stats = runtime["topology"]["bundle"]["mesh_stats"]
     expected_parts = max(1, len(asset.get("intent", {}).get("parts", [])))
-    if stats["triangle_count"] < max(140, expected_parts * 22) and metrics["structural_richness"] < 0.64:
+    if (
+        stats["triangle_count"] < max(140, expected_parts * 22)
+        and metrics["structural_richness"] < _TOY_STRUCTURAL_RICHNESS_MIN
+    ):
         return True
-    if metrics["silhouette_fidelity"] < 0.66 and metrics["structural_richness"] < 0.60:
+    if (
+        metrics["silhouette_fidelity"] < _TOY_SILHOUETTE_FIDELITY_MIN
+        and metrics["structural_richness"] < _TOY_SECONDARY_RICHNESS_MIN
+    ):
         return True
-    if metrics["part_coverage"] < 0.60:
+    if metrics["part_coverage"] < _TOY_PART_COVERAGE_MIN:
         return True
-    if metrics["fragmentation_penalty"] > 0.60:
-        return True
-    return False
+    return metrics["fragmentation_penalty"] > _TOY_FRAGMENTATION_MAX
 
 
 def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
@@ -168,10 +213,16 @@ def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) ->
     part_groups = runtime["topology"]["bundle"].get("part_groups", [])
     actual_parts = {group["name"] for group in part_groups}
     part_coverage = len(expected_parts & actual_parts) / max(1, len(expected_parts))
-    silhouette_fidelity = compare_scaffold_signature(scaffold_signature, runtime["topology"]["bundle"]["mesh_stats"]["extents"], part_groups)
+    silhouette_fidelity = compare_scaffold_signature(
+        scaffold_signature, runtime["topology"]["bundle"]["mesh_stats"]["extents"], part_groups
+    )
     symmetry_score = _symmetry_score(asset, runtime)
     interface_score = _interface_score(runtime)
-    adjacency_score = _adjacency_score(scaffold_signature.get("adjacency_pairs", []), part_groups, runtime["topology"]["bundle"]["mesh_stats"]["extents"])
+    adjacency_score = _adjacency_score(
+        scaffold_signature.get("adjacency_pairs", []),
+        part_groups,
+        runtime["topology"]["bundle"]["mesh_stats"]["extents"],
+    )
     fragmentation_penalty = _fragmentation_penalty(
         runtime["topology"]["bundle"]["mesh_stats"],
         scaffold_signature,
@@ -180,9 +231,17 @@ def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) ->
         len(part_groups),
     )
     shape_mode = asset.get("build", {}).get("shape", {}).get("mode")
-    if asset_graph.get("family") == "courier_drone" and part_coverage >= 0.95 and adjacency_score >= 0.90:
+    if (
+        asset_graph.get("family") == "courier_drone"
+        and part_coverage >= _FRAGMENTATION_RELIEF_PART_COVERAGE
+        and adjacency_score >= _FRAGMENTATION_RELIEF_ADJACENCY
+    ):
         fragmentation_penalty = min(fragmentation_penalty, 0.18)
-    if shape_mode == "assemble" and part_coverage >= 0.95 and adjacency_score >= 0.90:
+    if (
+        shape_mode == "assemble"
+        and part_coverage >= _FRAGMENTATION_RELIEF_PART_COVERAGE
+        and adjacency_score >= _FRAGMENTATION_RELIEF_ADJACENCY
+    ):
         fragmentation_penalty = min(fragmentation_penalty, 0.24)
     component_score = round(max(0.0, 1.0 - fragmentation_penalty), 6)
 
@@ -236,8 +295,15 @@ def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) ->
                 "asset": asset["name"],
                 "stage": "validate",
                 "path": "validate.semantic.fragmentation_penalty",
-                "message": f"Semantic validator failed for fragmentation_penalty: {metrics['fragmentation_penalty']:.3f} > {fragmentation_max:.3f}",
-                "details": {"metric": "fragmentation_penalty", "actual": metrics["fragmentation_penalty"], "maximum": fragmentation_max},
+                "message": (
+                    "Semantic validator failed for fragmentation_penalty: "
+                    f"{metrics['fragmentation_penalty']:.3f} > {fragmentation_max:.3f}"
+                ),
+                "details": {
+                    "metric": "fragmentation_penalty",
+                    "actual": metrics["fragmentation_penalty"],
+                    "maximum": fragmentation_max,
+                },
                 "suggested_repairs": ["split_merged_parts", "increase_structural_richness"],
             }
         )

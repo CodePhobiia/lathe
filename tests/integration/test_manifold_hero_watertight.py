@@ -5,20 +5,18 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-import numpy as np
 import pytest
-
 from lathe.asset_graph import build_asset_graph
 from lathe.geometry.manifold_kernel import manifold_available
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 from lathe.scaffold_compiler import compile_scaffold_candidates
 
-
 MANIFOLD_AVAILABLE = manifold_available()
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 MANIFOLD_RUNTIME = {"runtime": {"geometry": {"backend": "lathe.geometry.manifold_v1"}}}
 REFERENCE_RUNTIME = {"runtime": {"geometry": {"backend": "lathe.geometry.reference_v1"}}}
+pytestmark = pytest.mark.slow
 
 
 def _load_asset_graph(hero: str):
@@ -40,7 +38,7 @@ def _body_counts(result: dict) -> list[int]:
         mesh = c["mesh"]
         try:
             counts.append(len(mesh.split(only_watertight=False)))
-        except Exception:
+        except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
             counts.append(-1)
     return counts
 
@@ -87,7 +85,7 @@ def test_mechanical_door_manifold_watertight_and_not_slower_than_reference() -> 
     asset_graph = _load_asset_graph("mechanical_door")
 
     t0 = time.perf_counter()
-    ref_result = compile_scaffold_candidates(
+    compile_scaffold_candidates(
         asset_graph,
         seed=42,
         candidates_count=1,

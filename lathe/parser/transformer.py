@@ -228,7 +228,11 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
         decl_kind: str | None = None
         remaining: list[Any] = []
         for item in rest:
-            if decl_kind is None and isinstance(item, str) and item in {"hard_surface_prop", "env_module", "mechanical_assembly"}:
+            if (
+                decl_kind is None
+                and isinstance(item, str)
+                and item in {"hard_surface_prop", "env_module", "mechanical_assembly"}
+            ):
                 decl_kind = item
             else:
                 remaining.append(item)
@@ -720,9 +724,10 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 assembly_rules = item["values"]
             elif isinstance(item, dict) and item.get("node_type") == "execution":
                 execution = item["values"]
-            elif isinstance(item, dict) and item.get("node_type") == "space_inline":
-                space = item
-            elif isinstance(item, dict) and item.get("node_type") == "search_inline":
+            elif isinstance(item, dict) and item.get("node_type") in {
+                "space_inline",
+                "search_inline",
+            }:
                 space = item
             elif isinstance(item, dict) and item.get("node_type") == "repair_policy_inline":
                 repair_policy = item["values"]

@@ -1,7 +1,7 @@
 # Wave 2 Review — Tests & Contract
 
-**Reviewer:** reviewer-tests-contract  
-**Date:** 2026-04-23  
+**Reviewer:** reviewer-tests-contract
+**Date:** 2026-04-23
 **Wave 2 commit range:** `54b8ae8..61aab04` (8 commits)
 
 ## Summary
@@ -10,7 +10,7 @@ Wave 2 has landed cleanly. Full pytest suite is **70 passed, 0 failed in 943.64s
 
 ## Pytest result
 
-Run: `.venv/Scripts/python.exe -m pytest -q 2>&1 | tail -15`  
+Run: `.venv/Scripts/python.exe -m pytest -q 2>&1 | tail -15`
 Started 2026-04-23 03:59:41 AST, PID 728. Exit code 0.
 
 ```

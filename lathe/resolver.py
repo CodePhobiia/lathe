@@ -13,23 +13,26 @@ from typing import Any
 
 # re-export — authoritative definitions live in lathe/errors.py
 from .errors import ResolutionError, UnresolvedNameError
+from .logging_utils import debug as log_debug
 from .normalizer import normalize_asset
 from .utils import append_by_path, deep_merge, has_path, remove_by_path, set_by_path, unset_by_path
+
+__all__ = ["ResolutionError", "Resolver", "UnresolvedNameError", "materialize_asset"]
 
 
 log = logging.getLogger(__name__)
 
 
-def _resolve_required(name: str, mapping: dict[str, Any], kind: str) -> Any:
-    if name not in mapping:
-        raise UnresolvedNameError(f"unresolved {kind}: {name}")
-    return mapping[name]
-
-
 def _resolve_optional(name: str, mapping: dict[str, Any], kind: str) -> Any | None:
     if name in mapping:
         return mapping[name]
-    log.debug("skipping optional %s %r: not in map", kind, name)
+    log_debug(
+        log,
+        "lathe.resolver.optional_reference_missing",
+        "skipping optional {kind} {name!r}: not in map",
+        kind=kind,
+        name=name,
+    )
     return None
 
 
@@ -70,7 +73,9 @@ def _merge_repair_policy_spec(base: dict[str, Any], overlay: dict[str, Any]) -> 
     return merged
 
 
-def _repair_policy_to_validate_repair(source_policy: dict[str, Any], validate_repair: dict[str, Any]) -> dict[str, Any]:
+def _repair_policy_to_validate_repair(
+    source_policy: dict[str, Any], validate_repair: dict[str, Any]
+) -> dict[str, Any]:
     merged = deepcopy(validate_repair or {})
     if source_policy.get("mode"):
         merged["mode"] = source_policy["mode"]
@@ -83,6 +88,7 @@ def _repair_policy_to_validate_repair(source_policy: dict[str, Any], validate_re
 
 class Resolver:
     """Resolver."""
+
     def __init__(self, program: dict[str, Any]) -> None:
         self.program = program
         self.profile_map = {decl["name"]: decl for decl in program.get("profiles", [])}
@@ -127,7 +133,9 @@ class Resolver:
         in_profiles = name in self.profile_map
         in_contracts = name in self.contract_map
         if in_profiles and in_contracts:
-            raise ResolutionError(f"Ambiguous use reference '{name}' found in both profile and contract namespaces")
+            raise ResolutionError(
+                f"Ambiguous use reference '{name}' found in both profile and contract namespaces"
+            )
         if caller_type == "profile" and in_contracts:
             raise ResolutionError(f"Profile cannot use contract '{name}'")
         if in_profiles:
@@ -136,7 +144,9 @@ class Resolver:
             return "contract", self.contract_map[name]
         raise ResolutionError(f"Unknown use reference '{name}'")
 
-    def _resolve_named_decl(self, namespace: dict[str, dict[str, Any]], name: str, label: str) -> dict[str, Any]:
+    def _resolve_named_decl(
+        self, namespace: dict[str, dict[str, Any]], name: str, label: str
+    ) -> dict[str, Any]:
         if name not in namespace:
             raise ResolutionError(f"Unknown {label} reference '{name}'")
         return namespace[name]
@@ -312,7 +322,9 @@ class Resolver:
     def _resolve_mechanism(self, name: str) -> dict[str, Any]:
         return deepcopy(self._resolve_named_decl(self.mechanism_map, name, "mechanism"))
 
-    def _resolve_mapping_optional(self, namespace: dict[str, dict[str, Any]], name: str, label: str) -> dict[str, Any]:
+    def _resolve_mapping_optional(
+        self, namespace: dict[str, dict[str, Any]], name: str, label: str
+    ) -> dict[str, Any]:
         if not name:
             return {}
         return deepcopy(self._resolve_named_decl(namespace, name, label))
@@ -341,15 +353,29 @@ class Resolver:
     def _resolve_named_policies(self, asset: dict[str, Any]) -> dict[str, Any]:
         shape_cfg = asset.get("build", {}).get("shape", {})
         fit_profile_name = str(shape_cfg.get("fit_profile", "") or asset.get("fit", {}).get("profile", ""))
-        reconstruct_policy_name = str(shape_cfg.get("reconstruct_policy", "") or asset.get("fit", {}).get("reconstruct_policy", ""))
-        adapt_policy_name = str(shape_cfg.get("adapt_policy", "") or asset.get("transfer", {}).get("adapt_policy", ""))
-        assembly_policy_name = str(shape_cfg.get("assembly_policy", "") or asset.get("constraints", {}).get("assembly_policy", ""))
+        reconstruct_policy_name = str(
+            shape_cfg.get("reconstruct_policy", "") or asset.get("fit", {}).get("reconstruct_policy", "")
+        )
+        adapt_policy_name = str(
+            shape_cfg.get("adapt_policy", "") or asset.get("transfer", {}).get("adapt_policy", "")
+        )
+        assembly_policy_name = str(
+            shape_cfg.get("assembly_policy", "") or asset.get("constraints", {}).get("assembly_policy", "")
+        )
         transfer_rule_names = list(asset.get("transfer", {}).get("rules", []))
         return {
-            "fit_profile": self._resolve_mapping_optional(self.fit_profile_map, fit_profile_name, "fit_profile"),
-            "reconstruct_policy": self._resolve_mapping_optional(self.reconstruct_policy_map, reconstruct_policy_name, "reconstruct_policy"),
-            "adapt_policy": self._resolve_mapping_optional(self.adapt_policy_map, adapt_policy_name, "adapt_policy"),
-            "assembly_policy": self._resolve_mapping_optional(self.assembly_policy_map, assembly_policy_name, "assembly_policy"),
+            "fit_profile": self._resolve_mapping_optional(
+                self.fit_profile_map, fit_profile_name, "fit_profile"
+            ),
+            "reconstruct_policy": self._resolve_mapping_optional(
+                self.reconstruct_policy_map, reconstruct_policy_name, "reconstruct_policy"
+            ),
+            "adapt_policy": self._resolve_mapping_optional(
+                self.adapt_policy_map, adapt_policy_name, "adapt_policy"
+            ),
+            "assembly_policy": self._resolve_mapping_optional(
+                self.assembly_policy_map, assembly_policy_name, "assembly_policy"
+            ),
             "transfer_rules": self._resolve_optional_list(
                 transfer_rule_names, self.transfer_rule_map, "transfer_rule"
             ),
@@ -427,7 +453,11 @@ class Resolver:
             family_name = from_name
         if from_name and from_name in self.kit_map:
             resolved_kit = deepcopy(self._resolve_named_decl(self.kit_map, from_name, "kit"))
-            family_name = str(resolved_kit.get("values", {}).get("family", "") or resolved_kit.get("values", {}).get("family_bias", "") or family_name)
+            family_name = str(
+                resolved_kit.get("values", {}).get("family", "")
+                or resolved_kit.get("values", {}).get("family_bias", "")
+                or family_name
+            )
         resolved_family: dict[str, Any] = {}
         if family_name:
             resolved_family = deepcopy(self._resolve_named_decl(self.family_map, family_name, "family"))
@@ -439,17 +469,33 @@ class Resolver:
         merged = deep_merge(merged, explicit_overlay)
 
         if resolved_family:
-            merged["geometry"] = deep_merge(deepcopy(resolved_family.get("geometry", {})), merged.get("geometry", {}))
-            merged["features"] = deep_merge(deepcopy(resolved_family.get("features", {})), merged.get("features", {}))
-            merged["surface"] = deep_merge(deepcopy(resolved_family.get("surface", {})), merged.get("surface", {}))
-            merged["assembly"] = deep_merge(deepcopy(resolved_family.get("assembly", {})), merged.get("assembly", {}))
-            merged["space"] = _merge_space_spec(deepcopy(resolved_family.get("space", {})), merged.get("space", {}))
-            merged["repair_policy"] = _merge_repair_policy_spec(deepcopy(resolved_family.get("repair_policy", {})), merged.get("repair_policy", {}))
+            merged["geometry"] = deep_merge(
+                deepcopy(resolved_family.get("geometry", {})), merged.get("geometry", {})
+            )
+            merged["features"] = deep_merge(
+                deepcopy(resolved_family.get("features", {})), merged.get("features", {})
+            )
+            merged["surface"] = deep_merge(
+                deepcopy(resolved_family.get("surface", {})), merged.get("surface", {})
+            )
+            merged["assembly"] = deep_merge(
+                deepcopy(resolved_family.get("assembly", {})), merged.get("assembly", {})
+            )
+            merged["space"] = _merge_space_spec(
+                deepcopy(resolved_family.get("space", {})), merged.get("space", {})
+            )
+            merged["repair_policy"] = _merge_repair_policy_spec(
+                deepcopy(resolved_family.get("repair_policy", {})), merged.get("repair_policy", {})
+            )
 
         merged.setdefault("validate", {})
-        merged["validate"] = deep_merge(merged["validate"], {k: v for k, v in explicit_validate.items() if k not in {"rules", "repair"}})
+        merged["validate"] = deep_merge(
+            merged["validate"], {k: v for k, v in explicit_validate.items() if k not in {"rules", "repair"}}
+        )
         merged["validate"]["rules"] = inherited_rules + deepcopy(explicit_validate.get("rules", []))
-        merged["validate"]["repair"] = deep_merge(inherited_repair, deepcopy(explicit_validate.get("repair", {})))
+        merged["validate"]["repair"] = deep_merge(
+            inherited_repair, deepcopy(explicit_validate.get("repair", {}))
+        )
 
         merged["name"] = explicit["name"]
         merged["kind"] = explicit["kind"]
@@ -465,19 +511,28 @@ class Resolver:
             merged["assembly"]["resolved_kit"] = resolved_kit
             if not merged["assembly"].get("components"):
                 merged["assembly"]["components"] = list(resolved_kit.get("values", {}).get("modules", []))
-            merged["constraints"] = deep_merge(deepcopy(resolved_kit.get("values", {})), merged.get("constraints", {}))
+            merged["constraints"] = deep_merge(
+                deepcopy(resolved_kit.get("values", {})), merged.get("constraints", {})
+            )
 
         merged["space"] = self.resolve_space_spec(merged.get("space", {}))
         merged["repair_policy"] = self.resolve_repair_policy_spec(merged.get("repair_policy", {}))
-        merged["validate"]["repair"] = _repair_policy_to_validate_repair(merged["repair_policy"], merged["validate"].get("repair", {}))
+        merged["validate"]["repair"] = _repair_policy_to_validate_repair(
+            merged["repair_policy"], merged["validate"].get("repair", {})
+        )
 
         palette_name = merged.get("surface", {}).get("palette")
         resolved_palette = self._resolve_palette(palette_name) if palette_name else {}
-        palette_materials = list(resolved_palette.get("values", {}).get("materials", []) or resolved_palette.get("values", {}).get("slots", []))
+        palette_materials = list(
+            resolved_palette.get("values", {}).get("materials", [])
+            or resolved_palette.get("values", {}).get("slots", [])
+        )
         declared_materials = list(merged.get("surface", {}).get("materials", []))
         intent_materials = list(merged.get("intent", {}).get("materials", []))
         material_names = _dedupe([*declared_materials, *intent_materials, *palette_materials])
-        resolved_materials = {material_name: self._resolve_material(material_name) for material_name in material_names}
+        resolved_materials = {
+            material_name: self._resolve_material(material_name) for material_name in material_names
+        }
 
         component_names = _dedupe(list(merged.get("assembly", {}).get("components", [])))
         mechanism_names = _dedupe(list(merged.get("assembly", {}).get("mechanisms", [])))
@@ -496,14 +551,26 @@ class Resolver:
         merged["surface"]["resolved_palette"] = resolved_palette
         merged["surface"]["resolved_materials"] = resolved_materials
         surface_program_name = str(merged["surface"].get("program", "") or "")
-        resolved_surface_program = self._resolve_surface_program(surface_program_name) if surface_program_name else {}
+        resolved_surface_program = (
+            self._resolve_surface_program(surface_program_name) if surface_program_name else {}
+        )
         if resolved_surface_program:
-            merged["surface"] = deep_merge(deepcopy(resolved_surface_program.get("values", {})), merged["surface"])
+            merged["surface"] = deep_merge(
+                deepcopy(resolved_surface_program.get("values", {})), merged["surface"]
+            )
             merged["surface"]["program"] = surface_program_name
-        surface_policy_name = str(merged["surface"].get("policy", "") or merged["build"].get("surface", {}).get("surface_policy", "") or "")
-        resolved_surface_policy = self._resolve_surface_policy(surface_policy_name) if surface_policy_name else {}
+        surface_policy_name = str(
+            merged["surface"].get("policy", "")
+            or merged["build"].get("surface", {}).get("surface_policy", "")
+            or ""
+        )
+        resolved_surface_policy = (
+            self._resolve_surface_policy(surface_policy_name) if surface_policy_name else {}
+        )
         if resolved_surface_policy:
-            merged["surface"] = deep_merge(deepcopy(resolved_surface_policy.get("values", {})), merged["surface"])
+            merged["surface"] = deep_merge(
+                deepcopy(resolved_surface_policy.get("values", {})), merged["surface"]
+            )
             merged["surface"]["policy"] = surface_policy_name
         surface_backend_name = str(
             merged["surface"].get("backend")
@@ -511,7 +578,11 @@ class Resolver:
             or merged["build"].get("surface", {}).get("authoring_backend")
             or ""
         )
-        resolved_surface_backend = self._resolve_surface_backend(surface_backend_name) if surface_backend_name in self.surface_backend_map else {}
+        resolved_surface_backend = (
+            self._resolve_surface_backend(surface_backend_name)
+            if surface_backend_name in self.surface_backend_map
+            else {}
+        )
         decal_library_names = _dedupe(list(merged["surface"].get("decal_libraries", [])))
         mask_program_names = _dedupe(list(merged["surface"].get("mask_programs", [])))
         trim_sheet_names = _dedupe(list(merged["surface"].get("trim_sheets", [])))
@@ -532,20 +603,30 @@ class Resolver:
             trim_sheet_names, self.trim_sheet_map, "trim_sheet"
         )
         material_graph_name = str(merged["surface"].get("material_graph", "") or "")
-        resolved_material_graph = self._resolve_mapping_optional(self.material_graph_map, material_graph_name, "material_graph")
+        resolved_material_graph = self._resolve_mapping_optional(
+            self.material_graph_map, material_graph_name, "material_graph"
+        )
         if resolved_material_graph:
-            merged["surface"] = deep_merge(deepcopy(resolved_material_graph.get("values", {})), merged["surface"])
+            merged["surface"] = deep_merge(
+                deepcopy(resolved_material_graph.get("values", {})), merged["surface"]
+            )
             merged["surface"]["material_graph"] = material_graph_name
         merged["surface"]["resolved_material_graph"] = resolved_material_graph
 
         merged.setdefault("execution", {})
         execution_profile_name = str(merged["execution"].get("profile", "") or "")
-        resolved_execution_profile = self._resolve_mapping_optional(self.execution_profile_map, execution_profile_name, "execution_profile")
+        resolved_execution_profile = self._resolve_mapping_optional(
+            self.execution_profile_map, execution_profile_name, "execution_profile"
+        )
         if resolved_execution_profile:
-            merged["execution"] = deep_merge(deepcopy(resolved_execution_profile.get("values", {})), merged["execution"])
+            merged["execution"] = deep_merge(
+                deepcopy(resolved_execution_profile.get("values", {})), merged["execution"]
+            )
             merged["execution"]["profile"] = execution_profile_name
         inspection_policy_name = str(merged["execution"].get("inspection_policy", "") or "")
-        resolved_inspection_policy = self._resolve_mapping_optional(self.inspection_policy_map, inspection_policy_name, "inspection_policy")
+        resolved_inspection_policy = self._resolve_mapping_optional(
+            self.inspection_policy_map, inspection_policy_name, "inspection_policy"
+        )
         if resolved_inspection_policy:
             merged["execution"]["inspection_policy"] = inspection_policy_name
         explicit_library_bindings = _dedupe(list(merged["execution"].get("library_bindings", [])))
@@ -567,15 +648,23 @@ class Resolver:
 
         surface_build = merged.setdefault("build", {}).setdefault("surface", {})
         bake_profile_name = str(surface_build.get("bake_profile", "") or "")
-        resolved_bake_profile = self._resolve_mapping_optional(self.bake_profile_map, bake_profile_name, "bake_profile")
+        resolved_bake_profile = self._resolve_mapping_optional(
+            self.bake_profile_map, bake_profile_name, "bake_profile"
+        )
         if resolved_bake_profile:
-            merged["build"]["surface"] = deep_merge(deepcopy(resolved_bake_profile.get("values", {})), merged["build"]["surface"])
+            merged["build"]["surface"] = deep_merge(
+                deepcopy(resolved_bake_profile.get("values", {})), merged["build"]["surface"]
+            )
             merged["build"]["surface"]["bake_profile"] = bake_profile_name
         merged["build"]["surface"]["resolved_bake_profile"] = resolved_bake_profile
         render_fixture_name = str(merged["build"]["surface"].get("render_fixture", "") or "")
-        resolved_render_fixture = self._resolve_mapping_optional(self.render_fixture_map, render_fixture_name, "render_fixture")
+        resolved_render_fixture = self._resolve_mapping_optional(
+            self.render_fixture_map, render_fixture_name, "render_fixture"
+        )
         if resolved_render_fixture:
-            merged["build"]["surface"] = deep_merge(deepcopy(resolved_render_fixture.get("values", {})), merged["build"]["surface"])
+            merged["build"]["surface"] = deep_merge(
+                deepcopy(resolved_render_fixture.get("values", {})), merged["build"]["surface"]
+            )
             merged["build"]["surface"]["render_fixture"] = render_fixture_name
         merged["build"]["surface"]["resolved_render_fixture"] = resolved_render_fixture
         resolved_policies = self._resolve_named_policies(merged)
@@ -591,7 +680,9 @@ class Resolver:
         return normalize_asset(merged)
 
 
-def materialize_asset(program: dict[str, Any], name: str, execution_profile_override: str | None = None) -> dict[str, Any]:
+def materialize_asset(
+    program: dict[str, Any], name: str, execution_profile_override: str | None = None
+) -> dict[str, Any]:
     """Materialize asset.
 
     Args:

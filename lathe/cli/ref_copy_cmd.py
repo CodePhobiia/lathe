@@ -63,12 +63,13 @@ def _choose_source(build_dir: Path, node) -> Path | None:
 
 
 def run_ref_copy(args) -> None:
+    """Copy the referenced build artifact to the target path."""
     token = args.token
     try:
         node = parse_ref(token)
     except RefParseError as exc:
         print(json.dumps({"ok": False, "error": {"code": exc.code, "message": str(exc)}}), file=sys.stderr)
-        raise SystemExit(2)
+        raise SystemExit(2) from exc
     repo_root = Path(getattr(args, "repo_root", None) or Path.cwd())
     result = resolve_ref(node, repo_root=repo_root)
     if not result.get("ok"):
@@ -78,12 +79,18 @@ def run_ref_copy(args) -> None:
     target_path = Path(result.get("target_path") or (repo_root / node.target))
     src = _choose_source(target_path, node)
     if src is None or not src.exists():
-        print(json.dumps({
-            "ok": False,
-            "error": "no_copyable_artifact",
-            "ref": asdict(node),
-            "message": f"no glb/bundle found for {node.raw} in {target_path}",
-        }, indent=2), file=sys.stderr)
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": "no_copyable_artifact",
+                    "ref": asdict(node),
+                    "message": f"no glb/bundle found for {node.raw} in {target_path}",
+                },
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
         raise SystemExit(4)
 
     dest = Path(args.target_path)
@@ -91,9 +98,14 @@ def run_ref_copy(args) -> None:
         dest = dest / src.name
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest)
-    print(json.dumps({
-        "ok": True,
-        "ref": asdict(node),
-        "source": str(src),
-        "dest": str(dest),
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "ref": asdict(node),
+                "source": str(src),
+                "dest": str(dest),
+            },
+            indent=2,
+        )
+    )

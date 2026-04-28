@@ -20,12 +20,14 @@ class ProbeBlenderTests(unittest.TestCase):
         fake_candidates = [mock.MagicMock()]
         fake_candidates[0].exists.return_value = True
         fake_candidates[0].__str__ = lambda self: "/fake/blender"
-        with mock.patch.object(capabilities, "_candidate_blender_paths", return_value=fake_candidates), \
-             mock.patch.object(
-                 capabilities,
-                 "_run_command",
-                 return_value={"ok": True, "returncode": 0, "stdout": "Blender 4.5.0\n", "stderr": ""},
-             ):
+        with (
+            mock.patch.object(capabilities, "_candidate_blender_paths", return_value=fake_candidates),
+            mock.patch.object(
+                capabilities,
+                "_run_command",
+                return_value={"ok": True, "returncode": 0, "stdout": "Blender 4.5.0\n", "stderr": ""},
+            ),
+        ):
             report = capabilities.probe_blender()
         self.assertTrue(report["available"])
         self.assertEqual(report["code"], "ok")
@@ -44,7 +46,12 @@ class ProbeXatlasTests(unittest.TestCase):
         with mock.patch.object(
             capabilities,
             "package_report",
-            return_value={"import_name": "xatlas", "distribution_name": "xatlas", "available": True, "version": "0.0.9"},
+            return_value={
+                "import_name": "xatlas",
+                "distribution_name": "xatlas",
+                "available": True,
+                "version": "0.0.9",
+            },
         ):
             report = capabilities.probe_xatlas()
         self.assertTrue(report["available"])
@@ -55,7 +62,12 @@ class ProbeXatlasTests(unittest.TestCase):
         with mock.patch.object(
             capabilities,
             "package_report",
-            return_value={"import_name": "xatlas", "distribution_name": "xatlas", "available": False, "version": None},
+            return_value={
+                "import_name": "xatlas",
+                "distribution_name": "xatlas",
+                "available": False,
+                "version": None,
+            },
         ):
             report = capabilities.probe_xatlas()
         self.assertFalse(report["available"])
@@ -77,8 +89,10 @@ class ProbeTorchTests(unittest.TestCase):
         fake_torch.__version__ = "2.1.0"
         fake_torch.cuda.is_available.return_value = False
         fake_torch.version.cuda = None
-        with mock.patch.object(capabilities, "_module_available", return_value=True), \
-             mock.patch.dict("sys.modules", {"torch": fake_torch}):
+        with (
+            mock.patch.object(capabilities, "_module_available", return_value=True),
+            mock.patch.dict("sys.modules", {"torch": fake_torch}),
+        ):
             report = capabilities.probe_torch()
         self.assertTrue(report["available"])
         self.assertEqual(report["code"], "ok")
@@ -116,19 +130,67 @@ class ProbeHunyuanEndpointTests(unittest.TestCase):
         self.assertFalse(report["available"])
         self.assertEqual(report["code"], "missing_base_url")
 
+    def test_health_probe_threads_configured_url_allowlist(self) -> None:
+        rc = {
+            "shape": {
+                "providers": {
+                    "hunyuan2_1_http": {
+                        "base_url": "https://hunyuan.example",
+                        "url_allowlist": ["hunyuan.example"],
+                    }
+                }
+            }
+        }
+        response = mock.MagicMock(status=200, body=b'{"status":"ok"}')
+        with mock.patch.object(capabilities, "safe_urlopen", return_value=response) as opened:
+            report = capabilities.probe_hunyuan_endpoint(rc)
+
+        self.assertTrue(report["available"])
+        self.assertEqual(opened.call_args.kwargs["allowlist"], ["hunyuan.example"])
+
+    def test_health_probe_requires_url_allowlist_before_network(self) -> None:
+        rc = {
+            "shape": {
+                "providers": {
+                    "hunyuan2_1_http": {
+                        "base_url": "https://hunyuan.example",
+                    }
+                }
+            }
+        }
+        with mock.patch("lathe.net.socket.getaddrinfo") as getaddrinfo:
+            report = capabilities.probe_hunyuan_endpoint(rc)
+
+        self.assertFalse(report["available"])
+        self.assertEqual(report["code"], "host_not_allowlisted")
+        getaddrinfo.assert_not_called()
+
 
 class DeterministicBackendReportsTests(unittest.TestCase):
     def test_unknown_backend_config_gracefully_falls_back(self) -> None:
-        with mock.patch.object(
-            capabilities,
-            "probe_blender",
-            return_value={"available": False, "code": "not_found", "python_module_available": False,
-                          "supported_modes": [], "asset_libraries": [], "addons": []},
-        ), mock.patch.object(
-            capabilities,
-            "probe_xatlas",
-            return_value={"available": False, "code": "not_installed", "version": None,
-                          "build_tools": {}},
+        with (
+            mock.patch.object(
+                capabilities,
+                "probe_blender",
+                return_value={
+                    "available": False,
+                    "code": "not_found",
+                    "python_module_available": False,
+                    "supported_modes": [],
+                    "asset_libraries": [],
+                    "addons": [],
+                },
+            ),
+            mock.patch.object(
+                capabilities,
+                "probe_xatlas",
+                return_value={
+                    "available": False,
+                    "code": "not_installed",
+                    "version": None,
+                    "build_tools": {},
+                },
+            ),
         ):
             reports = capabilities.deterministic_backend_reports({"topology": {"adapter": "weird_unknown"}})
         self.assertEqual(len(reports), 3)
@@ -138,16 +200,25 @@ class DeterministicBackendReportsTests(unittest.TestCase):
         self.assertIn("lathe.package.openusd_gltf_v1", ids)
 
     def test_capability_report_shape_has_required_keys(self) -> None:
-        with mock.patch.object(
-            capabilities,
-            "probe_blender",
-            return_value={"available": True, "code": "ok", "path": "/fake",
-                          "python_module_available": False, "supported_modes": ["background_cli"],
-                          "asset_libraries": [], "addons": []},
-        ), mock.patch.object(
-            capabilities,
-            "probe_xatlas",
-            return_value={"available": True, "code": "ok", "version": "0.0.9"},
+        with (
+            mock.patch.object(
+                capabilities,
+                "probe_blender",
+                return_value={
+                    "available": True,
+                    "code": "ok",
+                    "path": "/fake",
+                    "python_module_available": False,
+                    "supported_modes": ["background_cli"],
+                    "asset_libraries": [],
+                    "addons": [],
+                },
+            ),
+            mock.patch.object(
+                capabilities,
+                "probe_xatlas",
+                return_value={"available": True, "code": "ok", "version": "0.0.9"},
+            ),
         ):
             reports = capabilities.deterministic_backend_reports({})
         for report in reports:

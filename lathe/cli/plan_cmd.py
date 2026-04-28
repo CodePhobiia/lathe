@@ -40,15 +40,30 @@ def run_surface_plan(args) -> None:
     _dump(
         {
             "asset": args.name,
-            "backend": authoring.get("backend") or surface.get("backend") or build_surface.get("authoring_backend") or build_surface.get("backend"),
-            "resolved_backend_id": surface.get("resolved_surface_backend", {}).get("values", {}).get("id", ""),
+            "backend": (
+                authoring.get("backend")
+                or surface.get("backend")
+                or build_surface.get("authoring_backend")
+                or build_surface.get("backend")
+            ),
+            "resolved_backend_id": (
+                surface.get("resolved_surface_backend", {}).get("values", {}).get("id", "")
+            ),
             "policy": surface.get("policy", ""),
             "resolved_policy": plan["v1_2_surface"].get("resolved_surface_policy", ""),
             "zones": list(surface.get("material_zones", [])),
             "maps_to_generate": list(authoring.get("generate", [])),
             "maps_to_derive": list(authoring.get("derive", [])),
             "required_maps": list(policy_values.get("maps", build_surface.get("maps", []))),
-            "control_images": ["uv_layout", "padded_island_mask", "material_zone_mask", "ao", "curvature", "normal_reference", "preview"],
+            "control_images": [
+                "uv_layout",
+                "padded_island_mask",
+                "material_zone_mask",
+                "ao",
+                "curvature",
+                "normal_reference",
+                "preview",
+            ],
             "validation_gates": [
                 "surface_authoring_quality",
                 "material_zone_coherence",

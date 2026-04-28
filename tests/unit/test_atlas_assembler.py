@@ -42,17 +42,13 @@ class BuildAtlasAssemblyIRTests(unittest.TestCase):
         self.assertEqual(ir["schema"], "lathe.atlas_assembly_ir.v1")
         self.assertEqual(ir["mode"], "zone_first")
         self.assertEqual(ir["control_pack"], "control_pack/manifest.json")
-        self.assertEqual(
-            ir["compose"]["maps"], ["basecolor", "normal", "roughness"]
-        )
+        self.assertEqual(ir["compose"]["maps"], ["basecolor", "normal", "roughness"])
         self.assertEqual(len(ir["outputs"]), 3)
         self.assertEqual(ir["outputs"]["basecolor"], "atlas/basecolor.png")
         self.assertEqual(ir["outputs"]["normal"], "atlas/normal.png")
 
     def test_empty_sprite_list_yields_empty_outputs(self) -> None:
-        ir = build_atlas_assembly_ir(
-            _surface_cfg(maps=[]), _control_pack(), {}
-        )
+        ir = build_atlas_assembly_ir(_surface_cfg(maps=[]), _control_pack(), {})
         self.assertEqual(ir["compose"]["maps"], [])
         self.assertEqual(ir["outputs"], {})
         # Schema and mode must still be populated even in the empty case.
@@ -105,14 +101,10 @@ class BuildAtlasAssemblyIRTests(unittest.TestCase):
         # entry without that key must raise.
         bad_outputs = {"basecolor": {"wrong_key": "x.png"}}
         with self.assertRaises(KeyError):
-            build_atlas_assembly_ir(
-                _surface_cfg(maps=["basecolor"]), _control_pack(), bad_outputs
-            )
+            build_atlas_assembly_ir(_surface_cfg(maps=["basecolor"]), _control_pack(), bad_outputs)
 
     def test_control_pack_missing_manifest_uri_yields_none(self) -> None:
-        ir = build_atlas_assembly_ir(
-            _surface_cfg(maps=["basecolor"]), {}, _outputs(["basecolor"])
-        )
+        ir = build_atlas_assembly_ir(_surface_cfg(maps=["basecolor"]), {}, _outputs(["basecolor"]))
         self.assertIsNone(ir["control_pack"])
 
 

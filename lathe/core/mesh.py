@@ -15,6 +15,7 @@ import trimesh
 @dataclass
 class RuntimeMesh:
     """RuntimeMesh."""
+
     mesh: trimesh.Trimesh
     face_parts: list[str]
     part_colors: dict[str, tuple[int, int, int]]

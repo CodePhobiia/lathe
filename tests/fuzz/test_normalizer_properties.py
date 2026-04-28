@@ -14,6 +14,7 @@ AST-shaped dicts directly rather than going through ``parse_text``,
 giving the normalizer a wider input distribution than any source-text
 strategy could.
 """
+
 from __future__ import annotations
 
 import os
@@ -21,10 +22,12 @@ from copy import deepcopy
 from typing import Any
 
 import pytest
-from hypothesis import HealthCheck, given, settings, strategies as st
-
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from lathe.normalizer import normalize_asset, normalize_program
 from lathe.parser import parse_text
+
+pytestmark = pytest.mark.fuzz
 
 
 # Scale knob (BL-42): default 200 (fast, PR CI / local smoke);
@@ -42,9 +45,7 @@ _IDENT = st.from_regex(r"[a-z][a-z0-9_]{0,8}", fullmatch=True)
 def _assert_idempotent_program(program: dict) -> None:
     once = normalize_program(deepcopy(program))
     twice = normalize_program(deepcopy(once))
-    assert once == twice, (
-        "normalize_program not idempotent: differs on second pass."
-    )
+    assert once == twice, "normalize_program not idempotent: differs on second pass."
 
 
 def _assert_idempotent_asset(asset: dict) -> None:
@@ -177,14 +178,22 @@ def _random_program(draw: Any) -> dict:
 
 
 @given(program=_random_program())
-@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
+@settings(
+    max_examples=MAX_EXAMPLES,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much],
+)
 def test_normalize_program_idempotent(program: dict) -> None:
     """Property: ``normalize_program(normalize_program(x)) == normalize_program(x)``."""
     _assert_idempotent_program(program)
 
 
 @given(asset=_random_asset_node())
-@settings(max_examples=MAX_EXAMPLES, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
+@settings(
+    max_examples=MAX_EXAMPLES,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much],
+)
 def test_normalize_asset_idempotent(asset: dict) -> None:
     """Property: ``normalize_asset(normalize_asset(x)) == normalize_asset(x)``."""
     _assert_idempotent_asset(asset)

@@ -7,13 +7,14 @@ units, binary ops and literal folding.
 from __future__ import annotations
 
 import ast as py_ast
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from lark import Transformer, v_args
 
 from .grammar import (
-    LatheParseError,
     _UNIT_RE,
+    LatheParseError,
     _dedupe_keep_first,
     _num,
     _set_nested,
@@ -392,7 +393,13 @@ class _TransformerExprMixin(Transformer):
             _set_nested(values, path, value, context)
         return values
 
-    def _structured_decl(self, node_type: str, name: str, *rest: Any, kind: str | None = None) -> dict[str, Any]:
+    def _structured_decl(
+        self,
+        node_type: str,
+        name: str,
+        *rest: Any,
+        kind: str | None = None,
+    ) -> dict[str, Any]:
         uses: list[str] = []
         defaults: dict[str, Any] = {}
         params: dict[str, Any] = {}
@@ -423,9 +430,7 @@ class _TransformerExprMixin(Transformer):
                     surface = item["values"]
                 elif node == "assembly":
                     assembly = item["values"]
-                elif node == "space_inline":
-                    space = item
-                elif node == "search_inline":
+                elif node in {"space_inline", "search_inline"}:
                     space = item
                 elif node == "repair_policy_inline":
                     repair_policy = item["values"]

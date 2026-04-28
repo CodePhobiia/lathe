@@ -153,8 +153,8 @@ asset courier_drone: mechanical_assembly uses shipping_prop {
     }
 
     interfaces {
-      sockets = [battery_slot, underslung_mount]
-      anchors = [floor_contact]
+      sockets = [socket(id: battery_slot, socket_type: slot), socket(id: underslung_mount, socket_type: mount)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

@@ -14,7 +14,6 @@ are sorted by code.
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path, PurePath
 from typing import Any
@@ -23,31 +22,27 @@ from .html import render_html_report
 from .terminal import render_terminal_report
 
 __all__ = [
-    "render_terminal_report",
-    "render_html_report",
-    "write_report",
     "canonicalize_report",
+    "render_html_report",
+    "render_terminal_report",
+    "write_report",
 ]
 
 
-_ISO_TIMESTAMP_RE = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$"
-)
+_ISO_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$")
 _ZEROED_TIMESTAMP = "0000-00-00T00:00:00Z"
 
 _TIMESTAMP_KEYS: frozenset[str] = frozenset(
     {"timestamp", "started_at", "finished_at", "built_at", "created_at", "updated_at"}
 )
-_RUNTIME_KEYS: frozenset[str] = frozenset(
-    {"runtime_ms", "elapsed_ms", "duration_ms", "wall_ms"}
-)
+_RUNTIME_KEYS: frozenset[str] = frozenset({"runtime_ms", "elapsed_ms", "duration_ms", "wall_ms"})
 _RUNTIME_SEC_KEYS: frozenset[str] = frozenset(
     {"runtime_s", "elapsed_s", "duration_s", "wall_s", "elapsed_seconds"}
 )
 
 
 def _home_prefixes() -> list[str]:
-    home = os.path.expanduser("~")
+    home = str(Path("~").expanduser())
     out: list[str] = []
     if home and home != "~":
         out.append(home.replace("\\", "/"))
@@ -60,7 +55,7 @@ def _canonical_path(raw: str) -> str:
     for home in _home_prefixes():
         home_norm = home.replace("\\", "/")
         if forward.startswith(home_norm):
-            forward = "<home>" + forward[len(home_norm):]
+            forward = "<home>" + forward[len(home_norm) :]
             break
     return forward
 
@@ -90,7 +85,7 @@ def _canonicalize_value(key: str, value: Any) -> Any:
         if key in _RUNTIME_SEC_KEYS:
             return round(value, 3)
     if isinstance(value, (int, float)) and key in _RUNTIME_KEYS:
-        return int(round(float(value)))
+        return round(float(value))
     return value
 
 
@@ -119,7 +114,6 @@ def canonicalize_report(build_report: dict[str, Any]) -> dict[str, Any]:
     nearest ms, keys sorted recursively, diagnostics sorted by code.
     The input is not mutated.
     """
-
     return _canonicalize_dict(build_report)
 
 
@@ -145,7 +139,6 @@ def write_report(
     canonical formatting (sorted keys, ``(",", ": ")`` separators)
     so two fresh builds emit byte-identical files.
     """
-
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     fmt = format.lower()

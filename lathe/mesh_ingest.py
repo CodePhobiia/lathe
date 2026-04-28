@@ -17,7 +17,7 @@ import numpy as np
 import trimesh
 
 from .errors import ShapeMeshLoadError
-
+from .security import InputClass, TrustLevel, boundary_policy, ingress_boundary
 
 # trimesh's public load-failure class moved between versions; fall back
 # to ``Exception`` at the narrowest if the attribute is missing. We still
@@ -27,12 +27,24 @@ _TRIMESH_LOAD_EXC: tuple[type[BaseException], ...] = tuple(
 )
 
 
-ALLOWED_MESH_FORMATS = frozenset({".glb", ".gltf", ".obj", ".ply", ".stl"})
+ALLOWED_MESH_FORMATS = frozenset({".glb", ".gltf", ".obj", ".off", ".ply", ".stl"})
 DEFAULT_MAX_BYTES = 256 * 1024 * 1024  # 256 MiB
 _MAX_FACES = 5_000_000
 _MAX_VERTICES = 5_000_000
 
 _PROVIDER_ID = "lathe.mesh_ingest"
+_MESH_INGEST_BOUNDARY = boundary_policy(
+    name="external_mesh_ingest",
+    input_class=InputClass.EXTERNAL_MESH,
+    trust_level=TrustLevel.UNTRUSTED,
+    controls=(
+        "format_allowlist",
+        "byte_cap",
+        "magic_byte_sniff",
+        "trimesh_exception_narrowing",
+        "post_load_sanity",
+    ),
+)
 
 
 def _raise(code: str, **details) -> None:
@@ -64,6 +76,11 @@ def _sniff_magic(path: Path, ext: str, filesize: int) -> None:
             _raise("magic_mismatch", ext=ext, actual_prefix="")
         first = prefix[0]
         if first < 0x20 or first > 0x7E:
+            _raise("magic_mismatch", ext=ext, actual_prefix=prefix[:4].hex())
+        return
+
+    if ext == ".off":
+        if not prefix.startswith(b"OFF") and not prefix.startswith(b"COFF"):
             _raise("magic_mismatch", ext=ext, actual_prefix=prefix[:4].hex())
         return
 
@@ -126,6 +143,7 @@ def _post_load_sanity(mesh: trimesh.Trimesh) -> None:
             _raise("post_load_sanity", field="bounds", detail="non-finite bound")
 
 
+@ingress_boundary(_MESH_INGEST_BOUNDARY)
 def safe_load_mesh(
     path: Path,
     *,

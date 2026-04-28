@@ -136,8 +136,8 @@ asset corpus_pedestal: hard_surface_prop from control_pedestal_family uses shipp
     }
 
     interfaces {
-      sockets = [power_socket]
-      anchors = [floor_contact]
+      sockets = [socket(id: power_socket, socket_type: port)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

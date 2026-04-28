@@ -20,19 +20,17 @@ A third tripwire fires when the mesh is *too* smooth with no readable
 silhouette features -- this yields ``soft_silhouette_too_smooth`` and
 catches degenerate all-sphere outputs.
 
-# TODO(BL-34-followup): full curvature-continuity analysis (per-vertex
-# principal curvatures, per-edge C^1/C^2 continuity, silhouette-edge
-# ray casts from canonical camera angles) is deferred to the full
-# Plan 08 Phase 4 implementation. The thresholds below are tuned so
-# a minimal hero (rounded bag shape) certifies and so a crafted-bad
-# input (jagged cube, flat plane) fails loudly in tests.
+BL-34 follow-up: full curvature-continuity analysis (per-vertex principal
+curvatures, per-edge C^1/C^2 continuity, silhouette-edge ray casts from
+canonical camera angles) is deferred to the full Plan 08 Phase 4 implementation.
+The thresholds below are tuned so a minimal hero (rounded bag shape) certifies
+and so a crafted-bad input (jagged cube, flat plane) fails loudly in tests.
 """
 
 from __future__ import annotations
 
 import math
 from typing import Any
-
 
 # Thresholds -- tuned for the Wave 4.IV.e proof. See docstring.
 MIN_TRIANGLE_SAMPLES = 24
@@ -45,8 +43,7 @@ IDEAL_SAMPLE_TARGET = 500
 def _mesh_stats(runtime: dict[str, Any]) -> dict[str, Any]:
     topology = runtime.get("topology", {}) or {}
     bundle = topology.get("bundle", {}) or {}
-    stats = bundle.get("mesh_stats", {}) or {}
-    return stats
+    return bundle.get("mesh_stats", {}) or {}
 
 
 def _max_dihedral_degrees(runtime: dict[str, Any]) -> float:
@@ -64,7 +61,7 @@ def _max_dihedral_degrees(runtime: dict[str, Any]) -> float:
     try:
         adjacency = mesh.face_adjacency
         angles = mesh.face_adjacency_angles
-    except Exception:  # noqa: BLE001 -- defensive; any trimesh call can raise
+    except (AttributeError, TypeError, ValueError, RuntimeError):
         return 0.0
     if angles is None or len(angles) == 0 or len(adjacency) == 0:
         return 0.0
@@ -89,7 +86,7 @@ def _edge_length_variance(runtime: dict[str, Any]) -> float:
     mesh = runtime_mesh.mesh
     try:
         lengths = mesh.edges_unique_length
-    except Exception:  # noqa: BLE001
+    except (AttributeError, TypeError, ValueError, RuntimeError):
         return 0.0
     if lengths is None or len(lengths) == 0:
         return 0.0
@@ -129,82 +126,97 @@ def evaluate_soft_silhouette(asset: dict[str, Any], runtime: dict[str, Any]) -> 
 
     # Tripwire 1: too few samples -> too jagged to read as soft.
     if triangle_count > 0 and triangle_count < MIN_TRIANGLE_SAMPLES:
-        diagnostics.append({
-            "code": "L6701",
-            "name": "soft_silhouette_too_jagged",
-            "severity": "error",
-            "phase": "validate",
-            "asset": asset_name,
-            "stage": "validate",
-            "path": "validate.soft_silhouette.samples",
-            "message": (
-                f"Soft silhouette has only {triangle_count} triangle samples "
-                f"(minimum {MIN_TRIANGLE_SAMPLES}); silhouette reads as jagged."
-            ),
-            "suggested_repairs": ["retopo_auto", "reselect_candidate"],
-        })
+        diagnostics.append(
+            {
+                "code": "L6701",
+                "name": "soft_silhouette_too_jagged",
+                "severity": "error",
+                "phase": "validate",
+                "asset": asset_name,
+                "stage": "validate",
+                "path": "validate.soft_silhouette.samples",
+                "message": (
+                    f"Soft silhouette has only {triangle_count} triangle samples "
+                    f"(minimum {MIN_TRIANGLE_SAMPLES}); silhouette reads as jagged."
+                ),
+                "suggested_repairs": ["retopo_auto", "reselect_candidate"],
+            }
+        )
 
     if vertex_count > 0 and vertex_count < MIN_VERTEX_SAMPLES:
-        diagnostics.append({
-            "code": "L6702",
-            "name": "soft_silhouette_too_jagged",
-            "severity": "error",
-            "phase": "validate",
-            "asset": asset_name,
-            "stage": "validate",
-            "path": "validate.soft_silhouette.vertices",
-            "message": (
-                f"Soft silhouette has only {vertex_count} vertex samples "
-                f"(minimum {MIN_VERTEX_SAMPLES})."
-            ),
-            "suggested_repairs": ["retopo_auto", "reselect_candidate"],
-        })
+        diagnostics.append(
+            {
+                "code": "L6702",
+                "name": "soft_silhouette_too_jagged",
+                "severity": "error",
+                "phase": "validate",
+                "asset": asset_name,
+                "stage": "validate",
+                "path": "validate.soft_silhouette.vertices",
+                "message": (
+                    f"Soft silhouette has only {vertex_count} vertex samples (minimum {MIN_VERTEX_SAMPLES})."
+                ),
+                "suggested_repairs": ["retopo_auto", "reselect_candidate"],
+            }
+        )
 
     # Tripwire 2: too-sharp fold -> too jagged crease.
     if max_dihedral > MAX_DIHEDRAL_DEGREES:
-        diagnostics.append({
-            "code": "L6703",
-            "name": "soft_silhouette_too_jagged",
-            "severity": "error",
-            "phase": "validate",
-            "asset": asset_name,
-            "stage": "validate",
-            "path": "validate.soft_silhouette.max_dihedral",
-            "message": (
-                f"Maximum dihedral angle {max_dihedral:.1f} deg exceeds soft-surface "
-                f"fold limit {MAX_DIHEDRAL_DEGREES:.1f} deg."
-            ),
-            "suggested_repairs": ["retopo_auto", "reselect_candidate"],
-        })
+        diagnostics.append(
+            {
+                "code": "L6703",
+                "name": "soft_silhouette_too_jagged",
+                "severity": "error",
+                "phase": "validate",
+                "asset": asset_name,
+                "stage": "validate",
+                "path": "validate.soft_silhouette.max_dihedral",
+                "message": (
+                    f"Maximum dihedral angle {max_dihedral:.1f} deg exceeds soft-surface "
+                    f"fold limit {MAX_DIHEDRAL_DEGREES:.1f} deg."
+                ),
+                "suggested_repairs": ["retopo_auto", "reselect_candidate"],
+            }
+        )
 
     # Tripwire 3: too-smooth / no features -> unreadable silhouette.
     if triangle_count > 0 and edge_variance < MIN_READABLE_EDGE_VARIANCE:
-        diagnostics.append({
-            "code": "L6704",
-            "name": "soft_silhouette_too_smooth",
-            "severity": "warning",
-            "phase": "validate",
-            "asset": asset_name,
-            "stage": "validate",
-            "path": "validate.soft_silhouette.edge_variance",
-            "message": (
-                f"Edge-length variance {edge_variance:.6f} is below "
-                f"{MIN_READABLE_EDGE_VARIANCE:.6f}; silhouette is featureless."
-            ),
-            "suggested_repairs": ["reselect_candidate"],
-        })
+        diagnostics.append(
+            {
+                "code": "L6704",
+                "name": "soft_silhouette_too_smooth",
+                "severity": "warning",
+                "phase": "validate",
+                "asset": asset_name,
+                "stage": "validate",
+                "path": "validate.soft_silhouette.edge_variance",
+                "message": (
+                    f"Edge-length variance {edge_variance:.6f} is below "
+                    f"{MIN_READABLE_EDGE_VARIANCE:.6f}; silhouette is featureless."
+                ),
+                "suggested_repairs": ["reselect_candidate"],
+            }
+        )
 
     # Score: simple composite across the same three axes so callers can
     # blend into a critic weighting. Higher is better.
-    sample_score = 1.0 if triangle_count >= MIN_TRIANGLE_SAMPLES else (
-        triangle_count / max(1, MIN_TRIANGLE_SAMPLES)
+    sample_score = (
+        1.0 if triangle_count >= MIN_TRIANGLE_SAMPLES else (triangle_count / max(1, MIN_TRIANGLE_SAMPLES))
     )
-    sample_score = min(1.0, triangle_count / IDEAL_SAMPLE_TARGET) if triangle_count > MIN_TRIANGLE_SAMPLES else sample_score
-    fold_score = 1.0 if max_dihedral <= MAX_DIHEDRAL_DEGREES else max(
-        0.0, 1.0 - (max_dihedral - MAX_DIHEDRAL_DEGREES) / 30.0
+    sample_score = (
+        min(1.0, triangle_count / IDEAL_SAMPLE_TARGET)
+        if triangle_count > MIN_TRIANGLE_SAMPLES
+        else sample_score
     )
-    variance_score = 1.0 if edge_variance >= MIN_READABLE_EDGE_VARIANCE else max(
-        0.0, edge_variance / max(MIN_READABLE_EDGE_VARIANCE, 1e-9)
+    fold_score = (
+        1.0
+        if max_dihedral <= MAX_DIHEDRAL_DEGREES
+        else max(0.0, 1.0 - (max_dihedral - MAX_DIHEDRAL_DEGREES) / 30.0)
+    )
+    variance_score = (
+        1.0
+        if edge_variance >= MIN_READABLE_EDGE_VARIANCE
+        else max(0.0, edge_variance / max(MIN_READABLE_EDGE_VARIANCE, 1e-9))
     )
     composite = 0.5 * sample_score + 0.35 * fold_score + 0.15 * variance_score
 

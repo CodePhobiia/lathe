@@ -1,0 +1,88 @@
+{
+  "event": "build_ping",
+  "salt": "00112233445566778899aabbccddeeff",
+  "build_report": {
+    "build_id": "cache-key-golden-001",
+    "kind": "mechanical_assembly",
+    "backend_stack": {
+      "id": "lathe.stack.hard_surface_game_asset_v1"
+    },
+    "certified": false,
+    "ok": false,
+    "wall_ms": "9876",
+    "asset": "secret_local_asset_name",
+    "asset_path": "C:/Users/alice/private/asset.lth",
+    "out_dir": "D:/private/build",
+    "source_path": "/home/alice/secrets/source.lth",
+    "env": {
+      "LATHE_TOKEN": "super-secret-token"
+    },
+    "diagnostics": [
+      {
+        "message": "contains private topology notes"
+      }
+    ],
+    "logs": "raw build log with local details",
+    "outputs": [
+      {
+        "format": "glb",
+        "uri": "stages/package/private_asset.glb",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size_bytes": 12345
+      }
+    ],
+    "runtime_config": {
+      "provider_api_key": "sk-local-secret"
+    }
+  },
+  "expected_payload": {
+    "lathe_version": "0.2.0rc1",
+    "build_id_hash": "4c00ad8bec8f6988",
+    "build_kind": "mechanical_assembly",
+    "stack_id": "lathe.stack.hard_surface_game_asset_v1",
+    "certified": false,
+    "exit_code": 1,
+    "wall_ms": 9876
+  },
+  "forbidden_payload_keys": [
+    "asset",
+    "asset_path",
+    "asset_content",
+    "cwd",
+    "diagnostics",
+    "env",
+    "environment",
+    "file",
+    "files",
+    "home",
+    "hostname",
+    "ip",
+    "logs",
+    "out_dir",
+    "repo_root",
+    "runtime_config",
+    "salt",
+    "secret",
+    "source_path",
+    "stderr",
+    "stdout",
+    "token",
+    "user",
+    "username"
+  ],
+  "forbidden_payload_strings": [
+    "00112233445566778899aabbccddeeff",
+    "cache-key-golden-001",
+    "secret_local_asset_name",
+    "C:/Users/alice",
+    "D:/private",
+    "/home/alice",
+    "LATHE_TOKEN",
+    "super-secret-token",
+    "contains private topology notes",
+    "raw build log with local details",
+    "stages/package/private_asset.glb",
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "sk-local-secret"
+  ]
+}

@@ -36,4 +36,15 @@ Provider proposals are *optional sources under a stable contract* — they are n
 
 Key modules that implement this stage live in the `lathe/` package: `asset_graph.py`, `assembly_kernel.py`, `scaffold_compiler.py`, `shape_ir.py`, `feature_grammar.py`, `feature_fusion.py`, `mesh_finalize.py`, `conformance.py`, `shape_backend.py`, `shape_providers.py`.
 
-See [Backends](backends.md) for how the shape contract binds into a concrete stack and how fallbacks cascade across stages.
+## Public vs internal shape surface
+
+The public shape surface is the `lathe.shape.intent_mesh_handoff_v1` backend
+descriptor and the emitted shape bundle fields pinned by
+`tests/contract/test_shape_handoff_v1.py`. The implementation path
+(`AssetGraph`, blueprints, `ShapeIR`, search geometry, provider proposals, and
+conformance fit) is internal and may be refactored as long as the v1 bundle and
+provider report remain compatible.
+
+See [Backends](backends.md) for how the shape contract binds into a concrete
+stack, [Pipeline](pipeline.md) for how fallbacks cascade across stages, and
+[Public contracts and internal boundaries](contracts.md) for migration rules.

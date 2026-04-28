@@ -135,8 +135,8 @@ asset corpus_door: env_module from mechanical_door_family uses shipping_module {
     }
 
     interfaces {
-      sockets = [power_socket]
-      anchors = [wall_mount_anchor]
+      sockets = [socket(id: power_socket, socket_type: port)]
+      pivots = [pivot(id: wall_mount_anchor, pivot_type: contact)]
       clearance = 2cm
     }
 

@@ -32,7 +32,6 @@ def build_handler_class(build_dir: Path, static_dir: Path = STATIC_DIR) -> type:
     Serves files from ``static_dir`` and exposes the build's ``.glb``
     at ``/asset.glb``.
     """
-
     build_dir = Path(build_dir).resolve()
     static_dir = Path(static_dir).resolve()
     glb_path = _find_glb(build_dir)
@@ -57,7 +56,6 @@ def build_handler_class(build_dir: Path, static_dir: Path = STATIC_DIR) -> type:
 
 def serve(build_dir: Path, port: int = 8765) -> None:
     """Block-serve the viewer against ``build_dir`` on ``port``."""
-
     handler_cls = build_handler_class(Path(build_dir))
     with socketserver.TCPServer(("127.0.0.1", int(port)), handler_cls) as httpd:
         print(f"Serving lathe viewer on http://127.0.0.1:{port}  (Ctrl+C to stop)")

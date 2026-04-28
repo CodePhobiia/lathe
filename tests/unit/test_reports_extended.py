@@ -59,7 +59,11 @@ def _populate_build_dir(root: Path) -> None:
                     {"id": "rotor_rl", "ref": "@lathe[courier_drone#part.rotor_rl]", "name": "rotor_rl"},
                 ],
                 "sockets": [
-                    {"id": "battery_slot", "ref": "@lathe[courier_drone#socket.battery_slot]", "name": "battery_slot"},
+                    {
+                        "id": "battery_slot",
+                        "ref": "@lathe[courier_drone#socket.battery_slot]",
+                        "name": "battery_slot",
+                    },
                 ],
                 "pivots": [],
                 "collisions": [],
@@ -119,7 +123,11 @@ def _populate_build_dir(root: Path) -> None:
                         "name": "parts",
                         "path": "stages/optimize/collision_parts.glb",
                         "subproxies": [
-                            {"name": "body", "tris": 126, "aabb": {"min": [-64.0, -16.0, -70.0], "max": [64.0, 20.0, 70.0]}},
+                            {
+                                "name": "body",
+                                "tris": 126,
+                                "aabb": {"min": [-64.0, -16.0, -70.0], "max": [64.0, 20.0, 70.0]},
+                            },
                             {"name": "rotor_fl", "tris": 154},
                         ],
                     },
@@ -221,9 +229,7 @@ class DeterministicTests(unittest.TestCase):
         self.assertEqual(canon["timestamp"], "0000-00-00T00:00:00Z")
         self.assertEqual(canon["started_at"], "0000-00-00T00:00:00Z")
         self.assertNotIn("\\", canon["out_dir"])
-        self.assertEqual(
-            canon["stages_runtime"]["shape"]["runtime_ms"], 124
-        )
+        self.assertEqual(canon["stages_runtime"]["shape"]["runtime_ms"], 124)
         # Diagnostics now sorted by code
         codes = [d["code"] for d in canon["diagnostics"]]
         self.assertEqual(codes, ["a.first", "b.later"])

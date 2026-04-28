@@ -9,6 +9,7 @@ work unchanged.
 Remove after V1.4 when downstream callers have migrated to
 ``lathe.providers`` imports.
 """
+
 from __future__ import annotations
 
 from .providers import (  # noqa: F401
@@ -54,10 +55,9 @@ from .providers import (  # noqa: F401
     resolve_shape_provider,
 )
 
-
 __all__ = [
-    "PROVIDER_ALIASES",
     "PROVIDERS",
+    "PROVIDER_ALIASES",
     "ShapeMeshLoadError",
     "ShapeProviderError",
     "ShapeProviderExecutionError",

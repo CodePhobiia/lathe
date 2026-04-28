@@ -25,12 +25,18 @@ def check_surface_v12_refs(checker: Any, surface: dict[str, Any], path_prefix: s
         ("policy", checker.resolver.surface_policy_map, "surface_policy", "L5221"),
         ("backend", checker.resolver.surface_backend_map, "surface_backend", "L5222"),
     ]
-    authoring_backend = surface.get("authoring", {}).get("backend") if isinstance(surface.get("authoring"), dict) else ""
+    authoring_backend = (
+        surface.get("authoring", {}).get("backend") if isinstance(surface.get("authoring"), dict) else ""
+    )
     if authoring_backend and authoring_backend in checker.resolver.surface_backend_map:
         surface = {**surface, "backend": authoring_backend}
     for field, namespace, label, code in checks:
         name = surface.get(field)
-        if name and name not in namespace and not (field == "backend" and str(name).startswith("lathe.surface.")):
+        if (
+            name
+            and name not in namespace
+            and not (field == "backend" and str(name).startswith("lathe.surface."))
+        ):
             checker.diagnostics.append(
                 diag(
                     code,

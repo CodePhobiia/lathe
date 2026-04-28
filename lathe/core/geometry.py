@@ -9,6 +9,7 @@ because tests import it directly.
 from __future__ import annotations
 
 from collections import Counter
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,8 @@ import numpy as np
 import trimesh
 
 from .mesh import RuntimeMesh
+
+SPARSE_PART_FACE_THRESHOLD = 2
 
 
 def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, str | None]:
@@ -30,12 +33,10 @@ def seal_non_watertight_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, st
     if mesh.is_watertight:
         return mesh, None
     repaired = mesh.copy()
-    try:
+    # trimesh.fill_holes can fail on degenerate topology; move on to the
+    # convex-hull fallback below.
+    with suppress(ValueError, IndexError, AttributeError, RuntimeError):
         repaired.fill_holes()
-    except (ValueError, IndexError, AttributeError, RuntimeError):
-        # trimesh.fill_holes can fail on degenerate topology; swallow and move on
-        # to the convex-hull fallback below.
-        pass
     if repaired.is_watertight:
         return repaired, "fill_holes"
     try:
@@ -70,7 +71,12 @@ def quadrant_tokens(part_name: str) -> tuple[int | None, int | None]:
     return None, None
 
 
-def assign_faces_by_score(assignments: np.ndarray, score: np.ndarray, part_name: str, face_count: int) -> None:
+def assign_faces_by_score(
+    assignments: np.ndarray,
+    score: np.ndarray,
+    part_name: str,
+    face_count: int,
+) -> None:
     """Assign faces by score.
 
     Args:
@@ -92,7 +98,104 @@ def assign_faces_by_score(assignments: np.ndarray, score: np.ndarray, part_name:
             break
 
 
-def infer_face_parts_from_mesh(mesh: trimesh.Trimesh, expected_parts: list[str], default_name: str) -> list[str]:
+def _matching_parts(expected_parts: list[str], tokens: tuple[str, ...]) -> list[str]:
+    return [part for part in expected_parts if any(token in part.lower() for token in tokens)]
+
+
+def _left_right_sign(part_name: str) -> int:
+    name = part_name.lower()
+    if any(token in name for token in ("_l", " left")):
+        return 1
+    if any(token in name for token in ("_r", " right")):
+        return -1
+    return 0
+
+
+def _assign_rotor_parts(
+    assignments: np.ndarray,
+    expected_parts: list[str],
+    face_count: int,
+    y: np.ndarray,
+    x: np.ndarray,
+    z: np.ndarray,
+    radial: np.ndarray,
+) -> None:
+    rotor_parts = _matching_parts(expected_parts, ("rotor", "fan", "prop"))
+    rotor_target = max(4, face_count // max(12, len(rotor_parts) * 8)) if rotor_parts else 0
+    for part_name in rotor_parts:
+        x_sign, z_sign = quadrant_tokens(part_name)
+        score = np.maximum(0.0, y) * 0.35 + np.maximum(0.0, radial - 0.2) * 0.65
+        if x_sign is not None:
+            score += 0.4 * np.maximum(0.0, x * x_sign)
+        if z_sign is not None:
+            score += 0.4 * np.maximum(0.0, z * z_sign)
+        assign_faces_by_score(assignments, score, part_name, rotor_target)
+
+
+def _assign_leg_parts(
+    assignments: np.ndarray,
+    expected_parts: list[str],
+    face_count: int,
+    x: np.ndarray,
+    y: np.ndarray,
+) -> None:
+    leg_parts = _matching_parts(expected_parts, ("leg", "foot"))
+    leg_target = max(3, face_count // max(18, len(leg_parts) * 10)) if leg_parts else 0
+    for part_name in leg_parts:
+        x_sign = _left_right_sign(part_name)
+        score = np.maximum(0.0, -y) * 0.6 + np.maximum(0.0, np.abs(x) - 0.1) * 0.4
+        if x_sign != 0:
+            score += 0.35 * np.maximum(0.0, x * x_sign)
+        assign_faces_by_score(assignments, score, part_name, leg_target)
+
+
+def _assign_named_feature_parts(
+    assignments: np.ndarray,
+    expected_parts: list[str],
+    face_count: int,
+    x: np.ndarray,
+    y: np.ndarray,
+    z: np.ndarray,
+) -> None:
+    for part_name in expected_parts:
+        lname = part_name.lower()
+        if any(token in lname for token in ("door", "hatch", "cargo")):
+            score = np.maximum(0.0, z) * 0.7 + np.maximum(0.0, -np.abs(y - (-0.1)) + 0.8) * 0.3
+            assign_faces_by_score(assignments, score, part_name, max(4, face_count // 16))
+        elif any(token in lname for token in ("camera", "gimbal", "sensor")):
+            score = np.maximum(0.0, z) * 0.55 + np.maximum(0.0, -y) * 0.45
+            assign_faces_by_score(assignments, score, part_name, max(4, face_count // 18))
+        elif any(token in lname for token in ("wing", "arm")):
+            score = np.maximum(0.0, np.abs(x) - 0.15) * 0.6 + np.maximum(0.0, np.abs(z) - 0.15) * 0.4
+            assign_faces_by_score(assignments, score, part_name, max(4, face_count // 16))
+
+
+def _assign_missing_parts(
+    assignments: np.ndarray,
+    expected_parts: list[str],
+    default_name: str,
+    normalized: np.ndarray,
+) -> None:
+    assigned = set(assignments.tolist())
+    missing_parts = [part for part in expected_parts if part != default_name and part not in assigned]
+    if not missing_parts:
+        return
+    order = np.argsort(np.linalg.norm(normalized, axis=1))[::-1]
+    cursor = 0
+    for part_name in missing_parts:
+        while cursor < len(order) and assignments[order[cursor]] != default_name:
+            cursor += 1
+        if cursor >= len(order):
+            break
+        assignments[order[cursor]] = part_name
+        cursor += 1
+
+
+def infer_face_parts_from_mesh(
+    mesh: trimesh.Trimesh,
+    expected_parts: list[str],
+    default_name: str,
+) -> list[str]:
     """Infer face parts from mesh.
 
     Args:
@@ -103,7 +206,7 @@ def infer_face_parts_from_mesh(mesh: trimesh.Trimesh, expected_parts: list[str],
     Returns:
         The result.
     """
-    face_count = int(len(mesh.faces))
+    face_count = len(mesh.faces)
     if face_count == 0:
         return []
     centroids = np.asarray(mesh.triangles_center, dtype=np.float64)
@@ -117,54 +220,29 @@ def infer_face_parts_from_mesh(mesh: trimesh.Trimesh, expected_parts: list[str],
     radial = np.sqrt(np.maximum(0.0, x * x + z * z))
     assignments = np.array([default_name] * face_count, dtype=object)
 
-    rotor_parts = [part for part in expected_parts if any(token in part.lower() for token in ("rotor", "fan", "prop"))]
-    rotor_target = max(4, face_count // max(12, len(rotor_parts) * 8)) if rotor_parts else 0
-    for part_name in rotor_parts:
-        x_sign, z_sign = quadrant_tokens(part_name)
-        score = np.maximum(0.0, y) * 0.35 + np.maximum(0.0, radial - 0.2) * 0.65
-        if x_sign is not None:
-            score += 0.4 * np.maximum(0.0, x * x_sign)
-        if z_sign is not None:
-            score += 0.4 * np.maximum(0.0, z * z_sign)
-        assign_faces_by_score(assignments, score, part_name, rotor_target)
-
-    leg_parts = [part for part in expected_parts if any(token in part.lower() for token in ("leg", "foot"))]
-    leg_target = max(3, face_count // max(18, len(leg_parts) * 10)) if leg_parts else 0
-    for part_name in leg_parts:
-        x_sign = 1 if any(token in part_name.lower() for token in ("_l", " left")) else -1 if any(token in part_name.lower() for token in ("_r", " right")) else 0
-        score = np.maximum(0.0, -y) * 0.6 + np.maximum(0.0, np.abs(x) - 0.1) * 0.4
-        if x_sign != 0:
-            score += 0.35 * np.maximum(0.0, x * x_sign)
-        assign_faces_by_score(assignments, score, part_name, leg_target)
-
-    for part_name in expected_parts:
-        lname = part_name.lower()
-        if any(token in lname for token in ("door", "hatch", "cargo")):
-            score = np.maximum(0.0, z) * 0.7 + np.maximum(0.0, -np.abs(y - (-0.1)) + 0.8) * 0.3
-            assign_faces_by_score(assignments, score, part_name, max(4, face_count // 16))
-        elif any(token in lname for token in ("camera", "gimbal", "sensor")):
-            score = np.maximum(0.0, z) * 0.55 + np.maximum(0.0, -y) * 0.45
-            assign_faces_by_score(assignments, score, part_name, max(4, face_count // 18))
-        elif any(token in lname for token in ("wing", "arm")):
-            score = np.maximum(0.0, np.abs(x) - 0.15) * 0.6 + np.maximum(0.0, np.abs(z) - 0.15) * 0.4
-            assign_faces_by_score(assignments, score, part_name, max(4, face_count // 16))
-
-    missing_parts = [part for part in expected_parts if part != default_name and part not in set(assignments.tolist())]
-    if missing_parts:
-        order = np.argsort(np.linalg.norm(normalized, axis=1))[::-1]
-        cursor = 0
-        for part_name in missing_parts:
-            while cursor < len(order) and assignments[order[cursor]] != default_name:
-                cursor += 1
-            if cursor >= len(order):
-                break
-            assignments[order[cursor]] = part_name
-            cursor += 1
+    _assign_rotor_parts(assignments, expected_parts, face_count, y, x, z, radial)
+    _assign_leg_parts(assignments, expected_parts, face_count, x, y)
+    _assign_named_feature_parts(assignments, expected_parts, face_count, x, y, z)
+    _assign_missing_parts(assignments, expected_parts, default_name, normalized)
 
     return [str(value) for value in assignments.tolist()]
 
 
-def run_reference_topology_cleanup(runtime_mesh: RuntimeMesh, asset: dict[str, Any] | None = None) -> tuple[RuntimeMesh, dict[str, Any]]:
+def _default_part_name(expected_parts: list[str]) -> str:
+    return next(
+        (
+            name
+            for name in expected_parts
+            if any(token in name.lower() for token in ("body", "hull", "core", "base"))
+        ),
+        expected_parts[0] if expected_parts else "mesh",
+    )
+
+
+def run_reference_topology_cleanup(
+    runtime_mesh: RuntimeMesh,
+    asset: dict[str, Any] | None = None,
+) -> tuple[RuntimeMesh, dict[str, Any]]:
     """Run reference topology cleanup.
 
     Args:
@@ -188,9 +266,13 @@ def run_reference_topology_cleanup(runtime_mesh: RuntimeMesh, asset: dict[str, A
     inferred_parts = False
     if asset is not None:
         expected_parts = list(asset.get("intent", {}).get("parts", []))
-        default_name = next((name for name in expected_parts if any(token in name.lower() for token in ("body", "hull", "core", "base"))), expected_parts[0] if expected_parts else "mesh")
+        default_name = _default_part_name(expected_parts)
         counts = Counter(face_parts) if face_parts else Counter()
-        sparse_nondefault = sum(1 for name, count in counts.items() if name != default_name and count <= 2)
+        sparse_nondefault = sum(
+            1
+            for name, count in counts.items()
+            if name != default_name and count <= SPARSE_PART_FACE_THRESHOLD
+        )
         part_distribution_unreliable = (
             len(face_parts) != len(mesh.faces)
             or len(set(face_parts)) <= 1
@@ -200,10 +282,11 @@ def run_reference_topology_cleanup(runtime_mesh: RuntimeMesh, asset: dict[str, A
         if expected_parts and part_distribution_unreliable:
             face_parts = infer_face_parts_from_mesh(mesh, expected_parts, default_name)
             inferred_parts = True
+    fallback_parts = [next(iter(runtime_mesh.part_colors), "mesh")] * len(mesh.faces)
     return (
         RuntimeMesh(
             mesh=mesh,
-            face_parts=face_parts if len(face_parts) == len(mesh.faces) else [next(iter(runtime_mesh.part_colors), "mesh")] * int(len(mesh.faces)),
+            face_parts=face_parts if len(face_parts) == len(mesh.faces) else fallback_parts,
             part_colors=dict(runtime_mesh.part_colors),
             units=runtime_mesh.units,
         ),
@@ -258,16 +341,21 @@ def load_runtime_mesh_from_scene(path: Path, source_runtime: RuntimeMesh) -> Run
                 continue
             meshes.append(geom.copy())
             part_name = name if name in known_parts else (next(iter(known_parts)) if known_parts else "mesh")
-            face_parts.extend([part_name] * int(len(geom.faces)))
+            face_parts.extend([part_name] * len(geom.faces))
         if not meshes:
             return None
         mesh = trimesh.util.concatenate(meshes) if len(meshes) > 1 else meshes[0]
-        return RuntimeMesh(mesh=mesh, face_parts=face_parts, part_colors=dict(source_runtime.part_colors), units=source_runtime.units)
+        return RuntimeMesh(
+            mesh=mesh,
+            face_parts=face_parts,
+            part_colors=dict(source_runtime.part_colors),
+            units=source_runtime.units,
+        )
     if isinstance(loaded, trimesh.Trimesh):
         part_name = next(iter(source_runtime.part_colors), "mesh")
         return RuntimeMesh(
             mesh=loaded.copy(),
-            face_parts=[part_name] * int(len(loaded.faces)),
+            face_parts=[part_name] * len(loaded.faces),
             part_colors=dict(source_runtime.part_colors),
             units=source_runtime.units,
         )
@@ -325,8 +413,8 @@ def mesh_stats(mesh: trimesh.Trimesh) -> dict[str, Any]:
     bounds = mesh.bounds
     extents = bounds[1] - bounds[0]
     return {
-        "vertex_count": int(len(mesh.vertices)),
-        "triangle_count": int(len(mesh.faces)),
+        "vertex_count": len(mesh.vertices),
+        "triangle_count": len(mesh.faces),
         "watertight": bool(mesh.is_watertight),
         "volume": float(mesh.volume) if mesh.is_volume else 0.0,
         "bounds_min": [round(float(v), 6) for v in bounds[0]],
@@ -347,18 +435,20 @@ def part_groups_from_face_parts(mesh: trimesh.Trimesh, face_parts: list[str]) ->
         The result.
     """
     if len(face_parts) != len(mesh.faces):
-        face_parts = ["mesh"] * int(len(mesh.faces))
+        face_parts = ["mesh"] * len(mesh.faces)
     groups: list[dict[str, Any]] = []
     for part in sorted(set(face_parts)):
         face_indices = [idx for idx, name in enumerate(face_parts) if name == part]
         part_mesh = mesh.submesh([face_indices], append=True, repair=False)
-        groups.append({
-            "name": part,
-            "face_count": len(face_indices),
-            "vertex_count": int(len(part_mesh.vertices)),
-            "bounds_min": [round(float(v), 6) for v in part_mesh.bounds[0]],
-            "bounds_max": [round(float(v), 6) for v in part_mesh.bounds[1]],
-        })
+        groups.append(
+            {
+                "name": part,
+                "face_count": len(face_indices),
+                "vertex_count": len(part_mesh.vertices),
+                "bounds_min": [round(float(v), 6) for v in part_mesh.bounds[0]],
+                "bounds_max": [round(float(v), 6) for v in part_mesh.bounds[1]],
+            }
+        )
     return groups
 
 
@@ -373,7 +463,7 @@ def part_centroids(mesh: trimesh.Trimesh, face_parts: list[str]) -> dict[str, li
         The result.
     """
     if len(face_parts) != len(mesh.faces):
-        face_parts = ["mesh"] * int(len(mesh.faces))
+        face_parts = ["mesh"] * len(mesh.faces)
     out: dict[str, list[float]] = {}
     for part in sorted(set(face_parts)):
         face_indices = [idx for idx, name in enumerate(face_parts) if name == part]

@@ -31,7 +31,7 @@ def _asset_graph(
     *,
     role: str = "storage crate",
     kind: str = "prop",
-) -> "build_asset_graph":
+) -> build_asset_graph:
     return build_asset_graph(
         {
             "name": "demo",
@@ -147,9 +147,7 @@ class TestPlannerSingleDiagnostic(unittest.TestCase):
             primitives=[_primitive(part="body", region="region_body")],
         )
         repairs = plan_shape_repairs(graph, shape_ir)
-        missing_actions = [
-            r for r in repairs if r.action == "add_missing_required_part"
-        ]
+        missing_actions = [r for r in repairs if r.action == "add_missing_required_part"]
         self.assertEqual(len(missing_actions), 1)
         self.assertEqual(missing_actions[0].target, "lid")
         self.assertFalse(missing_actions[0].applied)

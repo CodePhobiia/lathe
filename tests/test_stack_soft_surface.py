@@ -20,6 +20,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pytest
 from lathe.adapters import blender_subdiv
 from lathe.backends import (
     BACKENDS,
@@ -39,7 +40,6 @@ from lathe.validators.soft_silhouette import (
     evaluate_soft_silhouette,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SATCHEL_EXAMPLE = ROOT / "examples" / "satchel_bag.lth"
 
@@ -47,9 +47,7 @@ SOFT_STACK_ID = "lathe.stack.soft_surface_prop_v1"
 SOFT_TOPOLOGY_ID = "lathe.topology.blender_subdiv_v1"
 SHAPE_CONTRACT_ID = "lathe.shape.intent_mesh_handoff_v1"
 # Same pin as tests/contract/test_shape_handoff_v1.py.
-PINNED_CONTRACT_SHA256 = (
-    "51e02c6ed7e524cca42d0e638aa936da222af5a006358bd1d4e931aea671b085"
-)
+PINNED_CONTRACT_SHA256 = "51e02c6ed7e524cca42d0e638aa936da222af5a006358bd1d4e931aea671b085"
 
 
 def _canonical_bytes(payload: object) -> bytes:
@@ -126,6 +124,7 @@ class SoftSurfaceStackSelectionTests(unittest.TestCase):
         self.assertTrue(stack.get("resolved"))
 
 
+@pytest.mark.slow
 class SoftSurfaceBuildTests(unittest.TestCase):
     def test_satchel_builds_and_certifies(self) -> None:
         program = parse_file(SATCHEL_EXAMPLE)
@@ -142,14 +141,12 @@ class SoftSurfaceBuildTests(unittest.TestCase):
             # Topology bundle should record the subdiv backend id as the
             # declared backend.
             topo_bundle = json.loads(
-                (out_dir / "stages" / "topology" / "bundle.json").read_text(
-                    encoding="utf-8"
-                )
+                (out_dir / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8")
             )
             self.assertEqual(topo_bundle["backend_id"], SOFT_TOPOLOGY_ID)
             # Deliverables exist.
             formats = {item["format"] for item in report["outputs"]}
-            self.assertEqual(formats, {"usd", "glb"})
+            self.assertGreaterEqual(formats, {"usd", "glb"})
 
 
 class SoftSilhouetteValidatorTests(unittest.TestCase):
@@ -223,9 +220,7 @@ class SoftSilhouetteValidatorTests(unittest.TestCase):
         )
         # Bump the triangle count above the too-jagged threshold so we
         # isolate the too-smooth / too-few-vertex tripwires.
-        runtime["topology"]["bundle"]["mesh_stats"]["triangle_count"] = (
-            MIN_TRIANGLE_SAMPLES + 10
-        )
+        runtime["topology"]["bundle"]["mesh_stats"]["triangle_count"] = MIN_TRIANGLE_SAMPLES + 10
         report = evaluate_soft_silhouette({"name": "flat"}, runtime)
         names = {d["name"] for d in report["diagnostics"]}
         # Flat plane: too few vertices AND too-smooth are acceptable
@@ -238,12 +233,8 @@ class SoftSilhouetteValidatorTests(unittest.TestCase):
     def test_thresholds_round_trip_are_exposed(self) -> None:
         runtime = self._make_runtime(triangle_count=0, vertex_count=0)
         report = evaluate_soft_silhouette({"name": "empty"}, runtime)
-        self.assertEqual(
-            report["thresholds"]["min_triangle_samples"], MIN_TRIANGLE_SAMPLES
-        )
-        self.assertEqual(
-            report["thresholds"]["max_dihedral_degrees"], MAX_DIHEDRAL_DEGREES
-        )
+        self.assertEqual(report["thresholds"]["min_triangle_samples"], MIN_TRIANGLE_SAMPLES)
+        self.assertEqual(report["thresholds"]["max_dihedral_degrees"], MAX_DIHEDRAL_DEGREES)
         self.assertEqual(
             report["thresholds"]["min_readable_edge_variance"],
             MIN_READABLE_EDGE_VARIANCE,

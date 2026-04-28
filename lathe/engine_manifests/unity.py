@@ -21,13 +21,12 @@ from typing import Any
 
 def emit_unity_manifest(context: dict[str, Any], asset_name: str) -> str:
     """Build the Unity sidecar YAML as a string (caller writes to disk)."""
-
     lines: list[str] = []
     lines.append("%YAML 1.1")
     lines.append("# Lathe Unity import manifest (schemaVersion 1)")
     lines.append("schemaVersion: 1")
     lines.append("engine: unity")
-    lines.append("engineVersion: \">=2022.3\"")
+    lines.append('engineVersion: ">=2022.3"')
     lines.append(f"assetName: {asset_name}")
     lines.append("rootGameObject:")
     lines.append(f"  name: {asset_name}")
@@ -44,24 +43,16 @@ def emit_unity_manifest(context: dict[str, Any], asset_name: str) -> str:
         coverage = lod.get("screen_coverage")
         if coverage is None:
             coverage = 0.0
-        lines.append(
-            f"        - level: {int(lod.get('level', 0))}"
-        )
+        lines.append(f"        - level: {int(lod.get('level', 0))}")
         lines.append(f"          meshUri: {lod.get('mesh_uri')}")
-        lines.append(
-            f"          screenRelativeTransitionHeight: {float(coverage):.4f}"
-        )
-        lines.append(
-            f"          distanceMin: {float(lod.get('distance_min', 0.0) or 0.0):.3f}"
-        )
+        lines.append(f"          screenRelativeTransitionHeight: {float(coverage):.4f}")
+        lines.append(f"          distanceMin: {float(lod.get('distance_min', 0.0) or 0.0):.3f}")
         dist_max = lod.get("distance_max")
         if dist_max is None:
             lines.append("          distanceMax: ~")
         else:
             lines.append(f"          distanceMax: {float(dist_max):.3f}")
-        lines.append(
-            f"          triangleCount: {int(lod.get('triangle_count') or 0)}"
-        )
+        lines.append(f"          triangleCount: {int(lod.get('triangle_count') or 0)}")
     # Sockets
     lines.append("  sockets:")
     for sock in context.get("sockets", []):
@@ -69,9 +60,7 @@ def emit_unity_manifest(context: dict[str, Any], asset_name: str) -> str:
             continue
         lines.append(f"    - name: socket_{sock['id']}")
         lines.append(f"      anchorId: {sock['id']}")
-        lines.append(
-            f"      socketType: {sock.get('socket_type') or sock.get('kind') or 'attach'}"
-        )
+        lines.append(f"      socketType: {sock.get('socket_type') or sock.get('kind') or 'attach'}")
         origin = list(sock.get("origin", [0.0, 0.0, 0.0]))
         lines.append(f"      origin: [{origin[0]}, {origin[1]}, {origin[2]}]")
         axis = list(sock.get("axis", [0.0, 1.0, 0.0]))
@@ -107,5 +96,5 @@ def emit_unity_manifest(context: dict[str, Any], asset_name: str) -> str:
             continue
         lines.append(f"    - id: {mat['id']}")
         display = mat.get("display_name") or mat["id"]
-        lines.append(f"      displayName: \"{display}\"")
+        lines.append(f'      displayName: "{display}"')
     return "\n".join(lines) + "\n"

@@ -1,3 +1,5 @@
+"""Shared helpers for deterministic assembly blueprint construction."""
+
 from __future__ import annotations
 
 from ..assembly_kernel import BlueprintComponent
@@ -12,12 +14,17 @@ def _part_name(asset_graph: AssetGraph, *tags: str, fallback: str = "body") -> s
     for part in asset_graph.parts:
         if any(tag in part.tags for tag in tags):
             return part.name
-    return next((part.name for part in asset_graph.parts if part.name == fallback), asset_graph.parts[0].name if asset_graph.parts else fallback)
+    return next(
+        (part.name for part in asset_graph.parts if part.name == fallback),
+        asset_graph.parts[0].name if asset_graph.parts else fallback,
+    )
 
 
 def _pair_parts(asset_graph: AssetGraph, role: str) -> tuple[str | None, str | None]:
     left = next((part.name for part in asset_graph.parts if role in part.tags and "left" in part.tags), None)
-    right = next((part.name for part in asset_graph.parts if role in part.tags and "right" in part.tags), None)
+    right = next(
+        (part.name for part in asset_graph.parts if role in part.tags and "right" in part.tags), None
+    )
     return left, right
 
 

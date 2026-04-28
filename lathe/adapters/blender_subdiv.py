@@ -12,13 +12,13 @@ Current behavior -- intentional scaffolding:
 * When Blender is unavailable, fall back to the reference topology
   cleanup path (the same fallback the hard-surface stack uses).
 
-# TODO(BL-34-followup): real subdivision surfaces with curvature
-# continuity and fold-crease detection are deferred. The full Plan 08
-# Phase 4 scope (2-week implementation) would introduce a dedicated
-# Blender script that applies a Catmull-Clark subdivision modifier
-# with explicit crease tags, honors ``build.topology.preserve = [soft_folds]``,
-# and emits a ``subdiv_report`` with per-edge curvature continuity
-# metrics. Document the gap in ``docs/second_backend_stack.md``.
+BL-34 follow-up: real subdivision surfaces with curvature continuity and
+fold-crease detection are deferred. The full Plan 08 Phase 4 scope (2-week
+implementation) would introduce a dedicated Blender script that applies a
+Catmull-Clark subdivision modifier with explicit crease tags, honors
+``build.topology.preserve = [soft_folds]``, and emits a ``subdiv_report`` with
+per-edge curvature continuity metrics. The gap is documented in
+``docs/second_backend_stack.md``.
 
 The adapter registers metadata so downstream code can query which
 adapter path was taken. Actual runtime dispatch still happens inside
@@ -29,7 +29,6 @@ topology bundle simply tells consumers which contract was in force.
 from __future__ import annotations
 
 from typing import Any
-
 
 ADAPTER_ID = "lathe.topology.blender_subdiv_v1"
 
@@ -55,7 +54,9 @@ def describe() -> dict[str, Any]:
     }
 
 
-def run(runtime_mesh: Any, stage_dir: Any, runtime_config: dict[str, Any] | None) -> tuple[Any, dict[str, Any]]:
+def run(
+    runtime_mesh: Any, stage_dir: Any, runtime_config: dict[str, Any] | None
+) -> tuple[Any, dict[str, Any]]:
     """Execute the adapter.
 
     Scoped implementation: delegate to the existing Blender topology

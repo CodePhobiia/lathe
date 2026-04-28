@@ -16,11 +16,11 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+import pytest
 from lathe.executor import build_asset
 from lathe.parser import parse_file
 from lathe.validators.semantic_quality import evaluate_semantic_quality
 from lathe.validators.silhouette import compare_scaffold_signature
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _BUILT: dict[str, Any] | None = None
@@ -35,8 +35,12 @@ def _hero_snapshot() -> dict[str, Any]:
         out = Path(tmp) / "courier_drone"
         build_asset(program, "courier_drone", out)
         shape_bundle = json.loads((out / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-        topology_bundle = json.loads((out / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8"))
-        interfaces_bundle = json.loads((out / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8"))
+        topology_bundle = json.loads(
+            (out / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8")
+        )
+        interfaces_bundle = json.loads(
+            (out / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8")
+        )
         asset = json.loads((out / "materialized_asset.json").read_text(encoding="utf-8"))
     _BUILT = {
         "asset": asset,
@@ -112,6 +116,7 @@ class CompareScaffoldSignatureTests(unittest.TestCase):
         self.assertEqual(second, third)
 
 
+@pytest.mark.slow
 class SilhouetteThroughSemanticTests(unittest.TestCase):
     def test_semantic_silhouette_fidelity_failure_fires_diagnostic(self) -> None:
         asset, runtime = _baseline()
@@ -123,9 +128,7 @@ class SilhouetteThroughSemanticTests(unittest.TestCase):
         report = evaluate_semantic_quality(asset, runtime)
         names = {d["name"] for d in report["diagnostics"]}
         self.assertIn("semantic_silhouette_fidelity_failed", names)
-        self.assertLess(
-            report["metrics"]["silhouette_fidelity"], report["thresholds"]["silhouette_fidelity"]
-        )
+        self.assertLess(report["metrics"]["silhouette_fidelity"], report["thresholds"]["silhouette_fidelity"])
 
     def test_semantic_silhouette_clears_threshold_for_hero_build(self) -> None:
         asset, runtime = _baseline()

@@ -19,7 +19,6 @@ import unittest
 
 import numpy as np
 import trimesh
-
 from lathe.errors import ContractViolation
 from lathe.exact_solids import (
     _primitive_mesh,
@@ -167,16 +166,12 @@ class TranslatedPrimitiveTests(unittest.TestCase):
         self.assertGreater(len(cyl_mesh.faces), 12)  # cylinder has more sides
 
     def test_primitive_mesh_rejects_missing_box_extents(self) -> None:
-        bad = ShapePrimitive(
-            primitive_type="box", part="body", center=(0.0, 0.0, 0.0)
-        )
+        bad = ShapePrimitive(primitive_type="box", part="body", center=(0.0, 0.0, 0.0))
         with self.assertRaises(ContractViolation):
             _primitive_mesh(bad)
 
     def test_primitive_mesh_rejects_unknown_type(self) -> None:
-        weird = ShapePrimitive(
-            primitive_type="torus", part="body", center=(0.0, 0.0, 0.0)
-        )
+        weird = ShapePrimitive(primitive_type="torus", part="body", center=(0.0, 0.0, 0.0))
         with self.assertRaises(ValueError):
             _primitive_mesh(weird)
 
@@ -195,14 +190,14 @@ class CompileExplicitSurfaceMeshTests(unittest.TestCase):
         mesh, face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
         self.assertGreater(len(mesh.faces), 0)
         # face_parts has one label per face
-        self.assertEqual(len(face_parts), int(len(mesh.faces)))
+        self.assertEqual(len(face_parts), len(mesh.faces))
         self.assertEqual(set(face_parts), {"body"})
         self.assertEqual(report["mode"], "exact_explicit_assembly")
         self.assertEqual(report["primitive_count"], 1)
 
     def test_two_primitives_union_or_concatenate(self) -> None:
         s = _two_primitive_shape_ir()
-        mesh, face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
+        mesh, _face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
         self.assertGreater(len(mesh.faces), 0)
         # either boolean union (face_parts_out cleared) or concatenate (per-primitive labels)
         self.assertIn(report["mode"], {"exact_boolean_union", "exact_explicit_assembly"})
@@ -215,7 +210,7 @@ class CompileExplicitSurfaceMeshTests(unittest.TestCase):
         )
         self.assertGreater(len(mesh.faces), 0)
         # component_assembly preserves per-primitive face_parts (no union)
-        self.assertEqual(len(face_parts), int(len(mesh.faces)))
+        self.assertEqual(len(face_parts), len(mesh.faces))
         self.assertEqual(report["mode"], "exact_component_assembly")
 
 

@@ -6,7 +6,6 @@ by more than one subcommand.
 
 from __future__ import annotations
 
-import glob
 import json
 import sys
 from pathlib import Path
@@ -38,14 +37,40 @@ def _emit_error(
     source_path: str | None = None,
     source_line: int | None = None,
     severity: str = "error",
+    json_mode: bool = False,
 ) -> None:
     """Emit a structured CLI error to stderr and exit.
 
-    Writes a short, human-readable block:
+    By default, writes a short, human-readable block:
     ``lathe error [code]: message`` followed by an optional
     ``  at <path>:<line>`` citation and a ``  Next step: <hint>`` line.
-    Color is applied when stderr is a TTY.
+    Color is applied when stderr is a TTY. When ``json_mode`` is true, writes
+    a stable machine-readable error payload to stdout instead.
     """
+    if json_mode:
+        diagnostic: dict[str, Any] = {
+            "code": code,
+            "severity": severity.lower(),
+            "message": message,
+        }
+        if source_path:
+            diagnostic["path"] = source_path
+        if source_line is not None:
+            diagnostic["line"] = source_line
+        payload: dict[str, Any] = {
+            "ok": False,
+            "code": code,
+            "message": message,
+            "severity": severity.lower(),
+            "next_step": next_step,
+            "diagnostics": [diagnostic],
+        }
+        if source_path:
+            payload["source_path"] = source_path
+        if source_line is not None:
+            payload["source_line"] = source_line
+        _dump(payload)
+        raise SystemExit(exit_code)
 
     use_color = _stderr_is_tty()
     tag = severity.lower()
@@ -66,7 +91,13 @@ def _expand_files(patterns: list[str] | None) -> list[str]:
         return []
     expanded: list[str] = []
     for pattern in patterns:
-        matches = glob.glob(pattern)
+        pattern_path = Path(pattern)
+        if pattern_path.is_absolute():
+            root = Path(pattern_path.anchor)
+            glob_pattern = str(pattern_path.relative_to(root))
+            matches = [str(path) for path in root.glob(glob_pattern)]
+        else:
+            matches = [str(path) for path in Path().glob(pattern)]
         if matches:
             expanded.extend(matches)
         else:
@@ -89,7 +120,13 @@ def _diff_objects(left: Any, right: Any, path: str = "") -> dict[str, Any]:
         keys = sorted(set(left) | set(right))
         for key in keys:
             if key not in left or key not in right:
-                diffs.append({"path": f"{path}.{key}" if path else key, "left": left.get(key), "right": right.get(key)})
+                diffs.append(
+                    {
+                        "path": f"{path}.{key}" if path else key,
+                        "left": left.get(key),
+                        "right": right.get(key),
+                    }
+                )
             else:
                 child = _diff_objects(left[key], right[key], f"{path}.{key}" if path else key)
                 if child:

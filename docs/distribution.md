@@ -14,8 +14,10 @@ live. A user who has to clone a repo and read a README is a user who bounced.
   Godot devs expect the AssetLib search bar inside the editor. Blender users
   expect the Extensions Platform. macOS power users expect Homebrew. Windows
   power users expect Scoop.
-- Every artifact we publish is signed, reproducible, and backed by a release
-  note in `CHANGELOG.md`. No opaque builds.
+- Every artifact we publish is traceable, reproducible, and backed by a
+  release note in `CHANGELOG.md`. Stable public releases must attach signed
+  artifacts, while pre-release candidates may use the documented exception in
+  `docs/release/provenance.md`. No opaque builds.
 - Every artifact ships an SBOM. If downstream CI cannot audit what went into
   the build, we have not met the production-grade bar we set for ourselves.
 - The public language contract (`profile`, `contract`, `critic`, `asset`,
@@ -45,7 +47,9 @@ PyPI release checklist:
    non-semantic internal changes bump PATCH.
 3. Bump the version string referenced in `lathe/__init__.py` if present, so
    `lathe --version` and the emitted manifest agree.
-4. Run `python -m pytest -q` and `scripts/lathe_smoke.sh` locally. Green is
+4. Run `python -m pytest -q` and the local smoke command
+   (`scripts/lathe_smoke.ps1` on Windows, `bash scripts/lathe_smoke.sh` from
+   bash). Green is
    a precondition, not a nice-to-have.
 5. Commit, tag (`git tag -s v<version>`), and push the tag. The signed tag
    is what the release workflow consumes.
@@ -67,16 +71,18 @@ Known constraints:
 - `.lathe_lark_cache/` is never shipped in the wheel. It is regenerated on
   first parse.
 - Optional runtime backends (Hunyuan HTTP, VGGT) are not installed by
-  default. They are opt-in extras (`pip install lathe[hunyuan]`, etc.) and
-  their absence must not degrade the conservative fallback path.
+  default. They are opt-in extras (`pip install lathe[hunyuan_http]`,
+  `pip install lathe[vggt]`, etc.) and their absence must not degrade the
+  conservative fallback path.
 
 ### 2. GitHub Releases (signed tarballs)
 
 Every tagged release publishes a GitHub Release with:
 
 - source tarball and wheel (the same artifacts uploaded to PyPI)
-- `SHA256SUMS` file
-- detached GPG signature over `SHA256SUMS`
+- `SHA256SUMS` file when release signing is enabled
+- detached GPG or keyless signature over `SHA256SUMS` when release signing is
+  enabled, or an approved pre-release exception documented in the release notes
 - SBOM (CycloneDX JSON)
 - release notes generated from `CHANGELOG.md`
 
@@ -90,7 +96,8 @@ GitHub Release checklist:
 1. The PyPI workflow must complete successfully first. The GitHub Release
    is produced by the same workflow in a follow-on job so the artifacts
    match byte-for-byte.
-2. The signing key is stored as a repository secret and rotated annually.
+2. The signing key is stored as a repository secret and rotated annually, or
+   the release uses an approved keyless signing workflow.
 3. Release notes follow the Keep-a-Changelog format already used in
    `CHANGELOG.md`.
 4. Release notes must call out (a) breaking language changes, (b) new
@@ -112,8 +119,8 @@ Submission prerequisites:
   editor experience.
 - A `plugin.cfg` with a clear `description`, the current `version`, and the
   minimum Godot version supported (target Godot 4.3+ for Day-1).
-- MIT or Apache-2.0 license file in the repo root. Lathe uses MIT; the
-  addon inherits.
+- MIT or Apache-2.0 license file in the repo root. Lathe uses Apache-2.0; the
+  addon inherits unless a separate addon repository declares otherwise.
 - A README that points to `docs/blog/04_godot_integration_walkthrough.md`
   for the end-to-end story.
 

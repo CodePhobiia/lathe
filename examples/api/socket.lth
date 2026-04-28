@@ -87,11 +87,11 @@ asset api_socket: hard_surface_prop from industrial_crate_family uses shipping_p
               bakes = [ao, curvature, id] decals = [shipping_mark, warning_band, trim_band, service_label] id_map = true }
     rig { type = none joints = [] pivot_policy = studio_standard joint_limits = auto }
 
-    // Three sockets (cargo_anchor, top_strap, side_clip) plus floor anchor.
+    // Three typed sockets (cargo_anchor, top_strap, side_clip) plus floor pivot.
     // Each socket yields a named transform downstream tools can bind to.
     interfaces {
-      sockets = [cargo_anchor, top_strap, side_clip]
-      anchors = [floor_contact]
+      sockets = [socket(id: cargo_anchor, socket_type: attach), socket(id: top_strap, socket_type: attach), socket(id: side_clip, socket_type: attach)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

@@ -1,6 +1,9 @@
+"""Import a GLB into Blender, save a .blend, and summarize linked data."""
+
 import argparse
 import json
 import sys
+from pathlib import Path
 
 import bpy
 
@@ -16,6 +19,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """Run the Blender export helper."""
     args = _parse_args()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=args.input)
@@ -30,7 +34,7 @@ def main() -> None:
         "linked_libraries": [item.filepath for item in bpy.data.libraries],
         "overrides": [item.name for item in bpy.data.objects if getattr(item, "override_library", None)],
     }
-    with open(args.summary, "w", encoding="utf-8") as handle:
+    with Path(args.summary).open("w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2)
 
 

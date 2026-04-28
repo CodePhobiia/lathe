@@ -19,7 +19,7 @@ import unittest
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from lathe.repair_loop import RepairRound, run_repair_loop
+from lathe.repair_loop import run_repair_loop
 
 
 def _make_bundle(
@@ -52,7 +52,11 @@ def _make_executor(
     executor.asset = {
         "validate": {
             "threshold": 0.80,
-            "repair": {"allow": list(allow or ["reauthor_surface_layer", "reselect_candidate", "regenerate_with_patch"])},
+            "repair": {
+                "allow": list(
+                    allow or ["reauthor_surface_layer", "reselect_candidate", "regenerate_with_patch"]
+                )
+            },
         },
     }
     executor.runtime_config = {"shape": {}}
@@ -60,7 +64,9 @@ def _make_executor(
         "shape": {
             "bundle": {
                 "selected_candidate_id": selected_candidate_id,
-                "candidates": list(candidates or [{"candidate_id": "c0", "score": 0.9}, {"candidate_id": "c1", "score": 0.8}]),
+                "candidates": list(
+                    candidates or [{"candidate_id": "c0", "score": 0.9}, {"candidate_id": "c1", "score": 0.8}]
+                ),
             },
         },
         "topology": {"bundle": {"ok": True}},
@@ -83,7 +89,9 @@ class TestRepairLoopHappyPath(unittest.TestCase):
 
     def test_max_rounds_zero_skips_loop_entirely(self) -> None:
         executor = _make_executor()
-        initial = _make_bundle(certified=False, score=0.50, diagnostics=[_diag("visual_surface_authoring_quality_failed")])
+        initial = _make_bundle(
+            certified=False, score=0.50, diagnostics=[_diag("visual_surface_authoring_quality_failed")]
+        )
         final, rounds = run_repair_loop(executor, initial, max_rounds=0)
         self.assertIs(final, initial)
         self.assertEqual(rounds, [])
@@ -147,8 +155,10 @@ class TestRepairLoopReselect(unittest.TestCase):
         # Round 2: reselect -> downstream yields certified bundle.
         certified_bundle = _make_bundle(certified=True, score=0.92, diagnostics=[])
 
-        with patch("lathe.repair_loop.stage_topology") as topology_mod, \
-             patch("lathe.repair_loop._run_downstream_after_topology", return_value=certified_bundle):
+        with (
+            patch("lathe.repair_loop.stage_topology") as topology_mod,
+            patch("lathe.repair_loop._run_downstream_after_topology", return_value=certified_bundle),
+        ):
             topology_mod.run.return_value = {"ok": True}
             final, rounds = run_repair_loop(executor, initial, max_rounds=3)
 
@@ -188,10 +198,14 @@ class TestRepairLoopAllFail(unittest.TestCase):
         executor._attempt_surface_repair.side_effect = fake_surface_repair
 
         # Reselects: also fail, keep the same score.
-        stagnant = _make_bundle(certified=False, score=0.60, diagnostics=[_diag("visual_surface_authoring_quality_failed")])
+        stagnant = _make_bundle(
+            certified=False, score=0.60, diagnostics=[_diag("visual_surface_authoring_quality_failed")]
+        )
 
-        with patch("lathe.repair_loop.stage_topology") as topology_mod, \
-             patch("lathe.repair_loop._run_downstream_after_topology", return_value=stagnant):
+        with (
+            patch("lathe.repair_loop.stage_topology") as topology_mod,
+            patch("lathe.repair_loop._run_downstream_after_topology", return_value=stagnant),
+        ):
             topology_mod.run.return_value = {"ok": True}
             final, rounds = run_repair_loop(executor, initial, max_rounds=3)
 
@@ -199,7 +213,9 @@ class TestRepairLoopAllFail(unittest.TestCase):
         # The no-progress guard may short-circuit before all 3 rounds run;
         # we only require at least one round executed and none certified.
         self.assertGreaterEqual(len(rounds), 1)
-        self.assertTrue(all(not r["rollback"] is False or r["rollback"] for r in rounds if not r["rollback"]) is not None)
+        self.assertTrue(
+            all(r["rollback"] is not False or r["rollback"] for r in rounds if not r["rollback"]) is not None
+        )
 
 
 class TestRepairLoopBudget(unittest.TestCase):
@@ -287,7 +303,15 @@ class TestRepairLoopTraceShape(unittest.TestCase):
         _final, rounds = run_repair_loop(executor, initial, max_rounds=3)
 
         self.assertGreaterEqual(len(rounds), 1)
-        required = {"round_index", "action", "before_score", "after_score", "diagnostics_delta", "rollback", "elapsed_ms"}
+        required = {
+            "round_index",
+            "action",
+            "before_score",
+            "after_score",
+            "diagnostics_delta",
+            "rollback",
+            "elapsed_ms",
+        }
         for round_rec in rounds:
             self.assertSetEqual(set(round_rec.keys()), required)
             self.assertGreaterEqual(round_rec["elapsed_ms"], 1)

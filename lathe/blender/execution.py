@@ -85,7 +85,9 @@ def build_execution_bundle(
     bake_profile = _resolve_bake_profile(asset)
     render_fixture = _resolve_render_fixture(asset)
     surface_bundle = runtime.get("surface", {}).get("bundle", {})
-    render_report = evaluate_render_views(runtime.get("optimize") or runtime["topology"], views=list(render_fixture.get("views", [])))
+    render_report = evaluate_render_views(
+        runtime.get("optimize") or runtime["topology"], views=list(render_fixture.get("views", []))
+    )
     execution_ir = {
         "schema": "lathe.execution_ir.v1",
         "profile": execution.get("profile", ""),
@@ -97,13 +99,17 @@ def build_execution_bundle(
     }
     blender_execution_ir = {
         "schema": "lathe.blender_execution_ir.v1",
-        "pinned_blender_version_intent": resolved_profile.get("values", {}).get("blender_version", blender.get("version")),
+        "pinned_blender_version_intent": resolved_profile.get("values", {}).get(
+            "blender_version", blender.get("version")
+        ),
         "execution_mode": mode,
         "selected_backend_ids": internal_backends,
         "node_group_generation_plan": _planned_node_groups(asset),
         "material_graph_generation_plan": {
             "material_graph": asset.get("surface", {}).get("material_graph", ""),
-            "resolved_material_graph": asset.get("surface", {}).get("resolved_material_graph", {}).get("name", ""),
+            "resolved_material_graph": asset.get("surface", {})
+            .get("resolved_material_graph", {})
+            .get("name", ""),
             "surface_program": asset.get("surface", {}).get("program", ""),
         },
         "asset_library_references": [
@@ -130,14 +136,23 @@ def build_execution_bundle(
             "preserve_blend": execution.get("preserve_blend", ""),
         },
         "safety_policy": {
-            "allow_autoexec": bool(((runtime_config or {}).get("execution", {}).get("blender", {}) or {}).get("allow_autoexec", False)),
-            "trusted": bool(((runtime_config or {}).get("execution", {}).get("blender", {}) or {}).get("trusted", False)),
+            "allow_autoexec": bool(
+                ((runtime_config or {}).get("execution", {}).get("blender", {}) or {}).get(
+                    "allow_autoexec", False
+                )
+            ),
+            "trusted": bool(
+                ((runtime_config or {}).get("execution", {}).get("blender", {}) or {}).get("trusted", False)
+            ),
         },
     }
     bake_plan_ir = {
         "schema": "lathe.bake_plan_ir.v1",
         "profile": asset.get("build", {}).get("surface", {}).get("bake_profile", ""),
-        "resolved_bake_profile": asset.get("build", {}).get("surface", {}).get("resolved_bake_profile", {}).get("name", ""),
+        "resolved_bake_profile": asset.get("build", {})
+        .get("surface", {})
+        .get("resolved_bake_profile", {})
+        .get("name", ""),
         "maps": list(bake_profile.get("maps", [])),
         "target_resolution": bake_profile.get("target_resolution"),
         "normal_space": bake_profile.get("normal_space", "tangent"),
@@ -165,7 +180,10 @@ def build_execution_bundle(
     render_eval_ir = {
         "schema": "lathe.render_eval_ir.v1",
         "fixture": asset.get("build", {}).get("surface", {}).get("render_fixture", ""),
-        "resolved_render_fixture": asset.get("build", {}).get("surface", {}).get("resolved_render_fixture", {}).get("name", ""),
+        "resolved_render_fixture": asset.get("build", {})
+        .get("surface", {})
+        .get("resolved_render_fixture", {})
+        .get("name", ""),
         "views": list(render_fixture.get("views", [])),
         "passes": list(render_fixture.get("passes", [])),
         "resolution": render_fixture.get("resolution"),
@@ -227,11 +245,17 @@ def build_execution_bundle(
                 }
             )
     else:
-        reason = blender.get("message", "Blender unavailable") if not blender.get("available") else "No runtime mesh available"
+        reason = (
+            blender.get("message", "Blender unavailable")
+            if not blender.get("available")
+            else "No runtime mesh available"
+        )
         diagnostics.append(
             {
                 "code": "L7202",
-                "name": "blender_not_found" if not blender.get("available") else "blend_artifact_generation_skipped",
+                "name": "blender_not_found"
+                if not blender.get("available")
+                else "blend_artifact_generation_skipped",
                 "severity": "warning",
                 "phase": "build",
                 "asset": asset["name"],

@@ -137,8 +137,8 @@ asset corpus_chest: hard_surface_prop from brassbound_chest_family uses shipping
     }
 
     interfaces {
-      sockets = [loot_anchor]
-      anchors = [floor_contact]
+      sockets = [socket(id: loot_anchor, socket_type: attach)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

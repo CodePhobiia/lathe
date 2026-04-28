@@ -8,17 +8,21 @@ IR.
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from .asset_graph import AssetGraph
 from .errors import ContractViolation
 from .shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
 
+NUMERIC_EPSILON = 1e-6
+
 
 @dataclass
 class BlueprintComponent:
     """BlueprintComponent."""
+
     name: str
     component_type: str
     part: str
@@ -44,6 +48,7 @@ class BlueprintComponent:
 @dataclass
 class AssemblyBlueprint:
     """AssemblyBlueprint."""
+
     blueprint_id: str
     family: str
     components: list[BlueprintComponent]
@@ -60,7 +65,14 @@ class AssemblyBlueprint:
         return payload
 
 
-def _box(part: str, component: BlueprintComponent, *, center: tuple[float, float, float] | None = None, extents: tuple[float, float, float] | None = None, tags: list[str] | None = None) -> ShapePrimitive:
+def _box(
+    part: str,
+    component: BlueprintComponent,
+    *,
+    center: tuple[float, float, float] | None = None,
+    extents: tuple[float, float, float] | None = None,
+    tags: list[str] | None = None,
+) -> ShapePrimitive:
     return ShapePrimitive(
         primitive_type="box",
         part=part,
@@ -72,7 +84,16 @@ def _box(part: str, component: BlueprintComponent, *, center: tuple[float, float
     )
 
 
-def _cylinder(part: str, component: BlueprintComponent, *, center: tuple[float, float, float] | None = None, radius: float | None = None, height: float | None = None, axis: str | None = None, tags: list[str] | None = None) -> ShapePrimitive:
+def _cylinder(
+    part: str,
+    component: BlueprintComponent,
+    *,
+    center: tuple[float, float, float] | None = None,
+    radius: float | None = None,
+    height: float | None = None,
+    axis: str | None = None,
+    tags: list[str] | None = None,
+) -> ShapePrimitive:
     return ShapePrimitive(
         primitive_type="cylinder",
         part=part,
@@ -95,7 +116,7 @@ def _shell_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
             component,
             center=(component.center[0], component.center[1] + height * 0.06, component.center[2]),
             extents=(width * 0.88, height * 0.78, depth * 0.88),
-            tags=list(component.tags) + ["liner"],
+            tags=[*list(component.tags), "liner"],
         ),
     ]
 
@@ -111,10 +132,30 @@ def _frame_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     half_h = height / 2.0
     cz = component.center[2]
     return [
-        _box(component.part, component, center=(component.center[0], component.center[1] + half_h - thickness / 2.0, cz), extents=(width, thickness, depth)),
-        _box(component.part, component, center=(component.center[0], component.center[1] - half_h + thickness / 2.0, cz), extents=(width, thickness, depth)),
-        _box(component.part, component, center=(component.center[0] - half_w + thickness / 2.0, component.center[1], cz), extents=(thickness, max(thickness, height - 2.0 * thickness), depth)),
-        _box(component.part, component, center=(component.center[0] + half_w - thickness / 2.0, component.center[1], cz), extents=(thickness, max(thickness, height - 2.0 * thickness), depth)),
+        _box(
+            component.part,
+            component,
+            center=(component.center[0], component.center[1] + half_h - thickness / 2.0, cz),
+            extents=(width, thickness, depth),
+        ),
+        _box(
+            component.part,
+            component,
+            center=(component.center[0], component.center[1] - half_h + thickness / 2.0, cz),
+            extents=(width, thickness, depth),
+        ),
+        _box(
+            component.part,
+            component,
+            center=(component.center[0] - half_w + thickness / 2.0, component.center[1], cz),
+            extents=(thickness, max(thickness, height - 2.0 * thickness), depth),
+        ),
+        _box(
+            component.part,
+            component,
+            center=(component.center[0] + half_w - thickness / 2.0, component.center[1], cz),
+            extents=(thickness, max(thickness, height - 2.0 * thickness), depth),
+        ),
     ]
 
 
@@ -127,7 +168,7 @@ def _lid_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
             component,
             center=(component.center[0], component.center[1] + height * 0.18, component.center[2]),
             extents=(width * 0.74, height * 0.52, depth * 0.84),
-            tags=list(component.tags) + ["crest"],
+            tags=[*list(component.tags), "crest"],
         ),
     ]
 
@@ -141,7 +182,7 @@ def _door_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
             component,
             center=(component.center[0], component.center[1], component.center[2] + depth * 0.18),
             extents=(width * 0.88, height * 0.90, depth * 0.30),
-            tags=list(component.tags) + ["face"],
+            tags=[*list(component.tags), "face"],
         ),
     ]
 
@@ -151,13 +192,20 @@ def _hinge_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     radius = component.radius if component.radius is not None else max(width, depth) * 0.42
     barrel_height = component.height if component.height is not None else max(width, height, depth)
     return [
-        _cylinder(component.part, component, radius=radius, height=barrel_height, axis=component.axis, tags=list(component.tags) + ["barrel"]),
+        _cylinder(
+            component.part,
+            component,
+            radius=radius,
+            height=barrel_height,
+            axis=component.axis,
+            tags=[*list(component.tags), "barrel"],
+        ),
         _box(
             component.part,
             component,
             center=(component.center[0], component.center[1], component.center[2] - depth * 0.20),
             extents=(width, height * 0.45, depth * 0.55),
-            tags=list(component.tags) + ["mount"],
+            tags=[*list(component.tags), "mount"],
         ),
     ]
 
@@ -173,9 +221,13 @@ def _lock_plate_primitives(component: BlueprintComponent) -> list[ShapePrimitive
         _box(
             component.part,
             component,
-            center=(component.center[0], component.center[1] - height * 0.18, component.center[2] + depth * 0.08),
+            center=(
+                component.center[0],
+                component.center[1] - height * 0.18,
+                component.center[2] + depth * 0.08,
+            ),
             extents=(width * 0.36, height * 0.55, depth * 0.40),
-            tags=list(component.tags) + ["latch_body"],
+            tags=[*list(component.tags), "latch_body"],
         ),
     ]
 
@@ -184,7 +236,16 @@ def _handle_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     width, height, depth = component.extents
     radius = component.radius if component.radius is not None else max(height, depth) * 0.36
     handle_height = component.height if component.height is not None else max(width, height, depth) * 0.85
-    return [_cylinder(component.part, component, radius=radius, height=handle_height, axis=component.axis, tags=list(component.tags) + ["grip"])]
+    return [
+        _cylinder(
+            component.part,
+            component,
+            radius=radius,
+            height=handle_height,
+            axis=component.axis,
+            tags=[*list(component.tags), "grip"],
+        )
+    ]
 
 
 def _foot_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
@@ -196,7 +257,7 @@ def _foot_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
             component,
             center=(component.center[0], component.center[1] - height * 0.20, component.center[2]),
             extents=(width * 1.14, height * 0.35, depth * 1.08),
-            tags=list(component.tags) + ["pad"],
+            tags=[*list(component.tags), "pad"],
         ),
     ]
 
@@ -210,7 +271,7 @@ def _stand_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
             component,
             center=(component.center[0], component.center[1] - height * 0.42, component.center[2]),
             extents=(width * 1.28, height * 0.22, depth * 1.18),
-            tags=list(component.tags) + ["base"],
+            tags=[*list(component.tags), "base"],
         ),
     ]
 
@@ -218,8 +279,18 @@ def _stand_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
 def _bracket_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     width, height, depth = component.extents
     return [
-        _box(component.part, component, center=(component.center[0], component.center[1], component.center[2] - depth * 0.16), extents=(width, height * 0.35, depth)),
-        _box(component.part, component, center=(component.center[0], component.center[1] - height * 0.18, component.center[2]), extents=(width * 0.35, height, depth)),
+        _box(
+            component.part,
+            component,
+            center=(component.center[0], component.center[1], component.center[2] - depth * 0.16),
+            extents=(width, height * 0.35, depth),
+        ),
+        _box(
+            component.part,
+            component,
+            center=(component.center[0], component.center[1] - height * 0.18, component.center[2]),
+            extents=(width * 0.35, height, depth),
+        ),
     ]
 
 
@@ -254,7 +325,7 @@ def _vent_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
                 component,
                 center=(component.center[0], cy, component.center[2]),
                 extents=(width, slat_height, depth),
-                tags=list(component.tags) + ["slat"],
+                tags=[*list(component.tags), "slat"],
             )
         )
     return primitives
@@ -269,7 +340,14 @@ def _rotor_pod_primitives(component: BlueprintComponent) -> list[ShapePrimitive]
     radius = component.radius if component.radius is not None else max(width, depth) * 0.45
     disc_height = component.height if component.height is not None else max(height * 0.40, 1.0)
     return [
-        _cylinder(component.part, component, radius=radius, height=disc_height, axis=component.axis, tags=list(component.tags) + ["disc"]),
+        _cylinder(
+            component.part,
+            component,
+            radius=radius,
+            height=disc_height,
+            axis=component.axis,
+            tags=[*list(component.tags), "disc"],
+        ),
         _cylinder(
             component.part,
             component,
@@ -277,7 +355,7 @@ def _rotor_pod_primitives(component: BlueprintComponent) -> list[ShapePrimitive]
             radius=radius * 0.34,
             height=max(height, disc_height * 2.4),
             axis=component.axis,
-            tags=list(component.tags) + ["hub"],
+            tags=[*list(component.tags), "hub"],
         ),
     ]
 
@@ -310,25 +388,42 @@ _COMPONENT_BUILDERS: dict[str, Callable[[BlueprintComponent], list[ShapePrimitiv
 }
 
 
+def _unsupported_component_error(component_type: str) -> ValueError:
+    return ValueError(f"Unsupported assembly component '{component_type}'")
+
+
+def _missing_box_extents_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
+    )
+
+
+def _missing_non_box_dimensions_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: non-box ShapePrimitive requires radius and height, "
+        f"got radius={primitive.radius!r}, height={primitive.height!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
+def _unsupported_mirror_axis_error(axis: str) -> ValueError:
+    return ValueError(f"Unsupported mirror axis '{axis}'")
+
+
 def _component_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     if component.component_type not in _COMPONENT_BUILDERS:
-        raise ValueError(f"Unsupported assembly component '{component.component_type}'")
+        raise _unsupported_component_error(component.component_type)
     return _COMPONENT_BUILDERS[component.component_type](component)
 
 
 def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[float]]:
     if primitive.primitive_type == "box":
         if primitive.extents is None:
-            raise ContractViolation(
-                f"invariant violation: box ShapePrimitive requires extents, got None (part={primitive.part!r})"
-            )
+            raise _missing_box_extents_error(primitive)
         half = [value / 2.0 for value in primitive.extents]
     else:
         if primitive.radius is None or primitive.height is None:
-            raise ContractViolation(
-                f"invariant violation: non-box ShapePrimitive requires radius and height, "
-                f"got radius={primitive.radius!r}, height={primitive.height!r} (part={primitive.part!r})"
-            )
+            raise _missing_non_box_dimensions_error(primitive)
         if primitive.axis == "x":
             half = [primitive.height / 2.0, primitive.radius, primitive.radius]
         elif primitive.axis == "z":
@@ -352,12 +447,12 @@ def _expected_extents(primitives: list[ShapePrimitive]) -> list[float]:
 
 
 def _ratio_signature(extents: list[float]) -> list[float]:
-    largest = max(1e-6, max(extents))
+    largest = max(NUMERIC_EPSILON, *extents)
     return [round(float(value) / largest, 6) for value in extents]
 
 
 def _profile_bins(values: list[float], span: float) -> list[float]:
-    if not values or span <= 1e-6:
+    if not values or span <= NUMERIC_EPSILON:
         return [0.0, 0.0, 0.0]
     bins = [0.0, 0.0, 0.0]
     for value in values:
@@ -368,25 +463,86 @@ def _profile_bins(values: list[float], span: float) -> list[float]:
     return [round(item / total, 6) for item in bins]
 
 
-def _shape_assessment(asset_graph: AssetGraph, regions: list[ShapeRegion], primitives: list[ShapePrimitive]) -> dict[str, Any]:
+def _shape_assessment(
+    asset_graph: AssetGraph, regions: list[ShapeRegion], primitives: list[ShapePrimitive]
+) -> dict[str, Any]:
     expected_parts = {part.name for part in asset_graph.parts}
     realized_parts = {region.part for region in regions}
-    required_pairs = [(part.name, part.symmetry_mate) for part in asset_graph.parts if part.symmetry_mate and part.name < part.symmetry_mate]
-    symmetry_score = 1.0 if not required_pairs else round(sum(1.0 for left, right in required_pairs if left in realized_parts and right in realized_parts) / len(required_pairs), 6)
+    required_pairs = [
+        (part.name, part.symmetry_mate)
+        for part in asset_graph.parts
+        if part.symmetry_mate and part.name < part.symmetry_mate
+    ]
+    symmetry_score = (
+        1.0
+        if not required_pairs
+        else round(
+            sum(1.0 for left, right in required_pairs if left in realized_parts and right in realized_parts)
+            / len(required_pairs),
+            6,
+        )
+    )
     feature_primitives = [primitive for primitive in primitives if "feature" in primitive.tags]
     feature_components = {primitive.component for primitive in feature_primitives if primitive.component}
-    edge_treatment_count = sum(1 for primitive in feature_primitives if any(tag in primitive.tags for tag in ("edge_break", "bevel", "chamfer", "fillet")))
-    panel_feature_count = sum(1 for primitive in feature_primitives if any(tag in primitive.tags for tag in ("frame_lip", "trim_band", "vent_grille", "panel_frame")))
-    support_feature_count = sum(1 for primitive in feature_primitives if any(tag in primitive.tags for tag in ("support_bracket", "recessed_handle", "rotor_shroud")))
-    attachment_region_count = sum(1 for region in regions if region.component in {"handle", "hinge", "lock_plate", "latch", "rotor_pod", "socket_plate", "anchor_plate", "bracket", "bezel", "frame"})
+    edge_treatment_count = sum(
+        1
+        for primitive in feature_primitives
+        if any(tag in primitive.tags for tag in ("edge_break", "bevel", "chamfer", "fillet"))
+    )
+    panel_feature_count = sum(
+        1
+        for primitive in feature_primitives
+        if any(tag in primitive.tags for tag in ("frame_lip", "trim_band", "vent_grille", "panel_frame"))
+    )
+    support_feature_count = sum(
+        1
+        for primitive in feature_primitives
+        if any(tag in primitive.tags for tag in ("support_bracket", "recessed_handle", "rotor_shroud"))
+    )
+    attachment_region_count = sum(
+        1
+        for region in regions
+        if region.component
+        in {
+            "handle",
+            "hinge",
+            "lock_plate",
+            "latch",
+            "rotor_pod",
+            "socket_plate",
+            "anchor_plate",
+            "bracket",
+            "bezel",
+            "frame",
+        }
+    )
     feature_density = round(len(feature_primitives) / max(1.0, len(asset_graph.parts) * 2.0), 6)
-    silhouette_complexity = round(min(1.0, (len(regions) * 0.04) + (len(feature_primitives) * 0.015) + (attachment_region_count * 0.03)), 6)
-    feature_coherence = round(min(1.0, (0.45 * feature_density) + (0.25 * min(1.0, len(feature_components) / max(1, len(asset_graph.parts)))) + (0.30 * min(1.0, attachment_region_count / max(1, len(asset_graph.parts) / 2.0)))), 6)
+    silhouette_complexity = round(
+        min(
+            1.0, (len(regions) * 0.04) + (len(feature_primitives) * 0.015) + (attachment_region_count * 0.03)
+        ),
+        6,
+    )
+    feature_coherence = round(
+        min(
+            1.0,
+            (0.45 * feature_density)
+            + (0.25 * min(1.0, len(feature_components) / max(1, len(asset_graph.parts))))
+            + (0.30 * min(1.0, attachment_region_count / max(1, len(asset_graph.parts) / 2.0))),
+        ),
+        6,
+    )
     return {
-        "required_part_coverage": round(len(expected_parts & realized_parts) / max(1, len(expected_parts)), 6),
+        "required_part_coverage": round(
+            len(expected_parts & realized_parts) / max(1, len(expected_parts)), 6
+        ),
         "primitive_count": len(primitives),
         "region_count": len(regions),
-        "primitive_diversity": round(len({primitive.component or primitive.primitive_type for primitive in primitives}) / max(1, len(primitives)), 6),
+        "primitive_diversity": round(
+            len({primitive.component or primitive.primitive_type for primitive in primitives})
+            / max(1, len(primitives)),
+            6,
+        ),
         "symmetry_region_score": symmetry_score,
         "richness_floor": round(min(1.0, len(primitives) / max(4.0, len(expected_parts) * 1.6)), 6),
         "feature_count": len(feature_primitives),
@@ -410,7 +566,7 @@ def _build_shape_ir(
     notes: list[str] | None = None,
 ) -> ShapeIR:
     extents = _expected_extents(primitives)
-    largest = max(1e-6, max(extents))
+    largest = max(NUMERIC_EPSILON, *extents)
     region_x = [region.center[0] / largest for region in regions]
     region_y = [region.center[1] / largest for region in regions]
     region_z = [region.center[2] / largest for region in regions]
@@ -428,7 +584,9 @@ def _build_shape_ir(
     signature = {
         "expected_extents": extents,
         "projected_ratio": _ratio_signature(extents),
-        "minimum_triangle_density": round(min(0.88, 0.42 + 0.05 * len(primitives_used) + 0.03 * len(regions)), 6),
+        "minimum_triangle_density": round(
+            min(0.88, 0.42 + 0.05 * len(primitives_used) + 0.03 * len(regions)), 6
+        ),
         "expected_part_names": [part.name for part in asset_graph.parts],
         "part_targets": part_targets,
         "adjacency_pairs": list(asset_graph.part_graph),
@@ -437,9 +595,15 @@ def _build_shape_ir(
             round(max(region_y) - min(region_y), 6) if region_y else 0.0,
             round(max(region_z) - min(region_z), 6) if region_z else 0.0,
         ],
-        "vertical_profile": _profile_bins(region_y, max(1e-6, max(region_y) - min(region_y) if region_y else 1.0)),
-        "depth_profile": _profile_bins(region_z, max(1e-6, max(region_z) - min(region_z) if region_z else 1.0)),
-        "width_profile": _profile_bins(region_x, max(1e-6, max(region_x) - min(region_x) if region_x else 1.0)),
+        "vertical_profile": _profile_bins(
+            region_y, max(NUMERIC_EPSILON, max(region_y) - min(region_y) if region_y else 1.0)
+        ),
+        "depth_profile": _profile_bins(
+            region_z, max(NUMERIC_EPSILON, max(region_z) - min(region_z) if region_z else 1.0)
+        ),
+        "width_profile": _profile_bins(
+            region_x, max(NUMERIC_EPSILON, max(region_x) - min(region_x) if region_x else 1.0)
+        ),
         "expected_region_count": len(regions),
         "fragmentation_ceiling": max(4, len(regions) * 3),
         "primitives_used": primitives_used,
@@ -488,10 +652,18 @@ def compile_assembly_blueprint(asset_graph: AssetGraph, blueprint: AssemblyBluep
                 required=True,
             )
         )
-    return _build_shape_ir(asset_graph, blueprint_id=blueprint.blueprint_id, primitives=primitives, regions=regions, notes=blueprint.notes)
+    return _build_shape_ir(
+        asset_graph,
+        blueprint_id=blueprint.blueprint_id,
+        primitives=primitives,
+        regions=regions,
+        notes=blueprint.notes,
+    )
 
 
-def refresh_shape_ir(asset_graph: AssetGraph, shape_ir: ShapeIR, *, notes: list[str] | None = None) -> ShapeIR:
+def refresh_shape_ir(
+    asset_graph: AssetGraph, shape_ir: ShapeIR, *, notes: list[str] | None = None
+) -> ShapeIR:
     """Refresh shape ir.
 
     Args:
@@ -525,10 +697,12 @@ def mirrored(center: tuple[float, float, float], *, axis: str = "x") -> tuple[fl
         return (-center[0], center[1], center[2])
     if axis == "z":
         return (center[0], center[1], -center[2])
-    raise ValueError(f"Unsupported mirror axis '{axis}'")
+    raise _unsupported_mirror_axis_error(axis)
 
 
-def polar_offset(radius: float, angle_deg: float, y: float, *, depth_scale: float = 1.0) -> tuple[float, float, float]:
+def polar_offset(
+    radius: float, angle_deg: float, y: float, *, depth_scale: float = 1.0
+) -> tuple[float, float, float]:
     """Polar offset.
 
     Args:

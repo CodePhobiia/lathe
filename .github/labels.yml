@@ -12,12 +12,27 @@
 - name: backend
   color: 0e8a16
   description: Backend stack, provider, or adapter change.
+- name: provider
+  color: 1f883d
+  description: External or local generation provider behavior.
+- name: architecture
+  color: 5319e7
+  description: Module boundaries, contracts, layering, or ADR work.
 - name: shape-stage
   color: 1d76db
   description: Affects the shape stage or the intent_mesh_handoff_v1 contract.
 - name: stdlib
   color: c5def5
   description: std/ library authoring layer.
+- name: examples
+  color: cfd3d7
+  description: Example assets, corpus files, or gallery output.
+- name: product-quality
+  color: fbca04
+  description: Artifact polish, certification, visual quality, or engine import quality.
+- name: cache
+  color: d4c5f9
+  description: Build cache, cache metadata, or cache invalidation behavior.
 - name: docs
   color: 0075ca
   description: Documentation or spec changes.
@@ -33,6 +48,12 @@
 - name: security
   color: ee0701
   description: Security vulnerability or hardening.
+- name: release-blocker
+  color: b60205
+  description: Must be fixed or explicitly excepted before a release.
+- name: flaky-test
+  color: f9d0c4
+  description: Test is nondeterministic or environment-sensitive and needs triage.
 - name: deps
   color: 0366d6
   description: Dependency updates (Dependabot).

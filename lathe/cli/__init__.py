@@ -7,13 +7,20 @@ Exposes the ``python -m lathe.cli`` entry point and the individual
 from __future__ import annotations
 
 import argparse
+import os
+import sys
 
 from ..doctor import collect_doctor_report, dump_doctor_json, format_doctor_report
+from ..errors import BuildError, LatheError, LatheParseError, RuntimeConfigError
+from ._common import _emit_error
 from .bridge_cmd import run_bridge
 from .build_cmd import run_build, run_mode_build, run_render_eval
-from .cache_cmd import register as _register_cache, run_cache
+from .cache_cmd import register as _register_cache
+from .cache_cmd import run_cache
 from .check_cmd import run_check
-from .diff_cmd import register as _register_diff, run_diff
+from .completions_cmd import SUPPORTED_SHELLS, run_completions
+from .diff_cmd import register as _register_diff
+from .diff_cmd import run_diff
 from .doctor_cmd import (
     run_backends,
     run_doctor,
@@ -21,6 +28,7 @@ from .doctor_cmd import (
     run_probe_providers,
     run_shape_providers,
 )
+from .fmt_cmd import run_fmt
 from .inspect_cmd import (
     run_bake_audit,
     run_explain,
@@ -33,26 +41,70 @@ from .inspect_cmd import (
 )
 from .library_cmd import run_library
 from .materialize_cmd import run_diff_asset, run_materialize
-from .fmt_cmd import run_fmt
 from .parse_cmd import run_normalize, run_parse, run_schema
 from .patch_cmd import run_patch
 from .plan_cmd import run_fit, run_plan, run_surface_plan
-from .publish_cmd import register as _register_publish, run_publish
+from .publish_cmd import register as _register_publish
+from .publish_cmd import run_publish
 from .ref_cmd import run_ref
-from .ref_copy_cmd import run_ref_copy
-from .ref_diff_cmd import run_ref_diff
-from .ref_inspect_cmd import run_ref_inspect
-from .ref_planes_cmd import run_ref_planes
-from .snapshot_cmd import register as _register_snapshot, run_snapshot
+from .snapshot_cmd import register as _register_snapshot
+from .snapshot_cmd import run_snapshot
 from .surface_cmd import run_surface
-from .telemetry_cmd import register as _register_telemetry, run_telemetry
+from .telemetry_cmd import register as _register_telemetry
+from .telemetry_cmd import run_telemetry
 from .test_cmd import run_audit, run_bench, run_test
 
-__all__ = ["main", "collect_doctor_report", "dump_doctor_json", "format_doctor_report"]
+__all__ = ["collect_doctor_report", "dump_doctor_json", "format_doctor_report", "main"]
+
+
+def _wants_json_error(args: argparse.Namespace) -> bool:
+    return getattr(args, "report", None) == "json"
+
+
+def _source_path_for_error(args: argparse.Namespace, exc: BaseException) -> str | None:
+    if isinstance(exc, RuntimeConfigError):
+        runtime_config = getattr(args, "runtime_config", None)
+        return str(runtime_config) if runtime_config else None
+    source_file = getattr(args, "file", None)
+    return str(source_file) if source_file else None
+
+
+def _lathe_error_code(exc: LatheError) -> str:
+    if isinstance(exc, RuntimeConfigError):
+        return "lathe.cli.runtime_config_error"
+    if isinstance(exc, LatheParseError):
+        return "lathe.cli.parse_error"
+    if isinstance(exc, BuildError) and exc.diagnostics:
+        code = exc.diagnostics[0].get("code")
+        if isinstance(code, str) and code:
+            return code
+    return "lathe.cli.error"
+
+
+class _LatheArgumentParser(argparse.ArgumentParser):
+    """ArgumentParser with Lathe's actionable error footer."""
+
+    def add_subparsers(self, *args, **kwargs):
+        kwargs.setdefault("parser_class", type(self))
+        return super().add_subparsers(*args, **kwargs)
+
+    def error(self, message: str) -> None:
+        self.print_usage(sys.stderr)
+        print(f"lathe usage error [lathe.cli.usage]: {message}", file=sys.stderr)
+        print(
+            f"  Next step: Run `{self.prog} --help` for the supported arguments.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="lathe", description="Lathe language reference scaffold")
+    parser = _LatheArgumentParser(prog="lathe", description="Lathe 3D asset compiler/runtime")
+    parser.add_argument(
+        "--debug-traceback",
+        action="store_true",
+        help="Show Python tracebacks for unexpected CLI failures. Also settable via LATHE_DEBUG_TRACEBACK=1.",
+    )
     parser.add_argument(
         "--strict-prompt-injection",
         action="store_true",
@@ -79,19 +131,58 @@ def _build_parser() -> argparse.ArgumentParser:
             "file (or stdin) and write the canonical form to stdout."
         ),
     )
-    p_fmt.add_argument("files", nargs="*", help="Files or glob patterns (default: examples/*.lth)")
-    p_fmt.add_argument("--check", action="store_true", help="Don't write; exit non-zero if any file would change")
-    p_fmt.add_argument("--dry-run", dest="dry_run", action="store_true", help="Print a unified diff without writing")
-    p_fmt.add_argument("--stdout", action="store_true", help="Read a single file (or stdin) and write canonical output to stdout")
+    p_fmt.add_argument(
+        "files",
+        nargs="*",
+        help="Files or glob patterns (default: examples/*.lth)",
+    )
+    p_fmt.add_argument(
+        "--check",
+        action="store_true",
+        help="Don't write; exit non-zero if any file would change",
+    )
+    p_fmt.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Print a unified diff without writing",
+    )
+    p_fmt.add_argument(
+        "--stdout",
+        action="store_true",
+        help="Read a single file (or stdin) and write canonical output to stdout",
+    )
 
     sub.add_parser("schema", help="Emit the normalized AST JSON schema")
     sub.add_parser("backends", help="List builtin backend contracts and stacks")
     sub.add_parser("shape-providers", help="List available shape provider adapters")
 
-    p_probe = sub.add_parser("probe-providers", help="Probe shape provider availability in the current runtime")
+    p_completions = sub.add_parser(
+        "completions",
+        help="Emit static shell completion scripts",
+    )
+    p_completions.add_argument(
+        "shell",
+        choices=SUPPORTED_SHELLS,
+        help="Shell completion format to emit",
+    )
+    p_completions.add_argument(
+        "--program",
+        default="lathe",
+        help="Command name to register in the generated script (default: lathe)",
+    )
+    p_completions.set_defaults(_completion_parser=parser)
+
+    p_probe = sub.add_parser(
+        "probe-providers",
+        help="Probe shape provider availability in the current runtime",
+    )
     p_probe.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
 
-    p_doctor = sub.add_parser("doctor", help="Inspect the local Lathe environment and backend/provider availability")
+    p_doctor = sub.add_parser(
+        "doctor",
+        help="Inspect the local Lathe environment and backend/provider availability",
+    )
     p_doctor.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
     p_doctor.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
     p_doctor.add_argument(
@@ -110,12 +201,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_plan = sub.add_parser("plan", help="Emit the effective build plan for an asset or variant")
     p_plan.add_argument("file")
     p_plan.add_argument("name")
-    p_plan.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
+    p_plan.add_argument(
+        "--execution-profile",
+        default=None,
+        help="Override the resolved V1.3 execution profile",
+    )
 
     p_mat = sub.add_parser("materialize", help="Materialize one asset or variant after uses and patches")
     p_mat.add_argument("file")
     p_mat.add_argument("name")
-    p_mat.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
+    p_mat.add_argument(
+        "--execution-profile",
+        default=None,
+        help="Override the resolved V1.3 execution profile",
+    )
 
     p_build = sub.add_parser(
         "build",
@@ -131,7 +230,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("name")
     p_build.add_argument("--out", default="dist", help="Output directory root (default: ./dist)")
     p_build.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
-    p_build.add_argument("--shape-provider", default=None, help="Override the shape provider adapter (for example: hunyuan2_1_http or vggt_local)")
+    p_build.add_argument(
+        "--shape-provider",
+        default=None,
+        help="Override the shape provider adapter (for example: hunyuan2_1_http or vggt_local)",
+    )
+    p_build.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail instead of falling back when the selected shape provider is unavailable or errors.",
+    )
     p_build.add_argument(
         "--strict-shape-provider",
         action="store_true",
@@ -152,8 +260,17 @@ def _build_parser() -> argparse.ArgumentParser:
             "becomes the sole non-strict opt-out."
         ),
     )
-    p_build.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None, help="Codex-operated imagegen handoff mode for V1.2 surfaces")
-    p_build.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
+    p_build.add_argument(
+        "--codex-imagegen",
+        choices=["auto", "fallback", "emit", "consume"],
+        default=None,
+        help="Codex-operated imagegen handoff mode for V1.2 surfaces",
+    )
+    p_build.add_argument(
+        "--execution-profile",
+        default=None,
+        help="Override the resolved V1.3 execution profile",
+    )
     p_build.add_argument(
         "--publish",
         default=None,
@@ -184,14 +301,27 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    p_probe_blender = sub.add_parser("probe-blender", help="Probe Blender availability and V1.3 execution capabilities")
+    p_probe_blender = sub.add_parser(
+        "probe-blender",
+        help="Probe Blender availability and V1.3 execution capabilities",
+    )
     p_probe_blender.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
 
-    p_export_blend = sub.add_parser("export-blend", help="Report or copy the retained .blend artifact for a completed build")
+    p_export_blend = sub.add_parser(
+        "export-blend",
+        help="Report or copy the retained .blend artifact for a completed build",
+    )
     p_export_blend.add_argument("build_dir")
-    p_export_blend.add_argument("--out", default=None, help="Optional destination path for the exported .blend")
+    p_export_blend.add_argument(
+        "--out",
+        default=None,
+        help="Optional destination path for the exported .blend",
+    )
 
-    p_inspect_blend = sub.add_parser("inspect-blend", help="Inspect the retained V1.3 .blend artifact summary for a completed build")
+    p_inspect_blend = sub.add_parser(
+        "inspect-blend",
+        help="Inspect the retained V1.3 .blend artifact summary for a completed build",
+    )
     p_inspect_blend.add_argument("build_dir")
 
     p_render_eval = sub.add_parser("render-eval", help="Build an asset and emit V1.3 render-eval evidence")
@@ -199,7 +329,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_render_eval.add_argument("name")
     p_render_eval.add_argument("--out", default="dist")
     p_render_eval.add_argument("--runtime-config", default=None)
-    p_render_eval.add_argument("--execution-profile", default=None, help="Override the resolved V1.3 execution profile")
+    p_render_eval.add_argument(
+        "--execution-profile",
+        default=None,
+        help="Override the resolved V1.3 execution profile",
+    )
 
     p_bridge = sub.add_parser("bridge", help="Operate on V1.3.1 Lathe-Blender bridge plans and diagnostics")
     bridge_sub = p_bridge.add_subparsers(dest="bridge_cmd", required=True)
@@ -209,7 +343,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_bridge_plan.add_argument("file")
     p_bridge_plan.add_argument("name")
     p_bridge_plan.add_argument("--runtime-config", default=None, help="Optional runtime config JSON file")
-    p_bridge_plan.add_argument("--execution-profile", default=None, help="Override the resolved execution profile")
+    p_bridge_plan.add_argument(
+        "--execution-profile",
+        default=None,
+        help="Override the resolved execution profile",
+    )
 
     p_inspect = sub.add_parser("inspect", help="Inspect V1.3.1 evidence from a completed build")
     p_inspect.add_argument("build_dir")
@@ -234,10 +372,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("build_dir")
     p_serve.add_argument("--port", type=int, default=8765, help="HTTP port (default: 8765)")
 
-    p_render_fixture = sub.add_parser("render-fixture", help="Report render-fixture evidence from a completed build")
+    p_render_fixture = sub.add_parser(
+        "render-fixture",
+        help="Report render-fixture evidence from a completed build",
+    )
     p_render_fixture.add_argument("build_dir")
 
-    p_bake_audit = sub.add_parser("bake-audit", help="Report bake evidence and missing bake diagnostics from a completed build")
+    p_bake_audit = sub.add_parser(
+        "bake-audit",
+        help="Report bake evidence and missing bake diagnostics from a completed build",
+    )
     p_bake_audit.add_argument("build_dir")
 
     p_library = sub.add_parser("library", help="Operate on V1.3 library bindings")
@@ -271,21 +415,33 @@ def _build_parser() -> argparse.ArgumentParser:
             "fallback behavior, silencing the V0.1.x DeprecationWarning."
         ),
     )
-    p_surface_build.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None)
+    p_surface_build.add_argument(
+        "--codex-imagegen",
+        choices=["auto", "fallback", "emit", "consume"],
+        default=None,
+    )
 
     p_surface_validate = sub.add_parser("surface-validate", help="Evaluate only V1.2 surface outputs")
     p_surface_validate.add_argument("file")
     p_surface_validate.add_argument("name")
     p_surface_validate.add_argument("--out", default="dist")
     p_surface_validate.add_argument("--runtime-config", default=None)
-    p_surface_validate.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None)
+    p_surface_validate.add_argument(
+        "--codex-imagegen",
+        choices=["auto", "fallback", "emit", "consume"],
+        default=None,
+    )
 
     p_surface_repair = sub.add_parser("surface-repair", help="Attempt V1.2 zone-local surface repair")
     p_surface_repair.add_argument("file")
     p_surface_repair.add_argument("name")
     p_surface_repair.add_argument("--out", default="dist")
     p_surface_repair.add_argument("--runtime-config", default=None)
-    p_surface_repair.add_argument("--codex-imagegen", choices=["auto", "fallback", "emit", "consume"], default=None)
+    p_surface_repair.add_argument(
+        "--codex-imagegen",
+        choices=["auto", "fallback", "emit", "consume"],
+        default=None,
+    )
 
     p_fit = sub.add_parser("fit", help="Explain deterministic fit/reference inputs for an asset")
     p_fit.add_argument("file")
@@ -315,13 +471,19 @@ def _build_parser() -> argparse.ArgumentParser:
     p_bench = sub.add_parser("bench", help="Execute Lathe-defined source benchmarks")
     p_bench.add_argument("files", nargs="*", help="Files or glob patterns (default: examples/*.lth)")
 
-    p_audit = sub.add_parser("audit", help="Run benchmark/style of workspace audit for the current Lathe repo")
+    p_audit = sub.add_parser(
+        "audit",
+        help="Run benchmark/style of workspace audit for the current Lathe repo",
+    )
     p_audit.add_argument("--root", default=".", help="Workspace root (default: current directory)")
 
     p_explain = sub.add_parser("explain", help="Explain why a build passed, failed, or selected a candidate")
     p_explain.add_argument("build_dir", help="Build directory containing build_report.json and stage outputs")
 
-    p_explain_fit = sub.add_parser("explain-fit", help="Explain fit/reference/transfer inputs for a completed build")
+    p_explain_fit = sub.add_parser(
+        "explain-fit",
+        help="Explain fit/reference/transfer inputs for a completed build",
+    )
     p_explain_fit.add_argument("build_dir")
 
     p_diff_asset = sub.add_parser("diff-asset", help="Diff two materialized assets")
@@ -332,14 +494,18 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_patch = sub.add_parser("patch", help="Apply a semantic patch operation and emit normalized JSON")
     p_patch.add_argument("file")
-    p_patch.add_argument("--op", required=True, choices=[
-        "add_component_to_family",
-        "change_repair_policy",
-        "update_material_palette",
-        "widen_search_bounds",
-        "freeze_dimension",
-        "add_benchmark_fixture",
-    ])
+    p_patch.add_argument(
+        "--op",
+        required=True,
+        choices=[
+            "add_component_to_family",
+            "change_repair_policy",
+            "update_material_palette",
+            "widen_search_bounds",
+            "freeze_dimension",
+            "add_benchmark_fixture",
+        ],
+    )
     p_patch.add_argument("--target", required=True, help="Target declaration name")
     p_patch.add_argument("--value", required=True, help="Primary value for the selected patch operation")
     p_patch.add_argument("--value2", default=None, help="Secondary value for operations that need two values")
@@ -360,10 +526,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ref_inspect = ref_sub.add_parser(
         "inspect",
         help="Parse, resolve, and print JSON facts for an @lathe[...] token (REF-9)",
-        description=(
-            "Exit codes: 0 = ok (JSON on stdout); 2 = bad token (parse error); "
-            "3 = unresolved ref."
-        ),
+        description=("Exit codes: 0 = ok (JSON on stdout); 2 = bad token (parse error); 3 = unresolved ref."),
     )
     p_ref_inspect.add_argument("token", help="The @lathe[...] token to inspect, quoted")
     p_ref_inspect.add_argument("--repo-root", default=None, help="Override repo root for resolution")
@@ -405,6 +568,7 @@ _DISPATCH = {
     "fmt": run_fmt,
     "backends": run_backends,
     "shape-providers": run_shape_providers,
+    "completions": run_completions,
     "probe-providers": run_probe_providers,
     "probe-blender": run_probe_blender,
     "bridge": run_bridge,
@@ -447,18 +611,78 @@ _DISPATCH = {
 
 
 def main() -> None:
-    """Main.
-    """
-    import os as _os
-
+    """Run the Lathe command-line entry point."""
     parser = _build_parser()
     args = parser.parse_args()
     if getattr(args, "strict_prompt_injection", False):
-        _os.environ["LATHE_STRICT_PROMPT_INJECTION"] = "1"
+        os.environ["LATHE_STRICT_PROMPT_INJECTION"] = "1"
     handler = _DISPATCH.get(args.cmd)
     if handler is None:
         raise SystemExit(2)
-    handler(args)
+    debug_traceback = (
+        getattr(args, "debug_traceback", False) or os.environ.get("LATHE_DEBUG_TRACEBACK") == "1"
+    )
+    try:
+        handler(args)
+    except FileNotFoundError as exc:
+        if debug_traceback:
+            raise
+        missing = str(exc.filename or exc)
+        _emit_error(
+            "lathe.cli.file_not_found",
+            f"File not found: {missing}",
+            "Check the path and rerun the command from the repository root.",
+            exit_code=2,
+            source_path=missing,
+            json_mode=_wants_json_error(args),
+        )
+    except IsADirectoryError as exc:
+        if debug_traceback:
+            raise
+        target = str(exc.filename or exc)
+        _emit_error(
+            "lathe.cli.expected_file",
+            f"Expected a file but got a directory: {target}",
+            "Pass a .lth source file or a supported JSON sidecar path.",
+            exit_code=2,
+            source_path=target,
+            json_mode=_wants_json_error(args),
+        )
+    except PermissionError as exc:
+        if debug_traceback:
+            raise
+        target = str(exc.filename or exc)
+        _emit_error(
+            "lathe.cli.permission_denied",
+            f"Permission denied: {target}",
+            "Check file permissions or choose an output/cache directory you can read and write.",
+            exit_code=2,
+            source_path=target,
+            json_mode=_wants_json_error(args),
+        )
+    except LatheError as exc:
+        if debug_traceback:
+            raise
+        _emit_error(
+            _lathe_error_code(exc),
+            str(exc),
+            "Fix the reported Lathe input or configuration issue and rerun the command.",
+            exit_code=1,
+            source_path=_source_path_for_error(args, exc),
+            json_mode=_wants_json_error(args),
+        )
+    except OSError as exc:
+        if debug_traceback:
+            raise
+        target = str(getattr(exc, "filename", None) or exc)
+        _emit_error(
+            "lathe.cli.io_error",
+            str(exc),
+            "Check the referenced path, filesystem permissions, and available disk space.",
+            exit_code=1,
+            source_path=target,
+            json_mode=_wants_json_error(args),
+        )
 
 
 if __name__ == "__main__":

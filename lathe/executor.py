@@ -15,12 +15,15 @@ emitted by the shape stage. See ``lathe/shape/`` for the contract bytes.
 from __future__ import annotations
 
 import json
+import logging
 import shutil
+import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
-from .cache import lathe_cache_dir
-from .capabilities import probe_topology_backend  # noqa: F401 — re-export for test mocking
+from .cache_paths import CACHE_MANIFEST_FILENAME, lathe_cache_dir
+from .capabilities import deterministic_backend_reports, probe_topology_backend  # noqa: F401
 from .checker import check_program
 from .core.common import dump_json, hash_obj, relpath
 from .core.errors import BuildError
@@ -30,24 +33,46 @@ from .core.geometry import (
 from .core.mesh import RuntimeMesh
 from .core.stages import (
     execution as stage_execution,
+)
+from .core.stages import (
     interfaces as stage_interfaces,
+)
+from .core.stages import (
     optimize as stage_optimize,
+)
+from .core.stages import (
     package as stage_package,
+)
+from .core.stages import (
     physics as stage_physics,
+)
+from .core.stages import (
     rig as stage_rig,
+)
+from .core.stages import (
     shape as stage_shape,
+)
+from .core.stages import (
     surface as stage_surface,
+)
+from .core.stages import (
     topology as stage_topology,
+)
+from .core.stages import (
     uv as stage_uv,
+)
+from .core.stages import (
     validate as stage_validate,
 )
 from .core.stages.topology import run_blender_topology as _run_blender_topology  # noqa: F401
+from .logging_utils import debug as log_debug
 from .normalizer import normalize_program
 from .planner import build_plan
+from .providers import list_shape_providers
 from .resolver import Resolver
 from .runtime_config import merge_runtime_config
+from .security import redact_secrets
 from .validators.surface_quality import evaluate_surface_quality
-
 
 STAGE_ORDER = [
     "shape",
@@ -66,23 +91,97 @@ STAGE_ORDER = [
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
 BUILD_CACHE_VERSION = "v10_rc2"
+log = logging.getLogger(__name__)
 
 
 __all__ = [
+    "STAGE_ORDER",
     "BuildError",
     "BuildExecutor",
     "RuntimeMesh",
-    "STAGE_ORDER",
+    "_run_reference_topology_cleanup",
     "build_asset",
     "build_surface_stage",
     "repair_surface_stage",
     "validate_surface_stage",
-    "_run_reference_topology_cleanup",
 ]
+
+
+def _stable_probe_fingerprint(probe: dict[str, Any]) -> dict[str, Any]:
+    """Keep cache fingerprints capability-shaped, not host-path-shaped."""
+    allowed = {
+        "available",
+        "code",
+        "version",
+        "python_module_available",
+        "supported_modes",
+        "gpu_cpu_render_capability",
+        "cuda_available",
+        "cuda_version",
+        "torchvision_available",
+    }
+    return {key: probe.get(key) for key in sorted(allowed) if key in probe}
+
+
+def _build_cache_root() -> Path:
+    """Resolve the build-cache root at use time so env overrides stay live."""
+    return lathe_cache_dir() / "builds"
+
+
+def _deterministic_backend_fingerprint(runtime_config: dict[str, Any]) -> list[dict[str, Any]]:
+    reports = deterministic_backend_reports(runtime_config)
+    fingerprint: list[dict[str, Any]] = []
+    for report in sorted(reports, key=lambda item: str(item.get("backend_id", ""))):
+        probe = report.get("probe", {})
+        if not isinstance(probe, dict):
+            probe = {}
+        fingerprint.append(
+            {
+                "backend_id": report.get("backend_id"),
+                "requested_adapter": report.get("requested_adapter"),
+                "selected_adapter": report.get("selected_adapter"),
+                "strict": report.get("strict"),
+                "available": report.get("available"),
+                "real_adapter_available": report.get("real_adapter_available"),
+                "fallback_available": report.get("fallback_available"),
+                "probe": _stable_probe_fingerprint(probe),
+            }
+        )
+    return fingerprint
+
+
+def _selected_backend_fingerprint(selected_backends: dict[str, Any]) -> dict[str, Any]:
+    return {
+        stage: {
+            "id": data.get("id"),
+            "version": data.get("version"),
+            "determinism_class": data.get("determinism_class"),
+            "runtime_executor": data.get("runtime_executor"),
+            "toolchain": list(data.get("toolchain", [])),
+            "format_routes": data.get("format_routes", {}),
+            "contract": data.get("contract", {}),
+        }
+        for stage, data in sorted(selected_backends.items())
+    }
+
+
+def _shape_provider_registry_fingerprint() -> list[dict[str, Any]]:
+    providers = []
+    for provider in list_shape_providers():
+        providers.append(
+            {
+                "id": provider.get("id"),
+                "version": provider.get("version"),
+                "learned": provider.get("learned"),
+                "modes": list(provider.get("modes", [])),
+            }
+        )
+    return sorted(providers, key=lambda item: str(item.get("id", "")))
 
 
 class BuildExecutor:
     """BuildExecutor."""
+
     def __init__(
         self,
         program: dict[str, Any],
@@ -97,7 +196,9 @@ class BuildExecutor:
         source_path = program.get("_source_path")
         self.source_root = Path(source_path).resolve().parent if source_path else Path.cwd()
         self.resolver = Resolver(program)
-        self.asset = self.resolver.materialize_asset(asset_name, execution_profile_override=execution_profile_override)
+        self.asset = self.resolver.materialize_asset(
+            asset_name, execution_profile_override=execution_profile_override
+        )
         self.plan = build_plan(program, asset_name, execution_profile_override=execution_profile_override)
         self.backend_stack = self.plan["backend_stack"]
         self.selected_backends = self.plan["selected_backends"]
@@ -125,9 +226,17 @@ class BuildExecutor:
                 "program": self.normalized_program,
                 "asset": self.asset_name,
                 "runtime_config": self.runtime_config,
+                "build_environment": self._build_cache_environment_fingerprint(),
             }
         )
-        self.cache_dir = BUILD_CACHE_ROOT / self.cache_key
+        self.cache_dir = _build_cache_root() / self.cache_key
+
+    def _build_cache_environment_fingerprint(self) -> dict[str, Any]:
+        return {
+            "selected_backends": _selected_backend_fingerprint(self.selected_backends),
+            "deterministic_backends": _deterministic_backend_fingerprint(self.runtime_config),
+            "shape_providers": _shape_provider_registry_fingerprint(),
+        }
 
     def build(self) -> dict[str, Any]:
         """Build.
@@ -157,7 +266,7 @@ class BuildExecutor:
         interfaces_bundle = stage_interfaces.run(self, rig_bundle)
         physics_bundle = stage_physics.run(self, interfaces_bundle)
         optimize_bundle = stage_optimize.run(self, physics_bundle)
-        execution_bundle = stage_execution.run(self, optimize_bundle)
+        stage_execution.run(self, optimize_bundle)
         validate_bundle = stage_validate.run(self, optimize_bundle)
         repair_rounds: list[dict[str, Any]] = []
         if not validate_bundle["certified"]:
@@ -174,7 +283,7 @@ class BuildExecutor:
                 )
                 # Refresh optimize/execution bundles in case a round regenerated the stack.
                 optimize_bundle = self.runtime.get("optimize", {}).get("bundle", optimize_bundle)
-                execution_bundle = stage_execution.run(self, optimize_bundle)
+                stage_execution.run(self, optimize_bundle)
         if not validate_bundle["certified"]:
             raise BuildError("Validation failed", diagnostics=validate_bundle["diagnostics"])
         package_bundle = stage_package.run(self, optimize_bundle, validate_bundle)
@@ -186,7 +295,7 @@ class BuildExecutor:
             "certified": True,
             "backend_stack": self.backend_stack,
             "selected_backends": self.selected_backends,
-            "runtime_config": self.runtime_config,
+            "runtime_config": redact_secrets(self.runtime_config),
             "stage_bundles": {
                 "shape": relpath(self.out_dir, self.stage_dirs["shape"] / "bundle.json"),
                 "topology": relpath(self.out_dir, self.stage_dirs["topology"] / "bundle.json"),
@@ -271,7 +380,9 @@ class BuildExecutor:
             "out_dir": str(self.out_dir),
             "ok": report["ok"],
             "surface_bundle_path": surface_result["surface_bundle_path"],
-            "surface_quality_report_path": relpath(self.out_dir, self.stage_dirs["surface"] / "surface_quality_report.json"),
+            "surface_quality_report_path": relpath(
+                self.out_dir, self.stage_dirs["surface"] / "surface_quality_report.json"
+            ),
             "surface_validation_ir": self.runtime["surface"]["bundle"].get("surface_validation_ir", {}),
             "metrics": report["metrics"],
             "diagnostics": report["diagnostics"],
@@ -286,7 +397,9 @@ class BuildExecutor:
         initial = self.validate_surface_stage()
         if initial["ok"]:
             return {**initial, "repaired": False, "repair_reason": "surface_already_valid"}
-        repaired_bundle = stage_surface.run(self, self.runtime["uv"]["bundle"], repair_mode="surface_enhance_v1")
+        repaired_bundle = stage_surface.run(
+            self, self.runtime["uv"]["bundle"], repair_mode="surface_enhance_v1"
+        )
         repaired_report = evaluate_surface_quality(self.asset, self.runtime)
         dump_json(self.stage_dirs["surface"] / "surface_quality_report.json", repaired_report)
         return {
@@ -296,38 +409,110 @@ class BuildExecutor:
             "repaired": True,
             "repair_reason": "surface_enhance_v1",
             "surface_bundle_path": relpath(self.out_dir, self.stage_dirs["surface"] / "bundle.json"),
-            "surface_quality_report_path": relpath(self.out_dir, self.stage_dirs["surface"] / "surface_quality_report.json"),
+            "surface_quality_report_path": relpath(
+                self.out_dir, self.stage_dirs["surface"] / "surface_quality_report.json"
+            ),
             "surface_repair_ir": repaired_bundle.get("surface_repair_ir", {}),
-            "before": {"ok": initial["ok"], "metrics": initial["metrics"], "diagnostics": initial["diagnostics"]},
-            "after": {"ok": repaired_report["ok"], "metrics": repaired_report["metrics"], "diagnostics": repaired_report["diagnostics"]},
+            "before": {
+                "ok": initial["ok"],
+                "metrics": initial["metrics"],
+                "diagnostics": initial["diagnostics"],
+            },
+            "after": {
+                "ok": repaired_report["ok"],
+                "metrics": repaired_report["metrics"],
+                "diagnostics": repaired_report["diagnostics"],
+            },
         }
 
     def _restore_cached_build(self) -> dict[str, Any] | None:
         if not self.cache_dir.exists():
             return None
-        if self.out_dir.exists():
-            shutil.rmtree(self.out_dir)
-        self.out_dir.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(self.cache_dir, self.out_dir)
-        report_path = self.out_dir / "build_report.json"
-        if report_path.exists():
-            # JSON ingress — internal controlled payload from our own cached build_report.json (copytree'd from a prior build out_dir); safe without schema validation.
-            report = json.loads(report_path.read_text(encoding="utf-8"))
-            report["out_dir"] = str(self.out_dir)
-            report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-            return report
+        cached_report_path = self.cache_dir / "build_report.json"
+        if not cached_report_path.is_file():
+            return None
+        try:
+            report = json.loads(cached_report_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        if not isinstance(report, dict):
+            return None
+        manifest_path = self.cache_dir / CACHE_MANIFEST_FILENAME
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                return None
+            if not isinstance(manifest, dict):
+                return None
+            if manifest.get("cache_version") != BUILD_CACHE_VERSION:
+                return None
+            if manifest.get("cache_key") not in (None, self.cache_key):
+                return None
+        try:
+            if self.out_dir.exists():
+                shutil.rmtree(self.out_dir)
+            self.out_dir.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(self.cache_dir, self.out_dir)
+            report_path = self.out_dir / "build_report.json"
+            if report_path.exists():
+                # JSON ingress — internal controlled payload from our own cached build_report.json (copytree'd from a prior build out_dir); safe without schema validation.
+                report["out_dir"] = str(self.out_dir)
+                report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+                return report
+        except (OSError, shutil.Error):
+            return None
         return None
 
     def _persist_build_cache(self) -> None:
+        staging_dir: Path | None = None
         try:
-            if self.cache_dir.exists():
-                shutil.rmtree(self.cache_dir)
             self.cache_dir.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.out_dir, self.cache_dir)
-        except (OSError, shutil.Error):
+            if self.cache_dir.exists():
+                return
+            staging_dir = Path(
+                tempfile.mkdtemp(
+                    prefix=f".{self.cache_key}.",
+                    suffix=".tmp",
+                    dir=self.cache_dir.parent,
+                )
+            )
+            shutil.rmtree(staging_dir)
+            shutil.copytree(self.out_dir, staging_dir)
+            dump_json(staging_dir / CACHE_MANIFEST_FILENAME, self._cache_manifest())
+            staging_dir.rename(self.cache_dir)
+            staging_dir = None
+        except (OSError, shutil.Error) as exc:
             # Caching is best-effort; surface IO/permission/dest-exists failures
-            # silently rather than aborting the build.
-            pass
+            # as debug diagnostics rather than aborting the build.
+            log_debug(
+                log,
+                "lathe.executor.cache_persist_failed",
+                "failed to persist build cache at {cache_dir}: {error}",
+                cache_dir=self.cache_dir,
+                error=exc,
+            )
+        finally:
+            if staging_dir is not None:
+                shutil.rmtree(staging_dir, ignore_errors=True)
+
+    def _cache_manifest(self) -> dict[str, Any]:
+        variant_name = None
+        for variant in self.program.get("variants", []) or []:
+            if isinstance(variant, dict) and variant.get("name") == self.asset_name:
+                variant_name = self.asset_name
+                break
+        return {
+            "schema": "lathe.cache_manifest.v1",
+            "cache_version": BUILD_CACHE_VERSION,
+            "cache_key": self.cache_key,
+            "asset": self.asset_name,
+            "variant": variant_name,
+            "kind": self.asset.get("kind"),
+            "backend_stack": self.backend_stack,
+            "source_fingerprint": hash_obj(self.normalized_program),
+            "created_time": time.time(),
+        }
 
     def _select_shape_candidate(self, candidate_id: str, reason: str) -> None:
         stage_shape.select_candidate(self, candidate_id, reason)
@@ -390,12 +575,21 @@ class BuildExecutor:
         optimize_bundle = stage_optimize.run(self, physics_bundle)
         repaired_validate = stage_validate.run(self, optimize_bundle)
         attempts = self.runtime["shape"].setdefault("reselection_attempts", [])
-        attempts.append({
-            "candidate_id": self.runtime["shape"]["bundle"].get("selected_candidate_id"),
-            "reason": "surface_reauthor_repair",
-            "score": repaired_validate.get("score"),
-        })
-        return surface_bundle, rig_bundle, interfaces_bundle, physics_bundle, optimize_bundle, repaired_validate
+        attempts.append(
+            {
+                "candidate_id": self.runtime["shape"]["bundle"].get("selected_candidate_id"),
+                "reason": "surface_reauthor_repair",
+                "score": repaired_validate.get("score"),
+            }
+        )
+        return (
+            surface_bundle,
+            rig_bundle,
+            interfaces_bundle,
+            physics_bundle,
+            optimize_bundle,
+            repaired_validate,
+        )
 
     def _resolved_profile_names(self) -> list[str]:
         names = []
@@ -433,7 +627,12 @@ def build_asset(
     ).build()
 
 
-def build_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str | Path, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_surface_stage(
+    program: dict[str, Any],
+    asset_name: str,
+    out_dir: str | Path,
+    runtime_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build surface stage.
 
     Args:
@@ -448,7 +647,12 @@ def build_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str |
     return BuildExecutor(program, asset_name, out_dir, runtime_config=runtime_config).build_surface_stage()
 
 
-def validate_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str | Path, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+def validate_surface_stage(
+    program: dict[str, Any],
+    asset_name: str,
+    out_dir: str | Path,
+    runtime_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Validate surface stage.
 
     Args:
@@ -463,7 +667,12 @@ def validate_surface_stage(program: dict[str, Any], asset_name: str, out_dir: st
     return BuildExecutor(program, asset_name, out_dir, runtime_config=runtime_config).validate_surface_stage()
 
 
-def repair_surface_stage(program: dict[str, Any], asset_name: str, out_dir: str | Path, runtime_config: dict[str, Any] | None = None) -> dict[str, Any]:
+def repair_surface_stage(
+    program: dict[str, Any],
+    asset_name: str,
+    out_dir: str | Path,
+    runtime_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Repair surface stage.
 
     Args:

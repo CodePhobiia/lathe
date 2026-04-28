@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from lathe.topology_runtime import derive_topology_semantics, should_preserve_integrated_shape
 
 
@@ -140,4 +139,7 @@ class TestShouldPreserveIntegratedShape:
         bundle = _shape_bundle(assessment=assessment)
         result = derive_topology_semantics(bundle)
         assert result["feature_semantics"] == assessment
-        assert result["feature_semantics"]["attempted_provider"] != result["feature_semantics"]["actual_provider"]
+        assert (
+            result["feature_semantics"]["attempted_provider"]
+            != result["feature_semantics"]["actual_provider"]
+        )

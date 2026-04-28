@@ -8,20 +8,18 @@ collapses back to the canonical form.
 
 from __future__ import annotations
 
-import io
 import random
+import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
-from lathe.errors import LatheError, LatheParseError
+from lathe.errors import LatheParseError
 from lathe.formatter import (
     _tokenize,
     check_formatted,
     format_file,
     format_source,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "fmt"
@@ -48,12 +46,7 @@ class FormatSourceHappyPathTests(unittest.TestCase):
         self.assertEqual(format_source("\n\n   \t\n"), "")
 
     def test_messy_source_canonicalized(self) -> None:
-        messy = (
-            "profile   p1{\n"
-            "  defaults{build.optimize.lods=4}\n"
-            "ensure units(cm)\n"
-            "}\n"
-        )
+        messy = "profile   p1{\n  defaults{build.optimize.lods=4}\nensure units(cm)\n}\n"
         out = format_source(messy)
         # Canonical form has 2-space indent, spaces around `=`,
         # blocks on their own lines, etc.
@@ -64,26 +57,13 @@ class FormatSourceHappyPathTests(unittest.TestCase):
 
     def test_list_gets_trailing_comma_when_multiline(self) -> None:
         source = (
-            "asset a: hard_surface_prop {\n"
-            "  intent {\n"
-            "    parts = [\n"
-            "      one,\n"
-            "      two\n"
-            "    ]\n"
-            "  }\n"
-            "}\n"
+            "asset a: hard_surface_prop {\n  intent {\n    parts = [\n      one,\n      two\n    ]\n  }\n}\n"
         )
         out = format_source(source)
         self.assertIn("      one,\n      two,\n", out)
 
     def test_inline_list_stays_inline(self) -> None:
-        source = (
-            "profile p {\n"
-            "  defaults {\n"
-            "    package.formats = [usd, glb]\n"
-            "  }\n"
-            "}\n"
-        )
+        source = "profile p {\n  defaults {\n    package.formats = [usd, glb]\n  }\n}\n"
         out = format_source(source)
         self.assertIn("package.formats = [usd, glb]", out)
         self.assertNotIn("[\n", out)
@@ -112,29 +92,17 @@ class IdempotenceTests(unittest.TestCase):
 
 class CommentPreservationTests(unittest.TestCase):
     def test_line_comment_preserved(self) -> None:
-        source = (
-            "// file banner\n"
-            "module foo.bar\n"
-        )
+        source = "// file banner\nmodule foo.bar\n"
         out = format_source(source)
         self.assertIn("// file banner", out)
 
     def test_block_comment_preserved(self) -> None:
-        source = (
-            "/* note */\n"
-            "module foo.bar\n"
-        )
+        source = "/* note */\nmodule foo.bar\n"
         out = format_source(source)
         self.assertIn("/* note */", out)
 
     def test_trailing_line_comment_preserved(self) -> None:
-        source = (
-            "profile p {\n"
-            "  defaults {\n"
-            "    package.manifest = true   // important\n"
-            "  }\n"
-            "}\n"
-        )
+        source = "profile p {\n  defaults {\n    package.manifest = true   // important\n  }\n}\n"
         out = format_source(source)
         self.assertIn("package.manifest = true", out)
         self.assertIn("// important", out)
@@ -207,7 +175,6 @@ class MalformedSourceTests(unittest.TestCase):
 
 class FormatFileTests(unittest.TestCase):
     def test_in_place_rewrite_reports_changed(self) -> None:
-        import tempfile
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "sample.lth"
             path.write_text("profile   p{  }\n", encoding="utf-8")
@@ -219,7 +186,6 @@ class FormatFileTests(unittest.TestCase):
             )
 
     def test_in_place_noop_when_already_canonical(self) -> None:
-        import tempfile
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "sample.lth"
             canonical = format_source("profile p {}\n")
@@ -229,7 +195,6 @@ class FormatFileTests(unittest.TestCase):
             self.assertEqual(path.read_text(encoding="utf-8"), canonical)
 
     def test_dry_run_does_not_write(self) -> None:
-        import tempfile
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "sample.lth"
             original = "profile   p{  }\n"

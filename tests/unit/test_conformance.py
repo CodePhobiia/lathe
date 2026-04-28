@@ -19,9 +19,7 @@ from __future__ import annotations
 
 import unittest
 
-import numpy as np
 import trimesh
-
 from lathe.asset_graph import build_asset_graph
 from lathe.conformance import fit_provider_proposals
 
@@ -43,8 +41,7 @@ def _graph():
 
 
 def _scaffold_mesh() -> trimesh.Trimesh:
-    mesh = trimesh.creation.box(extents=(1.0, 1.0, 1.0))
-    return mesh
+    return trimesh.creation.box(extents=(1.0, 1.0, 1.0))
 
 
 def _scaffold_candidate(mesh: trimesh.Trimesh | None = None) -> dict:
@@ -84,7 +81,8 @@ def _scaffold_result(asset_graph, *, n_candidates: int = 1):
 
 
 def _provider_candidate(
-    *, extents: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    *,
+    extents: tuple[float, float, float] = (1.0, 1.0, 1.0),
     face_count: int = 600,
     parts: list[str] | None = None,
 ) -> dict:

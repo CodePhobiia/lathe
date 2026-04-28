@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from lathe.validators.urdf_validation import (
     L6401,
     L6402,
@@ -82,9 +80,7 @@ def test_robotics_complete_hinge_passes():
                 "child_part_id": "upper_arm",
             }
         ],
-        physics_parts=[
-            {"id": "upper_arm", "movable": True, "mass": 1.0, "inertia": [0.1, 0.1, 0.1]}
-        ],
+        physics_parts=[{"id": "upper_arm", "movable": True, "mass": 1.0, "inertia": [0.1, 0.1, 0.1]}],
     )
     report = evaluate_urdf_validation(asset, runtime)
     assert not any(d.get("severity") == "error" for d in report["diagnostics"])
@@ -103,9 +99,7 @@ def test_hinge_missing_axis_emits_l6401():
 
 def test_door_socket_missing_limits_emits_l6401():
     asset = _make_asset()
-    runtime = _make_runtime(
-        sockets=[{"id": "hinge0", "socket_type": "door", "axis": [0, 1, 0]}]
-    )
+    runtime = _make_runtime(sockets=[{"id": "hinge0", "socket_type": "door", "axis": [0, 1, 0]}])
     report = evaluate_urdf_validation(asset, runtime)
     codes = {d["code"] for d in report["diagnostics"]}
     assert L6401 in codes
@@ -147,8 +141,7 @@ def test_joint_graph_cycle_emits_l6402():
             },
         ],
         physics_parts=[
-            {"id": p, "movable": True, "mass": 1.0, "inertia": [0.1, 0.1, 0.1]}
-            for p in ("A", "B", "C")
+            {"id": p, "movable": True, "mass": 1.0, "inertia": [0.1, 0.1, 0.1]} for p in ("A", "B", "C")
         ],
     )
     report = evaluate_urdf_validation(asset, runtime)
@@ -194,9 +187,7 @@ def test_missing_inertia_emits_l6403():
 
 def test_immovable_part_skips_physics_checks():
     asset = _make_asset()
-    runtime = _make_runtime(
-        physics_parts=[{"id": "chassis", "movable": False}]
-    )
+    runtime = _make_runtime(physics_parts=[{"id": "chassis", "movable": False}])
     report = evaluate_urdf_validation(asset, runtime)
     assert not any(d["code"] == L6403 for d in report["diagnostics"])
 

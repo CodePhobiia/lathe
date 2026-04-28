@@ -17,7 +17,6 @@ from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 from lathe.transfer_ir import TransferIR
 
-
 ROOT = Path(__file__).resolve().parents[2]
 ADAPT_EXAMPLE = ROOT / "examples" / "console_terminal_mobile_adapt.lth"
 
@@ -111,9 +110,7 @@ class TransferIRTests(unittest.TestCase):
             }
         }
         ir = TransferIR.from_asset(asset)
-        self.assertEqual(
-            [r["name"] for r in ir.transfer_rules], ["high", "mid", "low"]
-        )
+        self.assertEqual([r["name"] for r in ir.transfer_rules], ["high", "mid", "low"])
 
 
 if __name__ == "__main__":

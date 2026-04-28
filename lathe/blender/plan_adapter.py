@@ -33,7 +33,9 @@ def _unit_px(value: Any, default: int) -> int:
 
 def _canonical_backends(execution: dict[str, Any], backend_ids: dict[str, Any]) -> dict[str, Any]:
     return {
-        "geometry_backend": backend_ids["geometry_backend"].get(str(execution.get("geometry_backend", "")), ""),
+        "geometry_backend": backend_ids["geometry_backend"].get(
+            str(execution.get("geometry_backend", "")), ""
+        ),
         "topology_backend": backend_ids["topology_backend"],
         "uv_backend": backend_ids["uv_backend"].get(str(execution.get("uv_backend", "")), ""),
         "bake_backend": backend_ids["bake_backend"].get(str(execution.get("bake_backend", "")), ""),
@@ -45,7 +47,9 @@ def _canonical_backends(execution: dict[str, Any], backend_ids: dict[str, Any]) 
 
 
 def _resolve_render_fixture(asset: dict[str, Any]) -> dict[str, Any]:
-    fixture = dict(asset.get("build", {}).get("surface", {}).get("resolved_render_fixture", {}).get("values", {}))
+    fixture = dict(
+        asset.get("build", {}).get("surface", {}).get("resolved_render_fixture", {}).get("values", {})
+    )
     if not fixture:
         fixture = {
             "views": ["front_34", "front", "side", "rear_34"],
@@ -57,7 +61,9 @@ def _resolve_render_fixture(asset: dict[str, Any]) -> dict[str, Any]:
 
 
 def _resolve_bake_profile(asset: dict[str, Any]) -> dict[str, Any]:
-    profile = dict(asset.get("build", {}).get("surface", {}).get("resolved_bake_profile", {}).get("values", {}))
+    profile = dict(
+        asset.get("build", {}).get("surface", {}).get("resolved_bake_profile", {}).get("values", {})
+    )
     if not profile:
         profile = {
             "maps": list(asset.get("build", {}).get("surface", {}).get("bakes", [])),

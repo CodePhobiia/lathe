@@ -13,11 +13,12 @@ from typing import Any
 @dataclass
 class ReuseIR:
     """ReuseIR."""
+
     values: dict[str, Any] = field(default_factory=dict)
     resolved_kit: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "ReuseIR":
+    def from_asset(cls, asset: dict[str, Any]) -> ReuseIR:
         """From asset.
 
         Args:

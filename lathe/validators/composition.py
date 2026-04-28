@@ -19,7 +19,11 @@ authoritative runtime mesh — not a shape-stage hook).
 
 from __future__ import annotations
 
-from typing import Any, Callable, Protocol, TypedDict, runtime_checkable
+from collections.abc import Callable
+from typing import Any, Protocol, TypedDict, runtime_checkable
+
+from ..selector_manifest import GAMEPLAY_TAG_CATALOG
+from .urdf_validation import evaluate_urdf_validation
 
 
 class ValidatorReport(TypedDict, total=False):
@@ -35,7 +39,7 @@ class ValidatorReport(TypedDict, total=False):
     passes: bool
     diagnostics: list[dict[str, Any]]
     evidence: dict[str, Any]
-    subreports: dict[str, "ValidatorReport"]
+    subreports: dict[str, ValidatorReport]
 
 
 @runtime_checkable
@@ -51,7 +55,13 @@ class Validator(Protocol):
     name: str
     stage_dependencies: list[str]
 
-    def evaluate(self, runtime: dict[str, Any], asset: dict[str, Any], artifacts: dict[str, Any]) -> ValidatorReport:
+    def evaluate(
+        self,
+        runtime: dict[str, Any],
+        asset: dict[str, Any],
+        artifacts: dict[str, Any],
+    ) -> ValidatorReport:
+        """Validate ``asset`` against the current build ``runtime``."""
         ...
 
 
@@ -72,13 +82,20 @@ class FunctionValidator:
         weight: float = 1.0,
         score_key: str | None = None,
     ) -> None:
+        """Create an adapter for a legacy validator function."""
         self.name = name
         self._fn = fn
         self.stage_dependencies = list(stage_dependencies or [])
         self.weight = float(weight)
         self._score_key = score_key
 
-    def evaluate(self, runtime: dict[str, Any], asset: dict[str, Any], artifacts: dict[str, Any]) -> ValidatorReport:
+    def evaluate(
+        self,
+        runtime: dict[str, Any],
+        asset: dict[str, Any],
+        artifacts: dict[str, Any],
+    ) -> ValidatorReport:
+        """Run the wrapped validator and normalize its report shape."""
         raw = self._fn(asset, runtime) or {}
         diagnostics = list(raw.get("diagnostics", []))
         passes = not any(diag.get("severity") == "error" for diag in diagnostics)
@@ -117,7 +134,7 @@ def _extract_score(raw: dict[str, Any], score_key: str | None, passes: bool) -> 
     return 1.0 if passes else 0.0
 
 
-def build_urdf_validator() -> "FunctionValidator":
+def build_urdf_validator() -> FunctionValidator:
     """Return the STAGE-11 URDF validator wrapped as a pipeline validator.
 
     Kept in ``composition.py`` (alongside the other built-in registrations)
@@ -126,9 +143,6 @@ def build_urdf_validator() -> "FunctionValidator":
     report with no diagnostics and so acts as a no-op for the aggregate
     certification score.
     """
-
-    from .urdf_validation import evaluate_urdf_validation
-
     return FunctionValidator(
         name="urdf_validation",
         fn=evaluate_urdf_validation,
@@ -137,7 +151,7 @@ def build_urdf_validator() -> "FunctionValidator":
     )
 
 
-def build_gameplay_tag_validator() -> "FunctionValidator":
+def build_gameplay_tag_validator() -> FunctionValidator:
     """Return the STAGE-12 gameplay-tag catalog validator.
 
     Verifies every tag declared in ``asset.publish.tags`` is a member of
@@ -147,9 +161,7 @@ def build_gameplay_tag_validator() -> "FunctionValidator":
     Assets with no tags are silently a no-op.
     """
 
-    def _evaluate(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG001
-        from ..selector_manifest import GAMEPLAY_TAG_CATALOG
-
+    def _evaluate(asset: dict[str, Any], _runtime: dict[str, Any]) -> dict[str, Any]:
         diagnostics: list[dict[str, Any]] = []
         publish = (asset or {}).get("publish") or {}
         raw_tags = publish.get("tags") or []
@@ -181,10 +193,7 @@ def build_gameplay_tag_validator() -> "FunctionValidator":
                     "phase": "validate",
                     "stage": "validate",
                     "validator": "gameplay_tags",
-                    "message": (
-                        f"Unknown gameplay tag '{tag}'. "
-                        f"Allowed: {sorted(GAMEPLAY_TAG_CATALOG)}."
-                    ),
+                    "message": (f"Unknown gameplay tag '{tag}'. Allowed: {sorted(GAMEPLAY_TAG_CATALOG)}."),
                     "details": {"tag": tag, "allowed": sorted(GAMEPLAY_TAG_CATALOG)},
                 }
             )
@@ -215,10 +224,12 @@ class ValidatorPipeline:
     """
 
     def __init__(self, validators: list[Validator]) -> None:
+        """Create a pipeline from validators in dependency order."""
         self._validators: list[Validator] = self._topological_order(validators)
 
     @property
     def validators(self) -> list[Validator]:
+        """Return the ordered validators as a defensive copy."""
         return list(self._validators)
 
     @staticmethod
@@ -247,7 +258,12 @@ class ValidatorPipeline:
                 break
         return ordered
 
-    def run(self, runtime: dict[str, Any], asset: dict[str, Any], artifacts: dict[str, Any]) -> dict[str, Any]:
+    def run(
+        self,
+        runtime: dict[str, Any],
+        asset: dict[str, Any],
+        artifacts: dict[str, Any],
+    ) -> dict[str, Any]:
         """Run all validators and build a certification bundle.
 
         Aggregation follows a min-of-gates + weighted-sum-of-scores
@@ -262,7 +278,11 @@ class ValidatorPipeline:
         total_weight = 0.0
         weighted_sum = 0.0
         for validator in self._validators:
-            report = validator.evaluate(runtime, asset, artifacts)
+            missing_deps = _missing_stage_dependencies(validator, runtime, reports)
+            if missing_deps:
+                report = _dependency_failure_report(validator, missing_deps, asset)
+            else:
+                report = validator.evaluate(runtime, asset, artifacts)
             reports[validator.name] = report
             # Publish this validator's evidence into runtime under its name so
             # downstream validators (flow reads semantic+visual, visual reads
@@ -285,3 +305,52 @@ class ValidatorPipeline:
             "score": round(float(score), 6),
             "threshold": 0.0,
         }
+
+
+def _missing_stage_dependencies(
+    validator: Validator,
+    runtime: dict[str, Any],
+    reports: dict[str, ValidatorReport],
+) -> list[str]:
+    missing: list[str] = []
+    for dependency in getattr(validator, "stage_dependencies", []) or []:
+        if dependency in reports:
+            continue
+        stage_state = runtime.get(dependency)
+        if not isinstance(stage_state, dict) or not isinstance(stage_state.get("bundle"), dict):
+            missing.append(str(dependency))
+    return missing
+
+
+def _dependency_failure_report(
+    validator: Validator,
+    missing_deps: list[str],
+    asset: dict[str, Any],
+) -> ValidatorReport:
+    validator_name = getattr(validator, "name", "validator")
+    missing = sorted(missing_deps)
+    return ValidatorReport(
+        name=validator_name,
+        score=0.0,
+        passes=False,
+        diagnostics=[
+            {
+                "code": "L6001",
+                "name": "missing_stage_dependency",
+                "severity": "error",
+                "phase": "validate",
+                "asset": asset.get("name"),
+                "stage": "validate",
+                "validator": validator_name,
+                "path": f"runtime.{missing[0]}.bundle",
+                "message": (
+                    f"Validator '{validator_name}' cannot run because required stage "
+                    f"bundle(s) are missing or invalid: {missing}."
+                ),
+                "details": {"missing_dependencies": missing},
+                "suggested_repairs": ["rerun_required_stage"],
+            }
+        ],
+        evidence={},
+        subreports={},
+    )

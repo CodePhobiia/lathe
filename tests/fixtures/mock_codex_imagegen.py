@@ -15,10 +15,9 @@ from __future__ import annotations
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import pytest
-
 
 SAMPLES_DIR = Path(__file__).resolve().parent / "codex_imagegen_samples"
 DEFAULT_PLACEHOLDER = SAMPLES_DIR / "placeholder.png"
@@ -75,11 +74,7 @@ def mock_codex_bridge(monkeypatch: pytest.MonkeyPatch) -> MockCodexBridge:
         return bridge
 
     if hasattr(_codex, "emit_codex_imagegen_requests"):
-        monkeypatch.setattr(
-            _codex, "emit_codex_imagegen_requests", bridge.emit, raising=True
-        )
+        monkeypatch.setattr(_codex, "emit_codex_imagegen_requests", bridge.emit, raising=True)
     if hasattr(_codex, "consume_codex_imagegen_outputs"):
-        monkeypatch.setattr(
-            _codex, "consume_codex_imagegen_outputs", bridge.consume, raising=True
-        )
+        monkeypatch.setattr(_codex, "consume_codex_imagegen_outputs", bridge.consume, raising=True)
     return bridge

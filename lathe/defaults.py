@@ -235,6 +235,7 @@ BUILD_STAGE_DEFAULTS = {
     "interfaces": {
         "backend": "auto",
         "sockets": [],
+        "pivots": [],
         "anchors": [],
     },
     "physics": {
@@ -319,6 +320,7 @@ SET_LIKE_PATHS = {
     "build.surface.bakes",
     "build.rig.joints",
     "build.interfaces.sockets",
+    "build.interfaces.pivots",
     "build.interfaces.anchors",
     "package.formats",
     "package.previews",

@@ -1,3 +1,5 @@
+"""Clean imported GLB topology in Blender and export a normalized GLB."""
+
 import argparse
 import sys
 
@@ -28,6 +30,7 @@ def _cleanup_mesh_object(obj: bpy.types.Object) -> None:
 
 
 def main() -> None:
+    """Run the Blender topology cleanup helper."""
     args = _parse_args()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=args.input)

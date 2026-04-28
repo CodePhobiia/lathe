@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,9 +20,7 @@ class SafeResolveHappyPathTests(unittest.TestCase):
 
     def test_relative_path_resolves_under_root(self) -> None:
         resolved = safe_resolve(self.root, "foo/bar.txt")
-        self.assertTrue(
-            str(resolved).startswith(str(Path(os.path.realpath(self.root))))
-        )
+        self.assertTrue(str(resolved).startswith(str(Path(os.path.realpath(self.root)))))
         self.assertTrue(resolved.name == "bar.txt")
 
     def test_single_component_resolves(self) -> None:
@@ -111,7 +108,7 @@ class SafeResolveSymlinkTests(unittest.TestCase):
         target.write_text("ok", encoding="utf-8")
         link = self.root / "link.txt"
         try:
-            os.symlink(target, link)
+            link.symlink_to(target)
         except (OSError, NotImplementedError):
             self.skipTest("symlinks unsupported in this environment")
         resolved = safe_resolve(self.root, "link.txt", allow_symlinks=True)
@@ -122,7 +119,7 @@ class SafeResolveSymlinkTests(unittest.TestCase):
         target.write_text("ok", encoding="utf-8")
         link = self.root / "link.txt"
         try:
-            os.symlink(target, link)
+            link.symlink_to(target)
         except (OSError, NotImplementedError):
             self.skipTest("symlinks unsupported in this environment")
         with self.assertRaises(PathGuardError):

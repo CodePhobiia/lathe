@@ -1,0 +1,30 @@
+{
+  "shape": {
+    "provider": "reference_conditioned",
+    "strict": false,
+    "allow_fallback": true
+  },
+  "topology": {
+    "adapter": "reference_cleanup",
+    "strict": false
+  },
+  "uv": {
+    "adapter": "reference_box",
+    "strict": false
+  },
+  "surface": {
+    "fallback_mode": "allow_fallback",
+    "codex_imagegen": {
+      "mode": "fallback",
+      "request_dir": "imagegen_requests",
+      "output_dir": "imagegen_outputs"
+    }
+  },
+  "execution": {
+    "blender": {
+      "strict": false,
+      "allow_autoexec": false,
+      "trusted": false
+    }
+  }
+}

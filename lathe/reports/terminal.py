@@ -55,7 +55,7 @@ def _collect_validator_rows(build_report: dict[str, Any]) -> list[tuple[str, str
 
 def _collect_diagnostics(build_report: dict[str, Any]) -> list[dict[str, Any]]:
     diags: list[dict[str, Any]] = []
-    for source in (build_report.get("diagnostics") or []):
+    for source in build_report.get("diagnostics") or []:
         diags.append(dict(source))
     validate = build_report.get("validate_detail") or {}
     for name, payload in validate.items():
@@ -157,7 +157,7 @@ def _lod_ladder_lines(build_dir: Path, *, use_color: bool) -> list[str]:
         ratio = lod.get("ratio", "?")
         tris = lod.get("tris", lod.get("triangle_count", "?"))
         path = str(lod.get("path") or "").replace("\\", "/")
-        lines.append(f"  {str(level):<6}{str(ratio):<8}{str(tris):<10}{path}")
+        lines.append(f"  {level!s:<6}{ratio!s:<8}{tris!s:<10}{path}")
     lines.append("")
     return lines
 
@@ -214,8 +214,7 @@ def _render_plain(build_report: dict[str, Any], *, use_color: bool) -> str:
         for name, status, summary in rows:
             color = "green" if status == "pass" else "red"
             lines.append(
-                f"  {name.ljust(width)}  "
-                f"{_paint(status.upper(), color, enabled=use_color)}  {summary}"
+                f"  {name.ljust(width)}  {_paint(status.upper(), color, enabled=use_color)}  {summary}"
             )
         lines.append("")
 
@@ -385,11 +384,7 @@ def _render_rich_extended(console: Any, build_dir: Path, Table: Any) -> None:
         ):
             items = manifest.get(key) or []
             items = items if isinstance(items, list) else []
-            top = ", ".join(
-                str(i.get("name") or i.get("id") or "")
-                for i in items[:3]
-                if isinstance(i, dict)
-            )
+            top = ", ".join(str(i.get("name") or i.get("id") or "") for i in items[:3] if isinstance(i, dict))
             table.add_row(label, str(len(items)), top or "(none)")
         console.print(table)
 
@@ -440,7 +435,7 @@ def _render_rich_extended(console: Any, build_dir: Path, Table: Any) -> None:
             for sub in proxy.get("subproxies") or []:
                 if not isinstance(sub, dict):
                     continue
-                table.add_row(f"  - {sub.get('name','?')}", str(sub.get("tris", "")))
+                table.add_row(f"  - {sub.get('name', '?')}", str(sub.get("tris", "")))
         console.print(table)
 
 
@@ -451,7 +446,6 @@ def render_terminal_report(build_report: dict[str, Any], *, use_color: bool | No
     or ``use_color=False``. When ``use_color`` is ``None``, detects the
     TTY status of stdout.
     """
-
     color_enabled = _supports_color(use_color)
     if color_enabled:
         rich_output = _render_rich(build_report)

@@ -8,7 +8,6 @@ from lathe.parser import parse_file
 from lathe.planner import build_plan
 from lathe.resolver import materialize_asset
 
-
 ROOT = Path(__file__).resolve().parents[1]
 ADAPT_EXAMPLE = ROOT / "examples" / "console_terminal_mobile_adapt.lth"
 ASSEMBLE_EXAMPLE = ROOT / "examples" / "service_corridor_wall.lth"
@@ -18,18 +17,35 @@ RECONSTRUCT_EXAMPLE = ROOT / "examples" / "reconstruct_courier_from_views.lth"
 class LatheV11LanguageTests(unittest.TestCase):
     def test_new_v11_declarations_parse(self) -> None:
         adapt_program = parse_file(ADAPT_EXAMPLE)
-        self.assertTrue(any(item["name"] == "mobile_console_policy" for item in adapt_program["adapt_policies"]))
-        self.assertTrue(any(item["name"] == "preserve_console_surface" for item in adapt_program["transfer_rules"]))
+        self.assertTrue(
+            any(item["name"] == "mobile_console_policy" for item in adapt_program["adapt_policies"])
+        )
+        self.assertTrue(
+            any(item["name"] == "preserve_console_surface" for item in adapt_program["transfer_rules"])
+        )
 
         assemble_program = parse_file(ASSEMBLE_EXAMPLE)
-        self.assertTrue(any(item["name"] == "industrial_hardsurface_library" for item in assemble_program["libraries"]))
+        self.assertTrue(
+            any(item["name"] == "industrial_hardsurface_library" for item in assemble_program["libraries"])
+        )
         self.assertTrue(any(item["name"] == "industrial_wall_kit" for item in assemble_program["kits"]))
-        self.assertTrue(any(item["name"] == "industrial_wall_policy" for item in assemble_program["assembly_policies"]))
+        self.assertTrue(
+            any(item["name"] == "industrial_wall_policy" for item in assemble_program["assembly_policies"])
+        )
 
         reconstruct_program = parse_file(RECONSTRUCT_EXAMPLE)
-        self.assertTrue(any(item["name"] == "courier_views" for item in reconstruct_program["reference_sets"]))
-        self.assertTrue(any(item["name"] == "courier_reconstruct_policy" for item in reconstruct_program["reconstruct_policies"]))
-        self.assertTrue(any(item["name"] == "courier_fit_default" for item in reconstruct_program["fit_profiles"]))
+        self.assertTrue(
+            any(item["name"] == "courier_views" for item in reconstruct_program["reference_sets"])
+        )
+        self.assertTrue(
+            any(
+                item["name"] == "courier_reconstruct_policy"
+                for item in reconstruct_program["reconstruct_policies"]
+            )
+        )
+        self.assertTrue(
+            any(item["name"] == "courier_fit_default" for item in reconstruct_program["fit_profiles"])
+        )
 
     def test_materialize_asset_resolves_kit_and_reference_sets(self) -> None:
         assembled = materialize_asset(parse_file(ASSEMBLE_EXAMPLE), "service_corridor_wall")

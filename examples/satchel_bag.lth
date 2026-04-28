@@ -135,7 +135,7 @@ asset satchel_bag: hard_surface_prop from soft_prop_satchel uses soft_prop_contr
     }
 
     interfaces {
-      anchors = [floor_contact]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 1cm
     }
 

@@ -66,6 +66,13 @@ class LoadRuntimeConfigTests(_TempConfigMixin, unittest.TestCase):
             load_runtime_config(path)
         self.assertIn("invalid JSON", str(ctx.exception))
 
+    def test_non_utf8_json_raises_runtime_config_error(self) -> None:
+        path = Path(self._tempdir.name) / "latin1.json"
+        path.write_bytes(b'{"shape": "\xff"}')
+        with self.assertRaises(RuntimeConfigError) as ctx:
+            load_runtime_config(path)
+        self.assertIn("not valid UTF-8", str(ctx.exception))
+
     def test_size_cap_over_256_kib_raises(self) -> None:
         # 256 KiB + 1 byte: write a JSON object with a single key whose value
         # is a long string padding the file past the cap.
@@ -87,10 +94,11 @@ class LoadRuntimeConfigTests(_TempConfigMixin, unittest.TestCase):
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             config = load_runtime_config(path)
-        unknown_warnings = [
-            w for w in caught if "unknown keys" in str(w.message)
-        ]
-        self.assertTrue(unknown_warnings, msg=f"expected an unknown-keys warning, got: {[str(w.message) for w in caught]}")
+        unknown_warnings = [w for w in caught if "unknown keys" in str(w.message)]
+        self.assertTrue(
+            unknown_warnings,
+            msg=f"expected an unknown-keys warning, got: {[str(w.message) for w in caught]}",
+        )
         # Despite the warning, load still succeeds and the unknown key is preserved.
         self.assertEqual(config["shape"]["totally_made_up_key"], 42)
 
@@ -185,10 +193,10 @@ class ApplyEnvOverridesTests(unittest.TestCase):
         with self._isolated_env({"LATHE_XATLAS_RESOLUTION": "8192"}):
             result = apply_env_overrides(base)
         self.assertEqual(result["uv"]["xatlas"]["resolution"], 8192)
-        # Bad value silently ignored — original survives.
+        # Bad values fail loudly so CI does not fall back to defaults by typo.
         with self._isolated_env({"LATHE_XATLAS_RESOLUTION": "not_an_int"}):
-            result = apply_env_overrides(base)
-        self.assertEqual(result["uv"]["xatlas"]["resolution"], 2048)
+            with self.assertRaises(RuntimeConfigError):
+                apply_env_overrides(base)
 
     def test_apply_env_overrides_does_not_mutate_input(self) -> None:
         base = {"shape": {"provider": "auto", "strict": False}}

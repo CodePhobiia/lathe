@@ -122,5 +122,6 @@ asset console_terminal_mobile: hard_surface_prop from console_terminal_family us
 
   package {
     formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
   }
 }

@@ -114,9 +114,7 @@ class SurfaceIRFromAssetTests(unittest.TestCase):
         self.assertEqual(ir.mask_programs, ["wear_mask_program"])
         self.assertEqual(ir.trim_sheets, ["trim_hero"])
         self.assertEqual(ir.authoring["mode"], "zone_first")
-        self.assertEqual(
-            ir.resolved_surface_policy["values"]["on_backend_unavailable"], "fail"
-        )
+        self.assertEqual(ir.resolved_surface_policy["values"]["on_backend_unavailable"], "fail")
         self.assertEqual(
             ir.resolved_surface_backend["name"],
             "lathe.surface.codex_imagegen_v1",

@@ -17,29 +17,60 @@ from __future__ import annotations
 
 import hashlib
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import jsonschema
 
-from . import __version__ as _LATHE_VERSION
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover - optional mesh enrichment dependency
+    np = None  # type: ignore[assignment]
+
+from . import __version__
 from .errors import LatheError
 
-
 _SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema" / "lathe.selector.schema.json"
-_VALIDATOR: jsonschema.Draft202012Validator | None = None
+SELECTOR_SCHEMA_VERSION = 1
+SUPPORTED_SELECTOR_SCHEMA_VERSIONS = frozenset({SELECTOR_SCHEMA_VERSION})
+_MIN_HASH_HEX_CHARS = 8
+_VECTOR_DIMENSIONS = 3
+_BBOX_COORDINATE_COUNT = 6
+_TRANSFORM_ROWS = 4
+_TRANSFORM_COLUMNS = 4
+_SHA256_HEX_CHARS = 64
 
 
 class SelectorManifestError(LatheError):
     """Raised when an assembled selector manifest fails schema validation."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "selector_manifest_error",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Create a selector-manifest error with a stable diagnostic code."""
+        super().__init__(message)
+        self.code = code
+        self.details = details or {}
 
+
+@lru_cache(maxsize=1)
 def _load_validator() -> jsonschema.Draft202012Validator:
-    global _VALIDATOR
-    if _VALIDATOR is None:
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        _VALIDATOR = jsonschema.Draft202012Validator(schema)
-    return _VALIDATOR
+    schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+    return jsonschema.Draft202012Validator(schema)
+
+
+def _selector_schema_version_issue(version: Any) -> str | None:
+    version_text = "<missing>" if version in (None, "") else str(version)
+    supported = {str(item) for item in SUPPORTED_SELECTOR_SCHEMA_VERSIONS}
+    if version_text in supported:
+        return None
+    supported_text = ", ".join(sorted(supported))
+    return f"selector_manifest.json unsupported schemaVersion '{version_text}' (supported: {supported_text})"
 
 
 def _target_token(build_dir: Path, *, repo_root: Path | None = None) -> str:
@@ -50,7 +81,6 @@ def _target_token(build_dir: Path, *, repo_root: Path | None = None) -> str:
          with forward slashes.
       2. Else fall back to the directory's ``name``.
     """
-
     if repo_root is not None:
         try:
             rel = Path(build_dir).resolve().relative_to(Path(repo_root).resolve())
@@ -68,19 +98,14 @@ def _sha256_of_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _coerce_hash(value: str | None, *, field: str) -> str:
-    """Normalise hash-shaped strings to the ``[0-9a-f]{8,}`` pattern.
-
-    Falls back to a deterministic sha256 of the field name so the manifest
-    always satisfies the schema pattern even when upstream produced a
-    non-hex ``build_id`` placeholder.
-    """
-
-    if isinstance(value, str) and len(value) >= 8:
+def _normalize_explicit_hash(value: object, *, field: str) -> str:
+    """Return a canonical lowercase hash or reject invalid explicit provenance."""
+    if isinstance(value, str):
         lowered = value.lower()
-        if all(c in "0123456789abcdef" for c in lowered):
+        if len(lowered) >= _MIN_HASH_HEX_CHARS and all(c in "0123456789abcdef" for c in lowered):
             return lowered
-    return hashlib.sha256((field + ":" + str(value)).encode("utf-8")).hexdigest()
+    message = f"{field} must be a hexadecimal digest with at least 8 characters; got {value!r}"
+    raise SelectorManifestError(message)
 
 
 def _infer_package_hash(runtime: dict[str, Any], build_dir: Path) -> str:
@@ -92,20 +117,23 @@ def _infer_package_hash(runtime: dict[str, Any], build_dir: Path) -> str:
       3. sha256 of the first output's uri if present on disk.
       4. sha256 of the bundle dict (always available).
     """
-
     pkg_bundle = (runtime.get("package") or {}).get("bundle") or {}
     explicit = pkg_bundle.get("package_hash")
     if isinstance(explicit, str) and explicit:
-        return _coerce_hash(explicit, field="packageHash")
+        return _normalize_explicit_hash(explicit, field="runtime.package.bundle.package_hash")
     outputs = pkg_bundle.get("outputs") or []
     if isinstance(outputs, list):
         # Prefer glb, fall back to first entry with a sha256.
         for entry in outputs:
             if isinstance(entry, dict) and entry.get("format") == "glb" and entry.get("sha256"):
-                return _coerce_hash(entry["sha256"], field="packageHash")
+                return _normalize_explicit_hash(
+                    entry["sha256"], field="runtime.package.bundle.outputs[].sha256"
+                )
         for entry in outputs:
             if isinstance(entry, dict) and entry.get("sha256"):
-                return _coerce_hash(entry["sha256"], field="packageHash")
+                return _normalize_explicit_hash(
+                    entry["sha256"], field="runtime.package.bundle.outputs[].sha256"
+                )
             if isinstance(entry, dict) and entry.get("uri"):
                 candidate = build_dir / str(entry["uri"])
                 if candidate.exists() and candidate.is_file():
@@ -122,7 +150,6 @@ def _coordinate_system(asset: dict[str, Any] | None) -> dict[str, Any]:
     otherwise returns defaults (Y-up, cm, right-handed — matching the Lathe
     reference stack).
     """
-
     default = {"upAxis": "Y", "unit": "cm", "handedness": "right"}
     if not isinstance(asset, dict):
         return default
@@ -143,16 +170,150 @@ def _coordinate_system(asset: dict[str, Any] | None) -> dict[str, Any]:
 def _bbox_from_bounds(bounds_min: Any, bounds_max: Any) -> list[float] | None:
     if not isinstance(bounds_min, list) or not isinstance(bounds_max, list):
         return None
-    if len(bounds_min) != 3 or len(bounds_max) != 3:
+    if len(bounds_min) != _VECTOR_DIMENSIONS or len(bounds_max) != _VECTOR_DIMENSIONS:
         return None
     if not all(isinstance(v, (int, float)) for v in bounds_min):
         return None
     if not all(isinstance(v, (int, float)) for v in bounds_max):
         return None
     return [
-        float(bounds_min[0]), float(bounds_min[1]), float(bounds_min[2]),
-        float(bounds_max[0]), float(bounds_max[1]), float(bounds_max[2]),
+        float(bounds_min[0]),
+        float(bounds_min[1]),
+        float(bounds_min[2]),
+        float(bounds_max[0]),
+        float(bounds_max[1]),
+        float(bounds_max[2]),
     ]
+
+
+def _part_face_indices(runtime_mesh: Any, pid: str) -> tuple[Any, list[int]] | None:
+    try:
+        mesh = getattr(runtime_mesh, "mesh", None)
+        face_parts = list(getattr(runtime_mesh, "face_parts", []) or [])
+        if mesh is None or len(face_parts) != len(mesh.faces):
+            return None
+        face_indices = [i for i, part in enumerate(face_parts) if part == pid]
+    except (AttributeError, TypeError):
+        return None
+    if not face_indices:
+        return None
+    return mesh, face_indices
+
+
+def _collect_mesh_faces(
+    mesh: Any,
+    face_indices: list[int],
+    pid: str,
+    token_target: str,
+    max_faces: int,
+) -> list[dict[str, Any]]:
+    faces_out: list[dict[str, Any]] = []
+    centroids = mesh.triangles_center
+    normals = mesh.face_normals
+    areas = mesh.area_faces
+    for local_idx, face_idx in enumerate(face_indices[:max_faces]):
+        face_id = f"{pid}.face{local_idx}"
+        c = centroids[face_idx]
+        n = normals[face_idx]
+        faces_out.append(
+            {
+                "id": face_id,
+                "ref": _ref(token_target, f"part.{face_id}"),
+                "centroid": [round(float(c[0]), 6), round(float(c[1]), 6), round(float(c[2]), 6)],
+                "normal": [round(float(n[0]), 6), round(float(n[1]), 6), round(float(n[2]), 6)],
+                "area": round(float(areas[face_idx]), 6),
+                "meshFaceIndex": int(face_idx),
+            }
+        )
+    return faces_out
+
+
+def _collect_mesh_vertices(
+    mesh: Any,
+    face_indices: list[int],
+    pid: str,
+    token_target: str,
+    max_vertices: int,
+) -> list[dict[str, Any]]:
+    vertex_ids: dict[int, int] = {}
+    for face_idx in face_indices:
+        for raw_vi in mesh.faces[face_idx]:
+            vertex_index = int(raw_vi)
+            if vertex_index not in vertex_ids:
+                vertex_ids[vertex_index] = len(vertex_ids)
+
+    verts_out: list[dict[str, Any]] = []
+    sorted_verts = sorted(vertex_ids.items(), key=lambda kv: kv[1])
+    for vi, local_idx in sorted_verts[:max_vertices]:
+        p = mesh.vertices[vi]
+        vid = f"{pid}.vertex{local_idx}"
+        verts_out.append(
+            {
+                "id": vid,
+                "ref": _ref(token_target, f"part.{vid}"),
+                "position": [round(float(p[0]), 6), round(float(p[1]), 6), round(float(p[2]), 6)],
+                "meshVertexIndex": int(vi),
+            }
+        )
+    return verts_out
+
+
+def _collect_mesh_edges(
+    mesh: Any,
+    face_indices: list[int],
+    pid: str,
+    token_target: str,
+    max_edges: int,
+) -> list[dict[str, Any]]:
+    edge_set: dict[tuple[int, int], int] = {}
+    for face_idx in face_indices:
+        face = mesh.faces[face_idx]
+        for a, b in ((face[0], face[1]), (face[1], face[2]), (face[2], face[0])):
+            key = (int(min(a, b)), int(max(a, b)))
+            if key not in edge_set:
+                edge_set[key] = len(edge_set)
+
+    edges_out: list[dict[str, Any]] = []
+    sorted_edges = sorted(edge_set.items(), key=lambda kv: kv[1])
+    for (a, b), local_idx in sorted_edges[:max_edges]:
+        pa = mesh.vertices[a]
+        pb = mesh.vertices[b]
+        length = float(np.linalg.norm(pa - pb))
+        eid = f"{pid}.edge{local_idx}"
+        edges_out.append(
+            {
+                "id": eid,
+                "ref": _ref(token_target, f"part.{eid}"),
+                "endpoints": [
+                    [round(float(pa[0]), 6), round(float(pa[1]), 6), round(float(pa[2]), 6)],
+                    [round(float(pb[0]), 6), round(float(pb[1]), 6), round(float(pb[2]), 6)],
+                ],
+                "length": round(length, 6),
+            }
+        )
+    return edges_out
+
+
+def _collect_mesh_sub_parts(
+    mesh: Any,
+    face_indices: list[int],
+    pid: str,
+    token_target: str,
+    *,
+    max_faces: int,
+    max_edges: int,
+    max_vertices: int,
+) -> dict[str, list[dict[str, Any]]]:
+    empty = {"faces": [], "edges": [], "vertices": []}
+    try:
+        collected = {
+            "faces": _collect_mesh_faces(mesh, face_indices, pid, token_target, max_faces),
+            "edges": _collect_mesh_edges(mesh, face_indices, pid, token_target, max_edges),
+            "vertices": _collect_mesh_vertices(mesh, face_indices, pid, token_target, max_vertices),
+        }
+    except (AttributeError, IndexError, TypeError, ValueError):
+        return empty
+    return collected
 
 
 def _collect_sub_parts(
@@ -172,86 +333,24 @@ def _collect_sub_parts(
     meshes — consumers that need full enumeration should pull from the
     underlying GLB. Deterministic: same runtime_mesh input -> same output.
     """
-
     empty = {"faces": [], "edges": [], "vertices": []}
     topology = runtime.get("topology") or {}
     runtime_mesh = topology.get("runtime_mesh")
-    if runtime_mesh is None:
+    if runtime_mesh is None or np is None:
         return empty
-    try:
-        import numpy as np
-
-        mesh = getattr(runtime_mesh, "mesh", None)
-        face_parts = list(getattr(runtime_mesh, "face_parts", []) or [])
-        if mesh is None or len(face_parts) != len(mesh.faces):
-            return empty
-        face_indices = [i for i, part in enumerate(face_parts) if part == pid]
-        if not face_indices:
-            return empty
-
-        faces_out: list[dict[str, Any]] = []
-        centroids = mesh.triangles_center
-        normals = mesh.face_normals
-        areas = mesh.area_faces
-        for local_idx, face_idx in enumerate(face_indices[:max_faces]):
-            face_id = f"{pid}.face{local_idx}"
-            c = centroids[face_idx]
-            n = normals[face_idx]
-            entry = {
-                "id": face_id,
-                "ref": _ref(token_target, f"part.{face_id}"),
-                "centroid": [round(float(c[0]), 6), round(float(c[1]), 6), round(float(c[2]), 6)],
-                "normal": [round(float(n[0]), 6), round(float(n[1]), 6), round(float(n[2]), 6)],
-                "area": round(float(areas[face_idx]), 6),
-                "meshFaceIndex": int(face_idx),
-            }
-            faces_out.append(entry)
-
-        vertex_ids: dict[int, int] = {}
-        for face_idx in face_indices:
-            for vi in mesh.faces[face_idx]:
-                vi = int(vi)
-                if vi not in vertex_ids:
-                    vertex_ids[vi] = len(vertex_ids)
-        verts_out: list[dict[str, Any]] = []
-        sorted_verts = sorted(vertex_ids.items(), key=lambda kv: kv[1])
-        for vi, local_idx in sorted_verts[:max_vertices]:
-            p = mesh.vertices[vi]
-            vid = f"{pid}.vertex{local_idx}"
-            verts_out.append({
-                "id": vid,
-                "ref": _ref(token_target, f"part.{vid}"),
-                "position": [round(float(p[0]), 6), round(float(p[1]), 6), round(float(p[2]), 6)],
-                "meshVertexIndex": int(vi),
-            })
-
-        edge_set: dict[tuple[int, int], int] = {}
-        for face_idx in face_indices:
-            face = mesh.faces[face_idx]
-            for a, b in ((face[0], face[1]), (face[1], face[2]), (face[2], face[0])):
-                key = (int(min(a, b)), int(max(a, b)))
-                if key not in edge_set:
-                    edge_set[key] = len(edge_set)
-        edges_out: list[dict[str, Any]] = []
-        sorted_edges = sorted(edge_set.items(), key=lambda kv: kv[1])
-        for (a, b), local_idx in sorted_edges[:max_edges]:
-            pa = mesh.vertices[a]
-            pb = mesh.vertices[b]
-            length = float(np.linalg.norm(pa - pb))
-            eid = f"{pid}.edge{local_idx}"
-            edges_out.append({
-                "id": eid,
-                "ref": _ref(token_target, f"part.{eid}"),
-                "endpoints": [
-                    [round(float(pa[0]), 6), round(float(pa[1]), 6), round(float(pa[2]), 6)],
-                    [round(float(pb[0]), 6), round(float(pb[1]), 6), round(float(pb[2]), 6)],
-                ],
-                "length": round(length, 6),
-            })
-
-        return {"faces": faces_out, "edges": edges_out, "vertices": verts_out}
-    except Exception:  # noqa: BLE001 — best-effort enrichment
+    part_faces = _part_face_indices(runtime_mesh, pid)
+    if part_faces is None:
         return empty
+    mesh, face_indices = part_faces
+    return _collect_mesh_sub_parts(
+        mesh,
+        face_indices,
+        pid,
+        token_target,
+        max_faces=max_faces,
+        max_edges=max_edges,
+        max_vertices=max_vertices,
+    )
 
 
 def _collect_parts(
@@ -263,7 +362,6 @@ def _collect_parts(
     REF-6: the ``faces``/``edges``/``vertices`` lists are populated from the
     topology runtime mesh when it's present in ``runtime["topology"]["runtime_mesh"]``.
     """
-
     topology = (runtime.get("topology") or {}).get("bundle") or {}
     part_groups = topology.get("part_groups") or []
     parts: list[dict[str, Any]] = []
@@ -284,7 +382,11 @@ def _collect_parts(
         if "material_id" in group and isinstance(group["material_id"], str):
             entry["materialId"] = group["material_id"]
         bbox = group.get("bbox") or group.get("aabb")
-        if isinstance(bbox, list) and len(bbox) == 6 and all(isinstance(v, (int, float)) for v in bbox):
+        if (
+            isinstance(bbox, list)
+            and len(bbox) == _BBOX_COORDINATE_COUNT
+            and all(isinstance(v, (int, float)) for v in bbox)
+        ):
             entry["bbox"] = [float(v) for v in bbox]
         else:
             flat = _bbox_from_bounds(group.get("bounds_min"), group.get("bounds_max"))
@@ -307,11 +409,11 @@ _DEFAULT_PIVOT_TYPE = "center"
 
 def _validate_transform(value: Any) -> list[list[float]] | None:
     """Return a 4x4 row-major list-of-lists of floats, or ``None`` if invalid."""
-    if not isinstance(value, list) or len(value) != 4:
+    if not isinstance(value, list) or len(value) != _TRANSFORM_ROWS:
         return None
     rows: list[list[float]] = []
     for row in value:
-        if not isinstance(row, list) or len(row) != 4:
+        if not isinstance(row, list) or len(row) != _TRANSFORM_COLUMNS:
             return None
         if not all(isinstance(v, (int, float)) for v in row):
             return None
@@ -326,7 +428,7 @@ def _validate_aabb(value: Any) -> dict[str, list[float]] | None:
     hi = value.get("max")
     if not isinstance(lo, list) or not isinstance(hi, list):
         return None
-    if len(lo) != 3 or len(hi) != 3:
+    if len(lo) != _VECTOR_DIMENSIONS or len(hi) != _VECTOR_DIMENSIONS:
         return None
     if not all(isinstance(v, (int, float)) for v in lo):
         return None
@@ -359,10 +461,18 @@ def _collect_sockets(
         if isinstance(sock.get("name"), str) and sock["name"]:
             entry["name"] = sock["name"]
         origin = sock.get("origin") or sock.get("position")
-        if isinstance(origin, list) and len(origin) == 3 and all(isinstance(v, (int, float)) for v in origin):
+        if (
+            isinstance(origin, list)
+            and len(origin) == _VECTOR_DIMENSIONS
+            and all(isinstance(v, (int, float)) for v in origin)
+        ):
             entry["origin"] = [float(v) for v in origin]
         axis = sock.get("axis")
-        if isinstance(axis, list) and len(axis) == 3 and all(isinstance(v, (int, float)) for v in axis):
+        if (
+            isinstance(axis, list)
+            and len(axis) == _VECTOR_DIMENSIONS
+            and all(isinstance(v, (int, float)) for v in axis)
+        ):
             entry["axis"] = [float(v) for v in axis]
         transform = _validate_transform(sock.get("transform"))
         if transform is not None:
@@ -370,7 +480,11 @@ def _collect_sockets(
         aabb = _validate_aabb(sock.get("aabb"))
         if aabb is not None:
             entry["aabb"] = aabb
-        for key_src, key_dst in (("kind", "kind"), ("compat_kind", "compatKind"), ("parent_part_id", "parentPartId")):
+        for key_src, key_dst in (
+            ("kind", "kind"),
+            ("compat_kind", "compatKind"),
+            ("parent_part_id", "parentPartId"),
+        ):
             val = sock.get(key_src)
             if isinstance(val, str) and val:
                 entry[key_dst] = val
@@ -402,10 +516,18 @@ def _collect_pivots(
         if isinstance(piv.get("name"), str) and piv["name"]:
             entry["name"] = piv["name"]
         origin = piv.get("origin") or piv.get("position")
-        if isinstance(origin, list) and len(origin) == 3 and all(isinstance(v, (int, float)) for v in origin):
+        if (
+            isinstance(origin, list)
+            and len(origin) == _VECTOR_DIMENSIONS
+            and all(isinstance(v, (int, float)) for v in origin)
+        ):
             entry["origin"] = [float(v) for v in origin]
         axis = piv.get("axis")
-        if isinstance(axis, list) and len(axis) == 3 and all(isinstance(v, (int, float)) for v in axis):
+        if (
+            isinstance(axis, list)
+            and len(axis) == _VECTOR_DIMENSIONS
+            and all(isinstance(v, (int, float)) for v in axis)
+        ):
             entry["axis"] = [float(v) for v in axis]
         transform = _validate_transform(piv.get("transform"))
         if transform is not None:
@@ -465,69 +587,80 @@ def _collect_lods(
     manifest = optimize.get("lod_manifest")
     out: list[dict[str, Any]] = []
     if isinstance(manifest, list) and manifest:
-        for entry in manifest:
-            if not isinstance(entry, dict):
-                continue
-            level = entry.get("level")
-            part_id = entry.get("part_id") or entry.get("partId") or entry.get("part") or "mesh"
-            if not isinstance(level, int) or level < 0:
-                continue
-            item: dict[str, Any] = {
-                "level": level,
-                "ref": _ref(token_target, f"lod{level}.{part_id}"),
-            }
-            if isinstance(part_id, str) and part_id:
-                item["partId"] = part_id
-            tri = entry.get("triangle_count") or entry.get("triangleCount") or entry.get("tri_count")
-            if isinstance(tri, int) and tri >= 0:
-                item["triangleCount"] = tri
-            screen = entry.get("screen_size") or entry.get("screenSize")
-            if isinstance(screen, (int, float)) and 0.0 <= float(screen) <= 1.0:
-                item["screenSize"] = float(screen)
-            dist_min = entry.get("distance_min")
-            if isinstance(dist_min, (int, float)) and float(dist_min) >= 0.0:
-                item["distanceMin"] = float(dist_min)
-            if "distance_max" in entry:
-                dist_max = entry["distance_max"]
-                if dist_max is None:
-                    item["distanceMax"] = None
-                elif isinstance(dist_max, (int, float)):
-                    item["distanceMax"] = float(dist_max)
-            coverage = entry.get("screen_coverage")
-            if isinstance(coverage, (int, float)) and 0.0 <= float(coverage) <= 1.0:
-                item["screenCoverage"] = float(coverage)
-            out.append(item)
-        return out
+        return _collect_declared_lods(manifest, token_target)
     # Legacy: optimize bundle just has a `lods` list of {name, mesh_uri, ...}.
     lods = optimize.get("lods") or []
     if not isinstance(lods, list):
         return out
+    return _collect_legacy_lods(lods, token_target)
+
+
+def _apply_lod_metrics(
+    item: dict[str, Any],
+    entry: dict[str, Any],
+    *,
+    include_screen_size: bool,
+) -> None:
+    tri = entry.get("triangle_count") or entry.get("triangleCount") or entry.get("tri_count")
+    if isinstance(tri, int) and tri >= 0:
+        item["triangleCount"] = tri
+    if include_screen_size:
+        screen = entry.get("screen_size") or entry.get("screenSize")
+        if isinstance(screen, (int, float)) and 0.0 <= float(screen) <= 1.0:
+            item["screenSize"] = float(screen)
+    dist_min = entry.get("distance_min")
+    if isinstance(dist_min, (int, float)) and float(dist_min) >= 0.0:
+        item["distanceMin"] = float(dist_min)
+    if "distance_max" in entry:
+        dist_max = entry["distance_max"]
+        if dist_max is None:
+            item["distanceMax"] = None
+        elif isinstance(dist_max, (int, float)):
+            item["distanceMax"] = float(dist_max)
+    coverage = entry.get("screen_coverage")
+    if isinstance(coverage, (int, float)) and 0.0 <= float(coverage) <= 1.0:
+        item["screenCoverage"] = float(coverage)
+
+
+def _collect_declared_lods(
+    manifest: list[Any],
+    token_target: str,
+) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for entry in manifest:
+        if not isinstance(entry, dict):
+            continue
+        level = entry.get("level")
+        part_id = entry.get("part_id") or entry.get("partId") or entry.get("part") or "mesh"
+        if not isinstance(level, int) or level < 0:
+            continue
+        item: dict[str, Any] = {
+            "level": level,
+            "ref": _ref(token_target, f"lod{level}.{part_id}"),
+        }
+        if isinstance(part_id, str) and part_id:
+            item["partId"] = part_id
+        _apply_lod_metrics(item, entry, include_screen_size=True)
+        out.append(item)
+    return out
+
+
+def _collect_legacy_lods(
+    lods: list[Any],
+    token_target: str,
+) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
     for idx, entry in enumerate(lods):
         if not isinstance(entry, dict):
             continue
-        # Name is "lod<n>"; the schema wants level as an int and a partId string.
-        name = str(entry.get("name") or f"lod{idx}")
+        # Legacy entries are positional; the schema wants level as an int and a partId string.
         part_id = "mesh"
         item: dict[str, Any] = {
             "level": idx,
             "ref": _ref(token_target, f"lod{idx}.{part_id}"),
             "partId": part_id,
         }
-        tri = entry.get("triangle_count") or entry.get("triangleCount")
-        if isinstance(tri, int) and tri >= 0:
-            item["triangleCount"] = tri
-        dist_min = entry.get("distance_min")
-        if isinstance(dist_min, (int, float)) and float(dist_min) >= 0.0:
-            item["distanceMin"] = float(dist_min)
-        if "distance_max" in entry:
-            dist_max = entry["distance_max"]
-            if dist_max is None:
-                item["distanceMax"] = None
-            elif isinstance(dist_max, (int, float)):
-                item["distanceMax"] = float(dist_max)
-        coverage = entry.get("screen_coverage")
-        if isinstance(coverage, (int, float)) and 0.0 <= float(coverage) <= 1.0:
-            item["screenCoverage"] = float(coverage)
+        _apply_lod_metrics(item, entry, include_screen_size=False)
         out.append(item)
     return out
 
@@ -573,10 +706,12 @@ def _collect_materials(
         if not isinstance(name, str) or not name or name in seen:
             continue
         seen.add(name)
-        out.append({
-            "id": name,
-            "ref": _ref(token_target, f"material.{name}"),
-        })
+        out.append(
+            {
+                "id": name,
+                "ref": _ref(token_target, f"material.{name}"),
+            }
+        )
     return out
 
 
@@ -612,7 +747,6 @@ def _collect_gameplay_tags(asset: dict[str, Any] | None) -> list[str]:
     strictly a game-engine signal. Unknown tags are dropped here (and rejected
     upstream by the checker).
     """
-
     if not isinstance(asset, dict):
         return []
     publish = asset.get("publish")
@@ -633,9 +767,31 @@ def _collect_gameplay_tags(asset: dict[str, Any] | None) -> list[str]:
     return out
 
 
+def _clean_lod_config_entry(entry: dict[str, Any]) -> dict[str, Any] | None:
+    lvl = entry.get("level")
+    if not isinstance(lvl, int) or lvl < 0:
+        return None
+    clean: dict[str, Any] = {"level": int(lvl)}
+    ratio = entry.get("ratio")
+    if isinstance(ratio, (int, float)):
+        clean["ratio"] = float(ratio)
+    dist_min = entry.get("distance_min")
+    if isinstance(dist_min, (int, float)):
+        clean["distance_min"] = float(dist_min)
+    if "distance_max" in entry:
+        dm = entry["distance_max"]
+        if dm is None:
+            clean["distance_max"] = None
+        elif isinstance(dm, (int, float)):
+            clean["distance_max"] = float(dm)
+    cov = entry.get("screen_coverage")
+    if isinstance(cov, (int, float)):
+        clean["screen_coverage"] = float(cov)
+    return clean
+
+
 def _collect_lod_config(asset: dict[str, Any] | None) -> list[dict[str, Any]]:
     """Echo the STAGE-9 ``lod_config`` block from the asset build config."""
-
     if not isinstance(asset, dict):
         return []
     build = asset.get("build") or {}
@@ -649,32 +805,14 @@ def _collect_lod_config(asset: dict[str, Any] | None) -> list[dict[str, Any]]:
     for entry in raw:
         if not isinstance(entry, dict):
             continue
-        lvl = entry.get("level")
-        if not isinstance(lvl, int) or lvl < 0:
-            continue
-        clean: dict[str, Any] = {"level": int(lvl)}
-        ratio = entry.get("ratio")
-        if isinstance(ratio, (int, float)):
-            clean["ratio"] = float(ratio)
-        dist_min = entry.get("distance_min")
-        if isinstance(dist_min, (int, float)):
-            clean["distance_min"] = float(dist_min)
-        if "distance_max" in entry:
-            dm = entry["distance_max"]
-            if dm is None:
-                clean["distance_max"] = None
-            elif isinstance(dm, (int, float)):
-                clean["distance_max"] = float(dm)
-        cov = entry.get("screen_coverage")
-        if isinstance(cov, (int, float)):
-            clean["screen_coverage"] = float(cov)
-        out.append(clean)
+        clean = _clean_lod_config_entry(entry)
+        if clean is not None:
+            out.append(clean)
     return out
 
 
 def _collect_engine_manifests(runtime: dict[str, Any]) -> dict[str, Any]:
     """Return the STAGE-10 ``engine_manifests`` block from the package bundle."""
-
     pkg = (runtime.get("package") or {}).get("bundle") or {}
     raw = pkg.get("engine_manifests")
     if not isinstance(raw, dict):
@@ -688,7 +826,11 @@ def _collect_engine_manifests(runtime: dict[str, Any]) -> dict[str, Any]:
             continue
         clean: dict[str, Any] = {"path": path}
         sha = entry.get("sha256")
-        if isinstance(sha, str) and len(sha) == 64 and all(c in "0123456789abcdef" for c in sha):
+        if (
+            isinstance(sha, str)
+            and len(sha) == _SHA256_HEX_CHARS
+            and all(c in "0123456789abcdef" for c in sha)
+        ):
             clean["sha256"] = sha
         fmt = entry.get("format")
         if isinstance(fmt, str) and fmt in {"json", "yaml"}:
@@ -705,7 +847,6 @@ def _collect_budgets(runtime: dict[str, Any]) -> dict[str, Any] | None:
     propagate it verbatim so the selector manifest shares a single source of
     truth with ``stages/optimize/budget_report.json``.
     """
-
     optimize = (runtime.get("optimize") or {}).get("bundle") or {}
     report = optimize.get("budget_report")
     if not isinstance(report, dict):
@@ -782,23 +923,22 @@ def build_selector_manifest(
         build_dir: Output directory of the build (used when inferring package hash).
         repo_root: Repo root for resolving ``token_target``. Defaults to ``build_dir.parent.parent``.
     """
-
     resolved_build_dir = Path(build_dir) if build_dir is not None else Path.cwd()
     resolved_repo_root = Path(repo_root) if repo_root is not None else None
 
     token_target = _target_token(resolved_build_dir, repo_root=resolved_repo_root)
-    version = lathe_version or _LATHE_VERSION
+    version = lathe_version or __version__
 
     pkg_hash = package_hash
     if not isinstance(pkg_hash, str) or not pkg_hash:
         pkg_hash = _infer_package_hash(runtime or {}, resolved_build_dir)
-    pkg_hash = _coerce_hash(pkg_hash, field="packageHash")
-    build_hash_norm = _coerce_hash(build_hash, field="buildHash")
+    pkg_hash = _normalize_explicit_hash(pkg_hash, field="packageHash")
+    build_hash_norm = _normalize_explicit_hash(build_hash, field="buildHash")
 
     source_str = str(source_path) if source_path is not None else ""
 
     manifest: dict[str, Any] = {
-        "schemaVersion": 1,
+        "schemaVersion": SELECTOR_SCHEMA_VERSION,
         "latheVersion": version,
         "sourcePath": source_str,
         "asset": asset_name,
@@ -838,15 +978,24 @@ def write_selector_manifest(manifest: dict[str, Any], build_dir: Path) -> Path:
     Raises :class:`SelectorManifestError` on schema failure so a broken
     manifest never reaches disk.
     """
-
+    version_issue = _selector_schema_version_issue(manifest.get("schemaVersion"))
+    if version_issue is not None:
+        message = f"L7201 unsupported_selector_manifest_version: {version_issue}"
+        raise SelectorManifestError(
+            message,
+            code="L7201",
+            details={
+                "schemaVersion": manifest.get("schemaVersion"),
+                "supported": sorted(SUPPORTED_SELECTOR_SCHEMA_VERSIONS),
+            },
+        )
     validator = _load_validator()
     errors = sorted(validator.iter_errors(manifest), key=lambda e: list(e.absolute_path))
     if errors:
         first = errors[0]
         pointer = "/" + "/".join(str(p) for p in first.absolute_path) if first.absolute_path else "/"
-        raise SelectorManifestError(
-            f"selector_manifest.json failed schema validation at {pointer}: {first.message}"
-        )
+        message = f"selector_manifest.json failed schema validation at {pointer}: {first.message}"
+        raise SelectorManifestError(message)
     out_path = Path(build_dir) / "selector_manifest.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -854,6 +1003,8 @@ def write_selector_manifest(manifest: dict[str, Any], build_dir: Path) -> Path:
 
 
 __all__ = [
+    "SELECTOR_SCHEMA_VERSION",
+    "SUPPORTED_SELECTOR_SCHEMA_VERSIONS",
     "SelectorManifestError",
     "build_selector_manifest",
     "write_selector_manifest",

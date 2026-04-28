@@ -19,8 +19,9 @@ Hypothesis is not available; ``pytest.mark.parametrize`` is used instead.
 from __future__ import annotations
 
 import pytest
-
 from lathe.shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
+
+pytestmark = pytest.mark.property
 
 
 def _make_shape_ir(primitives: list[ShapePrimitive], regions: list[ShapeRegion] | None = None) -> ShapeIR:
@@ -177,7 +178,9 @@ ORDER_SENSITIVE_PAIRS = [
     ),
     pytest.param(
         [
-            ShapePrimitive(primitive_type="box", part="body", center=(0.0, 0.0, 0.0), extents=(2.0, 2.0, 2.0)),
+            ShapePrimitive(
+                primitive_type="box", part="body", center=(0.0, 0.0, 0.0), extents=(2.0, 2.0, 2.0)
+            ),
             ShapePrimitive(
                 primitive_type="cylinder",
                 part="stem",
@@ -206,8 +209,12 @@ ORDER_SENSITIVE_PAIRS = [
     ),
     pytest.param(
         [
-            ShapePrimitive(primitive_type="box", part="a", center=(0.0, 0.0, 0.0), extents=(1.0, 1.0, 1.0), tags=["t1"]),
-            ShapePrimitive(primitive_type="box", part="b", center=(0.0, 0.0, 0.0), extents=(1.0, 1.0, 1.0), tags=["t2"]),
+            ShapePrimitive(
+                primitive_type="box", part="a", center=(0.0, 0.0, 0.0), extents=(1.0, 1.0, 1.0), tags=["t1"]
+            ),
+            ShapePrimitive(
+                primitive_type="box", part="b", center=(0.0, 0.0, 0.0), extents=(1.0, 1.0, 1.0), tags=["t2"]
+            ),
         ],
         id="same_position_different_tags",
     ),

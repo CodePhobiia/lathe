@@ -13,7 +13,6 @@ from PIL import Image, ImageDraw
 
 from .mesh import RuntimeMesh
 
-
 IMAGE_SIZE = 1024
 PREVIEW_BG = (248, 248, 250, 255)
 LINE_COLOR = (24, 28, 33, 255)
@@ -64,9 +63,15 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
     for face_index, face in enumerate(mesh.faces):
         pts = [tuple(screen[idx]) for idx in face]
         depth = float(np.mean(z[face]))
-        part = runtime_mesh.face_parts[min(face_index, len(runtime_mesh.face_parts) - 1)] if runtime_mesh.face_parts else "mesh"
+        part = (
+            runtime_mesh.face_parts[min(face_index, len(runtime_mesh.face_parts) - 1)]
+            if runtime_mesh.face_parts
+            else "mesh"
+        )
         color = runtime_mesh.part_colors.get(part, (140, 160, 190))
-        brightness = 0.78 + 0.22 * (0.5 + 0.5 * np.clip(np.dot(mesh.face_normals[face_index], np.array([0.5, 0.7, 0.5])), -1, 1))
+        brightness = 0.78 + 0.22 * (
+            0.5 + 0.5 * np.clip(np.dot(mesh.face_normals[face_index], np.array([0.5, 0.7, 0.5])), -1, 1)
+        )
         shaded = tuple(min(255, max(0, int(channel * brightness))) for channel in color) + (255,)
         triangles.append((depth, pts, shaded))
     triangles.sort(key=lambda item: item[0])
@@ -104,7 +109,11 @@ def render_uv_layout(runtime_mesh: RuntimeMesh, path: Path) -> None:
         for vertex_idx in face:
             u, v = uv[vertex_idx]
             pts.append((40 + u * scale, IMAGE_SIZE - (40 + v * scale)))
-        part = runtime_mesh.face_parts[min(face_index, len(runtime_mesh.face_parts) - 1)] if runtime_mesh.face_parts else "mesh"
+        part = (
+            runtime_mesh.face_parts[min(face_index, len(runtime_mesh.face_parts) - 1)]
+            if runtime_mesh.face_parts
+            else "mesh"
+        )
         color = runtime_mesh.part_colors.get(part, (140, 160, 190))
         draw.polygon(pts, outline=(30, 36, 45, 255), fill=color + (140,))
     image.save(path)

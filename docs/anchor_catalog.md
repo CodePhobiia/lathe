@@ -4,6 +4,18 @@ Typed sockets and pivots are Lathe's stable addressable attachment points. Each 
 
 Every anchor `id` must be unique across **both** sockets and pivots for a given asset. The checker enforces this — duplicate ids produce a helpful error listing both declarations.
 
+In `.lth` source, declare typed entries with constructor calls:
+
+```lathe
+interfaces {
+  sockets = [socket(id: power_socket, socket_type: port)]
+  pivots = [pivot(id: floor_contact, pivot_type: contact)]
+}
+```
+
+Legacy bare socket names and `anchors = [...]` are still accepted for
+source compatibility, but new examples should use typed sockets and pivots.
+
 ## Socket types
 
 Sockets are attachment points on the surface of an asset where external geometry (hands, tools, accessories, wall mounts, etc.) can connect. Each socket carries a `transform` (4x4 row-major) and an `aabb` (`{min, max}` in manifest units).

@@ -1,0 +1,7 @@
+{
+  "shape": {
+    "provider": "reference_conditioned",
+    "strict": true,
+    "allow_fallback": false
+  }
+}

@@ -20,14 +20,40 @@ a replacement for the entire legacy module.
 from __future__ import annotations
 
 import math
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import trimesh
 
 from .kernel import REFERENCE_KERNEL_ID, GeometryKernel
 
-__all__ = ["reference_kernel", "ReferenceKernel"]
+__all__ = ["ReferenceKernel", "reference_kernel"]
+
+
+class _BoxExtentsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("box requires `extents` (3-tuple)")
+
+
+class _CylinderDimensionsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("cylinder requires `radius` and `height`")
+
+
+class _SphereRadiusRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("sphere requires `radius`")
+
+
+class _UnsupportedPrimitiveKindError(ValueError):
+    def __init__(self, kind: str) -> None:
+        super().__init__(f"Unsupported primitive kind: {kind!r}")
+
+
+class _HullEmptyError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("hull requires at least one mesh")
 
 
 class ReferenceKernel:
@@ -63,16 +89,19 @@ class ReferenceKernel:
         if kind == "box":
             extents = params.get("extents")
             if extents is None:
-                raise ValueError("box requires `extents` (3-tuple)")
+                raise _BoxExtentsRequiredError
             transform = np.eye(4)
             transform[:3, 3] = np.array(center, dtype=float)
-            return trimesh.creation.box(extents=np.array(list(extents), dtype=float), transform=transform)
+            return trimesh.creation.box(
+                extents=np.array(list(extents), dtype=float),
+                transform=transform,
+            )
 
         if kind == "cylinder":
             radius = params.get("radius")
             height = params.get("height")
             if radius is None or height is None:
-                raise ValueError("cylinder requires `radius` and `height`")
+                raise _CylinderDimensionsRequiredError
             axis = params.get("axis", "y")
             segments = int(params.get("segments", 32))
             mesh = trimesh.creation.cylinder(radius=float(radius), height=float(height), sections=segments)
@@ -88,22 +117,25 @@ class ReferenceKernel:
         if kind == "sphere":
             radius = params.get("radius")
             if radius is None:
-                raise ValueError("sphere requires `radius`")
+                raise _SphereRadiusRequiredError
             segments = int(params.get("segments", 32))
-            mesh = trimesh.creation.icosphere(subdivisions=max(1, int(math.log2(max(2, segments // 4)))), radius=float(radius))
+            mesh = trimesh.creation.icosphere(
+                subdivisions=max(1, int(math.log2(max(2, segments // 4)))),
+                radius=float(radius),
+            )
             translation = np.eye(4)
             translation[:3, 3] = np.array(center, dtype=float)
             mesh.apply_transform(translation)
             return mesh
 
-        raise ValueError(f"Unsupported primitive kind: {kind!r}")
+        raise _UnsupportedPrimitiveKindError(kind)
 
     def _boolean(self, op: str, a: trimesh.Trimesh, b: trimesh.Trimesh) -> trimesh.Trimesh:
         # trimesh.boolean.{union,difference,intersection} accept an iterable.
         fn = getattr(trimesh.boolean, op)
         try:
             result = fn([a, b])
-        except Exception:
+        except (ImportError, ValueError, RuntimeError, AttributeError, TypeError):
             # Fall back to concatenation/passthrough for union when no engine is present;
             # caller contract is "best-effort CSG", not watertightness.
             if op == "union":
@@ -120,35 +152,42 @@ class ReferenceKernel:
         return result
 
     def union(self, a: trimesh.Trimesh, b: trimesh.Trimesh) -> trimesh.Trimesh:
+        """Return the boolean union of two trimesh handles."""
         return self._boolean("union", a, b)
 
     def difference(self, a: trimesh.Trimesh, b: trimesh.Trimesh) -> trimesh.Trimesh:
+        """Return the boolean difference of two trimesh handles."""
         return self._boolean("difference", a, b)
 
     def intersection(self, a: trimesh.Trimesh, b: trimesh.Trimesh) -> trimesh.Trimesh:
+        """Return the boolean intersection of two trimesh handles."""
         return self._boolean("intersection", a, b)
 
     def hull(self, meshes: Iterable[trimesh.Trimesh]) -> trimesh.Trimesh:
+        """Return a convex hull over the supplied trimesh handles."""
         seq = list(meshes)
         if not seq:
-            raise ValueError("hull requires at least one mesh")
+            raise _HullEmptyError
         combined = trimesh.util.concatenate(seq) if len(seq) > 1 else seq[0]
         return combined.convex_hull
 
     def to_trimesh(self, handle: trimesh.Trimesh) -> trimesh.Trimesh:
+        """Return the trimesh handle unchanged."""
         return handle
 
     def is_watertight(self, handle: trimesh.Trimesh) -> bool:
+        """Return whether the trimesh handle is non-empty and watertight."""
         if handle is None or len(handle.faces) == 0:
             return False
         return bool(handle.is_watertight)
 
     def body_count(self, handle: trimesh.Trimesh) -> int:
+        """Return the number of disjoint mesh bodies."""
         if handle is None or len(handle.faces) == 0:
             return 0
         try:
             return len(handle.split(only_watertight=False))
-        except Exception:
+        except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
             return 1
 
 

@@ -26,6 +26,6 @@ The following identifiers are treated as public contracts. Any change requires e
 
 ## Language surface
 
-The additive-vs-breaking rule is enforced across a coordinated set of artifacts: any change must land as a single update to `spec/lathe-v0.1.md`, `grammar/lathe.lark`, `schema/lathe.schema.json`, parser / normalizer / resolver / checker behavior, and the matching examples + tests. This is documented in [`AGENTS.md`](AGENTS.md) and in [Contributing](CONTRIBUTING.md).
+The additive-vs-breaking rule is enforced across a coordinated set of artifacts: any change must land as a single update to `spec/lathe-v0.1.md`, `grammar/lathe.lark`, `schema/lathe.schema.json`, parser / normalizer / resolver / checker behavior, and the matching examples + tests. This is documented in [`AGENTS.md`](https://github.com/talmerri/lathe/blob/main/AGENTS.md) and in [Contributing](https://github.com/talmerri/lathe/blob/main/CONTRIBUTING.md).
 
 See [Dependency policy](dependency_policy.md) for how third-party dependency changes are versioned and upgraded.

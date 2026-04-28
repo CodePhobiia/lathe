@@ -29,7 +29,7 @@ from lathe.repair_planner import SemanticRepairAction, plan_shape_repairs
 from lathe.shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
 
 
-def _asset_graph(parts: list[str] | None = None) -> "build_asset_graph":
+def _asset_graph(parts: list[str] | None = None) -> build_asset_graph:
     return build_asset_graph(
         {
             "name": "demo",

@@ -18,7 +18,28 @@ scripts/bootstrap_local.sh --dev --export
 
 That creates `.venv`, installs the base editable repo, adds `pytest`, and installs the optional `export` toolchain.
 
-## 2. Verify the machine
+## 2. Run the contributor smoke
+
+PowerShell:
+
+```powershell
+scripts/lathe_smoke.ps1
+```
+
+Bash:
+
+```bash
+bash scripts/lathe_smoke.sh
+```
+
+The smoke command prefers `.venv/Scripts/python.exe` on Windows and
+`.venv/bin/python` on POSIX. It runs `doctor`, checks and plans the canonical
+`courier_drone` example, runs a small explicit pytest smoke partition, and writes a
+throwaway build under `tmp_lathe_smoke/`. Use `-OutDir tmp_some_name` in
+PowerShell or `LATHE_SMOKE_OUT=tmp_some_name` in bash when you want a separate
+ignored output root.
+
+## 3. Verify the machine
 
 ```powershell
 .\.venv\Scripts\python.exe -m lathe.cli doctor
@@ -32,7 +53,7 @@ Look for:
 - whether xatlas is available or the UV backend is in explicit fallback mode
 - whether Hunyuan or VGGT are actually reachable/importable
 
-## 3. Build in fallback mode
+## 4. Build in fallback mode
 
 Generate example:
 
@@ -58,7 +79,14 @@ Inspect the stage and trace bundles to see the actual adapters/providers that ra
 
 Even if VGGT or Hunyuan dependencies are installed locally, the default no-runtime-config path remains conservative and uses the reference-conditioned provider unless you explicitly opt into learned routing with a runtime config.
 
-## 4. Build with a real Hunyuan endpoint
+Use ignored output roots for local build products: `dist/`, `dist_*`, `tmp_*`,
+and `warm_*` are ignored by the repository. The examples above use
+`dist_local/` and `dist_local_reconstruct/`; both match the ignored `dist_*`
+pattern and keep generated artifacts out of source status. Paths outside the
+repository are blocked by default unless `LATHE_ALLOW_EXTERNAL_OUT=1` is set
+for a trusted local or CI run.
+
+## 5. Build with a real Hunyuan endpoint
 
 First, make sure your Hunyuan HTTP server responds on the configured base URL:
 
@@ -74,7 +102,7 @@ Then run:
 
 If the server is unreachable, Lathe will say so clearly. In non-strict mode it falls back explicitly; in strict mode it fails instead of pretending the real provider ran.
 
-## 5. Build with VGGT if available
+## 6. Build with VGGT if available
 
 Install `torch` plus `torchvision`:
 

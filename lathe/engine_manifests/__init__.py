@@ -16,13 +16,14 @@ so out-of-tree plugins can register additional engines.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Any
+from collections.abc import Callable
+from typing import Any
 
 from .godot import emit_godot_manifest
 from .unity import emit_unity_manifest
 from .unreal import emit_unreal_manifest
 
-EmitFn = Callable[[Dict[str, Any], str], str]
+EmitFn = Callable[[dict[str, Any], str], str]
 """Adapter signature: ``emit(context, asset_name) -> file contents``.
 
 ``context`` carries:
@@ -35,13 +36,13 @@ EmitFn = Callable[[Dict[str, Any], str], str]
   - ``main_glb_uri``: str  — relative path of the main glb
 """
 
-ADAPTERS: Dict[str, EmitFn] = {
+ADAPTERS: dict[str, EmitFn] = {
     "godot": emit_godot_manifest,
     "unity": emit_unity_manifest,
     "unreal": emit_unreal_manifest,
 }
 
-FILE_EXTENSIONS: Dict[str, str] = {
+FILE_EXTENSIONS: dict[str, str] = {
     "godot": "json",
     "unity": "yaml",
     "unreal": "json",
@@ -50,7 +51,8 @@ FILE_EXTENSIONS: Dict[str, str] = {
 
 def manifest_filename(engine: str, asset_name: str) -> str:
     """Return the sidecar filename for a given engine, e.g.
-    ``courier_drone.lathe_for_godot.json``."""
+    ``courier_drone.lathe_for_godot.json``.
+    """
     ext = FILE_EXTENSIONS.get(engine, "json")
     return f"{asset_name}.lathe_for_{engine}.{ext}"
 
@@ -59,8 +61,8 @@ __all__ = [
     "ADAPTERS",
     "FILE_EXTENSIONS",
     "EmitFn",
-    "manifest_filename",
     "emit_godot_manifest",
     "emit_unity_manifest",
     "emit_unreal_manifest",
+    "manifest_filename",
 ]

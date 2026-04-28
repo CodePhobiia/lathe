@@ -55,7 +55,9 @@ def check_new_declarations(checker: Any) -> None:
                     path=f"family.{family['name']}.surface.program",
                 )
             )
-        check_surface_v12_refs(checker, family.get("surface", {}), f"family.{family['name']}.surface", family["name"])
+        check_surface_v12_refs(
+            checker, family.get("surface", {}), f"family.{family['name']}.surface", family["name"]
+        )
         for pattern_name in family.get("surface", {}).get("patterns", []):
             if pattern_name not in checker.resolver.pattern_map:
                 checker.diagnostics.append(
@@ -82,7 +84,9 @@ def check_new_declarations(checker: Any) -> None:
             )
 
     for palette in checker.program.get("palettes", []):
-        material_names = list(palette.get("values", {}).get("materials", []) or palette.get("values", {}).get("slots", []))
+        material_names = list(
+            palette.get("values", {}).get("materials", []) or palette.get("values", {}).get("slots", [])
+        )
         for material_name in material_names:
             if material_name not in checker.resolver.material_map:
                 checker.diagnostics.append(

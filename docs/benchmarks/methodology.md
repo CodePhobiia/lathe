@@ -130,7 +130,7 @@ Grades are summary-level only; the numeric JSON is the ground truth.
 
 1. Add the system name to `COMPETITOR_SYSTEMS` in `scripts/run_benchmark.py`.
 2. Create `docs/benchmarks/competitors/<name>.md` using an existing
-   stub as a template. It must document: account setup, prompt text, export
+not_run manual-entry page as a template. It must document: account setup, prompt text, export
    path, licensing, and how to feed the exported `.glb` back through
    `scripts/run_benchmark.py`'s ingest mode (to be added in a later wave).
 3. If the competitor is self-hosted and deterministic, add it to the per-asset

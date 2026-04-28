@@ -20,10 +20,11 @@ Design notes:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Iterable
-
 import heapq
+from collections.abc import Iterable
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 import trimesh
 
@@ -54,6 +55,29 @@ DEFAULT_DISTANCE_BANDS: tuple[tuple[float, float | None], ...] = (
 # Default screen-space coverage hints (fraction of screen height).
 DEFAULT_SCREEN_COVERAGE: tuple[float, ...] = (1.0, 0.4, 0.15, 0.05)
 
+_DEGENERATE_NORMAL_EPS = 1e-18
+_FULL_RATIO_CUTOFF = 0.9999
+_MIN_TARGET_FACES = 4
+_COLLAPSED_EDGE_VERTEX_COUNT = 2
+_FLIP_DOT_THRESHOLD = 0.1
+_REINSERT_COST_PENALTY = 1e12
+_MAX_REINSERT_MULTIPLIER = 50
+_MIN_LOD_RATIO = 0.01
+
+
+@dataclass
+class _DecimationState:
+    verts: np.ndarray
+    faces: np.ndarray
+    vert_alive: np.ndarray
+    face_alive: np.ndarray
+    quadrics: np.ndarray
+    vert_faces: list[set[int]]
+    vert_version: np.ndarray
+    heap: list[tuple[float, int, int, int, int, int]]
+    counter: int
+    current_faces: int
+
 
 def _plane_quadric(p0: np.ndarray, p1: np.ndarray, p2: np.ndarray) -> np.ndarray:
     """Plane-equation quadric (4x4) for the triangle (p0,p1,p2).
@@ -61,10 +85,9 @@ def _plane_quadric(p0: np.ndarray, p1: np.ndarray, p2: np.ndarray) -> np.ndarray
     Plane is ax+by+cz+d=0 with unit normal. Quadric is K = [a,b,c,d]^T [a,b,c,d].
     Degenerate triangles (zero area) contribute the zero matrix.
     """
-
     normal = np.cross(p1 - p0, p2 - p0)
     length = float(np.linalg.norm(normal))
-    if length < 1e-18:
+    if length < _DEGENERATE_NORMAL_EPS:
         return np.zeros((4, 4), dtype=np.float64)
     normal = normal / length
     d = -float(np.dot(normal, p0))
@@ -74,7 +97,6 @@ def _plane_quadric(p0: np.ndarray, p1: np.ndarray, p2: np.ndarray) -> np.ndarray
 
 def _collapse_cost(q_sum: np.ndarray, v_target: np.ndarray) -> float:
     """Evaluate v^T Q v for candidate vertex ``v_target`` under quadric ``q_sum``."""
-
     vec = np.array([v_target[0], v_target[1], v_target[2], 1.0], dtype=np.float64)
     return float(vec @ q_sum @ vec)
 
@@ -85,7 +107,6 @@ def _best_collapse_position(q_sum: np.ndarray, p0: np.ndarray, p1: np.ndarray) -
     Solves the 3x3 linear system derived from the top-left of ``q_sum``.
     Falls back to edge midpoint when the system is singular.
     """
-
     a = q_sum.copy()
     a[3, :] = [0.0, 0.0, 0.0, 1.0]
     try:
@@ -101,21 +122,20 @@ def decimate(mesh: trimesh.Trimesh, ratio: float) -> trimesh.Trimesh:
     Deterministic: identical inputs produce identical outputs. Empty or
     near-empty meshes are returned as a trimesh copy without modification.
     """
-
-    if ratio >= 0.9999:
+    if ratio >= _FULL_RATIO_CUTOFF:
         return mesh.copy()
 
     verts = np.asarray(mesh.vertices, dtype=np.float64).copy()
     faces = np.asarray(mesh.faces, dtype=np.int64).copy()
-    n_faces = int(len(faces))
+    n_faces = len(faces)
     if n_faces == 0:
         return mesh.copy()
 
-    target_faces = max(4, int(round(ratio * n_faces)))
+    target_faces = max(_MIN_TARGET_FACES, round(ratio * n_faces))
     if target_faces >= n_faces:
         return mesh.copy()
 
-    n_verts = int(len(verts))
+    n_verts = len(verts)
     vert_alive = np.ones(n_verts, dtype=bool)
     face_alive = np.ones(n_faces, dtype=bool)
 
@@ -252,7 +272,6 @@ def _would_flip(
 
     Vectorized over affected faces for speed.
     """
-
     affected_all = list(vert_faces[u] | vert_faces[v])
     if not affected_all:
         return False
@@ -263,7 +282,7 @@ def _would_flip(
     # Skip faces that are entirely within the edge uv (they'll collapse away).
     uv_mask = (tris == u) | (tris == v)
     uv_count = uv_mask.sum(axis=1)
-    keep_mask = uv_count < 2
+    keep_mask = uv_count < _COLLAPSED_EDGE_VERTEX_COUNT
     if not np.any(keep_mask):
         return False
     tris = tris[keep_mask]
@@ -280,11 +299,11 @@ def _would_flip(
 
     old_len = np.linalg.norm(n_old, axis=1)
     new_len = np.linalg.norm(n_new, axis=1)
-    valid = (old_len > 1e-18) & (new_len > 1e-18)
+    valid = (old_len > _DEGENERATE_NORMAL_EPS) & (new_len > _DEGENERATE_NORMAL_EPS)
     if not np.any(valid):
         return False
     dots = np.einsum("ij,ij->i", n_old[valid], n_new[valid]) / (old_len[valid] * new_len[valid])
-    return bool(np.any(dots < 0.1))
+    return bool(np.any(dots < _FLIP_DOT_THRESHOLD))
 
 
 def _rebuild_mesh(
@@ -298,7 +317,6 @@ def _rebuild_mesh(
     Reindexing is deterministic: live vertices are renumbered in ascending
     original-index order.
     """
-
     live_vert_ids = np.nonzero(vert_alive)[0]
     remap = -np.ones(len(verts), dtype=np.int64)
     remap[live_vert_ids] = np.arange(len(live_vert_ids), dtype=np.int64)
@@ -308,7 +326,11 @@ def _rebuild_mesh(
     live_faces = faces[live_face_ids]
     new_faces = remap[live_faces]
     # Drop any accidental degenerate faces from the remap.
-    mask = (new_faces[:, 0] != new_faces[:, 1]) & (new_faces[:, 1] != new_faces[:, 2]) & (new_faces[:, 0] != new_faces[:, 2])
+    mask = (
+        (new_faces[:, 0] != new_faces[:, 1])
+        & (new_faces[:, 1] != new_faces[:, 2])
+        & (new_faces[:, 0] != new_faces[:, 2])
+    )
     new_faces = new_faces[mask]
 
     mesh = trimesh.Trimesh(vertices=new_verts, faces=new_faces, process=False)
@@ -329,7 +351,7 @@ def _default_band(level: int) -> tuple[float, float | None]:
     # Extrapolate: keep doubling from the last concrete outer radius.
     last = DEFAULT_DISTANCE_BANDS[-2][1] or 100.0  # LOD2 outer, fallback 100
     steps = level - (len(DEFAULT_DISTANCE_BANDS) - 1)
-    lo = last * (2 ** steps)
+    lo = last * (2**steps)
     return (lo, None)
 
 
@@ -359,13 +381,10 @@ def build_lods(
     ``DEFAULT_SCREEN_COVERAGE`` for matching ``level`` entries. Ratios passed
     via ``lod_config`` take precedence over ``ratios`` for the same level.
     """
-
     ratios_list = list(ratios)
     results: list[LODResult] = []
     if len(mesh.faces) == 0:
-        results.append(
-            LODResult(level=0, ratio=1.0, mesh=mesh.copy(), tris=0, verts=int(len(mesh.vertices)))
-        )
+        results.append(LODResult(level=0, ratio=1.0, mesh=mesh.copy(), tris=0, verts=len(mesh.vertices)))
         return results
 
     by_level: dict[int, dict[str, Any]] = {}
@@ -377,11 +396,12 @@ def build_lods(
             if isinstance(lvl, int) and lvl >= 0:
                 by_level[int(lvl)] = entry
 
-    for idx, raw_ratio in enumerate(ratios_list):
+    for idx, configured_ratio in enumerate(ratios_list):
         override = by_level.get(idx) or {}
+        raw_ratio = configured_ratio
         if "ratio" in override and isinstance(override["ratio"], (int, float)):
             raw_ratio = override["ratio"]
-        ratio = max(0.01, min(1.0, float(raw_ratio)))
+        ratio = max(_MIN_LOD_RATIO, min(1.0, float(raw_ratio)))
         lod_mesh = decimate(mesh, ratio)
 
         default_min, default_max = _default_band(idx)
@@ -392,18 +412,12 @@ def build_lods(
             level=idx,
             ratio=ratio,
             mesh=lod_mesh,
-            tris=int(len(lod_mesh.faces)),
-            verts=int(len(lod_mesh.vertices)),
+            tris=len(lod_mesh.faces),
+            verts=len(lod_mesh.vertices),
             distance_min=float(dist_min) if isinstance(dist_min, (int, float)) else default_min,
-            distance_max=(
-                float(dist_max)
-                if isinstance(dist_max, (int, float))
-                else default_max
-            ),
+            distance_max=(float(dist_max) if isinstance(dist_max, (int, float)) else default_max),
             screen_coverage=(
-                float(screen)
-                if isinstance(screen, (int, float))
-                else _default_screen_coverage(idx)
+                float(screen) if isinstance(screen, (int, float)) else _default_screen_coverage(idx)
             ),
         )
         results.append(result)

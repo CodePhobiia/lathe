@@ -33,15 +33,21 @@ import os
 import platform
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from importlib import metadata
 from pathlib import Path
 from typing import Any
 
+from ..logging_utils import info as log_info
+
 try:  # Optional dep — the ``publish`` extra pulls it in.
-    from cryptography.hazmat.primitives.asymmetric import ed25519 as _ed25519
+    from cryptography.exceptions import InvalidSignature as _InvalidSignature
     from cryptography.hazmat.primitives import serialization as _serialization
+    from cryptography.hazmat.primitives.asymmetric import ed25519 as _ed25519
+
     _CRYPTOGRAPHY_OK = True
 except ImportError:  # pragma: no cover - only when extra is absent
+    _InvalidSignature = None  # type: ignore[assignment]
     _ed25519 = None  # type: ignore[assignment]
     _serialization = None  # type: ignore[assignment]
     _CRYPTOGRAPHY_OK = False
@@ -50,6 +56,18 @@ except ImportError:  # pragma: no cover - only when extra is absent
 RECEIPT_SCHEMA_VERSION: int = 1
 RECEIPT_FILENAME: str = "reproducibility_receipt.json"
 _SNAPSHOT_FILENAME: str = ".lathe_snapshot.json"
+_RAW_ED25519_PRIVATE_KEY_BYTES = 32
+_RECEIPT_REQUIRED_KEYS = (
+    "schema_version",
+    "snapshot",
+    "signer_id",
+    "timestamp",
+    "env_fingerprint",
+    "signature",
+)
+_SIGNATURE_VERIFY_ERRORS: tuple[type[BaseException], ...] = (
+    (_InvalidSignature,) if _InvalidSignature is not None else ()
+)
 
 _LOG = logging.getLogger(__name__)
 
@@ -70,6 +88,7 @@ class ReproReceipt:
     signature: dict[str, Any]
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the receipt as a JSON-serializable dictionary."""
         return {
             "schema_version": int(self.schema_version),
             "snapshot": dict(self.snapshot),
@@ -85,15 +104,13 @@ def _canonical_bytes(payload: dict[str, Any]) -> bytes:
 
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _manifold_version() -> str:
     try:
-        import manifold3d  # type: ignore[import-not-found]
-
-        return str(getattr(manifold3d, "__version__", "unknown"))
-    except ImportError:
+        return metadata.version("manifold3d")
+    except metadata.PackageNotFoundError:
         return "not_installed"
 
 
@@ -138,31 +155,40 @@ def _env_fingerprint(build_dir: Path) -> dict[str, Any]:
 def _load_snapshot(build_dir: Path) -> dict[str, Any]:
     snapshot_path = build_dir / _SNAPSHOT_FILENAME
     if not snapshot_path.is_file():
-        raise ReproVerifyError(
+        message = (
             f"missing {_SNAPSHOT_FILENAME} in {build_dir}; run `lathe snapshot` or "
             f"`lathe build` with snapshotting enabled before signing"
         )
+        raise ReproVerifyError(message)
     try:
         data = json.loads(snapshot_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise ReproVerifyError(f"failed to read {snapshot_path}: {exc}") from exc
+        message = f"failed to read {snapshot_path}: {exc}"
+        raise ReproVerifyError(message) from exc
     if not isinstance(data, dict):
-        raise ReproVerifyError(f"{snapshot_path} did not decode to a JSON object")
+        message = f"{snapshot_path} did not decode to a JSON object"
+        raise ReproVerifyError(message)
     return data
 
 
 def _load_private_key(key_path: Path) -> Any:
     if not _CRYPTOGRAPHY_OK:
-        raise ReproVerifyError("cryptography package is not installed; install the 'publish' extra")
+        message = "cryptography package is not installed; install the 'publish' extra"
+        raise ReproVerifyError(message)
     if not key_path.is_file():
-        raise ReproVerifyError(f"signing key does not exist: {key_path}")
+        message = "signing key does not exist"
+        raise ReproVerifyError(message)
+    if os.name == "posix" and key_path.stat().st_mode & 0o077:
+        message = "signing key permissions are unsafe; remove group/world access"
+        raise ReproVerifyError(message)
     raw = key_path.read_bytes()
     try:
-        if len(raw) == 32:
+        if len(raw) == _RAW_ED25519_PRIVATE_KEY_BYTES:
             return _ed25519.Ed25519PrivateKey.from_private_bytes(raw)
         return _serialization.load_pem_private_key(raw, password=None)
     except (ValueError, TypeError) as exc:
-        raise ReproVerifyError(f"invalid signing key: {exc}") from exc
+        message = f"invalid signing key: {exc}"
+        raise ReproVerifyError(message) from exc
 
 
 def sign_receipt(
@@ -193,15 +219,15 @@ def sign_receipt(
     """
     build_dir = Path(build_dir)
     if not build_dir.is_dir():
-        raise ReproVerifyError(f"not a build directory: {build_dir}")
+        message = f"not a build directory: {build_dir}"
+        raise ReproVerifyError(message)
     snapshot = _load_snapshot(build_dir)
 
     env_key = os.getenv("LATHE_PUBLISH_SIGNING_KEY")
     key = signing_key_path or env_key
     if not key:
-        raise ReproVerifyError(
-            "no signing key configured; set LATHE_PUBLISH_SIGNING_KEY or pass signing_key_path"
-        )
+        message = "no signing key configured; set LATHE_PUBLISH_SIGNING_KEY or pass signing_key_path"
+        raise ReproVerifyError(message)
     private_key = _load_private_key(Path(key))
 
     signer = signer_id or os.getenv("LATHE_SIGNER_ID") or "anonymous"
@@ -231,8 +257,47 @@ def sign_receipt(
         json.dumps(receipt_payload, sort_keys=True, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
-    _LOG.info("publish: wrote reproducibility receipt %s (signer=%s)", target, signer)
+    log_info(
+        _LOG,
+        "lathe.publish.repro_receipt_written",
+        "publish: wrote reproducibility receipt {target} (signer={signer})",
+        target=target,
+        signer=signer,
+    )
     return target
+
+
+def _load_receipt_payload(receipt_path: Path) -> dict[str, Any]:
+    if not receipt_path.is_file():
+        message = f"receipt not found: {receipt_path}"
+        raise ReproVerifyError(message)
+    try:
+        data = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        message = f"failed to read receipt: {exc}"
+        raise ReproVerifyError(message) from exc
+    if not isinstance(data, dict):
+        message = "receipt is not a JSON object"
+        raise ReproVerifyError(message)
+    for required in _RECEIPT_REQUIRED_KEYS:
+        if required not in data:
+            message = f"receipt missing required key: {required}"
+            raise ReproVerifyError(message)
+    return data
+
+
+def _receipt_signature(data: dict[str, Any]) -> dict[str, Any]:
+    sig = data.get("signature") or {}
+    if not isinstance(sig, dict):
+        message = "receipt signature block is not a JSON object"
+        raise ReproVerifyError(message)
+    if sig.get("algorithm") != "ed25519":
+        message = f"unsupported signature algorithm: {sig.get('algorithm')}"
+        raise ReproVerifyError(message)
+    if not sig.get("value_hex") or not sig.get("public_key_hex"):
+        message = "receipt signature missing value_hex or public_key_hex"
+        raise ReproVerifyError(message)
+    return sig
 
 
 def verify_receipt(receipt_path: Path | str) -> ReproReceipt:
@@ -249,30 +314,13 @@ def verify_receipt(receipt_path: Path | str) -> ReproReceipt:
             or cryptography package not importable.
     """
     if not _CRYPTOGRAPHY_OK:
-        raise ReproVerifyError("cryptography package is not installed; install the 'publish' extra")
+        message = "cryptography package is not installed; install the 'publish' extra"
+        raise ReproVerifyError(message)
     receipt_path = Path(receipt_path)
-    if not receipt_path.is_file():
-        raise ReproVerifyError(f"receipt not found: {receipt_path}")
-    try:
-        data = json.loads(receipt_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ReproVerifyError(f"failed to read receipt: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ReproVerifyError("receipt is not a JSON object")
-
-    for required in ("schema_version", "snapshot", "signer_id", "timestamp", "env_fingerprint", "signature"):
-        if required not in data:
-            raise ReproVerifyError(f"receipt missing required key: {required}")
-
-    sig = data.get("signature") or {}
-    if not isinstance(sig, dict):
-        raise ReproVerifyError("receipt signature block is not a JSON object")
-    if sig.get("algorithm") != "ed25519":
-        raise ReproVerifyError(f"unsupported signature algorithm: {sig.get('algorithm')}")
+    data = _load_receipt_payload(receipt_path)
+    sig = _receipt_signature(data)
     value_hex = sig.get("value_hex")
     public_hex = sig.get("public_key_hex")
-    if not value_hex or not public_hex:
-        raise ReproVerifyError("receipt signature missing value_hex or public_key_hex")
 
     payload = {k: v for k, v in data.items() if k != "signature"}
     payload_bytes = _canonical_bytes(payload)
@@ -280,16 +328,19 @@ def verify_receipt(receipt_path: Path | str) -> ReproReceipt:
         signature_bytes = bytes.fromhex(value_hex)
         public_key = _ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(public_hex))
     except ValueError as exc:
-        raise ReproVerifyError(f"malformed signature hex: {exc}") from exc
+        message = f"malformed signature hex: {exc}"
+        raise ReproVerifyError(message) from exc
     try:
         public_key.verify(signature_bytes, payload_bytes)
-    except Exception as exc:  # noqa: BLE001 - cryptography.exceptions.InvalidSignature
-        raise ReproVerifyError("signature verification failed") from exc
+    except _SIGNATURE_VERIFY_ERRORS as exc:
+        message = "signature verification failed"
+        raise ReproVerifyError(message) from exc
 
     recorded_sha = sig.get("payload_sha256")
     actual_sha = hashlib.sha256(payload_bytes).hexdigest()
     if recorded_sha and recorded_sha != actual_sha:
-        raise ReproVerifyError("payload_sha256 mismatch: receipt tampered")
+        message = "payload_sha256 mismatch: receipt tampered"
+        raise ReproVerifyError(message)
 
     return ReproReceipt(
         schema_version=int(data.get("schema_version", RECEIPT_SCHEMA_VERSION)),

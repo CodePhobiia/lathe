@@ -65,7 +65,13 @@ def check_duplicate_names(checker: Any) -> None:
             name = decl["name"]
             if name in seen:
                 checker.diagnostics.append(
-                    diag(code, "duplicate_name", "error", "resolve", f"Duplicate declaration '{name}' in {ns_key[:-1]} namespace")
+                    diag(
+                        code,
+                        "duplicate_name",
+                        "error",
+                        "resolve",
+                        f"Duplicate declaration '{name}' in {ns_key[:-1]} namespace",
+                    )
                 )
             seen.add(name)
 
@@ -82,12 +88,23 @@ def check_use_graphs(checker: Any) -> None:
                 _walk_decl_uses(checker, decl_type, decl["name"], [])
             except ResolutionError as exc:
                 checker.diagnostics.append(
-                    diag("L2101", "use_cycle_or_invalid_use", "error", "resolve", str(exc), path=f"{decl_type}.{decl['name']}.uses")
+                    diag(
+                        "L2101",
+                        "use_cycle_or_invalid_use",
+                        "error",
+                        "resolve",
+                        str(exc),
+                        path=f"{decl_type}.{decl['name']}.uses",
+                    )
                 )
 
 
 def _walk_decl_uses(checker: Any, decl_type: str, decl_name: str, stack: list[tuple[str, str]]) -> None:
-    decl = checker.resolver.profile_map[decl_name] if decl_type == "profile" else checker.resolver.contract_map[decl_name]
+    decl = (
+        checker.resolver.profile_map[decl_name]
+        if decl_type == "profile"
+        else checker.resolver.contract_map[decl_name]
+    )
     key = (decl_type, decl_name)
     if key in stack:
         cycle = " -> ".join(name for _, name in [*stack, key])
@@ -144,16 +161,38 @@ def check_tests_and_benchmarks(checker: Any) -> None:
     """
     for decl in checker.program.get("tests", []):
         asset_name = decl.get("values", {}).get("asset")
-        if asset_name and asset_name not in checker.resolver.asset_map and asset_name not in checker.resolver.variant_map:
+        if (
+            asset_name
+            and asset_name not in checker.resolver.asset_map
+            and asset_name not in checker.resolver.variant_map
+        ):
             checker.diagnostics.append(
-                diag("L5301", "unknown_test_asset", "error", "resolve", f"Test '{decl['name']}' references unknown asset '{asset_name}'", path=f"test.{decl['name']}.values.asset")
+                diag(
+                    "L5301",
+                    "unknown_test_asset",
+                    "error",
+                    "resolve",
+                    f"Test '{decl['name']}' references unknown asset '{asset_name}'",
+                    path=f"test.{decl['name']}.values.asset",
+                )
             )
     for decl in checker.program.get("benchmarks", []):
         values = decl.get("values", {})
         asset_name = values.get("asset")
-        if asset_name and asset_name not in checker.resolver.asset_map and asset_name not in checker.resolver.variant_map:
+        if (
+            asset_name
+            and asset_name not in checker.resolver.asset_map
+            and asset_name not in checker.resolver.variant_map
+        ):
             checker.diagnostics.append(
-                diag("L5302", "unknown_benchmark_asset", "error", "resolve", f"Benchmark '{decl['name']}' references unknown asset '{asset_name}'", path=f"benchmark.{decl['name']}.values.asset")
+                diag(
+                    "L5302",
+                    "unknown_benchmark_asset",
+                    "error",
+                    "resolve",
+                    f"Benchmark '{decl['name']}' references unknown asset '{asset_name}'",
+                    path=f"benchmark.{decl['name']}.values.asset",
+                )
             )
         for fixture_name in values.get("compare_against", []):
             if fixture_name not in checker.resolver.fixture_map:

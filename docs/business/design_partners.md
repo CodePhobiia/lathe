@@ -55,7 +55,7 @@ The LOI that lands this shape is in `docs/business/outreach_template.md`. Three 
 
 **Where to find them.** Continue.dev / OpenHands / Claude Code community — the people writing the agent frameworks know who is deploying agents in game pipelines. Also: NeurIPS / ICLR workshop tool-track submissions overlap with this population (`docs/roadmap_public.md` § V0.6).
 
-**What they get.** Direct input on the `agents.md` listing + the five framework adapters. Early access to `trace.json` schema evolutions. Co-authorship on any agent-track workshop demo.
+**What they get.** Direct input on the `agents.md` listing + the five framework adapters. Early access to `stages/package/trace_manifest.json` schema evolutions. Co-authorship on any agent-track workshop demo.
 
 **What we get.** The Persona-C validation loop in one relationship: they deploy agents that try to use Lathe, we fix the integration sharp edges. Without a partner in this seat, we are guessing at what agents need.
 

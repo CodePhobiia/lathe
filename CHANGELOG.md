@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added tracked maintenance docs for issue triage, labels, milestones, stale
+  handling, dependency-update review gates, release metrics, and the 10/10
+  quality dashboard.
+- Added release-blocker issue intake and expanded the release workflow so
+  publishing waits for tests, docs, lint, package metadata, security scans, and
+  SBOM generation.
+- Added a generated CLI reference that is checked against live
+  `python -m lathe.cli ... --help` output.
+- Added runtime-config examples for offline, reference-only, mocked learned,
+  and real learned-provider modes, with tests that keep the examples loadable
+  and documented.
+- Hardened outbound HTTP so network egress requires an explicit host
+  allowlist, including provider, telemetry, and Supabase publish paths.
+
 ## [0.2.0-rc.1] - 2026-04-25
 
 21 commits across six sub-waves (Wave 6.I–VI) covering every V0.2 epic

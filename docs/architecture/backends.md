@@ -46,4 +46,16 @@ flowchart TB
 - **Conservative defaults.** With no `--runtime-config` given, shape falls back to `lathe.provider.shape.reference_conditioned_v1`; topology and UV fall back to deterministic reference paths when Blender or xatlas are unavailable. This keeps smoke tests and bootstrap flows ergonomic.
 - **Stable IDs.** `lathe.shape.intent_mesh_handoff_v1`, `lathe.topology.blender_hard_surface_v1`, `lathe.uv.xatlas_v1`, `lathe.package.openusd_gltf_v1`, and `lathe.stack.hard_surface_game_asset_v1` are public contract identifiers. A breaking change requires either a MAJOR version bump or a new ID suffix (`_v2`). See [Versioning](../versioning.md).
 
-See [Shape stage](shape_stage.md) for the internals of the probabilistic stage and [Pipeline](pipeline.md) for the full stage order.
+## Registry boundary
+
+`lathe/backends.py` is the built-in registry ground truth. Third-party
+extensions add descriptors through the `lathe.backends`, `lathe.stacks`, and
+`lathe.providers.shape` entry-point groups; they do not replace built-in IDs.
+Provider adapter modules are internal implementation details below their
+descriptor and provider report. Downstream consumers should read selected
+backend IDs, provider IDs, and attempted-vs-actual trace fields, not import
+adapter helpers directly.
+
+See [Shape stage](shape_stage.md) for the internals of the probabilistic stage,
+[Pipeline](pipeline.md) for the full stage order, and [Public contracts and
+internal boundaries](contracts.md) for the full contract map.

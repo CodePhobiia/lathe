@@ -10,7 +10,6 @@ from typing import Any
 
 from .visual_quality import _surface_evidence
 
-
 SURFACE_THRESHOLDS = {
     "surface_authoring_quality": 0.40,
     "surface_material_zone_coherence": 0.45,
@@ -21,7 +20,9 @@ SURFACE_THRESHOLDS = {
 }
 
 
-def build_surface_validation_ir(surface_cfg: dict[str, Any], backend_report: dict[str, Any]) -> dict[str, Any]:
+def build_surface_validation_ir(
+    surface_cfg: dict[str, Any], backend_report: dict[str, Any]
+) -> dict[str, Any]:
     """Build surface validation ir.
 
     Args:
@@ -79,7 +80,11 @@ def evaluate_surface_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> 
                     "path": f"validate.surface.{metric}",
                     "message": f"Surface validator failed for {metric}: {actual:.3f} < {minimum:.3f}",
                     "details": {"metric": metric, "actual": actual, "minimum": minimum},
-                    "suggested_repairs": ["reauthor_surface_layer", "rederive_zone_roughness", "fallback_zone_deterministic"],
+                    "suggested_repairs": [
+                        "reauthor_surface_layer",
+                        "rederive_zone_roughness",
+                        "fallback_zone_deterministic",
+                    ],
                 }
             )
     return {

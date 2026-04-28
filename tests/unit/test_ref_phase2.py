@@ -15,7 +15,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from lathe.ref import (
     RefParseError,
     RefSelector,
@@ -67,13 +66,17 @@ def phase2_build(tmp_path: Path) -> Path:
     build_dir = tmp_path / "phase2_drone"
     build_dir.mkdir()
     (build_dir / "stages" / "shape").mkdir(parents=True)
-    (build_dir / "build_report.json").write_text(json.dumps({
-        "asset": "phase2_drone",
-        "kind": "mechanical_assembly",
-        "certified": True,
-        "stage_bundles": {"shape": {"backend_id": "x"}},
-        "outputs": [],
-    }))
+    (build_dir / "build_report.json").write_text(
+        json.dumps(
+            {
+                "asset": "phase2_drone",
+                "kind": "mechanical_assembly",
+                "certified": True,
+                "stage_bundles": {"shape": {"backend_id": "x"}},
+                "outputs": [],
+            }
+        )
+    )
     manifest = {
         "schemaVersion": 1,
         "latheVersion": "0.1.0",
@@ -189,10 +192,17 @@ def test_phase1_part_still_resolves(phase2_build: Path):
 def test_subpart_requires_manifest(tmp_path: Path):
     build_dir = tmp_path / "no_manifest"
     build_dir.mkdir()
-    (build_dir / "build_report.json").write_text(json.dumps({
-        "asset": "x", "kind": "mechanical_assembly", "certified": False,
-        "stage_bundles": {"shape": {}}, "outputs": [],
-    }))
+    (build_dir / "build_report.json").write_text(
+        json.dumps(
+            {
+                "asset": "x",
+                "kind": "mechanical_assembly",
+                "certified": False,
+                "stage_bundles": {"shape": {}},
+                "outputs": [],
+            }
+        )
+    )
     node = parse_ref("@lathe[no_manifest#part.body.face0]")
     result = resolve_ref(node, repo_root=tmp_path)
     assert result["ok"] is False
@@ -204,7 +214,6 @@ def test_deterministic_ids_same_mesh_same_ids():
     runtime input yields identical ids and geometric facts."""
     import numpy as np
     import trimesh
-
     from lathe.selector_manifest import _collect_sub_parts
 
     vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]], dtype=float)
@@ -222,9 +231,15 @@ def test_deterministic_ids_same_mesh_same_ids():
     b = _collect_sub_parts(runtime, "body", "build")
     assert a == b
     assert [f["id"] for f in a["faces"]] == ["body.face0", "body.face1"]
-    assert [v["id"] for v in a["vertices"]] == ["body.vertex0", "body.vertex1", "body.vertex2", "body.vertex3"]
+    assert [v["id"] for v in a["vertices"]] == [
+        "body.vertex0",
+        "body.vertex1",
+        "body.vertex2",
+        "body.vertex3",
+    ]
 
 
 def test_subpart_extractor_empty_when_no_runtime_mesh():
     from lathe.selector_manifest import _collect_sub_parts
+
     assert _collect_sub_parts({}, "any", "build") == {"faces": [], "edges": [], "vertices": []}

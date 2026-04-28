@@ -88,7 +88,7 @@ asset api_csg_boolean: hard_surface_prop from industrial_crate_family uses shipp
     surface { workflow = pbr_metal_rough maps = [basecolor, normal, orm] resolution = 2048px
               bakes = [ao, curvature, id] decals = [shipping_mark, warning_band, trim_band, service_label] id_map = true }
     rig { type = none joints = [] pivot_policy = studio_standard joint_limits = auto }
-    interfaces { sockets = [cargo_anchor] anchors = [floor_contact] clearance = 2cm }
+    interfaces { sockets = [socket(id: cargo_anchor, socket_type: attach)] pivots = [pivot(id: floor_contact, pivot_type: contact)] clearance = 2cm }
     physics { collision = convex_decomp max_hulls = 5 mass = auto center_of_mass = auto }
     optimize { lods = 4 atlas = true draw_calls = 2 texture_budget = 24mb mesh_compression = true }
   }

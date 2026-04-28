@@ -12,12 +12,8 @@ re-scaling would be overly brittle.
 
 from __future__ import annotations
 
-import math
 import unittest
 
-import pytest
-
-from lathe.asset_graph import build_asset_graph
 from lathe.assembly_kernel import (
     AssemblyBlueprint,
     BlueprintComponent,
@@ -26,6 +22,7 @@ from lathe.assembly_kernel import (
     polar_offset,
     refresh_shape_ir,
 )
+from lathe.asset_graph import build_asset_graph
 from lathe.shape_ir import ShapeIR
 
 
@@ -77,7 +74,9 @@ class BlueprintDataclassTests(unittest.TestCase):
         self.assertEqual(restored, component)
 
     def test_assembly_blueprint_to_dict_nests_components(self) -> None:
-        blueprint = _simple_blueprint([_component(), _component(name="lid_top", part="lid", component_type="lid")])
+        blueprint = _simple_blueprint(
+            [_component(), _component(name="lid_top", part="lid", component_type="lid")]
+        )
         payload = blueprint.to_dict()
         self.assertEqual(payload["blueprint_id"], "lathe.blueprint.test_v1")
         self.assertEqual(len(payload["components"]), 2)
@@ -131,9 +130,7 @@ class CompileAssemblyBlueprintTests(unittest.TestCase):
         # The vent builder fans out into 4 slat primitives regardless of
         # component extents — this anchors the expected count.
         asset_graph = _asset_graph(["vent"])
-        blueprint = _simple_blueprint(
-            [_component(name="vent_face", component_type="vent", part="vent")]
-        )
+        blueprint = _simple_blueprint([_component(name="vent_face", component_type="vent", part="vent")])
         shape_ir = compile_assembly_blueprint(asset_graph, blueprint)
         self.assertEqual(len(shape_ir.primitives), 4)
         self.assertEqual(len(shape_ir.regions), 1)

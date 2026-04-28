@@ -14,11 +14,11 @@ Usage::
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import pytest
-
 
 HERO_EXAMPLES = (
     "courier_drone",
@@ -43,8 +43,7 @@ def _resolve_example_path(repo_root: Path, name: str) -> Path:
     candidate = repo_root / "examples" / f"{name}.lth"
     if not candidate.exists():
         raise FileNotFoundError(
-            f"Hero example {name!r} not found at {candidate}. "
-            f"Known heroes: {', '.join(HERO_EXAMPLES)}"
+            f"Hero example {name!r} not found at {candidate}. Known heroes: {', '.join(HERO_EXAMPLES)}"
         )
     return candidate
 

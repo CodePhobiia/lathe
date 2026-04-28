@@ -1,32 +1,19 @@
 # Semgrep configuration for Lathe (SEC-5).
 #
-# This file declares which community rule packs the CI Semgrep gate runs.
-# We rely on curated Semgrep Registry packs rather than authoring custom
-# rules locally — upstream updates flow through automatically.
+# This file is reserved for future custom local rules.
+#
+# The CI gate and local reproduction command invoke the Semgrep Registry
+# packs explicitly with repeated `--config p/...` flags. Keeping that list in
+# the command avoids relying on unsupported Registry pack expansion from this
+# YAML file.
 #
 # Usage (local):
-#   semgrep --config .semgrep.yml --error lathe/
-#   semgrep --config auto lathe/        # alternative: registry-driven
+#   semgrep --error --config p/python --config p/security-audit --config p/owasp-top-ten lathe/
+#   semgrep --validate --config .semgrep.yml
 #
 # To silence a false positive at a call site, annotate the offending line:
 #   result = dangerous_call()  # nosemgrep: rule-id-here
 #
-# The CI workflow uses `semgrep ci` (GitHub-aware wrapper). This file is
-# also read directly by the CLI form above and by `pre-commit run semgrep`.
+# The CI workflow uses the same explicit Registry pack list.
 
 rules: []
-
-# Semgrep CLI interprets the top-level `extends` key like `p/...` shortcuts
-# in the Semgrep Registry. These are the three packs relevant to a
-# Python-first, dependency-heavy project:
-#
-#   p/python          — general Python correctness + security
-#   p/security-audit  — broad security ruleset across languages
-#   p/owasp-top-ten   — OWASP Top 10 2021 coverage
-#
-# Semgrep resolves packs remotely; CI must have network access to the
-# Semgrep Registry (semgrep.dev) during the scan step.
-extends:
-  - p/python
-  - p/security-audit
-  - p/owasp-top-ten

@@ -9,7 +9,6 @@ from lathe.checker import check_program
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 
-
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "examples" / "courier_drone.lth"
 
@@ -25,7 +24,9 @@ class LatheBackendResolutionTests(unittest.TestCase):
         self.assertEqual(resolved["selected"]["package"]["id"], "lathe.package.openusd_gltf_v1")
 
     def test_udim_rejected_by_first_stack(self) -> None:
-        source = EXAMPLE.read_text(encoding="utf-8").replace("unwrap = auto", "unwrap = auto\n      tile_mode = udim\n      udims = [1001]")
+        source = EXAMPLE.read_text(encoding="utf-8").replace(
+            "unwrap = auto", "unwrap = auto\n      tile_mode = udim\n      udims = [1001]"
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "courier_drone.lth"
             path.write_text(source, encoding="utf-8")
@@ -35,7 +36,9 @@ class LatheBackendResolutionTests(unittest.TestCase):
         self.assertIn("L4604", error_codes)
 
     def test_unknown_backend_is_rejected(self) -> None:
-        source = EXAMPLE.read_text(encoding="utf-8").replace("mode = generate", "backend = studio.unknown_backend\n      mode = generate", 1)
+        source = EXAMPLE.read_text(encoding="utf-8").replace(
+            "mode = generate", "backend = studio.unknown_backend\n      mode = generate", 1
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "courier_drone.lth"
             path.write_text(source, encoding="utf-8")

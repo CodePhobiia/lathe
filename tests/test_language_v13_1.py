@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
-import uuid
 from pathlib import Path
 
+import pytest
 from lathe.executor import build_asset
 from lathe.normalizer import normalize_program
 from lathe.parser import parse_file
 from lathe.planner import build_plan
 from lathe.resolver import materialize_asset
-
 
 ROOT = Path(__file__).resolve().parents[1]
 V13_1_EXAMPLE = ROOT / "examples" / "brassbound_chest_v13_1_codex_blender.lth"
@@ -38,33 +39,43 @@ class LatheV13_1LanguageTests(unittest.TestCase):
         self.assertEqual(plan["v1_3_1_control"]["resolved_inspection_policy"], "hero_visual_gate")
         self.assertIn("surface_evidence", plan["v1_3_1_control"]["required_evidence"])
 
+    @pytest.mark.slow
     def test_v13_1_build_emits_bridge_and_evidence_ir(self) -> None:
         program = parse_file(V13_1_EXAMPLE)
-        temp_root = ROOT / "tmp_v13_1_tests"
-        temp_root.mkdir(exist_ok=True)
-        out_dir = temp_root / f"brassbound_chest_v13_1_{uuid.uuid4().hex}"
+        tmpdir = tempfile.TemporaryDirectory(prefix="lathe_v13_1_build_")
+        self.addCleanup(tmpdir.cleanup)
+        out_dir = Path(tmpdir.name) / "brassbound_chest_v13_1"
         report = build_asset(program, "brassbound_chest_v13_1", out_dir)
         self.assertTrue(report["certified"])
 
-        execution_bundle = json.loads((out_dir / "stages" / "execution" / "bundle.json").read_text(encoding="utf-8"))
-        self.assertEqual(execution_bundle["bridge_plan_ir"]["backend_id"], "lathe.bridge.blender_execution_v1")
+        execution_bundle = json.loads(
+            (out_dir / "stages" / "execution" / "bundle.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            execution_bundle["bridge_plan_ir"]["backend_id"], "lathe.bridge.blender_execution_v1"
+        )
         self.assertEqual(execution_bundle["inspection_policy_ir"]["resolved_policy"], "hero_visual_gate")
         self.assertTrue(execution_bundle["validation_evidence_ir"]["satisfied"])
         self.assertEqual(execution_bundle["validation_evidence_ir"]["missing_required_evidence"], [])
 
-        trace = json.loads((out_dir / "stages" / "package" / "trace_manifest.json").read_text(encoding="utf-8"))
+        trace = json.loads(
+            (out_dir / "stages" / "package" / "trace_manifest.json").read_text(encoding="utf-8")
+        )
         execution_trace = trace["stage_execution"]["execution"]
         self.assertEqual(execution_trace["inspection_policy_ir"]["resolved_policy"], "hero_visual_gate")
         self.assertTrue(execution_trace["validation_evidence_ir"]["satisfied"])
 
+    @pytest.mark.slow
     def test_v13_1_cli_commands(self) -> None:
-        temp_root = ROOT / "tmp_v13_1_tests"
-        temp_root.mkdir(exist_ok=True)
-        out_dir = temp_root / f"v13_1_cli_{uuid.uuid4().hex}"
+        tmpdir = tempfile.TemporaryDirectory(prefix="lathe_v13_1_cli_")
+        self.addCleanup(tmpdir.cleanup)
+        out_dir = Path(tmpdir.name) / "v13_1_cli"
+        cli_env = {**os.environ, "LATHE_ALLOW_EXTERNAL_OUT": "1"}
 
         doctor_result = subprocess.run(
             [sys.executable, "-m", "lathe.cli", "bridge", "doctor"],
             cwd=ROOT,
+            env=cli_env,
             text=True,
             capture_output=True,
             check=True,
@@ -74,8 +85,17 @@ class LatheV13_1LanguageTests(unittest.TestCase):
         self.assertGreaterEqual(doctor_payload["tool_contracts"]["blender_mcp_count"], 1)
 
         plan_result = subprocess.run(
-            [sys.executable, "-m", "lathe.cli", "bridge", "plan", str(V13_1_EXAMPLE), "brassbound_chest_v13_1"],
+            [
+                sys.executable,
+                "-m",
+                "lathe.cli",
+                "bridge",
+                "plan",
+                str(V13_1_EXAMPLE),
+                "brassbound_chest_v13_1",
+            ],
             cwd=ROOT,
+            env=cli_env,
             text=True,
             capture_output=True,
             check=True,
@@ -96,6 +116,7 @@ class LatheV13_1LanguageTests(unittest.TestCase):
                 str(out_dir),
             ],
             cwd=ROOT,
+            env=cli_env,
             text=True,
             capture_output=True,
             check=True,

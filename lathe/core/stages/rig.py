@@ -29,10 +29,12 @@ def run(executor: Any, surface_bundle: dict[str, Any]) -> dict[str, Any]:
     joints = []
     for joint_name in rig_cfg.get("joints", []):
         centroid = centroids.get(joint_name, [0.0, 0.0, 0.0])
-        joints.append({
-            "name": joint_name,
-            "pivot": [round(float(v), 6) for v in centroid],
-        })
+        joints.append(
+            {
+                "name": joint_name,
+                "pivot": [round(float(v), 6) for v in centroid],
+            }
+        )
     bundle = {
         "backend_id": "lathe.rig.rigid_mechanical_stub_v1",
         "type": rig_cfg.get("type"),

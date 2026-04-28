@@ -9,12 +9,11 @@ Thresholds mirror the Wave 3 reviewer report
 `.lth` sources themselves declare. If a hero's threshold changes in its
 source, update it here too.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
-
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -29,7 +28,7 @@ class Hero:
     threshold: float
 
 
-HEROES: List[Hero] = [
+HEROES: list[Hero] = [
     Hero(
         asset_name="courier_drone",
         source_path=_REPO_ROOT / "examples" / "courier_drone.lth",

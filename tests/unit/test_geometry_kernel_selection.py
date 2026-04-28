@@ -6,7 +6,6 @@ import logging
 from typing import Any
 
 import pytest
-
 from lathe.geometry import (
     GeometryKernel,
     GeometryKernelUnavailable,
@@ -15,13 +14,15 @@ from lathe.geometry import (
     register_geometry_kernel,
     resolve_geometry_kernel,
 )
+from lathe.geometry import (
+    kernel as k_mod,
+)
 from lathe.geometry.kernel import (
     MANIFOLD_KERNEL_ID,
     REFERENCE_KERNEL_ID,
 )
-from lathe.geometry.manifold_kernel import manifold_available
+from lathe.geometry.manifold_kernel import manifold_available, manifold_kernel
 from lathe.geometry.reference_kernel import ReferenceKernel, reference_kernel
-
 
 MANIFOLD_AVAILABLE = manifold_available()
 
@@ -68,7 +69,7 @@ def test_default_falls_back_to_reference_when_manifold_factory_unavailable(
     monkeypatch.delenv("LATHE_GEOMETRY_BACKEND", raising=False)
 
     def _raise() -> GeometryKernel:
-        raise GeometryKernelUnavailable("manifold3d missing")
+        raise GeometryKernelUnavailable(kernel=MANIFOLD_KERNEL_ID, source="test")
 
     register_geometry_kernel(MANIFOLD_KERNEL_ID, _raise)
     try:
@@ -78,9 +79,7 @@ def test_default_falls_back_to_reference_when_manifold_factory_unavailable(
         assert any("falling back" in rec.message for rec in caplog.records)
     finally:
         # Restore the real manifold factory so later tests see the normal registry.
-        from lathe.geometry import manifold_kernel as mk_mod
-
-        register_geometry_kernel(MANIFOLD_KERNEL_ID, mk_mod.manifold_kernel)
+        register_geometry_kernel(MANIFOLD_KERNEL_ID, manifold_kernel)
 
 
 # ---------------------------------------------------------------------------
@@ -144,8 +143,6 @@ def test_reference_kernel_satisfies_protocol() -> None:
 
 @pytest.mark.skipif(not MANIFOLD_AVAILABLE, reason="manifold3d not installed")
 def test_manifold_kernel_satisfies_protocol() -> None:
-    from lathe.geometry.manifold_kernel import manifold_kernel
-
     kernel: Any = manifold_kernel()
     assert isinstance(kernel, GeometryKernel)
     box = kernel.build_primitive("box", extents=(1.0, 1.0, 1.0))
@@ -172,6 +169,4 @@ def test_register_and_resolve_custom_kernel(monkeypatch: pytest.MonkeyPatch) -> 
         assert kernel.name == REFERENCE_KERNEL_ID
     finally:
         # Deregister the stub so later tests see a clean registry surface.
-        from lathe.geometry import kernel as k_mod
-
         k_mod._REGISTRY.pop("lathe.geometry.test_stub_v1", None)

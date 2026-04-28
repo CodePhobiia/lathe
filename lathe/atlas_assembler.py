@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 
-def build_atlas_assembly_ir(surface_cfg: dict[str, Any], control_pack: dict[str, Any], outputs: dict[str, Any]) -> dict[str, Any]:
+def build_atlas_assembly_ir(
+    surface_cfg: dict[str, Any], control_pack: dict[str, Any], outputs: dict[str, Any]
+) -> dict[str, Any]:
     return {
         "schema": "lathe.atlas_assembly_ir.v1",
         "mode": "zone_first",

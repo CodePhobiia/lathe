@@ -37,8 +37,7 @@ class JSONValidationError(LatheConfigError):
     ) -> None:
         detail = f" (value={snippet})" if snippet else ""
         super().__init__(
-            f"{schema_id} payload from {source} failed schema validation at {pointer}: "
-            f"{message}{detail}"
+            f"{schema_id} payload from {source} failed schema validation at {pointer}: {message}{detail}"
         )
         self.source = source
         self.schema_id = schema_id
@@ -145,10 +144,7 @@ def validate_json(
     except OSError as exc:
         raise LatheConfigError(f"JSON file could not be stat'd ({source}): {exc}") from exc
     if stat_result.st_size > max_bytes:
-        raise LatheConfigError(
-            f"JSON file exceeds {max_bytes} bytes "
-            f"({stat_result.st_size} bytes): {source}"
-        )
+        raise LatheConfigError(f"JSON file exceeds {max_bytes} bytes ({stat_result.st_size} bytes): {source}")
     try:
         text = file_path.read_text(encoding="utf-8")
     except UnicodeDecodeError as exc:
@@ -157,8 +153,7 @@ def validate_json(
         raw = json.loads(text)
     except json.JSONDecodeError as exc:
         raise LatheConfigError(
-            f"JSON file contains invalid JSON ({source}): "
-            f"{exc.msg} at line {exc.lineno}, column {exc.colno}"
+            f"JSON file contains invalid JSON ({source}): {exc.msg} at line {exc.lineno}, column {exc.colno}"
         ) from exc
     return _run_validator(raw, schema_id, source)
 
@@ -177,20 +172,15 @@ def validate_json_bytes(
     if isinstance(body, bytes):
         if len(body) > max_bytes:
             raise LatheConfigError(
-                f"JSON payload from {source} exceeds {max_bytes} bytes "
-                f"({len(body)} bytes)"
+                f"JSON payload from {source} exceeds {max_bytes} bytes ({len(body)} bytes)"
             )
         try:
             text = body.decode("utf-8", errors="replace")
         except UnicodeDecodeError as exc:
-            raise LatheConfigError(
-                f"JSON payload from {source} is not valid UTF-8: {exc}"
-            ) from exc
+            raise LatheConfigError(f"JSON payload from {source} is not valid UTF-8: {exc}") from exc
     else:
         if len(body.encode("utf-8", errors="replace")) > max_bytes:
-            raise LatheConfigError(
-                f"JSON payload from {source} exceeds {max_bytes} bytes"
-            )
+            raise LatheConfigError(f"JSON payload from {source} exceeds {max_bytes} bytes")
         text = body
     try:
         raw = json.loads(text)

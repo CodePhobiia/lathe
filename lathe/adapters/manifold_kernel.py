@@ -10,14 +10,17 @@ See `docs/geometry_kernel_eval.md` for the ADOPT/ADAPT/REJECT decision.
 
 from __future__ import annotations
 
-import math
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import trimesh
 
+_XYZ_COLUMN_COUNT = 3
+
 try:
     import manifold3d as _m3d
+
     _MANIFOLD_AVAILABLE = True
     _IMPORT_ERROR: str | None = None
 except ImportError as exc:
@@ -26,8 +29,48 @@ except ImportError as exc:
     _IMPORT_ERROR = str(exc)
 
 
-class ManifoldKernelUnavailable(RuntimeError):
+class ManifoldKernelUnavailableError(RuntimeError):
     """Raised when manifold3d is not importable."""
+
+    def __init__(self, import_error: str | None) -> None:
+        """Build the standard unavailable-kernel message."""
+        super().__init__(
+            f"manifold3d unavailable: {import_error!r}. "
+            "Install with `pip install manifold3d` or the `geometry` extra."
+        )
+
+
+ManifoldKernelUnavailable = ManifoldKernelUnavailableError
+
+
+class _BoxExtentsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("box requires `extents` (3-tuple)")
+
+
+class _CylinderDimensionsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("cylinder requires `radius` and `height`")
+
+
+class _SphereRadiusRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("sphere requires `radius`")
+
+
+class _UnsupportedPrimitiveKindError(ValueError):
+    def __init__(self, kind: str) -> None:
+        super().__init__(f"Unsupported primitive kind: {kind!r}")
+
+
+class _HullEmptyError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("hull requires at least one mesh")
+
+
+class _BatchUnionEmptyError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("batch_union requires at least one mesh")
 
 
 class ManifoldMesh:
@@ -40,25 +83,32 @@ class ManifoldMesh:
     __slots__ = ("_m",)
 
     def __init__(self, manifold: Any) -> None:
+        """Wrap a raw ``manifold3d.Manifold`` handle."""
         self._m = manifold
 
     @property
     def raw(self) -> Any:
+        """Return the underlying ``manifold3d`` object."""
         return self._m
 
     def is_empty(self) -> bool:
+        """Return whether the wrapped manifold has no volume."""
         return bool(self._m.is_empty())
 
     def num_tri(self) -> int:
+        """Return the triangle count reported by manifold3d."""
         return int(self._m.num_tri())
 
     def num_vert(self) -> int:
+        """Return the vertex count reported by manifold3d."""
         return int(self._m.num_vert())
 
     def volume(self) -> float:
+        """Return the signed volume reported by manifold3d."""
         return float(self._m.volume())
 
     def genus(self) -> int:
+        """Return the manifold genus reported by manifold3d."""
         return int(self._m.genus())
 
 
@@ -75,12 +125,9 @@ class ManifoldKernel:
     version = "0.1"
 
     def __init__(self) -> None:
+        """Validate that the optional manifold3d dependency is importable."""
         if not _MANIFOLD_AVAILABLE:
-            raise ManifoldKernelUnavailable(
-                f"manifold3d unavailable: {_IMPORT_ERROR!r}. "
-                "Install with `pip install manifold3d` or the "
-                "`geometry` extra."
-            )
+            raise ManifoldKernelUnavailable(_IMPORT_ERROR)
 
     def probe(self) -> dict[str, Any]:
         """Availability + capability flags. Safe to call without install."""
@@ -90,9 +137,7 @@ class ManifoldKernel:
             "available": _MANIFOLD_AVAILABLE,
         }
         if _MANIFOLD_AVAILABLE:
-            payload["manifold3d_module_dir"] = sorted(
-                attr for attr in dir(_m3d) if not attr.startswith("_")
-            )
+            payload["manifold3d_module_dir"] = sorted(attr for attr in dir(_m3d) if not attr.startswith("_"))
             payload["capabilities"] = {
                 "union": True,
                 "difference": True,
@@ -117,7 +162,7 @@ class ManifoldKernel:
         if kind == "box":
             extents = params.get("extents")
             if extents is None:
-                raise ValueError("box requires `extents` (3-tuple)")
+                raise _BoxExtentsRequiredError
             center = params.get("center", (0.0, 0.0, 0.0))
             manifold = _m3d.Manifold.cube(list(map(float, extents)), center=True)
             manifold = manifold.translate(list(map(float, center)))
@@ -127,13 +172,16 @@ class ManifoldKernel:
             radius = params.get("radius")
             height = params.get("height")
             if radius is None or height is None:
-                raise ValueError("cylinder requires `radius` and `height`")
+                raise _CylinderDimensionsRequiredError
             axis = params.get("axis", "y")
             center = params.get("center", (0.0, 0.0, 0.0))
             segments = int(params.get("segments", 32))
             manifold = _m3d.Manifold.cylinder(
-                float(height), float(radius), float(radius),
-                circular_segments=segments, center=True,
+                float(height),
+                float(radius),
+                float(radius),
+                circular_segments=segments,
+                center=True,
             )
             # Native manifold3d cylinder is z-axis aligned.
             if axis == "x":
@@ -146,28 +194,32 @@ class ManifoldKernel:
         if kind == "sphere":
             radius = params.get("radius")
             if radius is None:
-                raise ValueError("sphere requires `radius`")
+                raise _SphereRadiusRequiredError
             center = params.get("center", (0.0, 0.0, 0.0))
             segments = int(params.get("segments", 32))
             manifold = _m3d.Manifold.sphere(float(radius), circular_segments=segments)
             manifold = manifold.translate(list(map(float, center)))
             return ManifoldMesh(manifold)
 
-        raise ValueError(f"Unsupported primitive kind: {kind!r}")
+        raise _UnsupportedPrimitiveKindError(kind)
 
     def union(self, a: ManifoldMesh, b: ManifoldMesh) -> ManifoldMesh:
+        """Return the boolean union of two manifold handles."""
         return ManifoldMesh(a.raw + b.raw)
 
     def difference(self, a: ManifoldMesh, b: ManifoldMesh) -> ManifoldMesh:
+        """Return the boolean difference of two manifold handles."""
         return ManifoldMesh(a.raw - b.raw)
 
     def intersection(self, a: ManifoldMesh, b: ManifoldMesh) -> ManifoldMesh:
+        """Return the boolean intersection of two manifold handles."""
         return ManifoldMesh(a.raw ^ b.raw)
 
     def hull(self, meshes: Iterable[ManifoldMesh]) -> ManifoldMesh:
+        """Return a convex hull over the supplied manifold handles."""
         seq = list(meshes)
         if not seq:
-            raise ValueError("hull requires at least one mesh")
+            raise _HullEmptyError
         raws = [m.raw for m in seq]
         return ManifoldMesh(_m3d.Manifold.batch_hull(raws))
 
@@ -182,27 +234,27 @@ class ManifoldKernel:
         try:
             acc = next(it).raw
         except StopIteration as exc:
-            raise ValueError("batch_union requires at least one mesh") from exc
+            raise _BatchUnionEmptyError from exc
         for m in it:
             acc = acc + m.raw
         return ManifoldMesh(acc)
 
     def to_trimesh(self, manifold_mesh: ManifoldMesh) -> trimesh.Trimesh:
+        """Convert a manifold handle into a ``trimesh.Trimesh``."""
         mesh = manifold_mesh.raw.to_mesh()
         verts = np.asarray(mesh.vert_properties, dtype=np.float64)
         # Manifold may emit property columns beyond xyz; take the first 3.
-        if verts.shape[1] > 3:
-            verts = verts[:, :3]
+        if verts.shape[1] > _XYZ_COLUMN_COUNT:
+            verts = verts[:, :_XYZ_COLUMN_COUNT]
         tris = np.asarray(mesh.tri_verts, dtype=np.int64)
         return trimesh.Trimesh(vertices=verts, faces=tris, process=False)
 
     def is_watertight(self, manifold_mesh: ManifoldMesh) -> bool:
         """Manifold is watertight by construction; empty meshes are not."""
-        if manifold_mesh.is_empty():
-            return False
-        return True
+        return not manifold_mesh.is_empty()
 
     def body_count(self, manifold_mesh: ManifoldMesh) -> int:
+        """Return the number of disjoint bodies in the manifold handle."""
         if manifold_mesh.is_empty():
             return 0
         return len(manifold_mesh.raw.decompose())

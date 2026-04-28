@@ -7,6 +7,9 @@ Collects capability probes into the human-readable report the
 from __future__ import annotations
 
 import json
+import sys
+import tempfile
+from importlib.metadata import entry_points
 from typing import Any
 
 from .capabilities import (
@@ -21,6 +24,15 @@ from .capabilities import (
     probe_xatlas,
     repo_install_report,
 )
+
+_BASE_DEPS_REMEDIATION = r"Install the base repo dependencies: .\.venv\Scripts\python.exe -m pip install -e ."
+_DEV_DEPS_REMEDIATION = r'Install developer tooling: .\.venv\Scripts\python.exe -m pip install -e ".[dev]"'
+_EDITABLE_REMEDIATION = r"Install Lathe in editable mode: .\.venv\Scripts\python.exe -m pip install -e ."
+_EDITABLE_DEV_REMEDIATION = (
+    r"Install Lathe in editable mode for local development: "
+    r".\.venv\Scripts\python.exe -m pip install -e ."
+)
+_BASE_REQUIRED_PACKAGES = ("lark", "jsonschema", "numpy", "Pillow", "trimesh")
 
 
 def _package_reports() -> dict[str, dict[str, Any]]:
@@ -57,31 +69,182 @@ def _shape_provider_reports(runtime_config: dict[str, Any] | None) -> dict[str, 
     }
 
 
+def _required_packages_available(packages: dict[str, dict[str, Any]]) -> bool:
+    return all(packages[name]["available"] for name in _BASE_REQUIRED_PACKAGES)
+
+
+def _base_dependencies_missing(packages: dict[str, dict[str, Any]]) -> bool:
+    return any(not packages[name]["available"] for name in ("lark", "trimesh", "numpy", "Pillow"))
+
+
+def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
+    env = report["environment"]
+    packages = report["packages"]
+    python = env["python"]
+    commands = env["commands"]
+    venv_active = bool(python["venv_active"] or python.get("conda_prefix"))
+    return [
+        {
+            "id": "python_version",
+            "ok": sys.version_info >= (3, 11),
+            "severity": "error",
+            "message": "Lathe requires Python 3.11 or newer.",
+            "remediation": (
+                "Create a Python 3.11+ virtual environment and rerun Lathe from that interpreter."
+            ),
+        },
+        {
+            "id": "virtualenv_active",
+            "ok": venv_active,
+            "severity": "warning",
+            "message": "No active virtual environment was detected.",
+            "remediation": (
+                r"Create and activate one: py -3.11 -m venv .venv; "
+                r".\.venv\Scripts\Activate.ps1"
+            ),
+        },
+        {
+            "id": "pip_available",
+            "ok": bool(commands.get("pip")),
+            "severity": "error",
+            "message": "pip was not found on PATH.",
+            "remediation": (
+                "Use the Python interpreter that owns this checkout and run "
+                "`python -m ensurepip --upgrade` if needed."
+            ),
+        },
+        {
+            "id": "git_available",
+            "ok": bool(commands.get("git")),
+            "severity": "warning",
+            "message": "git was not found on PATH.",
+            "remediation": (
+                "Install Git and reopen the shell so repo metadata, plugins, and source installs "
+                "work predictably."
+            ),
+        },
+        {
+            "id": "base_dependencies",
+            "ok": _required_packages_available(packages),
+            "severity": "error",
+            "message": "One or more required Python packages are missing.",
+            "remediation": _BASE_DEPS_REMEDIATION,
+        },
+        {
+            "id": "editable_install",
+            "ok": bool(report["lathe"]["editable_install"]["editable"]),
+            "severity": "warning",
+            "message": "Lathe is importable but not installed in editable/source mode.",
+            "remediation": _EDITABLE_REMEDIATION,
+        },
+        {
+            "id": "dev_dependencies",
+            "ok": bool(packages["pytest"]["available"]),
+            "severity": "warning",
+            "message": "Developer test tooling is missing.",
+            "remediation": _DEV_DEPS_REMEDIATION,
+        },
+        {
+            "id": "cwd_writable",
+            "ok": bool(_cwd_writable()),
+            "severity": "warning",
+            "message": "The current working directory does not appear writable.",
+            "remediation": (
+                "Run Lathe from a writable checkout, or choose writable --out and cache directories."
+            ),
+        },
+    ]
+
+
+def _cwd_writable() -> bool:
+    try:
+        with tempfile.NamedTemporaryFile(prefix=".lathe_doctor_", dir=".", delete=True) as tmp:
+            tmp.write(b"")
+    except OSError:
+        return False
+    else:
+        return True
+
+
+def _append_unique(steps: list[str], step: str) -> None:
+    if step not in steps:
+        steps.append(step)
+
+
+def _append_xatlas_remediation(
+    steps: list[str],
+    env: dict[str, Any],
+    report: dict[str, Any],
+) -> None:
+    if report["xatlas"]["available"]:
+        return
+    nmake = env["commands"].get("nmake")
+    if not nmake:
+        _append_unique(
+            steps,
+            "Install Visual Studio Build Tools with the Desktop C++ workload so "
+            "`pip install xatlas` can compile on Windows, or keep using the explicit "
+            "reference-box fallback.",
+        )
+    _append_unique(
+        steps,
+        r"Try the optional UV extra after build tools are present: "
+        r'.\.venv\Scripts\python.exe -m pip install -e ".[xatlas]"',
+    )
+
+
+def _append_provider_remediation(steps: list[str], report: dict[str, Any]) -> None:
+    if report["hunyuan"]["configured"] and not report["hunyuan"]["available"]:
+        _append_unique(
+            steps,
+            "Start or fix the configured Hunyuan HTTP server and verify that GET /health "
+            "responds before requesting the real provider.",
+        )
+    if not report["shape_providers"]["importable"]:
+        _append_unique(
+            steps,
+            "Fix the base Python dependencies first so Lathe can import shape provider probes.",
+        )
+
+
+def _append_ml_remediation(steps: list[str], report: dict[str, Any]) -> None:
+    if not report["torch"]["available"]:
+        _append_unique(
+            steps,
+            r"Install PyTorch only if you want local ML runtimes: "
+            r'.\.venv\Scripts\python.exe -m pip install -e ".[vggt]"',
+        )
+    if not report["vggt"]["available"]:
+        _append_unique(
+            steps,
+            r"Install the official VGGT package manually from source after torch: "
+            r"git clone https://github.com/facebookresearch/vggt.git external\vggt && "
+            r".\.venv\Scripts\python.exe -m pip install -e .\external\vggt",
+        )
+
+
 def _remediation_steps(report: dict[str, Any]) -> list[str]:
     steps: list[str] = []
     packages = report["packages"]
     env = report["environment"]
-    if not packages["lark"]["available"] or not packages["trimesh"]["available"] or not packages["numpy"]["available"] or not packages["Pillow"]["available"]:
-        steps.append(r'Install the base repo dependencies: .\.venv\Scripts\python.exe -m pip install -e .')
+    for check in report.get("setup_checks", []):
+        if not check.get("ok") and check.get("remediation"):
+            _append_unique(steps, str(check["remediation"]))
+    if _base_dependencies_missing(packages):
+        _append_unique(steps, _BASE_DEPS_REMEDIATION)
     if not packages["pytest"]["available"]:
-        steps.append(r'Install developer tooling: .\.venv\Scripts\python.exe -m pip install -e ".[dev]"')
+        _append_unique(steps, _DEV_DEPS_REMEDIATION)
     if not report["lathe"]["editable_install"]["editable"]:
-        steps.append(r'Install Lathe in editable mode for local development: .\.venv\Scripts\python.exe -m pip install -e .')
+        _append_unique(steps, _EDITABLE_DEV_REMEDIATION)
     if not report["blender"]["available"]:
-        steps.append("Install Blender or set LATHE_BLENDER_PATH / runtime_config.topology.blender.path so lathe.topology.blender_hard_surface_v1 can use the real adapter.")
-    if not report["xatlas"]["available"]:
-        nmake = env["commands"].get("nmake")
-        if not nmake:
-            steps.append("Install Visual Studio Build Tools with the Desktop C++ workload so `pip install xatlas` can compile on Windows, or keep using the explicit reference-box fallback.")
-        steps.append(r'Try the optional UV extra after build tools are present: .\.venv\Scripts\python.exe -m pip install -e ".[xatlas]"')
-    if not report["torch"]["available"]:
-        steps.append(r'Install PyTorch only if you want local ML runtimes: .\.venv\Scripts\python.exe -m pip install -e ".[vggt]"')
-    if not report["vggt"]["available"]:
-        steps.append(r'Install the official VGGT package manually from source after torch: git clone https://github.com/facebookresearch/vggt.git external\vggt && .\.venv\Scripts\python.exe -m pip install -e .\external\vggt')
-    if report["hunyuan"]["configured"] and not report["hunyuan"]["available"]:
-        steps.append("Start or fix the configured Hunyuan HTTP server and verify that GET /health responds before requesting the real provider.")
-    if not report["shape_providers"]["importable"]:
-        steps.append("Fix the base Python dependencies first so Lathe can import shape provider probes.")
+        _append_unique(
+            steps,
+            "Install Blender or set LATHE_BLENDER_PATH / runtime_config.topology.blender.path "
+            "so lathe.topology.blender_hard_surface_v1 can use the real adapter.",
+        )
+    _append_xatlas_remediation(steps, env, report)
+    _append_ml_remediation(steps, report)
+    _append_provider_remediation(steps, report)
     return steps
 
 
@@ -107,6 +270,7 @@ def collect_doctor_report(runtime_config: dict[str, Any] | None = None) -> dict[
         "shape_providers": _shape_provider_reports(runtime_config),
         "deterministic_backends": deterministic_backend_reports(runtime_config),
     }
+    report["setup_checks"] = _setup_checks(report)
     report["remediation"] = _remediation_steps(report)
     return report
 
@@ -138,6 +302,11 @@ def format_doctor_report(report: dict[str, Any]) -> str:
         version = pkg["version"] or "n/a"
         lines.append(f"- {name}: {status} ({version})")
 
+    lines.extend(["", "Setup checks:"])
+    for check in report.get("setup_checks", []):
+        status = "ok" if check.get("ok") else str(check.get("severity", "warning"))
+        lines.append(f"- {check.get('id')}: {status} ({check.get('message')})")
+
     blender = report["blender"]
     xatlas = report["xatlas"]
     torch = report["torch"]
@@ -148,8 +317,14 @@ def format_doctor_report(report: dict[str, Any]) -> str:
         [
             "",
             f"Blender: {'ok' if blender['available'] else 'missing'} ({blender.get('path')})",
-            f"xatlas: {'ok' if xatlas['available'] else 'missing'} ({xatlas.get('version') or xatlas.get('code')})",
-            f"torch/CUDA: {'ok' if torch['available'] else 'missing'} (cuda_available={torch.get('cuda_available')})",
+            (
+                f"xatlas: {'ok' if xatlas['available'] else 'missing'} "
+                f"({xatlas.get('version') or xatlas.get('code')})"
+            ),
+            (
+                f"torch/CUDA: {'ok' if torch['available'] else 'missing'} "
+                f"(cuda_available={torch.get('cuda_available')})"
+            ),
             f"VGGT: {'ok' if vggt['available'] else 'unavailable'} (device={vggt.get('selected_device')})",
             f"Hunyuan health: {'ok' if hunyuan['available'] else 'unavailable'} ({hunyuan.get('base_url')})",
             "",
@@ -170,7 +345,9 @@ def format_doctor_report(report: dict[str, Any]) -> str:
         status = "ok" if item.get("available") else "unavailable"
         lines.append(
             f"- {item['backend_id']}: {status} "
-            f"(selected={item['selected_adapter']}, real_available={item['real_adapter_available']}, fallback_available={item['fallback_available']})"
+            f"(selected={item['selected_adapter']}, "
+            f"real_available={item['real_adapter_available']}, "
+            f"fallback_available={item['fallback_available']})"
         )
 
     if report["remediation"]:
@@ -203,11 +380,6 @@ def collect_plugin_report() -> dict[str, Any]:
     target cannot be imported -- the common "broken third-party plugin"
     signal for ``lathe doctor --plugins``.
     """
-    try:
-        from importlib.metadata import entry_points
-    except ImportError:  # pragma: no cover
-        return {"groups": {group: [] for group in _PLUGIN_GROUPS}}
-
     groups: dict[str, list[dict[str, Any]]] = {}
     for group in _PLUGIN_GROUPS:
         try:
@@ -225,7 +397,7 @@ def collect_plugin_report() -> dict[str, Any]:
             try:
                 ep.load()
                 record["resolvable"] = True
-            except Exception as exc:  # noqa: BLE001 - best-effort probe
+            except Exception as exc:
                 record["error"] = str(exc)
             records.append(record)
         groups[group] = sorted(records, key=lambda item: item["name"])

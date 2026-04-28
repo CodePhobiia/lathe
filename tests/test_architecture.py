@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = REPO_ROOT / ".importlinter"
 
@@ -55,14 +54,13 @@ def test_importlinter_contracts_pass() -> None:
             check=False,
         )
         assert result.returncode == 0, (
-            f"import-linter contracts broken:\n"
-            f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            f"import-linter contracts broken:\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
         return
 
     import os
 
-    prev_cwd = os.getcwd()
+    prev_cwd = Path.cwd()
     try:
         os.chdir(REPO_ROOT)
         passed = use_cases.lint_imports(config_filename=str(CONFIG_PATH))

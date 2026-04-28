@@ -1,6 +1,6 @@
 # Blender (by hand) — manual run instructions
 
-_Status: stub. No Blender-by-hand runs have been executed in this study yet._
+_Status: not_run. No Blender-by-hand runs have been executed in this study yet._
 
 This row measures a skilled-human ceiling: a senior 3D artist models each
 asset from scratch in Blender, aiming for a game-ready hard-surface result

@@ -12,7 +12,6 @@ from typing import Any
 import numpy as np
 from PIL import Image, ImageDraw
 
-
 IMAGE_BG = (246, 247, 250, 255)
 LINE_COLOR = (30, 36, 44, 255)
 
@@ -51,7 +50,9 @@ def _rotation_matrix(x_angle: float, y_angle: float) -> np.ndarray:
     return rx @ ry
 
 
-def _project_mesh(runtime_mesh: Any, view: str, size: int) -> tuple[np.ndarray, np.ndarray, list[tuple[float, list[tuple[float, float]], int, tuple[int, int, int]]]]:
+def _project_mesh(
+    runtime_mesh: Any, view: str, size: int
+) -> tuple[np.ndarray, np.ndarray, list[tuple[float, list[tuple[float, float]], int, tuple[int, int, int]]]]:
     mesh = runtime_mesh.mesh
     rotation = _render_rotation(view)
     projected = np.asarray(mesh.vertices, dtype=np.float64) @ rotation.T
@@ -73,7 +74,13 @@ def _project_mesh(runtime_mesh: Any, view: str, size: int) -> tuple[np.ndarray, 
         part = face_parts[min(face_index, len(face_parts) - 1)] if face_parts else "mesh"
         base = colors.get(part, (146, 162, 188))
         brightness = np.clip(np.dot(mesh.face_normals[face_index], light) * 0.5 + 0.5, 0.0, 1.0)
-        depth_value = int(np.clip((depth[list(face)].mean() - depth.min()) / max(1e-6, depth.max() - depth.min()) * 255.0, 0.0, 255.0))
+        depth_value = int(
+            np.clip(
+                (depth[list(face)].mean() - depth.min()) / max(1e-6, depth.max() - depth.min()) * 255.0,
+                0.0,
+                255.0,
+            )
+        )
         triangles.append((float(depth[list(face)].mean()), pts, depth_value, base, float(brightness)))
     triangles.sort(key=lambda item: item[0])
     return screen, depth, triangles
@@ -90,7 +97,9 @@ def _render_mesh_pass(runtime_mesh: Any, path: Path, view: str, mode: str, size:
 
     for _, pts, depth_value, base, brightness in triangles:
         if mode == "beauty":
-            fill = tuple(int(np.clip(channel * (0.72 + brightness * 0.34), 0, 255)) for channel in base) + (255,)
+            fill = tuple(int(np.clip(channel * (0.72 + brightness * 0.34), 0, 255)) for channel in base) + (
+                255,
+            )
             draw.polygon(pts, fill=fill, outline=LINE_COLOR)
         elif mode == "normal":
             fill = (int(128 + (base[0] - 128) * 0.35), int(128 + (base[1] - 128) * 0.35), 255, 255)

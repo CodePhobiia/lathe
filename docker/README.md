@@ -65,7 +65,7 @@ sandbox. Pick one per run — we do not try to unify them.
 | Service | What it does |
 |---|---|
 | `lathe` | Slim image; mounts `examples/`, `std/` (read-only) and `dist/` (read-write). Use for `docker compose run --rm lathe build ...`. |
-| `hunyuan-mock` | Stub HTTP server matching the Hunyuan provider contract. Depends on `tests/fixtures/mock_hunyuan.py` landing (owned by `wave1-tests`). Will fail to start until that fixture exists — expected. |
+| `hunyuan-mock` | Local HTTP fixture matching the Hunyuan provider contract. Uses `tests/fixtures/mock_hunyuan.py` and exposes `/health` plus `/generate` on port 8080. |
 | `blender-headless` | Blender image; runs `blender --background --version` as a smoke. |
 
 Typical flows:

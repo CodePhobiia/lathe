@@ -1,7 +1,8 @@
 @tool
 extends Node
 ##
-## Polls res://lathe_out/ for new <asset>/manifest.json files. When a manifest
+## Polls res://lathe_out/ for new <asset>/stages/package/package_manifest.json
+## files, with legacy <asset>/manifest.json fallback. When a manifest
 ## is discovered or its mtime changes, invokes LatheImporter and emits
 ## asset_imported so the dock can refresh.
 ##
@@ -12,6 +13,8 @@ const LatheImporter := preload("res://addons/lathe-addon/lathe_importer.gd")
 
 const WATCH_DIR := "res://lathe_out"
 const POLL_INTERVAL_SEC := 2.0
+const CURRENT_MANIFEST_REL := "stages/package/package_manifest.json"
+const LEGACY_MANIFEST_REL := "manifest.json"
 
 signal asset_imported(record: Dictionary)
 
@@ -41,11 +44,21 @@ func _scan() -> void:
 	var entry := dir.get_next()
 	while entry != "":
 		if entry != "." and entry != ".." and dir.current_is_dir():
-			var manifest_path := "%s/%s/manifest.json" % [WATCH_DIR, entry]
-			if FileAccess.file_exists(manifest_path):
+			var manifest_path := _manifest_path_for_build("%s/%s" % [WATCH_DIR, entry])
+			if not manifest_path.is_empty():
 				_maybe_import(entry, manifest_path)
 		entry = dir.get_next()
 	dir.list_dir_end()
+
+
+func _manifest_path_for_build(build_dir: String) -> String:
+	var current := "%s/%s" % [build_dir, CURRENT_MANIFEST_REL]
+	if FileAccess.file_exists(current):
+		return current
+	var legacy := "%s/%s" % [build_dir, LEGACY_MANIFEST_REL]
+	if FileAccess.file_exists(legacy):
+		return legacy
+	return ""
 
 
 func _maybe_import(asset_id: String, manifest_path: String) -> void:

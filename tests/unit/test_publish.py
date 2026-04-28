@@ -15,13 +15,14 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 import jsonschema
-
 from lathe import publish as publish_mod
 from lathe.core.stages import publish as stage_publish
 from lathe.publish import (
     PUBLISH_DRIVERS,
     GitLFSDriver,
+    GitLFSPublishError,
     LocalFSDriver,
+    PublishManifestError,
     S3Driver,
     SupabaseDriver,
     build_manifest,
@@ -31,6 +32,10 @@ from lathe.publish import (
     verify_signature,
 )
 
+try:
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+except ImportError:  # pragma: no cover - exercised only without publish extra
+    ed25519 = None  # type: ignore[assignment]
 
 _SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "publish_manifest.schema.json"
 
@@ -114,12 +119,36 @@ class ManifestTests(_BuildDirMixin, unittest.TestCase):
         # sha256 was empty in the seed and should now be computed.
         self.assertRegex(entry["sha256"], r"^[0-9a-f]{64}$")
 
+    def test_build_manifest_rejects_traversal_package_uri(self) -> None:
+        outside = self.tempdir / "outside.glb"
+        outside.write_bytes(b"outside")
+        package_manifest = self.build_dir / "stages" / "package" / "package_manifest.json"
+        payload = json.loads(package_manifest.read_text(encoding="utf-8"))
+        payload["outputs"].append({"format": "glb", "uri": "../outside.glb", "sha256": "", "size_bytes": 0})
+        package_manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+        with self.assertRaises(PublishManifestError):
+            build_manifest(self.build_dir, asset="demo")
+
+    def test_build_manifest_rejects_missing_package_artifact(self) -> None:
+        package_manifest = self.build_dir / "stages" / "package" / "package_manifest.json"
+        payload = json.loads(package_manifest.read_text(encoding="utf-8"))
+        payload["outputs"].append({"format": "glb", "uri": "stages/package/missing.glb"})
+        package_manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+        with self.assertRaises(PublishManifestError):
+            build_manifest(self.build_dir, asset="demo")
+
+    def test_build_manifest_redacts_secret_extra_fields(self) -> None:
+        manifest = build_manifest(self.build_dir, asset="demo", extra={"service_key": "sk-test"})
+
+        self.assertEqual(manifest["service_key"], "[redacted]")
+
 
 @unittest.skipUnless(publish_mod._CRYPTOGRAPHY_OK, "cryptography not installed")
 class SignatureRoundTripTests(_BuildDirMixin, unittest.TestCase):
     def test_local_fs_round_trip_signature_verifies(self) -> None:
-        from cryptography.hazmat.primitives.asymmetric import ed25519
-
+        self.assertIsNotNone(ed25519)
         private_key = ed25519.Ed25519PrivateKey.generate()
         key_path = self.tempdir / "signing.key"
         key_path.write_bytes(
@@ -132,7 +161,12 @@ class SignatureRoundTripTests(_BuildDirMixin, unittest.TestCase):
         driver = LocalFSDriver()
         result = driver.publish(
             self.build_dir,
-            {"target_dir": str(target_dir), "signing_key": str(key_path), "asset": "demo", "version": "1.0.0"},
+            {
+                "target_dir": str(target_dir),
+                "signing_key": str(key_path),
+                "asset": "demo",
+                "version": "1.0.0",
+            },
         )
 
         manifest_path = Path(result["manifest_uri"])
@@ -143,8 +177,7 @@ class SignatureRoundTripTests(_BuildDirMixin, unittest.TestCase):
         self.assertTrue(verify_signature(manifest))
 
     def test_signature_fails_verify_on_tampered_manifest(self) -> None:
-        from cryptography.hazmat.primitives.asymmetric import ed25519
-
+        self.assertIsNotNone(ed25519)
         private_key = ed25519.Ed25519PrivateKey.generate()
         key_path = self.tempdir / "signing.key"
         key_path.write_bytes(private_key.private_bytes_raw())
@@ -172,6 +205,28 @@ class SignSkipTests(_BuildDirMixin, unittest.TestCase):
         self.assertIn("signature", manifest)
         # skipped_reason will be either signing_key_missing or cryptography_not_installed
         self.assertIn("skipped_reason", manifest["signature"])
+        self.assertNotIn("key_path", manifest["signature"])
+
+    def test_missing_signing_key_log_does_not_include_path(self) -> None:
+        manifest = build_manifest(self.build_dir, asset="demo")
+        missing = str(self.tempdir / "secret-signing.key")
+        with self.assertLogs("lathe.publish", level="WARNING") as captured:
+            sign_manifest(manifest, signing_key_path=missing)
+
+        self.assertNotIn(missing, "\n".join(captured.output))
+
+    @unittest.skipUnless(os.name == "posix" and publish_mod._CRYPTOGRAPHY_OK, "POSIX permission check")
+    def test_sign_manifest_skips_world_readable_key(self) -> None:
+        self.assertIsNotNone(ed25519)
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        key_path = self.tempdir / "signing.key"
+        key_path.write_bytes(private_key.private_bytes_raw())
+        key_path.chmod(0o644)
+
+        manifest = build_manifest(self.build_dir, asset="demo")
+        manifest = sign_manifest(manifest, signing_key_path=key_path)
+
+        self.assertEqual(manifest["signature"]["skipped_reason"], "signing_key_permissions_unsafe")
 
 
 class LocalFSDriverNoSigningTests(_BuildDirMixin, unittest.TestCase):
@@ -189,6 +244,29 @@ class LocalFSDriverNoSigningTests(_BuildDirMixin, unittest.TestCase):
         self.assertEqual(result["driver"], "local_fs")
         self.assertGreaterEqual(len(result["published_files"]), 1)
 
+    def test_publish_rejects_target_asset_traversal(self) -> None:
+        target_dir = self.tempdir / "published"
+        driver = LocalFSDriver()
+
+        with self.assertRaises(ValueError):
+            driver.publish(
+                self.build_dir,
+                {"target_dir": str(target_dir), "asset": "../escape", "version": "0.0.1"},
+            )
+
+    def test_publish_refuses_to_overwrite_existing_artifact(self) -> None:
+        target_dir = self.tempdir / "published"
+        existing = target_dir / "demo" / "0.0.1" / "demo.glb"
+        existing.parent.mkdir(parents=True)
+        existing.write_bytes(b"existing")
+        driver = LocalFSDriver()
+
+        with self.assertRaises(FileExistsError):
+            driver.publish(
+                self.build_dir,
+                {"target_dir": str(target_dir), "asset": "demo", "version": "0.0.1"},
+            )
+
 
 class LocalFSDriverRequiredArgsTests(_BuildDirMixin, unittest.TestCase):
     def test_missing_target_dir_raises(self) -> None:
@@ -202,11 +280,20 @@ class S3DriverTests(_BuildDirMixin, unittest.TestCase):
         fake_client = mock.MagicMock()
         fake_boto3 = mock.MagicMock()
         fake_boto3.client.return_value = fake_client
-        with mock.patch.object(publish_mod, "_boto3", fake_boto3), mock.patch.object(publish_mod, "_BOTO3_OK", True):
+        with (
+            mock.patch.object(publish_mod, "_boto3", fake_boto3),
+            mock.patch.object(publish_mod, "_BOTO3_OK", True),
+        ):
             driver = S3Driver()
             result = driver.publish(
                 self.build_dir,
-                {"bucket": "my-bucket", "prefix": "artifacts", "asset": "demo", "version": "1.0"},
+                {
+                    "bucket": "my-bucket",
+                    "prefix": "artifacts",
+                    "asset": "demo",
+                    "version": "1.0",
+                    "url_allowlist": ["s3.amazonaws.com"],
+                },
             )
         # Upload one file + one put_object for manifest.
         self.assertTrue(fake_client.upload_file.called)
@@ -226,10 +313,22 @@ class S3DriverTests(_BuildDirMixin, unittest.TestCase):
                 driver.publish(self.build_dir, {"bucket": "b"})
 
     def test_s3_driver_requires_bucket(self) -> None:
-        with mock.patch.object(publish_mod, "_BOTO3_OK", True), mock.patch.object(publish_mod, "_boto3", mock.MagicMock()):
+        with (
+            mock.patch.object(publish_mod, "_BOTO3_OK", True),
+            mock.patch.object(publish_mod, "_boto3", mock.MagicMock()),
+        ):
             driver = S3Driver()
             with self.assertRaises(ValueError):
                 driver.publish(self.build_dir, {})
+
+    def test_s3_driver_requires_allowlisted_destination_host(self) -> None:
+        with (
+            mock.patch.object(publish_mod, "_BOTO3_OK", True),
+            mock.patch.object(publish_mod, "_boto3", mock.MagicMock()),
+        ):
+            driver = S3Driver()
+            with self.assertRaises(ValueError):
+                driver.publish(self.build_dir, {"bucket": "b", "url_allowlist": ["example.com"]})
 
 
 class SupabaseDriverTests(_BuildDirMixin, unittest.TestCase):
@@ -241,6 +340,7 @@ class SupabaseDriverTests(_BuildDirMixin, unittest.TestCase):
                 self.build_dir,
                 {
                     "base_url": "https://example.supabase.co",
+                    "url_allowlist": ["example.supabase.co"],
                     "bucket": "assets",
                     "service_key": "sk-test",
                     "asset": "demo",
@@ -250,6 +350,7 @@ class SupabaseDriverTests(_BuildDirMixin, unittest.TestCase):
         self.assertGreaterEqual(fake_put.call_count, 2)  # at least manifest + one file
         call_args = fake_put.call_args_list[0]
         self.assertEqual(call_args.kwargs["method"], "PUT")
+        self.assertEqual(call_args.kwargs["allowlist"], ["example.supabase.co"])
         self.assertIn("Authorization", call_args.kwargs["headers"])
         self.assertTrue(call_args.kwargs["headers"]["Authorization"].startswith("Bearer sk-test"))
         self.assertEqual(result["driver"], "supabase")
@@ -265,7 +366,78 @@ class SupabaseDriverTests(_BuildDirMixin, unittest.TestCase):
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("LATHE_SUPABASE_KEY", None)
             with self.assertRaises(ValueError):
-                driver.publish(self.build_dir, {"base_url": "https://x", "bucket": "b"})
+                driver.publish(
+                    self.build_dir,
+                    {"base_url": "https://x", "url_allowlist": ["x"], "bucket": "b"},
+                )
+
+    def test_supabase_driver_requires_url_allowlist(self) -> None:
+        driver = SupabaseDriver()
+        with self.assertRaises(ValueError):
+            driver.publish(
+                self.build_dir,
+                {"base_url": "https://x", "bucket": "b", "service_key": "sk-test"},
+            )
+
+    def test_supabase_driver_rejects_non_origin_base_url(self) -> None:
+        driver = SupabaseDriver()
+        for base_url in ("ftp://example.supabase.co", "https://example.supabase.co/project"):
+            with self.subTest(base_url=base_url), self.assertRaises(ValueError):
+                driver.publish(
+                    self.build_dir,
+                    {
+                        "base_url": base_url,
+                        "url_allowlist": ["example.supabase.co"],
+                        "bucket": "assets",
+                        "service_key": "sk-test",
+                    },
+                )
+
+    def test_supabase_driver_rejects_path_injection_characters(self) -> None:
+        driver = SupabaseDriver()
+        unsafe_configs = [
+            {"asset": "demo?download=true", "version": "0.1"},
+            {"asset": "demo#fragment", "version": "0.1"},
+            {"asset": "demo%2Fescape", "version": "0.1"},
+            {"asset": "demo\nbad", "version": "0.1"},
+            {"asset": "demo", "version": "0.1", "bucket": "assets?bad"},
+        ]
+        for config in unsafe_configs:
+            with self.subTest(config=config):
+                payload = {
+                    "base_url": "https://example.supabase.co",
+                    "url_allowlist": ["example.supabase.co"],
+                    "bucket": "assets",
+                    "service_key": "sk-test",
+                    "asset": config.get("asset", "demo"),
+                    "version": config.get("version", "0.1"),
+                }
+                if "bucket" in config:
+                    payload["bucket"] = config["bucket"]
+                with self.assertRaises(ValueError):
+                    driver.publish(self.build_dir, payload)
+
+    def test_supabase_driver_quotes_each_object_key_segment(self) -> None:
+        fake_response = mock.MagicMock(status=200, content_type="application/json")
+        with mock.patch.object(publish_mod, "safe_urlopen", return_value=fake_response) as fake_put:
+            driver = SupabaseDriver()
+            driver.publish(
+                self.build_dir,
+                {
+                    "base_url": "https://example.supabase.co",
+                    "url_allowlist": ["example.supabase.co"],
+                    "bucket": "asset.bucket",
+                    "service_key": "sk-test",
+                    "prefix": "release-v1",
+                    "asset": "demo_asset",
+                    "version": "0.1",
+                },
+            )
+
+        urls = [call.args[0] for call in fake_put.call_args_list]
+        self.assertTrue(
+            all("/storage/v1/object/asset.bucket/release-v1/demo_asset/0.1/" in url for url in urls)
+        )
 
 
 class GitLFSDriverTests(_BuildDirMixin, unittest.TestCase):
@@ -299,6 +471,25 @@ class GitLFSDriverTests(_BuildDirMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             driver.publish(self.build_dir, {})
 
+    def test_git_lfs_driver_fails_closed_when_push_fails(self) -> None:
+        repo_dir = self.tempdir / "repo"
+        repo_dir.mkdir()
+        ok = mock.MagicMock(ok=True, returncode=0, stderr_tail="", stdout="abc123\n")
+        push_failed = mock.MagicMock(ok=False, returncode=128, stderr_tail="permission denied", stdout="")
+        with (
+            mock.patch("lathe.publish.run_sandboxed", side_effect=[ok, ok, ok, ok, push_failed]),
+            mock.patch("shutil.which", return_value="/usr/bin/git"),
+        ):
+            driver = GitLFSDriver()
+            with self.assertRaises(GitLFSPublishError) as ctx:
+                driver.publish(
+                    self.build_dir,
+                    {"repo_dir": str(repo_dir), "asset": "demo", "version": "1.0"},
+                )
+
+        self.assertEqual(ctx.exception.returncode, 128)
+        self.assertIn("permission denied", ctx.exception.stderr_tail)
+
 
 class StageBodyTests(_BuildDirMixin, unittest.TestCase):
     def _make_fake_executor(self, runtime_config: dict | None):
@@ -327,7 +518,14 @@ class StageBodyTests(_BuildDirMixin, unittest.TestCase):
         target_dir = self.tempdir / "staged"
         target_dir.mkdir()
         executor, stage_dir = self._make_fake_executor(
-            {"publish": {"target": "local_fs", "target_dir": str(target_dir), "asset": "demo", "version": "9.9"}}
+            {
+                "publish": {
+                    "target": "local_fs",
+                    "target_dir": str(target_dir),
+                    "asset": "demo",
+                    "version": "9.9",
+                }
+            }
         )
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("LATHE_PUBLISH_SIGNING_KEY", None)

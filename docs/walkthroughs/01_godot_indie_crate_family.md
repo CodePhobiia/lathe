@@ -100,9 +100,9 @@ $ python -m lathe.cli build examples/industrial_crate.lth industrial_crate --out
   variant large_red_hazard   PASS   tris=2452   tex_density=381 px/m   3.1s
 
 [lathe]  certified:    12 / 12
-[lathe]  artifacts:    dist/industrial_crate/{small,medium,large}_*.glb
-[lathe]  manifests:    dist/industrial_crate/*.manifest.json
-[lathe]  trace:        dist/industrial_crate/trace.json
+[lathe]  artifacts:    dist/industrial_crate/stages/package/{small,medium,large}_*.glb
+[lathe]  manifest:     dist/industrial_crate/stages/package/package_manifest.json
+[lathe]  trace:        dist/industrial_crate/stages/package/trace_manifest.json
 [lathe]  wall-clock:   34.1s
 ```
 

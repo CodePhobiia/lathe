@@ -9,13 +9,10 @@ round-trip of every hero ``.lth`` source through the validator.
 
 from __future__ import annotations
 
-import copy
-import json
 import unittest
 from pathlib import Path
 
 import jsonschema
-
 from lathe.normalizer import normalize_program
 from lathe.parser import parse_file
 from lathe.schema import SCHEMA_PATH, get_schema
@@ -35,18 +32,50 @@ HERO_NAMES = [
 
 
 def _minimal_program() -> dict:
-    program = {key: [] for key in [
-        "imports", "profiles", "contracts", "critics", "libraries", "kits",
-        "patterns", "families", "components", "assemblies", "traits",
-        "mechanisms", "materials", "surface_programs", "surface_backends",
-        "surface_policies", "decal_libraries", "mask_programs", "trim_sheets",
-        "palettes", "reference_sets", "reconstruct_policies", "adapt_policies",
-        "assembly_policies", "fit_profiles", "transfer_rules",
-        "execution_profiles", "render_fixtures", "bake_profiles",
-        "library_bindings", "material_graphs", "inspection_policies",
-        "repair_policies", "fixtures", "tests", "benchmarks", "spaces",
-        "assets", "variants",
-    ]}
+    program = {
+        key: []
+        for key in [
+            "imports",
+            "profiles",
+            "contracts",
+            "critics",
+            "libraries",
+            "kits",
+            "patterns",
+            "families",
+            "components",
+            "assemblies",
+            "traits",
+            "mechanisms",
+            "materials",
+            "surface_programs",
+            "surface_backends",
+            "surface_policies",
+            "decal_libraries",
+            "mask_programs",
+            "trim_sheets",
+            "palettes",
+            "reference_sets",
+            "reconstruct_policies",
+            "adapt_policies",
+            "assembly_policies",
+            "fit_profiles",
+            "transfer_rules",
+            "execution_profiles",
+            "render_fixtures",
+            "bake_profiles",
+            "library_bindings",
+            "material_graphs",
+            "inspection_policies",
+            "repair_policies",
+            "fixtures",
+            "tests",
+            "benchmarks",
+            "spaces",
+            "assets",
+            "variants",
+        ]
+    }
     program["module"] = None
     return program
 
@@ -91,7 +120,9 @@ class SchemaValidationTests(unittest.TestCase):
         program["bogus_decl"] = []
         errors = list(self.validator.iter_errors(program))
         # schema declares additionalProperties: false at the root
-        self.assertTrue(any("bogus_decl" in err.message or "additional" in err.message.lower() for err in errors))
+        self.assertTrue(
+            any("bogus_decl" in err.message or "additional" in err.message.lower() for err in errors)
+        )
 
     def test_error_pointer_locates_path(self) -> None:
         program = _minimal_program()

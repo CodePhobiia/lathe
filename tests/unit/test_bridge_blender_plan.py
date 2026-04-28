@@ -16,7 +16,6 @@ from unittest import mock
 
 from lathe.bridge import blender_plan as bp
 
-
 _STUB_PROBE = {
     "available": True,
     "path": "/fake/blender",

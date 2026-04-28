@@ -11,8 +11,10 @@ preserve that contract even though the implementations now live here, the
 probe function looks up those names on the shim module at call time rather
 than binding at import time.
 """
+
 from __future__ import annotations
 
+import sys
 import urllib.error
 import warnings
 from copy import deepcopy
@@ -21,11 +23,11 @@ from typing import Any
 
 from ..capabilities import probe_hunyuan_endpoint as _probe_hunyuan_endpoint
 from ..capabilities import probe_vggt as _probe_vggt
+from ..security import redact_secrets
 from .adapters.hunyuan import run_hunyuan_http_provider as _run_hunyuan_http_provider
 from .adapters.vggt import run_vggt_local_provider as _run_vggt_local_provider
 from .errors import ShapeProviderError, ShapeProviderExecutionError, ShapeProviderUnavailable
 from .registry import (
-    PROVIDERS,
     _short_provider_name,
     get_provider,
     list_shape_providers,
@@ -33,17 +35,17 @@ from .registry import (
     provider_config,
 )
 
+_MIN_MULTIVIEW_REFS = 2
+
 
 def _probe_func_for(provider_id: str):
     """Look up the capability probe via the ``lathe.shape_providers`` shim.
 
     Tests that ``unittest.mock.patch('lathe.shape_providers._probe_vggt')``
-    to inject stub behavior expect this indirection; binding via module
+    to inject test-double behavior expect this indirection; binding via module
     attribute lookup (rather than a direct ``from`` import) keeps the patch
     point working after the refactor.
     """
-    import sys
-
     shim = sys.modules.get("lathe.shape_providers")
     if provider_id == "lathe.provider.shape.hunyuan2_1_http_v1":
         if shim is not None and hasattr(shim, "_probe_hunyuan_endpoint"):
@@ -108,7 +110,7 @@ def resolve_shape_provider(
         }
 
     image_refs = _non_material_image_refs(conditioning)
-    if mode == "reconstruct" and len(image_refs) >= 2:
+    if mode == "reconstruct" and len(image_refs) >= _MIN_MULTIVIEW_REFS:
         provider = get_provider("vggt_local")
         return {
             "provider": provider,
@@ -189,9 +191,21 @@ def probe_shape_provider(provider_id: str, runtime_config: dict[str, Any] | None
             return {"available": True, "provider_id": provider["id"], "details": probe}
         return {"available": True, "provider_id": provider["id"], "details": {}}
     except ShapeProviderError as exc:
-        return {"available": False, "provider_id": provider["id"], "code": exc.code, "message": str(exc), "details": exc.details}
+        return {
+            "available": False,
+            "provider_id": provider["id"],
+            "code": exc.code,
+            "message": str(exc),
+            "details": exc.details,
+        }
     except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
-        return {"available": False, "provider_id": provider["id"], "code": "probe_failed", "message": str(exc), "details": {}}
+        return {
+            "available": False,
+            "provider_id": provider["id"],
+            "code": "probe_failed",
+            "message": str(exc),
+            "details": {},
+        }
 
 
 def probe_all_shape_providers(runtime_config: dict[str, Any] | None = None) -> list[dict[str, Any]]:
@@ -223,7 +237,9 @@ def _redact_provider_config(provider_id: str, config: dict[str, Any]) -> dict[st
                 "guidance_scale",
                 "face_count",
                 "type",
+                "timeout_s",
                 "request_timeout_s",
+                "url_allowlist",
                 "max_retries",
                 "retry_backoff_s",
             ]
@@ -245,7 +261,7 @@ def _redact_provider_config(provider_id: str, config: dict[str, Any]) -> dict[st
             ]
             if k in allowed
         }
-    return allowed
+    return redact_secrets(allowed)
 
 
 def maybe_run_shape_provider(
@@ -316,7 +332,10 @@ def maybe_run_shape_provider(
         return {"provider_report": report, "runtime_candidates": None}
 
     if not report["probe"].get("available", False):
-        message = f"Selected shape provider '{provider_id}' is unavailable: {report['probe'].get('message', 'unknown error')}"
+        message = (
+            f"Selected shape provider '{provider_id}' is unavailable: "
+            f"{report['probe'].get('message', 'unknown error')}"
+        )
         if strict:
             # BL-37 (Plan 08 Phase 8) exit-code contract: strict + would-fall-back
             # raises ``ShapeProviderExecutionError`` with code
@@ -356,7 +375,9 @@ def maybe_run_shape_provider(
                 config=selection["config"],
             )
         else:
-            raise ShapeProviderExecutionError(provider_id, f"No executor implemented for provider '{provider_id}'", code="not_implemented")
+            raise ShapeProviderExecutionError(
+                provider_id, f"No executor implemented for provider '{provider_id}'", code="not_implemented"
+            )
     except ShapeProviderError as exc:
         if strict:
             # BL-37 (Plan 08 Phase 8) exit-code contract: strict + would-fall-back

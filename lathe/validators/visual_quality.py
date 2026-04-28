@@ -13,16 +13,46 @@ import numpy as np
 from PIL import Image
 
 from ..errors import LatheError
-from ..repair_planner import suggest_repairs_for_metric
 from ..render_eval import evaluate_render_views
+from ..repair_planner import suggest_repairs_for_metric
+
+GENERATED_GEOMETRY_INTEGRATION_FLOOR = 0.40
+GENERATED_SURFACE_AUTHORING_FLOOR = 0.40
+_MIN_SUPPORT_FACE_COUNT = 2
+_RGB_CHANNELS = 3
+_COPLANAR_ANGLE_MAX = 0.05
+_STAIR_STEP_ANGLE_MAX = 0.42
+_SHARP_BOUNDARY_ANGLE_MIN = 0.48
 
 
-def _support_plausibility(asset: dict[str, Any], runtime: dict[str, Any], shape_assessment: dict[str, Any]) -> float:
-    supports = [group for group in runtime["topology"]["bundle"].get("part_groups", []) if any(token in group["name"].lower() for token in ("foot", "leg", "stand", "bracket"))]
+class SurfaceEvidenceInvariantError(LatheError):
+    """Raised when surface evidence reaches metric computation without inputs."""
+
+    def __init__(self) -> None:
+        """Create the invariant error with the canonical Lathe message."""
+        super().__init__("surface evidence invariant violation")
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _as_list(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
+def _support_plausibility(
+    asset: dict[str, Any], runtime: dict[str, Any], shape_assessment: dict[str, Any]
+) -> float:
+    supports = [
+        group
+        for group in runtime["topology"]["bundle"].get("part_groups", [])
+        if any(token in group["name"].lower() for token in ("foot", "leg", "stand", "bracket"))
+    ]
     if not supports:
         return 0.75
     support_bonus = min(1.0, shape_assessment.get("support_feature_count", 0) / max(1, len(supports)))
-    if any(int(group.get("face_count", 0)) <= 2 for group in supports):
+    if any(int(group.get("face_count", 0)) <= _MIN_SUPPORT_FACE_COUNT for group in supports):
         return round(min(1.0, 0.58 + 0.18 * support_bonus), 6)
     bmin = runtime["topology"]["bundle"]["mesh_stats"]["bounds_min"]
     span_y = max(1e-6, runtime["topology"]["bundle"]["mesh_stats"]["extents"][1])
@@ -69,7 +99,7 @@ def _load_image(runtime: dict[str, Any], name: str) -> np.ndarray | None:
 
 
 def _image_entropy(image: np.ndarray) -> float:
-    if image.ndim == 3:
+    if image.ndim == _RGB_CHANNELS:
         gray = np.asarray(np.mean(image.astype(np.float64), axis=2), dtype=np.uint8)
     else:
         gray = np.asarray(image, dtype=np.uint8)
@@ -82,27 +112,129 @@ def _image_entropy(image: np.ndarray) -> float:
     return float(-np.sum(probs * np.log2(probs)) / 8.0)
 
 
+def _zero_surface_evidence() -> dict[str, float]:
+    return {
+        "texture_entropy": 0.0,
+        "normal_richness": 0.0,
+        "roughness_variation": 0.0,
+        "material_zone_coherence": 0.0,
+        "decal_coherence": 0.0,
+        "bake_cleanliness": 0.0,
+        "highlow_distinction_quality": 0.0,
+        "surface_texture_entropy": 0.0,
+        "surface_chroma_variation": 0.0,
+        "surface_normal_richness": 0.0,
+        "surface_roughness_variation": 0.0,
+        "surface_bake_cleanliness": 0.0,
+        "surface_material_zone_coherence": 0.0,
+        "surface_emissive_coherence": 0.0,
+        "surface_highlow_realness": 0.0,
+        "surface_authoring_quality": 0.0,
+    }
+
+
+def _requested_surface_maps(surface_bundle: dict[str, Any]) -> set[str]:
+    manifest = _as_dict(surface_bundle.get("surface_manifest", {}))
+    return {
+        str(name).lower()
+        for name in [
+            *_as_list(surface_bundle.get("maps", [])),
+            *_as_list(manifest.get("maps", [])),
+        ]
+    }
+
+
+def _metadata_surface_evidence(surface_bundle: dict[str, Any]) -> dict[str, float]:
+    maps = _requested_surface_maps(surface_bundle)
+    material_zones = [
+        entry for entry in _as_list(surface_bundle.get("material_zones", [])) if isinstance(entry, dict)
+    ]
+    if not maps and not material_zones:
+        return _zero_surface_evidence()
+
+    manifest = _as_dict(surface_bundle.get("surface_manifest", {}))
+    materials = {
+        str(entry.get("material") or entry.get("part") or "")
+        for entry in material_zones
+        if entry.get("material") or entry.get("part")
+    }
+    zone_diversity = min(1.0, len(materials) / 3.0) if materials else 0.0
+    workflow = str(manifest.get("workflow") or "").lower()
+    pbr_workflow = 1.0 if workflow in {"pbr_metal_rough", "metallic_roughness", "pbr_spec_gloss"} else 0.0
+    has_basecolor = "basecolor" in maps or "albedo" in maps
+    has_normal = "normal" in maps
+    has_roughness = "orm" in maps or "roughness" in maps
+    has_ao = "orm" in maps or "ao" in maps
+    has_emissive = "emissive" in maps
+    map_coverage = sum(1 for present in (has_basecolor, has_normal, has_roughness, has_ao) if present) / 4.0
+    authored_surface = any(
+        manifest.get(key) or surface_bundle.get(key)
+        for key in (
+            "program",
+            "palette",
+            "patterns",
+            "decal_libraries",
+            "mask_programs",
+            "trim_sheets",
+            "surface_program",
+        )
+    )
+    decal_count = (
+        len(_as_list(surface_bundle.get("decal_masks", [])))
+        + len(_as_list(surface_bundle.get("patterns", [])))
+        + len(_as_list(manifest.get("patterns", [])))
+    )
+
+    texture_entropy = min(
+        1.0, 0.16 + 0.18 * zone_diversity + 0.12 * map_coverage + (0.06 if authored_surface else 0.0)
+    )
+    chroma_variation = min(
+        1.0,
+        0.14 + 0.20 * zone_diversity + (0.08 if has_basecolor else 0.0) + (0.05 if authored_surface else 0.0),
+    )
+    normal_richness = min(1.0, 0.08 + (0.20 if has_normal else 0.0) + 0.04 * zone_diversity)
+    roughness_variation = min(1.0, 0.08 + (0.20 if has_roughness else 0.0) + 0.04 * zone_diversity)
+    bake_cleanliness = min(1.0, 0.10 + 0.18 * map_coverage + 0.07 * pbr_workflow)
+    material_zone_coherence = min(
+        1.0, 0.22 + 0.36 * zone_diversity + 0.22 * map_coverage + 0.10 * pbr_workflow
+    )
+    emissive_coherence = 0.70 if has_emissive else 0.80
+    decal_coherence = min(1.0, 0.52 + 0.10 * min(1.0, decal_count / 2.0) + 0.18 * material_zone_coherence)
+    highlow_realness = 0.0
+    surface_authoring_quality = min(
+        1.0,
+        0.20 * texture_entropy
+        + 0.12 * chroma_variation
+        + 0.18 * normal_richness
+        + 0.19 * roughness_variation
+        + 0.10 * bake_cleanliness
+        + 0.10 * material_zone_coherence
+        + 0.04 * decal_coherence
+        + 0.01 * emissive_coherence
+        + 0.06 * highlow_realness,
+    )
+    return {
+        "texture_entropy": round(texture_entropy, 6),
+        "normal_richness": round(normal_richness, 6),
+        "roughness_variation": round(roughness_variation, 6),
+        "material_zone_coherence": round(material_zone_coherence, 6),
+        "decal_coherence": round(decal_coherence, 6),
+        "bake_cleanliness": round(bake_cleanliness, 6),
+        "highlow_distinction_quality": round(highlow_realness, 6),
+        "surface_texture_entropy": round(texture_entropy, 6),
+        "surface_chroma_variation": round(chroma_variation, 6),
+        "surface_normal_richness": round(normal_richness, 6),
+        "surface_roughness_variation": round(roughness_variation, 6),
+        "surface_bake_cleanliness": round(bake_cleanliness, 6),
+        "surface_material_zone_coherence": round(material_zone_coherence, 6),
+        "surface_emissive_coherence": round(emissive_coherence, 6),
+        "surface_highlow_realness": round(highlow_realness, 6),
+        "surface_authoring_quality": round(surface_authoring_quality, 6),
+    }
+
+
 def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -> dict[str, float]:
     backend_id = surface_bundle.get("backend_id")
-    if backend_id != "lathe.surface.hero_pbr_v1":
-        return {
-            "texture_entropy": 0.0,
-            "normal_richness": 0.0,
-            "roughness_variation": 0.0,
-            "material_zone_coherence": 0.0,
-            "decal_coherence": 0.0,
-            "bake_cleanliness": 0.0,
-            "highlow_distinction_quality": 0.0,
-            "surface_texture_entropy": 0.0,
-            "surface_chroma_variation": 0.0,
-            "surface_normal_richness": 0.0,
-            "surface_roughness_variation": 0.0,
-            "surface_bake_cleanliness": 0.0,
-            "surface_material_zone_coherence": 0.0,
-            "surface_emissive_coherence": 0.0,
-            "surface_highlow_realness": 0.0,
-            "surface_authoring_quality": 0.0,
-        }
 
     basecolor = _load_image(runtime, "basecolor")
     normal = _load_image(runtime, "normal")
@@ -112,24 +244,19 @@ def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -
     id_map = _load_image(runtime, "id")
     emissive = _load_image(runtime, "emissive")
     if any(image is None for image in (basecolor, normal, orm, ao, curvature, id_map)):
-        return {
-            "surface_texture_entropy": 0.0,
-            "surface_chroma_variation": 0.0,
-            "surface_normal_richness": 0.0,
-            "surface_roughness_variation": 0.0,
-            "surface_bake_cleanliness": 0.0,
-            "surface_material_zone_coherence": 0.0,
-            "surface_emissive_coherence": 0.0,
-            "surface_highlow_realness": 0.0,
-            "surface_authoring_quality": 0.0,
-        }
+        if backend_id != "lathe.surface.hero_pbr_v1":
+            return _metadata_surface_evidence(surface_bundle)
+        return _zero_surface_evidence()
 
-    if basecolor is None or normal is None or orm is None or ao is None or curvature is None or id_map is None:
-        raise LatheError(
-            "invariant violation: surface evidence pass reached metric computation with a missing "
-            f"image (basecolor={basecolor is None}, normal={normal is None}, orm={orm is None}, "
-            f"ao={ao is None}, curvature={curvature is None}, id_map={id_map is None})"
-        )
+    if (
+        basecolor is None
+        or normal is None
+        or orm is None
+        or ao is None
+        or curvature is None
+        or id_map is None
+    ):
+        raise SurfaceEvidenceInvariantError
     texture_entropy = _image_entropy(basecolor)
     chroma_variation = min(1.0, float(np.std(basecolor.astype(np.float64), axis=(0, 1)).mean() / 72.0))
     normal_xy = normal[:, :, :2].astype(np.float64) - 128.0
@@ -141,17 +268,37 @@ def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -
     bake_cleanliness = min(1.0, 0.48 * normal_richness + 0.26 * ao_std + 0.26 * curvature_std)
 
     unique_colors = np.unique(id_map.reshape(-1, id_map.shape[-1]), axis=0)
-    unique_colors = [tuple(int(value) for value in color) for color in unique_colors if tuple(int(value) for value in color) != (8, 8, 8)]
-    expected_zone_count = max(1, len({entry.get("material", entry.get("part")) for entry in surface_bundle.get("material_zones", [])}))
+    unique_colors = [
+        tuple(int(value) for value in color)
+        for color in unique_colors
+        if tuple(int(value) for value in color) != (8, 8, 8)
+    ]
+    material_zones = [
+        entry for entry in _as_list(surface_bundle.get("material_zones")) if isinstance(entry, dict)
+    ]
+    expected_zone_count = max(
+        1,
+        len({entry.get("material", entry.get("part")) for entry in material_zones}),
+    )
     zone_coverage = min(1.0, len(unique_colors) / expected_zone_count)
-    horizontal_edges = np.any(id_map[:, 1:] != id_map[:, :-1], axis=2) if id_map.ndim == 3 else id_map[:, 1:] != id_map[:, :-1]
-    vertical_edges = np.any(id_map[1:, :] != id_map[:-1, :], axis=2) if id_map.ndim == 3 else id_map[1:, :] != id_map[:-1, :]
+    horizontal_edges = (
+        np.any(id_map[:, 1:] != id_map[:, :-1], axis=2)
+        if id_map.ndim == _RGB_CHANNELS
+        else id_map[:, 1:] != id_map[:, :-1]
+    )
+    vertical_edges = (
+        np.any(id_map[1:, :] != id_map[:-1, :], axis=2)
+        if id_map.ndim == _RGB_CHANNELS
+        else id_map[1:, :] != id_map[:-1, :]
+    )
     boundary_density = float((horizontal_edges.mean() + vertical_edges.mean()) / 2.0)
     target_density = 0.018 + min(0.06, expected_zone_count * 0.006)
-    boundary_cleanliness = max(0.0, 1.0 - abs(boundary_density - target_density) / max(target_density * 1.8, 0.04))
+    boundary_cleanliness = max(
+        0.0, 1.0 - abs(boundary_density - target_density) / max(target_density * 1.8, 0.04)
+    )
     material_zone_coherence = min(1.0, 0.60 * zone_coverage + 0.40 * boundary_cleanliness)
 
-    emissive_expected = any(max(entry.get("emissive", [0, 0, 0])) > 0 for entry in surface_bundle.get("material_zones", []))
+    emissive_expected = any(max(entry.get("emissive", [0, 0, 0])) > 0 for entry in material_zones)
     emissive_strength = 0.0
     if emissive is not None:
         emissive_strength = float(np.mean(np.max(emissive.astype(np.float64), axis=2)) / 255.0)
@@ -181,7 +328,13 @@ def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -
     highlow_realness = min(1.0, (0.45 if distinct_mesh_uris else 0.0) + min(0.55, triangle_delta / 0.18))
     requested_decals = list(surface_bundle.get("decal_masks", [])) + list(surface_bundle.get("patterns", []))
     if requested_decals:
-        decal_coherence = min(1.0, 0.45 * texture_entropy + 0.20 * chroma_variation + 0.20 * roughness_variation + 0.15 * material_zone_coherence)
+        decal_coherence = min(
+            1.0,
+            0.45 * texture_entropy
+            + 0.20 * chroma_variation
+            + 0.20 * roughness_variation
+            + 0.15 * material_zone_coherence,
+        )
     else:
         decal_coherence = 0.78
 
@@ -217,7 +370,12 @@ def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -
     }
 
 
-def _geometry_evidence(runtime: dict[str, Any], semantic: dict[str, Any], shape_assessment: dict[str, Any], render_metrics: dict[str, Any]) -> dict[str, float]:
+def _geometry_evidence(
+    runtime: dict[str, Any],
+    semantic: dict[str, Any],
+    shape_assessment: dict[str, Any],
+    render_metrics: dict[str, Any],
+) -> dict[str, float]:
     topology_runtime = runtime.get("topology", {}).get("runtime_mesh")
     if topology_runtime is None or len(topology_runtime.mesh.faces) == 0:
         return {
@@ -265,19 +423,35 @@ def _geometry_evidence(runtime: dict[str, Any], semantic: dict[str, Any], shape_
 
     face_parts = list(getattr(topology_runtime, "face_parts", []))
     if len(face_parts) == len(mesh.faces):
-        same_part_mask = np.array([face_parts[left] == face_parts[right] for left, right in adjacency], dtype=bool)
+        same_part_mask = np.array(
+            [face_parts[left] == face_parts[right] for left, right in adjacency], dtype=bool
+        )
     else:
         same_part_mask = np.ones(len(adjacency), dtype=bool)
     same_part_angles = angles[same_part_mask] if np.any(same_part_mask) else angles
     cross_part_angles = angles[~same_part_mask] if np.any(~same_part_mask) else angles
-    coplanar_ratio = float(np.mean(same_part_angles < 0.05)) if len(same_part_angles) else 0.0
-    stair_step_ratio = float(np.mean((same_part_angles >= 0.05) & (same_part_angles <= 0.42))) if len(same_part_angles) else 1.0
-    sharp_boundary_ratio = float(np.mean(cross_part_angles > 0.48)) if len(cross_part_angles) else 0.0
+    coplanar_ratio = float(np.mean(same_part_angles < _COPLANAR_ANGLE_MAX)) if len(same_part_angles) else 0.0
+    stair_step_ratio = (
+        float(
+            np.mean((same_part_angles >= _COPLANAR_ANGLE_MAX) & (same_part_angles <= _STAIR_STEP_ANGLE_MAX))
+        )
+        if len(same_part_angles)
+        else 1.0
+    )
+    sharp_boundary_ratio = (
+        float(np.mean(cross_part_angles > _SHARP_BOUNDARY_ANGLE_MIN)) if len(cross_part_angles) else 0.0
+    )
 
     face_areas = np.asarray(mesh.area_faces, dtype=np.float64)
     median_area = float(np.median(face_areas)) if len(face_areas) else 0.0
-    tiny_face_penalty = min(1.0, float(np.mean(face_areas < max(1e-6, median_area * 0.22))) * 1.55) if len(face_areas) else 1.0
-    boolean_scar_penalty = min(1.0, 0.60 * tiny_face_penalty + 0.40 * render_metrics.get("render_assembly_artifact_penalty", 1.0))
+    tiny_face_penalty = (
+        min(1.0, float(np.mean(face_areas < max(1e-6, median_area * 0.22))) * 1.55)
+        if len(face_areas)
+        else 1.0
+    )
+    boolean_scar_penalty = min(
+        1.0, 0.60 * tiny_face_penalty + 0.40 * render_metrics.get("render_assembly_artifact_penalty", 1.0)
+    )
 
     dihedral_continuity = min(
         1.0,
@@ -295,10 +469,14 @@ def _geometry_evidence(runtime: dict[str, Any], semantic: dict[str, Any], shape_
     )
     stair_step_penalty = min(1.0, 0.62 * stair_step_ratio + 0.38 * tiny_face_penalty)
     bevel_continuity = min(1.0, 0.60 * feature_edge_persistence + 0.40 * dihedral_continuity)
-    seam_quality = min(1.0, 0.55 * min(1.0, sharp_boundary_ratio / 0.18) + 0.45 * semantic.get("adjacency_score", 0.0))
+    seam_quality = min(
+        1.0, 0.55 * min(1.0, sharp_boundary_ratio / 0.18) + 0.45 * semantic.get("adjacency_score", 0.0)
+    )
     shading_continuity = min(
         1.0,
-        0.55 * dihedral_continuity + 0.20 * (1.0 - boolean_scar_penalty) + 0.25 * min(1.0, render_metrics.get("render_shading_variance", 0.0) / 0.22),
+        0.55 * dihedral_continuity
+        + 0.20 * (1.0 - boolean_scar_penalty)
+        + 0.25 * min(1.0, render_metrics.get("render_shading_variance", 0.0) / 0.22),
     )
     geometry_integration_quality = min(
         1.0,
@@ -325,6 +503,52 @@ def _geometry_evidence(runtime: dict[str, Any], semantic: dict[str, Any], shape_
         "geometry_tiny_face_penalty": round(tiny_face_penalty, 6),
         "geometry_integration_quality": round(geometry_integration_quality, 6),
     }
+
+
+def _is_generated_asset(asset: dict[str, Any]) -> bool:
+    return str(asset.get("build", {}).get("shape", {}).get("mode", "generate")) == "generate"
+
+
+def _effective_minimum(
+    requirements: dict[str, Any],
+    key: str,
+    default: float,
+    generated_floor: float | None,
+    asset: dict[str, Any],
+) -> float:
+    try:
+        minimum = float(requirements.get(key, default))
+    except (TypeError, ValueError):
+        minimum = default
+    if generated_floor is not None and _is_generated_asset(asset):
+        return max(minimum, generated_floor)
+    return minimum
+
+
+def _visual_metric_details(
+    metric: str, actual: float, minimum: float, runtime: dict[str, Any], surface_bundle: dict[str, Any]
+) -> dict[str, Any]:
+    details: dict[str, Any] = {"metric": metric, "actual": actual, "minimum": minimum}
+    if metric == "surface_authoring_quality":
+        outputs = surface_bundle.get("outputs", {})
+        details.update(
+            {
+                "surface_backend_id": surface_bundle.get("backend_id", ""),
+                "surface_maps": sorted(_requested_surface_maps(surface_bundle)),
+                "surface_output_maps": sorted(outputs) if isinstance(outputs, dict) else [],
+                "surface_material_zone_count": len(_as_list(surface_bundle.get("material_zones"))),
+            }
+        )
+    elif metric == "geometry_integration_quality":
+        topology_runtime = runtime.get("topology", {}).get("runtime_mesh")
+        mesh = getattr(topology_runtime, "mesh", None)
+        details.update(
+            {
+                "topology_runtime_mesh_present": topology_runtime is not None,
+                "topology_face_count": len(mesh.faces) if mesh is not None and hasattr(mesh, "faces") else 0,
+            }
+        )
+    return details
 
 
 def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
@@ -401,7 +625,8 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
             + 0.10 * feature_coherence
             + (0.14 if open_frame_family else 0.10) * geometry_integration_quality
             + 0.10 * semantic.get("structural_richness", 0.0)
-            + (0.06 if open_frame_family else 0.14) * (1.0 - render_metrics.get("render_primitive_penalty", 1.0))
+            + (0.06 if open_frame_family else 0.14)
+            * (1.0 - render_metrics.get("render_primitive_penalty", 1.0))
             + (0.08 if open_frame_family else 0.0) * attachment_integration_quality
         ),
     )
@@ -439,20 +664,47 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
 
     requirements = asset_graph.get("semantic_requirements", {})
     thresholds = {
-        "detail_density": float(requirements.get("minimum_detail_density", 0.58)),
-        "silhouette_complexity": float(requirements.get("minimum_silhouette_complexity", 0.58)),
-        "edge_readability": float(requirements.get("minimum_edge_readability", 0.55)),
-        "attachment_integration_quality": float(requirements.get("minimum_attachment_integration_quality", 0.58)),
-        "support_plausibility": float(requirements.get("minimum_support_plausibility", 0.52)),
-        "feature_coherence": float(requirements.get("minimum_feature_coherence", 0.56)),
-        "geometry_integration_quality": float(requirements.get("minimum_geometry_integration_quality", 0.0)),
-        "surface_authoring_quality": float(requirements.get("minimum_surface_authoring_quality", 0.0)),
-        "maximum_primitive_likeness_penalty": float(requirements.get("maximum_primitive_likeness_penalty", 0.44)),
-        "maximum_assembled_primitives_penalty": float(requirements.get("maximum_assembled_primitives_penalty", 0.42)),
+        "detail_density": _effective_minimum(requirements, "minimum_detail_density", 0.58, None, asset),
+        "silhouette_complexity": _effective_minimum(
+            requirements, "minimum_silhouette_complexity", 0.58, None, asset
+        ),
+        "edge_readability": _effective_minimum(requirements, "minimum_edge_readability", 0.55, None, asset),
+        "attachment_integration_quality": _effective_minimum(
+            requirements, "minimum_attachment_integration_quality", 0.58, None, asset
+        ),
+        "support_plausibility": _effective_minimum(
+            requirements, "minimum_support_plausibility", 0.52, None, asset
+        ),
+        "feature_coherence": _effective_minimum(requirements, "minimum_feature_coherence", 0.56, None, asset),
+        "geometry_integration_quality": _effective_minimum(
+            requirements,
+            "minimum_geometry_integration_quality",
+            0.0,
+            GENERATED_GEOMETRY_INTEGRATION_FLOOR,
+            asset,
+        ),
+        "surface_authoring_quality": _effective_minimum(
+            requirements, "minimum_surface_authoring_quality", 0.0, GENERATED_SURFACE_AUTHORING_FLOOR, asset
+        ),
+        "maximum_primitive_likeness_penalty": _effective_minimum(
+            requirements, "maximum_primitive_likeness_penalty", 0.44, None, asset
+        ),
+        "maximum_assembled_primitives_penalty": _effective_minimum(
+            requirements, "maximum_assembled_primitives_penalty", 0.42, None, asset
+        ),
     }
 
     diagnostics: list[dict[str, Any]] = []
-    for metric in ("detail_density", "silhouette_complexity", "edge_readability", "attachment_integration_quality", "support_plausibility", "feature_coherence", "geometry_integration_quality", "surface_authoring_quality"):
+    for metric in (
+        "detail_density",
+        "silhouette_complexity",
+        "edge_readability",
+        "attachment_integration_quality",
+        "support_plausibility",
+        "feature_coherence",
+        "geometry_integration_quality",
+        "surface_authoring_quality",
+    ):
         if metrics[metric] < thresholds[metric]:
             diagnostics.append(
                 {
@@ -463,13 +715,21 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
                     "asset": asset["name"],
                     "stage": "validate",
                     "path": f"validate.visual.{metric}",
-                    "message": f"Visual validator failed for {metric}: {metrics[metric]:.3f} < {thresholds[metric]:.3f}",
-                    "details": {"metric": metric, "actual": metrics[metric], "minimum": thresholds[metric]},
+                    "message": (
+                        f"Visual validator failed for {metric}: "
+                        f"{metrics[metric]:.3f} < {thresholds[metric]:.3f}"
+                    ),
+                    "details": _visual_metric_details(
+                        metric, metrics[metric], thresholds[metric], runtime, surface_bundle
+                    ),
                     "suggested_repairs": suggest_repairs_for_metric(metric, {**metrics, **semantic}),
                 }
             )
 
-    for metric, threshold_key in (("primitive_likeness_penalty", "maximum_primitive_likeness_penalty"), ("assembled_primitives_penalty", "maximum_assembled_primitives_penalty")):
+    for metric, threshold_key in (
+        ("primitive_likeness_penalty", "maximum_primitive_likeness_penalty"),
+        ("assembled_primitives_penalty", "maximum_assembled_primitives_penalty"),
+    ):
         if metrics[metric] > thresholds[threshold_key]:
             diagnostics.append(
                 {
@@ -480,9 +740,18 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
                     "asset": asset["name"],
                     "stage": "validate",
                     "path": f"validate.visual.{metric}",
-                    "message": f"Visual validator failed for {metric}: {metrics[metric]:.3f} > {thresholds[threshold_key]:.3f}",
-                    "details": {"metric": metric, "actual": metrics[metric], "maximum": thresholds[threshold_key]},
-                    "suggested_repairs": suggest_repairs_for_metric("feature_coherence", {**metrics, **semantic}),
+                    "message": (
+                        f"Visual validator failed for {metric}: "
+                        f"{metrics[metric]:.3f} > {thresholds[threshold_key]:.3f}"
+                    ),
+                    "details": {
+                        "metric": metric,
+                        "actual": metrics[metric],
+                        "maximum": thresholds[threshold_key],
+                    },
+                    "suggested_repairs": suggest_repairs_for_metric(
+                        "feature_coherence", {**metrics, **semantic}
+                    ),
                 }
             )
 

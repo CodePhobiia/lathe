@@ -3,10 +3,11 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+import pytest
 from lathe.eval_harness import run_benchmark_suite
 
-
 ROOT = Path(__file__).resolve().parents[1]
+pytestmark = pytest.mark.slow
 
 
 class LatheBenchmarkTests(unittest.TestCase):

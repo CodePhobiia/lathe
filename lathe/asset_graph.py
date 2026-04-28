@@ -9,12 +9,28 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from lathe.interface_entries import interface_entry_id
+
 
 def _token_set(value: str | None) -> set[str]:
     if not value:
         return set()
     lowered = value.lower().replace("-", "_").replace(" ", "_")
     return {token for token in lowered.split("_") if token}
+
+
+def _interface_ids(entries: list[Any], *, prefix: str) -> list[str]:
+    return [interface_entry_id(item, f"{prefix}_{idx}") for idx, item in enumerate(entries)]
+
+
+def _dedupe(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            out.append(value)
+    return out
 
 
 def infer_asset_family(asset: dict[str, Any]) -> str:
@@ -42,7 +58,10 @@ def infer_asset_family(asset: dict[str, Any]) -> str:
 
     if {"chest", "loot"} & tokens or {"lid_panel", "front_hatch", "lock_plate"} <= set(parts):
         return "brassbound_chest"
-    if "drone" in tokens or sum(1 for part in parts if "rotor" in part or "prop" in part or "fan" in part) >= 4:
+    if (
+        "drone" in tokens
+        or sum(1 for part in parts if "rotor" in part or "prop" in part or "fan" in part) >= 4
+    ):
         return "courier_drone"
     if kind == "env_module" and {"wall", "screen", "vent", "mount"} & tokens:
         return "sci_fi_wall_panel"
@@ -190,7 +209,7 @@ def _assembly_role(tags: list[str]) -> str | None:
     return None
 
 
-def _infer_part_graph(parts: list["PartNode"]) -> list[dict[str, str]]:
+def _infer_part_graph(parts: list[PartNode]) -> list[dict[str, str]]:
     part_names = {part.name for part in parts}
     edges: set[tuple[str, str]] = set()
 
@@ -199,7 +218,10 @@ def _infer_part_graph(parts: list["PartNode"]) -> list[dict[str, str]]:
             return
         edges.add(tuple(sorted((left, right))))
 
-    body_name = next((part.name for part in parts if part.assembly_role in {"body", "shell"}), parts[0].name if parts else None)
+    body_name = next(
+        (part.name for part in parts if part.assembly_role in {"body", "shell"}),
+        parts[0].name if parts else None,
+    )
     for part in parts:
         if body_name and part.name != body_name:
             connect(body_name, part.name)
@@ -233,6 +255,7 @@ def _infer_part_graph(parts: list["PartNode"]) -> list[dict[str, str]]:
 @dataclass
 class PartNode:
     """PartNode."""
+
     name: str
     tags: list[str] = field(default_factory=list)
     symmetry_mate: str | None = None
@@ -252,6 +275,7 @@ class PartNode:
 @dataclass
 class AssetGraph:
     """AssetGraph."""
+
     name: str
     kind: str
     family: str
@@ -323,10 +347,22 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
         component = component_by_part.get(name, {})
         component_values = component.get("values", {})
         component_tags = list(component_values.get("tags", []))
-        component_type = component.get("geometry", {}).get("component_type") or component_values.get("component_type")
-        tags = sorted(set(_part_tags(name) + component_tags + ([str(component_type)] if component_type else [])))
-        articulation = component_values.get("articulation") or ("hinge" if any(tag in tags for tag in ("lid", "door", "hatch")) else None)
-        interface_role = component_values.get("interface_role") or ("grip" if "handle" in tags else "support" if any(tag in tags for tag in ("foot", "leg", "stand")) else None)
+        component_type = component.get("geometry", {}).get("component_type") or component_values.get(
+            "component_type"
+        )
+        tags = sorted(
+            set(_part_tags(name) + component_tags + ([str(component_type)] if component_type else []))
+        )
+        articulation = component_values.get("articulation") or (
+            "hinge" if any(tag in tags for tag in ("lid", "door", "hatch")) else None
+        )
+        interface_role = component_values.get("interface_role") or (
+            "grip"
+            if "handle" in tags
+            else "support"
+            if any(tag in tags for tag in ("foot", "leg", "stand"))
+            else None
+        )
         parts.append(
             PartNode(
                 name=name,
@@ -424,7 +460,14 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                 "maximum_assembled_primitives_penalty": 0.26,
             }
         )
-    elif family in {"industrial_crate", "mechanical_door", "console_terminal", "service_cabinet", "control_pedestal", "supply_container"}:
+    elif family in {
+        "industrial_crate",
+        "mechanical_door",
+        "console_terminal",
+        "service_cabinet",
+        "control_pedestal",
+        "supply_container",
+    }:
         semantic_requirements.update(
             {
                 "minimum_part_coverage": 0.84,
@@ -440,8 +483,12 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                 "minimum_attachment_integration_quality": 0.70,
                 "minimum_support_plausibility": 0.60,
                 "minimum_feature_coherence": 0.68,
-                "minimum_geometry_integration_quality": 0.80 if family in {"console_terminal", "control_pedestal"} else 0.78,
-                "minimum_surface_authoring_quality": 0.72 if family in {"console_terminal", "mechanical_door", "control_pedestal"} else 0.70,
+                "minimum_geometry_integration_quality": 0.80
+                if family in {"console_terminal", "control_pedestal"}
+                else 0.78,
+                "minimum_surface_authoring_quality": 0.72
+                if family in {"console_terminal", "mechanical_door", "control_pedestal"}
+                else 0.70,
                 "maximum_primitive_likeness_penalty": 0.22,
                 "maximum_assembled_primitives_penalty": 0.24,
             }
@@ -467,6 +514,15 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
     semantic_requirements["language_feature_density"] = feature_density
     semantic_requirements["language_search_best_of"] = search_best_of
 
+    interfaces = asset.get("build", {}).get("interfaces", {})
+    sockets = _interface_ids(interfaces.get("sockets", []) or [], prefix="socket")
+    anchor_ids = _dedupe(
+        [
+            *_interface_ids(interfaces.get("anchors", []) or [], prefix="anchor"),
+            *_interface_ids(interfaces.get("pivots", []) or [], prefix="pivot"),
+        ]
+    )
+
     return AssetGraph(
         name=asset["name"],
         kind=str(asset.get("kind")),
@@ -479,8 +535,8 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
         critic_name=asset.get("validate", {}).get("score"),
         parts=parts,
         joints=[str(item) for item in asset.get("build", {}).get("rig", {}).get("joints", [])],
-        sockets=[str(item) for item in asset.get("build", {}).get("interfaces", {}).get("sockets", [])],
-        anchors=[str(item) for item in asset.get("build", {}).get("interfaces", {}).get("anchors", [])],
+        sockets=sockets,
+        anchors=anchor_ids,
         materials=[str(item) for item in asset.get("intent", {}).get("materials", [])],
         styles=[str(item) for item in asset.get("intent", {}).get("style", [])],
         interactions=[str(item) for item in asset.get("intent", {}).get("interactions", [])],
@@ -508,6 +564,17 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
             "assembly_rules": asset.get("assembly_rules", {}),
             "shape_mode": asset.get("build", {}).get("shape", {}).get("mode", "generate"),
             "objectives": objectives,
-            "self_reliant_target": family in {"brassbound_chest", "industrial_crate", "mechanical_door", "console_terminal", "service_cabinet", "control_pedestal", "supply_container", "sci_fi_wall_panel", "courier_drone"},
+            "self_reliant_target": family
+            in {
+                "brassbound_chest",
+                "industrial_crate",
+                "mechanical_door",
+                "console_terminal",
+                "service_cabinet",
+                "control_pedestal",
+                "supply_container",
+                "sci_fi_wall_panel",
+                "courier_drone",
+            },
         },
     )

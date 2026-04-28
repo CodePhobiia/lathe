@@ -26,8 +26,8 @@ stage, phase, message, details}``.
 from __future__ import annotations
 
 import math
-from typing import Any, Iterable
-
+from collections.abc import Iterable
+from typing import Any
 
 L6401 = "L6401"
 L6402 = "L6402"
@@ -37,6 +37,8 @@ L6405 = "L6405"
 L6406 = "L6406"
 
 _JOINT_SOCKET_TYPES = frozenset({"hinge", "door"})
+_VECTOR_DIMENSIONS = 3
+_AXIS_UNIT_TOLERANCE = 1e-3
 
 
 def _robotics_intent(asset: dict[str, Any]) -> bool:
@@ -51,9 +53,7 @@ def _robotics_intent(asset: dict[str, Any]) -> bool:
     # Fallback: explicit build-level flag.
     build = asset.get("build") or {}
     b_intent = build.get("intent") if isinstance(build, dict) else None
-    if isinstance(b_intent, dict) and bool(b_intent.get("robotics")):
-        return True
-    return False
+    return bool(isinstance(b_intent, dict) and bool(b_intent.get("robotics")))
 
 
 def _make_diag(
@@ -81,7 +81,7 @@ def _vec_length(axis: Iterable[Any]) -> float | None:
         values = [float(v) for v in axis]
     except (TypeError, ValueError):
         return None
-    if len(values) != 3:
+    if len(values) != _VECTOR_DIMENSIONS:
         return None
     return math.sqrt(sum(v * v for v in values))
 
@@ -91,22 +91,22 @@ def _detect_cycle(nodes: set[str], edges: list[tuple[str, str]]) -> list[str] | 
     for u, v in edges:
         if u in adj and v in adj:
             adj[u].append(v)
-    WHITE, GRAY, BLACK = 0, 1, 2
-    color = {n: WHITE for n in nodes}
+    white, gray, black = 0, 1, 2
+    color = {n: white for n in nodes}
     parent: dict[str, str | None] = {n: None for n in nodes}
 
     def _dfs(start: str) -> list[str] | None:
         stack = [(start, iter(adj[start]))]
-        color[start] = GRAY
+        color[start] = gray
         while stack:
             node, children = stack[-1]
             try:
                 child = next(children)
             except StopIteration:
-                color[node] = BLACK
+                color[node] = black
                 stack.pop()
                 continue
-            if color[child] == GRAY:
+            if color[child] == gray:
                 # Cycle found. Walk back from node to child.
                 cycle = [child, node]
                 cur = parent.get(node)
@@ -116,14 +116,14 @@ def _detect_cycle(nodes: set[str], edges: list[tuple[str, str]]) -> list[str] | 
                 if cur == child:
                     cycle.append(child)
                 return list(reversed(cycle))
-            if color[child] == WHITE:
+            if color[child] == white:
                 parent[child] = node
-                color[child] = GRAY
+                color[child] = gray
                 stack.append((child, iter(adj[child])))
         return None
 
     for node in sorted(nodes):
-        if color[node] == WHITE:
+        if color[node] == white:
             result = _dfs(node)
             if result is not None:
                 return result
@@ -136,7 +136,6 @@ def evaluate_urdf_validation(asset: dict[str, Any], runtime: dict[str, Any]) -> 
     For non-robotics assets: returns an empty-evidence report with no
     diagnostics so ``ValidatorPipeline`` treats it as a pass.
     """
-
     if not _robotics_intent(asset):
         return {
             "diagnostics": [],
@@ -171,18 +170,21 @@ def evaluate_urdf_validation(asset: dict[str, Any], runtime: dict[str, Any]) -> 
                     L6401,
                     f"Joint socket '{sid}' is missing axis/limits "
                     "(hinge+door sockets require axis, limit_lower, limit_upper).",
-                    details={"socket_id": sid, "has_axis": axis is not None,
-                             "has_limit_lower": lower is not None, "has_limit_upper": upper is not None},
+                    details={
+                        "socket_id": sid,
+                        "has_axis": axis is not None,
+                        "has_limit_lower": lower is not None,
+                        "has_limit_upper": upper is not None,
+                    },
                 )
             )
             continue
         length = _vec_length(axis) if isinstance(axis, list) else None
-        if length is None or abs(length - 1.0) > 1e-3:
+        if length is None or abs(length - 1.0) > _AXIS_UNIT_TOLERANCE:
             diagnostics.append(
                 _make_diag(
                     L6405,
-                    f"Joint socket '{sid}' axis is not unit length "
-                    f"(|axis|={length!r}).",
+                    f"Joint socket '{sid}' axis is not unit length (|axis|={length!r}).",
                     details={"socket_id": sid, "axis": axis, "length": length},
                 )
             )
@@ -193,8 +195,7 @@ def evaluate_urdf_validation(asset: dict[str, Any], runtime: dict[str, Any]) -> 
                 diagnostics.append(
                     _make_diag(
                         L6406,
-                        f"Joint socket '{sid}' has degenerate limit range "
-                        f"(lower={lo}, upper={hi}).",
+                        f"Joint socket '{sid}' has degenerate limit range (lower={lo}, upper={hi}).",
                         details={"socket_id": sid, "lower": lo, "upper": hi},
                     )
                 )
@@ -246,8 +247,10 @@ def evaluate_urdf_validation(asset: dict[str, Any], runtime: dict[str, Any]) -> 
         if not isinstance(mass, (int, float)) or float(mass) <= 0.0:
             issues.append("mass")
         inertia = part.get("inertia")
-        if not isinstance(inertia, list) or len(inertia) != 3 or not all(
-            isinstance(v, (int, float)) and float(v) > 0.0 for v in inertia
+        if (
+            not isinstance(inertia, list)
+            or len(inertia) != _VECTOR_DIMENSIONS
+            or not all(isinstance(v, (int, float)) and float(v) > 0.0 for v in inertia)
         ):
             issues.append("inertia")
         if issues:

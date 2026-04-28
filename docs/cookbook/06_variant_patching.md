@@ -141,6 +141,6 @@ python -m lathe.cli diff-asset \
 
 ## See also
 
-- [Spec — Lathe v0.1](../spec/lathe-v0.1.md) — variant grammar and resolution rules.
+- [Spec — Lathe v0.1](https://github.com/talmerri/lathe/blob/main/spec/lathe-v0.1.md) — variant grammar and resolution rules.
 - API: [`lathe.resolver`](../api/resolver.md), [`lathe.normalizer`](../api/normalizer.md).
 - Related: [Recipe 04 — Mobile adapt](04_mobile_adapt.md) — when a variant is not enough and you need a real retarget.

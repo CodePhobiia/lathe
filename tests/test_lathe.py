@@ -7,7 +7,6 @@ from lathe.checker import check_program
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 
-
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "courier_drone.lth"
 CHEST_EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "brassbound_chest.lth"
 WALL_PANEL_EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "sci_fi_wall_panel.lth"

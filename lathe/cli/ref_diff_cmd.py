@@ -54,16 +54,23 @@ def _diff_collection(a: list | None, b: list | None) -> dict:
 
 
 def run_ref_diff(args) -> None:
+    """Diff selector manifests from two completed build directories."""
     a_dir = Path(args.build_a)
     b_dir = Path(args.build_b)
     a = _load_manifest(a_dir)
     b = _load_manifest(b_dir)
     if a is None or b is None:
         missing = [str(p) for p, m in ((a_dir, a), (b_dir, b)) if m is None]
-        print(json.dumps({
-            "ok": False,
-            "error": f"selector_manifest.json missing under: {missing}",
-        }, indent=2), file=sys.stderr)
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": f"selector_manifest.json missing under: {missing}",
+                },
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
         raise SystemExit(2)
     summary = {
         "build_a": str(a_dir),

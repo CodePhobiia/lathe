@@ -138,7 +138,7 @@ This is the only reliable way to preserve repeatability, seam safety, and materi
 
 V1.2 must:
 1. Make surface programs first-class Lathe source.
-2. Make texture authoring a governed compiler stage instead of a post-process hack.
+2. Make texture authoring a governed compiler stage instead of a post-process afterthought.
 3. Let Codex image generation improve surface quality without weakening Lathe’s authority.
 4. Add evidence-based surface validation that judges actual outputs, not bundle presence.
 5. Support local re-authoring and repair of weak zones without rebuilding the whole asset.

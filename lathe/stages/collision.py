@@ -17,6 +17,16 @@ from dataclasses import dataclass
 import numpy as np
 import trimesh
 
+try:  # pragma: no cover - scipy is present when trimesh convex hull is available.
+    from scipy.spatial import QhullError
+except ImportError:  # pragma: no cover
+    _QHULL_ERROR_TYPES: tuple[type[Exception], ...] = ()
+else:
+    _QHULL_ERROR_TYPES = (QhullError,)
+
+
+_CONVEX_HULL_ERRORS = (ValueError, *_QHULL_ERROR_TYPES)
+
 
 @dataclass
 class ConvexProxy:
@@ -30,9 +40,10 @@ class ConvexProxy:
 
 def single_hull(mesh: trimesh.Trimesh) -> ConvexProxy:
     """Return one convex hull enclosing the entire mesh."""
-
     if len(mesh.vertices) == 0:
-        empty = trimesh.Trimesh(vertices=np.zeros((0, 3)), faces=np.zeros((0, 3), dtype=np.int64), process=False)
+        empty = trimesh.Trimesh(
+            vertices=np.zeros((0, 3)), faces=np.zeros((0, 3), dtype=np.int64), process=False
+        )
         return ConvexProxy(name="hull", mesh=empty, aabb_min=(0.0, 0.0, 0.0), aabb_max=(0.0, 0.0, 0.0))
     hull = mesh.convex_hull
     # Ensure deterministic winding (outward normals).
@@ -55,7 +66,6 @@ def per_part_hulls(
     ``face_parts`` must align 1:1 with ``mesh.faces``. If it does not, returns
     a single hull named ``mesh``.
     """
-
     if len(face_parts) != len(mesh.faces) or not face_parts:
         proxy = single_hull(mesh)
         proxy.name = "mesh"
@@ -74,7 +84,7 @@ def per_part_hulls(
         part_points = mesh.vertices[used_verts]
         try:
             hull_mesh = trimesh.convex.convex_hull(part_points)
-        except Exception:
+        except _CONVEX_HULL_ERRORS:
             continue
         if hull_mesh is None or len(hull_mesh.vertices) == 0:
             continue
@@ -102,9 +112,10 @@ def combine_hulls(proxies: list[ConvexProxy]) -> trimesh.Trimesh:
     arrays are concatenated with face indices offset by cumulative vertex
     count.
     """
-
     if not proxies:
-        return trimesh.Trimesh(vertices=np.zeros((0, 3)), faces=np.zeros((0, 3), dtype=np.int64), process=False)
+        return trimesh.Trimesh(
+            vertices=np.zeros((0, 3)), faces=np.zeros((0, 3), dtype=np.int64), process=False
+        )
     all_verts: list[np.ndarray] = []
     all_faces: list[np.ndarray] = []
     offset = 0

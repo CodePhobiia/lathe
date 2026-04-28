@@ -13,12 +13,13 @@ from typing import Any
 @dataclass
 class KitIR:
     """KitIR."""
+
     kit_name: str = ""
     values: dict[str, Any] = field(default_factory=dict)
     assembly_policy: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "KitIR":
+    def from_asset(cls, asset: dict[str, Any]) -> KitIR:
         """From asset.
 
         Args:

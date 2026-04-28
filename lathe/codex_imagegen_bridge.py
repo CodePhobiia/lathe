@@ -8,12 +8,13 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
-
 CODEX_IMAGEGEN_BACKEND_ID = "lathe.surface.codex_imagegen_v1"
 DETERMINISTIC_PBR_BACKEND_ID = "lathe.surface.deterministic_pbr_v1"
 
 
-def resolve_surface_backend_report(source_surface: dict[str, Any], surface_cfg: dict[str, Any], hero_mode: bool) -> dict[str, Any]:
+def resolve_surface_backend_report(
+    source_surface: dict[str, Any], surface_cfg: dict[str, Any], hero_mode: bool
+) -> dict[str, Any]:
     authoring = dict(source_surface.get("authoring", {}))
     requested = (
         authoring.get("backend")
@@ -38,19 +39,32 @@ def resolve_surface_backend_report(source_surface: dict[str, Any], surface_cfg: 
         "selected_backend_id": backend_id,
         "surface_backend_decl": source_surface.get("resolved_surface_backend", {}),
         "surface_policy_decl": source_surface.get("resolved_surface_policy", {}),
-        "authoring_mode": authoring.get("mode", source_surface.get("authoring_mode", "deterministic_only" if not codex_requested else "zone_first")),
+        "authoring_mode": authoring.get(
+            "mode",
+            source_surface.get(
+                "authoring_mode", "deterministic_only" if not codex_requested else "zone_first"
+            ),
+        ),
         "zone_first": bool(authoring.get("mode", "") == "zone_first" or codex_requested),
         "codex_imagegen_requested": codex_requested,
         "codex_imagegen_ran": False,
         "backend_unavailable_policy": unavailable_policy,
-        "fallback_backend_id": DETERMINISTIC_PBR_BACKEND_ID if codex_requested and unavailable_policy != "fail" else "",
-        "fallback_reason": "Codex ImageGen bridge is policy-modeled but not invoked by the reference runtime" if codex_requested else "",
+        "fallback_backend_id": DETERMINISTIC_PBR_BACKEND_ID
+        if codex_requested and unavailable_policy != "fail"
+        else "",
+        "fallback_reason": "Codex ImageGen bridge is policy-modeled but not invoked by the reference runtime"
+        if codex_requested
+        else "",
         "hero_surface": hero_mode,
     }
 
 
 def codex_imagegen_mode(runtime_config: dict[str, Any] | None) -> str:
-    cfg = ((runtime_config or {}).get("surface", {}).get("codex_imagegen", {}) if isinstance(runtime_config, dict) else {})
+    cfg = (
+        (runtime_config or {}).get("surface", {}).get("codex_imagegen", {})
+        if isinstance(runtime_config, dict)
+        else {}
+    )
     mode = str(cfg.get("mode", "fallback_deterministic"))
     aliases = {
         "auto": "fallback_deterministic",
@@ -64,8 +78,24 @@ def codex_imagegen_mode(runtime_config: dict[str, Any] | None) -> str:
 
 
 def _cfg_path(runtime_config: dict[str, Any] | None, key: str, default: str) -> str:
-    cfg = ((runtime_config or {}).get("surface", {}).get("codex_imagegen", {}) if isinstance(runtime_config, dict) else {})
+    cfg = (
+        (runtime_config or {}).get("surface", {}).get("codex_imagegen", {})
+        if isinstance(runtime_config, dict)
+        else {}
+    )
     return str(cfg.get(key, default))
+
+
+def _cfg_build_path(out_dir: Path, runtime_config: dict[str, Any] | None, key: str, default: str) -> Path:
+    raw = _cfg_path(runtime_config, key, default)
+    configured = Path(raw)
+    if configured.is_absolute():
+        raise ValueError(f"codex_imagegen.{key} must be relative to the build directory")
+    base = out_dir.resolve()
+    candidate = (base / configured).resolve()
+    if not candidate.is_relative_to(base):
+        raise ValueError(f"codex_imagegen.{key} must stay inside the build directory")
+    return candidate
 
 
 def _rel(root: Path, path: Path) -> str:
@@ -80,18 +110,22 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _zone_prompt(asset: dict[str, Any], source_surface: dict[str, Any], zone: dict[str, Any], generated_map: str) -> str:
-    authoring = source_surface.get("authoring", {}) if isinstance(source_surface.get("authoring"), dict) else {}
+def _zone_prompt(
+    asset: dict[str, Any], source_surface: dict[str, Any], zone: dict[str, Any], generated_map: str
+) -> str:
+    authoring = (
+        source_surface.get("authoring", {}) if isinstance(source_surface.get("authoring"), dict) else {}
+    )
     return "\n".join(
         [
             "Use case: stylized-concept",
             "Asset type: Lathe hard-surface asset texture map",
             f"Primary request: Generate a {generated_map} texture for the material zone '{zone['part']}' on asset '{asset['name']}'.",
             f"Subject: {asset.get('intent', {}).get('role', asset['name'])}",
-            f"Style/medium: production-ready PBR texture authoring, zone-local, UV-atlas friendly",
+            "Style/medium: production-ready PBR texture authoring, zone-local, UV-atlas friendly",
             f"Materials/textures: material '{zone['material']}', surface profile '{zone.get('surface_profile', 'neutral_panel')}', base color {zone.get('basecolor')}, roughness {zone.get('roughness')}",
-            f"Color palette: respect the declared material and avoid changing semantic material identity",
-            f"Constraints: output a square texture tile; no text unless decal libraries require it; preserve clear material separation; avoid seams and border artifacts",
+            "Color palette: respect the declared material and avoid changing semantic material identity",
+            "Constraints: output a square texture tile; no text unless decal libraries require it; preserve clear material separation; avoid seams and border artifacts",
             f"Lathe authoring mode: {authoring.get('mode', 'zone_first')}",
             f"Surface program: {source_surface.get('program', '')}",
             f"Policy: {source_surface.get('policy', '')}",
@@ -109,13 +143,19 @@ def emit_codex_imagegen_requests(
     material_zones: list[dict[str, Any]],
     control_pack: dict[str, Any],
 ) -> dict[str, Any]:
-    request_dir = out_dir / _cfg_path(runtime_config, "request_dir", "imagegen_requests")
-    output_dir = out_dir / _cfg_path(runtime_config, "output_dir", "imagegen_outputs")
+    request_dir = _cfg_build_path(out_dir, runtime_config, "request_dir", "imagegen_requests")
+    output_dir = _cfg_build_path(out_dir, runtime_config, "output_dir", "imagegen_outputs")
     request_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
-    authoring = source_surface.get("authoring", {}) if isinstance(source_surface.get("authoring"), dict) else {}
+    authoring = (
+        source_surface.get("authoring", {}) if isinstance(source_surface.get("authoring"), dict) else {}
+    )
     generated_maps = list(authoring.get("generate", [])) or ["basecolor"]
-    supported_maps = [item for item in generated_maps if item in {"basecolor", "detail_overlay", "decal_mask", "wear_mask", "trim_overlay", "emissive_art"}]
+    supported_maps = [
+        item
+        for item in generated_maps
+        if item in {"basecolor", "detail_overlay", "decal_mask", "wear_mask", "trim_overlay", "emissive_art"}
+    ]
     requests: list[dict[str, Any]] = []
     for zone in material_zones:
         for generated_map in supported_maps:
@@ -171,7 +211,7 @@ def consume_codex_imagegen_outputs(
     basecolor: Image.Image,
     material_zones: list[dict[str, Any]],
 ) -> tuple[Image.Image, dict[str, Any]]:
-    output_dir = out_dir / _cfg_path(runtime_config, "output_dir", "imagegen_outputs")
+    output_dir = _cfg_build_path(out_dir, runtime_config, "output_dir", "imagegen_outputs")
     id_source = np.asarray(id_map.convert("RGB"), dtype=np.uint8)
     out = np.asarray(basecolor.convert("RGB"), dtype=np.float64)
     consumed: list[dict[str, Any]] = []
@@ -186,7 +226,9 @@ def consume_codex_imagegen_outputs(
         mask = _color_mask(id_source, tuple(int(value) for value in zone["basecolor"]))
         if np.any(mask):
             out[mask] = generated[mask]
-        consumed.append({"zone": zone["part"], "map": "basecolor", "uri": _rel(out_dir, path), "sha256": _sha256(path)})
+        consumed.append(
+            {"zone": zone["part"], "map": "basecolor", "uri": _rel(out_dir, path), "sha256": _sha256(path)}
+        )
     report = {
         "schema": "lathe.codex_imagegen_outputs.v1",
         "status": "complete" if consumed and not missing else "partial" if consumed else "missing",

@@ -7,7 +7,6 @@ an optional dependency under `[project.optional-dependencies].geometry`.
 from __future__ import annotations
 
 import pytest
-
 from lathe.adapters import manifold_kernel as mk
 
 manifold3d_available = mk.manifold_available()

@@ -117,7 +117,7 @@ class HtmlReportTests(unittest.TestCase):
         parser.feed(html)
         self.assertTrue(
             any("summary" in cls for cls in parser.section_classes),
-            f"missing <section class=\"summary ...\"> (got {parser.section_classes})",
+            f'missing <section class="summary ..."> (got {parser.section_classes})',
         )
         self.assertIn("0.912", html)
         self.assertIn("courier_drone", html)
@@ -152,9 +152,8 @@ class WriteReportTests(unittest.TestCase):
             self.assertNotIn("\x1b[", content)
 
     def test_write_unknown_format_raises(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            with self.assertRaises(ValueError):
-                write_report(_fake_certified_report(), Path(tmp), "pdf")
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
+            write_report(_fake_certified_report(), Path(tmp), "pdf")
 
 
 if __name__ == "__main__":

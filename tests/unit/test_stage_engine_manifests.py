@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 import trimesh
-
 from lathe.engine_manifests import (
     ADAPTERS,
     FILE_EXTENSIONS,
@@ -305,7 +303,13 @@ def test_selector_manifest_surfaces_lod_config_from_asset(tmp_path):
             "optimize": {
                 "lod_config": [
                     {"level": 0, "ratio": 1.0, "distance_min": 0, "distance_max": 8},
-                    {"level": 1, "ratio": 0.5, "distance_min": 8, "distance_max": 25, "screen_coverage": 0.35},
+                    {
+                        "level": 1,
+                        "ratio": 0.5,
+                        "distance_min": 8,
+                        "distance_max": 25,
+                        "screen_coverage": 0.35,
+                    },
                 ]
             }
         }

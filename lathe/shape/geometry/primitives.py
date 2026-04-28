@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import trimesh
 
+from ...mesh_ingest import safe_load_mesh
 
 SUPPORTED_MESH_EXTS = {".glb", ".gltf", ".obj", ".ply", ".stl", ".off"}
 
@@ -34,9 +36,17 @@ def _unit_to_cm(value: Any) -> float:
 
 def _characteristic_scale_cm(asset: dict[str, Any]) -> float:
     intent = asset.get("intent", {})
-    if "dimensions" in intent and isinstance(intent["dimensions"], dict) and intent["dimensions"].get("type") == "call":
+    if (
+        "dimensions" in intent
+        and isinstance(intent["dimensions"], dict)
+        and intent["dimensions"].get("type") == "call"
+    ):
         args = intent["dimensions"].get("args", [])
-        values = [_unit_to_cm(item["value"]) for item in args if isinstance(item, dict) and item.get("value") is not None]
+        values = [
+            _unit_to_cm(item["value"])
+            for item in args
+            if isinstance(item, dict) and item.get("value") is not None
+        ]
         if values:
             return max(values)
     if "scale" in intent:
@@ -50,7 +60,9 @@ def _translated_box(extents: Iterable[float], center: Iterable[float]) -> trimes
     return trimesh.creation.box(extents=np.array(list(extents), dtype=float), transform=matrix)
 
 
-def _translated_cylinder(radius: float, height: float, center: Iterable[float], axis: str = "y") -> trimesh.Trimesh:
+def _translated_cylinder(
+    radius: float, height: float, center: Iterable[float], axis: str = "y"
+) -> trimesh.Trimesh:
     mesh = trimesh.creation.cylinder(radius=radius, height=height, sections=24)
     if axis == "y":
         mesh.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2.0, [1.0, 0.0, 0.0]))
@@ -63,15 +75,10 @@ def _translated_cylinder(radius: float, height: float, center: Iterable[float], 
 
 
 def _load_mesh_file(path) -> trimesh.Trimesh | None:
-    loaded = trimesh.load(path, force="scene")
-    if isinstance(loaded, trimesh.Scene):
-        meshes = [geom.copy() for geom in loaded.geometry.values() if isinstance(geom, trimesh.Trimesh)]
-        if not meshes:
-            return None
-        return trimesh.util.concatenate(meshes)
-    if isinstance(loaded, trimesh.Trimesh):
-        return loaded.copy()
-    return None
+    loaded = safe_load_mesh(path)
+    if len(loaded.faces) == 0 or len(loaded.vertices) == 0:
+        return None
+    return loaded.copy()
 
 
 def _normalize_mesh_to_scale(mesh: trimesh.Trimesh, target_extent_cm: float) -> trimesh.Trimesh:
@@ -85,18 +92,3 @@ def _normalize_mesh_to_scale(mesh: trimesh.Trimesh, target_extent_cm: float) -> 
     max_extent = max(1e-6, float(max(extents)))
     mesh.apply_scale(float(target_extent_cm) / max_extent)
     return mesh
-
-
-def _concat_named_meshes(named_meshes: list[tuple[str, trimesh.Trimesh]], part_colors: dict[str, tuple[int, int, int]]) -> dict[str, Any]:
-    meshes: list[trimesh.Trimesh] = []
-    face_parts: list[str] = []
-    for part_name, mesh in named_meshes:
-        meshes.append(mesh)
-        face_parts.extend([part_name] * int(len(mesh.faces)))
-    combined = trimesh.util.concatenate(meshes) if len(meshes) > 1 else meshes[0]
-    return {
-        "mesh": combined,
-        "face_parts": face_parts,
-        "part_colors": part_colors,
-        "units": "cm",
-    }

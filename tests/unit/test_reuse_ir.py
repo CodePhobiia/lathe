@@ -17,7 +17,6 @@ from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 from lathe.reuse_ir import ReuseIR
 
-
 ROOT = Path(__file__).resolve().parents[2]
 ASSEMBLE_EXAMPLE = ROOT / "examples" / "service_corridor_wall.lth"
 

@@ -59,9 +59,7 @@ class FeatureIRFromAssetTests(unittest.TestCase):
         # from_asset wraps with dict(...) so caller mutation must not leak.
         source_geometry = {"key": "value"}
         source_features = {"density": "low"}
-        ir = FeatureIR.from_asset(
-            {"geometry": source_geometry, "features": source_features}
-        )
+        ir = FeatureIR.from_asset({"geometry": source_geometry, "features": source_features})
         source_geometry["key"] = "mutated"
         source_features["density"] = "mutated"
         self.assertEqual(ir.geometry["key"], "value")

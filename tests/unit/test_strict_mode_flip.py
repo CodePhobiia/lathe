@@ -15,6 +15,7 @@ Covers the Plan 08 Phase 8 amended rollout:
 * The ``--strict-shape-provider`` CLI flag still works but emits a
   ``DeprecationWarning`` (back-compat alias).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -32,7 +33,6 @@ from unittest import mock
 from lathe.providers.errors import ShapeProviderExecutionError
 from lathe.providers.selection import maybe_run_shape_provider
 from lathe.runtime_config import DEFAULT_RUNTIME_CONFIG, apply_cli_overrides
-
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "courier_drone.lth"
@@ -98,7 +98,7 @@ class StrictModeMechanismTests(unittest.TestCase):
             "shape": {
                 "provider": "hunyuan2_1_http",
                 "strict": True,
-                "providers": {"hunyuan2_1_http": {"base_url": "http://example.invalid"}},
+                "providers": {"hunyuan2_1_http": {"base_url": "https://example.invalid"}},
             }
         }
         from lathe.providers.errors import ShapeProviderExecutionError as Exec
@@ -180,7 +180,9 @@ class StrictModeMechanismTests(unittest.TestCase):
             for w in caught
             if issubclass(w.category, DeprecationWarning) and "V0.1.x deprecation" in str(w.message)
         ]
-        self.assertFalse(dep, msg=f"expected no V0.1.x DeprecationWarning, got: {[str(w.message) for w in dep]}")
+        self.assertFalse(
+            dep, msg=f"expected no V0.1.x DeprecationWarning, got: {[str(w.message) for w in dep]}"
+        )
 
     def test_native_path_does_not_emit_deprecation_warning(self) -> None:
         # No configured learned providers => reference_conditioned native path.
@@ -196,6 +198,37 @@ class StrictModeMechanismTests(unittest.TestCase):
             if issubclass(w.category, DeprecationWarning) and "V0.1.x deprecation" in str(w.message)
         ]
         self.assertFalse(dep, msg="native path must not emit the V0.1.x strict deprecation warning")
+
+    def test_allowed_fallback_records_attempted_and_actual_provider(self) -> None:
+        runtime_config = {
+            "shape": {
+                "provider": "hunyuan2_1_http",
+                "strict": False,
+                "allow_fallback": True,
+                "providers": {"hunyuan2_1_http": {"base_url": "https://hunyuan.example"}},
+            }
+        }
+        with TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            with mock.patch(
+                "lathe.providers.selection.probe_shape_provider",
+                return_value={
+                    "available": False,
+                    "provider_id": "lathe.provider.shape.hunyuan2_1_http_v1",
+                    "code": "probe_failed",
+                    "message": "synthetic provider outage",
+                    "details": {},
+                },
+            ):
+                result = self._run(runtime_config, work_dir=work)
+
+        report = result["provider_report"]
+        self.assertEqual(report["selected_provider_id"], "lathe.provider.shape.hunyuan2_1_http_v1")
+        self.assertEqual(report["actual_provider_id"], "lathe.provider.shape.reference_conditioned_v1")
+        self.assertEqual(report["status"], "fallback")
+        self.assertIn("synthetic provider outage", report["fallback_reason"])
+        self.assertTrue(report["learned"])
+        self.assertNotEqual(report["selected_provider_id"], report["actual_provider_id"])
 
 
 class CLIAllowFallbackTests(unittest.TestCase):
@@ -258,18 +291,20 @@ class CLIExitCodeContractTests(unittest.TestCase):
             ):
                 warnings.simplefilter("ignore", DeprecationWarning)
                 # Patch probe to unavailable so the strict path triggers.
-                with mock.patch(
-                    "lathe.providers.selection.probe_shape_provider",
-                    return_value={
-                        "available": False,
-                        "provider_id": "lathe.provider.shape.hunyuan2_1_http_v1",
-                        "code": "probe_failed",
-                        "message": "synthetic probe failure",
-                        "details": {},
-                    },
+                with (
+                    mock.patch(
+                        "lathe.providers.selection.probe_shape_provider",
+                        return_value={
+                            "available": False,
+                            "provider_id": "lathe.provider.shape.hunyuan2_1_http_v1",
+                            "code": "probe_failed",
+                            "message": "synthetic probe failure",
+                            "details": {},
+                        },
+                    ),
+                    self.assertRaises(SystemExit) as ctx,
                 ):
-                    with self.assertRaises(SystemExit) as ctx:
-                        run_build(args)
+                    run_build(args)
             self.assertEqual(ctx.exception.code, 1)
             output = buf.getvalue()
             self.assertIn("provider_fallback_blocked", output)

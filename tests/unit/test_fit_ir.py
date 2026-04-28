@@ -17,7 +17,6 @@ from lathe.fit_ir import FitIR
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 
-
 ROOT = Path(__file__).resolve().parents[2]
 RECONSTRUCT_EXAMPLE = ROOT / "examples" / "reconstruct_courier_from_views.lth"
 
@@ -94,9 +93,7 @@ class FitIRTests(unittest.TestCase):
                 "resolved_fit_profile": {
                     "constraints": {"tri_budget": 12000, "texture_memory_mb": 16, "scale": 0.9}
                 },
-                "resolved_reconstruct_policy": {
-                    "constraints": {"view_count": 3, "seed": 42}
-                },
+                "resolved_reconstruct_policy": {"constraints": {"view_count": 3, "seed": 42}},
             }
         }
         ir = FitIR.from_asset(asset)

@@ -112,7 +112,7 @@ will raise the bar.
   validator uses proxy metrics (triangle count, dihedral angle, edge
   variance) rather than per-vertex principal curvatures, per-edge
   C^1/C^2 continuity, or silhouette-edge ray casts from canonical
-  camera angles. The `# TODO(BL-34-followup)` comment in the validator
+camera angles. The BL-34 follow-up note in the validator
   documents the shape of the real algorithm.
 * **Calibrated thresholds.** Current thresholds were tuned empirically
   so the minimal hero certifies and crafted-bad inputs fail. The full

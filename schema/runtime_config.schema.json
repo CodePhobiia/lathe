@@ -175,6 +175,10 @@
         "prefix": { "type": "string" },
         "region": { "type": "string" },
         "base_url": { "type": "string" },
+        "url_allowlist": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "service_key": { "type": "string" },
         "repo_dir": { "type": "string" },
         "branch": { "type": "string" },

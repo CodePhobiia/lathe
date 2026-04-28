@@ -19,6 +19,7 @@ Regenerate snapshots intentionally with::
 Unexpected drift — a shape/topology/UV/package change that was not meant to
 move artifacts — will fail these tests and surface the diff.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -28,11 +29,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from syrupy.assertion import SnapshotAssertion
-
 from lathe.executor import build_asset
 from lathe.parser import parse_file
-
+from syrupy.assertion import SnapshotAssertion
 
 HEROES: tuple[tuple[str, str], ...] = (
     ("courier_drone", "examples/courier_drone.lth"),
@@ -73,31 +72,35 @@ _ABS_PATH_RE = re.compile(
 
 # Keys whose string *values* are volatile runtime paths rather than semantic
 # data; mask them wholesale regardless of the value contents.
-_VOLATILE_STRING_KEYS = frozenset({
-    "out_dir",
-    "blender_path",
-    "source_root",
-    "resolved",
-    "path",
-    "trace_path",
-    "manifest_path",
-    "uri",  # stage-local file URIs like "stages/package/courier_drone.glb" are relative (kept), but absolute forms are masked by the regex above
-})
+_VOLATILE_STRING_KEYS = frozenset(
+    {
+        "out_dir",
+        "blender_path",
+        "source_root",
+        "resolved",
+        "path",
+        "trace_path",
+        "manifest_path",
+        "uri",  # stage-local file URIs like "stages/package/courier_drone.glb" are relative (kept), but absolute forms are masked by the regex above
+    }
+)
 
 # Latency / timing fields should never have been in the bundles, but mask any
 # that slip in to future-proof the normaliser. Snapshots will include these as
 # the literal ``<LATENCY>`` sentinel if encountered.
-_LATENCY_KEYS = frozenset({
-    "latency_ms",
-    "probe_latency_ms",
-    "wall_time_ms",
-    "elapsed_ms",
-    "duration_s",
-    "duration_ms",
-    "timestamp",
-    "started_at",
-    "finished_at",
-})
+_LATENCY_KEYS = frozenset(
+    {
+        "latency_ms",
+        "probe_latency_ms",
+        "wall_time_ms",
+        "elapsed_ms",
+        "duration_s",
+        "duration_ms",
+        "timestamp",
+        "started_at",
+        "finished_at",
+    }
+)
 
 _ISO_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T")
 _REPR_ID_RE = re.compile(r"at 0x[0-9a-f]+")
@@ -198,7 +201,7 @@ def _hero_builds(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
 @pytest.mark.parametrize("name,source", HEROES, ids=_HERO_IDS)
 def test_hero_manifest_snapshot(
     name: str,
-    source: str,  # noqa: ARG001 — kept for readable parametrize ids
+    source: str,
     _hero_builds: dict[str, Path],
     snapshot: SnapshotAssertion,
 ) -> None:
@@ -220,7 +223,7 @@ def test_hero_manifest_snapshot(
 @pytest.mark.parametrize("name,source", HEROES, ids=_HERO_IDS)
 def test_hero_stage_bundle_hashes_snapshot(
     name: str,
-    source: str,  # noqa: ARG001
+    source: str,
     _hero_builds: dict[str, Path],
     snapshot: SnapshotAssertion,
 ) -> None:
@@ -239,15 +242,13 @@ def test_hero_stage_bundle_hashes_snapshot(
 @pytest.mark.parametrize("name,source", HEROES, ids=_HERO_IDS)
 def test_hero_validator_scores_snapshot(
     name: str,
-    source: str,  # noqa: ARG001
+    source: str,
     _hero_builds: dict[str, Path],
     snapshot: SnapshotAssertion,
 ) -> None:
     """Snapshot validator certification, score, threshold, and sub-scores."""
     out_dir = _hero_builds[name]
-    report = json.loads(
-        (out_dir / "stages/validate/report.json").read_text(encoding="utf-8")
-    )
+    report = json.loads((out_dir / "stages/validate/report.json").read_text(encoding="utf-8"))
 
     scores: dict[str, Any] = {
         "certified": report["certified"],

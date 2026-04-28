@@ -2,14 +2,14 @@
 # Install:   pre-commit install
 # Run all:   pre-commit run --all-files
 default_language_version:
-  python: python3.11
+  python: python
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    rev: v0.15.11
     hooks:
       - id: ruff
-        args: [--fix]
+        args: []
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -18,6 +18,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-yaml
+        exclude: ^mkdocs\.yml$
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
@@ -38,3 +39,33 @@ repos:
         # the hook to the lathe package so incidental scripts don't block
         # commits.
         files: ^lathe/.*\.py$
+
+  - repo: local
+    hooks:
+      - id: mypy-typed-surface
+        name: mypy typed surface
+        entry: >-
+          python -m mypy --follow-imports=silent
+          lathe/errors.py
+          lathe/assembly_ir.py
+          lathe/feature_ir.py
+          lathe/fit_ir.py
+          lathe/kit_ir.py
+          lathe/materials.py
+          lathe/mesh_ir.py
+          lathe/proposals.py
+          lathe/ref.py
+          lathe/reference_ir.py
+          lathe/reuse_ir.py
+          lathe/shape_ir.py
+          lathe/solid_ir.py
+          lathe/stages/budgets.py
+          lathe/stages/lod.py
+          lathe/surface_ir.py
+          lathe/texture_control_pack.py
+          lathe/transfer_ir.py
+          lathe/validators/geometry_integrity.py
+          lathe/validators/semantic_quality.py
+          lathe/validators/surface_quality.py
+        language: system
+        pass_filenames: false

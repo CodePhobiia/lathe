@@ -9,18 +9,25 @@ Classifies every `json.loads` / `json.load(` site under `lathe/` as trust-bounda
 | Total sites in `lathe/` | 27 |
 | Sites in this audit's scope (editable files) | 25 |
 | Sites out of scope (excluded cluster: `blender_execution.py`) | 2 |
-| Trust-boundary, NOT yet validated | 1 |
-| Trust-boundary, already validated | 1 |
+| Trust-boundary, NOT yet validated | 0 |
+| Trust-boundary, already validated | 2 |
 | Internal-controlled | 23 |
 
-Only `runtime_config.py:165` is schema-validated today (in `8e70aa3`). `capabilities.py:423` is newly annotated with `TODO(security)` pending Wave 4.
+`runtime_config.py:165` validates user-supplied runtime config files. `capabilities.py` validates the Hunyuan HTTP `/health` response with `hunyuan_probe.schema.json` before surfacing endpoint health.
+
+Runtime config JSON is also marked in code as an untrusted ingress point:
+`lathe.runtime_config.load_runtime_config` carries a
+`BoundaryPolicy(input_class=RUNTIME_CONFIG, trust_level=UNTRUSTED)` via
+`lathe.security.ingress_boundary`. The boundary test suite asserts that
+the loader keeps explicit controls for byte caps, UTF-8 decode, JSON
+parse, object-root enforcement, and schema validation.
 
 ## Per-site table
 
 | Path:Line | Category | Source | Action |
 |---|---|---|---|
 | `lathe/capabilities.py:63` | internal | `importlib.metadata` `direct_url.json` (pip-written) | none |
-| `lathe/capabilities.py:423` | trust-boundary | Hunyuan HTTP `/health` response body | Wave 4: `hunyuan_probe.schema.json` |
+| `lathe/capabilities.py:423` | validated | Hunyuan HTTP `/health` response body | `hunyuan_probe.schema.json` |
 | `lathe/cli/inspect_cmd.py:42` | internal | Our own `build_report.json` | none |
 | `lathe/cli/inspect_cmd.py:43` | internal | Our own shape `bundle.json` | none |
 | `lathe/cli/inspect_cmd.py:44` | internal | Our own validate `report.json` | none |

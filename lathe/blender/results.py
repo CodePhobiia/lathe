@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ..paths import PathGuardError, safe_resolve
 from .plan_adapter import _dump_json
 
 
@@ -51,8 +52,15 @@ def export_blend_artifact(build_dir: Path, destination: Path | None = None) -> d
     artifact_path = inspect.get("blend_artifact_ir", {}).get("artifact_path")
     if not artifact_path:
         raise FileNotFoundError("No retained .blend artifact is recorded for this build")
-    source = build_dir / artifact_path
+    try:
+        source = safe_resolve(build_dir, str(artifact_path))
+    except PathGuardError as exc:
+        raise FileNotFoundError("Recorded .blend artifact path is outside the build directory") from exc
+    if not source.is_file():
+        raise FileNotFoundError(f"Recorded .blend artifact is missing: {artifact_path}")
     if destination is not None:
+        if destination.exists():
+            raise FileExistsError(f"Destination already exists: {destination}")
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(source.read_bytes())
     return {

@@ -1,4 +1,5 @@
 """Tests for the hero gallery + scoreboard tooling (BL-35, Plan 08 Phase 5)."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -8,9 +9,7 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from lathe.hero_manifest import HEROES, Hero, hero_by_name
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -39,7 +38,9 @@ class TestHeroManifest:
 
     def test_thresholds_in_range(self):
         for hero in HEROES:
-            assert 0.5 <= hero.threshold <= 1.0, f"{hero.asset_name} threshold {hero.threshold} out of [0.5, 1.0]"
+            assert 0.5 <= hero.threshold <= 1.0, (
+                f"{hero.asset_name} threshold {hero.threshold} out of [0.5, 1.0]"
+            )
 
     def test_expected_heroes_present(self):
         expected = {

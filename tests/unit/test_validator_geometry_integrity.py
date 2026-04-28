@@ -14,12 +14,11 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pytest
 import trimesh
-
 from lathe.executor import build_asset
 from lathe.parser import parse_file
 from lathe.validators.geometry_integrity import evaluate_geometry_integrity
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -132,9 +131,7 @@ class GeometryIntegrityTests(unittest.TestCase):
         report = evaluate_geometry_integrity({"name": "cube"}, runtime)
         self.assertEqual(calls["count"], 0)
         self.assertEqual(report["metrics"]["body_count_stability"], 1.0)
-        self.assertNotIn(
-            "L6203", [d["code"] for d in report["diagnostics"]]
-        )
+        self.assertNotIn("L6203", [d["code"] for d in report["diagnostics"]])
 
     def test_body_count_stability_check_on_stable(self) -> None:
         runtime = _runtime_with_mesh(_cube())
@@ -199,6 +196,7 @@ class GeometryIntegrityTests(unittest.TestCase):
         self.assertEqual(l6201[0]["severity"], "warning")
 
 
+@pytest.mark.slow
 class CourierDroneIntegrationTests(unittest.TestCase):
     _CACHE: dict[str, Any] | None = None
 
@@ -210,9 +208,7 @@ class CourierDroneIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "courier_drone"
             build_asset(program, "courier_drone", out)
-            report = json.loads(
-                (out / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
-            )
+            report = json.loads((out / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
         cls._CACHE = {"report": report}
         return cls._CACHE
 

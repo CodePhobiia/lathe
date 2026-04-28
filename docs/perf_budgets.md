@@ -32,7 +32,7 @@ this stage just get 2x slower" detection but has two downsides:
         "shape":    {"ms_max": 6000},
         "topology": {"ms_max": 4000},
         "uv":       {"ms_max": 1000},
-        "surface":  {"ms_max": 280000},
+        "surface":  {"ms_max": 180000},
         "optimize": {"ms_max": 200},
         "validate": {"ms_max": 80000},
         "package":  {"ms_max": 20000}
@@ -48,6 +48,12 @@ Rows emitted by the profiler:
 - `warn`: `0.9 * ms_max < current_ms <= ms_max` (heads-up; still passes)
 - `fail`: `current_ms > ms_max` (exit non-zero unless `--no-fail-on-regression`)
 - `skip`: no measurement or no budget for that stage
+
+Cached builds can legitimately emit `skip` rows for stages whose only
+available timing source is a preserved artifact mtime from an older run.
+The total wall-clock row still gates the current build, while per-stage
+rows resume once the executor reports structured timings or the build is
+profiled from a cold cache.
 
 ## Running the manifest gate
 

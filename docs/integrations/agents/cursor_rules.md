@@ -37,7 +37,7 @@ alwaysApply: false
     python -m lathe.cli plan <file.lth> <asset_id>
     python -m lathe.cli build <file.lth> <asset_id> --out dist
 
-Read `dist/<asset_id>/trace.json` after a successful build. Cite the
+Read `dist/<asset_id>/stages/package/trace_manifest.json` after a successful build. Cite the
 `attempted` vs `actual` provider when reporting back.
 
 ## Failure grammar
@@ -54,7 +54,7 @@ Parse it. Edit the corresponding block in the `.lth` source. Re-run
   the repo. That bypasses intent preservation and breaks reproducibility.
 - Do NOT edit `dist/` artifacts directly — they are outputs, not source.
 - Do NOT claim "the mesh looks fine" as a verification — cite
-  `trace.json` and the certification verdict.
+  `stages/package/trace_manifest.json` and the certification verdict.
 - Do NOT alter the stable shape contract ID `lathe.shape.intent_mesh_handoff_v1`
   unless the user explicitly asks for a migration.
 

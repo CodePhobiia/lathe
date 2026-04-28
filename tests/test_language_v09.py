@@ -7,7 +7,6 @@ from lathe.normalizer import normalize_program
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CHEST_EXAMPLE = ROOT / "examples" / "brassbound_chest.lth"
 CRATE_EXAMPLE = ROOT / "examples" / "industrial_crate.lth"

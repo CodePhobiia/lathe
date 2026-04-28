@@ -29,7 +29,6 @@ from pathlib import Path
 
 from .errors import LatheParseError
 
-
 # Token regex mirrors ``lathe.parser.tokens.TOKEN_RE`` but additionally
 # surfaces horizontal whitespace and newlines so we can re-emit
 # canonical whitespace.
@@ -52,6 +51,8 @@ _TOKEN_RE = re.compile(
 _OPEN_BRACES = {"{", "[", "("}
 _CLOSE_BRACES = {"}", "]", ")"}
 _CLOSE_FOR = {"{": "}", "[": "]", "(": ")"}
+_ATOM_KINDS = {"ident", "string", "number", "unit"}
+_BLANK_LINE_NEWLINE_COUNT = 2
 
 _SPACED_BINARY_OPS = {
     "=",
@@ -78,6 +79,31 @@ class _Token:
         return f"_Token({self.kind!r}, {self.value!r})"
 
 
+class _UnexpectedTokenError(LatheParseError):
+    def __init__(self, snippet: str) -> None:
+        super().__init__(f"Unexpected token near: {snippet!r}")
+
+
+class _UnmatchedClosingError(LatheParseError):
+    def __init__(self, token: str) -> None:
+        super().__init__(f"Unmatched closing {token!r} in source")
+
+
+class _UnclosedBraceError(LatheParseError):
+    def __init__(self, opener: str) -> None:
+        super().__init__(f"Unclosed {opener!r} in source")
+
+
+class _MismatchedBraceError(LatheParseError):
+    def __init__(self, expected: str, actual: str) -> None:
+        super().__init__(f"Mismatched brace: expected {expected!r}, got {actual!r}")
+
+
+class _UnclosedTokenIndexError(LatheParseError):
+    def __init__(self, opener: str, token_index: int) -> None:
+        super().__init__(f"Unclosed {opener!r} at token index {token_index}")
+
+
 # ---------------------------------------------------------------------------
 # Tokenization
 # ---------------------------------------------------------------------------
@@ -90,7 +116,7 @@ def _tokenize(source: str) -> list[_Token]:
         match = _TOKEN_RE.match(source, pos)
         if not match:
             snippet = source[pos : pos + 40].splitlines()[0] if source[pos:] else ""
-            raise LatheParseError(f"Unexpected token near: {snippet!r}")
+            raise _UnexpectedTokenError(snippet)
         kind = match.lastgroup or ""
         value = match.group()
         tokens.append(_Token(kind, value))
@@ -99,8 +125,10 @@ def _tokenize(source: str) -> list[_Token]:
 
 
 def _code_tokens(tokens: list[_Token]) -> list[_Token]:
-    """Return tokens with horizontal whitespace dropped and runs of
-    newlines collapsed to at most two (= one blank line)."""
+    """Return tokens with horizontal whitespace dropped.
+
+    Runs of newlines collapse to at most two (= one blank line).
+    """
     out: list[_Token] = []
     newline_run = 0
     for tok in tokens:
@@ -130,12 +158,10 @@ def _check_brace_balance(tokens: list[_Token]) -> None:
             stack.append((tok.value, idx))
         elif tok.value in _CLOSE_BRACES:
             if not stack or _CLOSE_FOR[stack[-1][0]] != tok.value:
-                raise LatheParseError(
-                    f"Unmatched closing {tok.value!r} in source"
-                )
+                raise _UnmatchedClosingError(tok.value)
             stack.pop()
     if stack:
-        raise LatheParseError(f"Unclosed {stack[-1][0]!r} in source")
+        raise _UnclosedBraceError(stack[-1][0])
 
 
 # ---------------------------------------------------------------------------
@@ -159,9 +185,7 @@ def _is_unary_minus(tokens: list[_Token], idx: int) -> bool:
             return True
         if pv in _SPACED_BINARY_OPS:
             return True
-        if pv in {"and", "or", "not", "in", "-", "+", "*", "/"}:
-            return True
-        return False
+        return pv in {"and", "or", "not", "in", "-", "+", "*", "/"}
     return True
 
 
@@ -243,7 +267,7 @@ def _render_inline(tokens: list[_Token], emitter: _Emitter) -> None:
     The list must not contain newlines; any nested multi-line brackets
     should already have been expanded into sub-renders.
     """
-    for idx, tok in enumerate(tokens):
+    for idx, _tok in enumerate(tokens):
         _emit_one_token(tokens, idx, emitter)
 
 
@@ -261,7 +285,6 @@ def _emit_one_token(tokens: list[_Token], idx: int, emitter: _Emitter) -> None:
         return
 
     value = tok.value
-    kind = tok.kind
 
     # Unary minus: attach to next atom (handled by suppressing the
     # leading space of the *next* token via _space_before).
@@ -283,6 +306,12 @@ def _prev_real(tokens: list[_Token], idx: int) -> _Token | None:
     return None
 
 
+def _adjacent_atoms_need_space(prev: _Token, tok: _Token) -> bool:
+    return (prev.kind in _ATOM_KINDS or prev.value in _CLOSE_BRACES) and (
+        tok.kind in _ATOM_KINDS or tok.value in _OPEN_BRACES
+    )
+
+
 def _space_before(tokens: list[_Token], idx: int, emitter: _Emitter) -> None:
     tok = tokens[idx]
     prev = _prev_real(tokens, idx)
@@ -296,51 +325,28 @@ def _space_before(tokens: list[_Token], idx: int, emitter: _Emitter) -> None:
         return
 
     pv, pk = prev.value, prev.kind
-    tv, tk = tok.value, tok.kind
+    tv = tok.value
 
-    # After an opener or before a closer: never space.
-    if pv in _OPEN_BRACES:
+    no_space_tokens = {".", "..", ","}
+    if (
+        pv in _OPEN_BRACES
+        or tv in _CLOSE_BRACES
+        or pv in no_space_tokens
+        or tv in no_space_tokens
+        or tv == ":"
+        or (tv == "(" and pk == "ident")
+        or (pv == "-" and _is_unary_minus(tokens, _idx_of(tokens, prev)))
+    ):
         return
-    if tv in _CLOSE_BRACES:
-        return
-    # Dot path.
-    if pv == "." or tv == ".":
-        return
-    # Range.
-    if pv == ".." or tv == "..":
-        return
-    # Comma: no space before, always space after.
-    if tv == ",":
-        return
-    if pv == ",":
+    if (
+        pv in {",", ":"}
+        or tv in _SPACED_BINARY_OPS
+        or pv in _SPACED_BINARY_OPS
+        or tv == "-"
+        or pv == "-"
+        or _adjacent_atoms_need_space(prev, tok)
+    ):
         emitter.write(" ")
-        return
-    # Colon: no space before, always space after.
-    if tv == ":":
-        return
-    if pv == ":":
-        emitter.write(" ")
-        return
-    # Call paren: no space between ident and `(`.
-    if tv == "(" and pk == "ident":
-        return
-    # After unary minus: no space.
-    if pv == "-" and _is_unary_minus(tokens, _idx_of(tokens, prev)):
-        return
-    # Spaced binary operators.
-    if tv in _SPACED_BINARY_OPS or pv in _SPACED_BINARY_OPS:
-        emitter.write(" ")
-        return
-    # Binary minus.
-    if tv == "-" or pv == "-":
-        emitter.write(" ")
-        return
-    # Default: space between atoms / closer-then-atom / atom-then-opener.
-    if pk in {"ident", "string", "number", "unit"} or pv in _CLOSE_BRACES:
-        if tk in {"ident", "string", "number", "unit"} or tv in _OPEN_BRACES:
-            emitter.write(" ")
-            return
-    # Any other adjacency: no space.
 
 
 def _idx_of(tokens: list[_Token], target: _Token) -> int:
@@ -370,11 +376,9 @@ def _find_matching(tokens: list[_Token], open_idx: int) -> int:
             depth -= 1
             if depth == 0:
                 if v != closer:
-                    raise LatheParseError(
-                        f"Mismatched brace: expected {closer!r}, got {v!r}"
-                    )
+                    raise _MismatchedBraceError(closer, v)
                 return i
-    raise LatheParseError(f"Unclosed {opener!r} at token index {open_idx}")
+    raise _UnclosedTokenIndexError(opener, open_idx)
 
 
 def _scan_logical_line(tokens: list[_Token], start: int, end: int) -> tuple[int, bool]:
@@ -436,7 +440,7 @@ def _render_block_body(
             i += 1
         if i >= end:
             break
-        if newline_count >= 2 and not first_line:
+        if newline_count >= _BLANK_LINE_NEWLINE_COUNT and not first_line:
             emitter.blank_line()
 
         # Skip further over any token we've already processed; also skip
@@ -544,27 +548,46 @@ def _space_before_opener(tokens: list[_Token], idx: int, emitter: _Emitter) -> N
     if emitter.last_char().isspace():
         return
     pv, pk = prev.value, prev.kind
-    if tok.value == "(" and pk == "ident":
-        return
-    if pv in _OPEN_BRACES or pv == ",":
-        return
-    if pv == ":" or pv == "=":
+
+    no_space = (
+        (tok.value == "(" and pk == "ident")
+        or pv in _OPEN_BRACES
+        or pv == ","
+        or (pv == "-" and _is_unary_minus(tokens, _idx_of(tokens, prev)))
+    )
+    needs_space = (
+        pv in {":", "="} or pv in _SPACED_BINARY_OPS or pv == "-" or pv in _CLOSE_BRACES or pk in _ATOM_KINDS
+    )
+    if needs_space and not no_space:
         emitter.write(" ")
-        return
-    if pv in _SPACED_BINARY_OPS:
-        emitter.write(" ")
-        return
-    if pv == "-":
-        if _is_unary_minus(tokens, _idx_of(tokens, prev)):
-            return
-        emitter.write(" ")
-        return
-    if pv in _CLOSE_BRACES:
-        emitter.write(" ")
-        return
-    if pk in {"ident", "string", "number", "unit"}:
-        emitter.write(" ")
-        return
+
+
+def _structured_token_needs_space(
+    tokens: list[_Token],
+    prev: _Token,
+    tok: _Token,
+) -> bool:
+    pv, pk = prev.value, prev.kind
+    tv = tok.value
+    no_space_tokens = {".", ".."}
+    if (
+        pv in _OPEN_BRACES
+        or tv in _CLOSE_BRACES
+        or pv in no_space_tokens
+        or tv in no_space_tokens
+        or tv in {",", ":"}
+        or (tv == "(" and pk == "ident")
+        or (pv == "-" and _is_unary_minus(tokens, _idx_of(tokens, prev)))
+    ):
+        return False
+    return (
+        pv in {",", ":"}
+        or tv in _SPACED_BINARY_OPS
+        or pv in _SPACED_BINARY_OPS
+        or tv == "-"
+        or pv == "-"
+        or _adjacent_atoms_need_space(prev, tok)
+    )
 
 
 def _emit_structured_token(tokens: list[_Token], idx: int, emitter: _Emitter) -> None:
@@ -572,63 +595,22 @@ def _emit_structured_token(tokens: list[_Token], idx: int, emitter: _Emitter) ->
     tok = tokens[idx]
     prev = _prev_real(tokens, idx)
     value = tok.value
-    kind = tok.kind
 
     # Handle unary minus: attach to the following atom.
     if value == "-" and _is_unary_minus(tokens, idx):
         if prev is not None and emitter.line_has_content() and not emitter.last_char().isspace():
             pv = prev.value
-            if pv in _OPEN_BRACES or pv in {",", ":", "="}:
-                pass
-            elif pv in _SPACED_BINARY_OPS or pv in {"and", "or", "not", "in", "-", "+", "*", "/"}:
-                emitter.write(" ")
-            else:
+            if pv not in _OPEN_BRACES and pv not in {",", ":", "="}:
                 emitter.write(" ")
         emitter.write("-")
         return
 
-    # Determine spacing.
-    need_space = False
-    if prev is None or not emitter.line_has_content() or emitter.last_char().isspace():
-        need_space = False
-    else:
-        pv, pk = prev.value, prev.kind
-        tv, tk = value, kind
-
-        if pv in _OPEN_BRACES:
-            need_space = False
-        elif tv in _CLOSE_BRACES:
-            need_space = False
-        elif pv == "." or tv == ".":
-            need_space = False
-        elif pv == ".." or tv == "..":
-            need_space = False
-        elif tv == ",":
-            need_space = False
-        elif pv == ",":
-            need_space = True
-        elif tv == ":":
-            need_space = False
-        elif pv == ":":
-            need_space = True
-        elif tv == "(" and pk == "ident":
-            need_space = False
-        elif pv == "-" and _is_unary_minus(tokens, _idx_of(tokens, prev)):
-            need_space = False
-        elif tv in _SPACED_BINARY_OPS or pv in _SPACED_BINARY_OPS:
-            need_space = True
-        elif tv == "-" or pv == "-":
-            need_space = True
-        elif pk in {"ident", "string", "number", "unit"} and tk in {
-            "ident", "string", "number", "unit",
-        }:
-            need_space = True
-        elif pv in _CLOSE_BRACES and tk in {
-            "ident", "string", "number", "unit",
-        }:
-            need_space = True
-        elif pk in {"ident", "string", "number", "unit"} and tv in _OPEN_BRACES:
-            need_space = True
+    need_space = (
+        prev is not None
+        and emitter.line_has_content()
+        and not emitter.last_char().isspace()
+        and _structured_token_needs_space(tokens, prev, tok)
+    )
 
     if need_space:
         emitter.write(" ")
@@ -748,7 +730,7 @@ def _emit_standalone_comment(tok: _Token, emitter: _Emitter) -> None:
             # Preserve the author's leading whitespace inside a multi-line
             # block comment — but strip all indentation; we re-indent to
             # the current block level and left-align the continuation.
-            emitter.write(line.lstrip().rstrip() if idx == len(lines) - 1 else line.lstrip().rstrip())
+            emitter.write(line.lstrip().rstrip())
         emitter.newline()
 
 

@@ -13,6 +13,7 @@ from typing import Any
 @dataclass
 class SolidOp:
     """SolidOp."""
+
     op: str
     primitive_type: str
     part: str
@@ -33,6 +34,7 @@ class SolidOp:
 @dataclass
 class SolidIR:
     """SolidIR."""
+
     asset_name: str
     family: str
     operations: list[SolidOp]

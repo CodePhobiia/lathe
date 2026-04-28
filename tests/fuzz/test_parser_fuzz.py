@@ -26,15 +26,18 @@ Strategies:
 
 All three are united by the same ``_assert_parser_invariant`` helper.
 """
+
 from __future__ import annotations
 
 import os
 from typing import Any
 
 import pytest
-from hypothesis import HealthCheck, given, settings, strategies as st
-
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from lathe.parser import LatheParseError, parse_text
+
+pytestmark = pytest.mark.fuzz
 
 
 # Scale knob (BL-42): default 200 (fast, PR CI / local smoke);
@@ -79,17 +82,58 @@ _IDENT = st.builds(lambda a, b: a + b, _IDENT_FIRST, _IDENT_REST)
 
 # Token vocabulary directly drawn from ``lathe.parser.tokens.TOKEN_RE``.
 _OPS = st.sampled_from(
-    ["{", "}", "(", ")", "[", "]", ",", ":", "=", ".", "+", "-", "*", "/", "<", ">", "..", "==", "!=", "<=", ">="]
+    [
+        "{",
+        "}",
+        "(",
+        ")",
+        "[",
+        "]",
+        ",",
+        ":",
+        "=",
+        ".",
+        "+",
+        "-",
+        "*",
+        "/",
+        "<",
+        ">",
+        "..",
+        "==",
+        "!=",
+        "<=",
+        ">=",
+    ]
 )
 _KEYWORDS = st.sampled_from(
-    ["asset", "profile", "contract", "critic", "stage", "uses", "module", "import", "build", "ensure", "kind", "true", "false"]
+    [
+        "asset",
+        "profile",
+        "contract",
+        "critic",
+        "stage",
+        "uses",
+        "module",
+        "import",
+        "build",
+        "ensure",
+        "kind",
+        "true",
+        "false",
+    ]
 )
 _NUMBERS = st.builds(
     lambda n: str(n),
-    st.one_of(st.integers(min_value=-1000, max_value=1000), st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False)),
+    st.one_of(
+        st.integers(min_value=-1000, max_value=1000),
+        st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False),
+    ),
 )
 _UNITS = st.sampled_from(["mm", "cm", "m", "deg", "rad", "g", "kg", "ms", "s", "kb", "mb", "gb", "px"])
-_NUMBER_WITH_UNIT = st.builds(lambda n, u: f"{abs(int(n))}{u}", st.integers(min_value=0, max_value=200), _UNITS)
+_NUMBER_WITH_UNIT = st.builds(
+    lambda n, u: f"{abs(int(n))}{u}", st.integers(min_value=0, max_value=200), _UNITS
+)
 _STRINGS = st.builds(lambda s: '"' + s.replace("\\", "").replace('"', "") + '"', st.text(max_size=10))
 
 

@@ -19,6 +19,8 @@ extends EditorImportPlugin
 ## socket injection at import time (rather than after) is the next tier.
 
 const _SNAPSHOT_EXT := "lathe_snapshot.json"
+const _CURRENT_MANIFEST_REL := "stages/package/package_manifest.json"
+const _LEGACY_MANIFEST_REL := "manifest.json"
 
 
 func _get_importer_name() -> String:
@@ -128,7 +130,7 @@ func _import(
 	resource.set_meta("threshold", threshold)
 
 	if bool(options.get("resolve_glb_path", true)):
-		var manifest_path := "%s/manifest.json" % build_dir
+		var manifest_path := _manifest_path_for_build(build_dir)
 		if FileAccess.file_exists(manifest_path):
 			var mtext := FileAccess.get_file_as_string(manifest_path)
 			var mparsed: Variant = JSON.parse_string(mtext)
@@ -141,3 +143,13 @@ func _import(
 
 	var save_to := "%s.%s" % [save_path, _get_save_extension()]
 	return ResourceSaver.save(resource, save_to)
+
+
+func _manifest_path_for_build(build_dir: String) -> String:
+	var current := "%s/%s" % [build_dir, _CURRENT_MANIFEST_REL]
+	if FileAccess.file_exists(current):
+		return current
+	var legacy := "%s/%s" % [build_dir, _LEGACY_MANIFEST_REL]
+	if FileAccess.file_exists(legacy):
+		return legacy
+	return ""

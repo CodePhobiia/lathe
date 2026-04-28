@@ -13,7 +13,6 @@ from .backends import resolve_selected_backends
 from .defaults import BUILD_STAGES
 from .resolver import Resolver
 
-
 STAGE_DAG = {
     "shape": ["topology"],
     "topology": ["uv", "rig", "interfaces", "physics", "optimize"],
@@ -90,13 +89,17 @@ def _v12_surface_summary(asset: dict[str, Any]) -> dict[str, Any]:
         "surface_program": surface.get("program", ""),
         "surface_policy": surface.get("policy", build_surface.get("surface_policy", "")),
         "resolved_surface_policy": surface.get("resolved_surface_policy", {}).get("name", ""),
-        "authoring_backend": authoring.get("backend") or surface.get("backend") or build_surface.get("authoring_backend", ""),
+        "authoring_backend": authoring.get("backend")
+        or surface.get("backend")
+        or build_surface.get("authoring_backend", ""),
         "resolved_surface_backend": surface.get("resolved_surface_backend", {}).get("name", ""),
         "authoring_mode": authoring.get("mode", surface.get("authoring_mode", "")),
         "decal_libraries": list(surface.get("decal_libraries", [])),
         "mask_programs": list(surface.get("mask_programs", [])),
         "trim_sheets": list(surface.get("trim_sheets", [])),
-        "resolved_decal_libraries": [item.get("name") for item in surface.get("resolved_decal_libraries", [])],
+        "resolved_decal_libraries": [
+            item.get("name") for item in surface.get("resolved_decal_libraries", [])
+        ],
         "resolved_mask_programs": [item.get("name") for item in surface.get("resolved_mask_programs", [])],
         "resolved_trim_sheets": [item.get("name") for item in surface.get("resolved_trim_sheets", [])],
     }
@@ -121,10 +124,20 @@ def _v13_execution_summary(asset: dict[str, Any]) -> dict[str, Any]:
         "render_fixture": build_surface.get("render_fixture", ""),
         "resolved_render_fixture": build_surface.get("resolved_render_fixture", {}).get("name", ""),
         "library_bindings": list(execution.get("library_bindings", [])),
-        "resolved_library_bindings": [item.get("name") for item in execution.get("resolved_library_bindings", [])],
+        "resolved_library_bindings": [
+            item.get("name") for item in execution.get("resolved_library_bindings", [])
+        ],
         "internal_backends": {
             key: V13_INTERNAL_BACKENDS.get(key, {}).get(str(execution.get(key, "") or ""), "")
-            for key in ("geometry_backend", "uv_backend", "bake_backend", "surface_backend", "render_backend", "package_backend", "library_backend")
+            for key in (
+                "geometry_backend",
+                "uv_backend",
+                "bake_backend",
+                "surface_backend",
+                "render_backend",
+                "package_backend",
+                "library_backend",
+            )
         },
     }
 
@@ -144,11 +157,18 @@ def _v13_1_control_summary(asset: dict[str, Any]) -> dict[str, Any]:
         "required_evidence": list(required or []),
         "patch_source_allowed": bool(values.get("patch_source_allowed", False)),
         "unsafe_blender_python_allowed": bool(values.get("unsafe_blender_python_allowed", False)),
-        "default_recovery_branches": ["reselect_candidate", "repair_candidate", "regenerate_candidate", "patch_source"],
+        "default_recovery_branches": [
+            "reselect_candidate",
+            "repair_candidate",
+            "regenerate_candidate",
+            "patch_source",
+        ],
     }
 
 
-def build_plan(program: dict[str, Any], asset_name: str, execution_profile_override: str | None = None) -> dict[str, Any]:
+def build_plan(
+    program: dict[str, Any], asset_name: str, execution_profile_override: str | None = None
+) -> dict[str, Any]:
     """Build plan.
 
     Args:

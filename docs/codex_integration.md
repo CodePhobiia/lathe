@@ -13,7 +13,9 @@ This repository includes a first project-scoped Codex integration pack so Codex 
 - `.agents/skills/`
   - repo-scoped Codex skills discovered by Codex in this repository
 - `scripts/lathe_smoke.sh`
-  - quick regression runner
+  - one-command local smoke runner: doctor, canonical check/plan, smoke pytest partition, and a throwaway build
+- `scripts/lathe_smoke.ps1`
+  - PowerShell equivalent for Windows-first local smoke runs
 - `scripts/lathe_asset_loop.sh`
   - end-to-end asset loop for one `.lth` source and asset name
 - `scripts/bootstrap_local.ps1`
@@ -48,7 +50,7 @@ python -m lathe.cli doctor
 python -m lathe.cli check examples/courier_drone.lth
 python -m lathe.cli plan examples/courier_drone.lth courier_drone
 scripts/lathe_asset_loop.sh examples/courier_drone.lth courier_drone
-scripts/lathe_smoke.sh
+bash scripts/lathe_smoke.sh
 ```
 
 ## Local machine flow
@@ -57,6 +59,12 @@ Recommended bootstrap:
 
 ```powershell
 scripts/bootstrap_local.ps1 -Dev -Export
+```
+
+Recommended Windows smoke:
+
+```powershell
+scripts/lathe_smoke.ps1
 ```
 
 Optional runtime-specific installs:

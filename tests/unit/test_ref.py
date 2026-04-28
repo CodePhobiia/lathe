@@ -21,9 +21,7 @@ import warnings
 from pathlib import Path
 
 import pytest
-
 from lathe.ref import (
-    RefNode,
     RefParseError,
     RefSelector,
     StaleRefWarning,
@@ -31,7 +29,6 @@ from lathe.ref import (
     parse_ref,
     resolve_ref,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -212,20 +209,22 @@ def mini_build(tmp_path: Path) -> Path:
             "package": {"backend_id": "lathe.package.openusd_gltf_v1"},
         },
         "diagnostics": [
-            {"id": "bake_missing", "severity": "warning", "stage": "surface",
-             "message": "bake was not run", "code": "surface.bake_missing"}
+            {
+                "id": "bake_missing",
+                "severity": "warning",
+                "stage": "surface",
+                "message": "bake was not run",
+                "code": "surface.bake_missing",
+            }
         ],
         "outputs": [
-            {"format": "glb", "uri": "stages/package/mini_drone.glb",
-             "sha256": "a" * 64, "size_bytes": 100}
+            {"format": "glb", "uri": "stages/package/mini_drone.glb", "sha256": "a" * 64, "size_bytes": 100}
         ],
     }
     (build_dir / "build_report.json").write_text(json.dumps(build_report))
     shape_bundle = {
         "selected_candidate_id": "c0",
-        "candidates": [
-            {"candidate_id": "c0", "part_labels": ["body", "rotor_fl", "rotor_fr"]}
-        ],
+        "candidates": [{"candidate_id": "c0", "part_labels": ["body", "rotor_fl", "rotor_fr"]}],
     }
     (build_dir / "stages" / "shape" / "bundle.json").write_text(json.dumps(shape_bundle))
     return tmp_path

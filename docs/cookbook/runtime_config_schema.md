@@ -2,7 +2,7 @@
 
 This page is the field-level reference for the JSON passed via `lathe ... --runtime-config <file>.json`. The authoritative schema lives at [`schema/runtime_config.schema.json`](https://github.com/talmerri/lathe/blob/main/schema/runtime_config.schema.json); this page documents each field with usage notes.
 
-Three example configs ship in-tree under [`examples/runtime_configs/`](https://github.com/talmerri/lathe/tree/main/examples/runtime_configs) — see [Recipe 08 — Runtime config](08_runtime_config.md) for a runnable walkthrough.
+The example configs ship in-tree under [`examples/runtime_configs/`](https://github.com/talmerri/lathe/tree/main/examples/runtime_configs) — see [Recipe 08 — Runtime config](08_runtime_config.md) for a runnable walkthrough. They cover `offline.json`, `reference_only.json`, `mock_hunyuan_http.json`, `hunyuan_http.json`, `real_learned_hunyuan_http.json`, `vggt_local.json`, and `auto_learned.json`.
 
 The schema id is `https://lathe.dev/schemas/runtime_config-v1.json`. Unknown keys are permitted (warned at load time) until stricter gates land in a later release.
 
@@ -36,7 +36,7 @@ Controls which provider the probabilistic shape stage calls.
 |---|---|---|
 | `base_url` | string (uri) | HTTP endpoint, e.g. `http://localhost:8081`. |
 | `timeout_s` | int 1–3600 | Request timeout. |
-| `url_allowlist` | array<string> | Optional host allowlist; any other host is rejected. |
+| `url_allowlist` | array<string> | Required host allowlist for outbound Hunyuan requests; any other host is rejected. |
 | `remove_background` | bool | Ask the server to strip background from input images. |
 | `texture` | bool | Request textured geometry (heavier). |
 | `octree_resolution` | int >= 1 | Octree resolution for surface extraction. 256 is a good default. |
@@ -92,6 +92,23 @@ V1.2 surface backend wiring.
 | `surface.codex_imagegen.mode` | string | `auto`, `fallback`, `emit`, `consume`. Matches the CLI `--codex-imagegen` flag. |
 | `surface.codex_imagegen.request_dir` | string | Where Lathe writes imagegen requests. |
 | `surface.codex_imagegen.output_dir` | string | Where Lathe reads imagegen results back. |
+
+## `publish`
+
+Network-capable publish drivers require explicit host allowlists before making
+outbound requests.
+
+| Field | Type | Notes |
+|---|---|---|
+| `publish.target` | string | Publish driver id (`local_fs`, `s3`, `supabase`, `git_lfs`, or a custom driver). |
+| `publish.base_url` | string | Supabase API origin URL. |
+| `publish.endpoint_url` | string | Optional S3-compatible endpoint origin URL. |
+| `publish.url_allowlist` | array<string> | Required for network publish drivers; must include the Supabase `base_url` host, the S3 `endpoint_url` host, or the expected AWS S3 host. |
+| `publish.service_key` | string | Supabase service key. Prefer environment-specific secret injection over checked-in files. |
+| `publish.bucket` | string | Supabase Storage bucket. |
+| `publish.prefix` | string | Optional object-key prefix. |
+| `publish.target_dir` | string | Local filesystem target for `local_fs`. |
+| `publish.timeout_s` | number >= 1 | Per-request timeout for network publish drivers. |
 
 ## `execution`
 

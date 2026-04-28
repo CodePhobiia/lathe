@@ -16,6 +16,7 @@ from ..asset_graph import build_asset_graph
 from ..conformance import fit_provider_proposals
 from ..scaffold_compiler import compile_scaffold_candidates
 from ..shape_providers import maybe_run_shape_provider
+from ..stage_contracts import assert_supported_backend_contract_version, supported_backend_contract_versions
 from .geometry.conditioning import collect_shape_conditioning
 
 __all__ = ["collect_shape_conditioning", "run_shape_backend"]
@@ -31,6 +32,7 @@ def run_shape_backend(
     conditioning: dict[str, Any],
     work_dir: Path,
     runtime_config: dict[str, Any] | None = None,
+    backend_version: str | None = None,
 ) -> dict[str, Any]:
     """Run shape backend.
 
@@ -43,12 +45,22 @@ def run_shape_backend(
         conditioning: conditioning argument.
         work_dir: work_dir argument.
         runtime_config: runtime_config argument.
+        backend_version: Backend contract version selected by the planner.
 
     Returns:
         The result.
     """
     if backend_id != "lathe.shape.intent_mesh_handoff_v1":
         raise ValueError(f"Unsupported runnable shape backend '{backend_id}'")
+    selected_version = backend_version
+    if selected_version is None:
+        supported_versions = supported_backend_contract_versions(backend_id)
+        selected_version = supported_versions[0] if supported_versions else None
+    assert_supported_backend_contract_version(
+        backend_id,
+        selected_version,
+        context="shape handoff contract",
+    )
 
     asset_graph = build_asset_graph(asset)
     mode = asset.get("build", {}).get("shape", {}).get("mode", "generate")
@@ -70,7 +82,11 @@ def run_shape_backend(
         mode=mode,
         runtime_config=runtime_config,
     )
-    if asset_graph.authoring.get("self_reliant_target") and mode in {"generate", "assemble", "adapt"} and not explicit_provider:
+    if (
+        asset_graph.authoring.get("self_reliant_target")
+        and mode in {"generate", "assemble", "adapt"}
+        and not explicit_provider
+    ):
         provider_result = {
             "provider_report": {
                 "selected_provider_id": "lathe.provider.shape.reference_conditioned_v1",
@@ -81,7 +97,11 @@ def run_shape_backend(
                 "strict": False,
                 "learned": False,
                 "status": "native_only",
-                "probe": {"available": True, "provider_id": "lathe.provider.shape.reference_conditioned_v1", "details": {}},
+                "probe": {
+                    "available": True,
+                    "provider_id": "lathe.provider.shape.reference_conditioned_v1",
+                    "details": {},
+                },
                 "config": {},
                 "fallback_reason": "V0.9 self-reliant compiler policy removes asset-generation AI from the critical path for this asset family.",
             },

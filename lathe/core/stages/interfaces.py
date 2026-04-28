@@ -9,8 +9,9 @@ from __future__ import annotations
 import warnings
 from typing import Any
 
-from ..common import dump_json
+from lathe.interface_entries import coerce_interface_entry
 
+from ..common import dump_json
 
 SOCKET_TYPES = (
     "attach",
@@ -79,17 +80,9 @@ def _coerce_entry(entry: Any) -> dict[str, Any]:
     Accepts:
       - str  — legacy form, ``sockets = [name1, name2]``.
       - dict — structured form with id/name/socket_type/pivot_type/etc.
+      - call — source form, ``socket(id: foo, socket_type: attach)``.
     """
-    if isinstance(entry, str):
-        return {"name": entry, "id": entry}
-    if isinstance(entry, dict):
-        out = dict(entry)
-        if "name" not in out and "id" in out:
-            out["name"] = out["id"]
-        if "id" not in out and "name" in out:
-            out["id"] = out["name"]
-        return out
-    return {"name": str(entry), "id": str(entry)}
+    return coerce_interface_entry(entry)
 
 
 def _resolve_socket_type(entry: dict[str, Any], *, source_label: str) -> str:
@@ -141,7 +134,6 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
 
     raw_sockets = cfg.get("sockets", []) or []
     sockets: list[dict[str, Any]] = []
-    legacy_anchors: list[dict[str, Any]] = []
     for idx, raw in enumerate(raw_sockets):
         entry = _coerce_entry(raw)
         name = str(entry.get("name") or entry.get("id") or f"socket_{idx}")
@@ -193,6 +185,12 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
         origin_raw = entry.get("origin") or entry.get("position")
         if isinstance(origin_raw, (list, tuple)) and len(origin_raw) == 3:
             origin = _round_vec3(list(origin_raw))
+        elif pivot_type == "contact":
+            origin = [
+                round(float(center[0]), 6),
+                round(float(bounds[0, 1]), 6),
+                round(float(center[2]), 6),
+            ]
         else:
             origin = [
                 round(float(center[0]), 6),
@@ -242,26 +240,30 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
         if entry.get("pivot_type") is None and entry.get("type") is None:
             pivot_type = "contact"
         transform = _round_transform(_translation_transform(position[0], position[1], position[2]))
-        pivots.append({
-            "id": aid,
-            "name": name,
-            "pivot_type": pivot_type,
-            "position": position,
-            "origin": position,
-            "transform": transform,
-        })
+        pivots.append(
+            {
+                "id": aid,
+                "name": name,
+                "pivot_type": pivot_type,
+                "position": position,
+                "origin": position,
+                "transform": transform,
+            }
+        )
 
     # Every asset inherits a `world` pivot at identity if the source declared
     # no pivots at all (so STAGE-4 is guaranteed to populate the manifest).
     if not pivots:
-        pivots.append({
-            "id": "world",
-            "name": "world",
-            "pivot_type": "world",
-            "position": [0.0, 0.0, 0.0],
-            "origin": [0.0, 0.0, 0.0],
-            "transform": _identity_transform(),
-        })
+        pivots.append(
+            {
+                "id": "world",
+                "name": "world",
+                "pivot_type": "world",
+                "position": [0.0, 0.0, 0.0],
+                "origin": [0.0, 0.0, 0.0],
+                "transform": _identity_transform(),
+            }
+        )
 
     bundle = {
         "backend_id": "lathe.interfaces.socket_stub_v1",

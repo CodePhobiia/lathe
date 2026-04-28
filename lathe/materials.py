@@ -119,11 +119,17 @@ def _custom_material(asset: dict[str, Any], name: str) -> dict[str, Any] | None:
             "basecolor": list(values.get("basecolor", palette_for_material(name)["basecolor"])),
             "metallic": float(values.get("metallic", palette_for_material(name)["metallic"])),
             "roughness": float(values.get("roughness", palette_for_material(name)["roughness"])),
-            "roughness_range": list(values.get("roughness_range", palette_for_material(name)["roughness_range"])),
+            "roughness_range": list(
+                values.get("roughness_range", palette_for_material(name)["roughness_range"])
+            ),
             "emissive": list(values.get("emissive", palette_for_material(name)["emissive"])),
-            "surface_profile": str(values.get("surface_profile", palette_for_material(name)["surface_profile"])),
+            "surface_profile": str(
+                values.get("surface_profile", palette_for_material(name)["surface_profile"])
+            ),
             "wear": float(values.get("wear", palette_for_material(name)["wear"])),
-            "normal_intensity": float(values.get("normal_intensity", palette_for_material(name)["normal_intensity"])),
+            "normal_intensity": float(
+                values.get("normal_intensity", palette_for_material(name)["normal_intensity"])
+            ),
         }
     return None
 
@@ -141,11 +147,15 @@ def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[
     surface = asset.get("surface", {})
     materials = list(surface.get("materials", [])) or list(asset.get("intent", {}).get("materials", []))
     palette = surface.get("resolved_palette", {})
-    palette_materials = list(palette.get("values", {}).get("materials", []) or palette.get("values", {}).get("slots", []))
+    palette_materials = list(
+        palette.get("values", {}).get("materials", []) or palette.get("values", {}).get("slots", [])
+    )
     if palette_materials:
         materials = list(dict.fromkeys([*materials, *palette_materials]))
     surface_program = surface.get("resolved_surface_program", {})
-    zone_overrides = dict(surface.get("zones", {}) or surface_program.get("values", {}).get("zones", {}) or {})
+    zone_overrides = dict(
+        surface.get("zones", {}) or surface_program.get("values", {}).get("zones", {}) or {}
+    )
     primary = materials[0] if materials else "default_body"
     secondary = materials[1] if len(materials) > 1 else primary
     tertiary = materials[2] if len(materials) > 2 else secondary
@@ -160,15 +170,19 @@ def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[
     for part in sorted(set(part_names)):
         lname = part.lower()
         material_name = str(zone_overrides.get(part, component_materials.get(part, primary)))
-        if part not in zone_overrides:
+        if part not in zone_overrides and part not in component_materials:
             for key, value in zone_overrides.items():
                 key_text = str(key).lower()
                 if key_text and key_text in lname:
                     material_name = str(value)
                     break
-        if part not in component_materials and any(token in lname for token in ("handle", "hinge", "lock", "frame", "bracket", "rotor")):
+        if part not in component_materials and any(
+            token in lname for token in ("handle", "hinge", "lock", "frame", "bracket", "rotor")
+        ):
             material_name = secondary
-        elif part not in component_materials and any(token in lname for token in ("glass", "screen", "socket", "lining")):
+        elif part not in component_materials and any(
+            token in lname for token in ("glass", "screen", "socket", "lining")
+        ):
             material_name = tertiary
         payload = _custom_material(asset, material_name) or palette_for_material(material_name)
         zones.append(

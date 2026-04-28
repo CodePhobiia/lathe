@@ -11,7 +11,7 @@ OpenHands is the most popular open-source coding-agent framework, and its users 
 ```json
 {
   "name": "lathe_build",
-  "description": "Build a certified game-ready 3D asset from a Lathe `.lth` source. Runs check -> plan -> build; emits a `.glb` + manifest + trace.json. Use when the user asks to certify, build, or validate a 3D asset and a `.lth` source exists in the workspace.",
+  "description": "Build a certified game-ready 3D asset from a Lathe `.lth` source. Runs check -> plan -> build; emits a `.glb` plus package_manifest.json and trace_manifest.json. Use when the user asks to certify, build, or validate a 3D asset and a `.lth` source exists in the workspace.",
   "parameters": {
     "type": "object",
     "properties": {
@@ -78,7 +78,7 @@ def lathe_build(source, asset_id, out_dir="dist", runtime_config=None):
     if runtime_config:
         cmd += ["--runtime-config", runtime_config]
     p = subprocess.run(cmd, capture_output=True, text=True)
-    trace_path = pathlib.Path(out_dir) / asset_id / "trace.json"
+    trace_path = pathlib.Path(out_dir) / asset_id / "stages" / "package" / "trace_manifest.json"
     if p.returncode == 0 and trace_path.exists():
         trace = json.loads(trace_path.read_text())
         return {"status": "pass", "artifacts": _list_artifacts(out_dir, asset_id),

@@ -13,6 +13,7 @@ from typing import Any
 @dataclass
 class ProposalDelta:
     """ProposalDelta."""
+
     delta_id: str
     kind: str
     target_region: str
@@ -33,6 +34,7 @@ class ProposalDelta:
 @dataclass
 class ShapeProposal:
     """ShapeProposal."""
+
     proposal_id: str
     source_id: str
     candidate_index: int
@@ -54,6 +56,7 @@ class ShapeProposal:
 @dataclass
 class ProposalBank:
     """ProposalBank."""
+
     attempted_sources: list[str]
     proposals: list[ShapeProposal]
 

@@ -22,7 +22,6 @@ from unittest import mock
 
 from lathe import bench_runtime
 
-
 _NO_BENCH_LTH = """
 asset noop_asset {
   kind = prop
@@ -42,9 +41,7 @@ def _write_lth(tmp_path: Path, body: str) -> Path:
 class TestBenchRunsSimpleBenchmarkBlock(unittest.TestCase):
     def test_program_with_no_benchmarks_passes_trivially(self) -> None:
         # An empty benchmarks list ⇒ ok=True, total=0, passed=0.
-        with mock.patch.object(
-            bench_runtime, "parse_file", return_value={"fixtures": [], "benchmarks": []}
-        ):
+        with mock.patch.object(bench_runtime, "parse_file", return_value={"fixtures": [], "benchmarks": []}):
             summary = bench_runtime.run_lathe_benchmarks(["fake.lth"])
         self.assertTrue(summary["ok"])
         self.assertEqual(summary["total"], 0)
@@ -56,9 +53,7 @@ class TestBenchReportsTiming(unittest.TestCase):
     def test_summary_shape_includes_pass_fail_counts(self) -> None:
         # The summary dict must always carry the keys the CLI reporter
         # expects, even when nothing ran.
-        with mock.patch.object(
-            bench_runtime, "parse_file", return_value={"fixtures": [], "benchmarks": []}
-        ):
+        with mock.patch.object(bench_runtime, "parse_file", return_value={"fixtures": [], "benchmarks": []}):
             summary = bench_runtime.run_lathe_benchmarks(["fake.lth"])
         for key in ("ok", "total", "passed", "failed", "results"):
             self.assertIn(key, summary)
@@ -81,9 +76,11 @@ class TestBenchHonorsIterationCount(unittest.TestCase):
             ],
         }
         fake_report = {"score": 1.0, "threshold": 0.5, "certified": True}
-        with mock.patch.object(bench_runtime, "parse_file", return_value=program), \
-             mock.patch.object(bench_runtime, "build_asset", return_value=fake_report), \
-             mock.patch("pathlib.Path.read_text", return_value=json.dumps({})):
+        with (
+            mock.patch.object(bench_runtime, "parse_file", return_value=program),
+            mock.patch.object(bench_runtime, "build_asset", return_value=fake_report),
+            mock.patch("pathlib.Path.read_text", return_value=json.dumps({})),
+        ):
             summary = bench_runtime.run_lathe_benchmarks(["fake.lth"])
         self.assertEqual(summary["total"], 1)
         self.assertEqual(len(summary["results"]), 1)
@@ -113,9 +110,11 @@ class TestBenchWithFailingBlock(unittest.TestCase):
         }
         # score (0.1) is NOT greater than threshold (0.5) ⇒ assert fails.
         fake_report = {"score": 0.1, "threshold": 0.5, "certified": False}
-        with mock.patch.object(bench_runtime, "parse_file", return_value=program), \
-             mock.patch.object(bench_runtime, "build_asset", return_value=fake_report), \
-             mock.patch("pathlib.Path.read_text", return_value=json.dumps({})):
+        with (
+            mock.patch.object(bench_runtime, "parse_file", return_value=program),
+            mock.patch.object(bench_runtime, "build_asset", return_value=fake_report),
+            mock.patch("pathlib.Path.read_text", return_value=json.dumps({})),
+        ):
             summary = bench_runtime.run_lathe_benchmarks(["fake.lth"])
         self.assertEqual(summary["total"], 1)
         self.assertEqual(summary["passed"], 0)
@@ -146,9 +145,11 @@ class TestBenchOutputShapeValid(unittest.TestCase):
             ],
         }
         fake_report = {"score": 1.0, "threshold": 0.5, "certified": True}
-        with mock.patch.object(bench_runtime, "parse_file", return_value=program), \
-             mock.patch.object(bench_runtime, "build_asset", return_value=fake_report), \
-             mock.patch("pathlib.Path.read_text", return_value=json.dumps({})):
+        with (
+            mock.patch.object(bench_runtime, "parse_file", return_value=program),
+            mock.patch.object(bench_runtime, "build_asset", return_value=fake_report),
+            mock.patch("pathlib.Path.read_text", return_value=json.dumps({})),
+        ):
             summary = bench_runtime.run_lathe_benchmarks(["fake.lth"])
         entry = summary["results"][0]
         for key in (

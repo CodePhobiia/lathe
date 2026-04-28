@@ -246,12 +246,12 @@ See [Recipe 09 — Certification debug](09_certification_debug.md) for the triag
 {
   "package": {
     "outputs":  [
-      {"format": "usd", "uri": "outputs/courier_drone.usd"},
-      {"format": "glb", "uri": "outputs/courier_drone.glb"}
+      {"format": "usd", "uri": "stages/package/courier_drone.usda"},
+      {"format": "glb", "uri": "stages/package/courier_drone.glb"}
     ],
-    "manifest_path":         "outputs/manifest.json",
-    "normalized_source_path": "normalized.json",
-    "trace_path":             "build_report.json"
+    "manifest_path":         "stages/package/package_manifest.json",
+    "normalized_source_path": "normalized_program.json",
+    "trace_path":             "stages/package/trace_manifest.json"
   },
   "publish": {
     "registry":  "props/drones/courier_drone",
@@ -262,7 +262,7 @@ See [Recipe 09 — Certification debug](09_certification_debug.md) for the triag
 }
 ```
 
-The `publish` runner is still a scaffold — builds record the intended registry/version pair but do not push anywhere.
+The default build trace records the intended registry/version pair. Actual upload/push happens only when a publish target is configured.
 
 ## CLI cheat sheet
 

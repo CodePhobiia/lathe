@@ -111,8 +111,8 @@ Assets can reference them through an asset-level `repair_policy` block, and the 
 
 ## Current examples
 
-- [examples/brassbound_chest.lth](/D:/lathe_v0_1/examples/brassbound_chest.lth)
-- [examples/courier_drone.lth](/D:/lathe_v0_1/examples/courier_drone.lth)
-- [examples/console_terminal.lth](/D:/lathe_v0_1/examples/console_terminal.lth)
+- [examples/brassbound_chest.lth](https://github.com/talmerri/lathe/blob/main/examples/brassbound_chest.lth)
+- [examples/courier_drone.lth](https://github.com/talmerri/lathe/blob/main/examples/courier_drone.lth)
+- [examples/console_terminal.lth](https://github.com/talmerri/lathe/blob/main/examples/console_terminal.lth)
 
-These examples import reusable source declarations from the repo stdlib under [std](/D:/lathe_v0_1/std).
+These examples import reusable source declarations from the repo stdlib under [`std/`](https://github.com/talmerri/lathe/tree/main/std).

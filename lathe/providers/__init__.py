@@ -5,13 +5,16 @@ Public surface re-exports kept stable for callers that import via
 the original flat module.  See ``ADR-0005`` / ``plans/03_architecture.md``
 Phase 1.
 """
+
 from __future__ import annotations
 
 from ..capabilities import probe_hunyuan_endpoint as _probe_hunyuan_endpoint  # noqa: F401
 from ..capabilities import probe_vggt as _probe_vggt  # noqa: F401
-from .adapters.hunyuan import _hunyuan_request  # noqa: F401
-from .adapters.hunyuan import _non_material_image_refs  # noqa: F401
-from .adapters.hunyuan import _select_primary_image  # noqa: F401
+from .adapters.hunyuan import (
+    _hunyuan_request,  # noqa: F401
+    _non_material_image_refs,  # noqa: F401
+    _select_primary_image,  # noqa: F401
+)
 from .adapters.hunyuan import run_hunyuan_http_provider as _run_hunyuan_http_provider  # noqa: F401
 from .adapters.vggt import (  # noqa: F401
     _to_conf_numpy,
@@ -21,7 +24,7 @@ from .adapters.vggt import (  # noqa: F401
     mesh_from_point_maps,
 )
 from .adapters.vggt import run_vggt_local_provider as _run_vggt_local_provider  # noqa: F401
-from .errors import (  # noqa: F401
+from .errors import (
     ShapeMeshLoadError,
     ShapeProviderError,
     ShapeProviderExecutionError,
@@ -57,13 +60,14 @@ from .selection import (  # noqa: F401
 )
 from .transport.http import (  # noqa: F401
     hunyuan_safe_text as _hunyuan_safe_text,
-    hunyuan_transient_status as _hunyuan_transient_status,
+)
+from .transport.http import (
+    hunyuan_transient_status as _hunyuan_transient_status,  # noqa: F401
 )
 
-
 __all__ = [
-    "PROVIDER_ALIASES",
     "PROVIDERS",
+    "PROVIDER_ALIASES",
     "ShapeMeshLoadError",
     "ShapeProviderError",
     "ShapeProviderExecutionError",

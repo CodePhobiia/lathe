@@ -8,11 +8,12 @@ used when the fast parser declines.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 # re-export — authoritative definitions live in lathe/errors.py
-from ..errors import DuplicateFieldError, LatheParseError
+from ..errors import DuplicateFieldError, LatheParseError  # noqa: F401
 
 
 def _find_grammar_path() -> Path:

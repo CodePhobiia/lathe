@@ -17,7 +17,6 @@ from ..errors import (  # re-export — authoritative definitions live in lathe/
     ShapeProviderUnavailable,
 )
 
-
 __all__ = [
     "ShapeMeshLoadError",
     "ShapeProviderError",

@@ -30,8 +30,12 @@ def run_lathe_benchmarks(files: list[str] | None = None) -> dict[str, Any]:
                 out_dir = Path(tmpdir) / asset_name
                 report = build_asset(program, asset_name, out_dir)
                 # JSON ingress — internal controlled payloads from our own validate/shape stage artifacts emitted by build_asset above into a tempdir; safe without schema validation.
-                validate_report = json.loads((out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
-                shape_bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
+                validate_report = json.loads(
+                    (out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
+                )
+                shape_bundle = json.loads(
+                    (out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8")
+                )
             comparisons: list[dict[str, Any]] = []
             compare_ok = True
             for fixture_name in values.get("compare_against", []):

@@ -6,6 +6,9 @@ with a reference compiler and a stable contract surface. Start by reading
 every PR touching the language, the schema, or the compiler pipeline. Then
 continue below for setup, tests, and workflow.
 
+For code style, error style, diagnostic shape, and test expectations, see the
+[docs contributor guide](https://github.com/talmerri/lathe/blob/main/docs/contributing.md).
+
 ## Bootstrap
 
 Use the bootstrap scripts to create a working `.venv` (Windows-first — the
@@ -30,8 +33,40 @@ For quick iteration on a single file or test:
 
 - `python -m pytest tests/test_build.py -q`
 - `python -m pytest tests/test_language_v13.py::TestName::test_case -q`
-- `scripts/lathe_smoke.sh` (= `pytest -q`)
+- `scripts/lathe_smoke.ps1` on Windows, or `bash scripts/lathe_smoke.sh` from bash
 - `scripts/lathe_asset_loop.sh <file.lth> <asset> [out_dir]`
+
+The CI partitions also have local mirrors in `Justfile` and the `Makefile`
+wrapper. Run the matching target before touching a workflow:
+
+- `just ci-fast-test` / `make ci-fast-test` mirrors the fast pytest, doctor,
+  and courier-drone check job.
+- `just ci-contract-golden` / `make ci-contract-golden` mirrors contract and
+  golden tests.
+- `just ci-property` / `make ci-property` mirrors property tests.
+- `just clean-clone-readme` / `make clean-clone-readme` mirrors the README
+  bootstrap and smoke-test job.
+- `just devcontainer-validate` / `make devcontainer-validate` mirrors
+  devcontainer configuration validation.
+
+## First issue workflow
+
+1. Pick an issue labeled `good-first-issue` or `help-wanted` unless a maintainer
+   has already invited you into a larger change.
+2. Comment that you are investigating it and wait for maintainer confirmation
+   when the issue touches language contracts, providers, security, release
+   automation, or public examples.
+3. Reproduce the issue locally before editing. For bugs, capture the failing
+   command, smallest `.lth` file or fixture, and expected behavior.
+4. Make the smallest change that fixes the root cause, then add or update the
+   narrowest reliable regression test.
+5. Run the relevant narrow test first, then the smoke or full gate requested by
+   the PR template.
+6. Open the PR with the exact validation commands and any remaining risk.
+
+If you are unsure where to start, open an `.lth authoring help` issue with the
+source file and validator output. Maintainers can convert it into a scoped bug
+or docs task once the failure mode is clear.
 
 ## Pre-commit setup
 
@@ -45,6 +80,15 @@ pre-commit run --all-files   # optional: sweep the tree once
 ```
 
 CI runs the same hook set so local and remote stay aligned.
+
+The required quality gates are:
+
+- Ruff lint: `ruff check .`.
+- Ruff format: `ruff-format` in pre-commit, with CI enforcing changed Python
+  files while the historical full-tree format backlog is paid down.
+- Mypy: `mypy --follow-imports=silent` over the currently typed IR, stage
+  budget, and validator surface listed in `.pre-commit-config.yaml` and
+  `.github/workflows/lint.yml`.
 
 ## Coordinated-change rule
 

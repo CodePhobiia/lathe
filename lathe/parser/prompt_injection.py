@@ -27,9 +27,11 @@ from __future__ import annotations
 import logging
 import os
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
+from ..logging_utils import error as log_error
+from ..logging_utils import warning as log_warning
 
 _LOG = logging.getLogger(__name__)
 
@@ -39,7 +41,13 @@ OVERSIZED_LITERAL_CHARS: int = 10_000
 
 
 _INJECTION_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("ignore_previous_instructions", re.compile(r"ignore\s+(?:all\s+|previous\s+|prior\s+)+instructions", re.IGNORECASE)),
+    (
+        "ignore_previous_instructions",
+        re.compile(
+            r"ignore\s+(?:all\s+|previous\s+|prior\s+)+instructions",
+            re.IGNORECASE,
+        ),
+    ),
     ("disregard_above", re.compile(r"disregard\s+(?:all|any|the)\s+(?:above|prior|previous)", re.IGNORECASE)),
     ("forget_everything", re.compile(r"forget\s+(?:everything|all\s+prior|all\s+previous)", re.IGNORECASE)),
     ("jailbreak", re.compile(r"\b(?:jailbreak|DAN\s+mode|developer\s+mode)\b", re.IGNORECASE)),
@@ -63,15 +71,15 @@ _CHAT_SENTINELS: tuple[str, ...] = (
 # Unicode bidirectional + invisible direction overrides that can hide
 # malicious text in otherwise-innocuous string literals.
 _DIRECTION_OVERRIDES: tuple[str, ...] = (
-    "‪",  # LRE
-    "‫",  # RLE
-    "‬",  # PDF
-    "‭",  # LRO
-    "‮",  # RLO
-    "⁦",  # LRI
-    "⁧",  # RLI
-    "⁨",  # FSI
-    "⁩",  # PDI
+    "\u202a",  # LRE
+    "\u202b",  # RLE
+    "\u202c",  # PDF
+    "\u202d",  # LRO
+    "\u202e",  # RLO
+    "\u2066",  # LRI
+    "\u2067",  # RLI
+    "\u2068",  # FSI
+    "\u2069",  # PDI
 )
 
 
@@ -92,6 +100,7 @@ class PromptInjectionDiagnostic:
     remediation: str
 
     def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready dictionary representation."""
         return {
             "code": self.code,
             "name": self.name,
@@ -112,10 +121,12 @@ class PromptInjectionScanResult:
 
     @property
     def clean(self) -> bool:
+        """Return whether the scan found no diagnostics."""
         return not self.diagnostics
 
     @property
     def has_errors(self) -> bool:
+        """Return whether any diagnostic is an error."""
         return any(d.severity == "error" for d in self.diagnostics)
 
 
@@ -123,6 +134,7 @@ class PromptInjectionError(Exception):
     """Raised when strict mode is enabled and any diagnostic fires."""
 
     def __init__(self, diagnostics: list[PromptInjectionDiagnostic]):
+        """Build an exception from scanner diagnostics."""
         self.diagnostics = diagnostics
         lines = [f"{d.code} {d.name} (line {d.line}:{d.column}): {d.message}" for d in diagnostics]
         super().__init__("Prompt-injection scanner rejected source:\n  " + "\n  ".join(lines))
@@ -131,10 +143,7 @@ class PromptInjectionError(Exception):
 def _line_col(source: str, index: int) -> tuple[int, int]:
     prefix = source[:index]
     line = prefix.count("\n") + 1
-    if line == 1:
-        column = index + 1
-    else:
-        column = index - prefix.rfind("\n")
+    column = index + 1 if line == 1 else index - prefix.rfind("\n")
     return line, column
 
 
@@ -226,7 +235,10 @@ def scan_source(source: str, *, strict: bool = False) -> PromptInjectionScanResu
                         index=start + match.start(),
                         match=match.group(0),
                         message="Suspected prompt-injection instruction in source",
-                        remediation="Remove the instruction, or mark the file as allowlisted in docs/security/prompt_injection.md",
+                        remediation=(
+                            "Remove the instruction, or mark the file as "
+                            "allowlisted in docs/security/prompt_injection.md"
+                        ),
                     )
                 )
 
@@ -241,7 +253,9 @@ def scan_source(source: str, *, strict: bool = False) -> PromptInjectionScanResu
                         index=start + match.start(),
                         match=match.group(0),
                         message="Source appears to impersonate a system prompt",
-                        remediation="Rephrase the literal so it cannot be interpreted as a system instruction",
+                        remediation=(
+                            "Rephrase the literal so it cannot be interpreted as a system instruction"
+                        ),
                     )
                 )
 
@@ -302,7 +316,12 @@ def scan_source(source: str, *, strict: bool = False) -> PromptInjectionScanResu
     return PromptInjectionScanResult(diagnostics=diags)
 
 
-def check_and_log(source: str, *, path: str | None = None, strict: bool | None = None) -> PromptInjectionScanResult:
+def check_and_log(
+    source: str,
+    *,
+    path: str | None = None,
+    strict: bool | None = None,
+) -> PromptInjectionScanResult:
     """Run :func:`scan_source` and emit warnings / raise on errors.
 
     Invoked by :func:`lathe.parser.parse_file` as a pre-parse pass.
@@ -316,13 +335,36 @@ def check_and_log(source: str, *, path: str | None = None, strict: bool | None =
         return result
     location = path or "<source>"
     for diag in result.diagnostics:
-        msg = (
-            f"{diag.code} {diag.name} ({location}:{diag.line}:{diag.column}): {diag.message} [{diag.match}]"
-        )
         if diag.severity == "error":
-            _LOG.error(msg)
+            log_error(
+                _LOG,
+                "lathe.parser.prompt_injection.diagnostic",
+                "{code} {name} ({location}:{line}:{column}): {message} [{match}]",
+                code=diag.code,
+                name=diag.name,
+                location=location,
+                line=diag.line,
+                column=diag.column,
+                message=diag.message,
+                match=diag.match,
+                severity=diag.severity,
+                remediation=diag.remediation,
+            )
         else:
-            _LOG.warning(msg)
+            log_warning(
+                _LOG,
+                "lathe.parser.prompt_injection.diagnostic",
+                "{code} {name} ({location}:{line}:{column}): {message} [{match}]",
+                code=diag.code,
+                name=diag.name,
+                location=location,
+                line=diag.line,
+                column=diag.column,
+                message=diag.message,
+                match=diag.match,
+                severity=diag.severity,
+                remediation=diag.remediation,
+            )
     if strict and result.diagnostics:
         raise PromptInjectionError(result.diagnostics)
     return result

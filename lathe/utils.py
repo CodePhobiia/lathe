@@ -6,8 +6,9 @@ dependency-free helpers.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any, Iterable
+from typing import Any
 
 
 def dedupe_keep_first(values: Iterable[Any]) -> list[Any]:

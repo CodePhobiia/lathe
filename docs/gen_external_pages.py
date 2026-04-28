@@ -6,6 +6,7 @@ us generate virtual pages without committing copies that would drift.
 
 Used by ``mkdocs.yml`` plugins -> gen-files scripts.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

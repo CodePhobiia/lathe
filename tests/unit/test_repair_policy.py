@@ -99,9 +99,7 @@ class TestRepairPolicyRegressionGuardRule(unittest.TestCase):
         policy = RepairPolicyIR.from_asset(
             {"repair_policy": {"deny": ["regularize_symmetry", "shroud_exposed_frame"]}}
         )
-        self.assertEqual(
-            policy.deny, ["regularize_symmetry", "shroud_exposed_frame"]
-        )
+        self.assertEqual(policy.deny, ["regularize_symmetry", "shroud_exposed_frame"])
 
 
 class TestEmptyPolicyExecutesNoRepairs(unittest.TestCase):

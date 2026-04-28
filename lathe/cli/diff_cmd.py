@@ -20,9 +20,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ._common import _emit_error
 
@@ -45,7 +44,7 @@ def register(sub: argparse._SubParsersAction) -> None:
     p.add_argument("--verbose", action="store_true", help="Include stages with matching hashes in the output")
 
 
-def _load_snapshot(path: Path) -> Optional[Dict[str, Any]]:
+def _load_snapshot(path: Path) -> dict[str, Any] | None:
     if not path.is_file():
         return None
     try:
@@ -57,12 +56,12 @@ def _load_snapshot(path: Path) -> Optional[Dict[str, Any]]:
     return data
 
 
-def _stage_drift(a_stages: Dict[str, str], b_stages: Dict[str, str]) -> Dict[str, Any]:
+def _stage_drift(a_stages: dict[str, str], b_stages: dict[str, str]) -> dict[str, Any]:
     """Return {matching, drifted, added, removed} for the stages maps."""
     a_keys = set(a_stages or {})
     b_keys = set(b_stages or {})
-    matching: List[str] = []
-    drifted: List[Dict[str, str]] = []
+    matching: list[str] = []
+    drifted: list[dict[str, str]] = []
     for stage in sorted(a_keys & b_keys):
         ah = a_stages.get(stage)
         bh = b_stages.get(stage)
@@ -80,7 +79,7 @@ def _stage_drift(a_stages: Dict[str, str], b_stages: Dict[str, str]) -> Dict[str
     }
 
 
-def _compute_diff(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
+def _compute_diff(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
     """Structured diff envelope — stable under ``--json``."""
     stages = _stage_drift(
         a.get("stages") if isinstance(a.get("stages"), dict) else {},
@@ -95,11 +94,7 @@ def _compute_diff(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
 
     cert_a = a.get("certified")
     cert_b = b.get("certified")
-    certified_flipped = (
-        isinstance(cert_a, bool)
-        and isinstance(cert_b, bool)
-        and cert_a != cert_b
-    )
+    certified_flipped = isinstance(cert_a, bool) and isinstance(cert_b, bool) and cert_a != cert_b
 
     lathe_version_mismatch = (
         bool(a.get("latheVersion"))
@@ -108,9 +103,7 @@ def _compute_diff(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     source_path_mismatch = (
-        bool(a.get("sourcePath"))
-        and bool(b.get("sourcePath"))
-        and a.get("sourcePath") != b.get("sourcePath")
+        bool(a.get("sourcePath")) and bool(b.get("sourcePath")) and a.get("sourcePath") != b.get("sourcePath")
     )
 
     has_drift = bool(
@@ -148,9 +141,9 @@ def _compute_diff(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _format_human(diff: Dict[str, Any], *, verbose: bool) -> str:
+def _format_human(diff: dict[str, Any], *, verbose: bool) -> str:
     """Render ``diff`` as a human-readable block."""
-    lines: List[str] = []
+    lines: list[str] = []
     a_info = diff["a"]
     b_info = diff["b"]
     lines.append("lathe diff (RPT-5)")
@@ -180,8 +173,7 @@ def _format_human(diff: Dict[str, Any], *, verbose: bool) -> str:
     if diff["score_delta"] is not None and diff["score_delta"] != 0.0:
         arrow = "+" if diff["score_delta"] > 0 else ""
         lines.append(
-            f"score: {a_info.get('score')} -> {b_info.get('score')} "
-            f"(delta {arrow}{diff['score_delta']})"
+            f"score: {a_info.get('score')} -> {b_info.get('score')} (delta {arrow}{diff['score_delta']})"
         )
     if diff["latheVersion_mismatch"]:
         lines.append(
@@ -197,9 +189,7 @@ def _format_human(diff: Dict[str, Any], *, verbose: bool) -> str:
     if drifted:
         lines.append(f"drifted stages ({len(drifted)}):")
         for entry in drifted:
-            lines.append(
-                f"  - {entry['stage']}: {entry['a_hash'][:12]}... -> {entry['b_hash'][:12]}..."
-            )
+            lines.append(f"  - {entry['stage']}: {entry['a_hash'][:12]}... -> {entry['b_hash'][:12]}...")
     if stages["added"]:
         lines.append(f"added stages ({len(stages['added'])}):")
         for entry in stages["added"]:

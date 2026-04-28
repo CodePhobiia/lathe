@@ -75,10 +75,20 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Quickstart: quickstart.md
+  - CLI Reference: cli_reference.md
+  - Canonical Commands: canonical_commands.md
+  - Troubleshooting: troubleshooting.md
+  - Product Value: product_value.md
+  - Canonical Gallery: gallery.md
+  - Quality Dashboard: quality_dashboard.md
+  - Deterministic Builds: deterministic_builds.md
   - Tutorials:
       - Overview: tutorial/index.md
       - Your first asset: tutorial/first_asset.md
       - Reconstruct flow: tutorial/second_asset_reconstruct.md
+      - Fallback provider workflow: tutorial/fallback_provider.md
+      - Learned provider workflow: tutorial/learned_provider.md
+      - Engine export workflow: tutorial/engine_export.md
       - Deep dive: tutorial/deep_dive.md
   - Cookbook:
       - Index: cookbook/index.md
@@ -98,8 +108,10 @@ nav:
   - Architecture:
       - Overview: architecture/overview.md
       - Pipeline: architecture/pipeline.md
+      - Stage contracts: architecture/stage_contracts.md
       - Shape stage: architecture/shape_stage.md
       - Backends: architecture/backends.md
+      - Public contracts: architecture/contracts.md
   - Decisions:
       - Index: adr/README.md
       - Template: adr/0000-template.md
@@ -107,8 +119,14 @@ nav:
       - 0002 Blender and xatlas fallback policy: adr/0002-blender-and-xatlas-fallback-policy.md
       - 0003 Provider mux design: adr/0003-provider-mux-design.md
       - 0004 Plugin entry points: adr/0004-plugin-entry-points.md
+      - 0005 Layering enforcement: adr/0005-layering-enforcement.md
+      - 0006 Validator composition: adr/0006-validator-composition.md
       - 0007 Resolver LOC exception: adr/0007-resolver-loc-exception.md
+      - 0008 Geometry kernel Manifold: adr/0008-geometry-kernel-manifold.md
+      - 0009 Public contract index: adr/0009-public-contract-index.md
   - Language Reference:
+      - Generated current reference: language_reference.md
+      - Normalized schema reference: schema_reference.md
       - v0.8: v08_language_reference.md
   - API Reference:
       - CLI: api/cli.md
@@ -163,5 +181,17 @@ nav:
       - V1.3.1: Specs/Lathe-V1.3.1-Spec.md
   - Contributing:
       - Guide: contributing.md
+      - Maintenance and triage: maintenance.md
       - Versioning: versioning.md
       - Dependency policy: dependency_policy.md
+      - Review requirements: review_requirements.md
+  - Release:
+      - Overview: release/index.md
+      - Quality bar: release/quality-bar.md
+      - Release checklist: release/release-checklist.md
+      - Readiness milestones: release/tasklist_milestones.md
+      - Release provenance: release/provenance.md
+      - Asset provenance: release/asset-provenance.md
+      - Release-note value guidance: release/release-note-value-guidance.md
+      - Support matrix: release/support-matrix.md
+      - Known limitations: release/known-limitations.md

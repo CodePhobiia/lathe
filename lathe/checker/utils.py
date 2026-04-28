@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 BACKEND_PATHS = {
     "shape": "build.shape.backend",
     "topology": "build.topology.backend",

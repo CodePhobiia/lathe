@@ -8,7 +8,6 @@ the vendored ``<model-viewer>`` web component.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 from ._common import _dump, _emit_error
@@ -16,7 +15,6 @@ from ._common import _dump, _emit_error
 
 def _run_view_mode(build_dir: Path) -> None:
     """``lathe inspect <dir> --view``: open the build's .glb in trimesh."""
-
     try:
         import trimesh  # type: ignore
     except ImportError:
@@ -64,7 +62,6 @@ def run_inspect(args) -> None:
 
 def run_serve(args) -> None:
     """``lathe serve <build_dir>``: HTTP-serve the artifact viewer."""
-
     build_dir = Path(args.build_dir).resolve()
     if not build_dir.is_dir():
         _emit_error(
@@ -132,12 +129,18 @@ def run_explain(args) -> None:
         args: args argument.
     """
     build_dir = Path(args.build_dir).resolve()
-    # JSON ingress — internal controlled payloads from our own prior-run build artifacts (build_report.json, shape stage bundle, validate report, all emitted by this package); safe without schema validation.
+    # JSON ingress: controlled payloads from prior-run build artifacts emitted
+    # by this package; safe without schema validation.
     report = json.loads((build_dir / "build_report.json").read_text(encoding="utf-8"))
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-    validate_report = json.loads((build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
+    validate_report = json.loads(
+        (build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
+    )
     selected_id = shape_bundle.get("selected_candidate_id")
-    selected = next((item for item in shape_bundle.get("candidates", []) if item.get("candidate_id") == selected_id), {})
+    selected = next(
+        (item for item in shape_bundle.get("candidates", []) if item.get("candidate_id") == selected_id),
+        {},
+    )
     _dump(
         {
             "asset": report.get("asset"),
@@ -166,9 +169,12 @@ def run_explain_fit(args) -> None:
         args: args argument.
     """
     build_dir = Path(args.build_dir).resolve()
-    # JSON ingress — internal controlled payloads from our own prior-run shape stage bundle and validate report; safe without schema validation.
+    # JSON ingress: controlled payloads from prior-run shape and validate
+    # artifacts emitted by this package; safe without schema validation.
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-    validate_report = json.loads((build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
+    validate_report = json.loads(
+        (build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
+    )
     _dump(
         {
             "reference_ir": shape_bundle.get("reference_ir", {}),

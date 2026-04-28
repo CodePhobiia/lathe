@@ -57,14 +57,12 @@ def _populate_build(root: Path, *, include_validate: bool = True) -> None:
 
 
 def _validate_against_schema(snapshot: dict) -> None:
-    schema_path = (
-        Path(__file__).resolve().parents[2] / "schema" / "lathe_snapshot.schema.json"
-    )
+    schema_path = Path(__file__).resolve().parents[2] / "schema" / "lathe_snapshot.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     try:
         import jsonschema  # type: ignore[import-untyped]
     except ImportError:  # pragma: no cover - mirror upstream style
-        raise unittest.SkipTest("jsonschema not installed")
+        raise unittest.SkipTest("jsonschema not installed") from None
     jsonschema.validate(instance=snapshot, schema=schema)
 
 

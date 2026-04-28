@@ -67,7 +67,12 @@ def _component_count(mask: np.ndarray) -> int:
                 cy, cx = queue.popleft()
                 for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     ny, nx = cy + dy, cx + dx
-                    if 0 <= ny < mask.shape[0] and 0 <= nx < mask.shape[1] and mask[ny, nx] and not visited[ny, nx]:
+                    if (
+                        0 <= ny < mask.shape[0]
+                        and 0 <= nx < mask.shape[1]
+                        and mask[ny, nx]
+                        and not visited[ny, nx]
+                    ):
                         visited[ny, nx] = True
                         queue.append((ny, nx))
     return count
@@ -76,7 +81,16 @@ def _component_count(mask: np.ndarray) -> int:
 def _evaluate_mask(mask: np.ndarray) -> dict[str, float]:
     area = float(mask.sum())
     if area <= 0:
-        return {"area": 0.0, "bbox_area": 0.0, "perimeter": 0.0, "components": 0.0, "complexity": 0.0, "primitive_penalty": 1.0, "artifact_penalty": 1.0, "clutter": 1.0}
+        return {
+            "area": 0.0,
+            "bbox_area": 0.0,
+            "perimeter": 0.0,
+            "components": 0.0,
+            "complexity": 0.0,
+            "primitive_penalty": 1.0,
+            "artifact_penalty": 1.0,
+            "clutter": 1.0,
+        }
     ys, xs = np.where(mask)
     bbox_area = float((xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1))
     perimeter = float(_perimeter(mask))
@@ -127,7 +141,9 @@ def _raster_from_mesh(mesh, view: str, size: int = 128) -> tuple[np.ndarray, np.
     return np.asarray(mask_image) > 0, np.asarray(shade_image, dtype=np.uint8)
 
 
-def _rectangles_from_part_groups(part_groups: list[dict[str, Any]], view: str) -> tuple[list[tuple[float, float, float, float]], tuple[float, float, float, float]]:
+def _rectangles_from_part_groups(
+    part_groups: list[dict[str, Any]], view: str
+) -> tuple[list[tuple[float, float, float, float]], tuple[float, float, float, float]]:
     rotation = _view_rotation(view)
     rectangles = []
     mins = []
@@ -135,7 +151,10 @@ def _rectangles_from_part_groups(part_groups: list[dict[str, Any]], view: str) -
     for group in part_groups:
         bmin = np.array(group["bounds_min"], dtype=np.float64)
         bmax = np.array(group["bounds_max"], dtype=np.float64)
-        corners = np.array([[x, y, z] for x in (bmin[0], bmax[0]) for y in (bmin[1], bmax[1]) for z in (bmin[2], bmax[2])], dtype=np.float64)
+        corners = np.array(
+            [[x, y, z] for x in (bmin[0], bmax[0]) for y in (bmin[1], bmax[1]) for z in (bmin[2], bmax[2])],
+            dtype=np.float64,
+        )
         projected = corners @ rotation.T
         xy = projected[:, :2]
         lo = xy.min(axis=0)
@@ -145,10 +164,17 @@ def _rectangles_from_part_groups(part_groups: list[dict[str, Any]], view: str) -
         maxs.append(hi)
     global_min = np.min(np.array(mins), axis=0)
     global_max = np.max(np.array(maxs), axis=0)
-    return rectangles, (float(global_min[0]), float(global_min[1]), float(global_max[0]), float(global_max[1]))
+    return rectangles, (
+        float(global_min[0]),
+        float(global_min[1]),
+        float(global_max[0]),
+        float(global_max[1]),
+    )
 
 
-def _rasterize_rectangles(part_groups: list[dict[str, Any]], view: str, size: int = 128) -> tuple[np.ndarray, np.ndarray]:
+def _rasterize_rectangles(
+    part_groups: list[dict[str, Any]], view: str, size: int = 128
+) -> tuple[np.ndarray, np.ndarray]:
     rectangles, bounds = _rectangles_from_part_groups(part_groups, view)
     x0, y0, x1, y1 = bounds
     span_x = max(1e-6, x1 - x0)
@@ -212,7 +238,9 @@ def evaluate_render_views(topology_runtime: dict[str, Any], views: list[str] | N
         "metrics": {
             "render_silhouette_complexity": round(sum(complexity_scores) / max(1, len(complexity_scores)), 6),
             "render_primitive_penalty": round(sum(primitive_penalties) / max(1, len(primitive_penalties)), 6),
-            "render_assembly_artifact_penalty": round(sum(artifact_penalties) / max(1, len(artifact_penalties)), 6),
+            "render_assembly_artifact_penalty": round(
+                sum(artifact_penalties) / max(1, len(artifact_penalties)), 6
+            ),
             "render_component_clutter": round(sum(clutter_scores) / max(1, len(clutter_scores)), 6),
             "render_shading_variance": round(sum(shading_scores) / max(1, len(shading_scores)), 6),
         },

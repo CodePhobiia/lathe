@@ -14,9 +14,8 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-
-from lathe.asset_graph import build_asset_graph
 from lathe.assembly_kernel import AssemblyBlueprint, BlueprintComponent
+from lathe.asset_graph import build_asset_graph
 from lathe.blueprints import resolve_blueprint
 from lathe.candidate_search import (
     CandidateParams,
@@ -49,17 +48,23 @@ class GenerateCandidateParamsTests(unittest.TestCase):
         graph = _crate_graph()
         fidelity = infer_fidelity_profile(graph)
         results = [
-            generate_candidate_params(graph, seed=7, candidate_index=i, fidelity=fidelity)
-            for i in range(3)
+            generate_candidate_params(graph, seed=7, candidate_index=i, fidelity=fidelity) for i in range(3)
         ]
         # each call returns a CandidateParams dataclass with all float fields
         for params in results:
             self.assertIsInstance(params, CandidateParams)
             for field_name in (
-                "width_scale", "height_scale", "depth_scale",
-                "feature_density", "panel_depth", "edge_weight",
-                "support_spread", "attachment_spread", "trim_scale",
-                "silhouette_bias", "rotor_guard_scale",
+                "width_scale",
+                "height_scale",
+                "depth_scale",
+                "feature_density",
+                "panel_depth",
+                "edge_weight",
+                "support_spread",
+                "attachment_spread",
+                "trim_scale",
+                "silhouette_bias",
+                "rotor_guard_scale",
             ):
                 self.assertIsInstance(getattr(params, field_name), float)
         # distinct indices must produce distinct samples (seed + index*977)
@@ -81,9 +86,7 @@ class GenerateCandidateParamsTests(unittest.TestCase):
         fidelity = infer_fidelity_profile(graph)
         # seed + candidate_index * 977 stays inside numpy's uint64 space
         # for huge indices; verify no overflow / no exception.
-        params = generate_candidate_params(
-            graph, seed=1, candidate_index=1_000_000, fidelity=fidelity
-        )
+        params = generate_candidate_params(graph, seed=1, candidate_index=1_000_000, fidelity=fidelity)
         self.assertIsInstance(params, CandidateParams)
         self.assertTrue(np.isfinite(params.width_scale))
         self.assertTrue(np.isfinite(params.feature_density))

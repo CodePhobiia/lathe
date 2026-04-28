@@ -26,9 +26,7 @@ def _box_primitive(
     )
 
 
-def _cylinder_primitive(
-    *, part: str = "stem", axis: str = "y"
-) -> ShapePrimitive:
+def _cylinder_primitive(*, part: str = "stem", axis: str = "y") -> ShapePrimitive:
     return ShapePrimitive(
         primitive_type="cylinder",
         part=part,
@@ -39,9 +37,7 @@ def _cylinder_primitive(
     )
 
 
-def _region(
-    *, name: str = "region_body", part: str = "body"
-) -> ShapeRegion:
+def _region(*, name: str = "region_body", part: str = "body") -> ShapeRegion:
     return ShapeRegion(
         name=name,
         part=part,
@@ -196,9 +192,7 @@ class ShapeIRTests(unittest.TestCase):
         from lathe.errors import ContractViolation
         from lathe.geometry_kernel import _primitive_bounds
 
-        bad = ShapePrimitive(
-            primitive_type="cylinder", part="stem", center=(0.0, 0.0, 0.0)
-        )
+        bad = ShapePrimitive(primitive_type="cylinder", part="stem", center=(0.0, 0.0, 0.0))
         with self.assertRaises(ContractViolation):
             _primitive_bounds(bad)
 

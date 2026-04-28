@@ -9,12 +9,18 @@ def derive_topology_semantics(shape_bundle: dict[str, Any]) -> dict[str, Any]:
         return {"hard_edge_groups": [], "panel_seams": [], "bake_groups": [], "feature_semantics": {}}
     primary = shape_ir[0]
     regions = primary.get("regions", [])
-    panel_seams = [region["name"] for region in regions if region.get("component") in {"panel", "frame", "bezel", "door", "lid"}]
+    panel_seams = [
+        region["name"]
+        for region in regions
+        if region.get("component") in {"panel", "frame", "bezel", "door", "lid"}
+    ]
     hard_edge_groups = [
         {
             "name": region["name"],
             "part": region["part"],
-            "edge_class": "hard_surface_feature" if region.get("component") not in {"vent", "grille"} else "grille",
+            "edge_class": "hard_surface_feature"
+            if region.get("component") not in {"vent", "grille"}
+            else "grille",
         }
         for region in regions
     ]
@@ -22,7 +28,8 @@ def derive_topology_semantics(shape_bundle: dict[str, Any]) -> dict[str, Any]:
         {
             "name": region["name"],
             "part": region["part"],
-            "material_boundary": region.get("component") in {"panel", "bezel", "screen_bezel", "lock_plate", "socket_plate"},
+            "material_boundary": region.get("component")
+            in {"panel", "bezel", "screen_bezel", "lock_plate", "socket_plate"},
         }
         for region in regions
     ]
@@ -34,12 +41,16 @@ def derive_topology_semantics(shape_bundle: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def should_preserve_integrated_shape(shape_bundle: dict[str, Any], runtime_config: dict[str, Any] | None = None) -> bool:
+def should_preserve_integrated_shape(
+    shape_bundle: dict[str, Any], runtime_config: dict[str, Any] | None = None
+) -> bool:
     topology_cfg = (runtime_config or {}).get("topology", {})
     if topology_cfg.get("adapter") not in {None, "", "auto"}:
         return False
     selected_id = shape_bundle.get("selected_candidate_id")
-    candidate = next((item for item in shape_bundle.get("candidates", []) if item.get("candidate_id") == selected_id), None)
+    candidate = next(
+        (item for item in shape_bundle.get("candidates", []) if item.get("candidate_id") == selected_id), None
+    )
     if not candidate:
         return False
     integration = candidate.get("integration_report", {})

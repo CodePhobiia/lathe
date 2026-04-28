@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 import trimesh
-
+from lathe.core.stages.optimize import _resolve_lod_ratios
 from lathe.stages import lod as lod_mod
 
 
@@ -19,7 +19,7 @@ def sphere() -> trimesh.Trimesh:
 
 
 def _faces(mesh: trimesh.Trimesh) -> int:
-    return int(len(mesh.faces))
+    return len(mesh.faces)
 
 
 def test_default_ratios_produce_four_lods_with_expected_tri_counts(sphere: trimesh.Trimesh) -> None:
@@ -30,7 +30,7 @@ def test_default_ratios_produce_four_lods_with_expected_tri_counts(sphere: trime
     # Each subsequent LOD must be within ±10% of ratio * source.
     source = _faces(sphere)
     for result in results[1:]:
-        expected = int(round(result.ratio * source))
+        expected = round(result.ratio * source)
         tolerance = max(4, int(0.10 * expected))
         assert abs(result.tris - expected) <= tolerance, (
             f"LOD{result.level}: got {result.tris}, expected {expected} ±{tolerance}"
@@ -96,18 +96,16 @@ def test_large_mesh_decimation_smoke_does_not_hang() -> None:
 
 
 def test_ratios_below_one_reduce_vertex_count(sphere: trimesh.Trimesh) -> None:
-    base_verts = int(len(sphere.vertices))
+    base_verts = len(sphere.vertices)
     r = lod_mod.decimate(sphere, 0.25)
-    assert int(len(r.vertices)) < base_verts
+    assert len(r.vertices) < base_verts
     # Decimated LOD must remain a valid, non-empty trimesh.
     assert _faces(r) > 0
-    assert int(len(r.vertices)) > 0
+    assert len(r.vertices) > 0
 
 
 def test_runtime_config_override_changes_resolved_ratios() -> None:
     """The optimize-stage ratio resolver must honor runtime_config.optimize.lod_ratios."""
-    from lathe.core.stages.optimize import _resolve_lod_ratios
-
     asset_cfg = {"lods": 4}
     overridden = _resolve_lod_ratios(asset_cfg, {"optimize": {"lod_ratios": [1.0, 0.75, 0.5]}})
     assert overridden == [1.0, 0.75, 0.5]

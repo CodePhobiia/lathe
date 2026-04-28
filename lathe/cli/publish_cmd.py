@@ -88,7 +88,12 @@ def run_publish(args: argparse.Namespace) -> None:
 
     target = args.target or publish_cfg.get("target")
     if not target:
-        _dump({"ok": False, "message": "no publish target configured; pass --target or runtime_config.publish.target"})
+        _dump(
+            {
+                "ok": False,
+                "message": ("no publish target configured; pass --target or runtime_config.publish.target"),
+            }
+        )
         raise SystemExit(2)
 
     target_config: dict[str, Any] = dict(publish_cfg)

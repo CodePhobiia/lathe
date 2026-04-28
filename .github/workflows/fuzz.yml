@@ -38,7 +38,7 @@ jobs:
         env:
           LATHE_FUZZ_EXTENDED: "1"
         run: |
-          python -m pytest -q tests/fuzz/ -x
+          python -m pytest -q -m fuzz tests/fuzz/ -x
 
       - name: Upload Hypothesis corpus on failure
         if: failure()

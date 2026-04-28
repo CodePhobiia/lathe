@@ -138,8 +138,8 @@ asset corpus_cabinet: hard_surface_prop from service_cabinet_family uses shippin
     }
 
     interfaces {
-      sockets = [tool_anchor]
-      anchors = [floor_contact]
+      sockets = [socket(id: tool_anchor, socket_type: attach)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
       clearance = 2cm
     }
 

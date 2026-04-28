@@ -67,7 +67,7 @@ After an edit, re-run `check` FIRST. It is fast and catches syntax + semantic
 violations before the slow build stage.
 
 ## Trace
-On success, `dist/<asset_id>/trace.json` contains the stage-by-stage record
+On success, `dist/<asset_id>/stages/package/trace_manifest.json` contains the stage-by-stage record
 (including attempted-vs-actual providers). Read it to confirm the build used
 the provider the user expected.
 ```
@@ -79,10 +79,10 @@ With the skill installed, an agent given *"the panel collision is off in `exampl
 1. Read the `.lth` source.
 2. Run `python -m lathe.cli check` to surface semantic violations.
 3. Propose an edit to the `collision` block.
-4. Run `python -m lathe.cli build ... --out tmp_diagnose` and inspect `trace.json`.
+4. Run `python -m lathe.cli build ... --out tmp_diagnose` and inspect `stages/package/trace_manifest.json`.
 5. Either confirm fix with the trace line cited, or iterate.
 
-The agent never claims "the mesh looks right." It only claims "the build passed certification with `trace.json` showing `validate.collision = pass`." That distinction is the entire reason Persona C exists.
+The agent never claims "the mesh looks right." It only claims "the build passed certification with `stages/package/trace_manifest.json` showing `validate.collision = pass`." That distinction is the entire reason Persona C exists.
 
 ## Installation paths (user-facing)
 

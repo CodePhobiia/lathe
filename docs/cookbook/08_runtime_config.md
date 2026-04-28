@@ -2,7 +2,7 @@
 
 ## Goal
 
-Drive Lathe with external learned providers — Hunyuan 2.1 via HTTP, VGGT via a local install, or auto-learned provider selection. This recipe walks through each of the three shipped runtime configs in [`examples/runtime_configs/`](https://github.com/talmerri/lathe/tree/main/examples/runtime_configs) and shows how to read the attempted-vs-actual provider trace.
+Drive Lathe with external learned providers — Hunyuan 2.1 via HTTP, VGGT via a local install, or auto-learned provider selection. This recipe walks through the shipped runtime configs in [`examples/runtime_configs/`](https://github.com/talmerri/lathe/tree/main/examples/runtime_configs) and shows how to read the attempted-vs-actual provider trace.
 
 ## Prerequisites
 
@@ -15,7 +15,49 @@ Even without any learned provider installed, these configs still work — Lathe 
 
 ## Walkthrough
 
-### Option A — Hunyuan over HTTP
+### Option A — offline deterministic mode
+
+`examples/runtime_configs/offline.json` forces the built-in reference shape,
+topology, UV, and surface fallbacks. It is the safest config for airplanes,
+trains, clean rooms, and any CI job that must not touch network or optional
+native tools.
+
+```bash
+python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist \
+    --runtime-config examples/runtime_configs/offline.json
+```
+
+### Option B — reference-only shape mode
+
+`examples/runtime_configs/reference_only.json` pins only the shape provider to
+`reference_conditioned_v1`. Other deterministic stages can still use installed
+Blender or xatlas adapters when available.
+
+```bash
+python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist \
+    --runtime-config examples/runtime_configs/reference_only.json
+```
+
+### Option C — mocked learned-provider mode
+
+`examples/runtime_configs/mock_hunyuan_http.json` points at a local
+Hunyuan-compatible test endpoint on `127.0.0.1:8081`, uses a small generation
+budget, and keeps `strict: true` so provider failures are visible during
+adapter development.
+
+```bash
+python -m lathe.cli probe-providers \
+    --runtime-config examples/runtime_configs/mock_hunyuan_http.json
+```
+
+Use this config as the provider test double in CI and adapter development: run
+a local Hunyuan-compatible fake server, assert that `probe-providers` sees the
+mock endpoint, then run the build in strict mode so transport errors,
+malformed payloads, and timeout handling fail loudly. Tests should mock the
+HTTP boundary or use a loopback service; they should not call the real
+provider fleet.
+
+### Option D — Hunyuan over HTTP
 
 `examples/runtime_configs/hunyuan_http.json`:
 
@@ -27,6 +69,8 @@ Even without any learned provider installed, these configs still work — Lathe 
     "providers": {
       "hunyuan2_1_http": {
         "base_url": "http://localhost:8081",
+        "timeout_s": 600,
+        "url_allowlist": ["localhost"],
         "remove_background": true,
         "texture": false,
         "octree_resolution": 256,
@@ -44,7 +88,8 @@ Key fields:
 
 - `shape.provider` — the alias Lathe should try first.
 - `shape.strict: true` — fail the build if the provider is unavailable or errors. Use this in CI.
-- `providers.hunyuan2_1_http.base_url` — where the HTTP server is. Supports a `url_allowlist` field if you want to pin allowed hosts.
+- `providers.hunyuan2_1_http.base_url` — where the HTTP server is. Pair it with `url_allowlist` to pin allowed hosts; outbound provider requests are denied when this allowlist is empty.
+- `providers.hunyuan2_1_http.timeout_s` — request timeout for generation calls.
 - `octree_resolution`, `num_inference_steps`, `guidance_scale`, `face_count`, `type` — mapped directly onto the Hunyuan request body.
 
 Run:
@@ -69,7 +114,19 @@ Check `dist/courier_drone/build_report.json`:
 
 `selected_provider_id == actual_provider_id` means the real provider ran. If they differ, see [Attempted-vs-actual](#attempted-vs-actual).
 
-### Option B — VGGT local
+### Option E — real learned-provider mode
+
+`examples/runtime_configs/real_learned_hunyuan_http.json` is the production
+shape of a real Hunyuan configuration: HTTPS, strict mode, no fallback, a
+non-empty `url_allowlist`, strict topology, and strict UV. Replace
+`https://hunyuan.internal.example` with the real endpoint before use.
+
+```bash
+python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist \
+    --runtime-config examples/runtime_configs/real_learned_hunyuan_http.json
+```
+
+### Option F — VGGT local
 
 `examples/runtime_configs/vggt_local.json`:
 
@@ -105,7 +162,7 @@ python -m lathe.cli build examples/reconstruct_courier_from_views.lth \
 
 The `max_views`, `stride`, and `min_confidence` knobs control how the provider samples the input views. Lower `min_confidence` to keep more points; raise `stride` to skip cheaper views.
 
-### Option C — auto
+### Option G — auto
 
 `examples/runtime_configs/auto_learned.json`:
 
@@ -115,7 +172,11 @@ The `max_views`, `stride`, and `min_confidence` knobs control how the provider s
     "provider": "auto",
     "strict": false,
     "providers": {
-      "hunyuan2_1_http": { "base_url": "http://localhost:8081" },
+      "hunyuan2_1_http": {
+        "base_url": "http://localhost:8081",
+        "timeout_s": 600,
+        "url_allowlist": ["localhost"]
+      },
       "vggt_local": { "weights": "facebook/VGGT-1B", "device": "auto" }
     }
   }
@@ -179,7 +240,7 @@ The runtime config does not change `dist/` layout. It changes:
 
 - **Pin an allowlist** — add `"url_allowlist": ["localhost", "hunyuan.internal.studio"]` to the Hunyuan provider block. The HTTP client rejects any other host.
 - **Force strict everywhere** — set `shape.strict: true`, `topology.strict: true`, `uv.strict: true`. Nothing falls back. Good for release builds.
-- **Override just one stage at the CLI** — `--shape-provider hunyuan2_1_http --strict-shape-provider` overrides the shape block without a config file.
+- **Override just one stage at the CLI** — `--shape-provider hunyuan2_1_http --strict` overrides the shape block without a config file. The older `--strict-shape-provider` alias is deprecated.
 - **Combine with variants** — variants inherit the runtime config; you do not need a separate config per variant.
 
 ## Troubleshooting

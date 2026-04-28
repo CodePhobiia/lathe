@@ -746,7 +746,16 @@ Defaults:
 
 - `backend = auto`
 - `sockets = []`
-- `anchors = []`
+- `pivots = []`
+- `anchors = []` (legacy compatibility)
+
+Typed interface entries should use constructor calls in source:
+
+- `sockets = [socket(id: power_socket, socket_type: port)]`
+- `pivots = [pivot(id: floor_contact, pivot_type: contact)]`
+
+Legacy bare socket names and `anchors = [...]` remain accepted for older
+sources, but canonical examples declare typed sockets and pivots explicitly.
 
 ### 13.7 `physics`
 

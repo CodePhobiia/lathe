@@ -41,4 +41,16 @@ flowchart LR
 - **package** — emit the bundle (usd / glb / gltf / obj) under the stable package contract.
 - **publish** — ship bundle + manifest to the configured target (scaffold in v0.1).
 
-See [Shape stage](shape_stage.md) for the internals of the shape stage and [Backends](backends.md) for the stack bindings and fallback semantics.
+## Observable artifacts
+
+Each stage writes its public handoff under `stages/<stage>/` and stores the
+stage result in the package trace when tracing is enabled. The stage names in
+`STAGE_ORDER`, the package trace, validation report, package manifest, selector
+manifest, budget manifest, collision manifest, publish manifest, and engine
+manifest entries are user-facing. Private helper functions inside
+`lathe/core/stages/*` are not public API.
+
+See [Shape stage](shape_stage.md) for the internals of the shape stage,
+[Backends](backends.md) for the stack bindings and fallback semantics, and
+[Public contracts and internal boundaries](contracts.md) for the migration
+rules that apply to stage outputs.

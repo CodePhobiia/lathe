@@ -35,8 +35,9 @@ scenes meant to be opened in the Godot editor.
 
 ## Smoke 3 — Thumbnail regen
 
-1. With the watcher running, touch a build's `manifest.json` (re-save it
-   or re-run `lathe build`). The watcher emits `asset_imported`.
+1. With the watcher running, touch a build's
+   `stages/package/package_manifest.json` (re-save it or re-run `lathe build`).
+   The watcher emits `asset_imported`.
 2. Within a few seconds, `<build_dir>/.thumbnail.png` appears (256×256).
 3. Re-importing an unchanged build does **not** produce a new thumbnail
    (mtime check).
@@ -77,7 +78,7 @@ scenes meant to be opened in the Godot editor.
 
 1. Open the "Lathe Build Trace" dock.
 2. The asset drop-down lists every `res://lathe_out/<asset>/` that has a
-   `manifest.json`.
+   `stages/package/package_manifest.json`.
 3. Picking an asset refreshes:
    - Kernel label + snapshot-hash suffix.
    - Watertight % (green if >= 99%).

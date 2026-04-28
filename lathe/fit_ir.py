@@ -13,12 +13,13 @@ from typing import Any
 @dataclass
 class FitIR:
     """FitIR."""
+
     values: dict[str, Any] = field(default_factory=dict)
     fit_profile: dict[str, Any] = field(default_factory=dict)
     reconstruct_policy: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "FitIR":
+    def from_asset(cls, asset: dict[str, Any]) -> FitIR:
         """From asset.
 
         Args:

@@ -44,7 +44,7 @@ Godot's editor auto-imports the `.lathe_snapshot.json` file:
 - Imported to a lightweight `Resource` whose metadata includes:
   `asset_id`, `snapshot_hash`, `lathe_version`, `stage_hashes`,
   `certified` (bool), `score`, `threshold`, and `glb_uri` (the build's
-  primary `.glb` path resolved from `manifest.json`).
+  primary `.glb` path resolved from `stages/package/package_manifest.json`).
 - Available at runtime via `load("res://lathe_out/<asset>/.lathe_snapshot.json")`.
 
 Full `.glb` drag-drop continues to use Godot's stock glTF importer; the
@@ -100,7 +100,7 @@ new asset while the editor was open.
 
 `fsnotify_watcher.gd` is a second polling watcher that tracks
 reproducibility-critical sidecars — `.lathe_snapshot.json` and
-`selector_manifest.json` — rather than `manifest.json`. Whenever an mtime
+`selector_manifest.json` — rather than the package manifest. Whenever an mtime
 advances on either file it emits:
 
 ```
@@ -108,9 +108,9 @@ build_updated(asset_id: String, snapshot_hash: String)
 ```
 
 The build-trace viewer, certified-state indicator, and thumbnail regen
-listen for this signal so they refresh even when `manifest.json` mtime
-happens not to change across a rebuild (e.g. a re-validation pass that
-keeps outputs identical but updates the snapshot).
+listen for this signal so they refresh even when package outputs happen not
+to change across a rebuild (e.g. a re-validation pass that keeps outputs
+identical but updates the snapshot).
 
 The watcher is gated by the editor setting `lathe/fsnotify_enabled`
 (default **true**). Toggle it from **Editor → Editor Settings → Lathe →
@@ -145,9 +145,10 @@ match — so per-build certified state is visible without leaving the dock.
 
 ## Troubleshooting
 
-- **Dock shows nothing.** Verify `res://lathe_out/<asset>/manifest.json`
-  exists and is well-formed JSON. The watcher polls every 2 seconds; give
-  it a moment after copying files in.
+- **Dock shows nothing.** Verify
+  `res://lathe_out/<asset>/stages/package/package_manifest.json` exists and is
+  well-formed JSON. The watcher polls every 2 seconds; give it a moment after
+  copying files in.
 - **"Open HTML Report" warns about missing `report.html`.** Generate one
   with the RPT-1 reporter (`python -m lathe.cli report <build-dir>`).
 - **Thumbnail never appears.** Check the Output log for `[Lathe]

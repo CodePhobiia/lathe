@@ -44,7 +44,7 @@ rules:
   - id: read-trace
     when: build_succeeded
     text: |
-      On success, read `dist/<asset_id>/trace.json`. Cite the `attempted` vs
+      On success, read `dist/<asset_id>/stages/package/trace_manifest.json`. Cite the `attempted` vs
       `actual` provider when reporting back to the user. Never claim the
       mesh "looks good" — claim the build passed certification.
 
@@ -72,7 +72,7 @@ Continue's agent loads rules alongside system context when a trigger fires. The 
 Observed effect when the rules are present (from internal dogfood):
 
 1. Prompt: *"fix the UV density on `examples/industrial_crate.lth`"*.
-2. Agent opens the file, runs `lathe check`, reads the stage/rule violation, edits the `surface.uv.texel_density` field, reruns `check`, then `build`, cites `trace.json`.
+2. Agent opens the file, runs `lathe check`, reads the stage/rule violation, edits the `surface.uv.texel_density` field, reruns `check`, then `build`, cites `stages/package/trace_manifest.json`.
 3. Without rules: agent tends to write a throwaway Blender script and never touches the `.lth` file — exactly the silent-failure class Persona C is most exposed to.
 
 ## Submission to the Continue.dev rules hub

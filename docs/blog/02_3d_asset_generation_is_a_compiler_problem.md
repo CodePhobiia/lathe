@@ -177,7 +177,8 @@ before.
 1. Read `docs/first_backend_stack.md` and `docs/second_backend_stack.md`.
 2. Run the full pipeline on an example with `--runtime-config` set to
    a provider you already have access to; inspect the resulting
-   `trace.json` for the `attempted` vs `actual` fields.
+   `stages/package/trace_manifest.json` for the `attempted` vs `actual`
+   fields.
 3. Open an issue proposing a new contract or adapter if our stack
    does not cover your pipeline.
 4. Cite the stable contract ID in your own tooling if you integrate
@@ -189,8 +190,9 @@ before.
 - Annotated `certification.json` screenshot.
 - GitHub PR status-check screenshot. Use a public sample repo.
 - Code snippets block (three snippets: an `.lth` intent block, a
-  `runtime_config.json` file, and a `trace.json` excerpt). Render as
-  syntax-highlighted images for HN, raw code in the markdown source.
+  `runtime_config.json` file, and a `trace_manifest.json` excerpt).
+  Render as syntax-highlighted images for HN, raw code in the markdown
+  source.
 
 ### Cross-links
 

@@ -79,10 +79,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run semgrep ci
-        env:
-          SEMGREP_RULES: >-
-            p/python
-            p/security-audit
-            p/owasp-top-ten
-        run: semgrep ci --error --config .semgrep.yml
+      - name: Run semgrep
+        run: |
+          semgrep \
+            --error \
+            --config p/python \
+            --config p/security-audit \
+            --config p/owasp-top-ten \
+            lathe/

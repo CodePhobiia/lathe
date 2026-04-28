@@ -16,7 +16,11 @@ def run_bridge(args) -> None:
     """
     from ..bridge.blender_plan import build_bridge_doctor, build_bridge_plan
 
-    runtime_config = load_runtime_config(args.runtime_config) if getattr(args, "runtime_config", None) else load_runtime_config(None)
+    runtime_config = (
+        load_runtime_config(args.runtime_config)
+        if getattr(args, "runtime_config", None)
+        else load_runtime_config(None)
+    )
     if args.bridge_cmd == "doctor":
         _dump(build_bridge_doctor(runtime_config))
         return

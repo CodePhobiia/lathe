@@ -1,9 +1,10 @@
 @tool
 extends RefCounted
 ##
-## Reads a Lathe manifest.json (schema: package_manifest.json + companion
-## build_report.json) and imports the referenced .glb via Godot's built-in
-## GLB loader. Post-import, enriches the scene by:
+## Reads a Lathe package manifest (`stages/package/package_manifest.json`,
+## with legacy `manifest.json` fallback) plus companion `build_report.json`
+## and imports the referenced .glb via Godot's built-in GLB loader.
+## Post-import, enriches the scene by:
 ##   - replacing nodes named socket_* or anchor_* with Marker3D
 ##   - replacing meshes named collision_* with CollisionShape3D (convex)
 ##   - wiring MeshInstance3D.lod_bias from the manifest's LOD list
@@ -15,6 +16,7 @@ extends RefCounted
 
 const _SOCKET_PREFIXES := ["socket_", "anchor_"]
 const _COLLISION_PREFIX := "collision_"
+const _CURRENT_MANIFEST_SUFFIX := "/stages/package/package_manifest.json"
 
 
 static func import_from_manifest(manifest_path: String) -> Dictionary:
@@ -23,7 +25,7 @@ static func import_from_manifest(manifest_path: String) -> Dictionary:
 		push_warning("[Lathe] manifest unreadable: %s" % manifest_path)
 		return {}
 
-	var asset_dir := manifest_path.get_base_dir()
+	var asset_dir := _build_dir_for_manifest(manifest_path)
 	var glb_rel: String = _find_glb(manifest)
 	if glb_rel.is_empty():
 		push_warning("[Lathe] no .glb listed in manifest: %s" % manifest_path)
@@ -79,6 +81,12 @@ static func _find_glb(manifest: Dictionary) -> String:
 		if entry is Dictionary and entry.get("format", "") == "glb":
 			return entry.get("uri", "")
 	return ""
+
+
+static func _build_dir_for_manifest(manifest_path: String) -> String:
+	if manifest_path.ends_with(_CURRENT_MANIFEST_SUFFIX):
+		return manifest_path.substr(0, manifest_path.length() - _CURRENT_MANIFEST_SUFFIX.length())
+	return manifest_path.get_base_dir()
 
 
 static func _load_glb(glb_abs_path: String) -> Node:

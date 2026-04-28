@@ -24,10 +24,11 @@ from collections import Counter
 
 import numpy as np
 import pytest
-
 from lathe.fidelity import FidelityProfile
 from lathe.geometry_kernel import fuse_shape_ir
 from lathe.shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
+
+pytestmark = pytest.mark.property
 
 
 def _game_fidelity() -> FidelityProfile:
@@ -43,11 +44,15 @@ def _game_fidelity() -> FidelityProfile:
     )
 
 
-def _box(part: str, center: tuple[float, float, float], extents: tuple[float, float, float] = (2.0, 2.0, 2.0)) -> ShapePrimitive:
+def _box(
+    part: str, center: tuple[float, float, float], extents: tuple[float, float, float] = (2.0, 2.0, 2.0)
+) -> ShapePrimitive:
     return ShapePrimitive(primitive_type="box", part=part, center=center, extents=extents)
 
 
-def _region(part: str, center: tuple[float, float, float], extents: tuple[float, float, float] = (2.0, 2.0, 2.0)) -> ShapeRegion:
+def _region(
+    part: str, center: tuple[float, float, float], extents: tuple[float, float, float] = (2.0, 2.0, 2.0)
+) -> ShapeRegion:
     return ShapeRegion(name=f"r_{part}", part=part, component="hull", center=center, extents=extents)
 
 

@@ -61,9 +61,7 @@ class InspectionPolicyIRTests(unittest.TestCase):
         )
 
     def test_policy_ir_partitions_unknown_evidence(self) -> None:
-        asset = _asset(
-            values={"require": ["geometry_evidence", "bogus_evidence", "uv_evidence"]}
-        )
+        asset = _asset(values={"require": ["geometry_evidence", "bogus_evidence", "uv_evidence"]})
         ir = build_inspection_policy_ir(asset)
         self.assertEqual(ir["required_evidence"], ["geometry_evidence", "uv_evidence"])
         self.assertEqual(ir["unknown_evidence"], ["bogus_evidence"])
@@ -128,21 +126,15 @@ class ValidationEvidenceIRTests(unittest.TestCase):
         asset = _asset(values={"require": ["bake_evidence"]})
         runtime = {"surface": {"bundle": {}}}
         execution_bundle = {"bake_plan_ir": {"maps": [{"name": "normal"}]}}
-        ir = build_validation_evidence_ir(
-            asset=asset, runtime=runtime, execution_bundle=execution_bundle
-        )
+        ir = build_validation_evidence_ir(asset=asset, runtime=runtime, execution_bundle=execution_bundle)
         self.assertTrue(ir["evidence"]["bake_evidence"]["available"])
         self.assertTrue(ir["satisfied"])
 
     def test_validation_evidence_counts_render_passes(self) -> None:
         asset = _asset()
         runtime = {"shape": {"bundle": {"x": 1}}}
-        execution_bundle = {
-            "render_eval_ir": {"evidence_passes": [{"view": "front"}, {"view": "iso"}]}
-        }
-        ir = build_validation_evidence_ir(
-            asset=asset, runtime=runtime, execution_bundle=execution_bundle
-        )
+        execution_bundle = {"render_eval_ir": {"evidence_passes": [{"view": "front"}, {"view": "iso"}]}}
+        ir = build_validation_evidence_ir(asset=asset, runtime=runtime, execution_bundle=execution_bundle)
         self.assertEqual(ir["evidence"]["geometry_evidence"]["render_pass_count"], 2)
         self.assertEqual(ir["evidence"]["surface_evidence"]["render_pass_count"], 2)
 
@@ -150,9 +142,7 @@ class ValidationEvidenceIRTests(unittest.TestCase):
         asset = _asset()
         runtime = {}
         execution_bundle = {"blend_artifact_ir": {"generated": True, "artifact_path": "out.blend"}}
-        ir = build_validation_evidence_ir(
-            asset=asset, runtime=runtime, execution_bundle=execution_bundle
-        )
+        ir = build_validation_evidence_ir(asset=asset, runtime=runtime, execution_bundle=execution_bundle)
         self.assertEqual(ir["evidence"]["geometry_evidence"]["blend_artifact"], "out.blend")
 
     def test_validation_evidence_sources_are_stable_pointers(self) -> None:

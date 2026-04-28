@@ -9,6 +9,7 @@ optionally a 24-frame `turntable.webp` if Blender's ffmpeg module is
 available. Failures inside Blender do not block the outer gallery script —
 the outer script treats a missing render directory as "no renders".
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,10 +26,7 @@ except ImportError:  # pragma: no cover - only run inside Blender
 
 def _parse_args() -> argparse.Namespace:
     argv = sys.argv
-    if "--" in argv:
-        argv = argv[argv.index("--") + 1 :]
-    else:
-        argv = []
+    argv = argv[argv.index("--") + 1 :] if "--" in argv else []
     p = argparse.ArgumentParser()
     p.add_argument("--glb", required=True)
     p.add_argument("--out", required=True)
@@ -48,7 +46,7 @@ def _import_glb(glb_path: Path) -> None:
 
 def _frame_scene() -> None:
     bpy.ops.object.select_all(action="SELECT")
-    bpy.ops.view3d.camera_to_view_selected() if False else None  # noqa
+    bpy.ops.view3d.camera_to_view_selected() if False else None
     # Compute bounding sphere for placing the camera.
     xs, ys, zs = [], [], []
     for obj in bpy.context.scene.objects:
@@ -59,13 +57,11 @@ def _frame_scene() -> None:
                 ys.append(world.y)
                 zs.append(world.z)
     if not xs:
-        return
+        return None
     cx = (min(xs) + max(xs)) / 2.0
     cy = (min(ys) + max(ys)) / 2.0
     cz = (min(zs) + max(zs)) / 2.0
-    radius = max(
-        max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs), 1.0
-    ) * 0.75
+    radius = max(max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs), 1.0) * 0.75
 
     cam_data = bpy.data.cameras.new("GalleryCam")
     cam_obj = bpy.data.objects.new("GalleryCam", cam_data)

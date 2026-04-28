@@ -23,7 +23,6 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-
 from lathe.asset_graph import build_asset_graph
 from lathe.constants import RNG_PRIME_OFFSET
 from lathe.scaffold_compiler import _candidate_rng, compile_scaffold_candidates
@@ -131,9 +130,7 @@ class CompileScaffoldCandidatesTests(unittest.TestCase):
         self.assertIn("blueprint_id", report)
         self.assertIn("fidelity", report)
         self.assertIn("candidate_search_summary", report)
-        self.assertEqual(
-            report["authoritative_candidate_reason"], "native_assembly_blueprint"
-        )
+        self.assertEqual(report["authoritative_candidate_reason"], "native_assembly_blueprint")
 
     def test_deterministic_same_seed_produces_same_shape_ir(self) -> None:
         asset_graph_a = _courier_drone_asset_graph()

@@ -186,8 +186,7 @@ def _suggestions_table(build_report: dict[str, Any]) -> str:
         else:
             rows.append(f"<tr><td></td><td>{_esc(item)}</td></tr>")
     return (
-        "<table><thead><tr><th>Target</th><th>Hint</th></tr></thead>"
-        f"<tbody>{''.join(rows)}</tbody></table>"
+        f"<table><thead><tr><th>Target</th><th>Hint</th></tr></thead><tbody>{''.join(rows)}</tbody></table>"
     )
 
 
@@ -195,14 +194,8 @@ def _artifacts_table(build_report: dict[str, Any]) -> str:
     outputs = build_report.get("outputs") or {}
     if not isinstance(outputs, dict) or not outputs:
         return '<p class="empty">No artifacts recorded.</p>'
-    rows = [
-        f"<tr><td>{_esc(k)}</td><td><code>{_esc(v)}</code></td></tr>"
-        for k, v in sorted(outputs.items())
-    ]
-    return (
-        "<table><thead><tr><th>Kind</th><th>Path</th></tr></thead>"
-        f"<tbody>{''.join(rows)}</tbody></table>"
-    )
+    rows = [f"<tr><td>{_esc(k)}</td><td><code>{_esc(v)}</code></td></tr>" for k, v in sorted(outputs.items())]
+    return f"<table><thead><tr><th>Kind</th><th>Path</th></tr></thead><tbody>{''.join(rows)}</tbody></table>"
 
 
 def _refs_manifest_section(build_dir: Path | None) -> str:
@@ -236,24 +229,17 @@ def _refs_manifest_section(build_dir: Path | None) -> str:
             ref = item.get("ref")
             if ref:
                 named_parts.append(
-                    f'<a class="ref-link" href="#ref" '
-                    f'title="{_esc(ref)}"><code>{_esc(name)}</code></a>'
+                    f'<a class="ref-link" href="#ref" title="{_esc(ref)}"><code>{_esc(name)}</code></a>'
                 )
             elif name:
                 named_parts.append(f"<code>{_esc(name)}</code>")
         top_html = ", ".join(named_parts) if named_parts else '<span class="empty">(none)</span>'
-        rows.append(
-            "<tr>"
-            f"<td>{_esc(label)}</td>"
-            f"<td>{len(items)}</td>"
-            f"<td>{top_html}</td>"
-            "</tr>"
-        )
+        rows.append(f"<tr><td>{_esc(label)}</td><td>{len(items)}</td><td>{top_html}</td></tr>")
 
     build_hash = manifest.get("buildHash") or ""
     header = (
         f'<div class="meta">buildHash: <code>{_esc(build_hash[:16])}'
-        f'{"…" if len(str(build_hash)) > 16 else ""}</code></div>'
+        f"{'…' if len(str(build_hash)) > 16 else ''}</code></div>"
     )
     table = (
         "<table><thead><tr><th>Category</th><th>Count</th>"
@@ -262,7 +248,7 @@ def _refs_manifest_section(build_dir: Path | None) -> str:
     )
     return (
         '  <section class="refs-manifest">\n'
-        '    <h2>Refs &amp; Selector Manifest</h2>\n'
+        "    <h2>Refs &amp; Selector Manifest</h2>\n"
         f"    {header}\n    {table}\n"
         "  </section>"
     )
@@ -292,15 +278,13 @@ def _geometry_kernel_section(build_dir: Path | None) -> str:
     determinism = bundle.get("determinism_class") or ""
     lines = [
         '  <section class="geometry-kernel">',
-        '    <h2>Geometry Kernel</h2>',
+        "    <h2>Geometry Kernel</h2>",
         f'    <div class="kv"><b>kernel_id:</b> <code>{_esc(kernel_id)}</code></div>',
         f'    <div class="kv"><b>watertight_rate:</b> <code>{_esc(pct)}</code> '
         f'<span class="empty">({watertight}/{candidates} candidates)</span></div>',
     ]
     if determinism:
-        lines.append(
-            f'    <div class="kv"><b>determinism:</b> <code>{_esc(determinism)}</code></div>'
-        )
+        lines.append(f'    <div class="kv"><b>determinism:</b> <code>{_esc(determinism)}</code></div>')
     lines.append(
         '    <div class="meta">Deterministic under canonical JSON hashing; see '
         "<code>lathe snapshot</code>.</div>"
@@ -350,12 +334,7 @@ def _lod_ladder_section(build_dir: Path | None) -> str:
         "<th>Triangles</th><th>Path</th></tr></thead>"
         f"<tbody>{''.join(rows)}</tbody></table>"
     )
-    return (
-        '  <section class="lod-ladder">\n'
-        '    <h2>LOD Ladder</h2>\n'
-        f"    {table}\n"
-        "  </section>"
-    )
+    return f'  <section class="lod-ladder">\n    <h2>LOD Ladder</h2>\n    {table}\n  </section>'
 
 
 def _collision_proxies_section(build_dir: Path | None) -> str:
@@ -403,12 +382,7 @@ def _collision_proxies_section(build_dir: Path | None) -> str:
         "<th>AABB (min→max)</th></tr></thead>"
         f"<tbody>{''.join(rows)}</tbody></table>"
     )
-    return (
-        '  <section class="collision-proxies">\n'
-        '    <h2>Collision Proxies</h2>\n'
-        f"    {table}\n"
-        "  </section>"
-    )
+    return f'  <section class="collision-proxies">\n    <h2>Collision Proxies</h2>\n    {table}\n  </section>'
 
 
 def _fmt_aabb(aabb: Any) -> str:
@@ -456,7 +430,6 @@ def render_html_report(build_report: dict[str, Any]) -> str:
     when ``build_report['out_dir']`` points at a real directory with
     the corresponding artifact. Pre-Wave-6 builds simply omit them.
     """
-
     certified = bool(build_report.get("certified"))
     build_dir = _resolve_build_dir(build_report)
     return _PAGE.substitute(

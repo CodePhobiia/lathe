@@ -154,7 +154,14 @@ class _FastParser(_FastParserExprMixin):
             else:
                 raise LatheParseError(f"Unexpected {node_type} item '{keyword}'")
         self.ts.pop("}")
-        return {"node_type": node_type, "name": name, "uses": _dedupe_keep_first(uses), "defaults": defaults, "rules": rules, "repair": repair}
+        return {
+            "node_type": node_type,
+            "name": name,
+            "uses": _dedupe_keep_first(uses),
+            "defaults": defaults,
+            "rules": rules,
+            "repair": repair,
+        }
 
     def _critic(self) -> dict[str, Any]:
         name = self.ts.pop_ident()
@@ -347,7 +354,12 @@ class _FastParser(_FastParserExprMixin):
             else:
                 values.append((self._finish_path(item), self._assign_value()))
         self.ts.pop("}")
-        return {"node_type": node_type, "name": name, "values": self._assignments(values, node_type), "asserts": asserts}
+        return {
+            "node_type": node_type,
+            "name": name,
+            "values": self._assignments(values, node_type),
+            "asserts": asserts,
+        }
 
     def _space_decl(self) -> dict[str, Any]:
         name = self.ts.pop_ident()

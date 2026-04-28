@@ -224,7 +224,10 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
         Returns:
             The result.
         """
-        return {"node_type": "repair_policy_inline", "values": self._assignments(assignments, "repair_policy")}
+        return {
+            "node_type": "repair_policy_inline",
+            "values": self._assignments(assignments, "repair_policy"),
+        }
 
     def from_clause(self, name: str) -> dict[str, Any]:
         """From clause.

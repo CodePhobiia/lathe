@@ -1,0 +1,23 @@
+{
+  "shape": {
+    "provider": "hunyuan2_1_http",
+    "strict": true,
+    "allow_fallback": false,
+    "providers": {
+      "hunyuan2_1_http": {
+        "base_url": "http://127.0.0.1:8081",
+        "timeout_s": 30,
+        "url_allowlist": [
+          "127.0.0.1"
+        ],
+        "remove_background": true,
+        "texture": false,
+        "octree_resolution": 64,
+        "num_inference_steps": 2,
+        "guidance_scale": 3.0,
+        "face_count": 5000,
+        "type": "glb"
+      }
+    }
+  }
+}

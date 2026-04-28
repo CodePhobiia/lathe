@@ -11,7 +11,6 @@ from typing import Any
 from .common import unit_to_bytes, unit_to_px_per_m
 from .errors import BuildError
 
-
 IDENT_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
@@ -57,7 +56,10 @@ def evaluate_expression(expr: Any, asset: dict[str, Any], runtime: dict[str, Any
         etype = expr.get("type")
         if etype == "call":
             name = expr["name"]
-            kwargs = {item["name"] if item.get("name") is not None else f"_{idx}": item["value"] for idx, item in enumerate(expr.get("args", []))}
+            kwargs = {
+                item["name"] if item.get("name") is not None else f"_{idx}": item["value"]
+                for idx, item in enumerate(expr.get("args", []))
+            }
             if name in _predicate_dispatch():
                 return _predicate_dispatch()[name](asset, runtime, kwargs)
             if name in _metric_dispatch():
@@ -106,21 +108,40 @@ def evaluate_expression(expr: Any, asset: dict[str, Any], runtime: dict[str, Any
 
 def _predicate_dispatch() -> dict[str, Any]:
     return {
-        "manifold": lambda asset, runtime, kwargs: bool(runtime["topology"]["bundle"]["mesh_stats"]["watertight"]),
-        "watertight": lambda asset, runtime, kwargs: bool(runtime["topology"]["bundle"]["mesh_stats"]["watertight"]),
-        "lightmap_uvs": lambda asset, runtime, kwargs: any(item["name"] == "lightmap" for item in runtime["uv"]["bundle"]["uv_sets"]),
-        "collision_proxy": lambda asset, runtime, kwargs: bool(runtime["physics"]["bundle"]["collision_proxy"]),
-        "material_slots": lambda asset, runtime, kwargs: int(runtime["surface"]["bundle"]["material_slots"]) <= int(kwargs.get("max", 999999)),
+        "manifold": lambda asset, runtime, kwargs: bool(
+            runtime["topology"]["bundle"]["mesh_stats"]["watertight"]
+        ),
+        "watertight": lambda asset, runtime, kwargs: bool(
+            runtime["topology"]["bundle"]["mesh_stats"]["watertight"]
+        ),
+        "lightmap_uvs": lambda asset, runtime, kwargs: any(
+            item["name"] == "lightmap" for item in runtime["uv"]["bundle"]["uv_sets"]
+        ),
+        "collision_proxy": lambda asset, runtime, kwargs: bool(
+            runtime["physics"]["bundle"]["collision_proxy"]
+        ),
+        "material_slots": lambda asset, runtime, kwargs: (
+            int(runtime["surface"]["bundle"]["material_slots"]) <= int(kwargs.get("max", 999999))
+        ),
         "uv_range": _predicate_uv_range,
         "texel_density": _predicate_texel_density,
         "runtime_budget": _predicate_runtime_budget,
         "pivots": _predicate_pivots,
         "names": _predicate_names,
         "units": lambda asset, runtime, kwargs: kwargs.get("_0") == "cm" or kwargs.get("unit") == "cm",
-        "lods": lambda asset, runtime, kwargs: len(runtime["optimize"]["bundle"]["lods"]) >= int(kwargs.get("min", 1)),
-        "triangles": lambda asset, runtime, kwargs: int(runtime["topology"]["bundle"]["mesh_stats"]["triangle_count"]) <= int(kwargs.get("max", 99999999)),
-        "texture_budget": lambda asset, runtime, kwargs: int(runtime["optimize"]["bundle"]["texture_memory_bytes"]) <= unit_to_bytes(kwargs.get("max")),
-        "socket_count": lambda asset, runtime, kwargs: len(runtime["interfaces"]["bundle"].get("sockets", [])) >= int(kwargs.get("min", 0)),
+        "lods": lambda asset, runtime, kwargs: (
+            len(runtime["optimize"]["bundle"]["lods"]) >= int(kwargs.get("min", 1))
+        ),
+        "triangles": lambda asset, runtime, kwargs: (
+            int(runtime["topology"]["bundle"]["mesh_stats"]["triangle_count"])
+            <= int(kwargs.get("max", 99999999))
+        ),
+        "texture_budget": lambda asset, runtime, kwargs: (
+            int(runtime["optimize"]["bundle"]["texture_memory_bytes"]) <= unit_to_bytes(kwargs.get("max"))
+        ),
+        "socket_count": lambda asset, runtime, kwargs: (
+            len(runtime["interfaces"]["bundle"].get("sockets", [])) >= int(kwargs.get("min", 0))
+        ),
         "riggable": _predicate_riggable,
     }
 
@@ -157,7 +178,9 @@ def _predicate_texel_density(asset: dict[str, Any], runtime: dict[str, Any], kwa
 
 def _predicate_runtime_budget(asset: dict[str, Any], runtime: dict[str, Any], kwargs: dict[str, Any]) -> bool:
     draw_calls_ok = runtime["optimize"]["bundle"]["draw_calls"] <= int(kwargs.get("draw_calls", 99999999))
-    texture_memory_ok = runtime["optimize"]["bundle"]["texture_memory_bytes"] <= unit_to_bytes(kwargs.get("texture_memory"))
+    texture_memory_ok = runtime["optimize"]["bundle"]["texture_memory_bytes"] <= unit_to_bytes(
+        kwargs.get("texture_memory")
+    )
     return draw_calls_ok and texture_memory_ok
 
 
@@ -166,6 +189,7 @@ def _predicate_names(asset: dict[str, Any], runtime: dict[str, Any], kwargs: dic
     names.extend(asset.get("intent", {}).get("parts", []))
     names.extend(item.get("name") for item in runtime["rig"]["bundle"].get("joints", []))
     names.extend(item.get("name") for item in runtime["interfaces"]["bundle"].get("sockets", []))
+    names.extend(item.get("name") for item in runtime["interfaces"]["bundle"].get("pivots", []))
     names.extend(item.get("name") for item in runtime["interfaces"]["bundle"].get("anchors", []))
     return all(name is not None and IDENT_RE.match(str(name)) for name in names)
 
@@ -326,8 +350,9 @@ def _metric_uv_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
 
 def _metric_assembly_compatibility(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
     sockets = len(runtime["interfaces"]["bundle"].get("sockets", []))
+    pivots = len(runtime["interfaces"]["bundle"].get("pivots", []))
     anchors = len(runtime["interfaces"]["bundle"].get("anchors", []))
-    return round(min(1.0, 0.75 + 0.05 * (sockets + anchors)), 6)
+    return round(min(1.0, 0.75 + 0.05 * (sockets + pivots + anchors)), 6)
 
 
 def _metric_surface_consistency(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
@@ -364,7 +389,13 @@ def evaluate_metric(expr: Any, asset: dict[str, Any], runtime: dict[str, Any]) -
     raise BuildError(f"Metric expression did not resolve to score: {expr!r}")
 
 
-def evaluate_critic(name: Any, asset: dict[str, Any], runtime: dict[str, Any], critics: dict[str, Any], rules: list[dict[str, Any]]) -> float:
+def evaluate_critic(
+    name: Any,
+    asset: dict[str, Any],
+    runtime: dict[str, Any],
+    critics: dict[str, Any],
+    rules: list[dict[str, Any]],
+) -> float:
     """Evaluate critic.
 
     Args:

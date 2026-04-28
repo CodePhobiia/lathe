@@ -3,20 +3,19 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
-
-cryptography = pytest.importorskip("cryptography")
-from cryptography.hazmat.primitives.asymmetric import ed25519
-
 from lathe.publish.signed_repro import (
-    RECEIPT_FILENAME,
     RECEIPT_SCHEMA_VERSION,
     ReproVerifyError,
     sign_receipt,
     verify_receipt,
 )
+
+ed25519 = pytest.importorskip("cryptography.hazmat.primitives.asymmetric.ed25519")
+serialization = pytest.importorskip("cryptography.hazmat.primitives.serialization")
 
 
 def _write_key(dir_: Path) -> Path:
@@ -24,8 +23,6 @@ def _write_key(dir_: Path) -> Path:
     raw = private_key.private_bytes_raw() if hasattr(private_key, "private_bytes_raw") else None
     if raw is None:
         # Fall back for older cryptography versions.
-        from cryptography.hazmat.primitives import serialization
-
         raw = private_key.private_bytes(
             encoding=serialization.Encoding.Raw,
             format=serialization.PrivateFormat.Raw,
@@ -109,6 +106,26 @@ def test_missing_key_raises(tmp_path: Path) -> None:
         sign_receipt(build_dir, signing_key_path=None)
 
 
+def test_missing_configured_key_error_does_not_include_path(tmp_path: Path) -> None:
+    build_dir = _seed_build_dir(tmp_path)
+    missing = tmp_path / "secret-signing-key.ed25519"
+
+    with pytest.raises(ReproVerifyError) as exc:
+        sign_receipt(build_dir, signing_key_path=missing)
+
+    assert str(missing) not in str(exc.value)
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX permission bits only")
+def test_world_readable_signing_key_is_rejected(tmp_path: Path) -> None:
+    build_dir = _seed_build_dir(tmp_path)
+    key_path = _write_key(tmp_path)
+    key_path.chmod(0o644)
+
+    with pytest.raises(ReproVerifyError, match="permissions are unsafe"):
+        sign_receipt(build_dir, signing_key_path=key_path)
+
+
 def test_receipt_matches_schema(tmp_path: Path) -> None:
     jsonschema = pytest.importorskip("jsonschema")
     build_dir = _seed_build_dir(tmp_path)
@@ -128,7 +145,6 @@ def test_verify_receipt_rejects_wrong_key(tmp_path: Path) -> None:
     payload = json.loads(receipt_path.read_text(encoding="utf-8"))
     # Replace only the public key — signature no longer matches.
     other_key = ed25519.Ed25519PrivateKey.generate().public_key()
-    from cryptography.hazmat.primitives import serialization
 
     other_raw = other_key.public_bytes(
         encoding=serialization.Encoding.Raw,

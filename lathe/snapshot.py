@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -70,7 +70,7 @@ def _hash_stage_dir(stage_dir: Path) -> str | None:
 
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _read_json_if_exists(path: Path) -> dict[str, Any] | None:
@@ -158,8 +158,8 @@ def write_snapshot(
 
 
 __all__ = [
-    "SNAPSHOT_SCHEMA_VERSION",
     "SNAPSHOT_FILENAME",
+    "SNAPSHOT_SCHEMA_VERSION",
     "STAGE_ORDER",
     "collect_snapshot",
     "write_snapshot",

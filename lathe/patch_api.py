@@ -75,7 +75,9 @@ def update_material_palette(program: dict[str, Any], asset_name: str, palette_na
     return normalize_program(updated)
 
 
-def widen_search_bounds(program: dict[str, Any], space_name: str, variable_name: str, lower: Any, upper: Any) -> dict[str, Any]:
+def widen_search_bounds(
+    program: dict[str, Any], space_name: str, variable_name: str, lower: Any, upper: Any
+) -> dict[str, Any]:
     """Widen search bounds.
 
     Args:

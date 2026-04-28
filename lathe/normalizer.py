@@ -27,10 +27,9 @@ from .defaults import (
     VALIDATE_REPAIR_DEFAULTS,
     VARIANT_DEFAULTS,
 )
-# re-export — authoritative definition lives in lathe/errors.py
-from .errors import NormalizationError
-from .utils import dedupe_keep_first, deep_fill_missing
 
+# re-export — authoritative definition lives in lathe/errors.py
+from .utils import dedupe_keep_first, deep_fill_missing
 
 CANONICAL_PROFILE_KEYS = ["node_type", "name", "uses", "defaults", "rules", "repair"]
 CANONICAL_CRITIC_KEYS = ["node_type", "name", "param", "body"]
@@ -252,7 +251,9 @@ def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
     out["ingest"] = deepcopy(out.get("ingest", {}))
     out["assembly_rules"] = deepcopy(out.get("assembly_rules", {}))
     out["execution"] = deepcopy(out.get("execution", {}))
-    out["space"] = _normalize_space_common(deep_fill_missing(out.get("space", {}), ASSET_SPACE_DEFAULTS), with_name=False)
+    out["space"] = _normalize_space_common(
+        deep_fill_missing(out.get("space", {}), ASSET_SPACE_DEFAULTS), with_name=False
+    )
     out["repair_policy"] = _normalize_repair_policy_spec(out.get("repair_policy", {}))
 
     for path in [
@@ -265,6 +266,7 @@ def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
         (out["build"]["surface"], "bakes"),
         (out["build"]["rig"], "joints"),
         (out["build"]["interfaces"], "sockets"),
+        (out["build"]["interfaces"], "pivots"),
         (out["build"]["interfaces"], "anchors"),
         (out["package"], "formats"),
         (out["package"], "previews"),
@@ -314,52 +316,136 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
     """
     out = deep_fill_missing(program, PROGRAM_DEFAULTS)
     out["imports"] = dedupe_keep_first(out.get("imports", []))
-    out["profiles"] = sorted([_normalize_profile_like(p, "profile") for p in out.get("profiles", [])], key=lambda d: d["name"])
-    out["contracts"] = sorted([_normalize_profile_like(c, "contract") for c in out.get("contracts", [])], key=lambda d: d["name"])
-    out["critics"] = sorted([
-        _ordered({**c, "node_type": "critic"}, CANONICAL_CRITIC_KEYS) for c in out.get("critics", [])
-    ], key=lambda d: d["name"])
-    out["families"] = sorted([_normalize_structured_decl(item, "family") for item in out.get("families", [])], key=lambda d: d["name"])
-    out["components"] = sorted([_normalize_structured_decl(item, "component") for item in out.get("components", [])], key=lambda d: d["name"])
-    out["assemblies"] = sorted([_normalize_structured_decl(item, "assembly") for item in out.get("assemblies", [])], key=lambda d: d["name"])
-    out["traits"] = sorted([_normalize_structured_decl(item, "trait") for item in out.get("traits", [])], key=lambda d: d["name"])
-    out["mechanisms"] = sorted([_normalize_structured_decl(item, "mechanism") for item in out.get("mechanisms", [])], key=lambda d: d["name"])
-    out["materials"] = sorted([_normalize_mapping_decl(item, "material") for item in out.get("materials", [])], key=lambda d: d["name"])
-    out["surface_backends"] = sorted([_normalize_mapping_decl(item, "surface_backend") for item in out.get("surface_backends", [])], key=lambda d: d["name"])
-    out["surface_policies"] = sorted([_normalize_mapping_decl(item, "surface_policy") for item in out.get("surface_policies", [])], key=lambda d: d["name"])
-    out["decal_libraries"] = sorted([_normalize_mapping_decl(item, "decal_library") for item in out.get("decal_libraries", [])], key=lambda d: d["name"])
-    out["mask_programs"] = sorted([_normalize_mapping_decl(item, "mask_program") for item in out.get("mask_programs", [])], key=lambda d: d["name"])
-    out["trim_sheets"] = sorted([_normalize_mapping_decl(item, "trim_sheet") for item in out.get("trim_sheets", [])], key=lambda d: d["name"])
-    out["palettes"] = sorted([_normalize_mapping_decl(item, "palette") for item in out.get("palettes", [])], key=lambda d: d["name"])
-    out["execution_profiles"] = sorted([_normalize_mapping_decl(item, "execution_profile") for item in out.get("execution_profiles", [])], key=lambda d: d["name"])
-    out["render_fixtures"] = sorted([_normalize_mapping_decl(item, "render_fixture") for item in out.get("render_fixtures", [])], key=lambda d: d["name"])
-    out["bake_profiles"] = sorted([_normalize_mapping_decl(item, "bake_profile") for item in out.get("bake_profiles", [])], key=lambda d: d["name"])
-    out["library_bindings"] = sorted([_normalize_mapping_decl(item, "library_binding") for item in out.get("library_bindings", [])], key=lambda d: d["name"])
-    out["material_graphs"] = sorted([_normalize_mapping_decl(item, "material_graph") for item in out.get("material_graphs", [])], key=lambda d: d["name"])
-    out["inspection_policies"] = sorted([_normalize_mapping_decl(item, "inspection_policy") for item in out.get("inspection_policies", [])], key=lambda d: d["name"])
-    out["repair_policies"] = sorted([_normalize_top_level_repair_policy(item) for item in out.get("repair_policies", [])], key=lambda d: d["name"])
-    out["fixtures"] = sorted([_normalize_mapping_decl(item, "fixture") for item in out.get("fixtures", [])], key=lambda d: d["name"])
-    out["tests"] = sorted([_normalize_test_like(item, "test") for item in out.get("tests", [])], key=lambda d: d["name"])
-    out["benchmarks"] = sorted([_normalize_test_like(item, "benchmark") for item in out.get("benchmarks", [])], key=lambda d: d["name"])
-    out["spaces"] = sorted([_normalize_space_decl(item) for item in out.get("spaces", [])], key=lambda d: d["name"])
+    out["profiles"] = sorted(
+        [_normalize_profile_like(p, "profile") for p in out.get("profiles", [])], key=lambda d: d["name"]
+    )
+    out["contracts"] = sorted(
+        [_normalize_profile_like(c, "contract") for c in out.get("contracts", [])], key=lambda d: d["name"]
+    )
+    out["critics"] = sorted(
+        [_ordered({**c, "node_type": "critic"}, CANONICAL_CRITIC_KEYS) for c in out.get("critics", [])],
+        key=lambda d: d["name"],
+    )
+    out["families"] = sorted(
+        [_normalize_structured_decl(item, "family") for item in out.get("families", [])],
+        key=lambda d: d["name"],
+    )
+    out["components"] = sorted(
+        [_normalize_structured_decl(item, "component") for item in out.get("components", [])],
+        key=lambda d: d["name"],
+    )
+    out["assemblies"] = sorted(
+        [_normalize_structured_decl(item, "assembly") for item in out.get("assemblies", [])],
+        key=lambda d: d["name"],
+    )
+    out["traits"] = sorted(
+        [_normalize_structured_decl(item, "trait") for item in out.get("traits", [])], key=lambda d: d["name"]
+    )
+    out["mechanisms"] = sorted(
+        [_normalize_structured_decl(item, "mechanism") for item in out.get("mechanisms", [])],
+        key=lambda d: d["name"],
+    )
+    out["materials"] = sorted(
+        [_normalize_mapping_decl(item, "material") for item in out.get("materials", [])],
+        key=lambda d: d["name"],
+    )
+    out["surface_backends"] = sorted(
+        [_normalize_mapping_decl(item, "surface_backend") for item in out.get("surface_backends", [])],
+        key=lambda d: d["name"],
+    )
+    out["surface_policies"] = sorted(
+        [_normalize_mapping_decl(item, "surface_policy") for item in out.get("surface_policies", [])],
+        key=lambda d: d["name"],
+    )
+    out["decal_libraries"] = sorted(
+        [_normalize_mapping_decl(item, "decal_library") for item in out.get("decal_libraries", [])],
+        key=lambda d: d["name"],
+    )
+    out["mask_programs"] = sorted(
+        [_normalize_mapping_decl(item, "mask_program") for item in out.get("mask_programs", [])],
+        key=lambda d: d["name"],
+    )
+    out["trim_sheets"] = sorted(
+        [_normalize_mapping_decl(item, "trim_sheet") for item in out.get("trim_sheets", [])],
+        key=lambda d: d["name"],
+    )
+    out["palettes"] = sorted(
+        [_normalize_mapping_decl(item, "palette") for item in out.get("palettes", [])],
+        key=lambda d: d["name"],
+    )
+    out["execution_profiles"] = sorted(
+        [_normalize_mapping_decl(item, "execution_profile") for item in out.get("execution_profiles", [])],
+        key=lambda d: d["name"],
+    )
+    out["render_fixtures"] = sorted(
+        [_normalize_mapping_decl(item, "render_fixture") for item in out.get("render_fixtures", [])],
+        key=lambda d: d["name"],
+    )
+    out["bake_profiles"] = sorted(
+        [_normalize_mapping_decl(item, "bake_profile") for item in out.get("bake_profiles", [])],
+        key=lambda d: d["name"],
+    )
+    out["library_bindings"] = sorted(
+        [_normalize_mapping_decl(item, "library_binding") for item in out.get("library_bindings", [])],
+        key=lambda d: d["name"],
+    )
+    out["material_graphs"] = sorted(
+        [_normalize_mapping_decl(item, "material_graph") for item in out.get("material_graphs", [])],
+        key=lambda d: d["name"],
+    )
+    out["inspection_policies"] = sorted(
+        [_normalize_mapping_decl(item, "inspection_policy") for item in out.get("inspection_policies", [])],
+        key=lambda d: d["name"],
+    )
+    out["repair_policies"] = sorted(
+        [_normalize_top_level_repair_policy(item) for item in out.get("repair_policies", [])],
+        key=lambda d: d["name"],
+    )
+    out["fixtures"] = sorted(
+        [_normalize_mapping_decl(item, "fixture") for item in out.get("fixtures", [])],
+        key=lambda d: d["name"],
+    )
+    out["tests"] = sorted(
+        [_normalize_test_like(item, "test") for item in out.get("tests", [])], key=lambda d: d["name"]
+    )
+    out["benchmarks"] = sorted(
+        [_normalize_test_like(item, "benchmark") for item in out.get("benchmarks", [])],
+        key=lambda d: d["name"],
+    )
+    out["spaces"] = sorted(
+        [_normalize_space_decl(item) for item in out.get("spaces", [])], key=lambda d: d["name"]
+    )
     out["assets"] = sorted([normalize_asset(a) for a in out.get("assets", [])], key=lambda d: d["name"])
-    out["variants"] = sorted([_normalize_variant(v) for v in out.get("variants", [])], key=lambda d: d["name"])
+    out["variants"] = sorted(
+        [_normalize_variant(v) for v in out.get("variants", [])], key=lambda d: d["name"]
+    )
     return {
         "module": out.get("module"),
         "imports": out["imports"],
         "profiles": out["profiles"],
         "contracts": out["contracts"],
         "critics": out["critics"],
-        "libraries": sorted([_normalize_mapping_decl(item, "library") for item in out.get("libraries", [])], key=lambda d: d["name"]),
-        "kits": sorted([_normalize_mapping_decl(item, "kit") for item in out.get("kits", [])], key=lambda d: d["name"]),
-        "patterns": sorted([_normalize_mapping_decl(item, "pattern") for item in out.get("patterns", [])], key=lambda d: d["name"]),
+        "libraries": sorted(
+            [_normalize_mapping_decl(item, "library") for item in out.get("libraries", [])],
+            key=lambda d: d["name"],
+        ),
+        "kits": sorted(
+            [_normalize_mapping_decl(item, "kit") for item in out.get("kits", [])], key=lambda d: d["name"]
+        ),
+        "patterns": sorted(
+            [_normalize_mapping_decl(item, "pattern") for item in out.get("patterns", [])],
+            key=lambda d: d["name"],
+        ),
         "families": out["families"],
         "components": out["components"],
         "assemblies": out["assemblies"],
         "traits": out["traits"],
         "mechanisms": out["mechanisms"],
         "materials": out["materials"],
-        "surface_programs": sorted([_normalize_mapping_decl(item, "surface_program") for item in out.get("surface_programs", [])], key=lambda d: d["name"]),
+        "surface_programs": sorted(
+            [_normalize_mapping_decl(item, "surface_program") for item in out.get("surface_programs", [])],
+            key=lambda d: d["name"],
+        ),
         "surface_backends": out["surface_backends"],
         "surface_policies": out["surface_policies"],
         "decal_libraries": out["decal_libraries"],
@@ -372,12 +458,33 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         "library_bindings": out["library_bindings"],
         "material_graphs": out["material_graphs"],
         "inspection_policies": out["inspection_policies"],
-        "reference_sets": sorted([_normalize_mapping_decl(item, "reference_set") for item in out.get("reference_sets", [])], key=lambda d: d["name"]),
-        "reconstruct_policies": sorted([_normalize_mapping_decl(item, "reconstruct_policy") for item in out.get("reconstruct_policies", [])], key=lambda d: d["name"]),
-        "adapt_policies": sorted([_normalize_mapping_decl(item, "adapt_policy") for item in out.get("adapt_policies", [])], key=lambda d: d["name"]),
-        "assembly_policies": sorted([_normalize_mapping_decl(item, "assembly_policy") for item in out.get("assembly_policies", [])], key=lambda d: d["name"]),
-        "fit_profiles": sorted([_normalize_mapping_decl(item, "fit_profile") for item in out.get("fit_profiles", [])], key=lambda d: d["name"]),
-        "transfer_rules": sorted([_normalize_mapping_decl(item, "transfer_rule") for item in out.get("transfer_rules", [])], key=lambda d: d["name"]),
+        "reference_sets": sorted(
+            [_normalize_mapping_decl(item, "reference_set") for item in out.get("reference_sets", [])],
+            key=lambda d: d["name"],
+        ),
+        "reconstruct_policies": sorted(
+            [
+                _normalize_mapping_decl(item, "reconstruct_policy")
+                for item in out.get("reconstruct_policies", [])
+            ],
+            key=lambda d: d["name"],
+        ),
+        "adapt_policies": sorted(
+            [_normalize_mapping_decl(item, "adapt_policy") for item in out.get("adapt_policies", [])],
+            key=lambda d: d["name"],
+        ),
+        "assembly_policies": sorted(
+            [_normalize_mapping_decl(item, "assembly_policy") for item in out.get("assembly_policies", [])],
+            key=lambda d: d["name"],
+        ),
+        "fit_profiles": sorted(
+            [_normalize_mapping_decl(item, "fit_profile") for item in out.get("fit_profiles", [])],
+            key=lambda d: d["name"],
+        ),
+        "transfer_rules": sorted(
+            [_normalize_mapping_decl(item, "transfer_rule") for item in out.get("transfer_rules", [])],
+            key=lambda d: d["name"],
+        ),
         "repair_policies": out["repair_policies"],
         "fixtures": out["fixtures"],
         "tests": out["tests"],

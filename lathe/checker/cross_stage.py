@@ -49,7 +49,11 @@ def check_backend_resolution(checker: Any, asset: dict[str, Any]) -> None:
                 )
             )
             continue
-        ok, reasons = evaluate_backend(backend_id, asset, stage)
+        try:
+            ok, reasons = evaluate_backend(backend_id, asset, stage)
+        except BackendResolutionError as exc:
+            checker.diagnostics.append(_backend_diag(asset_name, stage, backend_id, str(exc)))
+            continue
         if not ok:
             for reason in reasons:
                 checker.diagnostics.append(_backend_diag(asset_name, stage, backend_id, reason))
@@ -77,7 +81,9 @@ def check_backend_resolution(checker: Any, asset: dict[str, Any]) -> None:
 
 def _backend_diag(asset_name: str, stage: str, backend_id: str, reason: str) -> dict[str, Any]:
     lowered = reason.lower()
-    if stage == "uv" and ("tile_mode" in lowered or "unwrap" in lowered or "uv.sets" in lowered):
+    if "unsupported contract version" in lowered:
+        code, name = "L4610", "unsupported_backend_contract_version"
+    elif stage == "uv" and ("tile_mode" in lowered or "unwrap" in lowered or "uv.sets" in lowered):
         code, name = "L4605", "uv_backend_contract_mismatch"
     elif stage == "package" and "package.formats" in lowered:
         code, name = "L4606", "package_backend_format_unsupported"

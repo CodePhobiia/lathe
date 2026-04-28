@@ -12,11 +12,9 @@ without crashing.
 from __future__ import annotations
 
 import numpy as np
-from PIL import Image
-
 from lathe.bake_runtime import combine_orm
 from lathe.pbr_deriver import derive_orm_map
-
+from PIL import Image
 
 SIZE = 32
 

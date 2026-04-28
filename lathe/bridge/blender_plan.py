@@ -15,7 +15,6 @@ from typing import Any
 from ..capabilities import probe_blender
 from ..inspection.evidence import build_inspection_policy_ir
 
-
 BRIDGE_BACKEND_ID = "lathe.bridge.blender_execution_v1"
 
 LATHE_TOOL_CONTRACTS = [
@@ -60,7 +59,9 @@ BLENDER_TOOL_CONTRACTS = [
 ]
 
 
-def _contract(name: str, determinism_class: str, side_effect_class: str, approval_class: str) -> dict[str, Any]:
+def _contract(
+    name: str, determinism_class: str, side_effect_class: str, approval_class: str
+) -> dict[str, Any]:
     return {
         "name": name,
         "input_schema": "declared",

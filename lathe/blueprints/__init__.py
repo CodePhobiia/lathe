@@ -1,5 +1,8 @@
+"""Family-specific assembly blueprint resolution."""
+
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -16,6 +19,20 @@ from .panels import (
     _wall_panel_blueprint,
 )
 
+BlueprintBuilder = Callable[[AssetGraph, np.random.Generator, int], AssemblyBlueprint]
+
+_BLUEPRINT_BUILDERS: dict[str, BlueprintBuilder] = {
+    "brassbound_chest": _chest_blueprint,
+    "console_terminal": _console_blueprint,
+    "control_pedestal": _control_pedestal_blueprint,
+    "courier_drone": _drone_blueprint,
+    "industrial_crate": _crate_blueprint,
+    "mechanical_door": _door_blueprint,
+    "sci_fi_wall_panel": _wall_panel_blueprint,
+    "service_cabinet": _service_cabinet_blueprint,
+    "supply_container": _supply_container_blueprint,
+}
+
 
 def resolve_blueprint(
     asset_graph: AssetGraph,
@@ -23,26 +40,9 @@ def resolve_blueprint(
     rng: np.random.Generator,
     candidate_index: int,
 ) -> AssemblyBlueprint:
-    family = asset_graph.family
-    if family == "brassbound_chest":
-        return _chest_blueprint(asset_graph, rng, candidate_index)
-    if family == "courier_drone":
-        return _drone_blueprint(asset_graph, rng, candidate_index)
-    if family == "sci_fi_wall_panel":
-        return _wall_panel_blueprint(asset_graph, rng, candidate_index)
-    if family == "industrial_crate":
-        return _crate_blueprint(asset_graph, rng, candidate_index)
-    if family == "mechanical_door":
-        return _door_blueprint(asset_graph, rng, candidate_index)
-    if family == "console_terminal":
-        return _console_blueprint(asset_graph, rng, candidate_index)
-    if family == "service_cabinet":
-        return _service_cabinet_blueprint(asset_graph, rng, candidate_index)
-    if family == "control_pedestal":
-        return _control_pedestal_blueprint(asset_graph, rng, candidate_index)
-    if family == "supply_container":
-        return _supply_container_blueprint(asset_graph, rng, candidate_index)
-    return _generic_blueprint(asset_graph, rng, candidate_index)
+    """Resolve the generated scaffold blueprint for an asset family."""
+    builder = _BLUEPRINT_BUILDERS.get(asset_graph.family, _generic_blueprint)
+    return builder(asset_graph, rng, candidate_index)
 
 
 __all__ = ["resolve_blueprint"]

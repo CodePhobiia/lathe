@@ -6,8 +6,25 @@
 grammar/ @talmerri
 spec/ @talmerri
 schema/ @talmerri
+std/ @talmerri
+examples/ @talmerri
 
+lathe/parser.py @talmerri
+lathe/normalizer.py @talmerri
+lathe/resolver.py @talmerri
+lathe/checker/ @talmerri
+lathe/planner.py @talmerri
 lathe/shape_backend.py @talmerri
 lathe/shape_providers.py @talmerri
+lathe/providers/ @talmerri
 lathe/asset_graph.py @talmerri
 lathe/assembly_kernel.py @talmerri
+lathe/sandbox/ @talmerri
+lathe/net.py @talmerri
+lathe/telemetry.py @talmerri
+lathe/core/stages/package.py @talmerri
+lathe/executor.py @talmerri
+
+docs/release/ @talmerri
+docs/security/ @talmerri
+.github/workflows/ @talmerri

@@ -69,7 +69,9 @@ def _domain_bounds(domain: object) -> tuple[float, float] | None:
     return None
 
 
-def generate_candidate_params(asset_graph: AssetGraph, *, seed: int, candidate_index: int, fidelity: FidelityProfile) -> CandidateParams:
+def generate_candidate_params(
+    asset_graph: AssetGraph, *, seed: int, candidate_index: int, fidelity: FidelityProfile
+) -> CandidateParams:
     rng = _rng(seed, candidate_index)
     silhouette_window = 0.08 * fidelity.silhouette_refinement
     detail_window = 0.22 * fidelity.detail_density
@@ -86,7 +88,9 @@ def generate_candidate_params(asset_graph: AssetGraph, *, seed: int, candidate_i
         width_scale=float(1.0 + rng.uniform(-silhouette_window, silhouette_window)),
         height_scale=float(1.0 + rng.uniform(-silhouette_window * 0.75, silhouette_window * 0.75)),
         depth_scale=float(1.0 + rng.uniform(-silhouette_window, silhouette_window)),
-        feature_density=float(max(0.65, fidelity.detail_density + rng.uniform(-detail_window, detail_window))),
+        feature_density=float(
+            max(0.65, fidelity.detail_density + rng.uniform(-detail_window, detail_window))
+        ),
         panel_depth=float(max(0.65, fidelity.panel_depth + rng.uniform(-0.18, 0.18))),
         edge_weight=float(max(0.65, fidelity.edge_weight + rng.uniform(-0.16, 0.16))),
         support_spread=float(1.0 + rng.uniform(-0.12, 0.16)),
@@ -114,14 +118,19 @@ def generate_candidate_params(asset_graph: AssetGraph, *, seed: int, candidate_i
 
 
 def objective_weights(asset_graph: AssetGraph) -> dict[str, float]:
-    objectives = list(asset_graph.authoring.get("objectives", []) or asset_graph.authoring.get("space", {}).get("objectives", []))
+    objectives = list(
+        asset_graph.authoring.get("objectives", [])
+        or asset_graph.authoring.get("space", {}).get("objectives", [])
+    )
     total = sum(float(item.get("weight", 0.0) or 0.0) for item in objectives)
     if total <= 0:
         return {}
     return {str(item["metric"]): float(item.get("weight", 0.0) or 0.0) / total for item in objectives}
 
 
-def apply_candidate_params(blueprint: AssemblyBlueprint, params: CandidateParams, asset_graph: AssetGraph) -> AssemblyBlueprint:
+def apply_candidate_params(
+    blueprint: AssemblyBlueprint, params: CandidateParams, asset_graph: AssetGraph
+) -> AssemblyBlueprint:
     components: list[BlueprintComponent] = []
     for component in blueprint.components:
         cx, cy, cz = component.center
@@ -135,7 +144,17 @@ def apply_candidate_params(blueprint: AssemblyBlueprint, params: CandidateParams
                 ey * height_scale,
                 ez * depth_scale * params.silhouette_bias,
             )
-        elif component.component_type in {"panel", "bezel", "frame", "lid", "door", "lock_plate", "latch", "socket_plate", "anchor_plate"}:
+        elif component.component_type in {
+            "panel",
+            "bezel",
+            "frame",
+            "lid",
+            "door",
+            "lock_plate",
+            "latch",
+            "socket_plate",
+            "anchor_plate",
+        }:
             extents = (
                 ex * width_scale,
                 ey * height_scale,
@@ -187,5 +206,7 @@ def apply_candidate_params(blueprint: AssemblyBlueprint, params: CandidateParams
                 interface_role=component.interface_role,
             )
         )
-    notes = list(blueprint.notes) + [f"candidate_search: width={params.width_scale:.3f} depth={params.depth_scale:.3f} feature_density={params.feature_density:.3f}"]
+    notes = list(blueprint.notes) + [
+        f"candidate_search: width={params.width_scale:.3f} depth={params.depth_scale:.3f} feature_density={params.feature_density:.3f}"
+    ]
     return AssemblyBlueprint(blueprint.blueprint_id, blueprint.family, components, notes=notes)

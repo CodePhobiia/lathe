@@ -122,8 +122,8 @@ asset bookshelf: hard_surface_prop uses furniture_prop {
       id_map = true
     }
 
-    rig { type = none; joints = []; pivot_policy = studio_standard; joint_limits = auto }
-    interfaces { sockets = []; anchors = [floor_contact]; clearance = 1cm }
+rig { type = none; joints = []; pivot_policy = studio_standard; joint_limits = auto }
+interfaces { pivots = [pivot(id: floor_contact, pivot_type: contact)]; clearance = 1cm }
     physics { collision = convex_decomp; max_hulls = 3; mass = auto; center_of_mass = auto }
     optimize { lods = 3; atlas = true; draw_calls = 2; texture_budget = 16mb; mesh_compression = true }
   }
@@ -201,9 +201,9 @@ Produce a certified package:
 
 Look in `dist/bookshelf/`:
 
-- `manifest.json` — what was written + content hashes.
-- `trace.json` — which providers/adapters *attempted* to run vs what *actually* ran. When Blender or xatlas are missing, you will see the fallback recorded explicitly here. That attempted-vs-actual pattern is load-bearing — it is how you know whether your build is an honest native run or a fallback.
-- `previews/` — turntable, wireframe, UV layout, LOD sheet, etc.
+- `stages/package/package_manifest.json` — what was written + content hashes.
+- `stages/package/trace_manifest.json` — which providers/adapters *attempted* to run vs what *actually* ran. When Blender or xatlas are missing, you will see the fallback recorded explicitly here. That attempted-vs-actual pattern is load-bearing — it is how you know whether your build is an honest native run or a fallback.
+- `stages/package/previews/` — turntable, wireframe, UV layout, LOD sheet, etc.
 - `stages/` — per-stage artifacts.
 
 ## Step 9 — Tweak and observe determinism
@@ -219,7 +219,7 @@ build {
     ...
 ```
 
-Rebuild. The shape candidate set should differ because shape is the one probabilistic stage and `seed` drives it. Set `seed` back to `7` and rebuild a second time — the hashes in `manifest.json` should match the first `seed = 7` build. Everything downstream of shape is deterministic, so identical shape inputs produce identical packages.
+Rebuild. The shape candidate set should differ because shape is the one probabilistic stage and `seed` drives it. Set `seed` back to `7` and rebuild a second time — the hashes in `stages/package/package_manifest.json` should match the first `seed = 7` build. Everything downstream of shape is deterministic, so identical shape inputs produce identical packages.
 
 ## Where to go next
 

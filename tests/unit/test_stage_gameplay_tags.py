@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-import pytest
-
 from lathe.selector_manifest import (
     GAMEPLAY_TAG_CATALOG,
     build_selector_manifest,

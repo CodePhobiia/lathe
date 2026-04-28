@@ -12,6 +12,7 @@ from dataclasses import asdict, dataclass
 @dataclass
 class HighLowRelation:
     """HighLowRelation."""
+
     high_mesh_uri: str
     low_mesh_uri: str
     bake_cage_offset_cm: float

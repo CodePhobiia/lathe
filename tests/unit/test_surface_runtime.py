@@ -27,7 +27,6 @@ from typing import Any
 
 import pytest
 import trimesh
-
 from lathe.core.mesh import RuntimeMesh
 from lathe.surface_runtime import build_surface_bundle
 
@@ -136,10 +135,17 @@ class TestBuildSurfaceBundle:
                     }
                 },
                 "resolved_surface_policy": {
-                    "values": {"maps": ["emissive"], "resolution": 2048, "on_backend_unavailable": "fallback_deterministic"}
+                    "values": {
+                        "maps": ["emissive"],
+                        "resolution": 2048,
+                        "on_backend_unavailable": "fallback_deterministic",
+                    }
                 },
             },
-            build_surface_overrides={"bake_profile": "std.surface.bake_profile.hero_v1", "render_fixture": "std.surface.render.booth_v1"},
+            build_surface_overrides={
+                "bake_profile": "std.surface.bake_profile.hero_v1",
+                "render_fixture": "std.surface.render.booth_v1",
+            },
         )
         asset["build"]["surface"]["resolved_bake_profile"] = {"values": {"maps": ["curvature"]}}
         result = build_surface_bundle(
@@ -161,7 +167,9 @@ class TestBuildSurfaceBundle:
         assert "emissive" in manifest["maps"]
         assert result["surface_manifest"]["resolution"] == 2048
 
-    def test_codex_imagegen_requested_without_bridge_fails_under_fail_policy(self, tmp_workspace: Path) -> None:
+    def test_codex_imagegen_requested_without_bridge_fails_under_fail_policy(
+        self, tmp_workspace: Path
+    ) -> None:
         asset = _asset(
             family="generic_widget",
             surface_overrides={
@@ -232,7 +240,15 @@ class TestBuildSurfaceBundle:
         )
         assert result["backend_id"] == "lathe.surface.hero_pbr_v1"
         assert result["surface_manifest"]["hero_surface"] is True
-        assert set(result["outputs"].keys()) >= {"basecolor", "normal", "ao", "curvature", "id", "orm", "emissive"}
+        assert set(result["outputs"].keys()) >= {
+            "basecolor",
+            "normal",
+            "ao",
+            "curvature",
+            "id",
+            "orm",
+            "emissive",
+        }
         assert result["highlow_relation"]["authoritative"] is True
         assert result["highlow_relation"]["source"] == "hero_surface_runtime_v1"
         maps_dir = tmp_workspace / "maps"

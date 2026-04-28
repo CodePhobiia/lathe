@@ -13,22 +13,29 @@ import math
 from typing import Any
 
 from ...assembly_ir import AssemblyIR
+from ...backends import (
+    BackendResolutionError,
+    assert_supported_backend_contract_version,
+    supported_backend_contract_versions,
+)
+from ...errors import ShapeBundleError
 from ...feature_ir import FeatureIR
 from ...fit_ir import FitIR
 from ...kit_ir import KitIR
 from ...reference_ir import ReferenceIR
 from ...repair_policy import RepairPolicyIR
-from ...errors import ShapeBundleError
 from ...shape_backend import (
     collect_shape_conditioning as _shape_collect_conditioning,
+)
+from ...shape_backend import (
     run_shape_backend as _shape_run_backend,
 )
 from ...surface_ir import SurfaceIR
 from ...transfer_ir import TransferIR
 from ..common import dump_json, relpath, resolve_seed
-from ..errors import BuildError
-from ..io import export_glb
+from ..errors import BuildError, shape_handoff_contract_error
 from ..geometry import mesh_stats
+from ..io import export_glb
 from ..mesh import RuntimeMesh
 from ..rendering import render_mesh_preview
 
@@ -44,6 +51,22 @@ def run(executor: Any) -> dict[str, Any]:
     """
     shape_cfg = executor.asset["build"]["shape"]
     backend = executor.selected_backends["shape"]
+    try:
+        assert_supported_backend_contract_version(
+            backend["id"],
+            backend.get("version"),
+            context="shape handoff contract",
+        )
+    except BackendResolutionError as exc:
+        raise shape_handoff_contract_error(
+            executor.asset_name,
+            backend["id"],
+            str(exc),
+            details={
+                "backend_version": backend.get("version"),
+                "supported_versions": supported_backend_contract_versions(backend["id"]),
+            },
+        ) from exc
     seed = resolve_seed(shape_cfg.get("seed", "auto"), executor.asset_name)
     candidates_count = int(shape_cfg.get("candidates", 1) or 1)
     assembly_ir = AssemblyIR.from_asset(executor.asset)
@@ -64,6 +87,7 @@ def run(executor: Any) -> dict[str, Any]:
         conditioning=conditioning,
         work_dir=executor.stage_dirs["shape"],
         runtime_config=executor.runtime_config,
+        backend_version=backend.get("version"),
     )
     runtime_candidates = provider_result["runtime_candidates"]
     provider_report = provider_result["provider_report"]
@@ -112,8 +136,13 @@ def run(executor: Any) -> dict[str, Any]:
             "integration_report": meta.get("integration_report", {}),
         }
         candidates.append(candidate)
-        if selected is None or candidate["score"] > selected["score"] or (
-            math.isclose(candidate["score"], selected["score"]) and candidate_id < selected["candidate_id"]
+        if (
+            selected is None
+            or candidate["score"] > selected["score"]
+            or (
+                math.isclose(candidate["score"], selected["score"])
+                and candidate_id < selected["candidate_id"]
+            )
         ):
             selected = candidate
             selected_runtime = runtime_mesh
@@ -150,7 +179,9 @@ def run(executor: Any) -> dict[str, Any]:
         "accepted_deltas": conformance_report.get("accepted_deltas", []),
         "rejected_deltas": conformance_report.get("rejected_deltas", []),
         "conformance_failures": conformance_report.get("conformance_failures", []),
-        "authoritative_candidate_reason": conformance_report.get("authoritative_candidate_reason", scaffold_report.get("authoritative_candidate_reason")),
+        "authoritative_candidate_reason": conformance_report.get(
+            "authoritative_candidate_reason", scaffold_report.get("authoritative_candidate_reason")
+        ),
         "shape_assessment": scaffold_report.get("shape_assessment", {}),
         "candidates": candidates,
         "provenance": {
@@ -207,7 +238,9 @@ def select_candidate(executor: Any, candidate_id: str, reason: str) -> None:
         reason: reason argument.
     """
     bundle = executor.runtime["shape"]["bundle"]
-    selected = next((item for item in bundle.get("candidates", []) if item.get("candidate_id") == candidate_id), None)
+    selected = next(
+        (item for item in bundle.get("candidates", []) if item.get("candidate_id") == candidate_id), None
+    )
     runtime_mesh = executor.runtime["shape"].get("runtime_candidates", {}).get(candidate_id)
     if selected is None or runtime_mesh is None:
         raise BuildError(f"Unknown shape candidate '{candidate_id}' for reselection")

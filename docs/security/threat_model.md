@@ -62,6 +62,26 @@ provider clients, and the four publish drivers. Everything else is
 internal-controlled: produced by one of our stages and consumed by a
 later one inside the same run.
 
+## Enforceable ingress policy
+
+The compiler now marks code chokepoints that accept untrusted input with
+`lathe.security.ingress_boundary`. The annotation attaches one or more
+`BoundaryPolicy` values with an `InputClass`, `TrustLevel`, and named
+controls. `tests/unit/test_trust_boundaries.py` fails if the expected
+untrusted boundaries lose those policies or if an untrusted policy omits
+controls.
+
+Current untrusted boundary classes:
+
+| Input class | Entry point | Required control examples |
+|---|---|---|
+| `.lth` source | `lathe.parser.parse_file`, `lathe.parser.parse_text` | UTF-8 decode, byte/token/import budgets, prompt-injection scan, declarative grammar parse, safe import path resolution |
+| Asset ref paths | `lathe.paths.safe_resolve` | relative-only input, canonical root containment, symlink/reparse rejection |
+| External images | Shape-stage conditioning in the stable `lathe.shape.intent_mesh_handoff_v1` flow | project-relative path, format allowlist, byte and pixel caps |
+| External meshes | `lathe.mesh_ingest.safe_load_mesh`; shape conditioning mesh refs | format allowlist, byte cap, magic sniff, post-load mesh sanity checks |
+| Runtime config | `lathe.runtime_config.load_runtime_config` | byte cap, UTF-8 decode, JSON parse, object root, JSON schema validation |
+| Network/provider IO | `lathe.net.safe_urlopen` | scheme and host allowlists, private IP rejection, redirect blocking, TLS verification, content-type and body-size checks |
+
 ## STRIDE by flow
 
 Legend: **M** = mitigated today, **R** = residual risk (tracked as
@@ -73,6 +93,7 @@ Legend: **M** = mitigated today, **R** = residual risk (tracked as
 |---------------------------|------------------------------------------------------------------------|--------|---------------------------------------------------------------------------------------|
 | Spoofing                  | `.lth` masquerades as trusted stdlib by shadowing `std/…` path         | M      | `safe_resolve` (SEC-1) refuses traversal; stdlib lookup is bounded to `REPO_ROOT`.    |
 | Tampering                 | Hostile source mutates build cache via crafted import                  | M      | Parser emits AST only; cache writes go through `lathe/cache.py` with hash keys.       |
+| Tampering                 | Image refs traverse outside project or point at oversized/bomb images  | M      | Shape conditioning accepts project-relative PNG/JPEG/WebP only, with byte and pixel caps. |
 | Repudiation               | Author denies authorship of a malicious source                         | R      | `SEC-FUTURE-1`: optional ed25519 signing of `.lth` modules at commit.                 |
 | Info Disclosure           | String literals exfiltrate to learned providers via prompt injection   | M      | SEC-8 static scanner warns on suspected injection patterns; opt-in strict mode errors.|
 | Denial of Service         | Pathological grammar (deep nesting, billion laughs) OOMs parser        | R      | `SEC-FUTURE-2`: token-budget + recursion depth caps on `_FastParser`.                 |
@@ -144,6 +165,9 @@ Legend: **M** = mitigated today, **R** = residual risk (tracked as
 | Blender subprocess sandbox                    | `lathe/sandbox/blender.py` (SEC-7, this ticket)             |
 | Prompt-injection static scanner               | `lathe/parser/prompt_injection.py` (SEC-8, this ticket)     |
 | Signed reproducibility receipts               | `lathe/publish/signed_repro.py` (SEC-NEW-2, this ticket)    |
+
+See [`blender_sandbox.md`](blender_sandbox.md) for platform-specific
+Blender subprocess sandbox behavior and known limits.
 
 ## Open follow-ups (filed)
 

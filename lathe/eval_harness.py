@@ -1,3 +1,5 @@
+"""Benchmark evaluation harness for Lathe asset quality fixtures."""
+
 from __future__ import annotations
 
 import json
@@ -9,8 +11,7 @@ import trimesh
 
 from .asset_graph import build_asset_graph
 from .benchmarks import BENCHMARK_ROOT
-from .executor import RuntimeMesh
-from .executor import BuildError, build_asset
+from .executor import BuildError, RuntimeMesh, build_asset
 from .parser import parse_file
 from .resolver import materialize_asset
 from .scaffold_compiler import compile_scaffold_candidates
@@ -19,7 +20,8 @@ from .validators.visual_quality import evaluate_visual_quality
 
 
 def load_benchmark_catalog() -> dict[str, Any]:
-    # JSON ingress — internal controlled payload from lathe/benchmarks/catalog.json fixture shipped inside this package; safe without schema validation.
+    """Load the bundled benchmark catalog."""
+    # JSON ingress: internal controlled payload from the bundled catalog fixture.
     return json.loads((BENCHMARK_ROOT / "catalog.json").read_text(encoding="utf-8"))
 
 
@@ -34,9 +36,11 @@ def _positive_scorecard(workspace: Path, benchmark: dict[str, Any]) -> dict[str,
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir) / benchmark["asset"]
         report = build_asset(program, benchmark["asset"], out_dir)
-        # JSON ingress — internal controlled payloads from our own shape/validate stage artifacts emitted by build_asset above into a tempdir; safe without schema validation.
+        # JSON ingress: internal controlled shape/validate artifacts emitted by build_asset.
         shape_bundle = json.loads((out_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-        validate_report = json.loads((out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8"))
+        validate_report = json.loads(
+            (out_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
+        )
     return {
         "name": benchmark["name"],
         "asset": benchmark["asset"],
@@ -56,14 +60,20 @@ def _positive_scorecard(workspace: Path, benchmark: dict[str, Any]) -> dict[str,
 
 def _load_legacy_snapshot(workspace: Path, benchmark: dict[str, Any]) -> dict[str, Any]:
     if benchmark.get("snapshot"):
-        # JSON ingress — internal controlled payload from snapshot fixture shipped inside lathe/benchmarks/; safe without schema validation.
+        # JSON ingress: internal controlled snapshot fixture shipped inside lathe/benchmarks/.
         return json.loads((BENCHMARK_ROOT / benchmark["snapshot"]).read_text(encoding="utf-8"))
     build_dir = workspace / benchmark["build_dir"]
-    # JSON ingress — internal controlled payloads from our own shape/topology/interfaces/surface stage bundles emitted by a prior build_asset run; safe without schema validation.
+    # JSON ingress: internal controlled stage bundles emitted by a prior build_asset run.
     shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-    topology_bundle = json.loads((build_dir / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8"))
-    interfaces_bundle = json.loads((build_dir / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8"))
-    surface_bundle = json.loads((build_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8"))
+    topology_bundle = json.loads(
+        (build_dir / "stages" / "topology" / "bundle.json").read_text(encoding="utf-8")
+    )
+    interfaces_bundle = json.loads(
+        (build_dir / "stages" / "interfaces" / "bundle.json").read_text(encoding="utf-8")
+    )
+    surface_bundle = json.loads(
+        (build_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
+    )
     selected_id = shape_bundle["selected_candidate_id"]
     selected = next(item for item in shape_bundle["candidates"] if item["candidate_id"] == selected_id)
     topology_mesh_path = build_dir / topology_bundle.get("mesh_uri", "stages/topology/topology.glb")
@@ -74,7 +84,7 @@ def _load_legacy_snapshot(workspace: Path, benchmark: dict[str, Any]) -> dict[st
             default_part = topology_bundle.get("part_groups", [{}])[0].get("name", "mesh")
             topology_runtime = RuntimeMesh(
                 mesh=mesh,
-                face_parts=[default_part] * int(len(mesh.faces)),
+                face_parts=[default_part] * len(mesh.faces),
                 part_colors={default_part: (128, 128, 128)},
                 units="cm",
             )
@@ -94,11 +104,21 @@ def _load_legacy_snapshot(workspace: Path, benchmark: dict[str, Any]) -> dict[st
     }
 
 
-def _negative_scorecard(workspace: Path, benchmark: dict[str, Any], *, expected_to_fail: bool = True) -> dict[str, Any]:
+def _negative_scorecard(
+    workspace: Path,
+    benchmark: dict[str, Any],
+    *,
+    expected_to_fail: bool = True,
+) -> dict[str, Any]:
     program = parse_file(workspace / benchmark["file"])
     asset = materialize_asset(program, benchmark["asset"])
     asset_graph = build_asset_graph(asset)
-    conditioning = {"reference_strength": 0.0, "image_refs": [], "material_refs": [], "mesh_refs": []}
+    conditioning = {
+        "reference_strength": 0.0,
+        "image_refs": [],
+        "material_refs": [],
+        "mesh_refs": [],
+    }
     scaffold = compile_scaffold_candidates(
         asset_graph,
         seed=_resolve_seed(asset["build"]["shape"].get("seed", "auto"), benchmark["asset"]),
@@ -116,26 +136,36 @@ def _negative_scorecard(workspace: Path, benchmark: dict[str, Any], *, expected_
             "blueprint_id": scaffold["shape_irs"][0].blueprint_id,
         },
         "selected_candidate_id": "legacy_candidate_00",
-        "candidates": [{"candidate_id": "legacy_candidate_00", "integration_report": {"mode": "constructive_fallback"}}],
+        "candidates": [
+            {
+                "candidate_id": "legacy_candidate_00",
+                "integration_report": {"mode": "constructive_fallback"},
+            }
+        ],
     }
     if benchmark.get("build_dir"):
-        # JSON ingress — internal controlled payload from our own shape stage bundle emitted by a prior build_asset run; safe without schema validation.
-        build_shape = json.loads((workspace / benchmark["build_dir"] / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
+        # JSON ingress: internal controlled shape stage bundle emitted by a prior build.
+        build_shape = json.loads(
+            (workspace / benchmark["build_dir"] / "stages" / "shape" / "bundle.json").read_text(
+                encoding="utf-8"
+            )
+        )
         selected_id = build_shape["selected_candidate_id"]
         selected = next(item for item in build_shape["candidates"] if item["candidate_id"] == selected_id)
         shape_bundle["selected_candidate_id"] = selected_id
         shape_bundle["candidates"] = [selected]
     runtime = {
-        "shape": {
-            "bundle": shape_bundle
-        },
+        "shape": {"bundle": shape_bundle},
         "topology": {"bundle": snapshot["topology"]},
         "interfaces": {"bundle": snapshot.get("interfaces", {"sockets": [], "anchors": []})},
     }
     if snapshot.get("topology_runtime") is not None:
         runtime["topology"]["runtime_mesh"] = snapshot["topology_runtime"]
     if snapshot.get("surface"):
-        runtime["surface"] = {"bundle": snapshot["surface"], "stage_dir": snapshot.get("surface_stage_dir")}
+        runtime["surface"] = {
+            "bundle": snapshot["surface"],
+            "stage_dir": snapshot.get("surface_stage_dir"),
+        }
     semantic = evaluate_semantic_quality(asset, runtime)
     runtime["semantic_quality"] = semantic
     visual = evaluate_visual_quality(asset, runtime)
@@ -152,6 +182,7 @@ def _negative_scorecard(workspace: Path, benchmark: dict[str, Any], *, expected_
 
 
 def run_benchmark_suite(root: str | Path) -> dict[str, Any]:
+    """Run all bundled positive, negative, and near-miss benchmark checks."""
     workspace = Path(root)
     catalog = load_benchmark_catalog()
     positive_results: list[dict[str, Any]] = []
@@ -170,8 +201,14 @@ def run_benchmark_suite(root: str | Path) -> dict[str, Any]:
                 }
             )
 
-    negative_results = [_negative_scorecard(workspace, benchmark, expected_to_fail=True) for benchmark in catalog.get("negative", [])]
-    near_miss_results = [_negative_scorecard(workspace, benchmark, expected_to_fail=True) for benchmark in catalog.get("near_miss", [])]
+    negative_results = [
+        _negative_scorecard(workspace, benchmark, expected_to_fail=True)
+        for benchmark in catalog.get("negative", [])
+    ]
+    near_miss_results = [
+        _negative_scorecard(workspace, benchmark, expected_to_fail=True)
+        for benchmark in catalog.get("near_miss", [])
+    ]
 
     comparisons: list[dict[str, Any]] = []
     negative_by_asset = {item["asset"]: item for item in negative_results + near_miss_results}
@@ -189,20 +226,46 @@ def run_benchmark_suite(root: str | Path) -> dict[str, Any]:
                 "before": before,
                 "after": after,
                 "improvements": {
-                    "silhouette_fidelity": round(after["silhouette_fidelity"] - before["silhouette_fidelity"], 6),
-                    "structural_richness": round(after["structural_richness"] - before["structural_richness"], 6),
+                    "silhouette_fidelity": round(
+                        after["silhouette_fidelity"] - before["silhouette_fidelity"],
+                        6,
+                    ),
+                    "structural_richness": round(
+                        after["structural_richness"] - before["structural_richness"],
+                        6,
+                    ),
                     "adjacency_score": round(after["adjacency_score"] - before["adjacency_score"], 6),
-                    "fragmentation_penalty": round(before["fragmentation_penalty"] - after["fragmentation_penalty"], 6),
-                    "detail_density": round(after_visual.get("detail_density", 0.0) - before_visual.get("detail_density", 0.0), 6),
-                    "edge_readability": round(after_visual.get("edge_readability", 0.0) - before_visual.get("edge_readability", 0.0), 6),
-                    "primitive_likeness_penalty": round(before_visual.get("primitive_likeness_penalty", 0.0) - after_visual.get("primitive_likeness_penalty", 0.0), 6),
+                    "fragmentation_penalty": round(
+                        before["fragmentation_penalty"] - after["fragmentation_penalty"],
+                        6,
+                    ),
+                    "detail_density": round(
+                        after_visual.get("detail_density", 0.0) - before_visual.get("detail_density", 0.0),
+                        6,
+                    ),
+                    "edge_readability": round(
+                        after_visual.get("edge_readability", 0.0)
+                        - before_visual.get("edge_readability", 0.0),
+                        6,
+                    ),
+                    "primitive_likeness_penalty": round(
+                        before_visual.get("primitive_likeness_penalty", 0.0)
+                        - after_visual.get("primitive_likeness_penalty", 0.0),
+                        6,
+                    ),
                 },
             }
         )
 
-    positive_pass_rate = sum(1 for item in positive_results if item.get("ok")) / max(1, len(positive_results))
+    positive_pass_rate = sum(1 for item in positive_results if item.get("ok")) / max(
+        1,
+        len(positive_results),
+    )
     failing_legacy = negative_results + near_miss_results
-    negative_fail_rate = sum(1 for item in failing_legacy if not item.get("ok")) / max(1, len(failing_legacy))
+    negative_fail_rate = sum(1 for item in failing_legacy if not item.get("ok")) / max(
+        1,
+        len(failing_legacy),
+    )
     return {
         "positive": positive_results,
         "negative": negative_results,
@@ -210,5 +273,7 @@ def run_benchmark_suite(root: str | Path) -> dict[str, Any]:
         "comparisons": comparisons,
         "positive_pass_rate": round(positive_pass_rate, 6),
         "negative_fail_rate": round(negative_fail_rate, 6),
-        "shared_primitive_assets": [item["asset"] for item in positive_results if item.get("shared_primitives")],
+        "shared_primitive_assets": [
+            item["asset"] for item in positive_results if item.get("shared_primitives")
+        ],
     }

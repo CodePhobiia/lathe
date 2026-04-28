@@ -11,7 +11,6 @@ from typing import Any
 
 from ..sandbox.blender import DEFAULT_BLENDER_TIMEOUT_S, run_blender_sandboxed
 
-
 BACKEND_IDS = {
     "exec": "lathe.exec.blender_v1",
     "geometry_backend": {
@@ -40,7 +39,9 @@ BACKEND_IDS = {
 }
 
 
-def _export_blend_artifact(blender: dict[str, Any], input_glb: Path, output_blend: Path, summary_path: Path) -> dict[str, Any]:
+def _export_blend_artifact(
+    blender: dict[str, Any], input_glb: Path, output_blend: Path, summary_path: Path
+) -> dict[str, Any]:
     script_path = Path(__file__).resolve().parents[2] / "scripts" / "blender_export_blend.py"
     work_dir = output_blend.parent
     result = run_blender_sandboxed(

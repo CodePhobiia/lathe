@@ -1,3 +1,5 @@
+"""Generic fallback assembly blueprint generation."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -7,7 +9,9 @@ from ..asset_graph import AssetGraph
 from .common import _component, _part_name
 
 
-def _generic_blueprint(asset_graph: AssetGraph, rng: np.random.Generator, candidate_index: int) -> AssemblyBlueprint:
+def _generic_blueprint(
+    asset_graph: AssetGraph, rng: np.random.Generator, candidate_index: int
+) -> AssemblyBlueprint:
     scale = asset_graph.scale_cm
     if asset_graph.kind == "env_module":
         width = scale * 1.18
@@ -20,12 +24,18 @@ def _generic_blueprint(asset_graph: AssetGraph, rng: np.random.Generator, candid
         depth = scale * 0.56
         body_center = (0.0, 0.0, 0.0)
     body_part = _part_name(asset_graph, "body")
-    components = [_component("generic_shell", "shell", body_part, body_center, (width, height, depth), tags=["body", "generic"])]
+    components = [
+        _component(
+            "generic_shell", "shell", body_part, body_center, (width, height, depth), tags=["body", "generic"]
+        )
+    ]
     for index, part in enumerate(asset_graph.parts):
         if part.name == body_part:
             continue
         offset_x = ((index % 2) * 2 - 1) * width * 0.32
-        offset_y = 0.0 if asset_graph.kind != "env_module" else (height * 0.18 if index % 3 == 0 else -height * 0.18)
+        offset_y = (
+            0.0 if asset_graph.kind != "env_module" else (height * 0.18 if index % 3 == 0 else -height * 0.18)
+        )
         offset_z = (index // 2 - max(0, len(asset_graph.parts) - 2) / 4.0) * depth * 0.18
         component_type = "panel"
         if part.assembly_role in {"handle"}:
@@ -48,4 +58,9 @@ def _generic_blueprint(asset_graph: AssetGraph, rng: np.random.Generator, candid
                 interface_role=part.interface_role,
             )
         )
-    return AssemblyBlueprint(asset_graph.blueprint_id, asset_graph.family, components, notes=["generic hard-surface assembly fallback compiled from shared shell/panel primitives"])
+    return AssemblyBlueprint(
+        asset_graph.blueprint_id,
+        asset_graph.family,
+        components,
+        notes=["generic hard-surface assembly fallback compiled from shared shell/panel primitives"],
+    )

@@ -17,6 +17,7 @@ import trimesh
 @dataclass
 class MeshIR:
     """MeshIR."""
+
     asset_name: str
     family: str
     vertices: list[list[float]]
@@ -42,4 +43,8 @@ class MeshIR:
         Returns:
             The result.
         """
-        return trimesh.Trimesh(vertices=np.array(self.vertices, dtype=np.float64), faces=np.array(self.faces, dtype=np.int64), process=False)
+        return trimesh.Trimesh(
+            vertices=np.array(self.vertices, dtype=np.float64),
+            faces=np.array(self.faces, dtype=np.int64),
+            process=False,
+        )

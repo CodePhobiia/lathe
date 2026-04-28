@@ -47,11 +47,7 @@ def _asset(
 class InferFamilyTests(unittest.TestCase):
     def test_explicit_runtime_family_takes_precedence(self) -> None:
         asset = _asset(
-            extra={
-                "assembly": {
-                    "resolved_family": {"values": {"runtime_family": "brassbound_chest"}}
-                }
-            }
+            extra={"assembly": {"resolved_family": {"values": {"runtime_family": "brassbound_chest"}}}}
         )
         self.assertEqual(infer_asset_family(asset), "brassbound_chest")
 
@@ -78,13 +74,7 @@ class InferFamilyTests(unittest.TestCase):
 class InferBlueprintIDTests(unittest.TestCase):
     def test_explicit_blueprint_id_used_directly(self) -> None:
         asset = _asset(
-            extra={
-                "assembly": {
-                    "resolved_family": {
-                        "values": {"blueprint_id": "custom.blueprint.id.v1"}
-                    }
-                }
-            }
+            extra={"assembly": {"resolved_family": {"values": {"blueprint_id": "custom.blueprint.id.v1"}}}}
         )
         self.assertEqual(infer_blueprint_id(asset), "custom.blueprint.id.v1")
 
@@ -106,7 +96,19 @@ class BuildAssetGraphTests(unittest.TestCase):
                 "build": {
                     "shape": {"symmetry": "x"},
                     "rig": {"joints": ["lid_hinge"]},
-                    "interfaces": {"sockets": ["grip"], "anchors": ["floor"]},
+                    "interfaces": {
+                        "sockets": [
+                            {
+                                "type": "call",
+                                "name": "socket",
+                                "args": [
+                                    {"name": "id", "value": "grip"},
+                                    {"name": "socket_type", "value": "hand"},
+                                ],
+                            }
+                        ],
+                        "pivots": [{"id": "floor", "pivot_type": "contact"}],
+                    },
                 },
             },
         )

@@ -11,6 +11,7 @@ import re
 
 from .grammar import LatheParseError
 
+MAX_TOKENS = 100_000
 
 TOKEN_RE = re.compile(
     r"""
@@ -42,6 +43,8 @@ class _TokenStream:
             if kind in {"ws", "line_comment", "block_comment"}:
                 continue
             self.tokens.append((kind, value))
+            if len(self.tokens) > MAX_TOKENS:
+                raise LatheParseError(f"Lathe source exceeds {MAX_TOKENS} token parse budget")
         self.tokens.append(("eof", ""))
         self.index = 0
 

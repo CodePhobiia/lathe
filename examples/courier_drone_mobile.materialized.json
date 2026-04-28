@@ -2,6 +2,7 @@
   "node_type": "asset",
   "name": "courier_drone_mobile",
   "kind": "mechanical_assembly",
+  "from": "courier_drone_family",
   "uses": [
     "shipping_prop",
     "mobile_runtime"
@@ -15,7 +16,9 @@
     "meshes": [],
     "assets": [],
     "materials": [],
-    "notes": []
+    "notes": [],
+    "reference_sets": [],
+    "resolved_reference_sets": []
   },
   "intent": {
     "role": "last-mile courier drone",
@@ -56,6 +59,642 @@
     ],
     "notes": []
   },
+  "geometry": {
+    "seam_classes": [
+      "cargo_break",
+      "pod_split",
+      "service_panel"
+    ],
+    "edge_classes": [
+      "hero_bevel",
+      "pod_bevel",
+      "support_bevel"
+    ],
+    "integration_rules": [
+      "boolean_union",
+      "preserve_rotor_mounts"
+    ]
+  },
+  "features": {
+    "allow": [
+      "trim_band",
+      "vent_grille",
+      "rotor_shroud",
+      "support_bracket",
+      "edge_break"
+    ],
+    "density": "hero"
+  },
+  "surface": {
+    "palette": "courier_premium",
+    "materials": [
+      "anodized_aluminum_body",
+      "carbon_fiber_trim",
+      "amber_glass_lens"
+    ],
+    "material_zones": [
+      "anodized_aluminum_body",
+      "carbon_fiber_trim",
+      "amber_glass_lens"
+    ],
+    "decals": [
+      "serials",
+      "warning_labels"
+    ],
+    "bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "resolved_palette": {
+      "node_type": "palette",
+      "name": "courier_premium",
+      "uses": [],
+      "values": {
+        "materials": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ]
+      }
+    },
+    "resolved_materials": {
+      "anodized_aluminum_body": {
+        "node_type": "material",
+        "name": "anodized_aluminum_body",
+        "uses": [],
+        "values": {
+          "basecolor": [
+            104,
+            112,
+            122
+          ],
+          "metallic": 1.0,
+          "roughness": 0.42,
+          "roughness_range": [
+            0.28,
+            0.56
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "surface_profile": "brushed_metal",
+          "wear": 0.2,
+          "normal_intensity": 0.08
+        }
+      },
+      "carbon_fiber_trim": {
+        "node_type": "material",
+        "name": "carbon_fiber_trim",
+        "uses": [],
+        "values": {
+          "basecolor": [
+            46,
+            50,
+            54
+          ],
+          "metallic": 0.0,
+          "roughness": 0.72,
+          "roughness_range": [
+            0.64,
+            0.86
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "surface_profile": "carbon_rubber",
+          "wear": 0.08,
+          "normal_intensity": 0.14
+        }
+      },
+      "amber_glass_lens": {
+        "node_type": "material",
+        "name": "amber_glass_lens",
+        "uses": [],
+        "values": {
+          "basecolor": [
+            214,
+            152,
+            78
+          ],
+          "metallic": 0.0,
+          "roughness": 0.18,
+          "roughness_range": [
+            0.1,
+            0.28
+          ],
+          "emissive": [
+            26,
+            18,
+            6
+          ],
+          "surface_profile": "screen_glass",
+          "wear": 0.03,
+          "normal_intensity": 0.04
+        }
+      },
+      "anodized_aluminum": {
+        "node_type": "material",
+        "name": "anodized_aluminum",
+        "uses": [],
+        "values": {}
+      },
+      "carbon_fiber": {
+        "node_type": "material",
+        "name": "carbon_fiber",
+        "uses": [],
+        "values": {}
+      },
+      "amber_glass": {
+        "node_type": "material",
+        "name": "amber_glass",
+        "uses": [],
+        "values": {}
+      }
+    },
+    "resolved_patterns": [],
+    "resolved_surface_program": {},
+    "resolved_surface_policy": {},
+    "resolved_surface_backend": {},
+    "resolved_decal_libraries": [],
+    "resolved_mask_programs": [],
+    "resolved_trim_sheets": [],
+    "resolved_material_graph": {},
+    "program": "",
+    "material_graph": "",
+    "patterns": [],
+    "backend": "",
+    "policy": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "authoring": {}
+  },
+  "assembly": {
+    "components": [
+      "courier_body",
+      "rotor_front_left",
+      "rotor_front_right",
+      "rotor_rear_left",
+      "rotor_rear_right",
+      "cargo_door_panel",
+      "landing_leg_left",
+      "landing_leg_right"
+    ],
+    "mechanisms": [
+      "rotor_spin_mechanism"
+    ],
+    "family": "courier_drone_family",
+    "resolved_family": {
+      "node_type": "family",
+      "name": "courier_drone_family",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "seam_classes": [
+          "cargo_break",
+          "pod_split",
+          "service_panel"
+        ],
+        "edge_classes": [
+          "hero_bevel",
+          "pod_bevel",
+          "support_bevel"
+        ],
+        "integration_rules": [
+          "boolean_union",
+          "preserve_rotor_mounts"
+        ]
+      },
+      "features": {
+        "allow": [
+          "trim_band",
+          "vent_grille",
+          "rotor_shroud",
+          "support_bracket",
+          "edge_break"
+        ],
+        "density": "hero"
+      },
+      "surface": {
+        "palette": "courier_premium",
+        "materials": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ],
+        "material_zones": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ],
+        "decals": [
+          "serials",
+          "warning_labels"
+        ],
+        "bake": [
+          "normal",
+          "ao",
+          "curvature",
+          "id"
+        ]
+      },
+      "assembly": {
+        "components": [
+          "courier_body",
+          "rotor_front_left",
+          "rotor_front_right",
+          "rotor_rear_left",
+          "rotor_rear_right",
+          "cargo_door_panel",
+          "landing_leg_left",
+          "landing_leg_right"
+        ],
+        "mechanisms": [
+          "rotor_spin_mechanism"
+        ]
+      },
+      "space": {
+        "node_type": "space_inline",
+        "values": {
+          "use": "drone_hero_search"
+        },
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "hero_hardsurface_repair"
+      },
+      "rules": [],
+      "values": {
+        "runtime_family": "courier_drone",
+        "blueprint_id": "lathe.blueprint.mechanical_quad_drone_v1"
+      }
+    },
+    "resolved_components": [
+      {
+        "node_type": "component",
+        "name": "courier_body",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "shell"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "body",
+          "tags": [
+            "body",
+            "shell"
+          ],
+          "material_zone": "anodized_aluminum_body"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "rotor_front_left",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "rotor_pod"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "rotor_fl",
+          "tags": [
+            "rotor",
+            "front",
+            "left"
+          ],
+          "material_zone": "carbon_fiber_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "rotor_front_right",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "rotor_pod"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "rotor_fr",
+          "tags": [
+            "rotor",
+            "front",
+            "right"
+          ],
+          "material_zone": "carbon_fiber_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "rotor_rear_left",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "rotor_pod"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "rotor_rl",
+          "tags": [
+            "rotor",
+            "rear",
+            "left"
+          ],
+          "material_zone": "carbon_fiber_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "rotor_rear_right",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "rotor_pod"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "rotor_rr",
+          "tags": [
+            "rotor",
+            "rear",
+            "right"
+          ],
+          "material_zone": "carbon_fiber_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "cargo_door_panel",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "door"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "cargo_door",
+          "tags": [
+            "door",
+            "cargo"
+          ],
+          "articulation": "hinge",
+          "material_zone": "anodized_aluminum_body"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "landing_leg_left",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "foot"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "landing_leg_l",
+          "tags": [
+            "foot",
+            "left"
+          ],
+          "interface_role": "support",
+          "material_zone": "carbon_fiber_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "landing_leg_right",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "foot"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "landing_leg_r",
+          "tags": [
+            "foot",
+            "right"
+          ],
+          "interface_role": "support",
+          "material_zone": "carbon_fiber_trim"
+        }
+      }
+    ],
+    "resolved_mechanisms": [
+      {
+        "node_type": "mechanism",
+        "name": "rotor_spin_mechanism",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {},
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "type": "rotor_spin",
+          "axis": "y"
+        }
+      }
+    ],
+    "resolved_traits": [],
+    "traits": []
+  },
+  "fit": {
+    "resolved_fit_profile": {},
+    "resolved_reconstruct_policy": {}
+  },
+  "transfer": {
+    "resolved_adapt_policy": {},
+    "resolved_transfer_rules": []
+  },
+  "reuse": {},
+  "constraints": {
+    "resolved_assembly_policy": {}
+  },
+  "ingest": {},
+  "assembly_rules": {},
+  "execution": {
+    "resolved_execution_profile": {},
+    "resolved_inspection_policy": {},
+    "resolved_library_bindings": [],
+    "profile": "",
+    "engine": "",
+    "mode": "",
+    "deterministic": null,
+    "preserve_blend": "",
+    "geometry_backend": "",
+    "uv_backend": "",
+    "bake_backend": "",
+    "surface_backend": "",
+    "render_backend": "",
+    "package_backend": "",
+    "library_backend": "",
+    "library_bindings": [],
+    "inspection_policy": ""
+  },
+  "space": {
+    "use": "drone_hero_search",
+    "values": {},
+    "vary": [
+      {
+        "path": "feature_density",
+        "domain": {
+          "type": "range",
+          "from": 0.94,
+          "to": 1.24
+        }
+      },
+      {
+        "path": "support_spread",
+        "domain": {
+          "type": "range",
+          "from": 0.94,
+          "to": 1.16
+        }
+      },
+      {
+        "path": "rotor_guard_scale",
+        "domain": {
+          "type": "range",
+          "from": 0.96,
+          "to": 1.18
+        }
+      },
+      {
+        "path": "edge_weight",
+        "domain": {
+          "type": "range",
+          "from": 0.92,
+          "to": 1.18
+        }
+      }
+    ],
+    "freeze": [
+      "silhouette_bias"
+    ],
+    "objectives": [
+      {
+        "direction": "maximize",
+        "metric": "silhouette_readability",
+        "weight": 0.2
+      },
+      {
+        "direction": "maximize",
+        "metric": "geometry_integration_quality",
+        "weight": 0.35
+      },
+      {
+        "direction": "maximize",
+        "metric": "visual_surface_quality",
+        "weight": 0.2
+      },
+      {
+        "direction": "minimize",
+        "metric": "primitive_likeness_penalty",
+        "weight": 0.25
+      }
+    ],
+    "select": {
+      "best_of": 12
+    },
+    "resolved_name": "drone_hero_search"
+  },
+  "repair_policy": {
+    "use": "hero_hardsurface_repair",
+    "mode": "auto_until_pass",
+    "max_rounds": 4,
+    "allow": [
+      "reselect_candidate",
+      "enforce_symmetry",
+      "seal_mesh",
+      "retopo_auto",
+      "reduce_tris",
+      "repack_uvs",
+      "rebake_maps",
+      "reauthor_surface_layer",
+      "normalize_pivots",
+      "create_collision_proxy",
+      "generate_lods"
+    ],
+    "deny": [
+      "rebuild_shape"
+    ],
+    "resolved_name": "hero_hardsurface_repair"
+  },
   "build": {
     "optimize": {
       "lods": 4,
@@ -78,13 +717,53 @@
         "unit": "cm"
       },
       "sockets": [
-        "battery_slot",
-        "underslung_mount"
+        {
+          "type": "call",
+          "name": "socket",
+          "args": [
+            {
+              "name": "id",
+              "value": "battery_slot"
+            },
+            {
+              "name": "socket_type",
+              "value": "slot"
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "name": "socket",
+          "args": [
+            {
+              "name": "id",
+              "value": "underslung_mount"
+            },
+            {
+              "name": "socket_type",
+              "value": "mount"
+            }
+          ]
+        }
       ],
-      "anchors": [
-        "floor_contact"
+      "pivots": [
+        {
+          "type": "call",
+          "name": "pivot",
+          "args": [
+            {
+              "name": "id",
+              "value": "floor_contact"
+            },
+            {
+              "name": "pivot_type",
+              "value": "contact"
+            }
+          ]
+        }
       ],
-      "backend": "auto"
+      "backend": "auto",
+      "anchors": []
     },
     "surface": {
       "resolution": {
@@ -109,7 +788,11 @@
         "warning_labels"
       ],
       "id_map": true,
-      "backend": "auto"
+      "resolved_bake_profile": {},
+      "resolved_render_fixture": {},
+      "backend": "auto",
+      "bake_profile": "",
+      "render_fixture": ""
     },
     "shape": {
       "mode": "generate",
@@ -378,7 +1061,8 @@
         "rebake_maps",
         "normalize_pivots",
         "create_collision_proxy",
-        "generate_lods"
+        "generate_lods",
+        "reauthor_surface_layer"
       ],
       "deny": [
         "rebuild_shape"

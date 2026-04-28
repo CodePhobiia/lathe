@@ -22,9 +22,10 @@ import copy
 from pathlib import Path
 
 import pytest
-
 from lathe.parser import parse_file
 from lathe.resolver import Resolver, materialize_asset
+
+pytestmark = pytest.mark.property
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -79,14 +80,10 @@ COMMUTING_PATCH_PAIRS = [
 ]
 
 
-def _apply_patches_to_explicit(
-    resolver: Resolver, asset_name: str, patches: list[dict]
-) -> dict:
+def _apply_patches_to_explicit(resolver: Resolver, asset_name: str, patches: list[dict]) -> dict:
     """Materialize after applying `patches` in order to the derived
     explicit asset. Returns the fully materialized payload."""
-    program_clone = {
-        key: copy.deepcopy(value) for key, value in resolver.program.items()
-    }
+    program_clone = {key: copy.deepcopy(value) for key, value in resolver.program.items()}
     local = Resolver(program_clone)
     explicit = local.derive_explicit_asset(asset_name)
     for patch in patches:
@@ -143,7 +140,7 @@ def test_empty_uses_chain_returns_empty_decl_list(asset_spec: tuple[Path, str]) 
     what profiles/contracts are defined in the program. An asset with no
     ``uses`` inherits nothing from profile/contract chains.
     """
-    example_path, asset_name = asset_spec
+    example_path, _asset_name = asset_spec
     if not example_path.exists():
         pytest.skip(f"example {example_path} not present")
     program = parse_file(example_path)

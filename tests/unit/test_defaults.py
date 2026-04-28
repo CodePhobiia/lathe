@@ -22,7 +22,6 @@ import unittest
 from pathlib import Path
 
 import jsonschema
-
 from lathe.defaults import (
     ASSET_DEFAULTS,
     ASSET_PACKAGE_DEFAULTS,

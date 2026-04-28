@@ -25,10 +25,9 @@ import os
 import subprocess
 import sys
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Sequence
-
 
 DEFAULT_STDERR_DENY_PATTERNS: tuple[str, ...] = (
     "Error:",
@@ -53,10 +52,9 @@ _FORBIDDEN_ENV_KEYS: frozenset[str] = frozenset(
 _DEFAULT_ENV_ALLOWLIST: tuple[str, ...] = (
     "PATH",
     "TEMP",
-    "BLENDER_USER_CONFIG",
-    "BLENDER_USER_SCRIPTS",
     "LATHE_BLENDER_PATH",
 )
+_FORBIDDEN_ENV_KEYS_NORMALIZED: frozenset[str] = frozenset(key.casefold() for key in _FORBIDDEN_ENV_KEYS)
 
 
 @dataclass
@@ -110,11 +108,12 @@ def _validate_argv(argv: Sequence[object]) -> list[str]:
 
 
 def _build_env(env_allowlist: Sequence[str], extra_env: dict[str, str] | None) -> dict[str, str]:
-    forbidden_in_allowlist = _FORBIDDEN_ENV_KEYS.intersection(env_allowlist)
+    forbidden_in_allowlist = [
+        str(key) for key in env_allowlist if str(key).casefold() in _FORBIDDEN_ENV_KEYS_NORMALIZED
+    ]
     if forbidden_in_allowlist:
         raise ValueError(
-            "run_sandboxed: env_allowlist cannot include forbidden keys: "
-            f"{sorted(forbidden_in_allowlist)}"
+            f"run_sandboxed: env_allowlist cannot include forbidden keys: {sorted(forbidden_in_allowlist)}"
         )
     clean: dict[str, str] = {}
     for key in env_allowlist:
@@ -122,11 +121,12 @@ def _build_env(env_allowlist: Sequence[str], extra_env: dict[str, str] | None) -
         if value is not None:
             clean[key] = value
     if extra_env:
-        forbidden_in_extra = _FORBIDDEN_ENV_KEYS.intersection(extra_env.keys())
+        forbidden_in_extra = [
+            str(key) for key in extra_env if str(key).casefold() in _FORBIDDEN_ENV_KEYS_NORMALIZED
+        ]
         if forbidden_in_extra:
             raise ValueError(
-                "run_sandboxed: extra_env cannot include forbidden keys: "
-                f"{sorted(forbidden_in_extra)}"
+                f"run_sandboxed: extra_env cannot include forbidden keys: {sorted(forbidden_in_extra)}"
             )
         clean.update({str(k): str(v) for k, v in extra_env.items()})
     return clean
@@ -174,6 +174,8 @@ def run_sandboxed(
     expect_files: Sequence[Path] | None = None,
     input_bytes: bytes | None = None,
     stderr_deny_patterns: tuple[str, ...] = DEFAULT_STDERR_DENY_PATTERNS,
+    preexec_fn: Callable[[], None] | None = None,
+    on_spawn: Callable[[int], None] | None = None,
 ) -> SandboxResult:
     """Run ``argv`` as a subprocess with env scrubbing and stderr scanning.
 
@@ -182,8 +184,44 @@ def run_sandboxed(
     normalized_argv = _validate_argv(argv)
     clean_env = _build_env(env_allowlist, extra_env)
     start = time.monotonic()
+    proc: subprocess.Popen[bytes] | subprocess.Popen[str] | None = None
     try:
-        if input_bytes is not None:
+        if preexec_fn is not None and sys.platform == "win32":
+            raise ValueError("run_sandboxed: preexec_fn is only supported on POSIX hosts")
+
+        if preexec_fn is not None or on_spawn is not None:
+            popen_kwargs = {
+                "cwd": str(cwd) if cwd is not None else None,
+                "env": clean_env,
+                "shell": False,
+                "stdin": subprocess.PIPE if input_bytes is not None else None,
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.PIPE,
+                "text": input_bytes is None,
+            }
+            if preexec_fn is not None:
+                popen_kwargs["preexec_fn"] = preexec_fn
+            proc = subprocess.Popen(normalized_argv, **popen_kwargs)
+            if on_spawn is not None:
+                try:
+                    on_spawn(int(proc.pid))
+                except Exception:
+                    proc.kill()
+                    proc.wait()
+                    raise
+            result_stdout, result_stderr = proc.communicate(input=input_bytes, timeout=timeout_s)
+            stdout = (
+                result_stdout.decode("utf-8", errors="replace")
+                if isinstance(result_stdout, bytes)
+                else (result_stdout or "")
+            )
+            stderr = (
+                result_stderr.decode("utf-8", errors="replace")
+                if isinstance(result_stderr, bytes)
+                else (result_stderr or "")
+            )
+            returncode = proc.returncode
+        elif input_bytes is not None:
             result = subprocess.run(
                 normalized_argv,
                 cwd=str(cwd) if cwd is not None else None,
@@ -194,8 +232,17 @@ def run_sandboxed(
                 check=False,
                 capture_output=True,
             )
-            stdout = result.stdout.decode("utf-8", errors="replace") if isinstance(result.stdout, bytes) else (result.stdout or "")
-            stderr = result.stderr.decode("utf-8", errors="replace") if isinstance(result.stderr, bytes) else (result.stderr or "")
+            stdout = (
+                result.stdout.decode("utf-8", errors="replace")
+                if isinstance(result.stdout, bytes)
+                else (result.stdout or "")
+            )
+            stderr = (
+                result.stderr.decode("utf-8", errors="replace")
+                if isinstance(result.stderr, bytes)
+                else (result.stderr or "")
+            )
+            returncode = result.returncode
         else:
             result = subprocess.run(
                 normalized_argv,
@@ -209,10 +256,29 @@ def run_sandboxed(
             )
             stdout = result.stdout or ""
             stderr = result.stderr or ""
+            returncode = result.returncode
     except subprocess.TimeoutExpired as exc:
+        if proc is not None:
+            proc.kill()
+            try:
+                stdout_after_kill, stderr_after_kill = proc.communicate(timeout=1)
+            except subprocess.TimeoutExpired:
+                stdout_after_kill, stderr_after_kill = exc.stdout, exc.stderr
+            if exc.stdout is None:
+                exc.stdout = stdout_after_kill
+            if exc.stderr is None:
+                exc.stderr = stderr_after_kill
         duration = time.monotonic() - start
-        stdout = (exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")) or ""
-        stderr = (exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")) or ""
+        stdout = (
+            exc.stdout.decode("utf-8", errors="replace")
+            if isinstance(exc.stdout, bytes)
+            else (exc.stdout or "")
+        ) or ""
+        stderr = (
+            exc.stderr.decode("utf-8", errors="replace")
+            if isinstance(exc.stderr, bytes)
+            else (exc.stderr or "")
+        ) or ""
         return SandboxResult(
             argv=normalized_argv,
             returncode=-1,
@@ -230,12 +296,12 @@ def run_sandboxed(
     duration = time.monotonic() - start
     matched = [pat for pat in stderr_deny_patterns if pat in stderr]
     killed_by_signal: int | None = None
-    if result.returncode is not None and result.returncode < 0:
-        killed_by_signal = -result.returncode
+    if returncode is not None and returncode < 0:
+        killed_by_signal = -returncode
     expected_ok, missing = _check_expected_files(expect_files, cwd)
     return SandboxResult(
         argv=normalized_argv,
-        returncode=int(result.returncode),
+        returncode=int(returncode),
         stdout=stdout,
         stderr_tail=stderr.strip()[-2000:],
         stderr_signaled_error=bool(matched),

@@ -23,12 +23,32 @@ sent to the ingest URL. The payload has these fields and nothing else:
 
 | Field            | Type   | Description                                                                 |
 |------------------|--------|-----------------------------------------------------------------------------|
-| `salt`           | string | 16-byte hex string generated on first `enable`. Stored locally only.        |
-| `lathe_version`  | string | The `lathe.__version__` of the running CLI (e.g. `"0.1.0"`).                |
-| `build_id_hash`  | string | `sha256(salt + build_id)[:16]` — derived from the build cache key + salt.   |
+| `lathe_version`  | string | The `lathe.__version__` of the running CLI (e.g. `"0.2.0rc1"`).             |
+| `build_id_hash`  | string | `sha256(local_salt + build_id)[:16]`; the salt itself is never sent.        |
+| `build_kind`     | string | Public asset kind, such as `hard_surface_prop` or `mechanical_assembly`.    |
 | `stack_id`       | string | Backend stack id used (e.g. `lathe.stack.hard_surface_game_asset_v1`).      |
+| `certified`      | bool   | Whether the build certified.                                                |
 | `exit_code`      | int    | Build exit status (0 on success).                                           |
 | `wall_ms`        | int    | Wall-clock build duration in milliseconds.                                  |
+
+Example payload from the checked-in golden fixture:
+
+```json
+{
+  "lathe_version": "0.2.0rc1",
+  "build_id_hash": "4c00ad8bec8f6988",
+  "build_kind": "mechanical_assembly",
+  "stack_id": "lathe.stack.hard_surface_game_asset_v1",
+  "certified": false,
+  "exit_code": 1,
+  "wall_ms": 9876
+}
+```
+
+The fixture intentionally starts from a poisoned build report containing local
+paths, a raw build id, an asset name, diagnostics, logs, an environment token,
+an output hash, and a provider-key-like string. None of those values may appear
+in the emitted payload.
 
 ## What is NOT collected
 
@@ -43,6 +63,7 @@ The emitter is implemented against a strict allow-list. The following are
 - Build logs, stdout, stderr, or stage diagnostics.
 - Runtime config contents (strict mode, codex imagegen mode, etc. are
   intentionally not reported — they are a user preference, not a metric).
+- Raw telemetry salts or local identifiers.
 
 Because `build_id_hash` is salted with a locally-held random value, the
 ingest side cannot link your pings back to you without physical access to
@@ -60,9 +81,8 @@ a brand-new salt is generated and prior pings become un-correlatable.
    - macOS: `~/Library/Application Support/lathe/telemetry.json`
    - Linux: `$XDG_CONFIG_HOME/lathe/telemetry.json` or `~/.config/lathe/telemetry.json`
 3. That file contains `{enabled: true, user_salt: "<hex>"}`. The salt is
-   used to derive the one-way `build_id_hash` — it is never transmitted as
-   such; only the field literally named `salt` leaves the machine, and even
-   that is 16 random bytes with no identifying content.
+   used locally to derive the one-way `build_id_hash`; it never leaves the
+   machine.
 
 ## How to turn it off / purge data
 

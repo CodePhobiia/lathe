@@ -1,6 +1,6 @@
 # Quixel Megascans — manual run instructions
 
-_Status: stub. No Quixel runs have been executed in this study yet._
+_Status: not_run. No Quixel runs have been executed in this study yet._
 
 Quixel is the "buy, don't build" baseline. For each asset we search the
 Megascans library for the closest matching scanned asset, download it, and

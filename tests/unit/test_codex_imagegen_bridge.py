@@ -22,8 +22,6 @@ import json
 from pathlib import Path
 
 import pytest
-from PIL import Image
-
 from lathe.codex_imagegen_bridge import (
     CODEX_IMAGEGEN_BACKEND_ID,
     DETERMINISTIC_PBR_BACKEND_ID,
@@ -32,6 +30,7 @@ from lathe.codex_imagegen_bridge import (
     emit_codex_imagegen_requests,
     resolve_surface_backend_report,
 )
+from PIL import Image
 from tests.fixtures.mock_codex_imagegen import (  # noqa: F401 — re-exports fixture
     mock_codex_bridge,
 )
@@ -50,9 +49,7 @@ def _source_surface(mode: str = "zone_first") -> dict:
         "program": "hard_surface_stylized",
         "policy": "hero_surface_policy",
         "backend": CODEX_IMAGEGEN_BACKEND_ID,
-        "resolved_surface_policy": {
-            "values": {"on_backend_unavailable": "fallback_deterministic"}
-        },
+        "resolved_surface_policy": {"values": {"on_backend_unavailable": "fallback_deterministic"}},
     }
 
 
@@ -146,14 +143,14 @@ class TestBackendReportPolicyHandling:
         surface = {
             "backend": CODEX_IMAGEGEN_BACKEND_ID,
             "authoring": {"mode": "zone_first"},
-            "resolved_surface_policy": {
-                "values": {"on_backend_unavailable": "fallback_deterministic"}
-            },
+            "resolved_surface_policy": {"values": {"on_backend_unavailable": "fallback_deterministic"}},
         }
         report = resolve_surface_backend_report(surface, {}, hero_mode=True)
         assert report["codex_imagegen_requested"] is True
         assert report["fallback_backend_id"] == DETERMINISTIC_PBR_BACKEND_ID
-        assert "fallback" in report["fallback_reason"].lower() or "bridge" in report["fallback_reason"].lower()
+        assert (
+            "fallback" in report["fallback_reason"].lower() or "bridge" in report["fallback_reason"].lower()
+        )
 
 
 class TestRetryAndModeResolution:
@@ -163,28 +160,17 @@ class TestRetryAndModeResolution:
         # the mode string — an unknown mode passes through.
         assert codex_imagegen_mode(None) == "fallback_deterministic"
         assert (
-            codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "auto"}}})
-            == "fallback_deterministic"
+            codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "auto"}}}) == "fallback_deterministic"
         )
-        assert (
-            codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "requests"}}})
-            == "emit_requests"
-        )
-        assert (
-            codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "consume"}}})
-            == "consume_outputs"
-        )
+        assert codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "requests"}}}) == "emit_requests"
+        assert codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "consume"}}}) == "consume_outputs"
         # Passthrough for an unknown mode string.
         assert (
-            codex_imagegen_mode(
-                {"surface": {"codex_imagegen": {"mode": "custom_retry_mode"}}}
-            )
+            codex_imagegen_mode({"surface": {"codex_imagegen": {"mode": "custom_retry_mode"}}})
             == "custom_retry_mode"
         )
 
-    def test_emit_uses_runtime_config_request_and_output_dirs(
-        self, tmp_path: Path
-    ) -> None:
+    def test_emit_uses_runtime_config_request_and_output_dirs(self, tmp_path: Path) -> None:
         runtime_config = {
             "surface": {
                 "codex_imagegen": {
@@ -206,3 +192,42 @@ class TestRetryAndModeResolution:
         assert (tmp_path / "custom_outputs").exists()
         assert "custom_requests" in manifest["request_dir"]
         assert "custom_outputs" in manifest["output_dir"]
+
+    @pytest.mark.parametrize("key", ["request_dir", "output_dir"])
+    def test_emit_rejects_codex_imagegen_paths_outside_build_dir(self, tmp_path: Path, key: str) -> None:
+        runtime_config = {
+            "surface": {
+                "codex_imagegen": {
+                    key: "../escape",
+                }
+            }
+        }
+
+        with pytest.raises(ValueError, match=rf"codex_imagegen\.{key}"):
+            emit_codex_imagegen_requests(
+                asset=_asset(),
+                out_dir=tmp_path,
+                runtime_config=runtime_config,
+                surface_cfg={},
+                source_surface=_source_surface(),
+                material_zones=[_zone("body")],
+                control_pack={"manifest_uri": "surface/control_pack.json"},
+            )
+
+    def test_consume_rejects_codex_imagegen_output_path_outside_build_dir(self, tmp_path: Path) -> None:
+        runtime_config = {
+            "surface": {
+                "codex_imagegen": {
+                    "output_dir": "../escape",
+                }
+            }
+        }
+
+        with pytest.raises(ValueError, match=r"codex_imagegen\.output_dir"):
+            consume_codex_imagegen_outputs(
+                out_dir=tmp_path,
+                runtime_config=runtime_config,
+                id_map=Image.new("RGB", (2, 2), color=(180, 120, 60)),
+                basecolor=Image.new("RGB", (2, 2), color=(50, 50, 50)),
+                material_zones=[_zone("body")],
+            )

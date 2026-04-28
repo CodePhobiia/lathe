@@ -13,6 +13,7 @@ from typing import Any
 @dataclass
 class SurfaceIR:
     """SurfaceIR."""
+
     program: str = ""
     material_graph: str = ""
     backend: str = ""
@@ -39,7 +40,7 @@ class SurfaceIR:
     resolved_trim_sheets: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
-    def from_asset(cls, asset: dict[str, Any]) -> "SurfaceIR":
+    def from_asset(cls, asset: dict[str, Any]) -> SurfaceIR:
         """From asset.
 
         Args:

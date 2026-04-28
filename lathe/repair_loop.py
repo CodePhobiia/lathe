@@ -32,13 +32,29 @@ from typing import Any, TypedDict
 
 from .core.stages import (
     interfaces as stage_interfaces,
+)
+from .core.stages import (
     optimize as stage_optimize,
+)
+from .core.stages import (
     physics as stage_physics,
+)
+from .core.stages import (
     rig as stage_rig,
+)
+from .core.stages import (
     shape as stage_shape,
+)
+from .core.stages import (
     surface as stage_surface,
+)
+from .core.stages import (
     topology as stage_topology,
+)
+from .core.stages import (
     uv as stage_uv,
+)
+from .core.stages import (
     validate as stage_validate,
 )
 
@@ -126,7 +142,9 @@ def _classify(
     the next action class.
     """
     score = float(validate_bundle.get("score", 0.0))
-    diag_names = {d.get("name") for d in validate_bundle.get("diagnostics", []) if d.get("severity") == "error"}
+    diag_names = {
+        d.get("name") for d in validate_bundle.get("diagnostics", []) if d.get("severity") == "error"
+    }
     has_surface_diag = bool(diag_names & _SURFACE_DIAG_NAMES)
     distinct_classes = len({name for name in diag_names if name})
 
@@ -141,7 +159,11 @@ def _classify(
         and available("reselect_candidate")
     ):
         return "reselect_candidate"
-    if distinct_classes >= 2 and "regenerate_with_patch" in allowed_actions and available("regenerate_with_patch"):
+    if (
+        distinct_classes >= 2
+        and "regenerate_with_patch" in allowed_actions
+        and available("regenerate_with_patch")
+    ):
         return "regenerate_with_patch"
     if "reselect_candidate" in allowed_actions and available("reselect_candidate"):
         return "reselect_candidate"
@@ -250,7 +272,7 @@ def _execute_regenerate_with_patch(executor: Any, round_index: int) -> dict[str,
     shape_cfg["repair_nonce"] = round_index
     try:
         shape_bundle = stage_shape.run(executor)
-    except Exception:  # noqa: BLE001 — shape is probabilistic; bail the round gracefully
+    except Exception:
         return None
     topology_bundle = stage_topology.run(executor, shape_bundle)
     return _run_downstream_after_topology(executor, topology_bundle)
@@ -333,15 +355,17 @@ def run_repair_loop(
             exhausted_actions=exhausted_actions,
         )
         if action == "noop_exhausted":
-            rounds.append({
-                "round_index": round_index,
-                "action": action,
-                "before_score": before_score,
-                "after_score": before_score,
-                "diagnostics_delta": {},
-                "rollback": False,
-                "elapsed_ms": max(1, int((time.monotonic() - round_start) * 1000)),
-            })
+            rounds.append(
+                {
+                    "round_index": round_index,
+                    "action": action,
+                    "before_score": before_score,
+                    "after_score": before_score,
+                    "diagnostics_delta": {},
+                    "rollback": False,
+                    "elapsed_ms": max(1, int((time.monotonic() - round_start) * 1000)),
+                }
+            )
             break
 
         snapshot = _snapshot_runtime(executor)
@@ -360,15 +384,17 @@ def run_repair_loop(
         if new_bundle is None:
             _restore_runtime(executor, snapshot)
             exhausted_actions.add(action)
-            rounds.append({
-                "round_index": round_index,
-                "action": action,
-                "before_score": before_score,
-                "after_score": before_score,
-                "diagnostics_delta": {},
-                "rollback": True,
-                "elapsed_ms": elapsed_ms,
-            })
+            rounds.append(
+                {
+                    "round_index": round_index,
+                    "action": action,
+                    "before_score": before_score,
+                    "after_score": before_score,
+                    "diagnostics_delta": {},
+                    "rollback": True,
+                    "elapsed_ms": elapsed_ms,
+                }
+            )
             continue
 
         after_score = float(new_bundle.get("score", 0.0))
@@ -376,38 +402,41 @@ def run_repair_loop(
         delta = _diagnostics_delta(before_counts, after_counts)
 
         score_improved = (after_score - before_score) >= min_improvement
-        trigger_reduced = (
-            trigger_class is not None
-            and after_counts.get(trigger_class, 0) < before_counts.get(trigger_class, 0)
-        )
+        trigger_reduced = trigger_class is not None and after_counts.get(
+            trigger_class, 0
+        ) < before_counts.get(trigger_class, 0)
         certified = bool(new_bundle.get("certified"))
         accept = certified or score_improved or trigger_reduced
 
         if accept:
             current_bundle = new_bundle
-            rounds.append({
-                "round_index": round_index,
-                "action": action,
-                "before_score": before_score,
-                "after_score": after_score,
-                "diagnostics_delta": delta,
-                "rollback": False,
-                "elapsed_ms": elapsed_ms,
-            })
+            rounds.append(
+                {
+                    "round_index": round_index,
+                    "action": action,
+                    "before_score": before_score,
+                    "after_score": after_score,
+                    "diagnostics_delta": delta,
+                    "rollback": False,
+                    "elapsed_ms": elapsed_ms,
+                }
+            )
             if certified:
                 break
         else:
             _restore_runtime(executor, snapshot)
             exhausted_actions.add(action)
-            rounds.append({
-                "round_index": round_index,
-                "action": action,
-                "before_score": before_score,
-                "after_score": after_score,
-                "diagnostics_delta": delta,
-                "rollback": True,
-                "elapsed_ms": elapsed_ms,
-            })
+            rounds.append(
+                {
+                    "round_index": round_index,
+                    "action": action,
+                    "before_score": before_score,
+                    "after_score": after_score,
+                    "diagnostics_delta": delta,
+                    "rollback": True,
+                    "elapsed_ms": elapsed_ms,
+                }
+            )
 
     return current_bundle, rounds
 

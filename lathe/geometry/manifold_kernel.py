@@ -14,14 +14,16 @@ from typing import Any
 
 from ..adapters.manifold_kernel import (
     ManifoldKernel as _ManifoldKernel,
+)
+from ..adapters.manifold_kernel import (
     ManifoldKernelUnavailable,
     manifold_available,
 )
-from .kernel import GeometryKernel, GeometryKernelUnavailable, MANIFOLD_KERNEL_ID
+from .kernel import MANIFOLD_KERNEL_ID, GeometryKernel, GeometryKernelUnavailable
 
 MANIFOLD_ID = MANIFOLD_KERNEL_ID
 
-__all__ = ["manifold_kernel", "manifold_available", "MANIFOLD_ID", "ManifoldKernel"]
+__all__ = ["MANIFOLD_ID", "ManifoldKernel", "manifold_available", "manifold_kernel"]
 
 
 def manifold_kernel() -> GeometryKernel:

@@ -1,7 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Q&A and design discussions
-    # Placeholder URL until the repo is hosted; update to the live Discussions
-    # link once talmerri/lathe is public on GitHub.
     url: https://github.com/talmerri/lathe/discussions
     about: Ask questions, propose language RFCs, or share assets built with Lathe.

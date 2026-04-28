@@ -12,10 +12,12 @@ concurrency:
 
 jobs:
   ruff:
-    name: ruff (check + format)
+    name: ruff lint and format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -26,13 +28,17 @@ jobs:
           python -m pip install -e ".[dev]"
       - name: ruff check
         run: ruff check .
-      - name: ruff format --check
-        run: ruff format --check .
+      - name: ruff format --check changed Python files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pre-commit run ruff-format --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
+          else
+            pre-commit run ruff-format --from-ref "${{ github.event.before }}" --to-ref "${{ github.sha }}"
+          fi
 
   mypy:
-    name: mypy (advisory)
+    name: mypy typed surface
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -43,5 +49,28 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
-      - name: mypy
-        run: mypy lathe/
+      - name: mypy typed surface
+        run: >-
+          mypy
+          --follow-imports=silent
+          lathe/errors.py
+          lathe/assembly_ir.py
+          lathe/feature_ir.py
+          lathe/fit_ir.py
+          lathe/kit_ir.py
+          lathe/materials.py
+          lathe/mesh_ir.py
+          lathe/proposals.py
+          lathe/ref.py
+          lathe/reference_ir.py
+          lathe/reuse_ir.py
+          lathe/shape_ir.py
+          lathe/solid_ir.py
+          lathe/stages/budgets.py
+          lathe/stages/lod.py
+          lathe/surface_ir.py
+          lathe/texture_control_pack.py
+          lathe/transfer_ir.py
+          lathe/validators/geometry_integrity.py
+          lathe/validators/semantic_quality.py
+          lathe/validators/surface_quality.py

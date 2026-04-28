@@ -7,9 +7,10 @@ mapping/list literals and operator chains used inside Lathe blocks.
 from __future__ import annotations
 
 import ast as py_ast
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
-from .grammar import LatheParseError, _UNIT_RE, _dedupe_keep_first, _num, _set_nested
+from .grammar import _UNIT_RE, LatheParseError, _num, _set_nested
 from .tokens import _TokenStream
 
 

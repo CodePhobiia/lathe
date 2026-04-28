@@ -22,13 +22,14 @@ import copy
 
 import numpy as np
 import pytest
-
 from lathe.assembly_kernel import compile_assembly_blueprint
 from lathe.asset_graph import build_asset_graph
 from lathe.blueprints import resolve_blueprint
 from lathe.candidate_search import generate_candidate_params
 from lathe.feature_grammar import compile_feature_enhancements
 from lathe.fidelity import infer_fidelity_profile
+
+pytestmark = pytest.mark.property
 
 
 def _make_graph(family_payload: dict) -> object:
@@ -128,8 +129,12 @@ def test_grammar_is_deterministic_at_report_level(payload: dict) -> None:
     fidelity = infer_fidelity_profile(graph)
     params = generate_candidate_params(graph, seed=0, candidate_index=0, fidelity=fidelity)
     shape_ir = _compile(graph)
-    _, report_a = compile_feature_enhancements(graph, copy.deepcopy(shape_ir), fidelity=fidelity, params=params)
-    _, report_b = compile_feature_enhancements(graph, copy.deepcopy(shape_ir), fidelity=fidelity, params=params)
+    _, report_a = compile_feature_enhancements(
+        graph, copy.deepcopy(shape_ir), fidelity=fidelity, params=params
+    )
+    _, report_b = compile_feature_enhancements(
+        graph, copy.deepcopy(shape_ir), fidelity=fidelity, params=params
+    )
     assert report_a["feature_count_added"] == report_b["feature_count_added"]
     assert report_a["feature_ops_used"] == report_b["feature_ops_used"]
 
@@ -153,9 +158,7 @@ def test_feature_count_is_monotonic_under_region_dropping(payload: dict) -> None
     )
     partial = copy.deepcopy(shape_ir)
     partial.regions = partial.regions[:-1]  # drop one region
-    _, report_partial = compile_feature_enhancements(
-        graph, partial, fidelity=fidelity, params=params
-    )
+    _, report_partial = compile_feature_enhancements(graph, partial, fidelity=fidelity, params=params)
     # Full input must yield at least as many features as the partial.
     assert report_full["feature_count_added"] >= report_partial["feature_count_added"]
 

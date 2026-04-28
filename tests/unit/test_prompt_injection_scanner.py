@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from lathe.parser.prompt_injection import (
     OVERSIZED_LITERAL_CHARS,
     PromptInjectionError,
@@ -38,7 +37,7 @@ def test_jailbreak_phrase_detected() -> None:
 
 
 def test_unicode_direction_override_detected() -> None:
-    src = "description: \"normal‮txet desrever\""
+    src = 'description: "normal\u202etxet desrever"'
     result = scan_source(src)
     assert "L7002" in _codes(result)
 

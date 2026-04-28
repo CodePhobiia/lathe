@@ -2,10 +2,10 @@
 
 A minimal Godot 4.x `EditorPlugin` that watches a project-local directory for
 new Lathe build outputs, imports the `.glb`, enriches the scene graph from the
-Lathe manifest, and surfaces certification status in a bottom dock.
+Lathe package manifest, and surfaces certification status in a bottom dock.
 
-This is the **v0.1 in-repo MVP**. Real AssetLib submission, proper
-`EditorImportPlugin` integration, build-trace viewing, and per-asset previews
+This is the **v0.1 in-repo MVP**. It includes a native
+`EditorImportPlugin` for `.lathe_snapshot.json`; full `.glb` override imports
 are deferred — see BL-44.
 
 ## Install
@@ -24,7 +24,7 @@ its `README.md` explains the 90-second loop.
 ## How it works
 
 ```
-lathe build  →  dist/<asset>/ (manifest.json + .glb + build_report.json)
+lathe build  →  dist/<asset>/ (stages/package/package_manifest.json + .glb + build_report.json)
        └─ copy/symlink to res://lathe_out/<asset>/
                                    │
                                    ▼
@@ -35,13 +35,13 @@ lathe build  →  dist/<asset>/ (manifest.json + .glb + build_report.json)
                                    │
                                    ├─ nodes named socket_*, anchor_* → Marker3D
                                    ├─ meshes named collision_*       → StaticBody3D + CollisionShape3D (convex)
-                                   └─ manifest.lods[].lod_bias       → MeshInstance3D.lod_bias
+                                   └─ package_manifest.lods[].lod_bias → MeshInstance3D.lod_bias
                                    │
                                    ▼
             lathe_dock.gd      (bottom panel: PASS/FAIL + score + threshold)
 ```
 
-## Manifest fields consumed
+## Package manifest fields consumed
 
 - `asset_id` — used as the saved scene filename.
 - `outputs[].format == "glb"` → `outputs[].uri` — the mesh to import.
@@ -52,13 +52,16 @@ From the sibling `build_report.json`:
 - `certified` (bool) — drives the PASS/FAIL pill in the dock.
 - `certification.score` / `certification.threshold` — shown as numeric columns.
 
+Current `lathe.executor` reports expose top-level `score` / `threshold`; the
+importer accepts those fields as well as the nested `certification` shape.
+
 ## Files
 
 | File                 | Purpose                                                         |
 |----------------------|-----------------------------------------------------------------|
 | `plugin.cfg`         | Godot addon manifest.                                           |
 | `plugin.gd`          | `EditorPlugin` entry — registers dock + watcher.                |
-| `lathe_watcher.gd`   | Polls `res://lathe_out/` for manifest changes.                  |
+| `lathe_watcher.gd`   | Polls `res://lathe_out/` for package manifest changes.          |
 | `lathe_importer.gd`  | Loads `.glb`, runs the socket/collision/LOD enrichment passes.  |
 | `lathe_dock.gd`      | Bottom-panel status table.                                      |
 | `icons/lathe.svg`    | 16×16 plugin icon.                                              |
@@ -68,9 +71,11 @@ From the sibling `build_report.json`:
 - No native `EditorImportPlugin` — uses runtime `GLTFDocument` and saves a
   `.tscn`. Thumbnails/preview in the FileSystem dock won't regenerate until
   the user reloads.
+- Snapshot sidecars do have native `EditorImportPlugin` support; the gap above
+  is specifically for overriding the `.glb` import path.
 - No AssetLib submission pipeline.
-- No build-trace viewer (`trace_manifest.json` is listed in the manifest but
-  not yet opened in-editor).
+- No build-trace viewer polish (`trace_manifest.json` is listed in the package
+  manifest, but rich in-editor navigation is still early).
 - Polling-based watcher; a real filesystem-watcher hook would remove the
   2s interval.
 - Single-project demo only — no workspace/multi-project routing.
