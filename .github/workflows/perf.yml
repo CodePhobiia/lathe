@@ -40,7 +40,7 @@ jobs:
 
       - name: Upload historical perf record
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: heroes-perf-${{ github.run_id }}
           path: perf/heroes_*.json

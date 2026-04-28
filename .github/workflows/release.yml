@@ -47,7 +47,7 @@ jobs:
           twine check dist/*
 
       - name: Upload checked distribution
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-dist
           path: dist/
@@ -204,7 +204,7 @@ jobs:
           cyclonedx-py environment --output-format XML --schema-version 1.5 --outfile dist/sbom.xml
 
       - name: Upload SBOM artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: |
