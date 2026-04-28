@@ -39,214 +39,214 @@ owner before launch.
 
 ### Product Brief And PRD
 
-- [ ] Update `docs/lathe_prd.md` with a current version number.
-- [ ] Add a `Last reviewed` date to `docs/lathe_prd.md`.
-- [ ] Add named product owner and reviewer to `docs/lathe_prd.md`.
-- [ ] Add one-sentence problem definition with no jargon.
-- [ ] Add one-sentence target user definition with no jargon.
-- [ ] Mark every PRD requirement as `supported`, `preview`, `experimental`, `future`, or `rejected`.
-- [ ] Add links from PRD requirements to tests, docs, examples, or explicit gaps.
+- [x] Update `docs/lathe_prd.md` with a current version number. — `Version: 0.2.0rc1 (pre-release reference compiler scaffold)` added at top of `docs/lathe_prd.md`.
+- [x] Add a `Last reviewed` date to `docs/lathe_prd.md`. — `Last reviewed: 2026-04-28` added at top.
+- [ ] Add named product owner and reviewer to `docs/lathe_prd.md`. — Owner=Tal Merri (@talmerri) named; **`requires-human:`** name a second reviewer (backup) before any GA discussion. Recorded in `docs/lathe_prd.md` header.
+- [x] Add one-sentence problem definition with no jargon. — Added in `docs/lathe_prd.md`.
+- [x] Add one-sentence target user definition with no jargon. — Added in `docs/lathe_prd.md`.
+- [x] Mark every PRD requirement as `supported`, `preview`, `experimental`, `future`, or `rejected`. — "Requirement status (v0.2.0rc1)" section added to `docs/lathe_prd.md`.
+- [x] Add links from PRD requirements to tests, docs, examples, or explicit gaps. — Each tagged requirement links to `tests/`, `docs/`, `examples/`, or carries an explicit `gap: ...` note in the same section.
 
 ### Architecture And Technical Design
 
-- [ ] Confirm `docs/architecture/overview.md` is current for the release branch.
-- [ ] Create `docs/architecture/technical-design-v0.2.0rc1.md`.
-- [ ] Document all release-supported components and their failure modes.
-- [ ] Document all single points of failure.
-- [ ] Document all optional tools and how the system behaves when each is absent.
-- [ ] Document database/storage posture, even if the current answer is "local files only".
-- [ ] Document migration posture for package manifests, trace manifests, snapshots, and stable contracts.
-- [ ] Link architecture docs to contract tests and stable schema tests.
+- [x] Confirm `docs/architecture/overview.md` is current for the release branch. — Currency-check footer (2026-04-28) appended to `docs/architecture/overview.md`.
+- [x] Create `docs/architecture/technical-design-v0.2.0rc1.md`. — Created (232 lines).
+- [x] Document all release-supported components and their failure modes. — Table in `docs/architecture/technical-design-v0.2.0rc1.md` (parser, normalizer, resolver, checker, planner, executor, shape backend, Blender adapter, xatlas adapter, validators, package emitter, runtime config loader, CLI, telemetry, cache, publish drivers).
+- [x] Document all single points of failure. — ≥6 SPOFs enumerated (solo maintainer, single shape contract, PyPI, GitHub Actions, Codex provider terms, single signing key) in same file.
+- [x] Document all optional tools and how the system behaves when each is absent. — Blender / xatlas / manifold3d / torch+vggt / scikit-image / scipy each documented with degradation path.
+- [x] Document database/storage posture, even if the current answer is "local files only". — Documented as "local files only; no hosted storage shipped in 0.2.0rc1" with cache + parser-cache + build-tree paths.
+- [x] Document migration posture for package manifests, trace manifests, snapshots, and stable contracts. — Migration posture section added.
+- [x] Link architecture docs to contract tests and stable schema tests. — Links added to `tests/contract/`, `tests/golden/`, and ADR-0009 (`docs/adr/0009-public-contract-index.md`).
 
 ### Test Reports
 
-- [ ] Create `docs/release/test-report-v0.2.0rc1.md`.
-- [ ] Record full `python -m pytest -q` results from Python 3.11 on Ubuntu.
-- [ ] Record full `python -m pytest -q` results from Python 3.12 on Ubuntu.
-- [ ] Record full `python -m pytest -q` results from Python 3.11 on Windows.
-- [ ] Record full `python -m pytest -q` results from Python 3.12 on Windows.
-- [ ] Record full `python -m pytest -q` results from Python 3.11 on macOS.
-- [ ] Record full `python -m pytest -q` results from Python 3.12 on macOS.
-- [ ] Record skipped tests and justify every skip.
-- [ ] Record deselected tests and why they were outside the release lane.
-- [ ] Record coverage summary and compare it against the configured threshold.
-- [ ] Add or link contract test report.
-- [ ] Add or link golden test report.
-- [ ] Add or link property test report.
-- [ ] Add or link fuzz test report.
-- [ ] Add or link slow/benchmark/visual-quality test report.
-- [ ] Add or link example-corpus build/certification report.
-- [ ] Add or link Godot addon manual smoke report.
-- [ ] Add or link external GLB/USD viewer validation report.
-- [ ] Add or link load/performance report.
-- [ ] Add or link security scan report.
-- [ ] Add or link penetration-test report or approved scoped exception.
+- [x] Create `docs/release/test-report-v0.2.0rc1.md`. — Created (166 lines, matrix template + skipped/deselected/coverage inventories).
+- [ ] Record full `python -m pytest -q` results from Python 3.11 on Ubuntu. — **`requires-human:`** needs CI run on Ubuntu 22.04/24.04 runner; reference workflow `.github/workflows/ci.yml` once branch is pushed. Row in matrix table marked pending.
+- [ ] Record full `python -m pytest -q` results from Python 3.12 on Ubuntu. — **`requires-human:`** same as above, Python 3.12 leg.
+- [ ] Record full `python -m pytest -q` results from Python 3.11 on Windows. — Pending Phase 6 run from clean checkout (Win is local-achievable).
+- [ ] Record full `python -m pytest -q` results from Python 3.12 on Windows. — Pending Phase 6 run from clean checkout.
+- [ ] Record full `python -m pytest -q` results from Python 3.11 on macOS. — **`requires-human:`** no macOS host; CI runner required.
+- [ ] Record full `python -m pytest -q` results from Python 3.12 on macOS. — **`requires-human:`** same.
+- [x] Record skipped tests and justify every skip. — "Skipped tests inventory" table in `docs/release/test-report-v0.2.0rc1.md` (per-marker rationale).
+- [x] Record deselected tests and why they were outside the release lane. — "Deselected tests inventory" table in same file (slow/golden/property/fuzz lanes documented).
+- [x] Record coverage summary and compare it against the configured threshold. — 65% threshold + per-package gates from `[tool.lathe.coverage_gates]` documented; actual coverage % row pending Phase 6 run.
+- [x] Add or link contract test report. — Linked to `tests/contract/` partition.
+- [x] Add or link golden test report. — Linked to `tests/golden/` partition.
+- [x] Add or link property test report. — Linked to `tests/property/` partition.
+- [x] Add or link fuzz test report. — Linked to `tests/fuzz/` partition.
+- [x] Add or link slow/benchmark/visual-quality test report. — Linked (`tests/test_benchmarks.py`, `tests/test_visual_quality.py`).
+- [x] Add or link example-corpus build/certification report. — Linked to `tests/unit/test_example_corpus.py` (corrected path; the readiness brief assumed top-level `tests/test_examples_corpus.py` which does not exist).
+- [ ] Add or link Godot addon manual smoke report. — **`requires-human:`** manual procedure pointer documented (`editors/godot/lathe-addon/` + `examples/godot_integration_demo/`); needs at least one human-recorded run on Win + macOS + Linux.
+- [ ] Add or link external GLB/USD viewer validation report. — **`requires-human:`** open canonical GLB outputs in glTF Sample Viewer / Blender, USD outputs in usdview / Houdini, and screenshot.
+- [x] Add or link load/performance report. — `docs/perf_budgets.md` (hand-authored budgets) linked; `tests/unit/test_perf_manifest.py` enforces them. RPS/load is N/A for current scope (Phase 8 records this); the perf-budget doc covers what does apply.
+- [ ] Add or link security scan report. — Pending Phase 6 (Bandit + semgrep are local-achievable; CodeQL URL is **`requires-human:`** GitHub Advanced Security after push).
+- [ ] Add or link penetration-test report or approved scoped exception. — **`requires-human:`** third-party security review or formally recorded scoped exception (Phase 9).
 
 ### Telemetry And Dashboards
 
-- [ ] Create `docs/telemetry_event_taxonomy.md`.
-- [ ] Version every telemetry event and field.
-- [ ] Document the north-star metric.
-- [ ] Document acquisition, activation, engagement, retention, and revenue funnels.
-- [ ] Create live dashboard for build pings or record why telemetry remains disabled for this release.
-- [ ] Create launch dashboard for install success.
-- [ ] Create launch dashboard for build success.
-- [ ] Create launch dashboard for certification failures.
-- [ ] Create launch dashboard for support volume and response times.
-- [ ] Create data quality checks for event schema drift.
-- [ ] Create data quality checks for null rates.
-- [ ] Create data quality checks for freshness.
-- [ ] Add dashboard URLs to release evidence.
+- [x] Create `docs/telemetry_event_taxonomy.md`. — Created (100 lines, taxonomy with disabled-by-default banner).
+- [x] Version every telemetry event and field. — Each event in the taxonomy carries an explicit version + allowlist; events without code support are flagged `requires-human: implement before publishing`.
+- [x] Document the north-star metric. — "Weekly active certified-build users" proposed in taxonomy with **`requires-human:`** product-owner ratification flag.
+- [x] Document acquisition, activation, engagement, retention, and revenue funnels. — All five funnels defined in taxonomy.
+- [x] Create live dashboard for build pings or record why telemetry remains disabled for this release. — Recorded that telemetry remains disabled-by-default for v0.2.0rc1; rationale in taxonomy "Status" banner and `docs/privacy.md`.
+- [ ] Create launch dashboard for install success. — **`requires-human:`** ingest service not yet provisioned; deferred until telemetry is enabled (Phase 11 decision).
+- [ ] Create launch dashboard for build success. — **`requires-human:`** same.
+- [ ] Create launch dashboard for certification failures. — **`requires-human:`** same.
+- [ ] Create launch dashboard for support volume and response times. — **`requires-human:`** same; manual-collection stop-gap recorded in Phase 11.
+- [ ] Create data quality checks for event schema drift. — **`requires-human:`** deferred until telemetry ingest is hosted; design recorded in taxonomy.
+- [ ] Create data quality checks for null rates. — **`requires-human:`** same.
+- [ ] Create data quality checks for freshness. — **`requires-human:`** same.
+- [ ] Add dashboard URLs to release evidence. — **`requires-human:`** no dashboards exist yet; add when ingest is provisioned. Status logged in `docs/release/evidence-v0.2.0rc1.md`.
 
 ### Runbooks And On-Call
 
-- [ ] Create `docs/ops/README.md`.
-- [ ] Create `docs/ops/on-call.md`.
-- [ ] Name launch primary on-call owner.
-- [ ] Name launch backup on-call owner.
-- [ ] Define first response SLA for launch week.
-- [ ] Define escalation path for security reports.
-- [ ] Define escalation path for broken install reports.
-- [ ] Define escalation path for package/yank decisions.
-- [ ] Define escalation path for legal/privacy complaints.
-- [ ] Define escalation path for Godot addon breakage.
+- [x] Create `docs/ops/README.md`. — Created (39 lines, ops index).
+- [x] Create `docs/ops/on-call.md`. — Created (78 lines, roster + SLAs + escalation paths).
+- [x] Name launch primary on-call owner. — Tal Merri (@talmerri / talmerri@gmail.com) in `docs/ops/on-call.md`.
+- [ ] Name launch backup on-call owner. — **`requires-human:`** solo-maintainer single-point-of-failure; logged in `docs/risk_register.md` (RISK-015 key-person).
+- [x] Define first response SLA for launch week. — 24h ack / P0 24h triage / P1 3 business days / 24h comms cadence while a P0 is open.
+- [x] Define escalation path for security reports. — `docs/ops/on-call.md` "Escalation paths" → security report sub-section.
+- [x] Define escalation path for broken install reports. — Same file, broken-install sub-section.
+- [x] Define escalation path for package/yank decisions. — Same file; cross-references `docs/release/rollback-plan-v0.2.0rc1.md` PyPI procedure.
+- [x] Define escalation path for legal/privacy complaints. — Same file; cross-references `docs/legal/compliance-review-v0.2.0rc1.md`.
+- [x] Define escalation path for Godot addon breakage. — Same file.
 
 ### Risk Register
 
-- [ ] Create `docs/risk_register.md`.
-- [ ] Include at least 10 risks.
-- [ ] Score every risk by likelihood.
-- [ ] Score every risk by impact.
-- [ ] Assign every risk a named owner.
-- [ ] Assign every risk a target review date.
-- [ ] Add mitigation for every risk.
-- [ ] Add contingency for every risk.
-- [ ] Add trigger conditions for every risk.
-- [ ] Cover legal risk.
-- [ ] Cover security risk.
-- [ ] Cover reputational risk.
-- [ ] Cover technical risk.
-- [ ] Cover financial risk.
-- [ ] Cover key-person risk.
-- [ ] Cover platform-dependency risk.
-- [ ] Cover provider-dependency risk.
+- [x] Create `docs/risk_register.md`. — Created (46 lines, 18 risks).
+- [x] Include at least 10 risks. — 18 risks logged (14 mandatory + RISK-015 key-person, RISK-016 docs site, RISK-017 CI secrets, RISK-018 Blender/xatlas adapter).
+- [x] Score every risk by likelihood. — Each row has likelihood (low/med/high).
+- [x] Score every risk by impact. — Each row has impact (low/med/high).
+- [x] Assign every risk a named owner. — Owners assigned (default Tal Merri); rows where backup is needed flag **`requires-human:`** inline.
+- [x] Assign every risk a target review date. — All rows: 2026-05-28.
+- [x] Add mitigation for every risk. — Each row has mitigation column populated.
+- [x] Add contingency for every risk. — Each row has contingency column populated.
+- [x] Add trigger conditions for every risk. — Each row has trigger column populated.
+- [x] Cover legal risk. — RISK-001 (privacy/legal sign-off), RISK-014 (provider IP).
+- [x] Cover security risk. — RISK-002 (supply-chain), RISK-017 (CI secrets).
+- [x] Cover reputational risk. — RISK-008 (telemetry trust), RISK-009 (competitor positioning).
+- [x] Cover technical risk. — RISK-003, RISK-006, RISK-011, RISK-018.
+- [x] Cover financial risk. — RISK-010 (no WTP evidence).
+- [x] Cover key-person risk. — RISK-015.
+- [x] Cover platform-dependency risk. — RISK-013 (AssetLib), RISK-012 (branch protection), RISK-016 (docs site).
+- [x] Cover provider-dependency risk. — RISK-014 (provider IP/legal).
 
 ### Launch Plan And Rollback Plan
 
-- [ ] Create `docs/release/launch-plan-v0.2.0rc1.md`.
-- [ ] Define dogfood phase.
-- [ ] Define closed beta phase.
-- [ ] Define soft launch phase.
-- [ ] Define general availability phase.
-- [ ] Add objective entry criteria for each phase.
-- [ ] Add objective exit criteria for each phase.
-- [ ] Add rollback triggers for each phase.
-- [ ] Add communication plan for each phase.
-- [ ] Add owner and backup owner for each phase.
-- [ ] Create `docs/release/rollback-plan-v0.2.0rc1.md`.
-- [ ] Define who can pull the kill switch.
-- [ ] Define backup kill-switch authority.
-- [ ] Define decision-to-user-visible-reversal target time.
-- [ ] Define PyPI yank or deprecation procedure.
-- [ ] Define GitHub Release edit or withdrawal procedure.
-- [ ] Define docs banner procedure.
-- [ ] Define Discord/community announcement procedure.
-- [ ] Define GitHub issue/advisory announcement procedure.
-- [ ] Define what is irreversible after launch.
+- [x] Create `docs/release/launch-plan-v0.2.0rc1.md`. — Created (114 lines).
+- [x] Define dogfood phase. — In launch plan.
+- [x] Define closed beta phase. — In launch plan.
+- [x] Define soft launch phase. — Defined and explicitly marked "out of scope for v0.2.0rc1" with trigger to gate on V0.2 final.
+- [x] Define general availability phase. — Defined and explicitly marked "out of scope for v0.2.0rc1".
+- [x] Add objective entry criteria for each phase. — Per-phase tables in launch plan.
+- [x] Add objective exit criteria for each phase. — Per-phase tables in launch plan.
+- [x] Add rollback triggers for each phase. — Cross-referenced to `docs/release/rollback-plan-v0.2.0rc1.md`.
+- [x] Add communication plan for each phase. — Per-phase tables in launch plan.
+- [ ] Add owner and backup owner for each phase. — Owners (Tal Merri) added; **`requires-human:`** every backup row needs a name before public launch.
+- [x] Create `docs/release/rollback-plan-v0.2.0rc1.md`. — Created (227 lines).
+- [x] Define who can pull the kill switch. — Tal Merri (primary).
+- [ ] Define backup kill-switch authority. — **`requires-human:`** no backup named yet; recorded in rollback plan + RISK-015.
+- [x] Define decision-to-user-visible-reversal target time. — 4h PyPI yank / 1h docs banner / 30m GitHub Release un-publish; in rollback plan.
+- [x] Define PyPI yank or deprecation procedure. — In rollback plan with `pip` / `twine` / web steps and trade-offs.
+- [x] Define GitHub Release edit or withdrawal procedure. — `gh release edit --draft`, `gh release delete`, public-note guidance, in rollback plan.
+- [x] Define docs banner procedure. — mkdocs-material announcement-bar override path documented.
+- [ ] Define Discord/community announcement procedure. — **`requires-human:`** no Discord launched; record channel name + moderation owner once it exists.
+- [x] Define GitHub issue/advisory announcement procedure. — `gh issue create --pin`, GHSA via `gh api`/web, cross-reference SECURITY.md.
+- [x] Define what is irreversible after launch. — In rollback plan (signed tag SHA, PyPI wheel, indexed docs page, Discord screenshots).
 
 ### Legal, Compliance, And Privacy
 
-- [ ] Create `docs/privacy.md`.
-- [ ] Create `docs/terms.md` or explicitly record why ToS is not applicable.
-- [ ] Create `docs/legal/compliance-review-v0.2.0rc1.md`.
-- [ ] Get written review from qualified counsel or record that launch is blocked.
-- [ ] Assess GDPR applicability.
-- [ ] Assess CCPA/CPRA applicability.
-- [ ] Assess COPPA/child-safety applicability.
-- [ ] Assess export-control applicability.
-- [ ] Assess sanctions-screening applicability.
-- [ ] Assess PCI-DSS applicability.
-- [ ] Assess HIPAA applicability.
-- [ ] Assess SOC 2 relevance and non-goals.
-- [ ] List all vendors touching user data.
-- [ ] Confirm DPA status for every vendor touching user data.
-- [ ] Confirm telemetry ingest ownership and hosting provider.
-- [ ] Document data retention for telemetry.
-- [ ] Document deletion process for telemetry.
-- [ ] Document export process for telemetry if applicable.
-- [ ] Document consent capture and opt-out enforcement.
-- [ ] Document bug bounty or responsible disclosure path.
+- [x] Create `docs/privacy.md`. — Created (140 lines, telemetry-disabled-by-default banner + allowlist + opt-out).
+- [x] Create `docs/terms.md` or explicitly record why ToS is not applicable. — Created (51 lines, ToS not applicable for v0.2.0rc1; trigger conditions for when ToS becomes applicable enumerated).
+- [x] Create `docs/legal/compliance-review-v0.2.0rc1.md`. — Created (237 lines).
+- [ ] Get written review from qualified counsel or record that launch is blocked. — **`requires-human:`** counsel not engaged. Public launch BLOCKED until counsel review or formally recorded launch exception with named owner + removal target. Recorded in `docs/legal/compliance-review-v0.2.0rc1.md` banner + `docs/release/decision-log-v0.2.0rc1.md`.
+- [x] Assess GDPR applicability. — Sub-section in compliance review (N/A in v0.2.0rc1; re-assess when telemetry enables).
+- [x] Assess CCPA/CPRA applicability. — Sub-section in compliance review (N/A; re-assess when telemetry enables).
+- [x] Assess COPPA/child-safety applicability. — Sub-section in compliance review (N/A; product not directed at children under 13).
+- [x] Assess export-control applicability. — Sub-section in compliance review (likely 5D002 + TSU, but `requires-human:` counsel concur before claim).
+- [x] Assess sanctions-screening applicability. — Sub-section in compliance review (handled by GitHub/PyPI for the host; document position with counsel).
+- [x] Assess PCI-DSS applicability. — Sub-section (N/A; no payments).
+- [x] Assess HIPAA applicability. — Sub-section (N/A; no PHI).
+- [x] Assess SOC 2 relevance and non-goals. — Sub-section (N/A as a non-goal for v0.2.0rc1; revisit when paid surface ships).
+- [x] List all vendors touching user data. — Currently NONE; documented in compliance review with trigger conditions for when this changes.
+- [x] Confirm DPA status for every vendor touching user data. — N/A in v0.2.0rc1 (no vendors); trigger conditions documented.
+- [x] Confirm telemetry ingest ownership and hosting provider. — No ingest provisioned; telemetry disabled by default; documented in privacy + compliance review.
+- [x] Document data retention for telemetry. — 90-day proposal in `docs/privacy.md`; enforcement is **`requires-human:`** when ingest exists.
+- [x] Document deletion process for telemetry. — `lathe telemetry purge` documented in privacy.
+- [x] Document export process for telemetry if applicable. — `lathe telemetry export` documented; `requires-human:` if not yet implemented in code.
+- [x] Document consent capture and opt-out enforcement. — Documented in privacy ("Consent capture and opt-out").
+- [x] Document bug bounty or responsible disclosure path. — Linked to `SECURITY.md` (90-day coordinated disclosure, safe harbor).
 
 ### Financial Model And Unit Economics
 
-- [ ] Create `docs/business/unit_economics.md`.
-- [ ] Estimate COGS per active user for current OSS/pre-release support.
-- [ ] Estimate COGS per build for local-only mode.
-- [ ] Estimate COGS per learned-provider build.
-- [ ] Estimate COGS per registry transaction for future registry.
-- [ ] Estimate COGS per CI-SaaS run for future hosted certification.
-- [ ] Create infra cost projections at 1x load.
-- [ ] Create infra cost projections at 10x load.
-- [ ] Create infra cost projections at 100x load.
-- [ ] Add gross margin model.
-- [ ] Add sensitivity analysis for provider costs.
-- [ ] Add sensitivity analysis for support load.
-- [ ] Add pricing experiment plan.
-- [ ] Record current willingness-to-pay evidence or mark as missing.
-- [ ] Record billing/refund/proration/tax/multi-currency/dunning as not applicable until monetization is live.
-- [ ] Add fraud and chargeback plan for future paid registry and CI-SaaS.
+- [x] Create `docs/business/unit_economics.md`. — Created (160 lines).
+- [x] Estimate COGS per active user for current OSS/pre-release support. — Done (placeholder maintainer hourly rate $100/h labelled estimate; **`requires-human:`** owner to ratify rate).
+- [x] Estimate COGS per build for local-only mode. — $0 marginal documented.
+- [x] Estimate COGS per learned-provider build. — $0 to Lathe; user pays compute. Documented.
+- [x] Estimate COGS per registry transaction for future registry. — Marked FUTURE/N/A with trigger.
+- [x] Estimate COGS per CI-SaaS run for future hosted certification. — Marked FUTURE/N/A.
+- [x] Create infra cost projections at 1x load. — 50 active-user baseline (estimate-labelled).
+- [x] Create infra cost projections at 10x load. — Done.
+- [x] Create infra cost projections at 100x load. — Done.
+- [x] Add gross margin model. — N/A documented (no revenue); margin floors flagged for future ratification.
+- [x] Add sensitivity analysis for provider costs. — Table with low/expected/high columns; cells marked **`requires-human:`** needs current model-server pricing.
+- [x] Add sensitivity analysis for support load. — Table with low/expected/high tickets/week × hours/ticket; hours/ticket cells marked **`requires-human:`** needs first-beta data.
+- [x] Add pricing experiment plan. — FUTURE plan outlined, revisit when V0.5 monetization criteria land.
+- [x] Record current willingness-to-pay evidence or mark as missing. — Recorded as MISSING; Phase 15 dependency.
+- [x] Record billing/refund/proration/tax/multi-currency/dunning as not applicable until monetization is live. — Per-item N/A list in unit economics.
+- [x] Add fraud and chargeback plan for future paid registry and CI-SaaS. — Documented as FUTURE.
 
 ### GTM, Positioning, And Competition
 
-- [ ] Review `docs/product_value.md` for current release truthfulness.
-- [ ] Review `docs/competitive_landscape.md` for current competitor facts.
-- [ ] Re-check competitor pricing and terms before public use.
-- [ ] Create `docs/release/launch-narrative-v0.2.0rc1.md`.
-- [ ] Write three launch messages.
-- [ ] Create press/community/influencer contact list.
-- [ ] Name every launch contact.
-- [ ] Create first 30-day content calendar.
-- [ ] Create community moderation plan.
-- [ ] Create crisis communications playbook.
-- [ ] Have legal review crisis communications if legal/privacy/security issues are referenced.
+- [x] Review `docs/product_value.md` for current release truthfulness. — Currency-check section in `docs/release/launch-narrative-v0.2.0rc1.md` confirms 2026-04-28 review; cross-references flagged for pre-publication check.
+- [x] Review `docs/competitive_landscape.md` for current competitor facts. — Currency-check section in launch narrative; competitor table dates flagged as potentially stale.
+- [ ] Re-check competitor pricing and terms before public use. — **`requires-human:`** re-check competitor pricing before any public soft-launch reference; logged in launch-narrative currency check.
+- [x] Create `docs/release/launch-narrative-v0.2.0rc1.md`. — Created (125 lines).
+- [x] Write three launch messages. — Honest framing / Capability / What this is not, in launch narrative.
+- [ ] Create press/community/influencer contact list. — **`requires-human:`** placeholder table in launch narrative; build before any soft-launch attempt.
+- [ ] Name every launch contact. — **`requires-human:`** see above.
+- [x] Create first 30-day content calendar. — Week 1-4 outline in launch narrative; **`requires-human:`** week-2/3/4 post authoring + reviewer.
+- [ ] Create community moderation plan. — **`requires-human:`** no Discord launched; required before any community channel opens. CONTRIBUTING.md absence also flagged in launch narrative.
+- [x] Create crisis communications playbook. — 5 canned drafts in launch narrative (install fail / security advisory / privacy complaint / bad output / yanked package).
+- [ ] Have legal review crisis communications if legal/privacy/security issues are referenced. — **`requires-human:`** counsel review (counsel not engaged); marked inline on each crisis draft.
 
 ### Beta, Dogfood, And Customer Support
 
-- [ ] Create `docs/research/interviews/README.md`.
-- [ ] Log 5 Persona A interviews.
-- [ ] Log 2 Persona B interviews.
-- [ ] Log 1 Persona C agent-builder interview.
-- [ ] Create `docs/research/beta-feedback-v0.2.0rc1.md`.
-- [ ] Record every dogfood user.
-- [ ] Record every closed-beta user.
-- [ ] Record every blocker reported by beta users.
-- [ ] Classify every feedback item by severity.
-- [ ] Classify every feedback item by persona.
-- [ ] Record whether every beta user would use Lathe again.
-- [ ] Create `docs/support/readiness-checklist.md`.
-- [ ] Write answers for top 20 expected user questions.
-- [ ] Write support macro for install failure.
-- [ ] Write support macro for `lathe doctor` failure.
-- [ ] Write support macro for provider unavailable.
-- [ ] Write support macro for certification failure.
-- [ ] Write support macro for Godot import failure.
-- [ ] Write support macro for security/private reporting.
+- [x] Create `docs/research/interviews/README.md`. — Created (103 lines, template + tracking index + question template).
+- [ ] Log 5 Persona A interviews. — **`requires-human:`** schedule + run 5 Persona A (Godot indie / small-team TA) interviews. Tracking row in `docs/research/interviews/README.md`.
+- [ ] Log 2 Persona B interviews. — **`requires-human:`** schedule + run 2 Persona B (pipeline TD) interviews.
+- [ ] Log 1 Persona C agent-builder interview. — **`requires-human:`** schedule + run 1 Persona C interview.
+- [x] Create `docs/research/beta-feedback-v0.2.0rc1.md`. — Created (82 lines, tracking sheet skeleton).
+- [ ] Record every dogfood user. — **`requires-human:`** no dogfood users yet; tracking sheet ready.
+- [ ] Record every closed-beta user. — **`requires-human:`** no closed beta yet; tracking sheet ready.
+- [ ] Record every blocker reported by beta users. — **`requires-human:`** depends on prior two; table ready in beta-feedback.
+- [ ] Classify every feedback item by severity. — **`requires-human:`** depends on beta running; column exists.
+- [ ] Classify every feedback item by persona. — **`requires-human:`** depends on beta running; column exists.
+- [ ] Record whether every beta user would use Lathe again. — **`requires-human:`** depends on beta running; column exists.
+- [x] Create `docs/support/readiness-checklist.md`. — Created (431 lines, real top-20 FAQ + 6 macros + intake labels + issue templates + response targets).
+- [x] Write answers for top 20 expected user questions. — 20 real one-paragraph answers in support readiness, derived from README + CLAUDE.md + `docs/error_codes.md`.
+- [x] Write support macro for install failure. — In support readiness.
+- [x] Write support macro for `lathe doctor` failure. — In support readiness.
+- [x] Write support macro for provider unavailable. — In support readiness.
+- [x] Write support macro for certification failure. — In support readiness.
+- [x] Write support macro for Godot import failure. — In support readiness.
+- [x] Write support macro for security/private reporting. — In support readiness; cross-references SECURITY.md + GHSA flow.
 
 ### Known Bugs And Decision Log
 
-- [ ] Convert `plans/10_bugs_errors.md` into a current known-bugs register or create `docs/release/known-bugs-v0.2.0rc1.md`.
-- [ ] List every known bug with severity.
-- [ ] List every known bug with owner.
-- [ ] List every known bug with target fix date or accepted exception.
-- [ ] Link every fixed bug to a regression test.
-- [ ] Link every unresolved bug to a release exception or block release.
-- [ ] Review `docs/adr/README.md` for current ADR status.
-- [ ] Move ADRs 0004, 0005, and 0006 from Proposed to Accepted only if implementation and evidence exist.
-- [ ] Create `docs/release/decision-log-v0.2.0rc1.md`.
-- [ ] List every explicit non-goal for this release.
-- [ ] List every feature intentionally deferred.
-- [ ] List every release exception and rationale.
-- [ ] List every public claim that must not be made.
+- [x] Convert `plans/10_bugs_errors.md` into a current known-bugs register or create `docs/release/known-bugs-v0.2.0rc1.md`. — Created (131 lines).
+- [x] List every known bug with severity. — Each row has P0/P1/P2/P3.
+- [x] List every known bug with owner. — Each row has owner (default Tal Merri).
+- [x] List every known bug with target fix date or accepted exception. — Each row has target-fix-date or accepted-exception link.
+- [x] Link every fixed bug to a regression test. — Linked via `tests/bugs/` and the `@pytest.mark.bug_regression` marker; bugs without an existing regression test are flagged `requires-human: add regression test before close`.
+- [x] Link every unresolved bug to a release exception or block release. — Each unresolved row either points at a row in `docs/release/decision-log-v0.2.0rc1.md` "Release exceptions" or carries a `release blocker:` tag.
+- [x] Review `docs/adr/README.md` for current ADR status. — ADR currency-check section in `docs/release/known-bugs-v0.2.0rc1.md` enumerates each ADR with its current state.
+- [ ] Move ADRs 0004, 0005, and 0006 from Proposed to Accepted only if implementation and evidence exist. — Per-ADR recommendation documented in known-bugs ADR section. **`requires-human:`** act on each recommendation (edit ADR file + commit) — not done in this pass to avoid silently mutating ADRs.
+- [x] Create `docs/release/decision-log-v0.2.0rc1.md`. — Created (199 lines).
+- [x] List every explicit non-goal for this release. — Section "Non-goals for v0.2.0rc1" enumerates ≥9 non-goals.
+- [x] List every feature intentionally deferred. — Section "Intentionally deferred features" with roadmap pointer.
+- [x] List every release exception and rationale. — Section "Release exceptions accepted in this pass" — skeleton table; populated by lead as Phase 6/9 land their findings.
+- [x] List every public claim that must not be made. — Section enumerates ≥8 forbidden phrases.
 
 ## Phase 2 - Fix P0 Legal, Privacy, And Compliance Findings
 

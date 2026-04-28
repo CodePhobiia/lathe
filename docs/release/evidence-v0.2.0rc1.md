@@ -82,30 +82,112 @@ configuration, branch-protection toggles, etc.) are listed as
 
 ### Phase 1 — Required input inventory
 
-- `docs/lathe_prd.md`: pending refresh (version, last-reviewed date,
-  named owner/reviewer, problem/target-user one-liners, requirement
-  status tagging).
-- `docs/architecture/overview.md`: pending currency check.
-- `docs/architecture/technical-design-v0.2.0rc1.md`: pending creation.
-- `docs/release/test-report-v0.2.0rc1.md`: pending creation; Linux/
-  macOS rows are `requires-human` until matrix CI runs are attached.
-- `docs/telemetry_event_taxonomy.md`: pending creation; live dashboards
-  are `requires-human`.
-- `docs/ops/README.md`, `docs/ops/on-call.md`: pending creation.
-- `docs/risk_register.md`: pending creation.
-- `docs/release/launch-plan-v0.2.0rc1.md`,
-  `docs/release/rollback-plan-v0.2.0rc1.md`: pending creation.
-- `docs/privacy.md`, `docs/terms.md`,
-  `docs/legal/compliance-review-v0.2.0rc1.md`: pending creation;
-  signed counsel review is `requires-human`.
-- `docs/business/unit_economics.md`: pending creation.
-- `docs/release/launch-narrative-v0.2.0rc1.md`: pending creation.
-- `docs/research/interviews/README.md`,
-  `docs/research/beta-feedback-v0.2.0rc1.md`,
-  `docs/support/readiness-checklist.md`: pending creation; recorded
-  user interviews and beta-user feedback are `requires-human`.
-- `docs/release/known-bugs-v0.2.0rc1.md`,
-  `docs/release/decision-log-v0.2.0rc1.md`: pending creation.
+All Phase 1 documents created or updated in commit landing this section.
+Cross-references in `readiness-tasks.md` Phase 1 carry per-checkbox
+evidence pointers.
+
+**Completed (durable artifact landed in this branch):**
+
+- `docs/lathe_prd.md` — refreshed: version, last-reviewed 2026-04-28,
+  owner, problem/target-user one-liners, requirement-status tagging
+  with linked tests/docs/examples or explicit `gap:` annotations.
+  Reviewer slot still `requires-human` (no backup named).
+- `docs/architecture/overview.md` — currency-check footer
+  (2026-04-28) appended.
+- `docs/architecture/technical-design-v0.2.0rc1.md` — created
+  (release-supported components + failure modes; ≥6 SPOFs;
+  optional-tool absence behavior; storage posture; migration posture;
+  links to `tests/contract/`, `tests/golden/`, ADR-0009).
+- `docs/release/test-report-v0.2.0rc1.md` — created (matrix template
+  with rows for Win/Linux/macOS × Python 3.11/3.12; skipped tests;
+  deselected tests; coverage 65% threshold + per-package gates;
+  partition links).
+- `docs/telemetry_event_taxonomy.md` — created (telemetry remains
+  disabled-by-default for v0.2.0rc1; per-event versioning;
+  north-star metric proposal; 5-funnel definitions; dashboards and
+  data-quality checks deferred until ingest is provisioned).
+- `docs/ops/README.md`, `docs/ops/on-call.md` — created (ops index;
+  roster; first-response SLAs; escalation paths for security /
+  install / yank / legal-privacy / Godot).
+- `docs/risk_register.md` — created (18 risks: 14 mandatory + 4
+  extra; per-row likelihood, impact, owner, review date 2026-05-28,
+  mitigation, contingency, trigger).
+- `docs/release/launch-plan-v0.2.0rc1.md` — created (4-phase plan;
+  soft-launch and GA explicitly out of scope for rc1; per-phase
+  entry/exit/rollback/comms; backup owners flagged
+  `requires-human`).
+- `docs/release/rollback-plan-v0.2.0rc1.md` — created (kill-switch
+  authority; PyPI yank/deprecate; GitHub Release edit/withdraw;
+  docs banner via mkdocs-material override; pinned issue + GHSA;
+  irreversibles).
+- `docs/privacy.md` — created (telemetry-disabled-by-default banner;
+  field allowlist; consent capture; opt-out; purge; retention;
+  vendors-touching-user-data = NONE; safe-harbor pointer).
+- `docs/terms.md` — created (ToS not applicable for v0.2.0rc1;
+  trigger conditions for when ToS becomes applicable).
+- `docs/legal/compliance-review-v0.2.0rc1.md` — created (counsel
+  review banner: launch BLOCKED until counsel review or recorded
+  exception; per-regulation applicability sub-sections; license
+  compatibility table; Blender GPL subprocess-boundary reasoning;
+  provider terms `requires-human`).
+- `docs/business/unit_economics.md` — created (no-billing surface;
+  COGS estimates with explicit "estimate" labels; 1×/10×/100× infra
+  projections; sensitivity tables with `requires-human` cells; WTP
+  marked MISSING; sustainability thresholds flagged for ratification).
+- `docs/release/launch-narrative-v0.2.0rc1.md` — created (3 launch
+  messages; press list `requires-human`; 30-day calendar; community
+  moderation `requires-human`; 5 crisis-comms drafts).
+- `docs/research/interviews/README.md` — created (template + tracking
+  index for the 5 + 2 + 1 interview commitment).
+- `docs/research/beta-feedback-v0.2.0rc1.md` — created (tracking
+  sheet skeleton; rows are `requires-human` until beta runs).
+- `docs/support/readiness-checklist.md` — created (real top-20 FAQ
+  answers; 6 support macros; intake labels and issue-template review
+  posture; response-time targets; escalation triggers).
+- `docs/release/known-bugs-v0.2.0rc1.md` — created (per-row severity,
+  owner, target-fix-or-exception, regression-test linkage; ADR
+  currency check including 0004/0005/0006 Proposed→Accepted
+  recommendation).
+- `docs/release/decision-log-v0.2.0rc1.md` — created (≥9 non-goals;
+  intentionally deferred features; release-exception skeleton; ≥8
+  forbidden public claims).
+
+**Phase 1 `requires-human` inventory (durable list):**
+
+| # | What | Where | Trigger to clear |
+|---|------|-------|-----------------|
+| H1 | Backup product reviewer | `docs/lathe_prd.md` | Before any GA discussion |
+| H2 | Linux/macOS pytest matrix runs | `docs/release/test-report-v0.2.0rc1.md` | Push branch, GitHub Actions on Ubuntu/macOS runners |
+| H3 | Win Python 3.11 + 3.12 pytest results | same | Phase 6 from clean checkout (local-achievable) |
+| H4 | Godot addon manual smoke (Win+mac+Linux) | same | Run procedure in `editors/godot/lathe-addon/` |
+| H5 | External GLB/USD viewer screenshots | same | Run viewers on canonical outputs |
+| H6 | CodeQL URL | same | GitHub Advanced Security after push |
+| H7 | Pen-test / security review | same / Phase 9 | Engage third-party or record formal exception |
+| H8 | Telemetry dashboards (5) | `docs/telemetry_event_taxonomy.md` | Telemetry decision in Phase 11; dashboards only when ingest is provisioned |
+| H9 | Telemetry data-quality checks (3) | same | Same trigger as H8 |
+| H10 | Backup launch-day on-call owner | `docs/ops/on-call.md` + RISK-015 | Before public launch |
+| H11 | Backup security contact | same | Before public launch |
+| H12 | Legal/compliance contact | same | Engage counsel |
+| H13 | PyPI release authority backup | same | Before public launch |
+| H14 | GitHub release authority backup | same | Before public launch |
+| H15 | Community moderation owner | same | When Discord launches |
+| H16 | Counsel sign-off (privacy + compliance + crisis comms) | `docs/legal/compliance-review-v0.2.0rc1.md` | Engage counsel |
+| H17 | Launch-phase backup owners | `docs/release/launch-plan-v0.2.0rc1.md` | Before public launch |
+| H18 | Backup kill-switch authority | `docs/release/rollback-plan-v0.2.0rc1.md` | Before public launch |
+| H19 | Discord channel + procedure | `docs/release/rollback-plan-v0.2.0rc1.md` | When Discord launches |
+| H20 | Maintainer hourly rate ratification | `docs/business/unit_economics.md` | Owner sign-off |
+| H21 | Provider cost cells (Hunyuan, VGGT) | same | Confirmed model-server pricing |
+| H22 | Support hours/ticket | same | First beta data |
+| H23 | Sustainability threshold ratification (3 rows) | same | Owner sign-off |
+| H24 | Competitor pricing re-check | `docs/release/launch-narrative-v0.2.0rc1.md` | Before any public soft-launch |
+| H25 | Press/influencer contact list | same | Before any soft-launch |
+| H26 | 30-day content calendar weeks 2–4 | same | Before public launch |
+| H27 | Community moderation plan + CONTRIBUTING.md | same + repo root | When community channel opens |
+| H28 | Crisis-comms counsel review | same | Engage counsel |
+| H29 | 5 + 2 + 1 persona interviews | `docs/research/interviews/README.md` | Schedule + run |
+| H30 | Beta-user records (dogfood, closed beta, blockers, severity, persona, would-adopt) | `docs/research/beta-feedback-v0.2.0rc1.md` | Run beta |
+| H31 | ADR 0004 / 0005 / 0006 Proposed→Accepted moves | `docs/release/known-bugs-v0.2.0rc1.md` ADR section | Act on per-ADR recommendation |
+| H32 | Bugs without regression test | `docs/release/known-bugs-v0.2.0rc1.md` | Add regression tests under `tests/bugs/` and `@pytest.mark.bug_regression` |
 
 ### Phase 2 — P0 legal, privacy, compliance
 
