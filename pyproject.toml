@@ -29,7 +29,7 @@ dependencies = [
   "jsonschema>=4.0",
   "numpy>=1.26",
   "Pillow>=10.0",
-  "trimesh>=4.0",
+  "trimesh>=4.12.1",
 ]
 
 [project.urls]
@@ -43,12 +43,12 @@ Changelog = "https://github.com/talmerri/lathe/blob/main/CHANGELOG.md"
 dev = [
   "pytest>=9.0",
   "pytest-cov>=5",
-  "ruff>=0.6",
+  "ruff>=0.15.12",
   "mypy>=1.11",
   "pre-commit>=3.8",
   "types-jsonschema",
   "types-Pillow",
-  "hypothesis>=6.100",
+  "hypothesis>=6.152.4",
   "syrupy>=4",
   "mutmut>=2.5",
   "pip-tools",
@@ -83,7 +83,7 @@ export = [
 ]
 publish = [
   "cryptography>=43",
-  "boto3>=1.34",
+  "boto3>=1.42.97",
 ]
 
 [project.scripts]
@@ -279,12 +279,12 @@ markers = [
 dev = [
   "pytest>=9.0",
   "pytest-cov>=5",
-  "ruff>=0.6",
+  "ruff>=0.15.12",
   "mypy>=1.11",
   "pre-commit>=3.8",
   "types-jsonschema",
   "types-Pillow",
-  "hypothesis>=6.100",
+  "hypothesis>=6.152.4",
   "syrupy>=4",
   "mutmut>=2.5",
   "pip-tools",
