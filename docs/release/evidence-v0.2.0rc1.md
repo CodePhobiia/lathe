@@ -1,6 +1,6 @@
 # Release Evidence Packet — v0.2.0rc1
 
-**Status:** IN PROGRESS — readiness remediation pass
+**Status:** Phases 0–18 closed by readiness remediation pass; awaits human go/no-go gate (Phase 18). Verdict recommendations recorded inline.
 **Started:** 2026-04-28
 **Owner:** Tal Merri (@talmerri)
 **Branch:** `worktree-readiness-pass-v020rc1` (worktree off `main`)

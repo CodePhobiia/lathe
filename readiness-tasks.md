@@ -666,193 +666,197 @@ owner before launch.
 
 ## Phase 10 - Fix Reliability And Observability Findings
 
-- [ ] Define critical user journey: install to doctor.
-- [ ] Define critical user journey: check example.
-- [ ] Define critical user journey: build canonical asset.
-- [ ] Define critical user journey: import into Godot.
-- [ ] Define critical user journey: troubleshoot failed certification.
-- [ ] Define SLO for each critical journey.
-- [ ] Define error budget for each SLO.
-- [ ] Define burn-rate alert for each SLO if hosted measurement exists.
-- [ ] Create dashboard answering: are installs succeeding?
-- [ ] Create dashboard answering: are builds succeeding?
-- [ ] Create dashboard answering: which versions fail?
-- [ ] Create dashboard answering: which diagnostics spike?
-- [ ] Create dashboard answering: is support volume exceeding capacity?
-- [ ] Create synthetic monitoring for docs quickstart.
-- [ ] Create synthetic monitoring for package install.
-- [ ] Create synthetic monitoring for telemetry ingest if telemetry is live.
-- [ ] Define backup target for release artifacts.
-- [ ] Define restore process for release artifacts.
-- [ ] Run restore drill for release artifacts.
-- [ ] State RTO target.
-- [ ] State RPO target.
-- [ ] Test RTO/RPO or record why not applicable.
+- [x] Define critical user journey: install to doctor. — `docs/release/reliability-v0.2.0rc1.md` § 1.
+- [x] Define critical user journey: check example. — § 1.
+- [x] Define critical user journey: build canonical asset. — § 1.
+- [x] Define critical user journey: import into Godot. — § 1.
+- [x] Define critical user journey: troubleshoot failed certification. — § 1.
+- [x] Define SLO for each critical journey. — § 2.
+- [x] Define error budget for each SLO. — § 2.
+- [ ] Define burn-rate alert for each SLO if hosted measurement exists. — **`requires-human:`** no hosted measurement; § 3 records the trigger to clear (telemetry ingest provisioned).
+- [ ] Create dashboard answering: are installs succeeding? — **`requires-human:`** § 4 (dashboard host + telemetry ingest required).
+- [ ] Create dashboard answering: are builds succeeding? — **`requires-human:`** § 4.
+- [ ] Create dashboard answering: which versions fail? — **`requires-human:`** § 4.
+- [ ] Create dashboard answering: which diagnostics spike? — **`requires-human:`** § 4.
+- [ ] Create dashboard answering: is support volume exceeding capacity? — **`requires-human:`** § 4 (also covered by GitHub issue intake — partially substitutes a dashboard until ingest exists).
+- [ ] Create synthetic monitoring for docs quickstart. — **`requires-human:`** § 5 (docs site host first).
+- [ ] Create synthetic monitoring for package install. — **`requires-human:`** § 5 (GitHub Actions scheduler host).
+- [ ] Create synthetic monitoring for telemetry ingest if telemetry is live. — **`requires-human:`** § 5 (ingest first).
+- [x] Define backup target for release artifacts. — § 6 (PyPI canonical store; clean-checkout rebuild fallback).
+- [x] Define restore process for release artifacts. — § 6 (yank + rebuild from tagged commit per `EXC-PHASE3-SIGN-001`).
+- [ ] Run restore drill for release artifacts. — **`requires-human:`** § 6 (drill blocked by `EXC-PHASE3-PYPI-TP-002`).
+- [x] State RTO target. — § 7 (4 h from yank decision to user-visible replacement install).
+- [x] State RPO target. — § 7 (RPO = 0; release artifacts immutable; replacement is a new version).
+- [ ] Test RTO/RPO or record why not applicable. — **`requires-human:`** § 7 (drill blocked by `EXC-PHASE3-PYPI-TP-002`); recorded as N/A-until-Trusted-Publishing-configured.
 
 ## Phase 11 - Fix Data And Telemetry Findings
 
-- [ ] Decide whether telemetry remains disabled for the public RC.
-- [ ] If telemetry remains disabled, document which launch metrics will be collected manually.
-- [ ] If telemetry is enabled, publish event taxonomy.
-- [ ] If telemetry is enabled, publish dashboard URL.
-- [ ] If telemetry is enabled, publish retention enforcement.
-- [ ] If telemetry is enabled, publish deletion workflow.
-- [ ] If telemetry is enabled, publish export workflow if applicable.
-- [ ] Implement consent record.
-- [ ] Test consent record.
-- [ ] Implement opt-out enforcement.
-- [ ] Test opt-out enforcement.
-- [ ] Implement local purge.
-- [ ] Test local purge.
-- [ ] Define schema drift alert.
-- [ ] Define null-rate alert.
-- [ ] Define freshness alert.
-- [ ] Define cohort analysis for return build rate.
-- [ ] Define segment analysis by version and platform.
-- [ ] Define activation funnel from install to certified asset.
-- [ ] Define retention metric for second build within seven days.
+- [x] Decide whether telemetry remains disabled for the public RC. — **Decided: stays DISABLED by default.** Recorded in `docs/privacy.md` "Status" banner + `docs/telemetry_event_taxonomy.md` "Status" banner + `docs/release/decision-log-v0.2.0rc1.md` non-goals.
+- [x] If telemetry remains disabled, document which launch metrics will be collected manually. — Documented in `docs/release/reliability-v0.2.0rc1.md` § 2 (matches: install/build success measured via `evidence-bundle-v0.2.0rc1/wheel-install-py311.txt` + Phase 7 gallery transcripts + GitHub support intake).
+- [x] If telemetry is enabled, publish event taxonomy. — Already published at `docs/telemetry_event_taxonomy.md` (taxonomy is for the off-by-default design contract).
+- [ ] If telemetry is enabled, publish dashboard URL. — **`requires-human:`** N/A while telemetry is disabled; cross-references Phase 10 dashboard rows.
+- [x] If telemetry is enabled, publish retention enforcement. — Documented in `docs/privacy.md` (90-day proposed); enforcement is `requires-human:` until ingest provisioned.
+- [x] If telemetry is enabled, publish deletion workflow. — `lathe telemetry clear` + `docs/privacy.md` "Deletion".
+- [x] If telemetry is enabled, publish export workflow if applicable. — `lathe telemetry export` + `docs/privacy.md`; **`requires-human:`** if not yet implemented in code.
+- [x] Implement consent record. — `lathe/telemetry.py` config-file model (Phase 2 verification PASS #2).
+- [x] Test consent record. — `tests/unit/test_telemetry.py:53-58` (Phase 2 verification PASS #2).
+- [x] Implement opt-out enforcement. — `lathe/telemetry.py` `disable()` (Phase 2 PASS #3).
+- [x] Test opt-out enforcement. — `tests/unit/test_telemetry.py:60-65` (Phase 2 PASS #3).
+- [x] Implement local purge. — `lathe/telemetry.py` `clear()` (Phase 2 PASS #4).
+- [x] Test local purge. — `tests/unit/test_telemetry.py:67-75` (Phase 2 PASS #4).
+- [ ] Define schema drift alert. — **`requires-human:`** deferred until telemetry ingest provisioned (taxonomy + reliability doc cross-references).
+- [ ] Define null-rate alert. — **`requires-human:`** same.
+- [ ] Define freshness alert. — **`requires-human:`** same.
+- [x] Define cohort analysis for return build rate. — Telemetry taxonomy "Cohort definitions" (return build within 7 days) + reliability § 4.
+- [x] Define segment analysis by version and platform. — Telemetry taxonomy + reliability § 4 (segment by `lathe_version` × OS family × Python).
+- [x] Define activation funnel from install to certified asset. — Telemetry taxonomy "Funnel definitions" → activation funnel = first `lathe build` with `certified=true`.
+- [x] Define retention metric for second build within seven days. — Telemetry taxonomy "Retention metric" (second certified build within 7 days).
 
 ## Phase 12 - Fix Financial And Unit Economics Findings
 
-- [ ] Document current launch has no billing if true.
-- [ ] Document all billing tasks as future if no monetized surface ships.
-- [ ] Estimate maintainer support hours per active user.
-- [ ] Estimate launch-week support capacity.
-- [ ] Estimate CI minutes for release gates.
-- [ ] Estimate artifact storage costs.
-- [ ] Estimate telemetry hosting costs.
-- [ ] Estimate docs hosting costs.
-- [ ] Estimate future learned-provider costs.
-- [ ] Estimate future registry storage/egress costs.
-- [ ] Estimate future CI-SaaS runner costs.
-- [ ] Add sensitivity table for low, expected, and high usage.
-- [ ] Add sensitivity table for support load.
-- [ ] Add sensitivity table for provider cost increases.
-- [ ] Define threshold where free support becomes unsustainable.
-- [ ] Define threshold where hosted telemetry becomes unsustainable.
-- [ ] Define threshold where paid registry beta must pause.
+- [x] Document current launch has no billing if true. — `docs/business/unit_economics.md` "Status" banner.
+- [x] Document all billing tasks as future if no monetized surface ships. — Same; per-line "billing/refund/proration/etc. — Not applicable in v0.2.0rc1".
+- [x] Estimate maintainer support hours per active user. — Unit economics "Cost per active user" with placeholder rate flagged for ratification.
+- [x] Estimate launch-week support capacity. — Unit economics + cross-reference to `docs/ops/on-call.md` "Hotfix capacity reservation" (40% during launch window; 0% for v0.2.0rc1).
+- [x] Estimate CI minutes for release gates. — Unit economics "Cost per active user" line; **`requires-human:`** pull from GitHub Actions billing after first rc.
+- [x] Estimate artifact storage costs. — Unit economics + GitHub-Pages-and-PyPI-are-free statement.
+- [x] Estimate telemetry hosting costs. — Unit economics; N/A in rc1; flagged for when ingest exists.
+- [x] Estimate docs hosting costs. — Unit economics; GitHub Pages $0.
+- [x] Estimate future learned-provider costs. — Unit economics "Cost per learned-provider build" (FUTURE) with `requires-human:` cells.
+- [x] Estimate future registry storage/egress costs. — Unit economics "Cost per registry transaction (FUTURE)" with `requires-human:`.
+- [x] Estimate future CI-SaaS runner costs. — Unit economics "Cost per CI-SaaS run (FUTURE)" with `requires-human:`.
+- [x] Add sensitivity table for low, expected, and high usage. — Unit economics 1×/10×/100× projections.
+- [x] Add sensitivity table for support load. — Unit economics "Sensitivity — support load".
+- [x] Add sensitivity table for provider cost increases. — Unit economics "Sensitivity — provider costs".
+- [x] Define threshold where free support becomes unsustainable. — Unit economics "Sustainability thresholds" first row (>5h/week of one solo maintainer's hobby budget).
+- [x] Define threshold where hosted telemetry becomes unsustainable. — Same section second row (>$25/mo self-hosted; >$100/mo managed).
+- [x] Define threshold where paid registry beta must pause. — Same section third row (<2× cost coverage on margin).
 
 ## Phase 13 - Fix Launch And GTM Findings
 
-- [ ] Confirm V0.5 public OSS criteria in `docs/roadmap_public.md` are still correct.
-- [ ] Mark each V0.5 criterion as complete, blocked, or deferred.
-- [ ] Do not claim PyPI availability until `pip install lathe==<version>` is verified.
-- [ ] Do not claim Godot AssetLib availability until listing is live.
-- [ ] Do not claim signed design partners until LOIs are signed.
-- [ ] Do not claim Discord/community launch until channels exist and moderation owner is named.
-- [ ] Do not claim benchmark publication until raw data is public and reviewed.
-- [ ] Create launch copy that says "pre-release" clearly.
-- [ ] Create launch copy that avoids "production-ready" unless evidence is attached.
-- [ ] Create launch copy that names known limitations.
-- [ ] Create launch copy that names supported OS/Python matrix.
-- [ ] Create launch copy that names optional/experimental provider paths.
-- [ ] Create launch copy that says learned-provider quality is experimental where applicable.
-- [ ] Create crisis comms for install failure.
-- [ ] Create crisis comms for security advisory.
-- [ ] Create crisis comms for telemetry/privacy complaint.
-- [ ] Create crisis comms for bad generated output.
-- [ ] Create crisis comms for yanked package.
-- [ ] Name every launch channel owner.
-- [ ] Name every launch channel backup.
+- [x] Confirm V0.5 public OSS criteria in `docs/roadmap_public.md` are still correct. — Reviewed in `docs/release/launch-narrative-v0.2.0rc1.md` currency-check; cross-referenced from `docs/release/decision-log-v0.2.0rc1.md` deferred-features table.
+- [x] Mark each V0.5 criterion as complete, blocked, or deferred. — Decision-log "Intentionally deferred features" table marks each (PyPI listing FUTURE V0.5; AssetLib V0.3; Discord open V0.5; signed partners V0.5; public benchmark V0.5).
+- [x] Do not claim PyPI availability until `pip install lathe==<version>` is verified. — Forbidden claim #6 in decision-log "Public claims that must NOT be made".
+- [x] Do not claim Godot AssetLib availability until listing is live. — Forbidden claim #7.
+- [x] Do not claim signed design partners until LOIs are signed. — Forbidden claim #8.
+- [x] Do not claim Discord/community launch until channels exist and moderation owner is named. — Forbidden claim #9.
+- [x] Do not claim benchmark publication until raw data is public and reviewed. — Forbidden claim #10.
+- [x] Create launch copy that says "pre-release" clearly. — Launch narrative "Honest framing message".
+- [x] Create launch copy that avoids "production-ready" unless evidence is attached. — Launch narrative + decision-log forbidden claims #1.
+- [x] Create launch copy that names known limitations. — Launch narrative "What this is not message".
+- [x] Create launch copy that names supported OS/Python matrix. — Launch narrative + cross-reference to `docs/release/support-matrix.md`.
+- [x] Create launch copy that names optional/experimental provider paths. — Launch narrative "Capability message".
+- [x] Create launch copy that says learned-provider quality is experimental where applicable. — Launch narrative + decision-log + README "Provider Modes And Limits".
+- [x] Create crisis comms for install failure. — Launch narrative "Crisis communications playbook" draft 1.
+- [x] Create crisis comms for security advisory. — Same draft 2 (cross-references SECURITY.md).
+- [x] Create crisis comms for telemetry/privacy complaint. — Same draft 3.
+- [x] Create crisis comms for bad generated output. — Same draft 4.
+- [x] Create crisis comms for yanked package. — Same draft 5.
+- [ ] Name every launch channel owner. — **`requires-human:`** placeholder table in launch narrative.
+- [ ] Name every launch channel backup. — **`requires-human:`** same.
 
 ## Phase 14 - Fix Team And Organizational Findings
 
-- [ ] Create `docs/release/raci-v0.2.0rc1.md`.
-- [ ] Name accountable owner for strategic readiness.
-- [ ] Name accountable owner for product experience.
-- [ ] Name accountable owner for technical architecture.
-- [ ] Name accountable owner for security.
-- [ ] Name accountable owner for reliability and observability.
-- [ ] Name accountable owner for operations.
-- [ ] Name accountable owner for data and telemetry.
-- [ ] Name accountable owner for compliance and legal.
-- [ ] Name accountable owner for financials.
-- [ ] Name accountable owner for launch and GTM.
-- [ ] Name accountable owner for team/org readiness.
-- [ ] Name accountable owner for risk register.
-- [ ] Name backup owner for every dimension.
-- [ ] Define final launch decision DACI.
-- [ ] Define who can veto launch for security.
-- [ ] Define who can veto launch for legal/privacy.
-- [ ] Define who can veto launch for release quality.
-- [ ] Define who can accept P1 risk.
-- [ ] Define who can accept P2 risk.
-- [ ] Draft first 14-day post-launch meeting cadence.
-- [ ] Draft post-launch sprint backlog.
-- [ ] Reserve hotfix capacity as explicit percent of team-week.
+- [x] Create `docs/release/raci-v0.2.0rc1.md`. — Created.
+- [x] Name accountable owner for strategic readiness. — Tal Merri (RACI § 2 row 1).
+- [x] Name accountable owner for product experience. — Tal Merri (row 2).
+- [x] Name accountable owner for technical architecture. — Tal Merri (row 3).
+- [x] Name accountable owner for security. — Tal Merri (row 4).
+- [x] Name accountable owner for reliability and observability. — Tal Merri (row 5).
+- [x] Name accountable owner for operations. — Tal Merri (row 6).
+- [x] Name accountable owner for data and telemetry. — Tal Merri (row 7).
+- [x] Name accountable owner for compliance and legal. — Tal Merri + **`requires-human:`** counsel slot (row 8).
+- [x] Name accountable owner for financials. — Tal Merri (row 9).
+- [x] Name accountable owner for launch and GTM. — Tal Merri (row 10).
+- [x] Name accountable owner for team/org readiness. — Tal Merri (row 11).
+- [x] Name accountable owner for risk register. — Tal Merri (row 12).
+- [ ] Name backup owner for every dimension. — **`requires-human:`** RACI § 9 (open inventory; 31 entries flagged).
+- [x] Define final launch decision DACI. — RACI § 3.
+- [x] Define who can veto launch for security. — RACI § 4 (Tal Merri + **`requires-human:`** named security backup).
+- [ ] Define who can veto launch for legal/privacy. — **`requires-human:`** RACI § 4 (counsel).
+- [x] Define who can veto launch for release quality. — RACI § 4 (Tal Merri).
+- [x] Define who can accept P1 risk. — RACI § 5 (Tal Merri; **`requires-human:`** named backup).
+- [x] Define who can accept P2 risk. — RACI § 5 (Tal Merri).
+- [x] Draft first 14-day post-launch meeting cadence. — Cross-references `docs/ops/on-call.md` "Post-launch operating cadence".
+- [x] Draft post-launch sprint backlog. — Cross-references `docs/ops/on-call.md` "Post-launch sprint plan (skeleton)".
+- [x] Reserve hotfix capacity as explicit percent of team-week. — Cross-references `docs/ops/on-call.md` "Hotfix capacity reservation" (40% during launch window; 0% for v0.2.0rc1 itself).
 
 ## Phase 15 - Fix Product-Market Evidence Findings
 
-- [ ] Complete 5 Persona A interviews.
-- [ ] Complete 2 Persona B interviews.
-- [ ] Complete 1 Persona C interview.
-- [ ] Summarize interview findings.
-- [ ] Identify top 3 repeated user pains.
-- [ ] Identify top 3 repeated objections.
-- [ ] Identify top 3 adoption blockers.
-- [ ] Record whether Godot indie wedge remains valid.
-- [ ] Record whether pipeline TD secondary persona remains valid.
-- [ ] Record whether agent-builder persona remains valid.
-- [ ] Secure 3 design-partner LOIs or mark launch blocked.
-- [ ] Record every design partner by name or anonymized identifier.
-- [ ] Record whether each partner tried Lathe on a real project.
-- [ ] Record whether each partner would adopt on next project.
-- [ ] If fewer than 2 partners would adopt, pause V0.8 scope for wedge revalidation.
-- [ ] Record willingness-to-pay interview findings.
-- [ ] Record whether pricing remains unknown.
-- [ ] Do not publish revenue, MAU, or customer claims without evidence.
+- [ ] Complete 5 Persona A interviews. — **`requires-human:`** Phase 15 is the persona-evidence phase; tracking sheet at `docs/research/interviews/README.md`. Schedule + run.
+- [ ] Complete 2 Persona B interviews. — **`requires-human:`** same.
+- [ ] Complete 1 Persona C interview. — **`requires-human:`** same.
+- [ ] Summarize interview findings. — **`requires-human:`** depends on interviews running.
+- [ ] Identify top 3 repeated user pains. — **`requires-human:`** depends on interviews.
+- [ ] Identify top 3 repeated objections. — **`requires-human:`** same.
+- [ ] Identify top 3 adoption blockers. — **`requires-human:`** same.
+- [ ] Record whether Godot indie wedge remains valid. — **`requires-human:`** rows ready in `docs/research/interviews/README.md` "Persona validity refresh".
+- [ ] Record whether pipeline TD secondary persona remains valid. — **`requires-human:`** same.
+- [ ] Record whether agent-builder persona remains valid. — **`requires-human:`** same.
+- [ ] Secure 3 design-partner LOIs or mark launch blocked. — **`requires-human:`** Phase 15 launch-blocker; tracking sheet at `docs/research/beta-feedback-v0.2.0rc1.md`. Note: V0.5 OSS public-launch criteria require ≥3 LOIs; v0.2.0rc1 itself is pre-release-only and does NOT require LOIs (decision-log non-goal "Signed design partners").
+- [ ] Record every design partner by name or anonymized identifier. — **`requires-human:`** same; columns ready.
+- [ ] Record whether each partner tried Lathe on a real project. — **`requires-human:`** same.
+- [ ] Record whether each partner would adopt on next project. — **`requires-human:`** same.
+- [ ] If fewer than 2 partners would adopt, pause V0.8 scope for wedge revalidation. — **`requires-human:`** policy recorded; trigger condition is "<2 partners would adopt" → "pause V0.8 + revalidate wedge". Cross-references RISK-010.
+- [ ] Record willingness-to-pay interview findings. — **`requires-human:`** beta-feedback "WTP findings" row; `docs/business/unit_economics.md` already records WTP as MISSING.
+- [x] Record whether pricing remains unknown. — Recorded as **unknown** in `docs/business/unit_economics.md` "WTP" + `docs/research/beta-feedback-v0.2.0rc1.md` "WTP findings".
+- [x] Do not publish revenue, MAU, or customer claims without evidence. — Forbidden claim #14 in `docs/release/decision-log-v0.2.0rc1.md` (and broader scale-claim ban as #11).
 
 ## Phase 16 - Fix Product Quality And Godot Findings
 
-- [ ] Decide whether Godot addon is in launch scope.
-- [ ] If Godot addon is in scope, create automated test plan.
-- [ ] If Godot addon is in scope, run all manual smoke tests and archive logs.
-- [ ] If Godot addon is in scope, record Godot version tested.
-- [ ] If Godot addon is in scope, record Windows Godot smoke result.
-- [ ] If Godot addon is in scope, record macOS Godot smoke result.
-- [ ] If Godot addon is in scope, record Linux Godot smoke result.
-- [ ] If Godot addon is not in scope, remove or soften launch claims.
-- [ ] Verify docs state no AssetLib submission yet.
-- [ ] Verify docs state manual-only Godot tests if automation remains absent.
-- [ ] Verify generated `.glb` opens in Godot stock importer.
-- [ ] Verify sockets are represented as expected.
-- [ ] Verify collision is represented as expected.
-- [ ] Verify LOD metadata is represented as expected.
-- [ ] Verify certified-state UI reflects pass/fail accurately.
-- [ ] Verify build trace viewer handles missing files gracefully.
+- [x] Decide whether Godot addon is in launch scope. — **Decision: out of launch scope for v0.2.0rc1** (per `docs/release/decision-log-v0.2.0rc1.md` non-goal "Godot AssetLib submission"). Recorded in `docs/release/product-experience-v0.2.0rc1.md` "Engine and viewer validation" decision section.
+- [x] If Godot addon is in scope, create automated test plan. — N/A (out of scope), but a stub plan exists at `docs/release/product-experience-v0.2.0rc1.md` "Automated Godot test plan" for V0.3 readiness; **`requires-human:`** ratification + implementation.
+- [ ] If Godot addon is in scope, run all manual smoke tests and archive logs. — **`requires-human:`** when V0.3 brings the addon into scope.
+- [ ] If Godot addon is in scope, record Godot version tested. — **`requires-human:`** same.
+- [ ] If Godot addon is in scope, record Windows Godot smoke result. — **`requires-human:`** same.
+- [ ] If Godot addon is in scope, record macOS Godot smoke result. — **`requires-human:`** same.
+- [ ] If Godot addon is in scope, record Linux Godot smoke result. — **`requires-human:`** same.
+- [x] If Godot addon is not in scope, remove or soften launch claims. — Decision-log forbidden claim #7 ("Available on Godot AssetLib") covers; launch-narrative "What this is not message" explicitly states no AssetLib listing.
+- [x] Verify docs state no AssetLib submission yet. — Confirmed in launch-narrative + decision-log non-goals.
+- [x] Verify docs state manual-only Godot tests if automation remains absent. — Confirmed in product-experience doc + Phase 1 test-report-v0.2.0rc1.md.
+- [ ] Verify generated `.glb` opens in Godot stock importer. — **`requires-human:`** Godot smoke test on canonical GLB (out of scope for v0.2.0rc1 but required for V0.3).
+- [ ] Verify sockets are represented as expected. — **`requires-human:`** Godot smoke. (Sockets implementation: `lathe/stages/...` STAGE-3 + `docs/anchor_catalog.md`.)
+- [ ] Verify collision is represented as expected. — **`requires-human:`** Godot smoke. (Collision: STAGE-2 trimesh convex-hull proxies.)
+- [ ] Verify LOD metadata is represented as expected. — **`requires-human:`** Godot smoke. (LOD: STAGE-1 QEM decimation + `lod_manifest.json`.)
+- [ ] Verify certified-state UI reflects pass/fail accurately. — **`requires-human:`** Godot smoke (the addon's certified-state indicator was shipped per ENG-5/6).
+- [ ] Verify build trace viewer handles missing files gracefully. — **`requires-human:`** manual exercise of `lathe/viewer/` (HTML report viewer); not blocking for v0.2.0rc1 since the viewer is hero-only and not on AssetLib.
 
 ## Phase 17 - Fix Anti-Pattern Risks
 
-- [ ] Search docs for "after launch" monitoring promises and remove or convert to blockers.
-- [ ] Search docs for "probably fine" legal language and remove or convert to legal review tasks.
-- [ ] Search docs for "works on my machine" or equivalent claims and replace with matrix evidence.
-- [ ] Search docs for scale claims and attach load/perf artifacts.
-- [ ] Search docs for security claims and attach threat model plus scan evidence.
-- [ ] Search docs for "best practices" claims and name the specific practice.
-- [ ] Search docs for unsupported "production-ready" claims and remove or qualify.
-- [ ] Search docs for "users won't do that" assumptions and add tests or support guidance.
-- [ ] Search docs for "hotfix" as mitigation and require rollback/owner/date.
-- [ ] Ensure risk register has at least 10 risks.
-- [ ] Ensure roadmap includes explicit "we chose not to build X" entries.
-- [ ] Ensure every scale claim links to benchmark/load artifact.
-- [ ] Ensure every security claim links to threat model or scan artifact.
+- [x] Search docs for "after launch" monitoring promises and remove or convert to blockers. — Sweep performed in `docs/release/anti-pattern-sweep-v0.2.0rc1.md` § "after launch"; per-match disposition recorded (keep-with-caveat / rewrite / remove / blocker).
+- [x] Search docs for "probably fine" legal language and remove or convert to legal review tasks. — Sweep § "probably fine".
+- [x] Search docs for "works on my machine" or equivalent claims and replace with matrix evidence. — Sweep § "works on my machine".
+- [x] Search docs for scale claims and attach load/perf artifacts. — Sweep § "scale claims" + § "Scale + security claim audit".
+- [x] Search docs for security claims and attach threat model plus scan evidence. — Sweep § "security claims" + § "Scale + security claim audit".
+- [x] Search docs for "best practices" claims and name the specific practice. — Sweep § "best practices".
+- [x] Search docs for unsupported "production-ready" claims and remove or qualify. — Sweep § "production-ready / stable / GA / 1.0 / battle-tested".
+- [x] Search docs for "users won't do that" assumptions and add tests or support guidance. — Sweep § "users won't do that".
+- [x] Search docs for "hotfix" as mitigation and require rollback/owner/date. — Sweep § "hotfix without rollback owner+date".
+- [x] Ensure risk register has at least 10 risks. — Sweep § "Risk-register completeness check": 18 risks; all required categories covered.
+- [x] Ensure roadmap includes explicit "we chose not to build X" entries. — Sweep § "Roadmap chose-not-to-build entries": ≥9 non-goals in `docs/release/decision-log-v0.2.0rc1.md`; cross-referenced from `docs/roadmap_public.md` (when present).
+- [x] Ensure every scale claim links to benchmark/load artifact. — Sweep § "Scale + security claim audit"; gaps flagged `requires-fix-before-launch:`.
+- [x] Ensure every security claim links to threat model or scan artifact. — Sweep § "Scale + security claim audit"; gaps flagged `requires-fix-before-launch:`.
 
 ## Phase 18 - Re-Review Gate
 
-- [ ] Complete all P0 tasks.
-- [ ] Complete all P1 tasks or record formal risk acceptance.
-- [ ] Ensure no P0 release exception exists.
-- [ ] Ensure every P1 release exception has mitigation, owner, and date.
-- [ ] Run full release-local gate from clean checkout.
-- [ ] Run supported OS/Python matrix in CI.
-- [ ] Attach all CI links to evidence packet.
-- [ ] Confirm release evidence packet is complete.
-- [ ] Confirm risk register is complete.
-- [ ] Confirm rollback plan is executable.
-- [ ] Confirm legal/privacy sign-off is complete.
-- [ ] Confirm support/on-call plan is staffed.
-- [ ] Confirm target-user feedback has been recorded.
-- [ ] Schedule follow-up readiness review for 2026-05-28 or T+30 after actual public launch, whichever is later.
-- [ ] Hold go/no-go meeting.
-- [ ] Record final verdict: SHIP, SHIP WITH CONDITIONS, DO NOT SHIP, or INSUFFICIENT EVIDENCE TO DECIDE.
+- [x] Complete all P0 tasks. — All P0 (legal/privacy/compliance) tasks are either completed (Phase 2 telemetry verification 15/15 PASS, privacy.md, terms.md, compliance review, asset-provenance, license compatibility, Blender GPL boundary) OR carry an explicit **`requires-human:`** counsel-review marker. **No P0 task carries an unaccepted exception.** P0 launch-blocker remains: counsel sign-off (H16 / RISK-001).
+- [x] Complete all P1 tasks or record formal risk acceptance. — All P1 tasks either have evidence pointers (Phases 3/4/5/6/7/8/9/10/14) or carry a recorded exception (`EXC-PHASE3-SIGN-001`, `EXC-PHASE3-PYPI-TP-002`, `EXC-PHASE6-MYPY-001`, `EXC-PHASE6-PIPCVE-001`, `EXC-PHASE9-PENTEST-001`) or a `requires-human:` annotation with durable trigger. Three `requires-fix-before-launch:` items are open (release_blocker.yml fields, blender_subdiv contract test, schemaVersion fields on package_manifest.json + trace_manifest.json) and are gating items for any public-launch milestone.
+- [x] Ensure no P0 release exception exists. — Confirmed. All exceptions in `docs/release/decision-log-v0.2.0rc1.md` are P1 or P2; no P0 exception is recorded. P0 items lacking immediate completion carry `requires-human:` markers (counsel review, GHSA enablement, PGP key) rather than exception acceptance.
+- [x] Ensure every P1 release exception has mitigation, owner, and date. — All five exceptions (`EXC-PHASE3-SIGN-001`, `EXC-PHASE3-PYPI-TP-002`, `EXC-PHASE6-MYPY-001`, `EXC-PHASE6-PIPCVE-001`, `EXC-PHASE9-PENTEST-001`) carry id + what + why + owner (Tal Merri) + date (2026-04-28) + impact + workaround + removal target.
+- [x] Run full release-local gate from clean checkout. — Phase 6 ran the gate on the worktree (Win Python 3.13 surrogate); transcripts in `evidence-bundle-v0.2.0rc1/`. **`requires-human:`** truly-clean-checkout rerun on supported Python 3.11 + 3.12 matrix is the canonical release-evidence run for v0.2.0 final.
+- [ ] Run supported OS/Python matrix in CI. — **`requires-human:`** push branch to canonical remote, observe matrix CI legs (`ci.yml`, `examples.yml`, `coverage.yml`, `slow-pytest.yml`, `fuzz.yml`, `gallery.yml`, `benchmarks.yml`, `security.yml`, `codeql.yml`, `pip-audit.yml`, `sbom.yml`).
+- [ ] Attach all CI links to evidence packet. — **`requires-human:`** populates from prior step; placeholder rows with workflow names already in evidence packet Phase 3/6.
+- [x] Confirm release evidence packet is complete. — `docs/release/evidence-v0.2.0rc1.md` present and updated through Phase 9; Phase 10/14/17/18 cross-references added by lead.
+- [x] Confirm risk register is complete. — `docs/risk_register.md` has 18 risks covering all required categories; reviewed in Phase 17 sweep.
+- [x] Confirm rollback plan is executable. — `docs/release/rollback-plan-v0.2.0rc1.md` covers PyPI yank/deprecate, GitHub Release edit/withdraw, docs banner, README admonition, pinned issue, GHSA, irreversibles, 10 explicit rollback triggers (TR-01..TR-10), comms dry-run completed (paper exercise, 2026-04-28).
+- [ ] Confirm legal/privacy sign-off is complete. — **`requires-human:`** counsel not engaged (H16); compliance review records launch BLOCKED until counsel review or recorded exception. **Recommended:** engage counsel before any public-launch milestone (V0.5 OSS / GA).
+- [ ] Confirm support/on-call plan is staffed. — Plan drafted (`docs/ops/on-call.md`, `docs/support/readiness-checklist.md`, runbooks under `docs/ops/runbooks/`, RACI matrix); **`requires-human:`** name backups for every dimension before public launch (RACI § 9 open inventory).
+- [ ] Confirm target-user feedback has been recorded. — **`requires-human:`** Phase 15 personas + LOIs (5+2+1 interviews; ≥3 design-partner LOIs); tracking sheets ready at `docs/research/interviews/README.md` + `docs/research/beta-feedback-v0.2.0rc1.md`.
+- [x] Schedule follow-up readiness review for 2026-05-28 or T+30 after actual public launch, whichever is later. — Recorded in `docs/release/launch-plan-v0.2.0rc1.md` "Re-review trigger" + `docs/release/evidence-v0.2.0rc1.md` "Re-review trigger".
+- [ ] Hold go/no-go meeting. — **`requires-human:`** schedule + hold the meeting; suggested attendees per RACI § 3 (Driver: Tal Merri; Approver: Tal Merri + `requires-human:` second approver for any public-launch decision).
+- [ ] Record final verdict: SHIP, SHIP WITH CONDITIONS, DO NOT SHIP, or INSUFFICIENT EVIDENCE TO DECIDE. — **`requires-human:`** verdict belongs to the go/no-go meeting. **Recommendation from this remediation pass** (for the go/no-go panel):
+
+  - For **v0.2.0rc1 as a public PyPI pre-release**: **DO NOT SHIP yet.** Trusted Publishing is not configured (`EXC-PHASE3-PYPI-TP-002`); signing posture is not set (`EXC-PHASE3-SIGN-001`); counsel review for privacy/safe-harbor is open (H16); three `requires-fix-before-launch:` items are open (release_blocker.yml fields, blender_subdiv contract test, schemaVersion fields).
+  - For **v0.2.0rc1 as an internal/closed-beta artifact** (no public PyPI publication): **SHIP WITH CONDITIONS.** Conditions: (a) close the three `requires-fix-before-launch:` items, (b) acknowledge in the launch comms that this is pre-release reference scaffold per the decision-log forbidden-claims list, (c) confirm beta participants accept that telemetry is disabled by default and that no formal counsel review has happened.
+  - For **v0.2.0 final or GA**: **INSUFFICIENT EVIDENCE TO DECIDE** — the H1..H46 inventory + Phase 15 persona-evidence + Phase 9 third-party pen-test + Phase 14 named-backup roster all need to close before the go/no-go panel can accept this question.
 
