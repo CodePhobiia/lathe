@@ -68,6 +68,41 @@ class FormatSourceHappyPathTests(unittest.TestCase):
         self.assertIn("package.formats = [usd, glb]", out)
         self.assertNotIn("[\n", out)
 
+    def test_scene_source_syntax_snapshot(self) -> None:
+        source = (
+            "style_pack dead_god_observatory{display_name=\"Dead God Observatory\"}"
+            "scene   alchemist_observatory{style style_scene{style_pack=dead_god_observatory}"
+            "region region_central_chamber:interior{purpose=\"main reveal\"}"
+            "object obj_astrolabe_table:hero_prop from ornate_table{region=region_central_chamber\n"
+            "gameplay{interactable=true\naffordances.inspect_lens.action=inspect}}"
+            "camera camera_reveal:cinematic_wide{target=obj_astrolabe_table}}\n"
+        )
+        expected = (
+            "style_pack dead_god_observatory {\n"
+            "  display_name = \"Dead God Observatory\"\n"
+            "}\n"
+            "scene alchemist_observatory {\n"
+            "  style style_scene {\n"
+            "    style_pack = dead_god_observatory\n"
+            "  }\n"
+            "  region region_central_chamber: interior {\n"
+            "    purpose = \"main reveal\"\n"
+            "  }\n"
+          "  object obj_astrolabe_table: hero_prop from ornate_table {\n"
+          "    region = region_central_chamber\n"
+          "    gameplay {\n"
+          "      interactable = true\n"
+          "      affordances.inspect_lens.action = inspect\n"
+          "    }\n"
+          "  }\n"
+            "  camera camera_reveal: cinematic_wide {\n"
+            "    target = obj_astrolabe_table\n"
+            "  }\n"
+            "}\n"
+        )
+
+        self.assertEqual(format_source(source), expected)
+
 
 class IdempotenceTests(unittest.TestCase):
     def test_every_hero_example_is_idempotent(self) -> None:

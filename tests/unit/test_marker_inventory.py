@@ -34,6 +34,7 @@ TRACKED_MARKERS = {
         "symbol-index stub",
     ),
     "docs/plan_completeness.md": ("lathe/lsp/` is a stub",),
+    "docs/legal/compliance-review-v0.2.0rc1.md": ("placeholder.png",),
     "docs/release/asset-provenance.md": ("placeholder.png",),
     "docs/release/evidence-bundle-v0.2.0rc1/mypy.txt": (
         "missing stub packages",

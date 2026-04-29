@@ -4,8 +4,8 @@
 **Last reviewed:** 2026-04-28
 **Owner:** Tal Merri (@talmerri)
 **Reviewer:** requires-human (no second reviewer named yet)
-**Host:** Windows 10 Home Single Language 10.0.19045, Python 3.13.13, `.venv`
-under `D:\lathe_v0_1\.venv`.
+**Host:** Windows 10 Home Single Language 10.0.19045, Python 3.13.13,
+project-local virtual environment.
 
 This document captures Phase-7 product-experience evidence for the
 v0.2.0rc1 readiness remediation pass: time-to-first-value (TTFV),
@@ -229,7 +229,7 @@ All 6 cells `requires-human:`. Manual procedure documented in
 `editors/godot/lathe-addon/README.md` (or equivalent) and the demo project
 under `examples/godot_integration_demo/`.
 
-### Automated Godot test plan (stub)
+### Automated Godot test plan (draft)
 
 `requires-human:` headless GUT (Godot Unit Test) automation plan. Open
 items:
@@ -245,7 +245,7 @@ items:
 - gate the job on a label / dispatch (NOT every PR, since Godot is out of
   launch scope and the binary download is heavy).
 
-This stub is written down only so the work is captured. It is not in the
+This draft is written down only so the work is captured. It is not in the
 v0.2.0rc1 launch path.
 
 ### Decision

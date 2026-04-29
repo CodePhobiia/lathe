@@ -79,6 +79,17 @@ Every root field above is required in normalized JSON. Missing source declaratio
 | `space_objective` | `direction`, `metric` | `false` |
 | `space_spec` | `use`, `values`, `vary`, `freeze`, `objectives`, `select` | `false` |
 | `space_decl` | `node_type`, `name`, `use`, `values`, `vary`, `freeze`, `objectives`, `select` | `false` |
+| `scene_child` | `node_type`, `name`, `type`, `role`, `framing`, `target`, `from`, `values` | `false` |
+| `scene_style` | - | not specified |
+| `scene_region` | - | not specified |
+| `scene_object` | - | not specified |
+| `scene_relationship` | - | not specified |
+| `scene_camera` | - | not specified |
+| `scene_light` | - | not specified |
+| `scene_curiosity_anchor` | - | not specified |
+| `scene_hidden_state` | - | not specified |
+| `scene_export` | - | not specified |
+| `scene` | `node_type`, `name`, `version`, `brief`, `prompt`, `values`, `styles`, `regions`, `objects`, `relationships`, `cameras`, `lights`, `curiosity_anchors`, `hidden_state`, `exports` | `false` |
 | `profile_like` | `node_type`, `name`, `uses`, `defaults`, `rules`, `repair` | `true` |
 | `structured_decl` | `node_type`, `name`, `kind`, `uses`, `defaults`, `params`, `geometry`, `features`, `surface`, `assembly`, `space`, `repair_policy`, `rules`, `values` | `false` |
 | `mapping_decl` | `node_type`, `name`, `uses`, `values` | `false` |
@@ -117,6 +128,7 @@ Every root field above is required in normalized JSON. Missing source declaratio
 | mask_programs | [] |
 | trim_sheets | [] |
 | palettes | [] |
+| style_packs | [] |
 | reference_sets | [] |
 | reconstruct_policies | [] |
 | adapt_policies | [] |
@@ -134,6 +146,7 @@ Every root field above is required in normalized JSON. Missing source declaratio
 | tests | [] |
 | benchmarks | [] |
 | spaces | [] |
+| scenes | [] |
 | assets | [] |
 | variants | [] |
 

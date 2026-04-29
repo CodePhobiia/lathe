@@ -24,6 +24,7 @@ large or test-specific.
 | `fmt/input/*.lth` | Formatter input cases. | Minimal `.lth` snippets only. |
 | `fmt/expected/*.lth` | Formatter expected output cases. | One expected file per formatter input. |
 | `telemetry/build_ping_payload.json` | Sanitized telemetry payload golden fixture. | No secrets, paths, or PII. |
+| `wonder/*.json` | Minimal Wonder contract, plan, report, and package payloads used by schema and pipeline tests. | Small deterministic JSON fixtures only. |
 
 ## Rules
 

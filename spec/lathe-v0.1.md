@@ -6,7 +6,7 @@
 
 Lathe is a declarative, end-to-end build language for production-ready 3D assets.
 
-This repository now includes additive V0.8, V0.9, V1.0, V1.1, V1.2, V1.3, and V1.3.1 language/compiler layers on top of the original v0.1 surface. The stable v0.1 asset/build contract remains valid, while newer source can express reusable authoring declarations, source-visible search/repair/material semantics, self-reliant hero-family surface programs and patterns, V1.1 ingestion/reuse flows for adapt, assemble, and structured reconstruct, V1.2 governed surface authoring, V1.3 Blender-backed execution planning, bake/render intent, material-graph bindings, and traceable `.blend` artifacts, and V1.3.1 Codex-operated bridge/inspection policy semantics for typed evidence-driven build loops.
+This repository now includes additive V0.8, V0.9, V1.0, V1.1, V1.2, V1.3, V1.3.1, and experimental V0.3 scene-source language/compiler layers on top of the original v0.1 surface. The stable v0.1 asset/build contract remains valid, while newer source can express reusable authoring declarations, source-visible search/repair/material semantics, self-reliant hero-family surface programs and patterns, V1.1 ingestion/reuse flows for adapt, assemble, and structured reconstruct, V1.2 governed surface authoring, V1.3 Blender-backed execution planning, bake/render intent, material-graph bindings, and traceable `.blend` artifacts, V1.3.1 Codex-operated bridge/inspection policy semantics for typed evidence-driven build loops, and a minimal additive scene declaration surface for Wonder readiness.
 
 ### In scope for v0.1
 
@@ -108,6 +108,7 @@ Lathe supports these declaration kinds:
 - `mask_program`
 - `trim_sheet`
 - `palette`
+- `style_pack`
 - `reference_set`
 - `reconstruct_policy`
 - `adapt_policy`
@@ -125,6 +126,7 @@ Lathe supports these declaration kinds:
 - `test`
 - `benchmark`
 - `space`
+- `scene`
 - `asset`
 - `variant`
 
@@ -151,25 +153,27 @@ Canonical top-level order:
 19. `mask_program`
 20. `trim_sheet`
 21. `palette`
-22. `reference_set`
-23. `reconstruct_policy`
-24. `adapt_policy`
-25. `assembly_policy`
-26. `fit_profile`
-27. `transfer_rule`
-28. `execution_profile`
-29. `render_fixture`
-30. `bake_profile`
-31. `library_binding`
-32. `material_graph`
-33. `inspection_policy`
-34. `repair_policy`
-35. `fixture`
-36. `test`
-37. `benchmark`
-38. `space`
-39. `asset`
-40. `variant`
+22. `style_pack`
+23. `reference_set`
+24. `reconstruct_policy`
+25. `adapt_policy`
+26. `assembly_policy`
+27. `fit_profile`
+28. `transfer_rule`
+29. `execution_profile`
+30. `render_fixture`
+31. `bake_profile`
+32. `library_binding`
+33. `material_graph`
+34. `inspection_policy`
+35. `repair_policy`
+36. `fixture`
+37. `test`
+38. `benchmark`
+39. `space`
+40. `scene`
+41. `asset`
+42. `variant`
 
 ### 4.1 Additive V0.9 source semantics
 
@@ -238,6 +242,104 @@ The additive V1.3.1 layer formalizes Codex-operated, Lathe-governed Blender exec
 - unsafe arbitrary Blender Python is not exposed as the default autonomous execution path
 
 V1.3.1 adds traceable recovery branch intent across `reselect_candidate`, `repair_candidate`, `regenerate_candidate`, and `patch_source`. A `patch_source` branch may be proposed by tooling, but persistent semantic changes must still round-trip through Lathe source.
+
+### 4.6 Experimental v0.3 Scene Source Syntax
+
+The experimental V0.3 scene layer adds a first-class top-level `scene` declaration without changing asset semantics. Scene source is additive: existing `asset` and `variant` declarations continue to parse, normalize, resolve, check, plan, and build through the asset compiler. Asset planners ignore `scene` declarations until a scene-specific planning command is invoked.
+
+Minimum viable scene syntax:
+
+```lathe
+style_pack dead_god_observatory {
+  display_name = "Dead God Observatory"
+  source.kind = curated
+  palette.primary = bone_ivory
+  palette.secondary = oxidized_copper
+}
+
+scene alchemist_observatory {
+  version = 1
+  brief = "A forgotten alchemist observatory inside the ribcage of a dead god."
+  prompt = "A forgotten alchemist observatory inside the ribcage of a dead god."
+
+  style style_dead_god_observatory {
+    style_pack = dead_god_observatory
+    mood = "sacred, eerie, antique"
+    palette = [bone_ivory, oxidized_copper, black_glass, candle_gold]
+  }
+
+  region region_central_chamber: interior {
+    purpose = "main reveal space"
+  }
+
+  object obj_astrolabe_table: hero_prop from ornate_table {
+    region = region_central_chamber
+    material = oxidized_brass
+    gameplay {
+      interactable = true
+      collision = box
+      pivot = base_center
+      affordances.inspect_lens.action = inspect
+      affordances.inspect_lens.reveals = hidden_warm_lens_truth
+    }
+  }
+
+  object obj_rib_arches: environment_structure from bone_architecture {
+    region = region_central_chamber
+  }
+
+  relationship rel_astrolabe_under_arches: frames {
+    from = obj_rib_arches
+    to = obj_astrolabe_table
+  }
+
+  camera_intent camera_reveal: cinematic_wide {
+    target = obj_astrolabe_table
+  }
+
+  lighting_plan light_moonbeam: moonbeam {
+    target = obj_astrolabe_table
+  }
+
+  curiosity_anchor curiosity_warm_lens {
+    attached_to = obj_astrolabe_table
+    visible_clue = "The black glass lens is still warm."
+    hidden_fact = "The lens still tracks a living star."
+    suggested_user_actions = [inspect_lens, align_astrolabe]
+    expansion_options.hidden_star_map.label = "Hidden Star Map"
+    expansion_options.hidden_star_map.target_scope = obj_astrolabe_table
+  }
+
+  hidden_state hidden_warm_lens_truth {
+    attached_to = obj_astrolabe_table
+    fact = "The lens is warm because it tracks a living star."
+    reveal_condition = "User inspects the lens."
+    visible = false
+  }
+
+  export glb {
+    path = "exports/alchemist_observatory.glb"
+  }
+}
+```
+
+Top-level `style_pack` declarations are normalized as mapping declarations in
+the `style_packs` collection. A scene-local `style` block may reference a
+declared style pack or curated built-in style pack with `style_pack = <id>`.
+This source-level declaration is intentionally lighter than the JSON
+`lathe.style_pack.v1` contract; the full Style Pack JSON remains the durable
+contract for palette tokens, material PBR metadata, lighting presets,
+fingerprints, and reuse policy.
+
+The normalized scene declaration contains stable child collections for `styles`, `regions`, `objects`, `relationships`, `cameras`, `lights`, `curiosity_anchors`, `hidden_state`, and `exports`. Scene-local IDs should use the current contract prefixes: `region_`, `obj_`, `rel_`, `camera_`, `light_`, `curiosity_`, and `hidden_`. `camera_intent` lowers to normalized `scene_camera` records and `lighting_plan` lowers to normalized `scene_light` records; legacy `camera` and `light` blocks remain accepted as compatibility aliases for the same IR. Object-local `gameplay { ... }` blocks lower into the object's `values.gameplay` metadata map and are intended for game-readiness hints such as `interactable`, `collision`, `pivot`, `tags`, and `affordances.<id>.*`. `curiosity_anchor` and `hidden_state` blocks lower to normalized `scene_curiosity_anchor` and `scene_hidden_state` records whose field values remain in the child `values` map until Scene Graph lowering consumes them. The checker validates duplicate scene-local IDs, verifies scene style-pack references, and verifies object region references plus relationship, camera, light, curiosity-anchor, and hidden-state targets against the scene-local ID set. Object `from` references are intentionally not required to name an in-file asset yet; the scene build pipeline may resolve them through Scene Graph, family, kit, or later materialization contracts.
+
+Deferred beyond the minimal V0.3 source surface:
+
+- standalone game-readiness payload source syntax
+- sockets, snap points, and detailed collision metadata outside object gameplay metadata
+- provenance source syntax
+- advanced layout constraints
+- scene variants and branch/merge syntax
 
 ---
 

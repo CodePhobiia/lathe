@@ -321,7 +321,7 @@ a paper or formal release notes are written`.
 ## Support macros
 
 Short markdown blocks (≤6 lines each) for routine intake responses.
-Copy into a GitHub comment, fill in the placeholder, post.
+Copy into a GitHub comment, fill in the template value, post.
 
 ### Macro: install failure
 

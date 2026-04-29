@@ -55,6 +55,7 @@ def _minimal_program() -> dict:
             "mask_programs",
             "trim_sheets",
             "palettes",
+            "style_packs",
             "reference_sets",
             "reconstruct_policies",
             "adapt_policies",
@@ -72,6 +73,7 @@ def _minimal_program() -> dict:
             "tests",
             "benchmarks",
             "spaces",
+            "scenes",
             "assets",
             "variants",
         ]
@@ -100,6 +102,12 @@ class SchemaValidationTests(unittest.TestCase):
 
     def test_minimal_program_validates(self) -> None:
         errors = list(self.validator.iter_errors(_minimal_program()))
+        self.assertEqual(errors, [], msg=f"unexpected errors: {[e.message for e in errors]}")
+
+    def test_older_json_ast_without_scenes_still_validates(self) -> None:
+        program = _minimal_program()
+        program.pop("scenes")
+        errors = list(self.validator.iter_errors(program))
         self.assertEqual(errors, [], msg=f"unexpected errors: {[e.message for e in errors]}")
 
     def test_missing_required_field_rejected(self) -> None:

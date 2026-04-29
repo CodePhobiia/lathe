@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added Project Wonder Phase 0 baseline evidence and the Wonder Layer boundary
+  ADR, keeping Wonder contracts additive while preserving the current asset
+  compiler compatibility contract.
 - Added tracked maintenance docs for issue triage, labels, milestones, stale
   handling, dependency-update review gates, release metrics, and the 10/10
   quality dashboard.

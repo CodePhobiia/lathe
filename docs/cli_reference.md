@@ -15,12 +15,12 @@ python scripts/generate_cli_reference.py
 ```text
 $ python -m lathe.cli --help
 usage: lathe [-h] [--debug-traceback] [--strict-prompt-injection]
-             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry} ...
+             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,scene,wonder} ...
 
 Lathe 3D asset compiler/runtime
 
 positional arguments:
-  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry}
+  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,scene,wonder}
     parse               Parse a .lth file to raw AST JSON
     normalize           Normalize a .lth file to canonical JSON
     fmt                 Rewrite Lathe sources in canonical form
@@ -65,6 +65,8 @@ positional arguments:
     publish             Publish a completed build to a configured target
     snapshot            Emit a canonical hash-based snapshot for a completed build
     telemetry           Manage opt-in anonymous build-ping telemetry
+    scene               Operate on scene packages and World Memory
+    wonder              Validate Wonder-readiness JSON contracts
 
 options:
   -h, --help            show this help message and exit
@@ -1025,4 +1027,1533 @@ usage: lathe telemetry clear [-h]
 
 options:
   -h, --help  show this help message and exit
+```
+
+## `lathe scene`
+
+```text
+$ python -m lathe.cli scene --help
+usage: lathe scene [-h]
+                   {check,plan,materialize,build,render,export,validate,bench,style-pack,layout,camera-lighting,assemble,roblox-manifest,roblox-export,patch,branch,diff,merge,rollback,inspect-render,propose-repairs,repair,curiosity,expand-anchor,scene-graph-to-source,source-to-scene-graph,package,memory} ...
+
+Operate on folder-based Scene Packages and World Memory JSON contracts.
+
+positional arguments:
+  {check,plan,materialize,build,render,export,validate,bench,style-pack,layout,camera-lighting,assemble,roblox-manifest,roblox-export,patch,branch,diff,merge,rollback,inspect-render,propose-repairs,repair,curiosity,expand-anchor,scene-graph-to-source,source-to-scene-graph,package,memory}
+    check               Run schema and semantic checks for a Scene Graph JSON file
+    plan                Emit a deterministic Scene Plan for a Scene Graph JSON file
+    materialize         Lower a Scene Graph into generated Lathe asset source files
+    build               Build a deterministic offline Scene Package preview
+    render              Render deterministic proxy PNG passes for a Scene Graph
+    export              Export deterministic proxy scene artifacts
+    validate            Run scene quality validators for a Scene Graph JSON file
+    bench               Emit a deterministic Wonder Scene Benchmark Report
+    style-pack          Extract and validate a Style Pack from a Scene Graph
+    layout              Emit deterministic Layout Plan JSON for a Scene Graph
+    camera-lighting     Emit deterministic camera/lighting plan JSON
+    assemble            Emit deterministic Scene Assembly IR for a Scene Graph
+    roblox-manifest     Emit a Roblox profile validation manifest
+    roblox-export       Export a Roblox asset-kit GLB folder
+    patch               Apply a Scene Patch JSON file to a Scene Graph JSON file
+    branch              Create deterministic scene branch/version metadata
+    diff                Diff two Scene Graph JSON files
+    merge               Merge non-overlapping Scene Graph changes
+    rollback            Rollback a Scene Graph using hash-guarded Scene History
+    inspect-render      Validate Render Inspection JSON against a scene
+    propose-repairs     Convert Render Inspection JSON to Scene Patch proposals
+    repair              Run deterministic offline repair proposals
+    curiosity           Summarize curiosity anchors as deterministic cards
+    expand-anchor       Expand a curiosity anchor option into a Scene Graph copy
+    scene-graph-to-source
+                        Convert Scene Graph JSON into generated scene source
+    source-to-scene-graph
+                        Extract Scene Graph JSON from generated scene source
+    package             Inspect, initialize, and validate scene packages
+    memory              Inspect and append World Memory events
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `lathe scene check`
+
+```text
+$ python -m lathe.cli scene check --help
+usage: lathe scene check [-h] scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe scene plan`
+
+```text
+$ python -m lathe.cli scene plan --help
+usage: lathe scene plan [-h] [--mode {preview,final}] [--out OUT]
+                        [--reuse-from-plan REUSE_FROM_PLAN]
+                        scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --mode {preview,final}
+  --out OUT             Optional output path for the Scene Plan JSON
+  --reuse-from-plan REUSE_FROM_PLAN
+                        Optional base Scene Plan JSON used to report branch-safe asset cache reuse
+```
+
+## `lathe scene materialize`
+
+```text
+$ python -m lathe.cli scene materialize --help
+usage: lathe scene materialize [-h] --out OUT [--mode {preview,final}] [--build-assets] scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output directory for generated asset sources
+  --mode {preview,final}
+  --build-assets        Run the Lathe asset build pipeline for generated sources and record build
+                        results
+```
+
+## `lathe scene build`
+
+```text
+$ python -m lathe.cli scene build --help
+usage: lathe scene build [-h] --out OUT [--mode {preview,final}] [--runtime-config RUNTIME_CONFIG]
+                         [--deterministic] [--allow-fallback] [--strict] [--build-assets]
+                         scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output directory root for the Scene Package
+  --mode {preview,final}
+  --runtime-config RUNTIME_CONFIG
+                        Optional runtime config JSON file
+  --deterministic       Record deterministic scene-build policy in emitted reports and manifests
+  --allow-fallback      Explicitly allow deterministic proxy/fallback policy where the scene
+                        executor supports it
+  --strict              Fail on scene validation warnings and supported provider/fallback
+                        diagnostics
+  --build-assets        Materialize generated scene asset sources and run the Lathe asset build
+                        pipeline before packaging
+```
+
+## `lathe scene render`
+
+```text
+$ python -m lathe.cli scene render --help
+usage: lathe scene render [-h] --out OUT [--camera CAMERA] [--all-cameras]
+                          [--mode {preview,final}] [--passes PASSES] [--width WIDTH]
+                          [--height HEIGHT] [--timeout-seconds TIMEOUT_SECONDS]
+                          scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output directory for render artifacts
+  --camera CAMERA       Optional camera_id to render
+  --all-cameras         Render every authored camera plus the generated topdown debug camera; this
+                        is the default when --camera is omitted
+  --mode {preview,final}
+  --passes PASSES       Comma-separated render passes; defaults to the selected mode
+  --width WIDTH         Optional render width
+  --height HEIGHT       Optional render height
+  --timeout-seconds TIMEOUT_SECONDS
+                        Optional wall-clock timeout for deterministic proxy render artifact
+                        generation
+```
+
+## `lathe scene export`
+
+```text
+$ python -m lathe.cli scene export --help
+usage: lathe scene export [-h] --out OUT [--target {glb,usd,blender}] [--mode {preview,final}]
+                          [--include-collision-proxies] [--include-id-mask-bundle]
+                          scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output directory for export artifacts
+  --target {glb,usd,blender}
+  --mode {preview,final}
+  --include-collision-proxies
+                        Include deterministic simple-box collision proxy nodes in supported scene
+                        exports
+  --include-id-mask-bundle
+                        Include export-side object ID mask PNGs and object-index sidecars
+```
+
+## `lathe scene validate`
+
+```text
+$ python -m lathe.cli scene validate --help
+usage: lathe scene validate [-h] [--require-export-artifacts] [--platform PLATFORM] scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --require-export-artifacts
+                        Require referenced export artifacts to exist
+  --platform PLATFORM   Optional platform validator target, for example roblox
+```
+
+## `lathe scene bench`
+
+```text
+$ python -m lathe.cli scene bench --help
+usage: lathe scene bench [-h] --timings TIMINGS --scores SCORES [--out OUT] scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help         show this help message and exit
+  --timings TIMINGS  JSON file with measured stage timings
+  --scores SCORES    JSON file with measured benchmark scores
+  --out OUT          Optional output path for the benchmark report JSON
+```
+
+## `lathe scene style-pack`
+
+```text
+$ python -m lathe.cli scene style-pack --help
+usage: lathe scene style-pack [-h] [--builtin BUILTIN] [--style-pack-id STYLE_PACK_ID]
+                              [--display-name DISPLAY_NAME] --out OUT
+                              [scene]
+
+positional arguments:
+  scene                 Scene Graph JSON file; omit when using --builtin
+
+options:
+  -h, --help            show this help message and exit
+  --builtin BUILTIN     Curated built-in Style Pack id to emit
+  --style-pack-id STYLE_PACK_ID
+  --display-name DISPLAY_NAME
+  --out OUT             Output path for the Style Pack JSON
+```
+
+## `lathe scene layout`
+
+```text
+$ python -m lathe.cli scene layout --help
+usage: lathe scene layout [-h] [--style-pack STYLE_PACK] --out OUT scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --style-pack STYLE_PACK
+                        Optional Style Pack JSON for instance reuse policy
+  --out OUT             Output path for the Layout Plan JSON
+```
+
+## `lathe scene camera-lighting`
+
+```text
+$ python -m lathe.cli scene camera-lighting --help
+usage: lathe scene camera-lighting [-h] [--layout-plan LAYOUT_PLAN] --out OUT scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --layout-plan LAYOUT_PLAN
+                        Optional Layout Plan JSON for resolved positions
+  --out OUT             Output path for the camera/lighting plan JSON
+```
+
+## `lathe scene assemble`
+
+```text
+$ python -m lathe.cli scene assemble --help
+usage: lathe scene assemble [-h] --out OUT scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Output path for the Scene Assembly IR JSON
+```
+
+## `lathe scene roblox-manifest`
+
+```text
+$ python -m lathe.cli scene roblox-manifest --help
+usage: lathe scene roblox-manifest [-h] [--profile PROFILE] [--out OUT] scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help         show this help message and exit
+  --profile PROFILE  Roblox profile JSON path; defaults to the built-in roblox_lowpoly profile
+  --out OUT          Optional output path for the Roblox manifest JSON
+```
+
+## `lathe scene roblox-export`
+
+```text
+$ python -m lathe.cli scene roblox-export --help
+usage: lathe scene roblox-export [-h] --out OUT [--mode {preview,final}] [--profile PROFILE]
+                                 [--no-collision-proxies]
+                                 scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output directory for the Roblox asset-kit bundle
+  --mode {preview,final}
+  --profile PROFILE     Roblox profile JSON path; defaults to the built-in roblox_lowpoly profile
+  --no-collision-proxies
+                        Do not include deterministic simple-box collision proxy nodes in the GLB
+```
+
+## `lathe scene patch`
+
+```text
+$ python -m lathe.cli scene patch --help
+usage: lathe scene patch [-h] --out OUT [--preview] scene patch_json
+
+positional arguments:
+  scene
+  patch_json
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Output path for the updated Scene Graph JSON
+  --preview   Emit the patch result without writing --out
+```
+
+## `lathe scene branch`
+
+```text
+$ python -m lathe.cli scene branch --help
+usage: lathe scene branch [-h] --name NAME [--parent PARENT] --out OUT scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help       show this help message and exit
+  --name NAME      Branch display name
+  --parent PARENT  Parent branch id
+  --out OUT        Output path for the Scene Branch JSON
+```
+
+## `lathe scene diff`
+
+```text
+$ python -m lathe.cli scene diff --help
+usage: lathe scene diff [-h] [--out OUT] left right
+
+positional arguments:
+  left
+  right
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Optional output path for the Scene Diff JSON
+```
+
+## `lathe scene merge`
+
+```text
+$ python -m lathe.cli scene merge --help
+usage: lathe scene merge [-h] --into TARGET --out OUT source
+
+positional arguments:
+  source
+
+options:
+  -h, --help     show this help message and exit
+  --into TARGET  Target Scene Graph JSON
+  --out OUT      Output path for the merged Scene Graph JSON
+```
+
+## `lathe scene rollback`
+
+```text
+$ python -m lathe.cli scene rollback --help
+usage: lathe scene rollback [-h] --history HISTORY --to TO_EVENT --out OUT scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help         show this help message and exit
+  --history HISTORY  Scene History JSON path
+  --to TO_EVENT      Scene History event_id or version marker
+  --out OUT          Output path for the rolled-back Scene Graph JSON
+```
+
+## `lathe scene inspect-render`
+
+```text
+$ python -m lathe.cli scene inspect-render --help
+usage: lathe scene inspect-render [-h] scene render_inspection
+
+positional arguments:
+  scene
+  render_inspection
+
+options:
+  -h, --help         show this help message and exit
+```
+
+## `lathe scene propose-repairs`
+
+```text
+$ python -m lathe.cli scene propose-repairs --help
+usage: lathe scene propose-repairs [-h] [--goal {wonder_preview,export_ready,roblox_ready}]
+                                   [--out OUT]
+                                   scene render_inspection
+
+positional arguments:
+  scene
+  render_inspection
+
+options:
+  -h, --help            show this help message and exit
+  --goal {wonder_preview,export_ready,roblox_ready}
+  --out OUT             Optional output path for the Scene Repair Report JSON
+```
+
+## `lathe scene repair`
+
+```text
+$ python -m lathe.cli scene repair --help
+usage: lathe scene repair [-h] [--goal {wonder_preview,export_ready,roblox_ready}]
+                          [--max-rounds MAX_ROUNDS] --out OUT [--report-out REPORT_OUT]
+                          scene render_inspection
+
+positional arguments:
+  scene
+  render_inspection
+
+options:
+  -h, --help            show this help message and exit
+  --goal {wonder_preview,export_ready,roblox_ready}
+  --max-rounds MAX_ROUNDS
+  --out OUT             Output path for the repaired Scene Graph JSON
+  --report-out REPORT_OUT
+                        Optional output path for the Scene Repair Report JSON
+```
+
+## `lathe scene curiosity`
+
+```text
+$ python -m lathe.cli scene curiosity --help
+usage: lathe scene curiosity [-h] scene
+
+positional arguments:
+  scene
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe scene expand-anchor`
+
+```text
+$ python -m lathe.cli scene expand-anchor --help
+usage: lathe scene expand-anchor [-h] --option OPTION_ID --out OUT scene anchor_id
+
+positional arguments:
+  scene
+  anchor_id
+
+options:
+  -h, --help          show this help message and exit
+  --option OPTION_ID
+  --out OUT           Output path for the expanded Scene Graph JSON
+```
+
+## `lathe scene scene-graph-to-source`
+
+```text
+$ python -m lathe.cli scene scene-graph-to-source --help
+usage: lathe scene scene-graph-to-source [-h] --out OUT scene_graph
+
+positional arguments:
+  scene_graph
+
+options:
+  -h, --help   show this help message and exit
+  --out OUT    Output generated .lth scene source path
+```
+
+## `lathe scene source-to-scene-graph`
+
+```text
+$ python -m lathe.cli scene source-to-scene-graph --help
+usage: lathe scene source-to-scene-graph [-h] --out OUT scene_source
+
+positional arguments:
+  scene_source
+
+options:
+  -h, --help    show this help message and exit
+  --out OUT     Output Scene Graph JSON path
+```
+
+## `lathe scene package`
+
+```text
+$ python -m lathe.cli scene package --help
+usage: lathe scene package [-h] {init,inspect,validate} ...
+
+positional arguments:
+  {init,inspect,validate}
+    init                Create a folder-based Scene Package skeleton
+    inspect             Inspect a Scene Package manifest
+    validate            Validate a Scene Package directory or manifest
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `lathe scene package init`
+
+```text
+$ python -m lathe.cli scene package init --help
+usage: lathe scene package init [-h] --scene-id SCENE_ID [--package-id PACKAGE_ID] [--force]
+                                package_dir
+
+positional arguments:
+  package_dir
+
+options:
+  -h, --help            show this help message and exit
+  --scene-id SCENE_ID
+  --package-id PACKAGE_ID
+  --force               Overwrite an existing scene_package_manifest.json
+```
+
+## `lathe scene package inspect`
+
+```text
+$ python -m lathe.cli scene package inspect --help
+usage: lathe scene package inspect [-h] package_dir
+
+positional arguments:
+  package_dir
+
+options:
+  -h, --help   show this help message and exit
+```
+
+## `lathe scene package validate`
+
+```text
+$ python -m lathe.cli scene package validate --help
+usage: lathe scene package validate [-h] [--allow-missing-paths] package_dir_or_manifest
+
+positional arguments:
+  package_dir_or_manifest
+
+options:
+  -h, --help            show this help message and exit
+  --allow-missing-paths
+                        Validate schema and path safety without requiring referenced package paths
+                        to exist
+```
+
+## `lathe scene memory`
+
+```text
+$ python -m lathe.cli scene memory --help
+usage: lathe scene memory [-h] {inspect,append} ...
+
+positional arguments:
+  {inspect,append}
+    inspect         Inspect a World Memory JSON file
+    append          Append one event to a World Memory JSON file
+
+options:
+  -h, --help        show this help message and exit
+```
+
+## `lathe scene memory inspect`
+
+```text
+$ python -m lathe.cli scene memory inspect --help
+usage: lathe scene memory inspect [-h] [--scene-graph SCENE_GRAPH] package_dir_or_memory_json
+
+positional arguments:
+  package_dir_or_memory_json
+
+options:
+  -h, --help            show this help message and exit
+  --scene-graph SCENE_GRAPH
+                        Optional Scene Graph JSON file for affected_id continuity checks
+```
+
+## `lathe scene memory append`
+
+```text
+$ python -m lathe.cli scene memory append --help
+usage: lathe scene memory append [-h] [--scene-graph SCENE_GRAPH]
+                                 package_dir_or_memory_json event_json
+
+positional arguments:
+  package_dir_or_memory_json
+  event_json
+
+options:
+  -h, --help            show this help message and exit
+  --scene-graph SCENE_GRAPH
+                        Optional Scene Graph JSON file for affected_id continuity checks
+```
+
+## `lathe wonder`
+
+```text
+$ python -m lathe.cli wonder --help
+usage: lathe wonder [-h]
+                    {schemas,capabilities,status,env-probe,evidence-trace,alpha-gate,readiness-report,schema,validate-brief,validate-scene,check-scene-graph,decompose-brief,lower-brief,brief-to-scene,check-brief-scene,validate-patch,validate-scene-history,validate-camera-lock,validate-render-comparison,validate-llm-repair-playbook,append-memory-event,redact-memory,apply-patch,rollback-scene,branch-history,lock-camera,compare-renders,demo-before-after,validate-example,catalog-examples,validate-render-inspection,validate-world-memory,validate-scene-manifest,validate-wonder-report,validate-plan,validate-scene-materialization-manifest,generate-scene-plan,validate-scene-assembly,validate-scene-branch,validate-scene-diff,validate-scene-quality-report,validate-scene-repair-report,validate-scene-benchmark-report,validate-style-pack,validate-layout-plan,validate-game-readiness,validate-asset-provenance-scene,validate-roblox-profile,validate-roblox-manifest,validate-roblox-export-bundle,validate-roblox-fbx-handoff,diagnose-for-llm,repair-playbook,apply-semantic-patch,validate-package-manifest,init-package} ...
+
+Validate Dream Brief, Scene Graph, Scene Patch, Render Inspection, World Memory, Scene Package
+Manifest, and lightweight brief/scene consistency contracts.
+
+positional arguments:
+  {schemas,capabilities,status,env-probe,evidence-trace,alpha-gate,readiness-report,schema,validate-brief,validate-scene,check-scene-graph,decompose-brief,lower-brief,brief-to-scene,check-brief-scene,validate-patch,validate-scene-history,validate-camera-lock,validate-render-comparison,validate-llm-repair-playbook,append-memory-event,redact-memory,apply-patch,rollback-scene,branch-history,lock-camera,compare-renders,demo-before-after,validate-example,catalog-examples,validate-render-inspection,validate-world-memory,validate-scene-manifest,validate-wonder-report,validate-plan,validate-scene-materialization-manifest,generate-scene-plan,validate-scene-assembly,validate-scene-branch,validate-scene-diff,validate-scene-quality-report,validate-scene-repair-report,validate-scene-benchmark-report,validate-style-pack,validate-layout-plan,validate-game-readiness,validate-asset-provenance-scene,validate-roblox-profile,validate-roblox-manifest,validate-roblox-export-bundle,validate-roblox-fbx-handoff,diagnose-for-llm,repair-playbook,apply-semantic-patch,validate-package-manifest,init-package}
+    schemas             List supported Wonder contract schemas
+    capabilities        Emit machine-readable Wonder capability flags
+    status              Emit machine-readable Wonder readiness status
+    env-probe           Probe deterministic core and optional Wonder runtimes
+    evidence-trace      Trace checked Wonder readiness tasks to durable evidence
+    alpha-gate          Run the deterministic Wonder alpha gate skeleton
+    readiness-report    Write the final Project Wonder readiness Markdown and JSON reports
+    schema              Emit one Wonder contract schema
+    validate-brief      Validate a Dream Brief JSON file
+    validate-scene      Validate a Scene Graph JSON file
+    check-scene-graph   Run schema and semantic checks for a Scene Graph JSON file
+    decompose-brief     Emit deterministic Dream Brief decomposition JSON
+    lower-brief         Lower a Dream Brief JSON file into an initial Scene Graph JSON file
+    brief-to-scene      Convert a Dream Brief JSON file into an initial Scene Graph JSON file
+    check-brief-scene   Run schema, scene semantic, and brief/scene consistency checks
+    validate-patch      Validate a Scene Patch JSON file
+    validate-scene-history
+                        Validate a Scene History JSON file
+    validate-camera-lock
+                        Validate a Camera Lock JSON file
+    validate-render-comparison
+                        Validate a Render Comparison JSON file
+    validate-llm-repair-playbook
+                        Validate an LLM Repair Playbook JSON file
+    append-memory-event
+                        Append a redacted World Memory event idempotently
+    redact-memory       Redact secrets and PII from a World Memory-related JSON file
+    apply-patch         Apply a Scene Patch and update hash-guarded Scene History
+    rollback-scene      Rollback a Scene Graph using a hash-guarded Scene History event
+    branch-history      Emit branch-scoped World Memory events with linked patch history reports
+    lock-camera         Extract a deterministic Camera Lock from a Scene Graph
+    compare-renders     Compare deterministic before/after proxy render PNGs
+    demo-before-after   Build a deterministic proxy before/after comparison demo
+    validate-example    Validate a Wonder example golden fixture directory
+    catalog-examples    Validate and catalog all Wonder example golden fixtures
+    validate-render-inspection
+                        Validate a Render Inspection JSON file
+    validate-world-memory
+                        Validate a World Memory JSON file
+    validate-scene-manifest
+                        Validate a Scene Manifest JSON file
+    validate-wonder-report
+                        Validate a Wonder Report JSON file
+    validate-plan       Validate a Scene Plan JSON file
+    validate-scene-materialization-manifest
+                        Validate a Scene Materialization Manifest JSON file
+    generate-scene-plan
+                        Generate a deterministic offline Scene Plan from a Dream Brief and
+                        optional Scene Graph
+    validate-scene-assembly
+                        Validate a Scene Assembly IR JSON file
+    validate-scene-branch
+                        Validate a Scene Branch JSON file
+    validate-scene-diff
+                        Validate a Scene Diff JSON file
+    validate-scene-quality-report
+                        Validate a Scene Quality Report JSON file
+    validate-scene-repair-report
+                        Validate a Scene Repair Report JSON file
+    validate-scene-benchmark-report
+                        Validate a Scene Benchmark Report JSON file
+    validate-style-pack
+                        Validate a Style Pack JSON file
+    validate-layout-plan
+                        Validate a Layout Plan JSON file
+    validate-game-readiness
+                        Validate a Game Readiness JSON file
+    validate-asset-provenance-scene
+                        Validate an Asset Provenance Scene JSON file
+    validate-roblox-profile
+                        Validate a Roblox Profile JSON file
+    validate-roblox-manifest
+                        Validate a Roblox Manifest JSON file
+    validate-roblox-export-bundle
+                        Validate a Roblox Export Bundle JSON file
+    validate-roblox-fbx-handoff
+                        Validate a Roblox FBX Handoff JSON file
+    diagnose-for-llm    Compact a Wonder payload, report, diagnostics list, or scene source for
+                        LLM repair.
+    repair-playbook     Convert diagnostics into deterministic LLM repair steps
+    apply-semantic-patch
+                        Convert a semantic edit request JSON file into a schema-valid Scene Patch.
+    validate-package-manifest
+                        Validate a Scene Package Manifest JSON file and its package paths
+    init-package        Create a folder-based Scene Package Manifest skeleton
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `lathe wonder schemas`
+
+```text
+$ python -m lathe.cli wonder schemas --help
+usage: lathe wonder schemas [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder capabilities`
+
+```text
+$ python -m lathe.cli wonder capabilities --help
+usage: lathe wonder capabilities [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder status`
+
+```text
+$ python -m lathe.cli wonder status --help
+usage: lathe wonder status [-h]
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder env-probe`
+
+```text
+$ python -m lathe.cli wonder env-probe --help
+usage: lathe wonder env-probe [-h] --out OUT [--mode {core,strict}]
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output environment probe JSON path
+  --mode {core,strict}  core keeps optional runtimes nonblocking; strict marks missing optional
+                        runtimes as blocking
+```
+
+## `lathe wonder evidence-trace`
+
+```text
+$ python -m lathe.cli wonder evidence-trace --help
+usage: lathe wonder evidence-trace [-h] --tasks TASKS --evidence EVIDENCE --out OUT
+
+options:
+  -h, --help           show this help message and exit
+  --tasks TASKS        Wonder task checklist Markdown path
+  --evidence EVIDENCE  Wonder evidence ledger Markdown path
+  --out OUT            Output evidence trace JSON path
+```
+
+## `lathe wonder alpha-gate`
+
+```text
+$ python -m lathe.cli wonder alpha-gate --help
+usage: lathe wonder alpha-gate [-h] --out OUT [--tasks TASKS] [--evidence EVIDENCE]
+                               [--mode {core,strict}]
+                               example_dir
+
+positional arguments:
+  example_dir           Wonder example fixture directory
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output alpha gate directory
+  --tasks TASKS         Optional Wonder task checklist Markdown path
+  --evidence EVIDENCE   Optional Wonder evidence ledger Markdown path
+  --mode {core,strict}  core keeps optional runtimes nonblocking; strict marks missing optional
+                        runtimes as blocking
+```
+
+## `lathe wonder readiness-report`
+
+```text
+$ python -m lathe.cli wonder readiness-report --help
+usage: lathe wonder readiness-report [-h] --out OUT [--alpha-report ALPHA_REPORT]
+                                     [--alpha-out ALPHA_OUT] [--example-dir EXAMPLE_DIR]
+                                     [--mode {core,strict}]
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output readiness Markdown path
+  --alpha-report ALPHA_REPORT
+                        Existing alpha-gate JSON report; generated from the default example when
+                        missing
+  --alpha-out ALPHA_OUT
+                        Alpha-gate output directory to use when --alpha-report is missing
+  --example-dir EXAMPLE_DIR
+                        Wonder example used to generate an alpha report when --alpha-report is
+                        missing
+  --mode {core,strict}  core keeps optional runtimes nonblocking; strict marks missing optional
+                        runtimes as blocking
+```
+
+## `lathe wonder schema`
+
+```text
+$ python -m lathe.cli wonder schema --help
+usage: lathe wonder schema [-h]
+                           {dream_brief,scene_graph,scene_patch,scene_history,camera_lock,render_comparison,llm_repair_playbook,render_inspection,world_memory,scene_manifest,wonder_report,scene_package_manifest,scene_plan,scene_materialization_manifest,scene_assembly,scene_branch,scene_diff,scene_quality_report,scene_repair_report,scene_benchmark_report,style_pack,layout_plan,game_readiness,asset_provenance_scene,roblox_profile,roblox_manifest,roblox_export_bundle,roblox_fbx_handoff}
+
+positional arguments:
+  {dream_brief,scene_graph,scene_patch,scene_history,camera_lock,render_comparison,llm_repair_playbook,render_inspection,world_memory,scene_manifest,wonder_report,scene_package_manifest,scene_plan,scene_materialization_manifest,scene_assembly,scene_branch,scene_diff,scene_quality_report,scene_repair_report,scene_benchmark_report,style_pack,layout_plan,game_readiness,asset_provenance_scene,roblox_profile,roblox_manifest,roblox_export_bundle,roblox_fbx_handoff}
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `lathe wonder validate-brief`
+
+```text
+$ python -m lathe.cli wonder validate-brief --help
+usage: lathe wonder validate-brief [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene`
+
+```text
+$ python -m lathe.cli wonder validate-scene --help
+usage: lathe wonder validate-scene [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder check-scene-graph`
+
+```text
+$ python -m lathe.cli wonder check-scene-graph --help
+usage: lathe wonder check-scene-graph [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder decompose-brief`
+
+```text
+$ python -m lathe.cli wonder decompose-brief --help
+usage: lathe wonder decompose-brief [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder lower-brief`
+
+```text
+$ python -m lathe.cli wonder lower-brief --help
+usage: lathe wonder lower-brief [-h] --out OUT file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Output Scene Graph JSON path
+```
+
+## `lathe wonder brief-to-scene`
+
+```text
+$ python -m lathe.cli wonder brief-to-scene --help
+usage: lathe wonder brief-to-scene [-h] --out OUT file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Output Scene Graph JSON path
+```
+
+## `lathe wonder check-brief-scene`
+
+```text
+$ python -m lathe.cli wonder check-brief-scene --help
+usage: lathe wonder check-brief-scene [-h] brief_file scene_graph_file
+
+positional arguments:
+  brief_file
+  scene_graph_file
+
+options:
+  -h, --help        show this help message and exit
+```
+
+## `lathe wonder validate-patch`
+
+```text
+$ python -m lathe.cli wonder validate-patch --help
+usage: lathe wonder validate-patch [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-history`
+
+```text
+$ python -m lathe.cli wonder validate-scene-history --help
+usage: lathe wonder validate-scene-history [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-camera-lock`
+
+```text
+$ python -m lathe.cli wonder validate-camera-lock --help
+usage: lathe wonder validate-camera-lock [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-render-comparison`
+
+```text
+$ python -m lathe.cli wonder validate-render-comparison --help
+usage: lathe wonder validate-render-comparison [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-llm-repair-playbook`
+
+```text
+$ python -m lathe.cli wonder validate-llm-repair-playbook --help
+usage: lathe wonder validate-llm-repair-playbook [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder append-memory-event`
+
+```text
+$ python -m lathe.cli wonder append-memory-event --help
+usage: lathe wonder append-memory-event [-h] --event EVENT --idempotency-key IDEMPOTENCY_KEY
+                                        --out OUT
+                                        world_memory
+
+positional arguments:
+  world_memory
+
+options:
+  -h, --help            show this help message and exit
+  --event EVENT         Memory event JSON file
+  --idempotency-key IDEMPOTENCY_KEY
+                        Durable idempotency key
+  --out OUT             Output World Memory JSON path
+```
+
+## `lathe wonder redact-memory`
+
+```text
+$ python -m lathe.cli wonder redact-memory --help
+usage: lathe wonder redact-memory [-h] --out OUT memory
+
+positional arguments:
+  memory
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Output redacted JSON path
+```
+
+## `lathe wonder apply-patch`
+
+```text
+$ python -m lathe.cli wonder apply-patch --help
+usage: lathe wonder apply-patch [-h] --out OUT --history HISTORY scene_graph patch
+
+positional arguments:
+  scene_graph
+  patch
+
+options:
+  -h, --help         show this help message and exit
+  --out OUT          Output patched Scene Graph JSON path
+  --history HISTORY  Scene History JSON path to create or update
+```
+
+## `lathe wonder rollback-scene`
+
+```text
+$ python -m lathe.cli wonder rollback-scene --help
+usage: lathe wonder rollback-scene [-h] --history HISTORY --to-event TO_EVENT --out OUT
+                                   scene_graph
+
+positional arguments:
+  scene_graph
+
+options:
+  -h, --help           show this help message and exit
+  --history HISTORY    Scene History JSON path
+  --to-event TO_EVENT  Scene History event_id to roll back
+  --out OUT            Output rolled-back Scene Graph JSON path
+```
+
+## `lathe wonder branch-history`
+
+```text
+$ python -m lathe.cli wonder branch-history --help
+usage: lathe wonder branch-history [-h] --memory MEMORY --branch BRANCH [--history HISTORY]
+                                   --out OUT
+
+options:
+  -h, --help         show this help message and exit
+  --memory MEMORY    World Memory JSON path
+  --branch BRANCH    World Memory branch id
+  --history HISTORY  Optional Scene History JSON path
+  --out OUT          Output Branch History JSON path
+```
+
+## `lathe wonder lock-camera`
+
+```text
+$ python -m lathe.cli wonder lock-camera --help
+usage: lathe wonder lock-camera [-h] --camera-id CAMERA_ID --out OUT scene_graph
+
+positional arguments:
+  scene_graph
+
+options:
+  -h, --help            show this help message and exit
+  --camera-id CAMERA_ID
+                        Scene Graph camera_id to lock
+  --out OUT             Output Camera Lock JSON path
+```
+
+## `lathe wonder compare-renders`
+
+```text
+$ python -m lathe.cli wonder compare-renders --help
+usage: lathe wonder compare-renders [-h] --before BEFORE --after AFTER [--camera-lock CAMERA_LOCK]
+                                    --out OUT
+
+options:
+  -h, --help            show this help message and exit
+  --before BEFORE       Before render PNG path
+  --after AFTER         After render PNG path
+  --camera-lock CAMERA_LOCK
+                        Optional Camera Lock JSON path
+  --out OUT             Output Render Comparison JSON path
+```
+
+## `lathe wonder demo-before-after`
+
+```text
+$ python -m lathe.cli wonder demo-before-after --help
+usage: lathe wonder demo-before-after [-h] --out OUT [--renderer {proxy,blender}]
+                                      [--mode {core,optional,strict}] [--history HISTORY]
+                                      [--branch BRANCH] [--patch PATCH] [--camera-id CAMERA_ID]
+                                      example_dir
+
+positional arguments:
+  example_dir           Wonder example fixture directory
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output before/after demo directory
+  --renderer {proxy,blender}
+                        proxy is the core deterministic local renderer; blender is reserved for
+                        optional lanes
+  --mode {core,optional,strict}
+                        core keeps external renderers nonblocking; strict requires requested
+                        external lanes
+  --history HISTORY     Optional Scene History JSON path to update
+  --branch BRANCH       Branch id for generated reports
+  --patch PATCH         Scene Patch JSON path
+  --camera-id CAMERA_ID
+                        Scene Graph camera_id to compare
+```
+
+## `lathe wonder validate-example`
+
+```text
+$ python -m lathe.cli wonder validate-example --help
+usage: lathe wonder validate-example [-h] [--out OUT] [--strict] [--allow-deferred-scene-source]
+                                     [--write-missing-proxy-evidence]
+                                     example_dir
+
+positional arguments:
+  example_dir           Wonder example fixture directory
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Optional output report JSON path
+  --strict              Require all normally deferred lanes
+  --allow-deferred-scene-source
+                        Allow truthful scene-source deferral even when --strict is set
+  --write-missing-proxy-evidence
+                        Create or refresh deterministic proxy/example golden fixture artifacts
+                        before validating
+```
+
+## `lathe wonder catalog-examples`
+
+```text
+$ python -m lathe.cli wonder catalog-examples --help
+usage: lathe wonder catalog-examples [-h] --out OUT [--markdown-out MARKDOWN_OUT] [--strict]
+                                     [--allow-deferred-scene-source]
+                                     [--write-missing-proxy-evidence]
+                                     examples_root
+
+positional arguments:
+  examples_root         Directory containing Wonder example folders
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output catalog JSON path
+  --markdown-out MARKDOWN_OUT
+                        Optional output Markdown path; defaults to the JSON sibling if it already
+                        exists
+  --strict              Require all normally deferred lanes
+  --allow-deferred-scene-source
+                        Allow truthful scene-source deferral even when --strict is set
+  --write-missing-proxy-evidence
+                        Create or refresh deterministic proxy/example golden fixture artifacts
+                        before cataloging
+```
+
+## `lathe wonder validate-render-inspection`
+
+```text
+$ python -m lathe.cli wonder validate-render-inspection --help
+usage: lathe wonder validate-render-inspection [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-world-memory`
+
+```text
+$ python -m lathe.cli wonder validate-world-memory --help
+usage: lathe wonder validate-world-memory [-h] [--scene-graph SCENE_GRAPH] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help            show this help message and exit
+  --scene-graph SCENE_GRAPH
+                        Optional Scene Graph JSON file for affected_id continuity checks
+```
+
+## `lathe wonder validate-scene-manifest`
+
+```text
+$ python -m lathe.cli wonder validate-scene-manifest --help
+usage: lathe wonder validate-scene-manifest [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-wonder-report`
+
+```text
+$ python -m lathe.cli wonder validate-wonder-report --help
+usage: lathe wonder validate-wonder-report [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-plan`
+
+```text
+$ python -m lathe.cli wonder validate-plan --help
+usage: lathe wonder validate-plan [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-materialization-manifest`
+
+```text
+$ python -m lathe.cli wonder validate-scene-materialization-manifest --help
+usage: lathe wonder validate-scene-materialization-manifest [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder generate-scene-plan`
+
+```text
+$ python -m lathe.cli wonder generate-scene-plan --help
+usage: lathe wonder generate-scene-plan [-h] [--scene-graph SCENE_GRAPH] --out OUT
+                                        [--plan-mode {preview,final}] [--mode {deterministic}]
+                                        dream_brief
+
+positional arguments:
+  dream_brief
+
+options:
+  -h, --help            show this help message and exit
+  --scene-graph SCENE_GRAPH
+                        Optional Scene Graph JSON for concrete tasks
+  --out OUT             Output Scene Plan JSON path
+  --plan-mode {preview,final}
+  --mode {deterministic}
+                        Wave 4 supports deterministic local generation only
+```
+
+## `lathe wonder validate-scene-assembly`
+
+```text
+$ python -m lathe.cli wonder validate-scene-assembly --help
+usage: lathe wonder validate-scene-assembly [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-branch`
+
+```text
+$ python -m lathe.cli wonder validate-scene-branch --help
+usage: lathe wonder validate-scene-branch [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-diff`
+
+```text
+$ python -m lathe.cli wonder validate-scene-diff --help
+usage: lathe wonder validate-scene-diff [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-quality-report`
+
+```text
+$ python -m lathe.cli wonder validate-scene-quality-report --help
+usage: lathe wonder validate-scene-quality-report [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-repair-report`
+
+```text
+$ python -m lathe.cli wonder validate-scene-repair-report --help
+usage: lathe wonder validate-scene-repair-report [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-scene-benchmark-report`
+
+```text
+$ python -m lathe.cli wonder validate-scene-benchmark-report --help
+usage: lathe wonder validate-scene-benchmark-report [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-style-pack`
+
+```text
+$ python -m lathe.cli wonder validate-style-pack --help
+usage: lathe wonder validate-style-pack [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-layout-plan`
+
+```text
+$ python -m lathe.cli wonder validate-layout-plan --help
+usage: lathe wonder validate-layout-plan [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-game-readiness`
+
+```text
+$ python -m lathe.cli wonder validate-game-readiness --help
+usage: lathe wonder validate-game-readiness [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-asset-provenance-scene`
+
+```text
+$ python -m lathe.cli wonder validate-asset-provenance-scene --help
+usage: lathe wonder validate-asset-provenance-scene [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-roblox-profile`
+
+```text
+$ python -m lathe.cli wonder validate-roblox-profile --help
+usage: lathe wonder validate-roblox-profile [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-roblox-manifest`
+
+```text
+$ python -m lathe.cli wonder validate-roblox-manifest --help
+usage: lathe wonder validate-roblox-manifest [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-roblox-export-bundle`
+
+```text
+$ python -m lathe.cli wonder validate-roblox-export-bundle --help
+usage: lathe wonder validate-roblox-export-bundle [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder validate-roblox-fbx-handoff`
+
+```text
+$ python -m lathe.cli wonder validate-roblox-fbx-handoff --help
+usage: lathe wonder validate-roblox-fbx-handoff [-h] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `lathe wonder diagnose-for-llm`
+
+```text
+$ python -m lathe.cli wonder diagnose-for-llm --help
+usage: lathe wonder diagnose-for-llm [-h] [--contract CONTRACT] [--root ROOT]
+                                     [--max-diagnostics MAX_DIAGNOSTICS] [--out OUT]
+                                     file
+
+positional arguments:
+  file
+
+options:
+  -h, --help            show this help message and exit
+  --contract CONTRACT   Optional contract id for JSON payload validation
+  --root ROOT           Optional root for scene source/graph path checks
+  --max-diagnostics MAX_DIAGNOSTICS
+  --out OUT             Optional output path for the summary JSON
+```
+
+## `lathe wonder repair-playbook`
+
+```text
+$ python -m lathe.cli wonder repair-playbook --help
+usage: lathe wonder repair-playbook [-h] --diagnostics DIAGNOSTICS --out OUT
+                                    [--max-diagnostics MAX_DIAGNOSTICS]
+
+options:
+  -h, --help            show this help message and exit
+  --diagnostics DIAGNOSTICS
+                        Diagnostics JSON, Wonder report, or LLM summary
+  --out OUT             Output LLM Repair Playbook JSON path
+  --max-diagnostics MAX_DIAGNOSTICS
+```
+
+## `lathe wonder apply-semantic-patch`
+
+```text
+$ python -m lathe.cli wonder apply-semantic-patch --help
+usage: lathe wonder apply-semantic-patch [-h] [--scene-graph SCENE_GRAPH] --out OUT request_json
+
+positional arguments:
+  request_json
+
+options:
+  -h, --help            show this help message and exit
+  --scene-graph SCENE_GRAPH
+                        Optional Scene Graph JSON for defaults
+  --out OUT             Output Scene Patch JSON path
+```
+
+## `lathe wonder validate-package-manifest`
+
+```text
+$ python -m lathe.cli wonder validate-package-manifest --help
+usage: lathe wonder validate-package-manifest [-h] [--allow-missing-paths] file
+
+positional arguments:
+  file
+
+options:
+  -h, --help            show this help message and exit
+  --allow-missing-paths
+                        Validate schema and path safety without requiring referenced package paths
+                        to exist
+```
+
+## `lathe wonder init-package`
+
+```text
+$ python -m lathe.cli wonder init-package --help
+usage: lathe wonder init-package [-h] --scene-id SCENE_ID [--package-id PACKAGE_ID] [--force]
+                                 package_dir
+
+positional arguments:
+  package_dir
+
+options:
+  -h, --help            show this help message and exit
+  --scene-id SCENE_ID
+  --package-id PACKAGE_ID
+  --force               Overwrite an existing scene_package_manifest.json
 ```

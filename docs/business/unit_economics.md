@@ -56,7 +56,7 @@ Baseline: 50 active users at launch week (estimate — `requires-human: revise a
 | 10× | 500 | ~125 h | `requires-human` | `requires-human` | ~$12,500 |
 | 100× | 5,000 | ~1,250 h | `requires-human` | `requires-human` | ~$125,000 |
 
-All $/week figures use the placeholder $100/h rate and 0.25 h/active-user/week estimate. CI minutes and ticket volume are `requires-human` until first-beta data is available. The 10× and 100× rows are unsustainable on a solo-maintainer model without either community support absorption or revenue — that is the point of this table.
+All $/week figures use an assumed $100/h rate and 0.25 h/active-user/week estimate. CI minutes and ticket volume are `requires-human` until first-beta data is available. The 10× and 100× rows are unsustainable on a solo-maintainer model without either community support absorption or revenue — that is the point of this table.
 
 ---
 

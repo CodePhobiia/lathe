@@ -6,14 +6,14 @@ Classifies every `json.loads` / `json.load(` site under `lathe/` as trust-bounda
 
 | Metric | Count |
 |---|---|
-| Total sites in `lathe/` | 27 |
-| Sites in this audit's scope (editable files) | 25 |
+| Total sites in `lathe/` | 29 |
+| Sites in this audit's scope (editable files) | 27 |
 | Sites out of scope (excluded cluster: `blender_execution.py`) | 2 |
 | Trust-boundary, NOT yet validated | 0 |
-| Trust-boundary, already validated | 2 |
-| Internal-controlled | 23 |
+| Trust-boundary, already validated | 3 |
+| Internal-controlled | 24 |
 
-`runtime_config.py:165` validates user-supplied runtime config files. `capabilities.py` validates the Hunyuan HTTP `/health` response with `hunyuan_probe.schema.json` before surfacing endpoint health.
+`runtime_config.py:165` validates user-supplied runtime config files. `capabilities.py` validates the Hunyuan HTTP `/health` response with `hunyuan_probe.schema.json` before surfacing endpoint health. `wonder/contracts.py` validates user-supplied Wonder JSON contracts with the selected Wonder schema before any Dream Brief, Scene Graph, Scene Patch, or Render Inspection payload is accepted.
 
 Runtime config JSON is also marked in code as an untrusted ingress point:
 `lathe.runtime_config.load_runtime_config` carries a
@@ -51,6 +51,8 @@ parse, object-root enforcement, and schema validation.
 | `lathe/geometry_kernel.py:191` | internal | In-memory `dumps`/`loads` deep-copy of `_FUSION_CACHE` (no I/O) | none |
 | `lathe/runtime_config.py:28` | internal | `schema/runtime_config.schema.json` (this IS the schema) | none |
 | `lathe/runtime_config.py:165` | validated | User-supplied runtime_config file; validated via `_validate_runtime_config` | none |
+| `lathe/wonder/contracts.py:108` | internal | Wonder schema files in `schema/` (these ARE the schemas) | none |
+| `lathe/wonder/contracts.py:172` | validated | User-supplied Wonder contract file; validated via `load_and_validate_contract` | none |
 | `lathe/blender_execution.py:424` | out of scope | surgeon-subproc cluster | re-audit Wave 4 |
 | `lathe/blender_execution.py:530` | out of scope | surgeon-subproc cluster | re-audit Wave 4 |
 

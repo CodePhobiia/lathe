@@ -50,6 +50,7 @@ class InputClass(StrEnum):
     EXTERNAL_MESH = "external_mesh"
     RUNTIME_CONFIG = "runtime_config"
     NETWORK_PROVIDER = "network_provider"
+    WONDER_CONTRACT = "wonder_contract"
 
 
 @dataclass(frozen=True)

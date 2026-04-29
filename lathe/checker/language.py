@@ -39,6 +39,7 @@ def check_duplicate_names(checker: Any) -> None:
         ("mask_programs", "L2011"),
         ("trim_sheets", "L2011"),
         ("palettes", "L2012"),
+        ("style_packs", "L2012"),
         ("reference_sets", "L2012"),
         ("reconstruct_policies", "L2012"),
         ("adapt_policies", "L2012"),
@@ -56,6 +57,7 @@ def check_duplicate_names(checker: Any) -> None:
         ("tests", "L2015"),
         ("benchmarks", "L2016"),
         ("spaces", "L2017"),
+        ("scenes", "L2018"),
         ("assets", "L2004"),
         ("variants", "L2005"),
     ]

@@ -10,9 +10,9 @@ import warnings
 from pathlib import Path
 from typing import Any
 
+from ..errors import ShapeProviderError
 from ..logging_utils import debug as log_debug
 from ..paths import PathGuardError, safe_resolve
-from ..providers.errors import ShapeProviderError
 from ..runtime_config import apply_cli_overrides, load_runtime_config
 from ._common import _dump, _emit_error
 

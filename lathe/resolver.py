@@ -109,6 +109,7 @@ class Resolver:
         self.mask_program_map = {decl["name"]: decl for decl in program.get("mask_programs", [])}
         self.trim_sheet_map = {decl["name"]: decl for decl in program.get("trim_sheets", [])}
         self.palette_map = {decl["name"]: decl for decl in program.get("palettes", [])}
+        self.style_pack_map = {decl["name"]: decl for decl in program.get("style_packs", [])}
         self.reference_set_map = {decl["name"]: decl for decl in program.get("reference_sets", [])}
         self.reconstruct_policy_map = {decl["name"]: decl for decl in program.get("reconstruct_policies", [])}
         self.adapt_policy_map = {decl["name"]: decl for decl in program.get("adapt_policies", [])}
@@ -126,6 +127,7 @@ class Resolver:
         self.test_map = {decl["name"]: decl for decl in program.get("tests", [])}
         self.benchmark_map = {decl["name"]: decl for decl in program.get("benchmarks", [])}
         self.space_map = {decl["name"]: decl for decl in program.get("spaces", [])}
+        self.scene_map = {decl["name"]: decl for decl in program.get("scenes", [])}
         self.asset_map = {decl["name"]: decl for decl in program.get("assets", [])}
         self.variant_map = {decl["name"]: decl for decl in program.get("variants", [])}
 

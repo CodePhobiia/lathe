@@ -33,6 +33,8 @@ EXPECTED_PACKAGE_GATES = {
             "lathe/publish/signed_repro.py",
         ],
     },
+    "scene": {"fail_under": 45, "paths": ["lathe/scene"]},
+    "wonder": {"fail_under": 55, "paths": ["lathe/wonder"]},
 }
 EXPECTED_EXCLUDE_LINES = ["pragma: no cover"]
 

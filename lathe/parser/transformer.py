@@ -73,6 +73,8 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 program["trim_sheets"].append(item)
             elif kind == "palette":
                 program["palettes"].append(item)
+            elif kind == "style_pack":
+                program["style_packs"].append(item)
             elif kind == "reference_set":
                 program["reference_sets"].append(item)
             elif kind == "reconstruct_policy":
@@ -107,6 +109,8 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 program["benchmarks"].append(item)
             elif kind == "space_decl":
                 program["spaces"].append(item)
+            elif kind == "scene":
+                program["scenes"].append(item)
             elif kind == "asset":
                 program["assets"].append(item)
             elif kind == "variant":
@@ -418,6 +422,18 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
         """
         return self._mapping_decl("palette", name, *rest)
 
+    def style_pack_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Style pack decl.
+
+        Args:
+            name: name argument.
+            *rest: *rest argument.
+
+        Returns:
+            The result.
+        """
+        return self._mapping_decl("style_pack", name, *rest)
+
     def reference_set_decl(self, name: str, *rest: Any) -> dict[str, Any]:
         """Reference set decl.
 
@@ -657,6 +673,178 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
             The result.
         """
         return self._space_spec("space_decl", name, *rest)
+
+    def scene_decl(self, name: str, *items: Any) -> dict[str, Any]:
+        values: list[tuple[str, Any]] = []
+        styles: list[dict[str, Any]] = []
+        regions: list[dict[str, Any]] = []
+        objects: list[dict[str, Any]] = []
+        relationships: list[dict[str, Any]] = []
+        cameras: list[dict[str, Any]] = []
+        lights: list[dict[str, Any]] = []
+        curiosity_anchors: list[dict[str, Any]] = []
+        hidden_state: list[dict[str, Any]] = []
+        exports: list[dict[str, Any]] = []
+        for item in items:
+            if isinstance(item, tuple) and len(item) == 2:
+                values.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_style":
+                styles.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_region":
+                regions.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_object":
+                objects.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_relationship":
+                relationships.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_camera":
+                cameras.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_light":
+                lights.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_curiosity_anchor":
+                curiosity_anchors.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_hidden_state":
+                hidden_state.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_export":
+                exports.append(item)
+            else:
+                raise LatheParseError(f"Unexpected scene item: {item!r}")
+        return {
+            "node_type": "scene",
+            "name": name,
+            "values": self._assignments(values, "scene"),
+            "styles": styles,
+            "regions": regions,
+            "objects": objects,
+            "relationships": relationships,
+            "cameras": cameras,
+            "lights": lights,
+            "curiosity_anchors": curiosity_anchors,
+            "hidden_state": hidden_state,
+            "exports": exports,
+        }
+
+    def style_scene_block(self, name: str, *assignments: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_style",
+            "name": name,
+            "values": self._assignments(assignments, "style"),
+        }
+
+    def scene_type_clause(self, value: str) -> dict[str, Any]:
+        return {"node_type": "scene_type_clause", "value": value}
+
+    def scene_role_clause(self, value: str) -> dict[str, Any]:
+        return {"node_type": "scene_role_clause", "value": value}
+
+    def scene_from_clause(self, value: str) -> dict[str, Any]:
+        return {"node_type": "scene_from_clause", "value": value}
+
+    def _scene_qualifier_value(self, items: tuple[Any, ...], qualifier: str) -> str:
+        for item in items:
+            if isinstance(item, dict) and item.get("node_type") == qualifier:
+                return str(item.get("value", "") or "")
+        return ""
+
+    def _scene_assignments(self, items: tuple[Any, ...]) -> list[tuple[str, Any]]:
+        assignments: list[tuple[str, Any]] = []
+        for item in items:
+            if isinstance(item, tuple) and len(item) == 2:
+                assignments.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_gameplay_block":
+                assignments.extend(item["assignments"])
+        return assignments
+
+    def region_scene_block(self, name: str, *items: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_region",
+            "name": name,
+            "type": self._scene_qualifier_value(items, "scene_type_clause"),
+            "values": self._assignments(self._scene_assignments(items), "region"),
+        }
+
+    def object_scene_block(
+        self,
+        name: str,
+        *items: Any,
+    ) -> dict[str, Any]:
+        return {
+            "node_type": "scene_object",
+            "name": name,
+            "role": self._scene_qualifier_value(items, "scene_role_clause"),
+            "from": self._scene_qualifier_value(items, "scene_from_clause"),
+            "values": self._assignments(self._scene_assignments(items), "object"),
+        }
+
+    def gameplay_scene_block(self, *assignments: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_gameplay_block",
+            "assignments": [(f"gameplay.{path}", value) for path, value in self._scene_assignments(assignments)],
+        }
+
+    def relationship_scene_block(
+        self,
+        name: str,
+        *items: Any,
+    ) -> dict[str, Any]:
+        return {
+            "node_type": "scene_relationship",
+            "name": name,
+            "type": self._scene_qualifier_value(items, "scene_type_clause"),
+            "values": self._assignments(self._scene_assignments(items), "relationship"),
+        }
+
+    def camera_scene_block(self, name: str, *items: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_camera",
+            "name": name,
+            "framing": self._scene_qualifier_value(items, "scene_type_clause"),
+            "values": self._assignments(self._scene_assignments(items), "camera"),
+        }
+
+    def camera_intent_scene_block(self, name: str, *items: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_camera",
+            "name": name,
+            "framing": self._scene_qualifier_value(items, "scene_type_clause"),
+            "values": self._assignments(self._scene_assignments(items), "camera_intent"),
+        }
+
+    def light_scene_block(self, name: str, *items: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_light",
+            "name": name,
+            "type": self._scene_qualifier_value(items, "scene_type_clause"),
+            "values": self._assignments(self._scene_assignments(items), "light"),
+        }
+
+    def lighting_plan_scene_block(self, name: str, *items: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_light",
+            "name": name,
+            "type": self._scene_qualifier_value(items, "scene_type_clause"),
+            "values": self._assignments(self._scene_assignments(items), "lighting_plan"),
+        }
+
+    def curiosity_anchor_scene_block(self, name: str, *assignments: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_curiosity_anchor",
+            "name": name,
+            "values": self._assignments(assignments, "curiosity_anchor"),
+        }
+
+    def hidden_state_scene_block(self, name: str, *assignments: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_hidden_state",
+            "name": name,
+            "values": self._assignments(assignments, "hidden_state"),
+        }
+
+    def export_scene_block(self, name: str, *assignments: Any) -> dict[str, Any]:
+        return {
+            "node_type": "scene_export",
+            "name": name,
+            "values": self._assignments(assignments, "export"),
+        }
 
     def asset_decl(self, name: str, kind: str, *rest: Any) -> dict[str, Any]:
         """Asset decl.

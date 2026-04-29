@@ -254,6 +254,8 @@ cache = { fail_under = 70, paths = ["lathe/cache.py"] }
 cli = { fail_under = 35, paths = ["lathe/cli"] }
 telemetry = { fail_under = 80, paths = ["lathe/telemetry.py"] }
 security = { fail_under = 75, paths = ["lathe/parser/prompt_injection.py", "lathe/net.py", "lathe/publish/signed_repro.py"] }
+scene = { fail_under = 45, paths = ["lathe/scene"] }
+wonder = { fail_under = 55, paths = ["lathe/wonder"] }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
