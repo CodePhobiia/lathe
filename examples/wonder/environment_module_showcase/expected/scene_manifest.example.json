@@ -1,0 +1,108 @@
+{
+  "schema_version": "lathe.scene_manifest.v1",
+  "scene_id": "environment_module_showcase",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "golden_fixture_proxy_contract",
+  "offline": true,
+  "source": {
+    "prompt": "../prompt.txt",
+    "dream_brief": "../dream_brief.json",
+    "scene_graph": "../scene_graph.json",
+    "world_memory": "../world_memory.json"
+  },
+  "objects": [
+    {
+      "object_id": "obj_env_room_shell_001",
+      "source": "architecture_room_shell",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_room_shell_001"
+    },
+    {
+      "object_id": "obj_env_floor_tile_002",
+      "source": "architecture_floor",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_floor_tile_002"
+    },
+    {
+      "object_id": "obj_env_wall_segment_003",
+      "source": "architecture_wall",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_wall_segment_003"
+    },
+    {
+      "object_id": "obj_env_ceiling_segment_004",
+      "source": "architecture_ceiling",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_ceiling_segment_004"
+    },
+    {
+      "object_id": "obj_env_arch_segment_005",
+      "source": "architecture_arch",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_arch_segment_005"
+    },
+    {
+      "object_id": "obj_env_platform_module_006",
+      "source": "architecture_platform",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_platform_module_006"
+    },
+    {
+      "object_id": "obj_env_stair_module_007",
+      "source": "architecture_stair",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_stair_module_007"
+    },
+    {
+      "object_id": "obj_env_background_silhouette_008",
+      "source": "environment_structure",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_background_silhouette_008"
+    },
+    {
+      "object_id": "obj_env_terrain_chunk_009",
+      "source": "natural_terrain_chunk",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_env_terrain_chunk_009"
+    }
+  ],
+  "planned_renders": [
+    {
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "camera_id": "camera_reveal",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    },
+    {
+      "task_id": "render_task_camera_topdown_debug_5f9f6a13a1",
+      "camera_id": "camera_topdown_debug",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    }
+  ],
+  "planned_exports": [
+    {
+      "task_id": "export_task_scene_graph_json_12df833709",
+      "target": "scene_graph",
+      "format": "json",
+      "declared_path": "exports/environment_module_showcase.scene_graph.json",
+      "status": "planned",
+      "artifact_path": null
+    }
+  ],
+  "built_renders": [],
+  "built_exports": [],
+  "notes": [
+    "Golden fixture reports deterministic proxy readiness only.",
+    "Generated render/export artifacts are produced in .tmp_tests during evidence runs, not committed here."
+  ]
+}

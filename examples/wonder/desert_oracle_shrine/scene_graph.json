@@ -1,0 +1,706 @@
+{
+  "schema_version": "lathe.scene_graph.v1",
+  "scene_id": "desert_oracle_shrine",
+  "version": 1,
+  "brief_id": "desert_oracle_shrine",
+  "prompt": "A desert oracle shrine at sunset, with wind-carved arches, a central mirror altar, sand channels, incense braziers, cloth shade, and a sealed sun door.",
+  "style_bible": {
+    "mood": [
+      "quiet",
+      "reverent",
+      "sun-warmed"
+    ],
+    "palette": [
+      "sun bleached limestone",
+      "lapis tile",
+      "shadow blue",
+      "gold dust",
+      "desert sage"
+    ],
+    "materials": [
+      "carved stone",
+      "polished tile",
+      "woven cloth",
+      "sandstone"
+    ],
+    "forms": [
+      "stepped plinths",
+      "wind-carved arches",
+      "cloth canopies",
+      "sand channels",
+      "mirror discs"
+    ],
+    "lighting": [
+      "Low sunset light grazes carved stone",
+      "braziers add warm points near the mirror"
+    ],
+    "avoid": [
+      "modern temple signage",
+      "sci-fi holograms",
+      "dense market clutter",
+      "real religious symbols",
+      "weapons",
+      "modern cables"
+    ]
+  },
+  "layout": {
+    "room_size": [
+      18.0,
+      14.0,
+      5.0
+    ],
+    "main_path": {
+      "from": "region_desert_oracle_shrine_main",
+      "to": "obj_oracle_mirror_002",
+      "width": 1.8
+    },
+    "focal_point": "obj_oracle_mirror_002",
+    "density": "medium",
+    "avoid_intersections": true
+  },
+  "regions": [
+    {
+      "region_id": "region_desert_oracle_shrine_main",
+      "name": "Desert Oracle Shrine",
+      "type": "exterior",
+      "purpose": "A compact shrine courtyard surrounded by low walls and wind-shaped arches.",
+      "mood": "quiet and reverent and sun-warmed",
+      "bounds": {
+        "center": [
+          0.0,
+          0.0,
+          2.5
+        ],
+        "size": [
+          18.0,
+          14.0,
+          5.0
+        ]
+      },
+      "semantic_tags": [
+        "small_courtyard",
+        "ancient mystery",
+        "desert fantasy",
+        "quiet",
+        "reverent",
+        "sun-warmed"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "obj_courtyard_wall_shell_001",
+      "name": "Courtyard Wall Shell",
+      "role": "architecture",
+      "region": "region_desert_oracle_shrine_main",
+      "lathe_asset": "courtyard_wall_shell",
+      "source_family": "environment_architecture",
+      "transform": {
+        "position": [
+          0.0,
+          -4.48,
+          2.25
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -90.0
+        ],
+        "scale": [
+          1.4,
+          1.4,
+          1.2
+        ]
+      },
+      "semantic_tags": [
+        "architecture",
+        "must",
+        "courtyard_wall_shell"
+      ],
+      "state": {
+        "description": "A low stone wall and arch shell defining the shrine boundary.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_sun_bleached_limestone_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_oracle_mirror_002",
+      "name": "Oracle Mirror",
+      "role": "hero_prop",
+      "region": "region_desert_oracle_shrine_main",
+      "lathe_asset": "oracle_mirror",
+      "source_family": "hero_prop",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "hero_prop",
+        "must",
+        "oracle_mirror"
+      ],
+      "state": {
+        "description": "A polished mirror disc mounted on the central altar.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [
+        {
+          "id": "inspect_oracle_mirror",
+          "action": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+          "reveals": "hidden_what_does_the_oracle_mirror_reflect_at_sunset_001"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_sun_bleached_limestone_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_sand_channel_path_003",
+      "name": "Sand Channel Path",
+      "role": "navigation",
+      "region": "region_desert_oracle_shrine_main",
+      "lathe_asset": "sand_channel_path",
+      "source_family": "navigation_marker",
+      "transform": {
+        "position": [
+          5.478,
+          -1.384,
+          0.05
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -18.0
+        ],
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ]
+      },
+      "semantic_tags": [
+        "navigation",
+        "should",
+        "sand_channel_path"
+      ],
+      "state": {
+        "description": "A readable sand channel path that connects entry, mirror, and door.",
+        "priority": "should",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_sun_bleached_limestone_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_incense_braziers_004",
+      "name": "Incense Braziers",
+      "role": "light_fixture",
+      "region": "region_desert_oracle_shrine_main",
+      "lathe_asset": "incense_braziers",
+      "source_family": "practical_light",
+      "transform": {
+        "position": [
+          3.386,
+          3.624,
+          3.1
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          54.0
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "semantic_tags": [
+        "light_fixture",
+        "must",
+        "incense_braziers"
+      ],
+      "state": {
+        "description": "Small braziers that mark the ritual circle around the mirror.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_sun_bleached_limestone_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_sealed_sun_door_005",
+      "name": "Sealed Sun Door",
+      "role": "interactive",
+      "region": "region_desert_oracle_shrine_main",
+      "lathe_asset": "sealed_sun_door",
+      "source_family": "interactive_mechanism",
+      "transform": {
+        "position": [
+          -3.386,
+          3.624,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          126.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "interactive",
+        "should",
+        "sealed_sun_door"
+      ],
+      "state": {
+        "description": "A locked door with a sun mark beyond the central mirror.",
+        "priority": "should",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [
+        {
+          "id": "use_sealed_sun_door",
+          "action": "Inspect the oracle mirror and decide whether to unlock the sealed sun door."
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_sun_bleached_limestone_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_date_palm_shadows_006",
+      "name": "Date Palm Shadows",
+      "role": "environment_structure",
+      "region": "region_desert_oracle_shrine_main",
+      "lathe_asset": "date_palm_shadows",
+      "source_family": "environment_structure",
+      "transform": {
+        "position": [
+          -5.478,
+          -1.384,
+          1.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          198.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "environment_structure",
+        "should",
+        "date_palm_shadows"
+      ],
+      "state": {
+        "description": "Background shade shapes that frame the courtyard edge.",
+        "priority": "should",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_sun_bleached_limestone_001"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "relationship_id": "rel_courtyard_wall_shell_001_contains_001",
+      "from": "obj_courtyard_wall_shell_001",
+      "to": "region_desert_oracle_shrine_main",
+      "type": "contains",
+      "description": "obj_courtyard_wall_shell_001 is lowered from the Dream Brief as contains region_desert_oracle_shrine_main."
+    },
+    {
+      "relationship_id": "rel_sand_channel_path_003_points_toward_003",
+      "from": "obj_sand_channel_path_003",
+      "to": "obj_oracle_mirror_002",
+      "type": "points_toward",
+      "description": "obj_sand_channel_path_003 is lowered from the Dream Brief as points_toward obj_oracle_mirror_002."
+    },
+    {
+      "relationship_id": "rel_incense_braziers_004_adjacent_to_004",
+      "from": "obj_incense_braziers_004",
+      "to": "obj_oracle_mirror_002",
+      "type": "adjacent_to",
+      "description": "obj_incense_braziers_004 is lowered from the Dream Brief as adjacent_to obj_oracle_mirror_002."
+    },
+    {
+      "relationship_id": "rel_sealed_sun_door_005_adjacent_to_005",
+      "from": "obj_sealed_sun_door_005",
+      "to": "obj_oracle_mirror_002",
+      "type": "adjacent_to",
+      "description": "obj_sealed_sun_door_005 is lowered from the Dream Brief as adjacent_to obj_oracle_mirror_002."
+    },
+    {
+      "relationship_id": "rel_date_palm_shadows_006_contains_006",
+      "from": "obj_date_palm_shadows_006",
+      "to": "region_desert_oracle_shrine_main",
+      "type": "contains",
+      "description": "obj_date_palm_shadows_006 is lowered from the Dream Brief as contains region_desert_oracle_shrine_main."
+    },
+    {
+      "relationship_id": "rel_light_incense_braziers_001_lights_focal_001",
+      "from": "light_incense_braziers_001",
+      "to": "obj_oracle_mirror_002",
+      "type": "lit_by",
+      "description": "Generated scene light targets the focal object."
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "mat_sun_bleached_limestone_001",
+      "name": "Sun Bleached Limestone",
+      "role": "carved_stone",
+      "palette_refs": [
+        "sun bleached limestone"
+      ],
+      "pbr": {
+        "basecolor": "#f462df",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_lapis_tile_002",
+      "name": "Lapis Tile",
+      "role": "polished_tile",
+      "palette_refs": [
+        "lapis tile"
+      ],
+      "pbr": {
+        "basecolor": "#cc02a4",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_shadow_blue_003",
+      "name": "Shadow Blue",
+      "role": "woven_cloth",
+      "palette_refs": [
+        "shadow blue"
+      ],
+      "pbr": {
+        "basecolor": "#bfb9ff",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_gold_dust_004",
+      "name": "Gold Dust",
+      "role": "sandstone",
+      "palette_refs": [
+        "gold dust"
+      ],
+      "pbr": {
+        "basecolor": "#9066f7",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_desert_sage_005",
+      "name": "Desert Sage",
+      "role": "carved_stone",
+      "palette_refs": [
+        "desert sage"
+      ],
+      "pbr": {
+        "basecolor": "#f54c8d",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    }
+  ],
+  "lights": [
+    {
+      "light_id": "light_incense_braziers_001",
+      "type": "area",
+      "target": "obj_oracle_mirror_002",
+      "color": "sun bleached limestone",
+      "intensity": 0.72,
+      "purpose": "Small braziers that mark the ritual circle around the mirror."
+    }
+  ],
+  "cameras": [
+    {
+      "camera_id": "camera_reveal",
+      "target": "obj_oracle_mirror_002",
+      "framing": "cinematic_wide",
+      "purpose": "Show the courtyard shell, mirror altar, and sealed sun door.",
+      "transform": {
+        "position": [
+          -8.1,
+          -7.7,
+          2.25
+        ],
+        "rotation": [
+          64.0,
+          0.0,
+          -38.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 48.0
+    },
+    {
+      "camera_id": "camera_mirror_detail",
+      "target": "obj_oracle_mirror_002",
+      "framing": "inspection",
+      "purpose": "Inspect the oracle mirror and sand channels.",
+      "transform": {
+        "position": [
+          -1.8,
+          -1.4,
+          1.4
+        ],
+        "rotation": [
+          62.0,
+          0.0,
+          -36.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 36.0
+    },
+    {
+      "camera_id": "camera_debug_topdown",
+      "target": "obj_oracle_mirror_002",
+      "framing": "topdown",
+      "purpose": "Deterministic topdown layout inspection.",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          9.0
+        ],
+        "rotation": [
+          90.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 55.0
+    }
+  ],
+  "curiosity_anchors": [
+    {
+      "anchor_id": "curiosity_what_does_the_oracle_mirror_reflect_at_sunset_001",
+      "visible_clue": "A scene detail invites investigation: What does the oracle mirror reflect at sunset?",
+      "hidden_fact": "Unresolved Wonder question: What does the oracle mirror reflect at sunset?",
+      "attached_to": "obj_oracle_mirror_002",
+      "suggested_user_actions": [
+        "Inspect the oracle mirror and decide whether to unlock the sealed sun door."
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_what_does_the_oracle_mirror_reflect_at_sunset",
+          "label": "Expand on What does the oracle mirror reflect at sunset?",
+          "target_scope": "obj_oracle_mirror_002",
+          "required_assets": [
+            "oracle_mirror_002"
+          ],
+          "continuity_constraints": [
+            "preserve obj_oracle_mirror_002",
+            "preserve primary layout"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_why_do_the_sand_channels_point_at_the_sealed_sun_door_002",
+      "visible_clue": "A scene detail invites investigation: Why do the sand channels point at the sealed sun door?",
+      "hidden_fact": "Unresolved Wonder question: Why do the sand channels point at the sealed sun door?",
+      "attached_to": "obj_oracle_mirror_002",
+      "suggested_user_actions": [
+        "Inspect the oracle mirror and decide whether to unlock the sealed sun door."
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_why_do_the_sand_channels_point_at_the_sealed_sun_door",
+          "label": "Expand on Why do the sand channels point at the sealed sun door?",
+          "target_scope": "obj_oracle_mirror_002",
+          "required_assets": [
+            "oracle_mirror_002"
+          ],
+          "continuity_constraints": [
+            "preserve obj_oracle_mirror_002",
+            "preserve primary layout"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_who_tends_the_incense_braziers_003",
+      "visible_clue": "A scene detail invites investigation: Who tends the incense braziers?",
+      "hidden_fact": "Unresolved Wonder question: Who tends the incense braziers?",
+      "attached_to": "obj_oracle_mirror_002",
+      "suggested_user_actions": [
+        "Inspect the oracle mirror and decide whether to unlock the sealed sun door."
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_who_tends_the_incense_braziers",
+          "label": "Expand on Who tends the incense braziers?",
+          "target_scope": "obj_oracle_mirror_002",
+          "required_assets": [
+            "oracle_mirror_002"
+          ],
+          "continuity_constraints": [
+            "preserve obj_oracle_mirror_002",
+            "preserve primary layout"
+          ]
+        }
+      ]
+    }
+  ],
+  "hidden_state": [
+    {
+      "hidden_id": "hidden_what_does_the_oracle_mirror_reflect_at_sunset_001",
+      "attached_to": "obj_oracle_mirror_002",
+      "fact": "Unresolved Wonder question: What does the oracle mirror reflect at sunset?",
+      "reveal_condition": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_why_do_the_sand_channels_point_at_the_sealed_sun_door_002",
+      "attached_to": "obj_oracle_mirror_002",
+      "fact": "Unresolved Wonder question: Why do the sand channels point at the sealed sun door?",
+      "reveal_condition": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_who_tends_the_incense_braziers_003",
+      "attached_to": "obj_oracle_mirror_002",
+      "fact": "Unresolved Wonder question: Who tends the incense braziers?",
+      "reveal_condition": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+      "visible": false
+    }
+  ],
+  "exports": [
+    {
+      "target": "scene_graph",
+      "format": "json",
+      "path": "scene_graph.json",
+      "metadata": {
+        "planned_only": true,
+        "lowered_from": "dream_brief"
+      }
+    },
+    {
+      "target": "scene_package",
+      "format": "lathepkg",
+      "path": "dist/desert_oracle_shrine.lathepkg",
+      "metadata": {
+        "planned_only": true,
+        "lowered_from": "dream_brief"
+      }
+    },
+    {
+      "target": "glb",
+      "format": "glb",
+      "path": "dist/exports/desert_oracle_shrine.glb",
+      "metadata": {
+        "planned_only": true,
+        "lowered_from": "dream_brief"
+      }
+    }
+  ],
+  "build_artifacts": [
+    {
+      "kind": "scene_graph",
+      "path": "scene_graph.json",
+      "status": "planned",
+      "produced_by": "lathe.wonder.brief"
+    }
+  ],
+  "memory_events": []
+}

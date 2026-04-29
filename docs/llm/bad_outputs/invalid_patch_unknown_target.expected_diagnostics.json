@@ -1,0 +1,13 @@
+{
+  "diagnostics": [
+    {
+      "code": "SP1501",
+      "name": "patch_target_missing",
+      "severity": "error",
+      "contract": "scene_patch",
+      "path": "/target_id",
+      "message": "Scene Patch object target 'obj_missing_001' was not found.",
+      "repair_category": "retarget_patch_to_existing_scene_entity"
+    }
+  ]
+}

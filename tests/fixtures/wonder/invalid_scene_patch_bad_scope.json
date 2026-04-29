@@ -1,0 +1,13 @@
+{
+  "schema_version": "lathe.scene_patch.v1",
+  "patch_id": "patch_bad_scope_001",
+  "scope": "timeline",
+  "target_id": "obj_astrolabe_table_001",
+  "instruction": "Make the table more sacred while preserving its layout.",
+  "preserve": [
+    "position"
+  ],
+  "allowed_changes": [
+    "materials"
+  ]
+}

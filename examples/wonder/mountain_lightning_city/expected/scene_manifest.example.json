@@ -1,0 +1,116 @@
+{
+  "schema_version": "lathe.scene_manifest.v1",
+  "scene_id": "mountain_lightning_city",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "golden_fixture_proxy_contract",
+  "offline": true,
+  "source": {
+    "prompt": "../prompt.txt",
+    "dream_brief": "../dream_brief.json",
+    "scene_graph": "../scene_graph.json",
+    "world_memory": "../world_memory.json"
+  },
+  "objects": [
+    {
+      "object_id": "obj_terrace_wall_modules_001",
+      "source": "terrace_wall_modules",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_terrace_wall_modules_001"
+    },
+    {
+      "object_id": "obj_lightning_rod_tower_002",
+      "source": "lightning_rod_tower",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_lightning_rod_tower_002"
+    },
+    {
+      "object_id": "obj_switchback_stairs_003",
+      "source": "switchback_stairs",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_switchback_stairs_003"
+    },
+    {
+      "object_id": "obj_sky_bridge_gate_004",
+      "source": "sky_bridge_gate",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_sky_bridge_gate_004"
+    },
+    {
+      "object_id": "obj_storm_lanterns_005",
+      "source": "storm_lanterns",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_storm_lanterns_005"
+    },
+    {
+      "object_id": "obj_cloudline_backdrop_006",
+      "source": "cloudline_backdrop",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_cloudline_backdrop_006"
+    }
+  ],
+  "planned_renders": [
+    {
+      "task_id": "render_task_camera_debug_topdown_bc8a62809e",
+      "camera_id": "camera_debug_topdown",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    },
+    {
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "camera_id": "camera_reveal",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    },
+    {
+      "task_id": "render_task_camera_tower_detail_bc087a8bf9",
+      "camera_id": "camera_tower_detail",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    }
+  ],
+  "planned_exports": [
+    {
+      "task_id": "export_task_glb_glb_3f7f82376f",
+      "target": "glb",
+      "format": "glb",
+      "declared_path": "dist/exports/mountain_lightning_city.glb",
+      "status": "planned",
+      "artifact_path": null
+    },
+    {
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "target": "scene_graph",
+      "format": "json",
+      "declared_path": "scene_graph.json",
+      "status": "planned",
+      "artifact_path": null
+    },
+    {
+      "task_id": "export_task_scene_package_lathepkg_3e8ebb929f",
+      "target": "scene_package",
+      "format": "lathepkg",
+      "declared_path": "dist/mountain_lightning_city.lathepkg",
+      "status": "planned",
+      "artifact_path": null
+    }
+  ],
+  "built_renders": [],
+  "built_exports": [],
+  "notes": [
+    "Golden fixture reports deterministic proxy readiness only.",
+    "Generated render/export artifacts are produced in .tmp_tests during evidence runs, not committed here."
+  ]
+}

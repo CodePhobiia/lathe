@@ -1,0 +1,118 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "alchemist_observatory",
+  "title": "The Alchemist Observatory",
+  "one_sentence": "A forgotten observatory built inside the ribcage of a dead celestial being.",
+  "source_prompt": "A forgotten alchemist observatory inside the ribcage of a dead god.",
+  "genre": [
+    "dark fantasy",
+    "ancient science"
+  ],
+  "mood": [
+    "sacred",
+    "eerie",
+    "dusty"
+  ],
+  "scale": "single_room",
+  "intent": {
+    "setting": "An abandoned observatory chamber held within a vast ribcage structure.",
+    "emotional_goal": "The first view should feel solemn, old, and quietly impossible.",
+    "primary_interaction": "Inspect the warm central lens and decide whether to reveal the hidden star map.",
+    "spatial_logic": "A central astrolabe table anchors a circular chamber, with ribs forming arches around it."
+  },
+  "style": {
+    "palette": [
+      "bone ivory",
+      "oxidized copper",
+      "black glass",
+      "candle gold",
+      "lunar blue"
+    ],
+    "materials": [
+      "ribbed bone architecture",
+      "aged brass instruments",
+      "dusty lenses",
+      "cracked enamel"
+    ],
+    "lighting": "Cold moonlight enters through cracked ribs while warm candles reveal brass details.",
+    "form_language": [
+      "rib arches",
+      "circular instruments",
+      "thin spires",
+      "engraved constellations"
+    ],
+    "avoid_styles": [
+      "modern electronics",
+      "clean science fiction panels",
+      "bright plastic"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "rib_architecture",
+      "description": "Rib bones forming the chamber architecture.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "central_astrolabe",
+      "description": "A brass astrolabe table with a black glass lens.",
+      "role": "hero_prop",
+      "priority": "must"
+    },
+    {
+      "id": "moonlight_beam",
+      "description": "A strong cold moonbeam crossing the central table.",
+      "role": "light_fixture",
+      "priority": "must"
+    },
+    {
+      "id": "sealed_archive_door",
+      "description": "A sealed archive door hinted at beyond the main chamber.",
+      "role": "interactive",
+      "priority": "should"
+    }
+  ],
+  "avoid": [
+    "modern monitors",
+    "clean sci-fi panels",
+    "neon signage"
+  ],
+  "constraints": {
+    "platform": "glb",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 150000,
+      "texture_resolution": 1024,
+      "mobile_friendly": false
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "First impression of the chamber and central table.",
+      "framing": "cinematic_wide"
+    },
+    {
+      "id": "warm_lens_detail",
+      "purpose": "Inspect the black glass lens and candle-lit brass.",
+      "framing": "inspection"
+    }
+  ],
+  "curiosity_goals": [
+    "Why is the central lens warm?",
+    "What lies behind the sealed archive door?",
+    "Who built an observatory inside this ribcage?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "lathe_source",
+    "glb",
+    "scene_package"
+  ],
+  "authoring_notes": "Phase 1 contract example. The scene graph is the source of truth until scene .lth syntax lands."
+}

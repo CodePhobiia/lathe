@@ -1,0 +1,48 @@
+{
+  "schema_version": "lathe.wonder_alpha_gate_report.v1",
+  "core_alpha_gate": "passed",
+  "blocking_missing_runtimes": [],
+  "alpha_decision_ready": true,
+  "remaining_human_decision": "Approve Project Wonder alpha gate.",
+  "optional_lane_keys": [
+    "blender",
+    "external_viewer",
+    "posix",
+    "roblox"
+  ],
+  "lane_ids": [
+    "env_probe",
+    "evidence_traceability",
+    "dream_brief_contract",
+    "scene_graph_contract",
+    "brief_scene_consistency",
+    "scene_graph_semantics",
+    "scene_patch_contract",
+    "render_inspection_contract",
+    "world_memory_contract",
+    "scene_plan_contract",
+    "scene_assembly_contract",
+    "scene_quality_validators"
+  ],
+  "report_bundle_keys": [
+    "benchmark_report",
+    "cli_catalog",
+    "contract_catalog",
+    "env_probe",
+    "evidence_traceability",
+    "example_catalog",
+    "final_readiness_report_json",
+    "final_readiness_report_md",
+    "performance_report",
+    "security_report"
+  ],
+  "non_runtime_deferred_lane_names": [
+    "human_alpha_decision"
+  ],
+  "example_catalog_summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "deferred_nonblocking": 0
+  }
+}

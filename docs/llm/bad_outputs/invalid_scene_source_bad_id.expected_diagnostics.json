@@ -1,0 +1,12 @@
+{
+  "diagnostics": [
+    {
+      "code": "WONDER_SCHEMA_VALIDATION",
+      "severity": "error",
+      "contract": "scene_graph",
+      "path": "/objects/0/object_id",
+      "message": "'bad object id' does not match '^obj_[a-z0-9_]{3,80}$'",
+      "repair_category": "replace_with_schema_valid_object_id"
+    }
+  ]
+}

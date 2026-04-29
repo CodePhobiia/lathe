@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/world-memory-v1.json",
+  "title": "Lathe Wonder World Memory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "memory_id",
+    "scene_id",
+    "scene_version",
+    "current_branch",
+    "summary",
+    "branches",
+    "events"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.world_memory.v1"
+    },
+    "memory_id": {
+      "$ref": "#/$defs/world_memory_id"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "current_branch": {
+      "$ref": "#/$defs/branch_id"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "branches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/branch"
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/memory_event"
+      }
+    },
+    "continuity_constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/continuity_constraint"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/metadata_value"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "world_memory_id": {
+      "type": "string",
+      "pattern": "^worldmem_[a-z0-9_]{3,96}$"
+    },
+    "branch_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "memory_id": {
+      "type": "string",
+      "pattern": "^mem_[a-z0-9_]{3,80}$"
+    },
+    "patch_id": {
+      "type": "string",
+      "pattern": "^patch_[a-z0-9_]{3,80}$"
+    },
+    "entity_ref": {
+      "type": "string",
+      "pattern": "^([a-z][a-z0-9_]{2,79}|obj_[a-z0-9_]{3,80}|region_[a-z0-9_]{3,80}|rel_[a-z0-9_]{3,80}|mat_[a-z0-9_]{3,80}|light_[a-z0-9_]{3,80}|camera_[a-z0-9_]{3,80}|curiosity_[a-z0-9_]{3,80}|hidden_[a-z0-9_]{3,80})$"
+    },
+    "memory_scope": {
+      "enum": [
+        "scene",
+        "region",
+        "object",
+        "camera",
+        "material",
+        "light",
+        "curiosity_anchor",
+        "hidden_state",
+        "relationship",
+        "branch",
+        "patch",
+        "render",
+        "validation",
+        "export",
+        "build"
+      ]
+    },
+    "memory_event_type": {
+      "enum": [
+        "fact",
+        "decision",
+        "hidden_lore",
+        "hidden_state",
+        "patch",
+        "branch",
+        "render",
+        "validation",
+        "continuity",
+        "user_note",
+        "system_note"
+      ]
+    },
+    "state_value": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata_value": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/state_value"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metadata_value"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/metadata_value"
+          }
+        }
+      ]
+    },
+    "branch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch_id",
+        "name",
+        "status",
+        "event_ids"
+      ],
+      "properties": {
+        "branch_id": {
+          "$ref": "#/$defs/branch_id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "status": {
+          "enum": [
+            "active",
+            "archived",
+            "merged",
+            "abandoned"
+          ]
+        },
+        "parent_branch": {
+          "$ref": "#/$defs/branch_id"
+        },
+        "base_event_id": {
+          "$ref": "#/$defs/memory_id"
+        },
+        "event_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/memory_id"
+          }
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "memory_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "type",
+        "scope",
+        "text",
+        "source"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/memory_id"
+        },
+        "type": {
+          "$ref": "#/$defs/memory_event_type"
+        },
+        "scope": {
+          "$ref": "#/$defs/memory_scope"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "affected_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/entity_ref"
+          }
+        },
+        "visibility": {
+          "enum": [
+            "public",
+            "private",
+            "hidden"
+          ]
+        },
+        "branch_id": {
+          "$ref": "#/$defs/branch_id"
+        },
+        "patch_id": {
+          "$ref": "#/$defs/patch_id"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/metadata_value"
+          }
+        }
+      }
+    },
+    "continuity_constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraint_id",
+        "scope",
+        "text"
+      ],
+      "properties": {
+        "constraint_id": {
+          "type": "string",
+          "pattern": "^constraint_[a-z0-9_]{3,80}$"
+        },
+        "scope": {
+          "$ref": "#/$defs/memory_scope"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "affected_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/entity_ref"
+          }
+        },
+        "priority": {
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "critical"
+          ]
+        }
+      }
+    }
+  }
+}

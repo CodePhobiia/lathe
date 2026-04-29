@@ -1,0 +1,40 @@
+{
+  "schema_version": "lathe.scene_manifest.v1",
+  "scene_id": "alchemist_observatory",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "offline_preview_package",
+  "offline": true,
+  "objects": [
+    {
+      "object_id": "obj_astrolabe_table_001",
+      "source": "astrolabe_table",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_astrolabe_table_001"
+    }
+  ],
+  "planned_renders": [
+    {
+      "task_id": "render_task_camera_reveal_001",
+      "camera_id": "camera_reveal",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    }
+  ],
+  "planned_exports": [
+    {
+      "task_id": "export_task_glb_001",
+      "target": "glb",
+      "format": "glb",
+      "declared_path": "exports/alchemist_observatory.glb",
+      "status": "planned",
+      "artifact_path": null
+    }
+  ],
+  "built_renders": [],
+  "built_exports": []
+}

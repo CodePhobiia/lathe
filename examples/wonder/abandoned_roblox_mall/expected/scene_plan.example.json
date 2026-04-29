@@ -1,0 +1,671 @@
+{
+  "assembly_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_dust_gray",
+            "slot": "rail"
+          },
+          {
+            "material": "mat_sun_worn_coral",
+            "slot": "stripe"
+          }
+        ],
+        "state": {
+          "blocked": true,
+          "collision": "box",
+          "material_slots": 2,
+          "max_texture_resolution": 512,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 1,
+          "triangle_count": 3400
+        }
+      },
+      "asset_task_id": "asset_task_broken_escalator_rail_16d6e7325eb2",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:broken_escalator_rail:default:6bbe6ecb4dd908c2",
+      "depends_on": [
+        "asset_task_broken_escalator_rail_16d6e7325eb2"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Broken Escalator Rail",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "navigation",
+        "semantic_tags": [
+          "blocked path",
+          "navigation",
+          "rail"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_broken_escalator_001",
+      "region": "region_atrium_floor",
+      "task_id": "assembly_task_obj_broken_escalator_001_307553df22",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          3,
+          -2,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          -30
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_faded_teal",
+            "slot": "paint"
+          },
+          {
+            "material": "mat_scuffed_tile",
+            "slot": "tile"
+          }
+        ],
+        "state": {
+          "collision": "hull",
+          "material_slots": 2,
+          "max_texture_resolution": 1024,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 2,
+          "triangle_count": 2800,
+          "water": false
+        }
+      },
+      "asset_task_id": "asset_task_dry_fountain_planter_8569aded141c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dry_fountain_planter:default:d26dd8755fa6f028",
+      "depends_on": [
+        "asset_task_dry_fountain_planter_8569aded141c"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_planter",
+            "reveals": "hidden_fountain_waypoint"
+          }
+        ],
+        "name": "Dry Fountain Planter",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "hero_prop",
+        "semantic_tags": [
+          "fountain",
+          "planter",
+          "waypoint"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_fountain_planter_001",
+      "region": "region_atrium_floor",
+      "task_id": "assembly_task_obj_fountain_planter_001_f5f5692354",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_dust_gray",
+            "slot": "frame"
+          },
+          {
+            "material": "mat_soft_yellow",
+            "slot": "sign"
+          }
+        ],
+        "state": {
+          "collision": "box",
+          "locked": true,
+          "material_slots": 2,
+          "max_texture_resolution": 512,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 1,
+          "triangle_count": 2600
+        }
+      },
+      "asset_task_id": "asset_task_arcade_security_gate_eb28df0bf1d9",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:arcade_security_gate:default:366d2391cc85c905",
+      "depends_on": [
+        "asset_task_arcade_security_gate_eb28df0bf1d9"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "try_gate",
+            "reveals": "hidden_arcade_power"
+          }
+        ],
+        "name": "Glowing Arcade Security Gate",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "interactive",
+        "semantic_tags": [
+          "security gate",
+          "arcade",
+          "interactive"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_security_gate_001",
+      "region": "region_arcade_gate",
+      "task_id": "assembly_task_obj_security_gate_001_ef2d5e1e9c",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          5,
+          2,
+          1.5
+        ],
+        "rotation": [
+          0,
+          0,
+          -90
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_simple_glass",
+            "slot": "glass"
+          },
+          {
+            "material": "mat_painted_concrete",
+            "slot": "wall"
+          }
+        ],
+        "state": {
+          "collision": "box",
+          "material_slots": 2,
+          "max_texture_resolution": 1024,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 2,
+          "triangle_count": 4200
+        }
+      },
+      "asset_task_id": "asset_task_storefront_row_b3a33ac3fa80",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:storefront_row:default:aaa2d26bad79d876",
+      "depends_on": [
+        "asset_task_storefront_row_b3a33ac3fa80"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Shuttered Storefront Row",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "architecture",
+        "semantic_tags": [
+          "storefront",
+          "architecture",
+          "closed"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_storefront_row_001",
+      "region": "region_atrium_floor",
+      "task_id": "assembly_task_obj_storefront_row_001_87730e3c42",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -4,
+          1,
+          1.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ],
+  "asset_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_dust_gray",
+            "slot": "rail"
+          },
+          {
+            "material": "mat_sun_worn_coral",
+            "slot": "stripe"
+          }
+        ],
+        "state": {
+          "blocked": true,
+          "collision": "box",
+          "material_slots": 2,
+          "max_texture_resolution": 512,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 1,
+          "triangle_count": 3400
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:broken_escalator_rail:default:6bbe6ecb4dd908c2",
+      "estimated_complexity": 20,
+      "mode": "preview",
+      "object_ids": [
+        "obj_broken_escalator_001"
+      ],
+      "override_fingerprint": "1047ae7ff2c783d0",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "broken_escalator_rail",
+        "ref": "broken_escalator_rail",
+        "source_family": "mall_navigation"
+      },
+      "task_id": "asset_task_broken_escalator_rail_16d6e7325eb2",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_faded_teal",
+            "slot": "paint"
+          },
+          {
+            "material": "mat_scuffed_tile",
+            "slot": "tile"
+          }
+        ],
+        "state": {
+          "collision": "hull",
+          "material_slots": 2,
+          "max_texture_resolution": 1024,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 2,
+          "triangle_count": 2800,
+          "water": false
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dry_fountain_planter:default:d26dd8755fa6f028",
+      "estimated_complexity": 22,
+      "mode": "preview",
+      "object_ids": [
+        "obj_fountain_planter_001"
+      ],
+      "override_fingerprint": "31753d365f348da3",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "dry_fountain_planter",
+        "ref": "dry_fountain_planter",
+        "source_family": "mall_centerpiece"
+      },
+      "task_id": "asset_task_dry_fountain_planter_8569aded141c",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_dust_gray",
+            "slot": "frame"
+          },
+          {
+            "material": "mat_soft_yellow",
+            "slot": "sign"
+          }
+        ],
+        "state": {
+          "collision": "box",
+          "locked": true,
+          "material_slots": 2,
+          "max_texture_resolution": 512,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 1,
+          "triangle_count": 2600
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:arcade_security_gate:default:366d2391cc85c905",
+      "estimated_complexity": 22,
+      "mode": "preview",
+      "object_ids": [
+        "obj_security_gate_001"
+      ],
+      "override_fingerprint": "cbe92e13a1183081",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "arcade_security_gate",
+        "ref": "arcade_security_gate",
+        "source_family": "mall_doors"
+      },
+      "task_id": "asset_task_arcade_security_gate_eb28df0bf1d9",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_simple_glass",
+            "slot": "glass"
+          },
+          {
+            "material": "mat_painted_concrete",
+            "slot": "wall"
+          }
+        ],
+        "state": {
+          "collision": "box",
+          "material_slots": 2,
+          "max_texture_resolution": 1024,
+          "mesh_count": 1,
+          "pivot": "base_center",
+          "texture_count": 2,
+          "triangle_count": 4200
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:storefront_row:default:aaa2d26bad79d876",
+      "estimated_complexity": 19,
+      "mode": "preview",
+      "object_ids": [
+        "obj_storefront_row_001"
+      ],
+      "override_fingerprint": "d00d82cc4eb33341",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "storefront_row",
+        "ref": "storefront_row",
+        "source_kit": "mall_lowpoly_kit"
+      },
+      "task_id": "asset_task_storefront_row_b3a33ac3fa80",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    }
+  ],
+  "cache_keys": [
+    {
+      "asset_task_id": "asset_task_broken_escalator_rail_16d6e7325eb2",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:broken_escalator_rail:default:6bbe6ecb4dd908c2",
+      "object_ids": [
+        "obj_broken_escalator_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "broken_escalator_rail",
+        "ref": "broken_escalator_rail",
+        "source_family": "mall_navigation"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_dry_fountain_planter_8569aded141c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dry_fountain_planter:default:d26dd8755fa6f028",
+      "object_ids": [
+        "obj_fountain_planter_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "dry_fountain_planter",
+        "ref": "dry_fountain_planter",
+        "source_family": "mall_centerpiece"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_arcade_security_gate_eb28df0bf1d9",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:arcade_security_gate:default:366d2391cc85c905",
+      "object_ids": [
+        "obj_security_gate_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "arcade_security_gate",
+        "ref": "arcade_security_gate",
+        "source_family": "mall_doors"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_storefront_row_b3a33ac3fa80",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:storefront_row:default:aaa2d26bad79d876",
+      "object_ids": [
+        "obj_storefront_row_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "storefront_row",
+        "ref": "storefront_row",
+        "source_kit": "mall_lowpoly_kit"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "export_tasks": [
+    {
+      "depends_on": [
+        "assembly_task_obj_broken_escalator_001_307553df22",
+        "assembly_task_obj_fountain_planter_001_f5f5692354",
+        "assembly_task_obj_security_gate_001_ef2d5e1e9c",
+        "assembly_task_obj_storefront_row_001_87730e3c42"
+      ],
+      "format": "json",
+      "metadata": {
+        "profile_id": "roblox_lowpoly",
+        "units": "studs"
+      },
+      "mode": "preview",
+      "path": "dist/exports/abandoned_roblox_mall.roblox_manifest.json",
+      "source_index": 1,
+      "target": "roblox_manifest",
+      "task_id": "export_task_roblox_manifest_json_9345acd627",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "assembly_task_obj_broken_escalator_001_307553df22",
+        "assembly_task_obj_fountain_planter_001_f5f5692354",
+        "assembly_task_obj_security_gate_001_ef2d5e1e9c",
+        "assembly_task_obj_storefront_row_001_87730e3c42"
+      ],
+      "format": "json",
+      "metadata": {},
+      "mode": "preview",
+      "path": "scene_graph.json",
+      "source_index": 0,
+      "target": "scene_graph",
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "render_task_camera_gate_detail_054067a844",
+        "render_task_camera_reveal_3b7c5655ea",
+        "render_task_camera_topdown_debug_5f9f6a13a1"
+      ],
+      "format": "lathepkg",
+      "metadata": {},
+      "mode": "preview",
+      "path": "dist/abandoned_roblox_mall.lathepkg",
+      "source_index": 2,
+      "target": "scene_package",
+      "task_id": "export_task_scene_package_lathepkg_2e2d047c10",
+      "task_type": "scene_export"
+    }
+  ],
+  "metadata": {
+    "budgets": {
+      "max_complexity": 320,
+      "max_objects": 32,
+      "quality": "preview",
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024
+    },
+    "counts": {
+      "assembly_tasks": 4,
+      "asset_tasks": 4,
+      "cameras": 2,
+      "export_tasks": 3,
+      "lights": 2,
+      "materials": 7,
+      "objects": 4,
+      "render_tasks": 3
+    },
+    "estimated_complexity": 109,
+    "planner": "lathe.scene.planner",
+    "planner_version": 1
+  },
+  "mode": "preview",
+  "plan_id": "plan_abandoned_roblox_mall_c4194f01fe11",
+  "render_tasks": [
+    {
+      "camera_id": "camera_gate_detail",
+      "depends_on": [
+        "assembly_task_obj_broken_escalator_001_307553df22",
+        "assembly_task_obj_fountain_planter_001_f5f5692354",
+        "assembly_task_obj_security_gate_001_ef2d5e1e9c",
+        "assembly_task_obj_storefront_row_001_87730e3c42"
+      ],
+      "framing": "inspection",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_security_gate_001",
+      "task_id": "render_task_camera_gate_detail_054067a844",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_reveal",
+      "depends_on": [
+        "assembly_task_obj_broken_escalator_001_307553df22",
+        "assembly_task_obj_fountain_planter_001_f5f5692354",
+        "assembly_task_obj_security_gate_001_ef2d5e1e9c",
+        "assembly_task_obj_storefront_row_001_87730e3c42"
+      ],
+      "framing": "cinematic_wide",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_fountain_planter_001",
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "depends_on": [
+        "assembly_task_obj_broken_escalator_001_307553df22",
+        "assembly_task_obj_fountain_planter_001_f5f5692354",
+        "assembly_task_obj_security_gate_001_ef2d5e1e9c",
+        "assembly_task_obj_storefront_row_001_87730e3c42"
+      ],
+      "framing": "topdown",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_fountain_planter_001",
+      "task_id": "render_task_camera_topdown_debug_5f9f6a13a1",
+      "task_type": "scene_render"
+    }
+  ],
+  "scene_id": "abandoned_roblox_mall",
+  "schema_version": "lathe.scene_plan.v1",
+  "source_brief_id": "abandoned_roblox_mall",
+  "source_prompt": "An abandoned Roblox-ready low-poly mall atrium with shuttered storefronts, a dry fountain planter, a broken escalator, and one glowing security gate hinting at a hidden arcade.",
+  "warnings": []
+}

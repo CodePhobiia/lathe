@@ -1,0 +1,668 @@
+{
+  "schema_version": "lathe.scene_graph.v1",
+  "scene_id": "abandoned_roblox_mall",
+  "version": 1,
+  "brief_id": "abandoned_roblox_mall",
+  "prompt": "An abandoned Roblox-ready low-poly mall atrium with shuttered storefronts, a dry fountain planter, a broken escalator, and one glowing security gate hinting at a hidden arcade.",
+  "style_bible": {
+    "mood": [
+      "quiet",
+      "dusty",
+      "playable"
+    ],
+    "palette": [
+      "faded teal",
+      "sun-worn coral",
+      "dust gray",
+      "soft yellow"
+    ],
+    "materials": [
+      "painted concrete",
+      "scuffed tile",
+      "simple glass",
+      "plastic signage"
+    ],
+    "forms": [
+      "blocky storefronts",
+      "rounded planter bowl",
+      "chunky railings",
+      "simple neon strips"
+    ],
+    "lighting": [
+      "soft skylight",
+      "small warm gate glow"
+    ],
+    "avoid": [
+      "real brand names",
+      "photo textures",
+      "dense debris"
+    ]
+  },
+  "layout": {
+    "room_size": [
+      16,
+      12,
+      5
+    ],
+    "main_path": {
+      "from": "region_entry_lane",
+      "to": "obj_fountain_planter_001",
+      "width": 2
+    },
+    "focal_point": "obj_fountain_planter_001",
+    "density": "medium",
+    "avoid_intersections": true
+  },
+  "regions": [
+    {
+      "region_id": "region_atrium_floor",
+      "name": "Atrium Floor",
+      "type": "interior",
+      "purpose": "Primary playable mall space.",
+      "mood": "quiet and open",
+      "bounds": {
+        "center": [
+          0,
+          0,
+          1.5
+        ],
+        "size": [
+          16,
+          12,
+          3
+        ]
+      },
+      "semantic_tags": [
+        "mall",
+        "atrium",
+        "roblox lowpoly"
+      ]
+    },
+    {
+      "region_id": "region_entry_lane",
+      "name": "Entry Lane",
+      "type": "threshold",
+      "purpose": "Simple approach path into the mall atrium.",
+      "mood": "dusty and readable",
+      "bounds": {
+        "center": [
+          0,
+          -5,
+          1
+        ],
+        "size": [
+          4,
+          2,
+          2
+        ]
+      },
+      "semantic_tags": [
+        "entry",
+        "path"
+      ]
+    },
+    {
+      "region_id": "region_arcade_gate",
+      "name": "Arcade Gate",
+      "type": "threshold",
+      "purpose": "Expansion hook behind the glowing security gate.",
+      "mood": "hidden and warm",
+      "bounds": {
+        "center": [
+          5,
+          2,
+          1.5
+        ],
+        "size": [
+          2,
+          1,
+          3
+        ]
+      },
+      "semantic_tags": [
+        "arcade",
+        "locked",
+        "expansion"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "obj_storefront_row_001",
+      "name": "Shuttered Storefront Row",
+      "role": "architecture",
+      "region": "region_atrium_floor",
+      "lathe_asset": "storefront_row",
+      "source_kit": "mall_lowpoly_kit",
+      "transform": {
+        "position": [
+          -4,
+          1,
+          1.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "wall",
+          "material": "mat_painted_concrete"
+        },
+        {
+          "slot": "glass",
+          "material": "mat_simple_glass"
+        }
+      ],
+      "semantic_tags": [
+        "storefront",
+        "architecture",
+        "closed"
+      ],
+      "state": {
+        "triangle_count": 4200,
+        "mesh_count": 1,
+        "texture_count": 2,
+        "max_texture_resolution": 1024,
+        "material_slots": 2,
+        "collision": "box",
+        "pivot": "base_center"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_fountain_planter_001",
+      "name": "Dry Fountain Planter",
+      "role": "hero_prop",
+      "region": "region_atrium_floor",
+      "lathe_asset": "dry_fountain_planter",
+      "source_family": "mall_centerpiece",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "tile",
+          "material": "mat_scuffed_tile"
+        },
+        {
+          "slot": "paint",
+          "material": "mat_faded_teal"
+        }
+      ],
+      "semantic_tags": [
+        "fountain",
+        "planter",
+        "waypoint"
+      ],
+      "state": {
+        "triangle_count": 2800,
+        "mesh_count": 1,
+        "texture_count": 2,
+        "max_texture_resolution": 1024,
+        "material_slots": 2,
+        "collision": "hull",
+        "pivot": "base_center",
+        "water": false
+      },
+      "affordances": [
+        {
+          "id": "inspect_planter",
+          "action": "inspect",
+          "reveals": "hidden_fountain_waypoint"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_broken_escalator_001",
+      "name": "Broken Escalator Rail",
+      "role": "navigation",
+      "region": "region_atrium_floor",
+      "lathe_asset": "broken_escalator_rail",
+      "source_family": "mall_navigation",
+      "transform": {
+        "position": [
+          3,
+          -2,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          -30
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "rail",
+          "material": "mat_dust_gray"
+        },
+        {
+          "slot": "stripe",
+          "material": "mat_sun_worn_coral"
+        }
+      ],
+      "semantic_tags": [
+        "blocked path",
+        "navigation",
+        "rail"
+      ],
+      "state": {
+        "triangle_count": 3400,
+        "mesh_count": 1,
+        "texture_count": 1,
+        "max_texture_resolution": 512,
+        "material_slots": 2,
+        "collision": "box",
+        "pivot": "base_center",
+        "blocked": true
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_security_gate_001",
+      "name": "Glowing Arcade Security Gate",
+      "role": "interactive",
+      "region": "region_arcade_gate",
+      "lathe_asset": "arcade_security_gate",
+      "source_family": "mall_doors",
+      "transform": {
+        "position": [
+          5,
+          2,
+          1.5
+        ],
+        "rotation": [
+          0,
+          0,
+          -90
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "frame",
+          "material": "mat_dust_gray"
+        },
+        {
+          "slot": "sign",
+          "material": "mat_soft_yellow"
+        }
+      ],
+      "semantic_tags": [
+        "security gate",
+        "arcade",
+        "interactive"
+      ],
+      "state": {
+        "triangle_count": 2600,
+        "mesh_count": 1,
+        "texture_count": 1,
+        "max_texture_resolution": 512,
+        "material_slots": 2,
+        "collision": "box",
+        "pivot": "base_center",
+        "locked": true
+      },
+      "affordances": [
+        {
+          "id": "try_gate",
+          "action": "inspect",
+          "reveals": "hidden_arcade_power"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "relationship_id": "rel_fountain_frames_gate",
+      "from": "obj_fountain_planter_001",
+      "to": "obj_security_gate_001",
+      "type": "points_toward",
+      "description": "The fountain planter subtly points players toward the glowing gate."
+    },
+    {
+      "relationship_id": "rel_escalator_blocks_path",
+      "from": "obj_broken_escalator_001",
+      "to": "region_atrium_floor",
+      "type": "blocks_path",
+      "description": "The broken escalator keeps the first playable loop compact."
+    },
+    {
+      "relationship_id": "rel_storefronts_contain_atrium",
+      "from": "obj_storefront_row_001",
+      "to": "region_atrium_floor",
+      "type": "contains",
+      "description": "The storefront row defines the atrium edge."
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "mat_painted_concrete",
+      "name": "Painted Concrete",
+      "role": "wall",
+      "palette_refs": [
+        "dust gray"
+      ],
+      "pbr": {
+        "basecolor": "#8a8d87",
+        "metallic": 0,
+        "roughness": 0.78
+      }
+    },
+    {
+      "material_id": "mat_simple_glass",
+      "name": "Simple Glass",
+      "role": "window",
+      "palette_refs": [
+        "faded teal"
+      ],
+      "pbr": {
+        "basecolor": "#7fc1b6",
+        "metallic": 0,
+        "roughness": 0.25
+      }
+    },
+    {
+      "material_id": "mat_scuffed_tile",
+      "name": "Scuffed Tile",
+      "role": "floor",
+      "palette_refs": [
+        "dust gray"
+      ],
+      "pbr": {
+        "basecolor": "#b6b4a8",
+        "metallic": 0,
+        "roughness": 0.66
+      }
+    },
+    {
+      "material_id": "mat_faded_teal",
+      "name": "Faded Teal Paint",
+      "role": "paint",
+      "palette_refs": [
+        "faded teal"
+      ],
+      "pbr": {
+        "basecolor": "#4f9f96",
+        "metallic": 0,
+        "roughness": 0.7
+      }
+    },
+    {
+      "material_id": "mat_sun_worn_coral",
+      "name": "Sun Worn Coral Plastic",
+      "role": "trim",
+      "palette_refs": [
+        "sun-worn coral"
+      ],
+      "pbr": {
+        "basecolor": "#d9796a",
+        "metallic": 0,
+        "roughness": 0.58
+      }
+    },
+    {
+      "material_id": "mat_dust_gray",
+      "name": "Dust Gray Metal",
+      "role": "rail",
+      "palette_refs": [
+        "dust gray"
+      ],
+      "pbr": {
+        "basecolor": "#777a78",
+        "metallic": 0.35,
+        "roughness": 0.68
+      }
+    },
+    {
+      "material_id": "mat_soft_yellow",
+      "name": "Soft Yellow Sign Glow",
+      "role": "emissive",
+      "palette_refs": [
+        "soft yellow"
+      ],
+      "pbr": {
+        "basecolor": "#ffd96a",
+        "metallic": 0,
+        "roughness": 0.35,
+        "emissive": "#ffd96a"
+      }
+    }
+  ],
+  "lights": [
+    {
+      "light_id": "light_skylight_001",
+      "type": "area",
+      "target": "obj_fountain_planter_001",
+      "color": "soft white",
+      "intensity": 0.7,
+      "purpose": "Soft atrium-wide skylight."
+    },
+    {
+      "light_id": "light_gate_glow_001",
+      "type": "point",
+      "target": "obj_security_gate_001",
+      "color": "soft yellow",
+      "intensity": 0.35,
+      "purpose": "Warm clue light at the arcade gate."
+    }
+  ],
+  "cameras": [
+    {
+      "camera_id": "camera_reveal",
+      "target": "obj_fountain_planter_001",
+      "framing": "cinematic_wide",
+      "purpose": "First impression of the whole Roblox-ready mall atrium.",
+      "transform": {
+        "position": [
+          -6,
+          -5,
+          3
+        ],
+        "rotation": [
+          60,
+          0,
+          -38
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "fov_degrees": 50
+    },
+    {
+      "camera_id": "camera_gate_detail",
+      "target": "obj_security_gate_001",
+      "framing": "inspection",
+      "purpose": "Read the glowing gate clue and arcade hint.",
+      "transform": {
+        "position": [
+          3,
+          -0.5,
+          2
+        ],
+        "rotation": [
+          58,
+          0,
+          -20
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "fov_degrees": 38
+    }
+  ],
+  "curiosity_anchors": [
+    {
+      "anchor_id": "curiosity_arcade_gate",
+      "visible_clue": "The security gate still glows even though every storefront is closed.",
+      "hidden_fact": "The arcade gate still glows because a backup battery powers the hidden arcade.",
+      "attached_to": "obj_security_gate_001",
+      "suggested_user_actions": [
+        "inspect gate",
+        "follow warm glow",
+        "open arcade"
+      ],
+      "expansion_options": [
+        {
+          "id": "hidden_arcade_room",
+          "label": "Generate the hidden arcade room behind the gate.",
+          "target_scope": "region_arcade_gate",
+          "required_assets": [
+            "lowpoly_arcade_cabinet",
+            "ticket_counter"
+          ],
+          "continuity_constraints": [
+            "preserve security gate identity",
+            "preserve mall atrium grid"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_fountain_waypoint",
+      "visible_clue": "The dry fountain planter is arranged like a route marker.",
+      "hidden_fact": "The fountain planter is arranged like a waypoint toward the hidden arcade gate.",
+      "attached_to": "obj_fountain_planter_001",
+      "suggested_user_actions": [
+        "inspect planter",
+        "look toward gate",
+        "trace path"
+      ],
+      "expansion_options": [
+        {
+          "id": "waypoint_tiles",
+          "label": "Reveal the tile path from the fountain planter to the gate.",
+          "target_scope": "region_atrium_floor",
+          "required_assets": [
+            "painted_tile_arrow",
+            "dust_trail_decal"
+          ],
+          "continuity_constraints": [
+            "preserve fountain position",
+            "preserve snap grid"
+          ]
+        }
+      ]
+    }
+  ],
+  "hidden_state": [
+    {
+      "hidden_id": "hidden_arcade_power",
+      "attached_to": "obj_security_gate_001",
+      "fact": "The arcade gate still glows because a backup battery powers the hidden arcade.",
+      "reveal_condition": "User inspects the glowing security gate.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_fountain_waypoint",
+      "attached_to": "obj_fountain_planter_001",
+      "fact": "The fountain planter is arranged like a waypoint toward the hidden arcade gate.",
+      "reveal_condition": "User inspects the dry fountain planter.",
+      "visible": false
+    }
+  ],
+  "exports": [
+    {
+      "target": "scene_graph",
+      "format": "json",
+      "path": "scene_graph.json"
+    },
+    {
+      "target": "roblox_manifest",
+      "format": "json",
+      "path": "dist/exports/abandoned_roblox_mall.roblox_manifest.json",
+      "metadata": {
+        "profile_id": "roblox_lowpoly",
+        "units": "studs"
+      }
+    },
+    {
+      "target": "scene_package",
+      "format": "lathepkg",
+      "path": "dist/abandoned_roblox_mall.lathepkg"
+    }
+  ],
+  "build_artifacts": [
+    {
+      "kind": "scene_manifest",
+      "path": "dist/build/roblox_manifest.json",
+      "status": "planned",
+      "produced_by": "lathe.scene.roblox"
+    }
+  ],
+  "memory_events": [
+    {
+      "event_id": "mem_mall_initial_001",
+      "type": "fact",
+      "text": "The mall atrium is authored as a Roblox low-poly contract example.",
+      "affected_ids": [
+        "region_atrium_floor",
+        "obj_fountain_planter_001"
+      ],
+      "source": "initial_prompt"
+    },
+    {
+      "event_id": "mem_arcade_hidden_001",
+      "type": "hidden_state",
+      "text": "The security gate hides a powered arcade expansion hook.",
+      "affected_ids": [
+        "obj_security_gate_001",
+        "hidden_arcade_power"
+      ],
+      "source": "scene_graph_authoring"
+    }
+  ]
+}

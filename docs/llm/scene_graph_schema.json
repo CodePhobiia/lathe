@@ -1,0 +1,7 @@
+{
+  "schema_pointer_version": "lathe.llm_schema_pointer.v1",
+  "contract": "scene_graph",
+  "schema_version": "lathe.scene_graph.v1",
+  "canonical_schema": "../../schema/scene_graph.schema.json",
+  "usage": "Link to the canonical schema from prompts and tools instead of copying schema bodies."
+}

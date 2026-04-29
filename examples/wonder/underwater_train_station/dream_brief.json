@@ -1,0 +1,130 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "underwater_train_station",
+  "title": "Underwater Train Station",
+  "one_sentence": "A glass-tube transit platform beneath the sea, built as a multi-room Wonder seed with clear expansion hooks.",
+  "source_prompt": "An underwater train station with arched glass tunnels, a stopped bathysphere train, red signal lamps, coral growth, and a sealed service hatch behind the platform.",
+  "genre": [
+    "retro transit",
+    "undersea mystery"
+  ],
+  "mood": [
+    "hushed",
+    "pressurized",
+    "curious"
+  ],
+  "scale": "multi_room_seed",
+  "intent": {
+    "setting": "A submerged transit station with a main platform, glass concourse, and service threshold.",
+    "emotional_goal": "The space should feel calm, sealed, and slightly vulnerable to the ocean outside.",
+    "primary_interaction": "Inspect the stopped train and decide whether to open the sealed service hatch.",
+    "spatial_logic": "The platform runs beside the train, with tunnel mouths and service spaces branching from the main concourse."
+  },
+  "style": {
+    "palette": [
+      "deep teal",
+      "oxidized brass",
+      "pearl white",
+      "signal red",
+      "algae green"
+    ],
+    "materials": [
+      "riveted glass",
+      "aged brass",
+      "ceramic tile",
+      "wet concrete"
+    ],
+    "lighting": "Caustic blue window light mixes with red signal lamps and small platform fixtures.",
+    "form_language": [
+      "arched tunnel mouths",
+      "ribbed glass tubes",
+      "platform edges",
+      "round portholes",
+      "rail lines"
+    ],
+    "avoid_styles": [
+      "modern subway ads",
+      "photoreal fish schools",
+      "horror gore"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "glass_tube_concourse",
+      "description": "A ribbed glass station shell that reveals the ocean outside.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "stopped_bathysphere_train",
+      "description": "A rounded undersea train stopped beside the platform.",
+      "role": "hero_prop",
+      "priority": "must"
+    },
+    {
+      "id": "platform_edge_markers",
+      "description": "Readable route markers along the station platform.",
+      "role": "navigation",
+      "priority": "should"
+    },
+    {
+      "id": "red_signal_lamps",
+      "description": "Signal lamps that still glow red at the far tunnel.",
+      "role": "light_fixture",
+      "priority": "must"
+    },
+    {
+      "id": "sealed_service_hatch",
+      "description": "A locked hatch to a maintenance room below the platform.",
+      "role": "interactive",
+      "priority": "should"
+    },
+    {
+      "id": "coral_platform_growth",
+      "description": "Controlled coral forms creeping along one quiet platform edge.",
+      "role": "dressing_prop",
+      "priority": "should"
+    }
+  ],
+  "avoid": [
+    "real transit brands",
+    "open ocean combat",
+    "paper posters"
+  ],
+  "constraints": {
+    "platform": "glb",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 130000,
+      "texture_resolution": 1024,
+      "mobile_friendly": false
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "Show the platform, glass tube, and stopped train together.",
+      "framing": "cinematic_wide"
+    },
+    {
+      "id": "hatch_detail",
+      "purpose": "Inspect the locked service hatch and signal reflections.",
+      "framing": "inspection"
+    }
+  ],
+  "curiosity_goals": [
+    "Why did the train stop under the sea?",
+    "What is behind the sealed service hatch?",
+    "Why are the red signal lamps still powered?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "scene_package",
+    "glb"
+  ],
+  "authoring_notes": "Phase 32 JSON-only Wonder example focused on environment modules, transit readability, and underwater material language."
+}

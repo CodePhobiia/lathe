@@ -1,0 +1,116 @@
+{
+  "schema_version": "lathe.scene_manifest.v1",
+  "scene_id": "desert_oracle_shrine",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "golden_fixture_proxy_contract",
+  "offline": true,
+  "source": {
+    "prompt": "../prompt.txt",
+    "dream_brief": "../dream_brief.json",
+    "scene_graph": "../scene_graph.json",
+    "world_memory": "../world_memory.json"
+  },
+  "objects": [
+    {
+      "object_id": "obj_courtyard_wall_shell_001",
+      "source": "courtyard_wall_shell",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_courtyard_wall_shell_001"
+    },
+    {
+      "object_id": "obj_oracle_mirror_002",
+      "source": "oracle_mirror",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_oracle_mirror_002"
+    },
+    {
+      "object_id": "obj_sand_channel_path_003",
+      "source": "sand_channel_path",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_sand_channel_path_003"
+    },
+    {
+      "object_id": "obj_incense_braziers_004",
+      "source": "incense_braziers",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_incense_braziers_004"
+    },
+    {
+      "object_id": "obj_sealed_sun_door_005",
+      "source": "sealed_sun_door",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_sealed_sun_door_005"
+    },
+    {
+      "object_id": "obj_date_palm_shadows_006",
+      "source": "date_palm_shadows",
+      "status": "planned",
+      "artifact_dir": "build/objects/obj_date_palm_shadows_006"
+    }
+  ],
+  "planned_renders": [
+    {
+      "task_id": "render_task_camera_debug_topdown_bc8a62809e",
+      "camera_id": "camera_debug_topdown",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    },
+    {
+      "task_id": "render_task_camera_mirror_detail_e008fc286b",
+      "camera_id": "camera_mirror_detail",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    },
+    {
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "camera_id": "camera_reveal",
+      "status": "planned",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "artifact_path": null
+    }
+  ],
+  "planned_exports": [
+    {
+      "task_id": "export_task_glb_glb_ae7294d907",
+      "target": "glb",
+      "format": "glb",
+      "declared_path": "dist/exports/desert_oracle_shrine.glb",
+      "status": "planned",
+      "artifact_path": null
+    },
+    {
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "target": "scene_graph",
+      "format": "json",
+      "declared_path": "scene_graph.json",
+      "status": "planned",
+      "artifact_path": null
+    },
+    {
+      "task_id": "export_task_scene_package_lathepkg_2e1270e42c",
+      "target": "scene_package",
+      "format": "lathepkg",
+      "declared_path": "dist/desert_oracle_shrine.lathepkg",
+      "status": "planned",
+      "artifact_path": null
+    }
+  ],
+  "built_renders": [],
+  "built_exports": [],
+  "notes": [
+    "Golden fixture reports deterministic proxy readiness only.",
+    "Generated render/export artifacts are produced in .tmp_tests during evidence runs, not committed here."
+  ]
+}

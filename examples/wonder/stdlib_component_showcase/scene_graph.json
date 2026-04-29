@@ -1,0 +1,2672 @@
+{
+  "schema_version": "lathe.scene_graph.v1",
+  "scene_id": "stdlib_component_showcase",
+  "version": 1,
+  "prompt": "A deterministic Wonder standard-library component showcase.",
+  "style_bible": {
+    "mood": [
+      "readable",
+      "modular",
+      "catalog"
+    ],
+    "palette": [
+      "warm stone",
+      "simple wood",
+      "weathered green",
+      "aged brass",
+      "soft emissive"
+    ],
+    "materials": [
+      "painted stone",
+      "simple wood",
+      "natural mineral",
+      "aged brass",
+      "soft emissive"
+    ],
+    "forms": [
+      "modular kits",
+      "clear silhouettes",
+      "scene-scale props"
+    ],
+    "lighting": [
+      "soft key",
+      "catalog fill"
+    ],
+    "avoid": []
+  },
+  "layout": {
+    "room_size": [
+      28.0,
+      18.0,
+      8.0
+    ],
+    "main_path": {
+      "from": "region_entry",
+      "to": "obj_hero_altar_001",
+      "width": 1.5
+    },
+    "focal_point": "obj_hero_altar_001",
+    "density": "dense",
+    "avoid_intersections": true,
+    "modular_walls": {
+      "enabled": true,
+      "regions": [
+        "region_stdlib_gallery"
+      ],
+      "sides": [
+        "north",
+        "south",
+        "east",
+        "west"
+      ],
+      "module_length": 2.0,
+      "snap_grid": 1.0,
+      "height": 4.0,
+      "thickness": 0.25
+    }
+  },
+  "regions": [
+    {
+      "region_id": "region_stdlib_gallery",
+      "name": "Stdlib Gallery",
+      "type": "interior",
+      "purpose": "Show every Wonder standard-library component contract.",
+      "mood": "clear",
+      "bounds": {
+        "center": [
+          0.0,
+          0.0,
+          2.0
+        ],
+        "size": [
+          28.0,
+          18.0,
+          8.0
+        ]
+      },
+      "semantic_tags": [
+        "catalog",
+        "stdlib"
+      ]
+    },
+    {
+      "region_id": "region_entry",
+      "name": "Entry",
+      "type": "threshold",
+      "purpose": "Start of the showcase path.",
+      "mood": "neutral",
+      "bounds": {
+        "center": [
+          0.0,
+          -8.0,
+          0.5
+        ],
+        "size": [
+          4.0,
+          1.0,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "entry"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "obj_architecture_wall_001",
+      "name": "Wall Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_wall",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "boundary",
+        "wall"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_wall_kit"
+    },
+    {
+      "object_id": "obj_architecture_floor_001",
+      "name": "Floor Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_floor",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "floor",
+        "walkable"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_floor_kit"
+    },
+    {
+      "object_id": "obj_architecture_ceiling_001",
+      "name": "Ceiling Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_ceiling",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "ceiling",
+        "overhead"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_ceiling_kit"
+    },
+    {
+      "object_id": "obj_architecture_arch_001",
+      "name": "Arch Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_arch",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "arch",
+        "architecture",
+        "threshold"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_arch_kit"
+    },
+    {
+      "object_id": "obj_architecture_column_001",
+      "name": "Column Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_column",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "column",
+        "support"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_column_kit"
+    },
+    {
+      "object_id": "obj_architecture_stair_001",
+      "name": "Stair Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_stair",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "navigation",
+        "stair"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_stair_kit"
+    },
+    {
+      "object_id": "obj_architecture_door_001",
+      "name": "Door Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_door",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "door",
+        "threshold"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_door_kit"
+    },
+    {
+      "object_id": "obj_architecture_window_001",
+      "name": "Window Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_window",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "opening",
+        "window"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_window_kit"
+    },
+    {
+      "object_id": "obj_architecture_bridge_001",
+      "name": "Bridge Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_bridge",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "bridge",
+        "navigation"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_bridge_kit"
+    },
+    {
+      "object_id": "obj_architecture_railing_001",
+      "name": "Railing Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_railing",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "railing",
+        "safety"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_railing_kit"
+    },
+    {
+      "object_id": "obj_architecture_platform_001",
+      "name": "Platform Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_platform",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "platform",
+        "walkable"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_platform_kit"
+    },
+    {
+      "object_id": "obj_architecture_tunnel_001",
+      "name": "Tunnel Module",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_tunnel",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "passage",
+        "tunnel"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "architecture_tunnel_kit"
+    },
+    {
+      "object_id": "obj_architecture_room_shell_001",
+      "name": "Modular Room Shell",
+      "role": "architecture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "architecture_room_shell",
+      "source_family": "environment_architecture",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "architecture",
+        "room",
+        "shell"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "modular_room_shell_kit"
+    },
+    {
+      "object_id": "obj_dressing_crate_001",
+      "name": "Crate",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_crate",
+      "source_family": "dressing_crate_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "crate",
+        "environmental_dressing",
+        "storage"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_barrel_001",
+      "name": "Barrel",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_barrel",
+      "source_family": "dressing_barrel_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "barrel",
+        "environmental_dressing",
+        "storage"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_book_001",
+      "name": "Book",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_book",
+      "source_family": "dressing_book_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "book",
+        "environmental_dressing",
+        "knowledge"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_candle_001",
+      "name": "Candle",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_candle",
+      "source_family": "dressing_candle_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "candle",
+        "environmental_dressing",
+        "ritual"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_chain_001",
+      "name": "Chain",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_chain",
+      "source_family": "dressing_chain_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "chain",
+        "environmental_dressing",
+        "hanging"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_pipe_001",
+      "name": "Pipe",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_pipe",
+      "source_family": "dressing_pipe_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "environmental_dressing",
+        "pipe",
+        "utility"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_vent_001",
+      "name": "Vent",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_vent",
+      "source_family": "dressing_vent_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "environmental_dressing",
+        "utility",
+        "vent"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_panel_001",
+      "name": "Panel",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_panel",
+      "source_family": "dressing_panel_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "environmental_dressing",
+        "panel",
+        "surface"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_debris_001",
+      "name": "Debris",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_debris",
+      "source_family": "dressing_debris_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "debris",
+        "environmental_dressing",
+        "scatter"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_rug_001",
+      "name": "Rug",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_rug",
+      "source_family": "dressing_rug_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "environmental_dressing",
+        "rug",
+        "soft"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_banner_001",
+      "name": "Banner",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_banner",
+      "source_family": "dressing_banner_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "banner",
+        "environmental_dressing",
+        "signage"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_dressing_sign_001",
+      "name": "Sign",
+      "role": "dressing_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "dressing_sign",
+      "source_family": "dressing_sign_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_dressing"
+        }
+      ],
+      "semantic_tags": [
+        "environmental_dressing",
+        "sign",
+        "wayfinding"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_rock_001",
+      "name": "Rock Cluster",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_rock",
+      "source_family": "natural_rock_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "natural_form",
+        "rock",
+        "terrain"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_root_001",
+      "name": "Root Cluster",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_root",
+      "source_family": "natural_root_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "natural_form",
+        "organic",
+        "root"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_vine_001",
+      "name": "Vine Cluster",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_vine",
+      "source_family": "natural_vine_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "natural_form",
+        "organic",
+        "vine"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_crystal_001",
+      "name": "Crystal Cluster",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_crystal",
+      "source_family": "natural_crystal_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "crystal",
+        "mineral",
+        "natural_form"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_mushroom_001",
+      "name": "Mushroom Cluster",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_mushroom",
+      "source_family": "natural_mushroom_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "mushroom",
+        "natural_form",
+        "organic"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_dead_tree_001",
+      "name": "Dead Tree",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_dead_tree",
+      "source_family": "natural_dead_tree_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "dead_tree",
+        "natural_form",
+        "silhouette"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_bone_001",
+      "name": "Bone Cluster",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_bone",
+      "source_family": "natural_bone_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "bone",
+        "natural_form",
+        "organic"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_coral_form_001",
+      "name": "Coral Form",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_coral_form",
+      "source_family": "natural_coral_form_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "coral",
+        "natural_form",
+        "organic"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_natural_terrain_chunk_001",
+      "name": "Terrain Chunk",
+      "role": "environment_structure",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "natural_terrain_chunk",
+      "source_family": "natural_form",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "ground",
+        "natural_form",
+        "terrain"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "natural_terrain_chunk_kit"
+    },
+    {
+      "object_id": "obj_hero_altar_001",
+      "name": "Altar",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_altar",
+      "source_family": "hero_altar_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "altar",
+        "hero_prop",
+        "ritual"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_altar",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_machine_001",
+      "name": "Machine",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_machine",
+      "source_family": "hero_machine_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "hero_prop",
+        "machine",
+        "mechanism"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_machine",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_console_001",
+      "name": "Console",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_console",
+      "source_family": "hero_console_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "console",
+        "hero_prop",
+        "interface"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_console",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_relic_001",
+      "name": "Relic",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_relic",
+      "source_family": "hero_relic_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "artifact",
+        "hero_prop",
+        "relic"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_relic",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_portal_001",
+      "name": "Portal",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_portal",
+      "source_family": "hero_portal_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "hero_prop",
+        "portal",
+        "threshold"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_portal",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_vehicle_001",
+      "name": "Vehicle",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_vehicle",
+      "source_family": "hero_vehicle_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "hero_prop",
+        "transport",
+        "vehicle"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_vehicle",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_weapon_001",
+      "name": "Weapon",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_weapon",
+      "source_family": "hero_weapon_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "hero_prop",
+        "tool",
+        "weapon"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_weapon",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_tool_001",
+      "name": "Tool",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_tool",
+      "source_family": "hero_tool_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "craft",
+        "hero_prop",
+        "tool"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_tool",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_hero_furniture_001",
+      "name": "Furniture",
+      "role": "hero_prop",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "hero_furniture",
+      "source_family": "hero_furniture_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -12.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_hero"
+        }
+      ],
+      "semantic_tags": [
+        "furniture",
+        "hero_prop",
+        "interior"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_hero_furniture",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_light_torch_001",
+      "name": "Torch",
+      "role": "light_fixture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "light_torch",
+      "source_family": "light_torch_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -8.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_light"
+        }
+      ],
+      "semantic_tags": [
+        "flame",
+        "lighting_fixture",
+        "torch"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_light_torch",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_light_lamp_001",
+      "name": "Lamp",
+      "role": "light_fixture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "light_lamp",
+      "source_family": "light_lamp_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          -4.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_light"
+        }
+      ],
+      "semantic_tags": [
+        "lamp",
+        "lighting_fixture",
+        "practical"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_light_lamp",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_light_neon_tube_001",
+      "name": "Neon Tube",
+      "role": "light_fixture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "light_neon_tube",
+      "source_family": "light_neon_tube_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          0.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_light"
+        }
+      ],
+      "semantic_tags": [
+        "emissive",
+        "lighting_fixture",
+        "neon"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_light_neon_tube",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_light_moon_window_001",
+      "name": "Moon Window",
+      "role": "light_fixture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "light_moon_window",
+      "source_family": "practical_light",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          4.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_light"
+        }
+      ],
+      "semantic_tags": [
+        "lighting_fixture",
+        "moon_window",
+        "moonlight"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_light_moon_window",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "source_kit": "light_moon_window_kit"
+    },
+    {
+      "object_id": "obj_light_glowing_crystal_001",
+      "name": "Glowing Crystal",
+      "role": "light_fixture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "light_glowing_crystal",
+      "source_family": "light_glowing_crystal_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          8.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_light"
+        }
+      ],
+      "semantic_tags": [
+        "emissive",
+        "glowing_crystal",
+        "lighting_fixture"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_light_glowing_crystal",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_light_hologram_001",
+      "name": "Hologram",
+      "role": "light_fixture",
+      "region": "region_stdlib_gallery",
+      "lathe_asset": "light_hologram",
+      "source_family": "light_hologram_family",
+      "variant": "stdlib_default",
+      "transform": {
+        "position": [
+          12.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_light"
+        }
+      ],
+      "semantic_tags": [
+        "hologram",
+        "lighting_fixture",
+        "projection"
+      ],
+      "state": {
+        "catalog_ready": true,
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [
+        {
+          "id": "inspect_light_hologram",
+          "action": "inspect"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "relationship_id": "rel_stdlib_wall_supports_shell",
+      "from": "obj_architecture_wall_001",
+      "to": "obj_architecture_room_shell_001",
+      "type": "supports",
+      "description": "Wall modules are the primary boundary pieces for room shells."
+    },
+    {
+      "relationship_id": "rel_stdlib_moon_window_lights_altar",
+      "from": "obj_light_moon_window_001",
+      "to": "obj_hero_altar_001",
+      "type": "lit_by",
+      "description": "Lighting fixtures can be linked to hero props for reveal composition."
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "mat_stdlib_architecture",
+      "name": "Stdlib Architecture Stone",
+      "role": "architecture",
+      "palette_refs": [
+        "warm stone",
+        "aged plaster"
+      ],
+      "pbr": {
+        "basecolor": "#8f897c",
+        "metallic": 0.0,
+        "roughness": 0.82
+      }
+    },
+    {
+      "material_id": "mat_stdlib_dressing",
+      "name": "Stdlib Dressing Wood",
+      "role": "surface",
+      "palette_refs": [
+        "simple wood",
+        "painted trim"
+      ],
+      "pbr": {
+        "basecolor": "#9a6f46",
+        "metallic": 0.0,
+        "roughness": 0.72
+      }
+    },
+    {
+      "material_id": "mat_stdlib_natural",
+      "name": "Stdlib Natural Form",
+      "role": "terrain",
+      "palette_refs": [
+        "weathered green",
+        "mineral gray"
+      ],
+      "pbr": {
+        "basecolor": "#6f7f62",
+        "metallic": 0.0,
+        "roughness": 0.88
+      }
+    },
+    {
+      "material_id": "mat_stdlib_hero",
+      "name": "Stdlib Hero Metal",
+      "role": "mechanism",
+      "palette_refs": [
+        "aged brass",
+        "dark iron"
+      ],
+      "pbr": {
+        "basecolor": "#9a7a45",
+        "metallic": 0.65,
+        "roughness": 0.48
+      }
+    },
+    {
+      "material_id": "mat_stdlib_light",
+      "name": "Stdlib Soft Emissive",
+      "role": "accent",
+      "palette_refs": [
+        "soft emissive",
+        "moon blue"
+      ],
+      "pbr": {
+        "basecolor": "#f2c36b",
+        "metallic": 0.0,
+        "roughness": 0.35,
+        "emissive": "#f2c36b"
+      }
+    }
+  ],
+  "lights": [
+    {
+      "light_id": "light_stdlib_key",
+      "type": "area",
+      "target": "obj_hero_altar_001",
+      "color": "soft emissive",
+      "intensity": 0.8,
+      "purpose": "Readable catalog key light."
+    }
+  ],
+  "cameras": [
+    {
+      "camera_id": "camera_reveal",
+      "target": "obj_hero_altar_001",
+      "framing": "cinematic_wide",
+      "purpose": "Reveal the standard-library component gallery.",
+      "transform": {
+        "position": [
+          -10.0,
+          -10.0,
+          5.0
+        ],
+        "rotation": [
+          60.0,
+          0.0,
+          -35.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 55.0
+    }
+  ],
+  "curiosity_anchors": [
+    {
+      "anchor_id": "curiosity_stdlib_wall_index",
+      "visible_clue": "The wall index labels which modules can grow into larger room shells.",
+      "hidden_fact": "The kit wall index marks which modules can expand into a larger room shell.",
+      "attached_to": "obj_architecture_wall_001",
+      "suggested_user_actions": [
+        "inspect wall index",
+        "expand room shell"
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_room_shell",
+          "label": "Generate a larger modular room shell.",
+          "target_scope": "region_stdlib_gallery",
+          "required_assets": [
+            "architecture_wall",
+            "architecture_floor",
+            "architecture_ceiling"
+          ],
+          "continuity_constraints": [
+            "preserve component ids"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_stdlib_light_modes",
+      "visible_clue": "The moon window and torch sit side by side with distinct light colors.",
+      "hidden_fact": "The moon window and torch entries demonstrate alternate lighting fixtures for mood changes.",
+      "attached_to": "obj_light_moon_window_001",
+      "suggested_user_actions": [
+        "inspect lighting modes",
+        "switch mood"
+      ],
+      "expansion_options": [
+        {
+          "id": "switch_catalog_mood",
+          "label": "Show the same component set under a darker lighting plan.",
+          "target_scope": "obj_light_moon_window_001",
+          "required_assets": [
+            "light_moon_window",
+            "light_torch"
+          ],
+          "continuity_constraints": [
+            "preserve object layout"
+          ]
+        }
+      ]
+    }
+  ],
+  "hidden_state": [
+    {
+      "hidden_id": "hidden_stdlib_wall_index",
+      "attached_to": "obj_architecture_wall_001",
+      "fact": "The kit wall index marks which modules can expand into a larger room shell.",
+      "reveal_condition": "User inspects the wall index labels.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_stdlib_light_modes",
+      "attached_to": "obj_light_moon_window_001",
+      "fact": "The moon window and torch entries demonstrate alternate lighting fixtures for mood changes.",
+      "reveal_condition": "User inspects the lighting fixture row.",
+      "visible": false
+    }
+  ],
+  "exports": [
+    {
+      "target": "scene_graph",
+      "format": "json",
+      "path": "exports/stdlib_component_showcase.scene_graph.json"
+    }
+  ],
+  "build_artifacts": [],
+  "memory_events": [
+    {
+      "event_id": "mem_stdlib_catalog_created",
+      "type": "fact",
+      "text": "The showcase scene exercises every committed Wonder standard-library component contract.",
+      "affected_ids": [
+        "region_stdlib_gallery"
+      ],
+      "source": "lathe.scene.stdlib"
+    }
+  ]
+}

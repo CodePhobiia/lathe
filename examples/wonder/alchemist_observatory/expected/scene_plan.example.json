@@ -1,0 +1,619 @@
+{
+  "assembly_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_oxidized_brass",
+            "slot": "frame"
+          },
+          {
+            "material": "mat_bone_ivory",
+            "slot": "panel"
+          }
+        ],
+        "state": {
+          "locked": true,
+          "requires": "star_lens_alignment"
+        }
+      },
+      "asset_task_id": "asset_task_sealed_archive_door_75255175465a",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_archive_door:default:65be01e98896f2d9",
+      "depends_on": [
+        "asset_task_sealed_archive_door_75255175465a"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "open",
+            "id": "attempt_open",
+            "requires": "star_lens_alignment"
+          }
+        ],
+        "name": "Sealed Archive Door",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "interactive",
+        "semantic_tags": [
+          "sealed",
+          "archive",
+          "mystery"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_archive_door_001",
+      "region": "region_sealed_archive",
+      "task_id": "assembly_task_obj_archive_door_001_8d5c018895",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          4.8,
+          1.5,
+          1.7
+        ],
+        "rotation": [
+          0,
+          0,
+          -90
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_black_glass",
+            "slot": "lens"
+          },
+          {
+            "material": "mat_oxidized_brass",
+            "slot": "metal"
+          }
+        ],
+        "state": {
+          "damaged": false,
+          "powered": true,
+          "secret_compartment": "unopened"
+        }
+      },
+      "asset_task_id": "asset_task_astrolabe_table_8787fc2f5480",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:astrolabe_table:default:6546356e640663e4",
+      "depends_on": [
+        "asset_task_astrolabe_table_8787fc2f5480"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_lens",
+            "reveals": "hidden_warm_lens_truth"
+          }
+        ],
+        "name": "Central Astrolabe Table",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "hero_prop",
+        "semantic_tags": [
+          "astronomy",
+          "ritual",
+          "interactive"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_astrolabe_table_001",
+      "region": "region_central_chamber",
+      "task_id": "assembly_task_obj_astrolabe_table_001_7b0e1e8098",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0.75
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1.4,
+          1.4,
+          1
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_candle_gold",
+            "slot": "flame"
+          },
+          {
+            "material": "mat_candle_wax",
+            "slot": "wax"
+          }
+        ],
+        "state": {
+          "lit": true,
+          "wax_drip_amount": 0.8
+        }
+      },
+      "asset_task_id": "asset_task_candle_cluster_f7382aad3890",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:candle_cluster:melted:b6e8e51ed1a2f450",
+      "depends_on": [
+        "asset_task_candle_cluster_f7382aad3890"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Candle Cluster",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "light_fixture",
+        "semantic_tags": [
+          "ritual",
+          "warm light",
+          "scale cue"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_candle_cluster_001",
+      "region": "region_central_chamber",
+      "task_id": "assembly_task_obj_candle_cluster_001_c1474639aa",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -2.2,
+          1.6,
+          0.25
+        ],
+        "rotation": [
+          0,
+          0,
+          18
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_bone_ivory",
+            "slot": "bone"
+          }
+        ],
+        "state": {
+          "cracked": true,
+          "load_bearing": true
+        }
+      },
+      "asset_task_id": "asset_task_rib_arch_ring_e6d6bd7b75e8",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:rib_arch_ring:default:bb2f88b6c3e0ef7d",
+      "depends_on": [
+        "asset_task_rib_arch_ring_e6d6bd7b75e8"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Rib Arch Ring",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "architecture",
+        "semantic_tags": [
+          "ribcage",
+          "architecture",
+          "shelter"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_rib_arches_001",
+      "region": "region_central_chamber",
+      "task_id": "assembly_task_obj_rib_arches_001_13feceec76",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0,
+          0,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ],
+  "asset_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_oxidized_brass",
+            "slot": "frame"
+          },
+          {
+            "material": "mat_bone_ivory",
+            "slot": "panel"
+          }
+        ],
+        "state": {
+          "locked": true,
+          "requires": "star_lens_alignment"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_archive_door:default:65be01e98896f2d9",
+      "estimated_complexity": 16,
+      "mode": "preview",
+      "object_ids": [
+        "obj_archive_door_001"
+      ],
+      "override_fingerprint": "54cb3a70ff868de9",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sealed_archive_door",
+        "ref": "sealed_archive_door",
+        "source_family": "mechanical_door"
+      },
+      "task_id": "asset_task_sealed_archive_door_75255175465a",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_black_glass",
+            "slot": "lens"
+          },
+          {
+            "material": "mat_oxidized_brass",
+            "slot": "metal"
+          }
+        ],
+        "state": {
+          "damaged": false,
+          "powered": true,
+          "secret_compartment": "unopened"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:astrolabe_table:default:6546356e640663e4",
+      "estimated_complexity": 17,
+      "mode": "preview",
+      "object_ids": [
+        "obj_astrolabe_table_001"
+      ],
+      "override_fingerprint": "ab5df33a31040add",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "astrolabe_table",
+        "ref": "astrolabe_table",
+        "source_family": "ornate_mechanical_table"
+      },
+      "task_id": "asset_task_astrolabe_table_8787fc2f5480",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_candle_gold",
+            "slot": "flame"
+          },
+          {
+            "material": "mat_candle_wax",
+            "slot": "wax"
+          }
+        ],
+        "state": {
+          "lit": true,
+          "wax_drip_amount": 0.8
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:candle_cluster:melted:b6e8e51ed1a2f450",
+      "estimated_complexity": 17,
+      "mode": "preview",
+      "object_ids": [
+        "obj_candle_cluster_001"
+      ],
+      "override_fingerprint": "a2d70089cb4d6c91",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "candle_cluster",
+        "ref": "candle_cluster",
+        "source_family": "ritual_candles"
+      },
+      "task_id": "asset_task_candle_cluster_f7382aad3890",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ],
+      "variant": "melted"
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_bone_ivory",
+            "slot": "bone"
+          }
+        ],
+        "state": {
+          "cracked": true,
+          "load_bearing": true
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:rib_arch_ring:default:bb2f88b6c3e0ef7d",
+      "estimated_complexity": 12,
+      "mode": "preview",
+      "object_ids": [
+        "obj_rib_arches_001"
+      ],
+      "override_fingerprint": "df4b5b6df496ecfb",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "rib_arch_ring",
+        "ref": "rib_arch_ring",
+        "source_kit": "bone_architecture"
+      },
+      "task_id": "asset_task_rib_arch_ring_e6d6bd7b75e8",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    }
+  ],
+  "cache_keys": [
+    {
+      "asset_task_id": "asset_task_sealed_archive_door_75255175465a",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_archive_door:default:65be01e98896f2d9",
+      "object_ids": [
+        "obj_archive_door_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sealed_archive_door",
+        "ref": "sealed_archive_door",
+        "source_family": "mechanical_door"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_astrolabe_table_8787fc2f5480",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:astrolabe_table:default:6546356e640663e4",
+      "object_ids": [
+        "obj_astrolabe_table_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "astrolabe_table",
+        "ref": "astrolabe_table",
+        "source_family": "ornate_mechanical_table"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_candle_cluster_f7382aad3890",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:candle_cluster:melted:b6e8e51ed1a2f450",
+      "object_ids": [
+        "obj_candle_cluster_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "candle_cluster",
+        "ref": "candle_cluster",
+        "source_family": "ritual_candles"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_rib_arch_ring_e6d6bd7b75e8",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:rib_arch_ring:default:bb2f88b6c3e0ef7d",
+      "object_ids": [
+        "obj_rib_arches_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "rib_arch_ring",
+        "ref": "rib_arch_ring",
+        "source_kit": "bone_architecture"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "export_tasks": [
+    {
+      "depends_on": [
+        "assembly_task_obj_archive_door_001_8d5c018895",
+        "assembly_task_obj_astrolabe_table_001_7b0e1e8098",
+        "assembly_task_obj_candle_cluster_001_c1474639aa",
+        "assembly_task_obj_rib_arches_001_13feceec76"
+      ],
+      "format": "glb",
+      "metadata": {
+        "embed_object_ids": true
+      },
+      "mode": "preview",
+      "path": "dist/exports/alchemist_observatory.glb",
+      "source_index": 2,
+      "target": "glb",
+      "task_id": "export_task_glb_glb_c312a74f24",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "assembly_task_obj_archive_door_001_8d5c018895",
+        "assembly_task_obj_astrolabe_table_001_7b0e1e8098",
+        "assembly_task_obj_candle_cluster_001_c1474639aa",
+        "assembly_task_obj_rib_arches_001_13feceec76"
+      ],
+      "format": "json",
+      "metadata": {},
+      "mode": "preview",
+      "path": "scene_graph.json",
+      "source_index": 0,
+      "target": "scene_graph",
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "render_task_camera_reveal_3b7c5655ea",
+        "render_task_camera_warm_lens_detail_14ddf14a40",
+        "render_task_camera_topdown_debug_5f9f6a13a1"
+      ],
+      "format": "lathepkg",
+      "metadata": {},
+      "mode": "preview",
+      "path": "dist/alchemist_observatory.lathepkg",
+      "source_index": 1,
+      "target": "scene_package",
+      "task_id": "export_task_scene_package_lathepkg_ea577b2b30",
+      "task_type": "scene_export"
+    }
+  ],
+  "metadata": {
+    "budgets": {
+      "max_complexity": 320,
+      "max_objects": 32,
+      "quality": "preview",
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024
+    },
+    "counts": {
+      "assembly_tasks": 4,
+      "asset_tasks": 4,
+      "cameras": 2,
+      "export_tasks": 3,
+      "lights": 2,
+      "materials": 5,
+      "objects": 4,
+      "render_tasks": 3
+    },
+    "estimated_complexity": 88,
+    "planner": "lathe.scene.planner",
+    "planner_version": 1
+  },
+  "mode": "preview",
+  "plan_id": "plan_alchemist_observatory_26d46dcaeede",
+  "render_tasks": [
+    {
+      "camera_id": "camera_reveal",
+      "depends_on": [
+        "assembly_task_obj_archive_door_001_8d5c018895",
+        "assembly_task_obj_astrolabe_table_001_7b0e1e8098",
+        "assembly_task_obj_candle_cluster_001_c1474639aa",
+        "assembly_task_obj_rib_arches_001_13feceec76"
+      ],
+      "framing": "cinematic_wide",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_astrolabe_table_001",
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_warm_lens_detail",
+      "depends_on": [
+        "assembly_task_obj_archive_door_001_8d5c018895",
+        "assembly_task_obj_astrolabe_table_001_7b0e1e8098",
+        "assembly_task_obj_candle_cluster_001_c1474639aa",
+        "assembly_task_obj_rib_arches_001_13feceec76"
+      ],
+      "framing": "inspection",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_astrolabe_table_001",
+      "task_id": "render_task_camera_warm_lens_detail_14ddf14a40",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "depends_on": [
+        "assembly_task_obj_archive_door_001_8d5c018895",
+        "assembly_task_obj_astrolabe_table_001_7b0e1e8098",
+        "assembly_task_obj_candle_cluster_001_c1474639aa",
+        "assembly_task_obj_rib_arches_001_13feceec76"
+      ],
+      "framing": "topdown",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_astrolabe_table_001",
+      "task_id": "render_task_camera_topdown_debug_5f9f6a13a1",
+      "task_type": "scene_render"
+    }
+  ],
+  "scene_id": "alchemist_observatory",
+  "schema_version": "lathe.scene_plan.v1",
+  "source_brief_id": "alchemist_observatory",
+  "source_prompt": "A forgotten alchemist observatory inside the ribcage of a dead god.",
+  "warnings": []
+}

@@ -1,0 +1,13 @@
+{
+  "diagnostics": [
+    {
+      "code": "SP3002",
+      "name": "missing_render_task",
+      "severity": "error",
+      "contract": "scene_plan",
+      "path": "/render_tasks",
+      "message": "Scene Plan must include at least one deterministic render task for LLM authoring review.",
+      "repair_category": "add_deterministic_render_task"
+    }
+  ]
+}

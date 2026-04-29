@@ -1,0 +1,92 @@
+{
+  "schema_version": "lathe.world_memory.v1",
+  "memory_id": "worldmem_alchemist_observatory",
+  "scene_id": "alchemist_observatory",
+  "scene_version": 1,
+  "current_branch": "main",
+  "summary": "Continuity memory for the first Alchemist Observatory scene seed.",
+  "branches": [
+    {
+      "branch_id": "main",
+      "name": "Main continuity",
+      "status": "active",
+      "event_ids": [
+        "mem_initial_fact_001",
+        "mem_hidden_lore_lens_001",
+        "mem_user_decision_archive_001",
+        "mem_patch_more_sacred_001"
+      ],
+      "summary": "The sealed observatory remains intact while the archive door is reserved for a future branch."
+    }
+  ],
+  "events": [
+    {
+      "event_id": "mem_initial_fact_001",
+      "type": "fact",
+      "scope": "scene",
+      "text": "The observatory was built inside the ribcage of a dead celestial being.",
+      "affected_ids": [
+        "alchemist_observatory",
+        "region_central_chamber",
+        "obj_rib_arches_001"
+      ],
+      "visibility": "public",
+      "branch_id": "main",
+      "source": "initial_prompt"
+    },
+    {
+      "event_id": "mem_hidden_lore_lens_001",
+      "type": "hidden_lore",
+      "scope": "object",
+      "text": "The central black-glass lens is warm because it still tracks a living star.",
+      "affected_ids": [
+        "obj_astrolabe_table_001",
+        "hidden_warm_lens_truth"
+      ],
+      "visibility": "hidden",
+      "branch_id": "main",
+      "source": "scene_graph_authoring"
+    },
+    {
+      "event_id": "mem_user_decision_archive_001",
+      "type": "decision",
+      "scope": "region",
+      "text": "Keep the sealed archive door closed in the MVP scene so it remains a curiosity expansion hook.",
+      "affected_ids": [
+        "region_sealed_archive",
+        "obj_archive_door_001"
+      ],
+      "visibility": "private",
+      "branch_id": "main",
+      "source": "user_direction"
+    },
+    {
+      "event_id": "mem_patch_more_sacred_001",
+      "type": "patch",
+      "scope": "scene",
+      "text": "A later patch may push the chamber mood more sacred without moving the table, rib ring, or archive door.",
+      "affected_ids": [
+        "obj_astrolabe_table_001",
+        "obj_rib_arches_001",
+        "obj_archive_door_001"
+      ],
+      "visibility": "private",
+      "branch_id": "main",
+      "patch_id": "patch_more_sacred",
+      "source": "scene_patch_more_sacred"
+    }
+  ],
+  "continuity_constraints": [
+    {
+      "constraint_id": "constraint_preserve_central_layout",
+      "scope": "scene",
+      "text": "Preserve the central table, rib arch ring, and sealed archive relationship across repair patches.",
+      "affected_ids": [
+        "obj_astrolabe_table_001",
+        "obj_rib_arches_001",
+        "obj_archive_door_001"
+      ],
+      "priority": "high"
+    }
+  ]
+}

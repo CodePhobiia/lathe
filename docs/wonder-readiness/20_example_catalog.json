@@ -1,0 +1,103 @@
+{
+  "schema_version": "lathe.wonder_example_catalog.v1",
+  "examples_root": "examples/wonder",
+  "examples": [
+    {
+      "name": "abandoned_roblox_mall",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "alchemist_observatory",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "desert_oracle_shrine",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "environment_module_showcase",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "mountain_lightning_city",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "stdlib_component_showcase",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "underwater_train_station",
+      "status": "passed",
+      "prompt": "present",
+      "dream_brief": "valid",
+      "scene_graph": "valid",
+      "world_memory": "valid",
+      "patch": "valid",
+      "render_inspection": "valid",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "deferred_nonblocking": 0
+  }
+}

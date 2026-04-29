@@ -1,0 +1,18 @@
+{
+  "schema_version": "lathe.wonder_report.v1",
+  "scene_id": "alchemist_observatory",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "proxy_scene_package_built",
+  "summary": "Built deterministic preview scene package for alchemist_observatory.",
+  "counts": {
+    "objects": 1,
+    "asset_tasks": 1,
+    "render_tasks": 1,
+    "export_tasks": 1
+  },
+  "artifacts": {
+    "scene_manifest": "reports/scene_manifest.json"
+  },
+  "diagnostics": []
+}

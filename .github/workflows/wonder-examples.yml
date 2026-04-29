@@ -1,0 +1,43 @@
+name: Wonder Examples
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  wonder-examples:
+    name: golden Wonder examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run Wonder examples lane
+        run: python scripts/ci_wonder_examples.py
+
+      - name: Upload Wonder examples report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonder-ci-examples-report
+          path: |
+            .tmp_tests/wonder_ci_examples/report.json
+            .tmp_tests/wonder_ci_examples/example_catalog.json
+            .tmp_tests/wonder_ci_examples/proxy/**/reports/*.json
+          if-no-files-found: ignore

@@ -1,0 +1,830 @@
+{
+  "assembly_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Layered cloud silhouettes that sell the height of the city.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_cloudline_backdrop_6a7f2c2e64f9",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:cloudline_backdrop:default:c76f9f02768c596b",
+      "depends_on": [
+        "asset_task_cloudline_backdrop_6a7f2c2e64f9"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Cloudline Backdrop",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "environment_structure",
+        "semantic_tags": [
+          "environment_structure",
+          "should",
+          "cloudline_backdrop"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_cloudline_backdrop_006",
+      "region": "region_mountain_lightning_city_main",
+      "task_id": "assembly_task_obj_cloudline_backdrop_006_793354f294",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -6.087,
+          -1.582,
+          2.45
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          198.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A copper tower that repeatedly draws lightning to the city.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_lightning_rod_tower_16af730f895d",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:lightning_rod_tower:default:81dbb4d1909805f2",
+      "depends_on": [
+        "asset_task_lightning_rod_tower_16af730f895d"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+            "id": "inspect_lightning_rod_tower",
+            "reveals": "hidden_why_does_lightning_strike_the_same_tower_001"
+          }
+        ],
+        "name": "Lightning Rod Tower",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "must",
+          "lightning_rod_tower"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_lightning_rod_tower_002",
+      "region": "region_mountain_lightning_city_main",
+      "task_id": "assembly_task_obj_lightning_rod_tower_002_b92367d6e9",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A closed gate leading to a narrow bridge lost in storm cloud.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_sky_bridge_gate_792979bb8a03",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sky_bridge_gate:default:87358cb8cece9f7e",
+      "depends_on": [
+        "asset_task_sky_bridge_gate_792979bb8a03"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+            "id": "use_sky_bridge_gate"
+          }
+        ],
+        "name": "Sky Bridge Gate",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "interactive",
+        "semantic_tags": [
+          "interactive",
+          "should",
+          "sky_bridge_gate"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_sky_bridge_gate_004",
+      "region": "region_mountain_lightning_city_main",
+      "task_id": "assembly_task_obj_sky_bridge_gate_004_35aac428bd",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          3.762,
+          4.142,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          54.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Copper lanterns that mark the safe route through the rain.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_storm_lanterns_fe2297d0ff0e",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:storm_lanterns:default:3d5c22e048daddc7",
+      "depends_on": [
+        "asset_task_storm_lanterns_fe2297d0ff0e"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Storm Lanterns",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "light_fixture",
+        "semantic_tags": [
+          "light_fixture",
+          "must",
+          "storm_lanterns"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_storm_lanterns_005",
+      "region": "region_mountain_lightning_city_main",
+      "task_id": "assembly_task_obj_storm_lanterns_005_c6c12b69a8",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -3.762,
+          4.142,
+          4.34
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          126.0
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A readable stair route that climbs between the terraces.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_switchback_stairs_8c4b38dbc6be",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:switchback_stairs:default:e9ed2be5d2fb5a62",
+      "depends_on": [
+        "asset_task_switchback_stairs_8c4b38dbc6be"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Switchback Stairs",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "navigation",
+        "semantic_tags": [
+          "navigation",
+          "must",
+          "switchback_stairs"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_switchback_stairs_003",
+      "region": "region_mountain_lightning_city_main",
+      "task_id": "assembly_task_obj_switchback_stairs_003_4254bf0e6e",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          6.087,
+          -1.582,
+          0.05
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -18.0
+        ],
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Stacked wall and balcony modules that define the cliff street.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_terrace_wall_modules_d44ca7899cdf",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:terrace_wall_modules:default:72a905980d1de642",
+      "depends_on": [
+        "asset_task_terrace_wall_modules_d44ca7899cdf"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Terrace Wall Modules",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "must",
+          "terrace_wall_modules"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_terrace_wall_modules_001",
+      "region": "region_mountain_lightning_city_main",
+      "task_id": "assembly_task_obj_terrace_wall_modules_001_fb38c61f5d",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0.0,
+          -5.12,
+          3.15
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -90.0
+        ],
+        "scale": [
+          1.4,
+          1.4,
+          1.2
+        ]
+      }
+    }
+  ],
+  "asset_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Layered cloud silhouettes that sell the height of the city.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:cloudline_backdrop:default:c76f9f02768c596b",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_cloudline_backdrop_006"
+      ],
+      "override_fingerprint": "96eb295535ee5119",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "cloudline_backdrop",
+        "ref": "cloudline_backdrop",
+        "source_family": "environment_structure"
+      },
+      "task_id": "asset_task_cloudline_backdrop_6a7f2c2e64f9",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A copper tower that repeatedly draws lightning to the city.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:lightning_rod_tower:default:81dbb4d1909805f2",
+      "estimated_complexity": 15,
+      "mode": "preview",
+      "object_ids": [
+        "obj_lightning_rod_tower_002"
+      ],
+      "override_fingerprint": "d9c4ab9088e8b864",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "lightning_rod_tower",
+        "ref": "lightning_rod_tower",
+        "source_family": "hero_prop"
+      },
+      "task_id": "asset_task_lightning_rod_tower_16af730f895d",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A closed gate leading to a narrow bridge lost in storm cloud.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sky_bridge_gate:default:87358cb8cece9f7e",
+      "estimated_complexity": 15,
+      "mode": "preview",
+      "object_ids": [
+        "obj_sky_bridge_gate_004"
+      ],
+      "override_fingerprint": "dd9d99b902003cd6",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sky_bridge_gate",
+        "ref": "sky_bridge_gate",
+        "source_family": "interactive_mechanism"
+      },
+      "task_id": "asset_task_sky_bridge_gate_792979bb8a03",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Copper lanterns that mark the safe route through the rain.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:storm_lanterns:default:3d5c22e048daddc7",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_storm_lanterns_005"
+      ],
+      "override_fingerprint": "50e119fda1a48f89",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "storm_lanterns",
+        "ref": "storm_lanterns",
+        "source_family": "practical_light"
+      },
+      "task_id": "asset_task_storm_lanterns_fe2297d0ff0e",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A readable stair route that climbs between the terraces.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:switchback_stairs:default:e9ed2be5d2fb5a62",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_switchback_stairs_003"
+      ],
+      "override_fingerprint": "892053626eb1953f",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "switchback_stairs",
+        "ref": "switchback_stairs",
+        "source_family": "navigation_marker"
+      },
+      "task_id": "asset_task_switchback_stairs_8c4b38dbc6be",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_storm_violet_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Stacked wall and balcony modules that define the cliff street.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:terrace_wall_modules:default:72a905980d1de642",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_terrace_wall_modules_001"
+      ],
+      "override_fingerprint": "1cb005e5451aee0b",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "terrace_wall_modules",
+        "ref": "terrace_wall_modules",
+        "source_family": "environment_architecture"
+      },
+      "task_id": "asset_task_terrace_wall_modules_d44ca7899cdf",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    }
+  ],
+  "cache_keys": [
+    {
+      "asset_task_id": "asset_task_cloudline_backdrop_6a7f2c2e64f9",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:cloudline_backdrop:default:c76f9f02768c596b",
+      "object_ids": [
+        "obj_cloudline_backdrop_006"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "cloudline_backdrop",
+        "ref": "cloudline_backdrop",
+        "source_family": "environment_structure"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_lightning_rod_tower_16af730f895d",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:lightning_rod_tower:default:81dbb4d1909805f2",
+      "object_ids": [
+        "obj_lightning_rod_tower_002"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "lightning_rod_tower",
+        "ref": "lightning_rod_tower",
+        "source_family": "hero_prop"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_sky_bridge_gate_792979bb8a03",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sky_bridge_gate:default:87358cb8cece9f7e",
+      "object_ids": [
+        "obj_sky_bridge_gate_004"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sky_bridge_gate",
+        "ref": "sky_bridge_gate",
+        "source_family": "interactive_mechanism"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_storm_lanterns_fe2297d0ff0e",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:storm_lanterns:default:3d5c22e048daddc7",
+      "object_ids": [
+        "obj_storm_lanterns_005"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "storm_lanterns",
+        "ref": "storm_lanterns",
+        "source_family": "practical_light"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_switchback_stairs_8c4b38dbc6be",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:switchback_stairs:default:e9ed2be5d2fb5a62",
+      "object_ids": [
+        "obj_switchback_stairs_003"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "switchback_stairs",
+        "ref": "switchback_stairs",
+        "source_family": "navigation_marker"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_terrace_wall_modules_d44ca7899cdf",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:terrace_wall_modules:default:72a905980d1de642",
+      "object_ids": [
+        "obj_terrace_wall_modules_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "terrace_wall_modules",
+        "ref": "terrace_wall_modules",
+        "source_family": "environment_architecture"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "export_tasks": [
+    {
+      "depends_on": [
+        "assembly_task_obj_cloudline_backdrop_006_793354f294",
+        "assembly_task_obj_lightning_rod_tower_002_b92367d6e9",
+        "assembly_task_obj_sky_bridge_gate_004_35aac428bd",
+        "assembly_task_obj_storm_lanterns_005_c6c12b69a8",
+        "assembly_task_obj_switchback_stairs_003_4254bf0e6e",
+        "assembly_task_obj_terrace_wall_modules_001_fb38c61f5d"
+      ],
+      "format": "glb",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "dist/exports/mountain_lightning_city.glb",
+      "source_index": 2,
+      "target": "glb",
+      "task_id": "export_task_glb_glb_3f7f82376f",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "assembly_task_obj_cloudline_backdrop_006_793354f294",
+        "assembly_task_obj_lightning_rod_tower_002_b92367d6e9",
+        "assembly_task_obj_sky_bridge_gate_004_35aac428bd",
+        "assembly_task_obj_storm_lanterns_005_c6c12b69a8",
+        "assembly_task_obj_switchback_stairs_003_4254bf0e6e",
+        "assembly_task_obj_terrace_wall_modules_001_fb38c61f5d"
+      ],
+      "format": "json",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "scene_graph.json",
+      "source_index": 0,
+      "target": "scene_graph",
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "render_task_camera_debug_topdown_bc8a62809e",
+        "render_task_camera_reveal_3b7c5655ea",
+        "render_task_camera_tower_detail_bc087a8bf9"
+      ],
+      "format": "lathepkg",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "dist/mountain_lightning_city.lathepkg",
+      "source_index": 1,
+      "target": "scene_package",
+      "task_id": "export_task_scene_package_lathepkg_3e8ebb929f",
+      "task_type": "scene_export"
+    }
+  ],
+  "metadata": {
+    "budgets": {
+      "max_complexity": 320,
+      "max_objects": 32,
+      "quality": "preview",
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024
+    },
+    "counts": {
+      "assembly_tasks": 6,
+      "asset_tasks": 6,
+      "cameras": 3,
+      "export_tasks": 3,
+      "lights": 1,
+      "materials": 5,
+      "objects": 6,
+      "render_tasks": 3
+    },
+    "estimated_complexity": 116,
+    "planner": "lathe.scene.planner",
+    "planner_version": 1
+  },
+  "mode": "preview",
+  "plan_id": "plan_mountain_lightning_city_f327cf52ae1c",
+  "render_tasks": [
+    {
+      "camera_id": "camera_debug_topdown",
+      "depends_on": [
+        "assembly_task_obj_cloudline_backdrop_006_793354f294",
+        "assembly_task_obj_lightning_rod_tower_002_b92367d6e9",
+        "assembly_task_obj_sky_bridge_gate_004_35aac428bd",
+        "assembly_task_obj_storm_lanterns_005_c6c12b69a8",
+        "assembly_task_obj_switchback_stairs_003_4254bf0e6e",
+        "assembly_task_obj_terrace_wall_modules_001_fb38c61f5d"
+      ],
+      "framing": "topdown",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_lightning_rod_tower_002",
+      "task_id": "render_task_camera_debug_topdown_bc8a62809e",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_reveal",
+      "depends_on": [
+        "assembly_task_obj_cloudline_backdrop_006_793354f294",
+        "assembly_task_obj_lightning_rod_tower_002_b92367d6e9",
+        "assembly_task_obj_sky_bridge_gate_004_35aac428bd",
+        "assembly_task_obj_storm_lanterns_005_c6c12b69a8",
+        "assembly_task_obj_switchback_stairs_003_4254bf0e6e",
+        "assembly_task_obj_terrace_wall_modules_001_fb38c61f5d"
+      ],
+      "framing": "cinematic_wide",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_lightning_rod_tower_002",
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_tower_detail",
+      "depends_on": [
+        "assembly_task_obj_cloudline_backdrop_006_793354f294",
+        "assembly_task_obj_lightning_rod_tower_002_b92367d6e9",
+        "assembly_task_obj_sky_bridge_gate_004_35aac428bd",
+        "assembly_task_obj_storm_lanterns_005_c6c12b69a8",
+        "assembly_task_obj_switchback_stairs_003_4254bf0e6e",
+        "assembly_task_obj_terrace_wall_modules_001_fb38c61f5d"
+      ],
+      "framing": "inspection",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_lightning_rod_tower_002",
+      "task_id": "render_task_camera_tower_detail_bc087a8bf9",
+      "task_type": "scene_render"
+    }
+  ],
+  "scene_id": "mountain_lightning_city",
+  "schema_version": "lathe.scene_plan.v1",
+  "source_brief_id": "mountain_lightning_city",
+  "source_prompt": "A vertical mountain city during a thunderstorm, with basalt terraces, switchback stairs, copper storm lanterns, a sky bridge gate, and a lightning rod tower that keeps getting struck.",
+  "warnings": []
+}

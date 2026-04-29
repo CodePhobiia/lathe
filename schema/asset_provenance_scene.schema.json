@@ -1,0 +1,301 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/asset-provenance-scene-v1.json",
+  "title": "Lathe Wonder Asset Provenance Scene v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "objects"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.asset_provenance_scene.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object_provenance"
+      }
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/export_provenance"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/state_value"
+      },
+      "description": "Opaque caller metadata. lathe.scene.provenance rejects secret-bearing keys and values."
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "export_target": {
+      "enum": [
+        "scene_package",
+        "blend",
+        "glb",
+        "usd",
+        "fbx",
+        "roblox_manifest",
+        "godot_manifest",
+        "unity_manifest",
+        "unreal_manifest"
+      ]
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 260,
+      "description": "Package-root-relative path. Path safety is checked by package/export helpers, not this provenance contract."
+    },
+    "source": {
+      "enum": [
+        "deterministic_lathe",
+        "provider_generated",
+        "user_supplied",
+        "licensed_reference",
+        "mixed"
+      ]
+    },
+    "permission_status": {
+      "enum": [
+        "unknown",
+        "allowed",
+        "restricted",
+        "blocked",
+        "not_applicable"
+      ]
+    },
+    "review_status": {
+      "enum": [
+        "unreviewed",
+        "passed",
+        "flagged",
+        "blocked"
+      ]
+    },
+    "brand_ip_status": {
+      "enum": [
+        "unreviewed",
+        "cleared",
+        "requires_review",
+        "restricted"
+      ]
+    },
+    "string_tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      }
+    },
+    "object_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "provenance"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "content_safety": {
+          "$ref": "#/$defs/content_safety"
+        },
+        "brand_ip": {
+          "$ref": "#/$defs/brand_ip"
+        },
+        "user_upload": {
+          "$ref": "#/$defs/user_upload"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/state_value"
+          },
+          "description": "Opaque caller metadata. lathe.scene.provenance rejects secret-bearing keys and values."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "input_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relative_path"
+          }
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "commercial_use": {
+          "type": "boolean"
+        },
+        "export_permission": {
+          "$ref": "#/$defs/permission_status"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "content_safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/review_status"
+        },
+        "categories": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "reviewer": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "brand_ip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/brand_ip_status"
+        },
+        "rights_holder": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "user_upload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "present",
+        "safety_status"
+      ],
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "reference_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snake_id"
+          }
+        },
+        "safety_status": {
+          "$ref": "#/$defs/review_status"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "export_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "path",
+        "permission"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/export_target"
+        },
+        "path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "permission": {
+          "$ref": "#/$defs/permission_status"
+        },
+        "source_object_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "state_value": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

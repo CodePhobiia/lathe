@@ -1,0 +1,37 @@
+name: Wonder Optional Roblox
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wonder-optional-roblox:
+    name: optional Roblox lane
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run optional Roblox lane
+        run: python scripts/ci_wonder_optional_roblox.py
+
+      - name: Upload optional Roblox report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonder-ci-optional-roblox-report
+          path: .tmp_tests/wonder_ci_optional_roblox/report.json
+          if-no-files-found: ignore

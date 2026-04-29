@@ -1,0 +1,50 @@
+{
+  "schema_version": "lathe.scene_patch.v1",
+  "patch_id": "patch_more_sacred_001",
+  "scope": "object",
+  "target_id": "obj_astrolabe_table_001",
+  "instruction": "Make the central astrolabe table feel more sacred and less industrial while preserving its scale, position, and mechanical function.",
+  "preserve": [
+    "object_id",
+    "region",
+    "transform.position",
+    "transform.scale",
+    "mechanical_function",
+    "curiosity_warm_lens"
+  ],
+  "allowed_changes": [
+    "materials",
+    "style",
+    "lighting",
+    "metadata"
+  ],
+  "operations": [
+    {
+      "op": "replace",
+      "path": "/objects/0/material_bindings/0/material",
+      "value": "mat_oxidized_brass"
+    },
+    {
+      "op": "add",
+      "path": "/objects/0/semantic_tags/-",
+      "value": "sacred"
+    }
+  ],
+  "continuity": {
+    "mode": "preserve_selected_ids",
+    "preserved_ids": [
+      "obj_astrolabe_table_001",
+      "region_central_chamber",
+      "camera_reveal"
+    ]
+  },
+  "acceptance": {
+    "validators": [
+      "style",
+      "semantic",
+      "continuity",
+      "composition"
+    ],
+    "minimum_score": 0.78
+  }
+}

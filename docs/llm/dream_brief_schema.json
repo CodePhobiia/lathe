@@ -1,0 +1,7 @@
+{
+  "schema_pointer_version": "lathe.llm_schema_pointer.v1",
+  "contract": "dream_brief",
+  "schema_version": "lathe.dream_brief.v1",
+  "canonical_schema": "../../schema/dream_brief.schema.json",
+  "usage": "Link to the canonical schema from prompts and tools instead of copying schema bodies."
+}

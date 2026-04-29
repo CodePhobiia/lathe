@@ -1,0 +1,17 @@
+{
+  "schema_version": "lathe.world_memory.v1",
+  "memory_id": "worldmem_desert_oracle_shrine",
+  "scene_id": "desert_oracle_shrine",
+  "scene_version": 1,
+  "current_branch": "main",
+  "summary": "Continuity memory for the desert_oracle_shrine Wonder golden fixture.",
+  "branches": [
+    {
+      "branch_id": "main",
+      "name": "Main continuity",
+      "status": "active",
+      "event_ids": []
+    }
+  ],
+  "events": []
+}

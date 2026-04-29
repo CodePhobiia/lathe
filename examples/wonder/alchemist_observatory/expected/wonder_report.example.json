@@ -1,0 +1,36 @@
+{
+  "schema_version": "lathe.wonder_report.v1",
+  "scene_id": "alchemist_observatory",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "golden_fixture_ready",
+  "summary": "alchemist_observatory validates as a deterministic Wonder golden fixture with proxy-only preview build/render/export evidence.",
+  "counts": {
+    "objects": 4,
+    "asset_tasks": 4,
+    "assembly_tasks": 4,
+    "render_tasks": 3,
+    "export_tasks": 3,
+    "materials": 5,
+    "lights": 2,
+    "cameras": 2
+  },
+  "optional_lanes": {
+    "blender": {
+      "status": "skipped_optional",
+      "blocking": false,
+      "reason": "Blender-backed rendering is outside Wave 5 example-golden core mode."
+    },
+    "roblox": {
+      "status": "skipped_optional",
+      "blocking": false,
+      "reason": "Roblox Studio execution is outside Wave 5 example-golden core mode."
+    }
+  },
+  "artifacts": {
+    "scene_plan": "expected/scene_plan.example.json",
+    "scene_manifest": "expected/scene_manifest.example.json",
+    "preview_evidence": "expected/preview_evidence.example.json"
+  },
+  "diagnostics": []
+}

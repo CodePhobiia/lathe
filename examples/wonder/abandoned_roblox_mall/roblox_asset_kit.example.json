@@ -1,0 +1,24 @@
+{
+  "schema_version": "lathe.roblox_asset_kit_example.v1",
+  "stack_id": "lathe.stack.roblox_asset_kit_v1",
+  "scene_graph": "scene_graph.json",
+  "profile": "roblox_profile.json",
+  "command": "python -m lathe.cli scene roblox-export scene_graph.json --profile roblox_profile.json --out .tmp_tests/roblox_asset_kit/abandoned_roblox_mall",
+  "expected_outputs": [
+    "exports/roblox/roblox_manifest.json",
+    "exports/roblox/glb/abandoned_roblox_mall_roblox_asset_kit.glb",
+    "exports/roblox/thumbnails/scene_thumbnail.png",
+    "exports/roblox/thumbnails/object_contact_sheet.png",
+    "exports/roblox/import_instructions.md",
+    "exports/roblox/fbx/fbx_handoff.json",
+    "reports/roblox_export_bundle.json"
+  ],
+  "scope": {
+    "writes_glb": true,
+    "writes_thumbnails": true,
+    "writes_import_instructions": true,
+    "writes_roblox_manifest": true,
+    "writes_rbxmx": false,
+    "calls_roblox_api": false
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema_version": "lathe.roblox_profile.v1",
+  "profile_id": "roblox_lowpoly",
+  "display_name": "Roblox Lowpoly",
+  "units": {
+    "length": "studs",
+    "scale": 1.0
+  },
+  "budgets": {
+    "max_scene_triangles": 50000,
+    "max_mesh_triangles": 5000,
+    "max_meshes": 64,
+    "max_textures": 128,
+    "max_texture_resolution": 1024,
+    "max_materials": 64,
+    "max_materials_per_mesh": 4
+  },
+  "mesh": {
+    "max_meshes_per_object": 1,
+    "prefer_shared_meshes": true
+  },
+  "collision": {
+    "required": true,
+    "required_roles": [
+      "architecture",
+      "hero_prop",
+      "environment_structure",
+      "dressing_prop",
+      "navigation",
+      "interactive",
+      "narrative_clue"
+    ],
+    "allowed_modes": [
+      "box",
+      "hull",
+      "mesh"
+    ],
+    "max_primitives_per_object": 4
+  },
+  "material": {
+    "max_slots_per_mesh": 4,
+    "prefer_vertex_colors": true,
+    "allow_pbr_textures": true
+  },
+  "naming": {
+    "policy": "lower_snake_case",
+    "pattern": "^[a-z][a-z0-9_]{2,63}$",
+    "max_length": 64
+  },
+  "pivot": {
+    "required": true,
+    "required_roles": [
+      "architecture",
+      "hero_prop",
+      "environment_structure",
+      "dressing_prop",
+      "light_fixture",
+      "navigation",
+      "interactive",
+      "narrative_clue"
+    ],
+    "allowed_modes": [
+      "base_center",
+      "center",
+      "custom"
+    ]
+  },
+  "snap_grid": {
+    "required": true,
+    "size_studs": 0.5,
+    "tolerance_studs": 0.000001,
+    "axes": [
+      "x",
+      "y",
+      "z"
+    ]
+  },
+  "mobile": {
+    "target_fps": 60,
+    "min_score": 80,
+    "component_weights": {
+      "triangle": 1,
+      "texture": 1,
+      "mesh": 1,
+      "collision": 1,
+      "material": 1,
+      "naming": 1,
+      "pivot": 1,
+      "snap_grid": 1
+    }
+  }
+}

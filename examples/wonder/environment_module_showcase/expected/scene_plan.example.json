@@ -1,0 +1,1173 @@
+{
+  "schema_version": "lathe.scene_plan.v1",
+  "plan_id": "plan_environment_module_showcase_82bbdf288c34",
+  "scene_id": "environment_module_showcase",
+  "source_prompt": "A modular room shell assembled from floor tiles, wall segments, arches, platforms, stairs, background silhouettes, and terrain chunks.",
+  "mode": "preview",
+  "metadata": {
+    "planner": "lathe.scene.planner",
+    "planner_version": 1,
+    "budgets": {
+      "max_objects": 32,
+      "max_complexity": 320,
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024,
+      "quality": "preview"
+    },
+    "counts": {
+      "objects": 9,
+      "asset_tasks": 9,
+      "assembly_tasks": 9,
+      "render_tasks": 2,
+      "export_tasks": 1,
+      "materials": 5,
+      "lights": 1,
+      "cameras": 1
+    },
+    "estimated_complexity": 185
+  },
+  "asset_tasks": [
+    {
+      "task_id": "asset_task_architecture_arch_9ae6d1c96624",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_arch:module_default:ac89c887c2b7ce18",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_arch",
+        "generated": false,
+        "lathe_asset": "architecture_arch",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_arch_kit"
+      },
+      "object_ids": [
+        "obj_env_arch_segment_005"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "threshold",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "05fdfa1e714c6ffa",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_environment_structure_b45fee4144fd",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:environment_structure:module_default:9416209af216d5b5",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "environment_structure",
+        "generated": false,
+        "lathe_asset": "environment_structure",
+        "source_family": "environment_structure",
+        "source_kit": "environment_structure_kit"
+      },
+      "object_ids": [
+        "obj_env_background_silhouette_008"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "background",
+          "snap_grid": 2.0,
+          "snap_point_count": 2,
+          "snap_profile": "grid_2m"
+        }
+      },
+      "override_fingerprint": "b018ba7ff96d1e14",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_ceiling_fc9c6b96a1ed",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_ceiling:module_default:448612deaacaa730",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_ceiling",
+        "generated": false,
+        "lathe_asset": "architecture_ceiling",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_ceiling_kit"
+      },
+      "object_ids": [
+        "obj_env_ceiling_segment_004"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "ceiling",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "bf2288cf14074cd2",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_floor_1d2356c74dbd",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_floor:module_default:efd5d5293ff20982",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_floor",
+        "generated": false,
+        "lathe_asset": "architecture_floor",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_floor_kit"
+      },
+      "object_ids": [
+        "obj_env_floor_tile_002"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "floor",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "c59ac3a2bc873b46",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_platform_d99382ecfdc8",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_platform:module_default:b595c7c37898e22c",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_platform",
+        "generated": false,
+        "lathe_asset": "architecture_platform",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_platform_kit"
+      },
+      "object_ids": [
+        "obj_env_platform_module_006"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "platform",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "683ec0d7cc7d64cf",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_room_shell_a0a573818b95",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_room_shell:module_default:5cc47f8773e53192",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_room_shell",
+        "generated": false,
+        "lathe_asset": "architecture_room_shell",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_room_shell_kit"
+      },
+      "object_ids": [
+        "obj_env_room_shell_001"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "required",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "scene_boundary",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "abb626db9839ebb9",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_stair_49b26d44d61a",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_stair:module_default:1b2bf739c73cc7eb",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_stair",
+        "generated": false,
+        "lathe_asset": "architecture_stair",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_stair_kit"
+      },
+      "object_ids": [
+        "obj_env_stair_module_007"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "stair",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "3e35ab02831e819e",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_terrain_chunk_0d9c40db56e1",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_terrain_chunk:module_default:839aa387ba461ef7",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_terrain_chunk",
+        "generated": false,
+        "lathe_asset": "natural_terrain_chunk",
+        "source_family": "environment_structure",
+        "source_kit": "natural_terrain_chunk_kit"
+      },
+      "object_ids": [
+        "obj_env_terrain_chunk_009"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "terrain",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "ee74151edff20c71",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_wall_a4741ee8b70c",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_wall:module_default:e9bd8b6ee02f4bae",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_wall",
+        "generated": false,
+        "lathe_asset": "architecture_wall",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_wall_kit"
+      },
+      "object_ids": [
+        "obj_env_wall_segment_003"
+      ],
+      "variant": "module_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "wall",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "override_fingerprint": "ed74716819fafafd",
+      "estimated_complexity": 19,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    }
+  ],
+  "assembly_tasks": [
+    {
+      "task_id": "assembly_task_obj_env_arch_segment_005_08f7cd37ea",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_arch_segment_005",
+      "asset_task_id": "asset_task_architecture_arch_9ae6d1c96624",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_arch:module_default:ac89c887c2b7ce18",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          0.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "threshold",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Arch Segment",
+        "role": "interactive",
+        "semantic_tags": [
+          "arch_segment",
+          "env_module",
+          "snap_profile_grid_1m",
+          "threshold"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_arch_9ae6d1c96624"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_background_silhouette_008_04eeec343f",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_background_silhouette_008",
+      "asset_task_id": "asset_task_environment_structure_b45fee4144fd",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:environment_structure:module_default:9416209af216d5b5",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          0.0,
+          4.0,
+          1.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "background",
+          "snap_grid": 2.0,
+          "snap_point_count": 2,
+          "snap_profile": "grid_2m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Background Silhouette",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "background_silhouette",
+          "env_module",
+          "snap_profile_grid_2m",
+          "vista_blocker"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_environment_structure_b45fee4144fd"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_ceiling_segment_004_5c521b23fd",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_ceiling_segment_004",
+      "asset_task_id": "asset_task_architecture_ceiling_fc9c6b96a1ed",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_ceiling:module_default:448612deaacaa730",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          0.0,
+          4.0,
+          3.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "ceiling",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Ceiling Segment",
+        "role": "architecture",
+        "semantic_tags": [
+          "ceiling_segment",
+          "env_module",
+          "overhead",
+          "snap_profile_grid_1m"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_ceiling_fc9c6b96a1ed"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_floor_tile_002_2038583b13",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_floor_tile_002",
+      "asset_task_id": "asset_task_architecture_floor_1d2356c74dbd",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_floor:module_default:efd5d5293ff20982",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          -4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "floor",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Floor Tile",
+        "role": "architecture",
+        "semantic_tags": [
+          "env_module",
+          "floor_tile",
+          "snap_profile_grid_1m",
+          "walkable"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_floor_1d2356c74dbd"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_platform_module_006_e7bdfa393f",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_platform_module_006",
+      "asset_task_id": "asset_task_architecture_platform_d99382ecfdc8",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_platform:module_default:b595c7c37898e22c",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "platform",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Platform",
+        "role": "architecture",
+        "semantic_tags": [
+          "env_module",
+          "platform",
+          "snap_profile_grid_1m",
+          "walkable"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_platform_d99382ecfdc8"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_room_shell_001_86ada6563f",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_room_shell_001",
+      "asset_task_id": "asset_task_architecture_room_shell_a0a573818b95",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_room_shell:module_default:5cc47f8773e53192",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "required",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "scene_boundary",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Room Boundary Shell",
+        "role": "architecture",
+        "semantic_tags": [
+          "env_module",
+          "room_shell",
+          "scene_boundary",
+          "snap_profile_grid_1m"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_room_shell_a0a573818b95"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_stair_module_007_6b3ffe053a",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_stair_module_007",
+      "asset_task_id": "asset_task_architecture_stair_49b26d44d61a",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_stair:module_default:1b2bf739c73cc7eb",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "stair",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Stair",
+        "role": "architecture",
+        "semantic_tags": [
+          "env_module",
+          "navigation",
+          "snap_profile_grid_1m",
+          "stair"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_stair_49b26d44d61a"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_terrain_chunk_009_e622689d2d",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_terrain_chunk_009",
+      "asset_task_id": "asset_task_natural_terrain_chunk_0d9c40db56e1",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_terrain_chunk:module_default:839aa387ba461ef7",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          0.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "terrain",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Terrain Chunk",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "env_module",
+          "ground",
+          "snap_profile_grid_1m",
+          "terrain_chunk"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_terrain_chunk_0d9c40db56e1"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_env_wall_segment_003_25e2df739d",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_env_wall_segment_003",
+      "asset_task_id": "asset_task_architecture_wall_a4741ee8b70c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_wall:module_default:e9bd8b6ee02f4bae",
+      "region": "region_environment_module_room",
+      "transform": {
+        "position": [
+          -4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "boundary_role": "member",
+          "mesh_runtime": "not_claimed",
+          "module_kind": "wall",
+          "snap_grid": 1.0,
+          "snap_point_count": 4,
+          "snap_profile": "grid_1m"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Wall Segment",
+        "role": "architecture",
+        "semantic_tags": [
+          "boundary",
+          "env_module",
+          "snap_profile_grid_1m",
+          "wall_segment"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_wall_a4741ee8b70c"
+      ]
+    }
+  ],
+  "render_tasks": [
+    {
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render",
+      "mode": "preview",
+      "camera_id": "camera_reveal",
+      "target": "obj_env_arch_segment_005",
+      "framing": "cinematic_wide",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "depends_on": [
+        "assembly_task_obj_env_arch_segment_005_08f7cd37ea",
+        "assembly_task_obj_env_background_silhouette_008_04eeec343f",
+        "assembly_task_obj_env_ceiling_segment_004_5c521b23fd",
+        "assembly_task_obj_env_floor_tile_002_2038583b13",
+        "assembly_task_obj_env_platform_module_006_e7bdfa393f",
+        "assembly_task_obj_env_room_shell_001_86ada6563f",
+        "assembly_task_obj_env_stair_module_007_6b3ffe053a",
+        "assembly_task_obj_env_terrain_chunk_009_e622689d2d",
+        "assembly_task_obj_env_wall_segment_003_25e2df739d"
+      ]
+    },
+    {
+      "task_id": "render_task_camera_topdown_debug_5f9f6a13a1",
+      "task_type": "scene_render",
+      "mode": "preview",
+      "camera_id": "camera_topdown_debug",
+      "target": "obj_env_arch_segment_005",
+      "framing": "topdown",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "depends_on": [
+        "assembly_task_obj_env_arch_segment_005_08f7cd37ea",
+        "assembly_task_obj_env_background_silhouette_008_04eeec343f",
+        "assembly_task_obj_env_ceiling_segment_004_5c521b23fd",
+        "assembly_task_obj_env_floor_tile_002_2038583b13",
+        "assembly_task_obj_env_platform_module_006_e7bdfa393f",
+        "assembly_task_obj_env_room_shell_001_86ada6563f",
+        "assembly_task_obj_env_stair_module_007_6b3ffe053a",
+        "assembly_task_obj_env_terrain_chunk_009_e622689d2d",
+        "assembly_task_obj_env_wall_segment_003_25e2df739d"
+      ]
+    }
+  ],
+  "export_tasks": [
+    {
+      "task_id": "export_task_scene_graph_json_12df833709",
+      "task_type": "scene_export",
+      "mode": "preview",
+      "target": "scene_graph",
+      "format": "json",
+      "path": "exports/environment_module_showcase.scene_graph.json",
+      "metadata": {},
+      "source_index": 0,
+      "depends_on": [
+        "assembly_task_obj_env_arch_segment_005_08f7cd37ea",
+        "assembly_task_obj_env_background_silhouette_008_04eeec343f",
+        "assembly_task_obj_env_ceiling_segment_004_5c521b23fd",
+        "assembly_task_obj_env_floor_tile_002_2038583b13",
+        "assembly_task_obj_env_platform_module_006_e7bdfa393f",
+        "assembly_task_obj_env_room_shell_001_86ada6563f",
+        "assembly_task_obj_env_stair_module_007_6b3ffe053a",
+        "assembly_task_obj_env_terrain_chunk_009_e622689d2d",
+        "assembly_task_obj_env_wall_segment_003_25e2df739d"
+      ]
+    }
+  ],
+  "warnings": [],
+  "diagnostics": [],
+  "cache_keys": [
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_arch:module_default:ac89c887c2b7ce18",
+      "asset_task_id": "asset_task_architecture_arch_9ae6d1c96624",
+      "object_ids": [
+        "obj_env_arch_segment_005"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_arch",
+        "generated": false,
+        "lathe_asset": "architecture_arch",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_arch_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:environment_structure:module_default:9416209af216d5b5",
+      "asset_task_id": "asset_task_environment_structure_b45fee4144fd",
+      "object_ids": [
+        "obj_env_background_silhouette_008"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "environment_structure",
+        "generated": false,
+        "lathe_asset": "environment_structure",
+        "source_family": "environment_structure",
+        "source_kit": "environment_structure_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_ceiling:module_default:448612deaacaa730",
+      "asset_task_id": "asset_task_architecture_ceiling_fc9c6b96a1ed",
+      "object_ids": [
+        "obj_env_ceiling_segment_004"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_ceiling",
+        "generated": false,
+        "lathe_asset": "architecture_ceiling",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_ceiling_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_floor:module_default:efd5d5293ff20982",
+      "asset_task_id": "asset_task_architecture_floor_1d2356c74dbd",
+      "object_ids": [
+        "obj_env_floor_tile_002"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_floor",
+        "generated": false,
+        "lathe_asset": "architecture_floor",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_floor_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_platform:module_default:b595c7c37898e22c",
+      "asset_task_id": "asset_task_architecture_platform_d99382ecfdc8",
+      "object_ids": [
+        "obj_env_platform_module_006"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_platform",
+        "generated": false,
+        "lathe_asset": "architecture_platform",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_platform_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_room_shell:module_default:5cc47f8773e53192",
+      "asset_task_id": "asset_task_architecture_room_shell_a0a573818b95",
+      "object_ids": [
+        "obj_env_room_shell_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_room_shell",
+        "generated": false,
+        "lathe_asset": "architecture_room_shell",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_room_shell_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_stair:module_default:1b2bf739c73cc7eb",
+      "asset_task_id": "asset_task_architecture_stair_49b26d44d61a",
+      "object_ids": [
+        "obj_env_stair_module_007"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_stair",
+        "generated": false,
+        "lathe_asset": "architecture_stair",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_stair_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_terrain_chunk:module_default:839aa387ba461ef7",
+      "asset_task_id": "asset_task_natural_terrain_chunk_0d9c40db56e1",
+      "object_ids": [
+        "obj_env_terrain_chunk_009"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_terrain_chunk",
+        "generated": false,
+        "lathe_asset": "natural_terrain_chunk",
+        "source_family": "environment_structure",
+        "source_kit": "natural_terrain_chunk_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_wall:module_default:e9bd8b6ee02f4bae",
+      "asset_task_id": "asset_task_architecture_wall_a4741ee8b70c",
+      "object_ids": [
+        "obj_env_wall_segment_003"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_wall",
+        "generated": false,
+        "lathe_asset": "architecture_wall",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_wall_kit"
+      },
+      "shareable": true
+    }
+  ],
+  "source_brief_id": "environment_module_showcase"
+}

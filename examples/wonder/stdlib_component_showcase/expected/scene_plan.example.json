@@ -1,0 +1,5597 @@
+{
+  "schema_version": "lathe.scene_plan.v1",
+  "plan_id": "plan_stdlib_component_showcase_25aed7bb9958",
+  "scene_id": "stdlib_component_showcase",
+  "source_prompt": "A clean catalog room showing every reusable Wonder standard-library scene component as stable planning vocabulary.",
+  "mode": "preview",
+  "metadata": {
+    "planner": "lathe.scene.planner",
+    "planner_version": 1,
+    "budgets": {
+      "max_objects": 32,
+      "max_complexity": 320,
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024,
+      "quality": "preview"
+    },
+    "counts": {
+      "objects": 49,
+      "asset_tasks": 49,
+      "assembly_tasks": 49,
+      "render_tasks": 2,
+      "export_tasks": 1,
+      "materials": 5,
+      "lights": 1,
+      "cameras": 1
+    },
+    "estimated_complexity": 779
+  },
+  "asset_tasks": [
+    {
+      "task_id": "asset_task_architecture_arch_2f641cca81e5",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_arch:stdlib_default:433db1e33a7b0296",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_arch",
+        "generated": false,
+        "lathe_asset": "architecture_arch",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_arch_kit"
+      },
+      "object_ids": [
+        "obj_architecture_arch_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_bridge_653378eb9307",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_bridge:stdlib_default:8b61eba9eda52c95",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_bridge",
+        "generated": false,
+        "lathe_asset": "architecture_bridge",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_bridge_kit"
+      },
+      "object_ids": [
+        "obj_architecture_bridge_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_ceiling_caf8a9942bed",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_ceiling:stdlib_default:09e6d0ca1b20cfc7",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_ceiling",
+        "generated": false,
+        "lathe_asset": "architecture_ceiling",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_ceiling_kit"
+      },
+      "object_ids": [
+        "obj_architecture_ceiling_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_column_22d5e29df20a",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_column:stdlib_default:05ff9e8f465ddcdf",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_column",
+        "generated": false,
+        "lathe_asset": "architecture_column",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_column_kit"
+      },
+      "object_ids": [
+        "obj_architecture_column_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_door_78e9e2ff0763",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_door:stdlib_default:a93ec712719141c1",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_door",
+        "generated": false,
+        "lathe_asset": "architecture_door",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_door_kit"
+      },
+      "object_ids": [
+        "obj_architecture_door_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_floor_067b8bdcd386",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_floor:stdlib_default:65d776a311a4fcdf",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_floor",
+        "generated": false,
+        "lathe_asset": "architecture_floor",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_floor_kit"
+      },
+      "object_ids": [
+        "obj_architecture_floor_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_platform_1c9c88f0e768",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_platform:stdlib_default:287c6b02a172f686",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_platform",
+        "generated": false,
+        "lathe_asset": "architecture_platform",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_platform_kit"
+      },
+      "object_ids": [
+        "obj_architecture_platform_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_railing_8a4b24eb0b18",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_railing:stdlib_default:84edb59c1f65c8c8",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_railing",
+        "generated": false,
+        "lathe_asset": "architecture_railing",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_railing_kit"
+      },
+      "object_ids": [
+        "obj_architecture_railing_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_room_shell_8c96ef4a6410",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_room_shell:stdlib_default:33dc4484484653f4",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_room_shell",
+        "generated": false,
+        "lathe_asset": "architecture_room_shell",
+        "source_family": "environment_architecture",
+        "source_kit": "modular_room_shell_kit"
+      },
+      "object_ids": [
+        "obj_architecture_room_shell_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_stair_38d579600003",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_stair:stdlib_default:033d18b413206072",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_stair",
+        "generated": false,
+        "lathe_asset": "architecture_stair",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_stair_kit"
+      },
+      "object_ids": [
+        "obj_architecture_stair_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_tunnel_1f7d1b5081cf",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_tunnel:stdlib_default:70667333d683a74c",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_tunnel",
+        "generated": false,
+        "lathe_asset": "architecture_tunnel",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_tunnel_kit"
+      },
+      "object_ids": [
+        "obj_architecture_tunnel_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_wall_294ccc8c5956",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_wall:stdlib_default:fa145aa13a440c68",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_wall",
+        "generated": false,
+        "lathe_asset": "architecture_wall",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_wall_kit"
+      },
+      "object_ids": [
+        "obj_architecture_wall_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_architecture_window_ca658b1c0442",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_window:stdlib_default:fe0d184328ceea9d",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_window",
+        "generated": false,
+        "lathe_asset": "architecture_window",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_window_kit"
+      },
+      "object_ids": [
+        "obj_architecture_window_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "5ceab8795997185d",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_banner_a20ce7c192a3",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_banner:stdlib_default:9d4a3c62639bc2fe",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_banner",
+        "generated": false,
+        "lathe_asset": "dressing_banner",
+        "source_family": "dressing_banner_family"
+      },
+      "object_ids": [
+        "obj_dressing_banner_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_barrel_8a40c1fed4fb",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_barrel:stdlib_default:ed7da299ae68747d",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_barrel",
+        "generated": false,
+        "lathe_asset": "dressing_barrel",
+        "source_family": "dressing_barrel_family"
+      },
+      "object_ids": [
+        "obj_dressing_barrel_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_book_b57e21371c7a",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_book:stdlib_default:3ca387552b0a1581",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_book",
+        "generated": false,
+        "lathe_asset": "dressing_book",
+        "source_family": "dressing_book_family"
+      },
+      "object_ids": [
+        "obj_dressing_book_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_candle_82539ac41f46",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_candle:stdlib_default:ad36404d4c0d6e57",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_candle",
+        "generated": false,
+        "lathe_asset": "dressing_candle",
+        "source_family": "dressing_candle_family"
+      },
+      "object_ids": [
+        "obj_dressing_candle_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_chain_debbdd2d2579",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_chain:stdlib_default:9bb28ae26fc533bd",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_chain",
+        "generated": false,
+        "lathe_asset": "dressing_chain",
+        "source_family": "dressing_chain_family"
+      },
+      "object_ids": [
+        "obj_dressing_chain_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_crate_b5dcddede50f",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_crate:stdlib_default:e9a03af45bd44ba1",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_crate",
+        "generated": false,
+        "lathe_asset": "dressing_crate",
+        "source_family": "dressing_crate_family"
+      },
+      "object_ids": [
+        "obj_dressing_crate_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_debris_2681c043ec46",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_debris:stdlib_default:870d2d572e7c58ff",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_debris",
+        "generated": false,
+        "lathe_asset": "dressing_debris",
+        "source_family": "dressing_debris_family"
+      },
+      "object_ids": [
+        "obj_dressing_debris_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_panel_bb95ae83e9b5",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_panel:stdlib_default:c687257f560a61d1",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_panel",
+        "generated": false,
+        "lathe_asset": "dressing_panel",
+        "source_family": "dressing_panel_family"
+      },
+      "object_ids": [
+        "obj_dressing_panel_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_pipe_a01aeee2feb2",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_pipe:stdlib_default:5320d32f750d8f82",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_pipe",
+        "generated": false,
+        "lathe_asset": "dressing_pipe",
+        "source_family": "dressing_pipe_family"
+      },
+      "object_ids": [
+        "obj_dressing_pipe_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_rug_b2b12c62eef4",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_rug:stdlib_default:46831335749f50d3",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_rug",
+        "generated": false,
+        "lathe_asset": "dressing_rug",
+        "source_family": "dressing_rug_family"
+      },
+      "object_ids": [
+        "obj_dressing_rug_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_sign_7395bc04bdde",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_sign:stdlib_default:c0eb49b5f79f8317",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_sign",
+        "generated": false,
+        "lathe_asset": "dressing_sign",
+        "source_family": "dressing_sign_family"
+      },
+      "object_ids": [
+        "obj_dressing_sign_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_dressing_vent_029a43c8e146",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_vent:stdlib_default:7c4412b946ec9b04",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_vent",
+        "generated": false,
+        "lathe_asset": "dressing_vent",
+        "source_family": "dressing_vent_family"
+      },
+      "object_ids": [
+        "obj_dressing_vent_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "3d20acee3332929c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_altar_0e48b432c5f0",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_altar:stdlib_default:f54e3d3291cd90cc",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_altar",
+        "generated": false,
+        "lathe_asset": "hero_altar",
+        "source_family": "hero_altar_family"
+      },
+      "object_ids": [
+        "obj_hero_altar_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_console_46cfafaf6097",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_console:stdlib_default:15bd59399ab46711",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_console",
+        "generated": false,
+        "lathe_asset": "hero_console",
+        "source_family": "hero_console_family"
+      },
+      "object_ids": [
+        "obj_hero_console_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_furniture_4247cd5538c2",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_furniture:stdlib_default:92acc31e4b8f82ed",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_furniture",
+        "generated": false,
+        "lathe_asset": "hero_furniture",
+        "source_family": "hero_furniture_family"
+      },
+      "object_ids": [
+        "obj_hero_furniture_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_machine_c5e4724dcf1c",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_machine:stdlib_default:40347080f185a80f",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_machine",
+        "generated": false,
+        "lathe_asset": "hero_machine",
+        "source_family": "hero_machine_family"
+      },
+      "object_ids": [
+        "obj_hero_machine_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_portal_4e12c3dac90e",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_portal:stdlib_default:4f1f33a5fb6e5471",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_portal",
+        "generated": false,
+        "lathe_asset": "hero_portal",
+        "source_family": "hero_portal_family"
+      },
+      "object_ids": [
+        "obj_hero_portal_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_relic_0407cdb61ec9",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_relic:stdlib_default:b7b4e72e270c9919",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_relic",
+        "generated": false,
+        "lathe_asset": "hero_relic",
+        "source_family": "hero_relic_family"
+      },
+      "object_ids": [
+        "obj_hero_relic_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_tool_34a1b62fbb84",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_tool:stdlib_default:6fa2ff6980dcb63b",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_tool",
+        "generated": false,
+        "lathe_asset": "hero_tool",
+        "source_family": "hero_tool_family"
+      },
+      "object_ids": [
+        "obj_hero_tool_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_vehicle_ab89b00857d4",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_vehicle:stdlib_default:023b9e5176719388",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_vehicle",
+        "generated": false,
+        "lathe_asset": "hero_vehicle",
+        "source_family": "hero_vehicle_family"
+      },
+      "object_ids": [
+        "obj_hero_vehicle_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_hero_weapon_f8b871ef3f27",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_weapon:stdlib_default:2ed69237dee982bc",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_weapon",
+        "generated": false,
+        "lathe_asset": "hero_weapon",
+        "source_family": "hero_weapon_family"
+      },
+      "object_ids": [
+        "obj_hero_weapon_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "1eda351404af6b13",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_light_glowing_crystal_93b4d2cb10ed",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_glowing_crystal:stdlib_default:4a98120f83c1b197",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_glowing_crystal",
+        "generated": false,
+        "lathe_asset": "light_glowing_crystal",
+        "source_family": "light_glowing_crystal_family"
+      },
+      "object_ids": [
+        "obj_light_glowing_crystal_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "7a4aecbef70c7576",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_light_hologram_595a05eb2066",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_hologram:stdlib_default:627ee7b08580d2a0",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_hologram",
+        "generated": false,
+        "lathe_asset": "light_hologram",
+        "source_family": "light_hologram_family"
+      },
+      "object_ids": [
+        "obj_light_hologram_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "7a4aecbef70c7576",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_light_lamp_7bbb54b6341a",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_lamp:stdlib_default:6f94f3a6ee670943",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_lamp",
+        "generated": false,
+        "lathe_asset": "light_lamp",
+        "source_family": "light_lamp_family"
+      },
+      "object_ids": [
+        "obj_light_lamp_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "7a4aecbef70c7576",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_light_moon_window_8208243ae7ae",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_moon_window:stdlib_default:08b917bd2098ca29",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_moon_window",
+        "generated": false,
+        "lathe_asset": "light_moon_window",
+        "source_family": "practical_light",
+        "source_kit": "light_moon_window_kit"
+      },
+      "object_ids": [
+        "obj_light_moon_window_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "7a4aecbef70c7576",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_light_neon_tube_55042450477f",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_neon_tube:stdlib_default:3ff9fe39945f03e8",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_neon_tube",
+        "generated": false,
+        "lathe_asset": "light_neon_tube",
+        "source_family": "light_neon_tube_family"
+      },
+      "object_ids": [
+        "obj_light_neon_tube_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "7a4aecbef70c7576",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_light_torch_d233a7de078d",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_torch:stdlib_default:de326a77aa04641f",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_torch",
+        "generated": false,
+        "lathe_asset": "light_torch",
+        "source_family": "light_torch_family"
+      },
+      "object_ids": [
+        "obj_light_torch_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "7a4aecbef70c7576",
+      "estimated_complexity": 17,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_bone_3d2ff9b48170",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_bone:stdlib_default:156036c59ee8a2ce",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_bone",
+        "generated": false,
+        "lathe_asset": "natural_bone",
+        "source_family": "natural_bone_family"
+      },
+      "object_ids": [
+        "obj_natural_bone_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_coral_form_b357686f2523",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_coral_form:stdlib_default:df3625d526a11593",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_coral_form",
+        "generated": false,
+        "lathe_asset": "natural_coral_form",
+        "source_family": "natural_coral_form_family"
+      },
+      "object_ids": [
+        "obj_natural_coral_form_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_crystal_73d5204fe886",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_crystal:stdlib_default:45aa581dcdf6f198",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_crystal",
+        "generated": false,
+        "lathe_asset": "natural_crystal",
+        "source_family": "natural_crystal_family"
+      },
+      "object_ids": [
+        "obj_natural_crystal_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_dead_tree_3f0db00c9587",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_dead_tree:stdlib_default:0cef6110683779be",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_dead_tree",
+        "generated": false,
+        "lathe_asset": "natural_dead_tree",
+        "source_family": "natural_dead_tree_family"
+      },
+      "object_ids": [
+        "obj_natural_dead_tree_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_mushroom_c01b6866229e",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_mushroom:stdlib_default:7167a3c5270ac27b",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_mushroom",
+        "generated": false,
+        "lathe_asset": "natural_mushroom",
+        "source_family": "natural_mushroom_family"
+      },
+      "object_ids": [
+        "obj_natural_mushroom_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_rock_d30b59fcd7af",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_rock:stdlib_default:d7f331e9371fa447",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_rock",
+        "generated": false,
+        "lathe_asset": "natural_rock",
+        "source_family": "natural_rock_family"
+      },
+      "object_ids": [
+        "obj_natural_rock_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_root_e7a6606aa92f",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_root:stdlib_default:43b5d39d6a31dff7",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_root",
+        "generated": false,
+        "lathe_asset": "natural_root",
+        "source_family": "natural_root_family"
+      },
+      "object_ids": [
+        "obj_natural_root_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_terrain_chunk_05d9f767eee5",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_terrain_chunk:stdlib_default:e89f75a6287afc0c",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_terrain_chunk",
+        "generated": false,
+        "lathe_asset": "natural_terrain_chunk",
+        "source_family": "natural_form",
+        "source_kit": "natural_terrain_chunk_kit"
+      },
+      "object_ids": [
+        "obj_natural_terrain_chunk_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    },
+    {
+      "task_id": "asset_task_natural_vine_d8289640c39c",
+      "task_type": "asset_build",
+      "mode": "preview",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_vine:stdlib_default:6cdfe42199c42f50",
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_vine",
+        "generated": false,
+        "lathe_asset": "natural_vine",
+        "source_family": "natural_vine_family"
+      },
+      "object_ids": [
+        "obj_natural_vine_001"
+      ],
+      "variant": "stdlib_default",
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "override_fingerprint": "42baa126d46f241c",
+      "estimated_complexity": 15,
+      "requires_unique_build": true,
+      "uniqueness_reasons": [
+        "variant",
+        "asset_overrides"
+      ]
+    }
+  ],
+  "assembly_tasks": [
+    {
+      "task_id": "assembly_task_obj_architecture_arch_001_2400c632fd",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_arch_001",
+      "asset_task_id": "asset_task_architecture_arch_2f641cca81e5",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_arch:stdlib_default:433db1e33a7b0296",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Arch Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "arch",
+          "architecture",
+          "threshold"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_arch_2f641cca81e5"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_bridge_001_69e0625037",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_bridge_001",
+      "asset_task_id": "asset_task_architecture_bridge_653378eb9307",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_bridge:stdlib_default:8b61eba9eda52c95",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Bridge Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "bridge",
+          "navigation"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_bridge_653378eb9307"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_ceiling_001_4a59925b0f",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_ceiling_001",
+      "asset_task_id": "asset_task_architecture_ceiling_caf8a9942bed",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_ceiling:stdlib_default:09e6d0ca1b20cfc7",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Ceiling Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "ceiling",
+          "overhead"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_ceiling_caf8a9942bed"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_column_001_4ad5a44cfa",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_column_001",
+      "asset_task_id": "asset_task_architecture_column_22d5e29df20a",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_column:stdlib_default:05ff9e8f465ddcdf",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Column Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "column",
+          "support"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_column_22d5e29df20a"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_door_001_d11af4d31e",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_door_001",
+      "asset_task_id": "asset_task_architecture_door_78e9e2ff0763",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_door:stdlib_default:a93ec712719141c1",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Door Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "door",
+          "threshold"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_door_78e9e2ff0763"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_floor_001_88e5880446",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_floor_001",
+      "asset_task_id": "asset_task_architecture_floor_067b8bdcd386",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_floor:stdlib_default:65d776a311a4fcdf",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Floor Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "floor",
+          "walkable"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_floor_067b8bdcd386"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_platform_001_88fcaf0582",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_platform_001",
+      "asset_task_id": "asset_task_architecture_platform_1c9c88f0e768",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_platform:stdlib_default:287c6b02a172f686",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Platform Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "platform",
+          "walkable"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_platform_1c9c88f0e768"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_railing_001_506a90a48a",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_railing_001",
+      "asset_task_id": "asset_task_architecture_railing_8a4b24eb0b18",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_railing:stdlib_default:84edb59c1f65c8c8",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Railing Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "railing",
+          "safety"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_railing_8a4b24eb0b18"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_room_shell_001_e7f41a3623",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_room_shell_001",
+      "asset_task_id": "asset_task_architecture_room_shell_8c96ef4a6410",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_room_shell:stdlib_default:33dc4484484653f4",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Modular Room Shell",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "room",
+          "shell"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_room_shell_8c96ef4a6410"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_stair_001_bafdd38797",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_stair_001",
+      "asset_task_id": "asset_task_architecture_stair_38d579600003",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_stair:stdlib_default:033d18b413206072",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Stair Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "navigation",
+          "stair"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_stair_38d579600003"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_tunnel_001_6046695101",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_tunnel_001",
+      "asset_task_id": "asset_task_architecture_tunnel_1f7d1b5081cf",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_tunnel:stdlib_default:70667333d683a74c",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Tunnel Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "passage",
+          "tunnel"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_tunnel_1f7d1b5081cf"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_wall_001_305567c74f",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_wall_001",
+      "asset_task_id": "asset_task_architecture_wall_294ccc8c5956",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_wall:stdlib_default:fa145aa13a440c68",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          -6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Wall Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "boundary",
+          "wall"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_wall_294ccc8c5956"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_architecture_window_001_3cabf660da",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_architecture_window_001",
+      "asset_task_id": "asset_task_architecture_window_ca658b1c0442",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_window:stdlib_default:fe0d184328ceea9d",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_architecture",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Window Module",
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "opening",
+          "window"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_architecture_window_ca658b1c0442"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_banner_001_142207de77",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_banner_001",
+      "asset_task_id": "asset_task_dressing_banner_a20ce7c192a3",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_banner:stdlib_default:9d4a3c62639bc2fe",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Banner",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "banner",
+          "environmental_dressing",
+          "signage"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_banner_a20ce7c192a3"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_barrel_001_70cc7cabff",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_barrel_001",
+      "asset_task_id": "asset_task_dressing_barrel_8a40c1fed4fb",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_barrel:stdlib_default:ed7da299ae68747d",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Barrel",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "barrel",
+          "environmental_dressing",
+          "storage"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_barrel_8a40c1fed4fb"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_book_001_2b92ceeeef",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_book_001",
+      "asset_task_id": "asset_task_dressing_book_b57e21371c7a",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_book:stdlib_default:3ca387552b0a1581",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Book",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "book",
+          "environmental_dressing",
+          "knowledge"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_book_b57e21371c7a"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_candle_001_e63217c0ec",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_candle_001",
+      "asset_task_id": "asset_task_dressing_candle_82539ac41f46",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_candle:stdlib_default:ad36404d4c0d6e57",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Candle",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "candle",
+          "environmental_dressing",
+          "ritual"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_candle_82539ac41f46"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_chain_001_78b4afc7da",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_chain_001",
+      "asset_task_id": "asset_task_dressing_chain_debbdd2d2579",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_chain:stdlib_default:9bb28ae26fc533bd",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Chain",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "chain",
+          "environmental_dressing",
+          "hanging"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_chain_debbdd2d2579"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_crate_001_4e9e223fac",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_crate_001",
+      "asset_task_id": "asset_task_dressing_crate_b5dcddede50f",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_crate:stdlib_default:e9a03af45bd44ba1",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          -4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Crate",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "crate",
+          "environmental_dressing",
+          "storage"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_crate_b5dcddede50f"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_debris_001_a4fd0a473c",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_debris_001",
+      "asset_task_id": "asset_task_dressing_debris_2681c043ec46",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_debris:stdlib_default:870d2d572e7c58ff",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Debris",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "debris",
+          "environmental_dressing",
+          "scatter"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_debris_2681c043ec46"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_panel_001_5defdcccb1",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_panel_001",
+      "asset_task_id": "asset_task_dressing_panel_bb95ae83e9b5",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_panel:stdlib_default:c687257f560a61d1",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Panel",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "environmental_dressing",
+          "panel",
+          "surface"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_panel_bb95ae83e9b5"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_pipe_001_33a8defe33",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_pipe_001",
+      "asset_task_id": "asset_task_dressing_pipe_a01aeee2feb2",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_pipe:stdlib_default:5320d32f750d8f82",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Pipe",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "environmental_dressing",
+          "pipe",
+          "utility"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_pipe_a01aeee2feb2"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_rug_001_535df9cddb",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_rug_001",
+      "asset_task_id": "asset_task_dressing_rug_b2b12c62eef4",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_rug:stdlib_default:46831335749f50d3",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Rug",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "environmental_dressing",
+          "rug",
+          "soft"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_rug_b2b12c62eef4"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_sign_001_6293eb0b34",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_sign_001",
+      "asset_task_id": "asset_task_dressing_sign_7395bc04bdde",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_sign:stdlib_default:c0eb49b5f79f8317",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Sign",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "environmental_dressing",
+          "sign",
+          "wayfinding"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_sign_7395bc04bdde"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_dressing_vent_001_2f4b63e333",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_dressing_vent_001",
+      "asset_task_id": "asset_task_dressing_vent_029a43c8e146",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_vent:stdlib_default:7c4412b946ec9b04",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_dressing",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Vent",
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "environmental_dressing",
+          "utility",
+          "vent"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_dressing_vent_029a43c8e146"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_altar_001_3db56153c2",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_altar_001",
+      "asset_task_id": "asset_task_hero_altar_0e48b432c5f0",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_altar:stdlib_default:f54e3d3291cd90cc",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Altar",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "altar",
+          "hero_prop",
+          "ritual"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_altar"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_altar_0e48b432c5f0"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_console_001_8fae889e80",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_console_001",
+      "asset_task_id": "asset_task_hero_console_46cfafaf6097",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_console:stdlib_default:15bd59399ab46711",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Console",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "console",
+          "hero_prop",
+          "interface"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_console"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_console_46cfafaf6097"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_furniture_001_07bf05ffad",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_furniture_001",
+      "asset_task_id": "asset_task_hero_furniture_4247cd5538c2",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_furniture:stdlib_default:92acc31e4b8f82ed",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Furniture",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "furniture",
+          "hero_prop",
+          "interior"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_furniture"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_furniture_4247cd5538c2"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_machine_001_760488fd94",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_machine_001",
+      "asset_task_id": "asset_task_hero_machine_c5e4724dcf1c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_machine:stdlib_default:40347080f185a80f",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Machine",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "machine",
+          "mechanism"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_machine"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_machine_c5e4724dcf1c"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_portal_001_b883ef1b00",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_portal_001",
+      "asset_task_id": "asset_task_hero_portal_4e12c3dac90e",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_portal:stdlib_default:4f1f33a5fb6e5471",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Portal",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "portal",
+          "threshold"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_portal"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_portal_4e12c3dac90e"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_relic_001_15761c3ea5",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_relic_001",
+      "asset_task_id": "asset_task_hero_relic_0407cdb61ec9",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_relic:stdlib_default:b7b4e72e270c9919",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Relic",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "artifact",
+          "hero_prop",
+          "relic"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_relic"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_relic_0407cdb61ec9"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_tool_001_6aaa9683a8",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_tool_001",
+      "asset_task_id": "asset_task_hero_tool_34a1b62fbb84",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_tool:stdlib_default:6fa2ff6980dcb63b",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Tool",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "craft",
+          "hero_prop",
+          "tool"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_tool"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_tool_34a1b62fbb84"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_vehicle_001_dbcd47db0e",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_vehicle_001",
+      "asset_task_id": "asset_task_hero_vehicle_ab89b00857d4",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_vehicle:stdlib_default:023b9e5176719388",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Vehicle",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "transport",
+          "vehicle"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_vehicle"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_vehicle_ab89b00857d4"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_hero_weapon_001_20d7a7e745",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_hero_weapon_001",
+      "asset_task_id": "asset_task_hero_weapon_f8b871ef3f27",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_weapon:stdlib_default:2ed69237dee982bc",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          4.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_hero",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Weapon",
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "tool",
+          "weapon"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_hero_weapon"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_hero_weapon_f8b871ef3f27"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_light_glowing_crystal_001_d0a23a939c",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_light_glowing_crystal_001",
+      "asset_task_id": "asset_task_light_glowing_crystal_93b4d2cb10ed",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_glowing_crystal:stdlib_default:4a98120f83c1b197",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Glowing Crystal",
+        "role": "light_fixture",
+        "semantic_tags": [
+          "emissive",
+          "glowing_crystal",
+          "lighting_fixture"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_light_glowing_crystal"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_light_glowing_crystal_93b4d2cb10ed"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_light_hologram_001_25c27abf3e",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_light_hologram_001",
+      "asset_task_id": "asset_task_light_hologram_595a05eb2066",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_hologram:stdlib_default:627ee7b08580d2a0",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Hologram",
+        "role": "light_fixture",
+        "semantic_tags": [
+          "hologram",
+          "lighting_fixture",
+          "projection"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_light_hologram"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_light_hologram_595a05eb2066"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_light_lamp_001_ae2aad1096",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_light_lamp_001",
+      "asset_task_id": "asset_task_light_lamp_7bbb54b6341a",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_lamp:stdlib_default:6f94f3a6ee670943",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Lamp",
+        "role": "light_fixture",
+        "semantic_tags": [
+          "lamp",
+          "lighting_fixture",
+          "practical"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_light_lamp"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_light_lamp_7bbb54b6341a"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_light_moon_window_001_6cba0d494f",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_light_moon_window_001",
+      "asset_task_id": "asset_task_light_moon_window_8208243ae7ae",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_moon_window:stdlib_default:08b917bd2098ca29",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Moon Window",
+        "role": "light_fixture",
+        "semantic_tags": [
+          "lighting_fixture",
+          "moon_window",
+          "moonlight"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_light_moon_window"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_light_moon_window_8208243ae7ae"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_light_neon_tube_001_631119d3ec",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_light_neon_tube_001",
+      "asset_task_id": "asset_task_light_neon_tube_55042450477f",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_neon_tube:stdlib_default:3ff9fe39945f03e8",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Neon Tube",
+        "role": "light_fixture",
+        "semantic_tags": [
+          "emissive",
+          "lighting_fixture",
+          "neon"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_light_neon_tube"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_light_neon_tube_55042450477f"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_light_torch_001_ae4537c6cd",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_light_torch_001",
+      "asset_task_id": "asset_task_light_torch_d233a7de078d",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_torch:stdlib_default:de326a77aa04641f",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          6.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_light",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Torch",
+        "role": "light_fixture",
+        "semantic_tags": [
+          "flame",
+          "lighting_fixture",
+          "torch"
+        ],
+        "affordances": [
+          {
+            "action": "inspect",
+            "id": "inspect_light_torch"
+          }
+        ],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_light_torch_d233a7de078d"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_bone_001_54d836288c",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_bone_001",
+      "asset_task_id": "asset_task_natural_bone_3d2ff9b48170",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_bone:stdlib_default:156036c59ee8a2ce",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          0.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Bone Cluster",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "bone",
+          "natural_form",
+          "organic"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_bone_3d2ff9b48170"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_coral_form_001_ae63c82ec8",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_coral_form_001",
+      "asset_task_id": "asset_task_natural_coral_form_b357686f2523",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_coral_form:stdlib_default:df3625d526a11593",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Coral Form",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "coral",
+          "natural_form",
+          "organic"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_coral_form_b357686f2523"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_crystal_001_cf72c4e534",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_crystal_001",
+      "asset_task_id": "asset_task_natural_crystal_73d5204fe886",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_crystal:stdlib_default:45aa581dcdf6f198",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -12.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Crystal Cluster",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "crystal",
+          "mineral",
+          "natural_form"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_crystal_73d5204fe886"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_dead_tree_001_8bb3d059a7",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_dead_tree_001",
+      "asset_task_id": "asset_task_natural_dead_tree_3f0db00c9587",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_dead_tree:stdlib_default:0cef6110683779be",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Dead Tree",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "dead_tree",
+          "natural_form",
+          "silhouette"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_dead_tree_3f0db00c9587"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_mushroom_001_40ed86b2e7",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_mushroom_001",
+      "asset_task_id": "asset_task_natural_mushroom_c01b6866229e",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_mushroom:stdlib_default:7167a3c5270ac27b",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          -8.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Mushroom Cluster",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "mushroom",
+          "natural_form",
+          "organic"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_mushroom_c01b6866229e"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_rock_001_919e2b91d7",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_rock_001",
+      "asset_task_id": "asset_task_natural_rock_d30b59fcd7af",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_rock:stdlib_default:d7f331e9371fa447",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          4.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Rock Cluster",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "natural_form",
+          "rock",
+          "terrain"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_rock_d30b59fcd7af"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_root_001_4a71e82bba",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_root_001",
+      "asset_task_id": "asset_task_natural_root_e7a6606aa92f",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_root:stdlib_default:43b5d39d6a31dff7",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Root Cluster",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "natural_form",
+          "organic",
+          "root"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_root_e7a6606aa92f"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_terrain_chunk_001_da62d9bca6",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_terrain_chunk_001",
+      "asset_task_id": "asset_task_natural_terrain_chunk_05d9f767eee5",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_terrain_chunk:stdlib_default:e89f75a6287afc0c",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          8.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Terrain Chunk",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "ground",
+          "natural_form",
+          "terrain"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_terrain_chunk_05d9f767eee5"
+      ]
+    },
+    {
+      "task_id": "assembly_task_obj_natural_vine_001_a917fe1da4",
+      "task_type": "scene_assembly",
+      "mode": "preview",
+      "object_id": "obj_natural_vine_001",
+      "asset_task_id": "asset_task_natural_vine_d8289640c39c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_vine:stdlib_default:6cdfe42199c42f50",
+      "region": "region_stdlib_gallery",
+      "transform": {
+        "position": [
+          12.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_stdlib_natural",
+            "slot": "body"
+          }
+        ],
+        "state": {
+          "catalog_ready": true,
+          "mesh_runtime": "not_claimed"
+        }
+      },
+      "instance_overrides": {
+        "name": "Vine Cluster",
+        "role": "environment_structure",
+        "semantic_tags": [
+          "natural_form",
+          "organic",
+          "vine"
+        ],
+        "affordances": [],
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        }
+      },
+      "depends_on": [
+        "asset_task_natural_vine_d8289640c39c"
+      ]
+    }
+  ],
+  "render_tasks": [
+    {
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render",
+      "mode": "preview",
+      "camera_id": "camera_reveal",
+      "target": "obj_hero_altar_001",
+      "framing": "cinematic_wide",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "depends_on": [
+        "assembly_task_obj_architecture_arch_001_2400c632fd",
+        "assembly_task_obj_architecture_bridge_001_69e0625037",
+        "assembly_task_obj_architecture_ceiling_001_4a59925b0f",
+        "assembly_task_obj_architecture_column_001_4ad5a44cfa",
+        "assembly_task_obj_architecture_door_001_d11af4d31e",
+        "assembly_task_obj_architecture_floor_001_88e5880446",
+        "assembly_task_obj_architecture_platform_001_88fcaf0582",
+        "assembly_task_obj_architecture_railing_001_506a90a48a",
+        "assembly_task_obj_architecture_room_shell_001_e7f41a3623",
+        "assembly_task_obj_architecture_stair_001_bafdd38797",
+        "assembly_task_obj_architecture_tunnel_001_6046695101",
+        "assembly_task_obj_architecture_wall_001_305567c74f",
+        "assembly_task_obj_architecture_window_001_3cabf660da",
+        "assembly_task_obj_dressing_banner_001_142207de77",
+        "assembly_task_obj_dressing_barrel_001_70cc7cabff",
+        "assembly_task_obj_dressing_book_001_2b92ceeeef",
+        "assembly_task_obj_dressing_candle_001_e63217c0ec",
+        "assembly_task_obj_dressing_chain_001_78b4afc7da",
+        "assembly_task_obj_dressing_crate_001_4e9e223fac",
+        "assembly_task_obj_dressing_debris_001_a4fd0a473c",
+        "assembly_task_obj_dressing_panel_001_5defdcccb1",
+        "assembly_task_obj_dressing_pipe_001_33a8defe33",
+        "assembly_task_obj_dressing_rug_001_535df9cddb",
+        "assembly_task_obj_dressing_sign_001_6293eb0b34",
+        "assembly_task_obj_dressing_vent_001_2f4b63e333",
+        "assembly_task_obj_hero_altar_001_3db56153c2",
+        "assembly_task_obj_hero_console_001_8fae889e80",
+        "assembly_task_obj_hero_furniture_001_07bf05ffad",
+        "assembly_task_obj_hero_machine_001_760488fd94",
+        "assembly_task_obj_hero_portal_001_b883ef1b00",
+        "assembly_task_obj_hero_relic_001_15761c3ea5",
+        "assembly_task_obj_hero_tool_001_6aaa9683a8",
+        "assembly_task_obj_hero_vehicle_001_dbcd47db0e",
+        "assembly_task_obj_hero_weapon_001_20d7a7e745",
+        "assembly_task_obj_light_glowing_crystal_001_d0a23a939c",
+        "assembly_task_obj_light_hologram_001_25c27abf3e",
+        "assembly_task_obj_light_lamp_001_ae2aad1096",
+        "assembly_task_obj_light_moon_window_001_6cba0d494f",
+        "assembly_task_obj_light_neon_tube_001_631119d3ec",
+        "assembly_task_obj_light_torch_001_ae4537c6cd",
+        "assembly_task_obj_natural_bone_001_54d836288c",
+        "assembly_task_obj_natural_coral_form_001_ae63c82ec8",
+        "assembly_task_obj_natural_crystal_001_cf72c4e534",
+        "assembly_task_obj_natural_dead_tree_001_8bb3d059a7",
+        "assembly_task_obj_natural_mushroom_001_40ed86b2e7",
+        "assembly_task_obj_natural_rock_001_919e2b91d7",
+        "assembly_task_obj_natural_root_001_4a71e82bba",
+        "assembly_task_obj_natural_terrain_chunk_001_da62d9bca6",
+        "assembly_task_obj_natural_vine_001_a917fe1da4"
+      ]
+    },
+    {
+      "task_id": "render_task_camera_topdown_debug_5f9f6a13a1",
+      "task_type": "scene_render",
+      "mode": "preview",
+      "camera_id": "camera_topdown_debug",
+      "target": "obj_hero_altar_001",
+      "framing": "topdown",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "depends_on": [
+        "assembly_task_obj_architecture_arch_001_2400c632fd",
+        "assembly_task_obj_architecture_bridge_001_69e0625037",
+        "assembly_task_obj_architecture_ceiling_001_4a59925b0f",
+        "assembly_task_obj_architecture_column_001_4ad5a44cfa",
+        "assembly_task_obj_architecture_door_001_d11af4d31e",
+        "assembly_task_obj_architecture_floor_001_88e5880446",
+        "assembly_task_obj_architecture_platform_001_88fcaf0582",
+        "assembly_task_obj_architecture_railing_001_506a90a48a",
+        "assembly_task_obj_architecture_room_shell_001_e7f41a3623",
+        "assembly_task_obj_architecture_stair_001_bafdd38797",
+        "assembly_task_obj_architecture_tunnel_001_6046695101",
+        "assembly_task_obj_architecture_wall_001_305567c74f",
+        "assembly_task_obj_architecture_window_001_3cabf660da",
+        "assembly_task_obj_dressing_banner_001_142207de77",
+        "assembly_task_obj_dressing_barrel_001_70cc7cabff",
+        "assembly_task_obj_dressing_book_001_2b92ceeeef",
+        "assembly_task_obj_dressing_candle_001_e63217c0ec",
+        "assembly_task_obj_dressing_chain_001_78b4afc7da",
+        "assembly_task_obj_dressing_crate_001_4e9e223fac",
+        "assembly_task_obj_dressing_debris_001_a4fd0a473c",
+        "assembly_task_obj_dressing_panel_001_5defdcccb1",
+        "assembly_task_obj_dressing_pipe_001_33a8defe33",
+        "assembly_task_obj_dressing_rug_001_535df9cddb",
+        "assembly_task_obj_dressing_sign_001_6293eb0b34",
+        "assembly_task_obj_dressing_vent_001_2f4b63e333",
+        "assembly_task_obj_hero_altar_001_3db56153c2",
+        "assembly_task_obj_hero_console_001_8fae889e80",
+        "assembly_task_obj_hero_furniture_001_07bf05ffad",
+        "assembly_task_obj_hero_machine_001_760488fd94",
+        "assembly_task_obj_hero_portal_001_b883ef1b00",
+        "assembly_task_obj_hero_relic_001_15761c3ea5",
+        "assembly_task_obj_hero_tool_001_6aaa9683a8",
+        "assembly_task_obj_hero_vehicle_001_dbcd47db0e",
+        "assembly_task_obj_hero_weapon_001_20d7a7e745",
+        "assembly_task_obj_light_glowing_crystal_001_d0a23a939c",
+        "assembly_task_obj_light_hologram_001_25c27abf3e",
+        "assembly_task_obj_light_lamp_001_ae2aad1096",
+        "assembly_task_obj_light_moon_window_001_6cba0d494f",
+        "assembly_task_obj_light_neon_tube_001_631119d3ec",
+        "assembly_task_obj_light_torch_001_ae4537c6cd",
+        "assembly_task_obj_natural_bone_001_54d836288c",
+        "assembly_task_obj_natural_coral_form_001_ae63c82ec8",
+        "assembly_task_obj_natural_crystal_001_cf72c4e534",
+        "assembly_task_obj_natural_dead_tree_001_8bb3d059a7",
+        "assembly_task_obj_natural_mushroom_001_40ed86b2e7",
+        "assembly_task_obj_natural_rock_001_919e2b91d7",
+        "assembly_task_obj_natural_root_001_4a71e82bba",
+        "assembly_task_obj_natural_terrain_chunk_001_da62d9bca6",
+        "assembly_task_obj_natural_vine_001_a917fe1da4"
+      ]
+    }
+  ],
+  "export_tasks": [
+    {
+      "task_id": "export_task_scene_graph_json_9cf03f856d",
+      "task_type": "scene_export",
+      "mode": "preview",
+      "target": "scene_graph",
+      "format": "json",
+      "path": "exports/stdlib_component_showcase.scene_graph.json",
+      "metadata": {},
+      "source_index": 0,
+      "depends_on": [
+        "assembly_task_obj_architecture_arch_001_2400c632fd",
+        "assembly_task_obj_architecture_bridge_001_69e0625037",
+        "assembly_task_obj_architecture_ceiling_001_4a59925b0f",
+        "assembly_task_obj_architecture_column_001_4ad5a44cfa",
+        "assembly_task_obj_architecture_door_001_d11af4d31e",
+        "assembly_task_obj_architecture_floor_001_88e5880446",
+        "assembly_task_obj_architecture_platform_001_88fcaf0582",
+        "assembly_task_obj_architecture_railing_001_506a90a48a",
+        "assembly_task_obj_architecture_room_shell_001_e7f41a3623",
+        "assembly_task_obj_architecture_stair_001_bafdd38797",
+        "assembly_task_obj_architecture_tunnel_001_6046695101",
+        "assembly_task_obj_architecture_wall_001_305567c74f",
+        "assembly_task_obj_architecture_window_001_3cabf660da",
+        "assembly_task_obj_dressing_banner_001_142207de77",
+        "assembly_task_obj_dressing_barrel_001_70cc7cabff",
+        "assembly_task_obj_dressing_book_001_2b92ceeeef",
+        "assembly_task_obj_dressing_candle_001_e63217c0ec",
+        "assembly_task_obj_dressing_chain_001_78b4afc7da",
+        "assembly_task_obj_dressing_crate_001_4e9e223fac",
+        "assembly_task_obj_dressing_debris_001_a4fd0a473c",
+        "assembly_task_obj_dressing_panel_001_5defdcccb1",
+        "assembly_task_obj_dressing_pipe_001_33a8defe33",
+        "assembly_task_obj_dressing_rug_001_535df9cddb",
+        "assembly_task_obj_dressing_sign_001_6293eb0b34",
+        "assembly_task_obj_dressing_vent_001_2f4b63e333",
+        "assembly_task_obj_hero_altar_001_3db56153c2",
+        "assembly_task_obj_hero_console_001_8fae889e80",
+        "assembly_task_obj_hero_furniture_001_07bf05ffad",
+        "assembly_task_obj_hero_machine_001_760488fd94",
+        "assembly_task_obj_hero_portal_001_b883ef1b00",
+        "assembly_task_obj_hero_relic_001_15761c3ea5",
+        "assembly_task_obj_hero_tool_001_6aaa9683a8",
+        "assembly_task_obj_hero_vehicle_001_dbcd47db0e",
+        "assembly_task_obj_hero_weapon_001_20d7a7e745",
+        "assembly_task_obj_light_glowing_crystal_001_d0a23a939c",
+        "assembly_task_obj_light_hologram_001_25c27abf3e",
+        "assembly_task_obj_light_lamp_001_ae2aad1096",
+        "assembly_task_obj_light_moon_window_001_6cba0d494f",
+        "assembly_task_obj_light_neon_tube_001_631119d3ec",
+        "assembly_task_obj_light_torch_001_ae4537c6cd",
+        "assembly_task_obj_natural_bone_001_54d836288c",
+        "assembly_task_obj_natural_coral_form_001_ae63c82ec8",
+        "assembly_task_obj_natural_crystal_001_cf72c4e534",
+        "assembly_task_obj_natural_dead_tree_001_8bb3d059a7",
+        "assembly_task_obj_natural_mushroom_001_40ed86b2e7",
+        "assembly_task_obj_natural_rock_001_919e2b91d7",
+        "assembly_task_obj_natural_root_001_4a71e82bba",
+        "assembly_task_obj_natural_terrain_chunk_001_da62d9bca6",
+        "assembly_task_obj_natural_vine_001_a917fe1da4"
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "SP2001",
+      "name": "object_count_exceeds_mode_budget",
+      "severity": "warning",
+      "contract": "scene_plan",
+      "phase": "scene_planning",
+      "path": "/objects",
+      "message": "Scene has 49 objects, above the preview mode budget of 32 objects.",
+      "details": {
+        "object_count": 49,
+        "max_objects": 32,
+        "mode": "preview"
+      }
+    },
+    {
+      "code": "SP2002",
+      "name": "complexity_exceeds_mode_budget",
+      "severity": "warning",
+      "contract": "scene_plan",
+      "phase": "scene_planning",
+      "path": "/",
+      "message": "Scene rough complexity score 779 is above the preview mode budget of 320.",
+      "details": {
+        "estimated_complexity": 779,
+        "max_complexity": 320,
+        "mode": "preview"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "SP2001",
+      "name": "object_count_exceeds_mode_budget",
+      "severity": "warning",
+      "contract": "scene_plan",
+      "phase": "scene_planning",
+      "path": "/objects",
+      "message": "Scene has 49 objects, above the preview mode budget of 32 objects.",
+      "details": {
+        "object_count": 49,
+        "max_objects": 32,
+        "mode": "preview"
+      }
+    },
+    {
+      "code": "SP2002",
+      "name": "complexity_exceeds_mode_budget",
+      "severity": "warning",
+      "contract": "scene_plan",
+      "phase": "scene_planning",
+      "path": "/",
+      "message": "Scene rough complexity score 779 is above the preview mode budget of 320.",
+      "details": {
+        "estimated_complexity": 779,
+        "max_complexity": 320,
+        "mode": "preview"
+      }
+    }
+  ],
+  "cache_keys": [
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_arch:stdlib_default:433db1e33a7b0296",
+      "asset_task_id": "asset_task_architecture_arch_2f641cca81e5",
+      "object_ids": [
+        "obj_architecture_arch_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_arch",
+        "generated": false,
+        "lathe_asset": "architecture_arch",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_arch_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_bridge:stdlib_default:8b61eba9eda52c95",
+      "asset_task_id": "asset_task_architecture_bridge_653378eb9307",
+      "object_ids": [
+        "obj_architecture_bridge_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_bridge",
+        "generated": false,
+        "lathe_asset": "architecture_bridge",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_bridge_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_ceiling:stdlib_default:09e6d0ca1b20cfc7",
+      "asset_task_id": "asset_task_architecture_ceiling_caf8a9942bed",
+      "object_ids": [
+        "obj_architecture_ceiling_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_ceiling",
+        "generated": false,
+        "lathe_asset": "architecture_ceiling",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_ceiling_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_column:stdlib_default:05ff9e8f465ddcdf",
+      "asset_task_id": "asset_task_architecture_column_22d5e29df20a",
+      "object_ids": [
+        "obj_architecture_column_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_column",
+        "generated": false,
+        "lathe_asset": "architecture_column",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_column_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_door:stdlib_default:a93ec712719141c1",
+      "asset_task_id": "asset_task_architecture_door_78e9e2ff0763",
+      "object_ids": [
+        "obj_architecture_door_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_door",
+        "generated": false,
+        "lathe_asset": "architecture_door",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_door_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_floor:stdlib_default:65d776a311a4fcdf",
+      "asset_task_id": "asset_task_architecture_floor_067b8bdcd386",
+      "object_ids": [
+        "obj_architecture_floor_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_floor",
+        "generated": false,
+        "lathe_asset": "architecture_floor",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_floor_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_platform:stdlib_default:287c6b02a172f686",
+      "asset_task_id": "asset_task_architecture_platform_1c9c88f0e768",
+      "object_ids": [
+        "obj_architecture_platform_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_platform",
+        "generated": false,
+        "lathe_asset": "architecture_platform",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_platform_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_railing:stdlib_default:84edb59c1f65c8c8",
+      "asset_task_id": "asset_task_architecture_railing_8a4b24eb0b18",
+      "object_ids": [
+        "obj_architecture_railing_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_railing",
+        "generated": false,
+        "lathe_asset": "architecture_railing",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_railing_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_room_shell:stdlib_default:33dc4484484653f4",
+      "asset_task_id": "asset_task_architecture_room_shell_8c96ef4a6410",
+      "object_ids": [
+        "obj_architecture_room_shell_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_room_shell",
+        "generated": false,
+        "lathe_asset": "architecture_room_shell",
+        "source_family": "environment_architecture",
+        "source_kit": "modular_room_shell_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_stair:stdlib_default:033d18b413206072",
+      "asset_task_id": "asset_task_architecture_stair_38d579600003",
+      "object_ids": [
+        "obj_architecture_stair_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_stair",
+        "generated": false,
+        "lathe_asset": "architecture_stair",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_stair_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_tunnel:stdlib_default:70667333d683a74c",
+      "asset_task_id": "asset_task_architecture_tunnel_1f7d1b5081cf",
+      "object_ids": [
+        "obj_architecture_tunnel_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_tunnel",
+        "generated": false,
+        "lathe_asset": "architecture_tunnel",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_tunnel_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_wall:stdlib_default:fa145aa13a440c68",
+      "asset_task_id": "asset_task_architecture_wall_294ccc8c5956",
+      "object_ids": [
+        "obj_architecture_wall_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_wall",
+        "generated": false,
+        "lathe_asset": "architecture_wall",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_wall_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:architecture_window:stdlib_default:fe0d184328ceea9d",
+      "asset_task_id": "asset_task_architecture_window_ca658b1c0442",
+      "object_ids": [
+        "obj_architecture_window_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "architecture_window",
+        "generated": false,
+        "lathe_asset": "architecture_window",
+        "source_family": "environment_architecture",
+        "source_kit": "architecture_window_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_banner:stdlib_default:9d4a3c62639bc2fe",
+      "asset_task_id": "asset_task_dressing_banner_a20ce7c192a3",
+      "object_ids": [
+        "obj_dressing_banner_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_banner",
+        "generated": false,
+        "lathe_asset": "dressing_banner",
+        "source_family": "dressing_banner_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_barrel:stdlib_default:ed7da299ae68747d",
+      "asset_task_id": "asset_task_dressing_barrel_8a40c1fed4fb",
+      "object_ids": [
+        "obj_dressing_barrel_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_barrel",
+        "generated": false,
+        "lathe_asset": "dressing_barrel",
+        "source_family": "dressing_barrel_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_book:stdlib_default:3ca387552b0a1581",
+      "asset_task_id": "asset_task_dressing_book_b57e21371c7a",
+      "object_ids": [
+        "obj_dressing_book_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_book",
+        "generated": false,
+        "lathe_asset": "dressing_book",
+        "source_family": "dressing_book_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_candle:stdlib_default:ad36404d4c0d6e57",
+      "asset_task_id": "asset_task_dressing_candle_82539ac41f46",
+      "object_ids": [
+        "obj_dressing_candle_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_candle",
+        "generated": false,
+        "lathe_asset": "dressing_candle",
+        "source_family": "dressing_candle_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_chain:stdlib_default:9bb28ae26fc533bd",
+      "asset_task_id": "asset_task_dressing_chain_debbdd2d2579",
+      "object_ids": [
+        "obj_dressing_chain_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_chain",
+        "generated": false,
+        "lathe_asset": "dressing_chain",
+        "source_family": "dressing_chain_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_crate:stdlib_default:e9a03af45bd44ba1",
+      "asset_task_id": "asset_task_dressing_crate_b5dcddede50f",
+      "object_ids": [
+        "obj_dressing_crate_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_crate",
+        "generated": false,
+        "lathe_asset": "dressing_crate",
+        "source_family": "dressing_crate_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_debris:stdlib_default:870d2d572e7c58ff",
+      "asset_task_id": "asset_task_dressing_debris_2681c043ec46",
+      "object_ids": [
+        "obj_dressing_debris_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_debris",
+        "generated": false,
+        "lathe_asset": "dressing_debris",
+        "source_family": "dressing_debris_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_panel:stdlib_default:c687257f560a61d1",
+      "asset_task_id": "asset_task_dressing_panel_bb95ae83e9b5",
+      "object_ids": [
+        "obj_dressing_panel_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_panel",
+        "generated": false,
+        "lathe_asset": "dressing_panel",
+        "source_family": "dressing_panel_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_pipe:stdlib_default:5320d32f750d8f82",
+      "asset_task_id": "asset_task_dressing_pipe_a01aeee2feb2",
+      "object_ids": [
+        "obj_dressing_pipe_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_pipe",
+        "generated": false,
+        "lathe_asset": "dressing_pipe",
+        "source_family": "dressing_pipe_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_rug:stdlib_default:46831335749f50d3",
+      "asset_task_id": "asset_task_dressing_rug_b2b12c62eef4",
+      "object_ids": [
+        "obj_dressing_rug_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_rug",
+        "generated": false,
+        "lathe_asset": "dressing_rug",
+        "source_family": "dressing_rug_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_sign:stdlib_default:c0eb49b5f79f8317",
+      "asset_task_id": "asset_task_dressing_sign_7395bc04bdde",
+      "object_ids": [
+        "obj_dressing_sign_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_sign",
+        "generated": false,
+        "lathe_asset": "dressing_sign",
+        "source_family": "dressing_sign_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:dressing_vent:stdlib_default:7c4412b946ec9b04",
+      "asset_task_id": "asset_task_dressing_vent_029a43c8e146",
+      "object_ids": [
+        "obj_dressing_vent_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "dressing_vent",
+        "generated": false,
+        "lathe_asset": "dressing_vent",
+        "source_family": "dressing_vent_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_altar:stdlib_default:f54e3d3291cd90cc",
+      "asset_task_id": "asset_task_hero_altar_0e48b432c5f0",
+      "object_ids": [
+        "obj_hero_altar_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_altar",
+        "generated": false,
+        "lathe_asset": "hero_altar",
+        "source_family": "hero_altar_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_console:stdlib_default:15bd59399ab46711",
+      "asset_task_id": "asset_task_hero_console_46cfafaf6097",
+      "object_ids": [
+        "obj_hero_console_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_console",
+        "generated": false,
+        "lathe_asset": "hero_console",
+        "source_family": "hero_console_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_furniture:stdlib_default:92acc31e4b8f82ed",
+      "asset_task_id": "asset_task_hero_furniture_4247cd5538c2",
+      "object_ids": [
+        "obj_hero_furniture_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_furniture",
+        "generated": false,
+        "lathe_asset": "hero_furniture",
+        "source_family": "hero_furniture_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_machine:stdlib_default:40347080f185a80f",
+      "asset_task_id": "asset_task_hero_machine_c5e4724dcf1c",
+      "object_ids": [
+        "obj_hero_machine_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_machine",
+        "generated": false,
+        "lathe_asset": "hero_machine",
+        "source_family": "hero_machine_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_portal:stdlib_default:4f1f33a5fb6e5471",
+      "asset_task_id": "asset_task_hero_portal_4e12c3dac90e",
+      "object_ids": [
+        "obj_hero_portal_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_portal",
+        "generated": false,
+        "lathe_asset": "hero_portal",
+        "source_family": "hero_portal_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_relic:stdlib_default:b7b4e72e270c9919",
+      "asset_task_id": "asset_task_hero_relic_0407cdb61ec9",
+      "object_ids": [
+        "obj_hero_relic_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_relic",
+        "generated": false,
+        "lathe_asset": "hero_relic",
+        "source_family": "hero_relic_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_tool:stdlib_default:6fa2ff6980dcb63b",
+      "asset_task_id": "asset_task_hero_tool_34a1b62fbb84",
+      "object_ids": [
+        "obj_hero_tool_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_tool",
+        "generated": false,
+        "lathe_asset": "hero_tool",
+        "source_family": "hero_tool_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_vehicle:stdlib_default:023b9e5176719388",
+      "asset_task_id": "asset_task_hero_vehicle_ab89b00857d4",
+      "object_ids": [
+        "obj_hero_vehicle_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_vehicle",
+        "generated": false,
+        "lathe_asset": "hero_vehicle",
+        "source_family": "hero_vehicle_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:hero_weapon:stdlib_default:2ed69237dee982bc",
+      "asset_task_id": "asset_task_hero_weapon_f8b871ef3f27",
+      "object_ids": [
+        "obj_hero_weapon_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "hero_weapon",
+        "generated": false,
+        "lathe_asset": "hero_weapon",
+        "source_family": "hero_weapon_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_glowing_crystal:stdlib_default:4a98120f83c1b197",
+      "asset_task_id": "asset_task_light_glowing_crystal_93b4d2cb10ed",
+      "object_ids": [
+        "obj_light_glowing_crystal_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_glowing_crystal",
+        "generated": false,
+        "lathe_asset": "light_glowing_crystal",
+        "source_family": "light_glowing_crystal_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_hologram:stdlib_default:627ee7b08580d2a0",
+      "asset_task_id": "asset_task_light_hologram_595a05eb2066",
+      "object_ids": [
+        "obj_light_hologram_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_hologram",
+        "generated": false,
+        "lathe_asset": "light_hologram",
+        "source_family": "light_hologram_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_lamp:stdlib_default:6f94f3a6ee670943",
+      "asset_task_id": "asset_task_light_lamp_7bbb54b6341a",
+      "object_ids": [
+        "obj_light_lamp_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_lamp",
+        "generated": false,
+        "lathe_asset": "light_lamp",
+        "source_family": "light_lamp_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_moon_window:stdlib_default:08b917bd2098ca29",
+      "asset_task_id": "asset_task_light_moon_window_8208243ae7ae",
+      "object_ids": [
+        "obj_light_moon_window_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_moon_window",
+        "generated": false,
+        "lathe_asset": "light_moon_window",
+        "source_family": "practical_light",
+        "source_kit": "light_moon_window_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_neon_tube:stdlib_default:3ff9fe39945f03e8",
+      "asset_task_id": "asset_task_light_neon_tube_55042450477f",
+      "object_ids": [
+        "obj_light_neon_tube_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_neon_tube",
+        "generated": false,
+        "lathe_asset": "light_neon_tube",
+        "source_family": "light_neon_tube_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:light_torch:stdlib_default:de326a77aa04641f",
+      "asset_task_id": "asset_task_light_torch_d233a7de078d",
+      "object_ids": [
+        "obj_light_torch_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "light_torch",
+        "generated": false,
+        "lathe_asset": "light_torch",
+        "source_family": "light_torch_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_bone:stdlib_default:156036c59ee8a2ce",
+      "asset_task_id": "asset_task_natural_bone_3d2ff9b48170",
+      "object_ids": [
+        "obj_natural_bone_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_bone",
+        "generated": false,
+        "lathe_asset": "natural_bone",
+        "source_family": "natural_bone_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_coral_form:stdlib_default:df3625d526a11593",
+      "asset_task_id": "asset_task_natural_coral_form_b357686f2523",
+      "object_ids": [
+        "obj_natural_coral_form_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_coral_form",
+        "generated": false,
+        "lathe_asset": "natural_coral_form",
+        "source_family": "natural_coral_form_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_crystal:stdlib_default:45aa581dcdf6f198",
+      "asset_task_id": "asset_task_natural_crystal_73d5204fe886",
+      "object_ids": [
+        "obj_natural_crystal_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_crystal",
+        "generated": false,
+        "lathe_asset": "natural_crystal",
+        "source_family": "natural_crystal_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_dead_tree:stdlib_default:0cef6110683779be",
+      "asset_task_id": "asset_task_natural_dead_tree_3f0db00c9587",
+      "object_ids": [
+        "obj_natural_dead_tree_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_dead_tree",
+        "generated": false,
+        "lathe_asset": "natural_dead_tree",
+        "source_family": "natural_dead_tree_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_mushroom:stdlib_default:7167a3c5270ac27b",
+      "asset_task_id": "asset_task_natural_mushroom_c01b6866229e",
+      "object_ids": [
+        "obj_natural_mushroom_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_mushroom",
+        "generated": false,
+        "lathe_asset": "natural_mushroom",
+        "source_family": "natural_mushroom_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_rock:stdlib_default:d7f331e9371fa447",
+      "asset_task_id": "asset_task_natural_rock_d30b59fcd7af",
+      "object_ids": [
+        "obj_natural_rock_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_rock",
+        "generated": false,
+        "lathe_asset": "natural_rock",
+        "source_family": "natural_rock_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_root:stdlib_default:43b5d39d6a31dff7",
+      "asset_task_id": "asset_task_natural_root_e7a6606aa92f",
+      "object_ids": [
+        "obj_natural_root_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_root",
+        "generated": false,
+        "lathe_asset": "natural_root",
+        "source_family": "natural_root_family"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_terrain_chunk:stdlib_default:e89f75a6287afc0c",
+      "asset_task_id": "asset_task_natural_terrain_chunk_05d9f767eee5",
+      "object_ids": [
+        "obj_natural_terrain_chunk_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_terrain_chunk",
+        "generated": false,
+        "lathe_asset": "natural_terrain_chunk",
+        "source_family": "natural_form",
+        "source_kit": "natural_terrain_chunk_kit"
+      },
+      "shareable": true
+    },
+    {
+      "cache_key": "scene_asset.v1:preview:lathe_asset:natural_vine:stdlib_default:6cdfe42199c42f50",
+      "asset_task_id": "asset_task_natural_vine_d8289640c39c",
+      "object_ids": [
+        "obj_natural_vine_001"
+      ],
+      "source": {
+        "kind": "lathe_asset",
+        "ref": "natural_vine",
+        "generated": false,
+        "lathe_asset": "natural_vine",
+        "source_family": "natural_vine_family"
+      },
+      "shareable": true
+    }
+  ],
+  "source_brief_id": "stdlib_component_showcase"
+}

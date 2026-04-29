@@ -1,0 +1,706 @@
+{
+  "schema_version": "lathe.scene_graph.v1",
+  "scene_id": "mountain_lightning_city",
+  "version": 1,
+  "brief_id": "mountain_lightning_city",
+  "prompt": "A vertical mountain city during a thunderstorm, with basalt terraces, switchback stairs, copper storm lanterns, a sky bridge gate, and a lightning rod tower that keeps getting struck.",
+  "style_bible": {
+    "mood": [
+      "awe",
+      "danger",
+      "alive"
+    ],
+    "palette": [
+      "storm violet",
+      "wet basalt",
+      "copper lantern",
+      "cloud silver",
+      "warning amber"
+    ],
+    "materials": [
+      "stacked basalt",
+      "weathered copper",
+      "rain glass",
+      "painted cloth"
+    ],
+    "forms": [
+      "vertical terraces",
+      "switchback stairs",
+      "sky bridges",
+      "banner lines",
+      "antenna spires"
+    ],
+    "lighting": [
+      "Cold lightning pulses over wet stone",
+      "copper lanterns keep the path readable"
+    ],
+    "avoid": [
+      "modern skyscraper glass",
+      "real city signage",
+      "photoreal traffic",
+      "real brand signs",
+      "cars",
+      "modern power grids"
+    ]
+  },
+  "layout": {
+    "room_size": [
+      20.0,
+      16.0,
+      7.0
+    ],
+    "main_path": {
+      "from": "region_mountain_lightning_city_main",
+      "to": "obj_lightning_rod_tower_002",
+      "width": 2.0
+    },
+    "focal_point": "obj_lightning_rod_tower_002",
+    "density": "medium",
+    "avoid_intersections": true
+  },
+  "regions": [
+    {
+      "region_id": "region_mountain_lightning_city_main",
+      "name": "Mountain Lightning City",
+      "type": "exterior",
+      "purpose": "A compact street corner carved into a high mountain face during an active storm.",
+      "mood": "awe and danger and alive",
+      "bounds": {
+        "center": [
+          0.0,
+          0.0,
+          3.5
+        ],
+        "size": [
+          20.0,
+          16.0,
+          7.0
+        ]
+      },
+      "semantic_tags": [
+        "street_corner",
+        "mythic urban",
+        "storm fantasy",
+        "awe",
+        "danger",
+        "alive"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "obj_terrace_wall_modules_001",
+      "name": "Terrace Wall Modules",
+      "role": "architecture",
+      "region": "region_mountain_lightning_city_main",
+      "lathe_asset": "terrace_wall_modules",
+      "source_family": "environment_architecture",
+      "transform": {
+        "position": [
+          0.0,
+          -5.12,
+          3.15
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -90.0
+        ],
+        "scale": [
+          1.4,
+          1.4,
+          1.2
+        ]
+      },
+      "semantic_tags": [
+        "architecture",
+        "must",
+        "terrace_wall_modules"
+      ],
+      "state": {
+        "description": "Stacked wall and balcony modules that define the cliff street.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_storm_violet_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_lightning_rod_tower_002",
+      "name": "Lightning Rod Tower",
+      "role": "hero_prop",
+      "region": "region_mountain_lightning_city_main",
+      "lathe_asset": "lightning_rod_tower",
+      "source_family": "hero_prop",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "hero_prop",
+        "must",
+        "lightning_rod_tower"
+      ],
+      "state": {
+        "description": "A copper tower that repeatedly draws lightning to the city.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [
+        {
+          "id": "inspect_lightning_rod_tower",
+          "action": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+          "reveals": "hidden_why_does_lightning_strike_the_same_tower_001"
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_storm_violet_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_switchback_stairs_003",
+      "name": "Switchback Stairs",
+      "role": "navigation",
+      "region": "region_mountain_lightning_city_main",
+      "lathe_asset": "switchback_stairs",
+      "source_family": "navigation_marker",
+      "transform": {
+        "position": [
+          6.087,
+          -1.582,
+          0.05
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -18.0
+        ],
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ]
+      },
+      "semantic_tags": [
+        "navigation",
+        "must",
+        "switchback_stairs"
+      ],
+      "state": {
+        "description": "A readable stair route that climbs between the terraces.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_storm_violet_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_sky_bridge_gate_004",
+      "name": "Sky Bridge Gate",
+      "role": "interactive",
+      "region": "region_mountain_lightning_city_main",
+      "lathe_asset": "sky_bridge_gate",
+      "source_family": "interactive_mechanism",
+      "transform": {
+        "position": [
+          3.762,
+          4.142,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          54.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "interactive",
+        "should",
+        "sky_bridge_gate"
+      ],
+      "state": {
+        "description": "A closed gate leading to a narrow bridge lost in storm cloud.",
+        "priority": "should",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [
+        {
+          "id": "use_sky_bridge_gate",
+          "action": "Inspect the lightning rod tower and decide whether to open the sky bridge gate."
+        }
+      ],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_storm_violet_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_storm_lanterns_005",
+      "name": "Storm Lanterns",
+      "role": "light_fixture",
+      "region": "region_mountain_lightning_city_main",
+      "lathe_asset": "storm_lanterns",
+      "source_family": "practical_light",
+      "transform": {
+        "position": [
+          -3.762,
+          4.142,
+          4.34
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          126.0
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      "semantic_tags": [
+        "light_fixture",
+        "must",
+        "storm_lanterns"
+      ],
+      "state": {
+        "description": "Copper lanterns that mark the safe route through the rain.",
+        "priority": "must",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_storm_violet_001"
+        }
+      ]
+    },
+    {
+      "object_id": "obj_cloudline_backdrop_006",
+      "name": "Cloudline Backdrop",
+      "role": "environment_structure",
+      "region": "region_mountain_lightning_city_main",
+      "lathe_asset": "cloudline_backdrop",
+      "source_family": "environment_structure",
+      "transform": {
+        "position": [
+          -6.087,
+          -1.582,
+          2.45
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          198.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "environment_structure",
+        "should",
+        "cloudline_backdrop"
+      ],
+      "state": {
+        "description": "Layered cloud silhouettes that sell the height of the city.",
+        "priority": "should",
+        "lowered_from": "dream_brief"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      },
+      "material_bindings": [
+        {
+          "slot": "primary",
+          "material": "mat_storm_violet_001"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "relationship_id": "rel_terrace_wall_modules_001_contains_001",
+      "from": "obj_terrace_wall_modules_001",
+      "to": "region_mountain_lightning_city_main",
+      "type": "contains",
+      "description": "obj_terrace_wall_modules_001 is lowered from the Dream Brief as contains region_mountain_lightning_city_main."
+    },
+    {
+      "relationship_id": "rel_switchback_stairs_003_points_toward_003",
+      "from": "obj_switchback_stairs_003",
+      "to": "obj_lightning_rod_tower_002",
+      "type": "points_toward",
+      "description": "obj_switchback_stairs_003 is lowered from the Dream Brief as points_toward obj_lightning_rod_tower_002."
+    },
+    {
+      "relationship_id": "rel_sky_bridge_gate_004_adjacent_to_004",
+      "from": "obj_sky_bridge_gate_004",
+      "to": "obj_lightning_rod_tower_002",
+      "type": "adjacent_to",
+      "description": "obj_sky_bridge_gate_004 is lowered from the Dream Brief as adjacent_to obj_lightning_rod_tower_002."
+    },
+    {
+      "relationship_id": "rel_storm_lanterns_005_adjacent_to_005",
+      "from": "obj_storm_lanterns_005",
+      "to": "obj_lightning_rod_tower_002",
+      "type": "adjacent_to",
+      "description": "obj_storm_lanterns_005 is lowered from the Dream Brief as adjacent_to obj_lightning_rod_tower_002."
+    },
+    {
+      "relationship_id": "rel_cloudline_backdrop_006_contains_006",
+      "from": "obj_cloudline_backdrop_006",
+      "to": "region_mountain_lightning_city_main",
+      "type": "contains",
+      "description": "obj_cloudline_backdrop_006 is lowered from the Dream Brief as contains region_mountain_lightning_city_main."
+    },
+    {
+      "relationship_id": "rel_light_storm_lanterns_001_lights_focal_001",
+      "from": "light_storm_lanterns_001",
+      "to": "obj_lightning_rod_tower_002",
+      "type": "lit_by",
+      "description": "Generated scene light targets the focal object."
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "mat_storm_violet_001",
+      "name": "Storm Violet",
+      "role": "stacked_basalt",
+      "palette_refs": [
+        "storm violet"
+      ],
+      "pbr": {
+        "basecolor": "#b5510e",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_wet_basalt_002",
+      "name": "Wet Basalt",
+      "role": "weathered_copper",
+      "palette_refs": [
+        "wet basalt"
+      ],
+      "pbr": {
+        "basecolor": "#267f47",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_copper_lantern_003",
+      "name": "Copper Lantern",
+      "role": "rain_glass",
+      "palette_refs": [
+        "copper lantern"
+      ],
+      "pbr": {
+        "basecolor": "#ff78e9",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_cloud_silver_004",
+      "name": "Cloud Silver",
+      "role": "painted_cloth",
+      "palette_refs": [
+        "cloud silver"
+      ],
+      "pbr": {
+        "basecolor": "#bf003f",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    },
+    {
+      "material_id": "mat_warning_amber_005",
+      "name": "Warning Amber",
+      "role": "stacked_basalt",
+      "palette_refs": [
+        "warning amber"
+      ],
+      "pbr": {
+        "basecolor": "#d0a871",
+        "metallic": 0.0,
+        "roughness": 0.65
+      }
+    }
+  ],
+  "lights": [
+    {
+      "light_id": "light_storm_lanterns_001",
+      "type": "area",
+      "target": "obj_lightning_rod_tower_002",
+      "color": "storm violet",
+      "intensity": 0.72,
+      "purpose": "Copper lanterns that mark the safe route through the rain."
+    }
+  ],
+  "cameras": [
+    {
+      "camera_id": "camera_reveal",
+      "target": "obj_lightning_rod_tower_002",
+      "framing": "cinematic_wide",
+      "purpose": "Show the vertical route, storm lanterns, and tower silhouette.",
+      "transform": {
+        "position": [
+          -9.0,
+          -8.8,
+          3.15
+        ],
+        "rotation": [
+          64.0,
+          0.0,
+          -38.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 48.0
+    },
+    {
+      "camera_id": "camera_tower_detail",
+      "target": "obj_lightning_rod_tower_002",
+      "framing": "inspection",
+      "purpose": "Inspect the charged lightning rod and copper grounding rings.",
+      "transform": {
+        "position": [
+          -1.8,
+          -1.4,
+          1.4
+        ],
+        "rotation": [
+          62.0,
+          0.0,
+          -36.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 36.0
+    },
+    {
+      "camera_id": "camera_debug_topdown",
+      "target": "obj_lightning_rod_tower_002",
+      "framing": "topdown",
+      "purpose": "Deterministic topdown layout inspection.",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          11.0
+        ],
+        "rotation": [
+          90.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 55.0
+    }
+  ],
+  "curiosity_anchors": [
+    {
+      "anchor_id": "curiosity_why_does_lightning_strike_the_same_tower_001",
+      "visible_clue": "A scene detail invites investigation: Why does lightning strike the same tower?",
+      "hidden_fact": "Unresolved Wonder question: Why does lightning strike the same tower?",
+      "attached_to": "obj_lightning_rod_tower_002",
+      "suggested_user_actions": [
+        "Inspect the lightning rod tower and decide whether to open the sky bridge gate."
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_why_does_lightning_strike_the_same_tower",
+          "label": "Expand on Why does lightning strike the same tower?",
+          "target_scope": "obj_lightning_rod_tower_002",
+          "required_assets": [
+            "lightning_rod_tower_002"
+          ],
+          "continuity_constraints": [
+            "preserve obj_lightning_rod_tower_002",
+            "preserve primary layout"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_what_waits_beyond_the_sky_bridge_gate_002",
+      "visible_clue": "A scene detail invites investigation: What waits beyond the sky bridge gate?",
+      "hidden_fact": "Unresolved Wonder question: What waits beyond the sky bridge gate?",
+      "attached_to": "obj_lightning_rod_tower_002",
+      "suggested_user_actions": [
+        "Inspect the lightning rod tower and decide whether to open the sky bridge gate."
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_what_waits_beyond_the_sky_bridge_gate",
+          "label": "Expand on What waits beyond the sky bridge gate?",
+          "target_scope": "obj_lightning_rod_tower_002",
+          "required_assets": [
+            "lightning_rod_tower_002"
+          ],
+          "continuity_constraints": [
+            "preserve obj_lightning_rod_tower_002",
+            "preserve primary layout"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_who_keeps_the_storm_lanterns_lit_003",
+      "visible_clue": "A scene detail invites investigation: Who keeps the storm lanterns lit?",
+      "hidden_fact": "Unresolved Wonder question: Who keeps the storm lanterns lit?",
+      "attached_to": "obj_lightning_rod_tower_002",
+      "suggested_user_actions": [
+        "Inspect the lightning rod tower and decide whether to open the sky bridge gate."
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_who_keeps_the_storm_lanterns_lit",
+          "label": "Expand on Who keeps the storm lanterns lit?",
+          "target_scope": "obj_lightning_rod_tower_002",
+          "required_assets": [
+            "lightning_rod_tower_002"
+          ],
+          "continuity_constraints": [
+            "preserve obj_lightning_rod_tower_002",
+            "preserve primary layout"
+          ]
+        }
+      ]
+    }
+  ],
+  "hidden_state": [
+    {
+      "hidden_id": "hidden_why_does_lightning_strike_the_same_tower_001",
+      "attached_to": "obj_lightning_rod_tower_002",
+      "fact": "Unresolved Wonder question: Why does lightning strike the same tower?",
+      "reveal_condition": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_what_waits_beyond_the_sky_bridge_gate_002",
+      "attached_to": "obj_lightning_rod_tower_002",
+      "fact": "Unresolved Wonder question: What waits beyond the sky bridge gate?",
+      "reveal_condition": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_who_keeps_the_storm_lanterns_lit_003",
+      "attached_to": "obj_lightning_rod_tower_002",
+      "fact": "Unresolved Wonder question: Who keeps the storm lanterns lit?",
+      "reveal_condition": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+      "visible": false
+    }
+  ],
+  "exports": [
+    {
+      "target": "scene_graph",
+      "format": "json",
+      "path": "scene_graph.json",
+      "metadata": {
+        "planned_only": true,
+        "lowered_from": "dream_brief"
+      }
+    },
+    {
+      "target": "scene_package",
+      "format": "lathepkg",
+      "path": "dist/mountain_lightning_city.lathepkg",
+      "metadata": {
+        "planned_only": true,
+        "lowered_from": "dream_brief"
+      }
+    },
+    {
+      "target": "glb",
+      "format": "glb",
+      "path": "dist/exports/mountain_lightning_city.glb",
+      "metadata": {
+        "planned_only": true,
+        "lowered_from": "dream_brief"
+      }
+    }
+  ],
+  "build_artifacts": [
+    {
+      "kind": "scene_graph",
+      "path": "scene_graph.json",
+      "status": "planned",
+      "produced_by": "lathe.wonder.brief"
+    }
+  ],
+  "memory_events": []
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "lathe.scene_patch.v1",
+  "patch_id": "patch_unknown_target_001",
+  "scope": "object",
+  "target_id": "obj_missing_001",
+  "instruction": "Make the missing object feel more sacred.",
+  "preserve": [
+    "object_id",
+    "region",
+    "transform.position",
+    "transform.rotation",
+    "transform.scale"
+  ],
+  "allowed_changes": [
+    "style",
+    "metadata"
+  ]
+}
+

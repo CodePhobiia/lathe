@@ -1,0 +1,33 @@
+{
+  "schema_version": "lathe.scene_patch.v1",
+  "patch_id": "patch_stdlib_component_showcase_example_001",
+  "scope": "object",
+  "target_id": "obj_hero_altar_001",
+  "instruction": "Add a small deterministic proxy-safe emphasis pass while preserving stable IDs, layout, position, scale, and branch continuity.",
+  "preserve": [
+    "object_id",
+    "region",
+    "transform.position",
+    "transform.rotation",
+    "transform.scale"
+  ],
+  "allowed_changes": [
+    "style",
+    "metadata"
+  ],
+  "continuity": {
+    "mode": "preserve_selected_ids",
+    "preserved_ids": [
+      "obj_hero_altar_001"
+    ]
+  },
+  "acceptance": {
+    "validators": [
+      "style",
+      "semantic",
+      "composition",
+      "continuity"
+    ],
+    "minimum_score": 0.78
+  }
+}

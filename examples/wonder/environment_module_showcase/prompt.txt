@@ -1,0 +1,1 @@
+A modular room shell assembled from floor tiles, wall segments, arches, platforms, stairs, background silhouettes, and terrain chunks.

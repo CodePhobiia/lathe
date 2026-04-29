@@ -1,0 +1,20 @@
+{
+  "schema_version": "lathe.render_comparison.v1",
+  "camera_lock_status": "passed",
+  "before_hash": "sha256:c6aaf0eef51f582568b1b4f2d2aa4097f19e7ee26fd7d12d2e8d8fd2970c75f0",
+  "after_hash": "sha256:c6aaf0eef51f582568b1b4f2d2aa4097f19e7ee26fd7d12d2e8d8fd2970c75f0",
+  "dimensions": {
+    "width": 640,
+    "height": 360
+  },
+  "pixel_delta": {
+    "changed_pixels": 0,
+    "changed_ratio": 0.0
+  },
+  "semantic_delta": {
+    "status": "not_evaluated",
+    "reason": "Wave 5 golden fixtures commit proxy comparison contracts only; target-level semantic visual evaluation is not implemented."
+  },
+  "status": "passed",
+  "camera_hash": "sha256:b331c84f1fb8257f39672bc6d5fb5570763984575f30c79a1d0e447599b22c27"
+}

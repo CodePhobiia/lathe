@@ -1,0 +1,557 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/roblox-manifest-v1.json",
+  "title": "Lathe Wonder Roblox Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "scene_id",
+    "profile_id",
+    "units",
+    "budgets",
+    "summary",
+    "objects",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.roblox_manifest.v1"
+    },
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,120}$"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "profile_id": {
+      "const": "roblox_lowpoly"
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "length"
+      ],
+      "properties": {
+        "length": {
+          "const": "studs"
+        }
+      }
+    },
+    "budgets": {
+      "$ref": "#/$defs/budgets"
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objects",
+        "triangles",
+        "meshes",
+        "textures",
+        "materials",
+        "diagnostics",
+        "errors",
+        "warnings",
+        "scores"
+      ],
+      "properties": {
+        "objects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "triangles": {
+          "$ref": "#/$defs/nullable_count"
+        },
+        "meshes": {
+          "$ref": "#/$defs/nullable_count"
+        },
+        "textures": {
+          "$ref": "#/$defs/nullable_count"
+        },
+        "materials": {
+          "$ref": "#/$defs/nullable_count"
+        },
+        "diagnostics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scores": {
+          "$ref": "#/$defs/scores"
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object_manifest"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "region_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^region_[a-z0-9_]{3,80}$"
+    },
+    "scene_role": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "architecture",
+        "hero_prop",
+        "environment_structure",
+        "dressing_prop",
+        "light_fixture",
+        "navigation",
+        "interactive",
+        "narrative_clue",
+        null
+      ]
+    },
+    "nullable_string": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nullable_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_scene_triangles",
+        "max_mesh_triangles",
+        "max_meshes",
+        "max_textures",
+        "max_texture_resolution",
+        "max_materials",
+        "max_materials_per_mesh"
+      ],
+      "properties": {
+        "max_scene_triangles": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_mesh_triangles": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_meshes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_textures": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_texture_resolution": {
+          "type": "integer",
+          "minimum": 64
+        },
+        "max_materials": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_materials_per_mesh": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "vector3_or_null": {
+      "oneOf": [
+        {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "score_status": {
+      "enum": [
+        "passed",
+        "warning",
+        "failed",
+        "not_measured"
+      ]
+    },
+    "component_score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "status"
+      ],
+      "properties": {
+        "score": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "status": {
+          "$ref": "#/$defs/score_status"
+        }
+      }
+    },
+    "mobile_score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "status",
+        "min_score",
+        "measured_components"
+      ],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "status": {
+          "$ref": "#/$defs/score_status"
+        },
+        "min_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "measured_components": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "triangle",
+        "texture",
+        "mesh",
+        "collision",
+        "material",
+        "naming",
+        "pivot",
+        "snap_grid",
+        "mobile"
+      ],
+      "properties": {
+        "triangle": {
+          "$ref": "#/$defs/component_score"
+        },
+        "texture": {
+          "$ref": "#/$defs/component_score"
+        },
+        "mesh": {
+          "$ref": "#/$defs/component_score"
+        },
+        "collision": {
+          "$ref": "#/$defs/component_score"
+        },
+        "material": {
+          "$ref": "#/$defs/component_score"
+        },
+        "naming": {
+          "$ref": "#/$defs/component_score"
+        },
+        "pivot": {
+          "$ref": "#/$defs/component_score"
+        },
+        "snap_grid": {
+          "$ref": "#/$defs/component_score"
+        },
+        "mobile": {
+          "$ref": "#/$defs/mobile_score"
+        }
+      }
+    },
+    "object_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "name",
+        "role",
+        "region",
+        "lathe_asset",
+        "roblox_name",
+        "transform",
+        "mesh",
+        "textures",
+        "materials",
+        "collision",
+        "pivot",
+        "snap_grid"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "name": {
+          "$ref": "#/$defs/nullable_string"
+        },
+        "role": {
+          "$ref": "#/$defs/scene_role"
+        },
+        "region": {
+          "$ref": "#/$defs/region_id"
+        },
+        "lathe_asset": {
+          "$ref": "#/$defs/nullable_string"
+        },
+        "roblox_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "transform": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "position"
+          ],
+          "properties": {
+            "position": {
+              "$ref": "#/$defs/vector3_or_null"
+            }
+          }
+        },
+        "mesh": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mesh_count",
+            "triangle_count"
+          ],
+          "properties": {
+            "mesh_count": {
+              "$ref": "#/$defs/nullable_count"
+            },
+            "triangle_count": {
+              "$ref": "#/$defs/nullable_count"
+            }
+          }
+        },
+        "textures": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "texture_count",
+            "max_resolution"
+          ],
+          "properties": {
+            "texture_count": {
+              "$ref": "#/$defs/nullable_count"
+            },
+            "max_resolution": {
+              "$ref": "#/$defs/nullable_count"
+            }
+          }
+        },
+        "materials": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "slot_count",
+            "max_slots_per_mesh"
+          ],
+          "properties": {
+            "slot_count": {
+              "$ref": "#/$defs/nullable_count"
+            },
+            "max_slots_per_mesh": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "collision": {
+          "$ref": "#/$defs/readiness"
+        },
+        "pivot": {
+          "$ref": "#/$defs/readiness"
+        },
+        "snap_grid": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required",
+            "grid_size_studs",
+            "on_grid",
+            "off_grid_axes"
+          ],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "grid_size_studs": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "on_grid": {
+              "type": "boolean"
+            },
+            "off_grid_axes": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "x",
+                  "y",
+                  "z"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "present",
+        "mode"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "json_value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "name",
+        "severity",
+        "contract",
+        "phase",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        }
+      }
+    }
+  }
+}

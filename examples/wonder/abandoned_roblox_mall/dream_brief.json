@@ -1,0 +1,116 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "abandoned_roblox_mall",
+  "title": "Abandoned Roblox Mall",
+  "one_sentence": "A compact low-poly mall atrium prepared for Roblox-style exploration.",
+  "source_prompt": "An abandoned Roblox-ready low-poly mall atrium with shuttered storefronts, a dry fountain planter, a broken escalator, and one glowing security gate hinting at a hidden arcade.",
+  "genre": [
+    "urban exploration",
+    "light mystery"
+  ],
+  "mood": [
+    "quiet",
+    "dusty",
+    "playable"
+  ],
+  "scale": "single_room",
+  "intent": {
+    "setting": "A deserted mall atrium built from chunky modular props and readable silhouettes.",
+    "emotional_goal": "The scene should feel inviting to inspect while still clearly abandoned.",
+    "primary_interaction": "Inspect the glowing security gate and decide whether to reveal the hidden arcade.",
+    "spatial_logic": "A central fountain anchors the grid, with storefronts and a broken escalator framing a simple player path."
+  },
+  "style": {
+    "palette": [
+      "faded teal",
+      "sun-worn coral",
+      "dust gray",
+      "soft yellow"
+    ],
+    "materials": [
+      "painted concrete",
+      "scuffed tile",
+      "simple glass",
+      "plastic signage"
+    ],
+    "lighting": "Soft skylight with a small warm glow at the security gate.",
+    "form_language": [
+      "blocky storefronts",
+      "rounded planter bowl",
+      "chunky railings",
+      "simple neon strips"
+    ],
+    "avoid_styles": [
+      "photoreal grime",
+      "dense debris",
+      "thin fragile geometry"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "storefront_row",
+      "description": "A row of closed storefront arches.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "dry_fountain",
+      "description": "A central dry fountain planter used as the focal point.",
+      "role": "hero_prop",
+      "priority": "must"
+    },
+    {
+      "id": "broken_escalator",
+      "description": "A blocked escalator that marks the far side of the atrium.",
+      "role": "navigation",
+      "priority": "should"
+    },
+    {
+      "id": "security_gate",
+      "description": "A glowing security gate that hints at an arcade behind it.",
+      "role": "interactive",
+      "priority": "should"
+    }
+  ],
+  "avoid": [
+    "real brand names",
+    "blood",
+    "photo textures"
+  ],
+  "constraints": {
+    "platform": "roblox",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 50000,
+      "texture_resolution": 1024,
+      "mobile_friendly": true
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "Show the whole playable atrium and the central fountain.",
+      "framing": "cinematic_wide"
+    },
+    {
+      "id": "gate_detail",
+      "purpose": "Inspect the glowing gate and hidden arcade clue.",
+      "framing": "inspection"
+    }
+  ],
+  "curiosity_goals": [
+    "Why is the security gate still glowing?",
+    "What is behind the shuttered arcade?",
+    "Who left the fountain planter arranged like a waypoint?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "roblox_manifest",
+    "scene_package"
+  ],
+  "authoring_notes": "Phase 24 Roblox export-lane example. The manifest is a contract artifact only; Studio import remains downstream."
+}

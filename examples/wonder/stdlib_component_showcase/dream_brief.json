@@ -1,0 +1,109 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "stdlib_component_showcase",
+  "title": "Stdlib Component Showcase",
+  "one_sentence": "A clean catalog room showing every reusable Wonder standard-library scene component.",
+  "source_prompt": "A clean catalog room showing every reusable Wonder standard-library scene component as stable planning vocabulary.",
+  "genre": [
+    "tooling",
+    "scene catalog"
+  ],
+  "mood": [
+    "readable",
+    "modular",
+    "catalog"
+  ],
+  "scale": "single_room",
+  "intent": {
+    "setting": "A neutral gallery where reusable scene components are arranged in rows.",
+    "emotional_goal": "The first view should feel organized, inspectable, and ready for AI planning loops.",
+    "primary_interaction": "Inspect component rows to choose kits for future Wonder scenes.",
+    "spatial_logic": "Architecture, dressing, natural forms, hero props, and lighting fixtures occupy stable grid positions."
+  },
+  "style": {
+    "palette": [
+      "warm stone",
+      "simple wood",
+      "weathered green",
+      "aged brass",
+      "soft emissive"
+    ],
+    "materials": [
+      "painted stone",
+      "simple wood",
+      "natural mineral",
+      "aged brass",
+      "soft emissive"
+    ],
+    "lighting": "Soft key lighting and catalog fill keep every component readable.",
+    "form_language": [
+      "modular kits",
+      "clear silhouettes",
+      "scene-scale props"
+    ],
+    "avoid_styles": [
+      "photoreal noise",
+      "unsupported mesh claims"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "architecture_kits",
+      "description": "Reusable wall, floor, ceiling, arch, column, stair, door, window, bridge, railing, platform, tunnel, and room-shell entries.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "dressing_props",
+      "description": "Reusable crate, barrel, book, candle, chain, pipe, vent, panel, debris, rug, banner, and sign entries.",
+      "role": "dressing_prop",
+      "priority": "must"
+    },
+    {
+      "id": "natural_forms",
+      "description": "Reusable rock, root, vine, crystal, mushroom, dead tree, bone, coral, and terrain entries.",
+      "role": "environment_structure",
+      "priority": "must"
+    },
+    {
+      "id": "hero_props_and_lights",
+      "description": "Reusable hero props and lighting fixtures for Wonder seed scenes.",
+      "role": "hero_prop",
+      "priority": "must"
+    }
+  ],
+  "avoid": [
+    "unsupported mesh claims",
+    "runtime import claims"
+  ],
+  "constraints": {
+    "platform": "generic",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 150000,
+      "texture_resolution": 1024,
+      "mobile_friendly": true
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "Show the organized catalog grid.",
+      "framing": "cinematic_wide"
+    }
+  ],
+  "curiosity_goals": [
+    "Which component family should seed the next Wonder room?",
+    "How can a room shell expand from the wall and floor entries?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "lathe_source",
+    "scene_package"
+  ],
+  "authoring_notes": "Phase 25 standard-library contract fixture. Components are planning vocabulary; mesh runtime proof is separate."
+}
