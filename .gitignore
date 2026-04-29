@@ -78,3 +78,7 @@ docs/gallery/index.html
 *.translation
 export.cfg
 export_presets.cfg
+
+# Loose Codex/Claude-Code prompt notes dropped at repo root for coordination.
+# Project-tracked design docs belong under docs/asset-quality/ instead.
+CLAUDE_CODE_*.md

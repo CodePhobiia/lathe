@@ -423,3 +423,129 @@ def test_recommendations_pair_to_unsatisfied_requirements_by_index() -> None:
             f"recommendations[{index}] should be the template of "
             f"{requirement_name!r}; got mismatch."
         )
+
+
+# --------------------------------------------------------------------------- #
+# Phase 4 graph-elevation tests
+# --------------------------------------------------------------------------- #
+
+
+def _crate_runtime_with_construction_graph(
+    nodes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build a runtime that publishes both a Phase 2 design_brief and a
+    Phase 4 construction_graph block, used to verify the additive
+    graph-elevation path on top of the Phase 3 detector.
+    """
+    return {
+        "design_brief": {"brief": {"family": "industrial_crate"}},
+        "construction_graph": {"nodes": nodes},
+    }
+
+
+def test_graph_only_evidence_promotes_missing_to_partial() -> None:
+    """When a requirement's parts-list signals don't match but a
+    construction-graph node of the requirement's allowlisted node type
+    is present, the status is elevated from ``"missing"`` to
+    ``"partial"`` and ``evidence.matched_graph_nodes`` records the
+    contributing node ids."""
+    runtime = _crate_runtime_with_construction_graph(
+        [
+            {"node_id": "body", "node_type": "primary_volume"},
+            {"node_id": "guard_corner_a", "node_type": "guard"},
+        ]
+    )
+    asset = {"intent": {"parts": ["body"]}}
+
+    payload = evaluate_family_grammar(asset, runtime)
+
+    statuses = {item["name"]: item["status"] for item in payload["requirement_results"]}
+    assert statuses["corner_guards"] == "partial"
+
+    corner_entry = next(
+        item
+        for item in payload["requirement_results"]
+        if item["name"] == "corner_guards"
+    )
+    assert corner_entry["evidence"]["matched_parts"] == []
+    assert corner_entry["evidence"]["matched_graph_nodes"] == ["guard_corner_a"]
+    assert payload["partial_count"] >= 1
+
+
+def test_parts_match_dominates_graph_match_for_satisfied_status() -> None:
+    """When both parts and graph match, the status is ``"satisfied"`` —
+    parts evidence wins because parts represent explicit authoring
+    intent. The ``matched_graph_nodes`` evidence key is omitted because
+    the graph-elevation path was not taken."""
+    runtime = _crate_runtime_with_construction_graph(
+        [
+            {"node_id": "body", "node_type": "primary_volume"},
+            {"node_id": "guard_corner_a", "node_type": "guard"},
+        ]
+    )
+    asset = {"intent": {"parts": ["body", "corner_guard_a"]}}
+
+    payload = evaluate_family_grammar(asset, runtime)
+
+    corner_entry = next(
+        item
+        for item in payload["requirement_results"]
+        if item["name"] == "corner_guards"
+    )
+    assert corner_entry["status"] == "satisfied"
+    assert corner_entry["evidence"]["matched_parts"] == ["corner_guard_a"]
+    assert "matched_graph_nodes" not in corner_entry["evidence"]
+
+
+def test_no_graph_evidence_falls_back_to_phase_3_behaviour() -> None:
+    """When ``runtime["construction_graph"]`` is absent, the validator
+    must produce the exact Phase 3 result (parts-only detection, no
+    ``matched_graph_nodes`` keys, identical statuses and counts)."""
+    asset = {
+        "intent": {
+            "parts": [
+                "body",
+                "latch_plate",
+                "handle_l",
+                "handle_r",
+                "foot_l",
+                "foot_r",
+            ]
+        }
+    }
+    runtime_phase_3 = {"design_brief": {"brief": {"family": "industrial_crate"}}}
+
+    payload = evaluate_family_grammar(asset, runtime_phase_3)
+
+    assert payload["satisfied_count"] == 4
+    assert payload["partial_count"] == 0
+    assert payload["missing_count"] == 6
+    assert payload["coverage"] == 0.4
+    for entry in payload["requirement_results"]:
+        assert "matched_graph_nodes" not in entry["evidence"]
+
+
+def test_industrial_crate_baseline_coverage_unchanged_with_graph() -> None:
+    """The actual industrial_crate.lth baseline parts list, plus a
+    construction_graph extracted from those same parts, must still yield
+    coverage = 0.40. The graph adds the same node types (primary_volume,
+    inset, handle, mount) the parts list already covers, so no
+    requirement is elevated from ``"missing"`` to ``"partial"``."""
+    parts = ["body", "latch_plate", "handle_l", "handle_r", "foot_l", "foot_r"]
+    nodes = [
+        {"node_id": "body", "node_type": "primary_volume"},
+        {"node_id": "latch_plate", "node_type": "inset"},
+        {"node_id": "handle_l", "node_type": "handle"},
+        {"node_id": "handle_r", "node_type": "handle"},
+        {"node_id": "foot_l", "node_type": "mount"},
+        {"node_id": "foot_r", "node_type": "mount"},
+    ]
+    runtime = _crate_runtime_with_construction_graph(nodes)
+    asset = {"intent": {"parts": parts}}
+
+    payload = evaluate_family_grammar(asset, runtime)
+
+    assert payload["satisfied_count"] == 4
+    assert payload["partial_count"] == 0
+    assert payload["missing_count"] == 6
+    assert payload["coverage"] == 0.4

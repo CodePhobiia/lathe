@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ...asset_quality.construction_graph import evaluate_construction_graph
 from ...asset_quality.design_brief import evaluate_design_brief
 from ...asset_quality.diagnostics import evaluate_quality_diagnostics
 from ...asset_quality.family_grammar import evaluate_family_grammar
@@ -31,6 +32,12 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="design_brief",
             fn=evaluate_design_brief,
+            stage_dependencies=[],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="construction_graph",
+            fn=evaluate_construction_graph,
             stage_dependencies=[],
             weight=0.0,
         ),
@@ -212,6 +219,25 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    construction_graph_entry = cert_bundle["validators"].get(
+        "construction_graph",
+        {
+            "evidence": {
+                "version": "construction_graph_v1",
+                "family": "generic",
+                "asset_name": "unnamed_asset",
+                "nodes": [],
+                "edges": [],
+                "node_count": 0,
+                "edge_count": 0,
+                "node_types_present": [],
+                "edge_types_present": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -220,6 +246,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     quality_diagnostics_report = quality_diagnostics_entry.get("evidence", {})
     design_brief_report = design_brief_entry.get("evidence", {})
     family_grammar_report = family_grammar_entry.get("evidence", {})
+    construction_graph_report = construction_graph_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -227,6 +254,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["urdf_validation"] = urdf_report
     executor.runtime["quality_diagnostics"] = quality_diagnostics_report
     executor.runtime["design_brief"] = design_brief_report
+    executor.runtime["construction_graph"] = construction_graph_report
     executor.runtime["family_grammar"] = family_grammar_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
@@ -292,6 +320,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "urdf_validation": {**urdf_report, "diagnostics": urdf_entry.get("diagnostics", [])},
         "quality_diagnostics": quality_diagnostics_report,
         "design_brief": design_brief_report,
+        "construction_graph": construction_graph_report,
         "family_grammar": family_grammar_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,

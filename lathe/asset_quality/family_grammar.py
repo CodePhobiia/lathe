@@ -13,19 +13,30 @@ Per-requirement reference: ``docs/asset-quality/family-grammar-v1.md``.
 Detection model
 ---------------
 
-For Phase 3's MVP, requirement detection is intentionally lightweight:
-each requirement carries a tuple of ``detection_signals`` (lowercase
-substring tokens), and a requirement is marked ``"satisfied"`` when at
-least one entry in ``asset["intent"]["parts"]`` contains any signal
-token (case-insensitive). Otherwise the requirement is ``"missing"``.
+Phase 3 detection used parts-list substring matching only. Phase 4
+extends the model with the semantic construction graph: each
+requirement now also carries a ``graph_node_types`` allowlist of node
+types from ``lathe.asset_quality.construction_graph.NODE_TYPES``.
 
-The MVP never emits ``"partial"`` — that status is reserved for
-Phase 4's semantic construction graph (which can detect a corner-guard
-edge present in the graph but not in the parts list) and Phase 6's
-grammar lowering (which produces ShapeIR v2 operations directly).
-``"not_applicable"`` is also reserved for forward phases (e.g. a
-mechanical-door grammar might mark ``foot_rails`` as not-applicable
-when the brief disables them).
+Detection precedence is:
+
+1. If any entry in ``asset["intent"]["parts"]`` contains one of the
+   requirement's ``detection_signals`` (case-insensitive), the
+   requirement is ``"satisfied"`` and ``evidence`` includes
+   ``matched_parts``.
+2. Otherwise, if ``runtime["construction_graph"]["nodes"]`` contains a
+   node whose ``node_type`` is in the requirement's
+   ``graph_node_types`` allowlist, the requirement is ``"partial"``
+   and ``evidence`` additionally includes ``matched_graph_nodes``.
+3. Otherwise, the requirement is ``"missing"``.
+
+Parts evidence dominates because parts represent explicit authoring
+intent while graph evidence is derived. ``"not_applicable"`` is still
+reserved for forward phases (e.g. a mechanical-door grammar might mark
+``foot_rails`` as not-applicable when the brief disables them).
+Backward compatibility: when ``runtime["construction_graph"]`` is
+absent or malformed, the graph-elevation path is skipped and Phase 3
+behaviour is preserved exactly.
 
 Generic fallback
 ----------------
@@ -74,10 +85,18 @@ class FamilyRequirement:
 
     ``detection_signals`` is a tuple of lowercase substring tokens the
     MVP matches against ``asset["intent"]["parts"]`` (case-insensitive).
-    Phase 4+ will extend detection to also consume the semantic
-    construction graph and ShapeIR v2 operations; the field name is
-    intentionally generic so the same dataclass survives that
-    transition.
+    Phase 4 extends detection to also consume the semantic construction
+    graph (see ``graph_node_types``); Phase 6+ will lower these into
+    ShapeIR v2 operations. The field name is intentionally generic so
+    the same dataclass survives those transitions.
+
+    ``graph_node_types`` is a tuple of construction-graph node-type
+    tokens (see ``lathe.asset_quality.construction_graph.NODE_TYPES``).
+    When parts-list detection misses but the construction graph contains
+    a node whose ``node_type`` matches any token here, the requirement
+    is elevated from ``"missing"`` to ``"partial"`` (Phase 4 semantics).
+    Default is the empty tuple, which preserves Phase 3 behaviour for
+    requirements that opt out of graph-based elevation.
 
     ``recommendation_template`` is the human-readable repair string
     surfaced in ``FamilyGrammarResult.recommendations`` when the
@@ -91,6 +110,7 @@ class FamilyRequirement:
     severity: str
     detection_signals: tuple[str, ...]
     recommendation_template: str
+    graph_node_types: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -135,6 +155,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add a primary body shell: the industrial crate grammar requires "
             "a structural box volume the rest of the construction hangs from."
         ),
+        graph_node_types=("primary_volume",),
     ),
     FamilyRequirement(
         name="lid_seam",
@@ -148,6 +169,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add a lid seam: the industrial crate grammar requires a visible "
             "lid break wrapping the top of the body."
         ),
+        graph_node_types=("panel",),
     ),
     FamilyRequirement(
         name="corner_guards",
@@ -161,6 +183,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add corner guards: the industrial crate grammar requires "
             "reinforcement corners on the eight body corners."
         ),
+        graph_node_types=("guard",),
     ),
     FamilyRequirement(
         name="latch_or_latch_plate",
@@ -174,6 +197,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add a latch or latch plate at the lid/body seam so the crate has "
             "a clear front face."
         ),
+        graph_node_types=("inset",),
     ),
     FamilyRequirement(
         name="recessed_or_bracketed_handles",
@@ -187,6 +211,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Seat handles into recessed wells or bracket plates rather than "
             "placing them as floating primitives on the shell."
         ),
+        graph_node_types=("handle",),
     ),
     FamilyRequirement(
         name="foot_rails_or_feet",
@@ -200,6 +225,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add foot rails or discrete feet to lift the body off the ground "
             "plane."
         ),
+        graph_node_types=("mount", "rail"),
     ),
     FamilyRequirement(
         name="trim_bands",
@@ -213,6 +239,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add horizontal or vertical trim bands to break up the body shell "
             "with medium-scale construction hierarchy."
         ),
+        graph_node_types=("trim",),
     ),
     FamilyRequirement(
         name="fasteners",
@@ -226,6 +253,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add visible fasteners (bolts, rivets, or screws) at structural "
             "junctions to reinforce the industrial brief."
         ),
+        graph_node_types=("fastener",),
     ),
     FamilyRequirement(
         name="warning_or_decal_zones",
@@ -239,6 +267,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add warning text, stencils, or decal zones to provide surface "
             "storytelling on the body."
         ),
+        graph_node_types=("decal_zone",),
     ),
     FamilyRequirement(
         name="edge_wear_masks",
@@ -252,6 +281,7 @@ _INDUSTRIAL_CRATE_REQUIREMENTS: tuple[FamilyRequirement, ...] = (
             "Add edge wear masks so paint chips and metal show at high-traffic "
             "edges instead of a uniform debug-material look."
         ),
+        graph_node_types=("wear_zone",),
     ),
 )
 
@@ -290,25 +320,49 @@ def _normalised_parts(asset: dict[str, Any]) -> list[str]:
 
 
 def _detect_requirement(
-    requirement: FamilyRequirement, parts: list[str]
-) -> tuple[str, list[str]]:
-    """Return ``(status, matched_parts)`` for one requirement.
+    requirement: FamilyRequirement,
+    parts: list[str],
+    graph_nodes: tuple[dict[str, Any], ...] = (),
+) -> tuple[str, list[str], list[str]]:
+    """Return ``(status, matched_parts, matched_graph_nodes)`` for one requirement.
 
-    Phase 3 only emits ``"satisfied"`` or ``"missing"``. Each part is
-    scanned against the requirement's ``detection_signals`` (already
-    lowercase) and recorded if any token is a substring of the part
-    name. Matched parts are returned in declaration order so the
-    evidence is deterministic and human-readable.
+    Phase 4 detection precedence:
+
+    1. Substring match against ``asset["intent"]["parts"]`` -> ``"satisfied"``.
+    2. Otherwise, ``node_type`` match against the construction graph
+       (``runtime["construction_graph"]["nodes"]``) -> ``"partial"``.
+    3. Otherwise -> ``"missing"``.
+
+    Parts wins over graph evidence because parts are explicit authoring
+    intent, while graph evidence is derived. ``graph_nodes`` is a tuple
+    of node dicts (each with at least ``node_id`` and ``node_type``) and
+    defaults to the empty tuple, preserving Phase 3 behaviour for
+    callers that don't pass graph evidence.
     """
-    matched: list[str] = []
+    matched_parts: list[str] = []
     for part in parts:
         for token in requirement.detection_signals:
             if token in part:
-                matched.append(part)
+                matched_parts.append(part)
                 break
-    if matched:
-        return _STATUS_SATISFIED, matched
-    return _STATUS_MISSING, matched
+    if matched_parts:
+        return _STATUS_SATISFIED, matched_parts, []
+
+    matched_graph_nodes: list[str] = []
+    if requirement.graph_node_types and graph_nodes:
+        allowlist = set(requirement.graph_node_types)
+        for entry in graph_nodes:
+            if not isinstance(entry, dict):
+                continue
+            node_type = entry.get("node_type")
+            if not isinstance(node_type, str) or node_type not in allowlist:
+                continue
+            node_id = entry.get("node_id")
+            if isinstance(node_id, str) and node_id:
+                matched_graph_nodes.append(node_id)
+    if matched_graph_nodes:
+        return _STATUS_PARTIAL, matched_parts, matched_graph_nodes
+    return _STATUS_MISSING, matched_parts, matched_graph_nodes
 
 
 def _compute_coverage(
@@ -342,8 +396,30 @@ def _compute_coverage(
     return round(earned / total_applicable, 6)
 
 
-def _result_for(grammar: FamilyGrammar, asset: dict[str, Any]) -> FamilyGrammarResult:
+def _construction_graph_nodes(runtime: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    """Return the construction-graph node dicts published by Phase 4.
+
+    Tolerates an absent or malformed ``runtime["construction_graph"]``
+    block by returning the empty tuple. Phase 3 callers that do not
+    populate ``runtime["construction_graph"]`` therefore retain their
+    original parts-only detection.
+    """
+    construction_graph = runtime.get("construction_graph")
+    if not isinstance(construction_graph, dict):
+        return ()
+    raw_nodes = construction_graph.get("nodes")
+    if not isinstance(raw_nodes, list):
+        return ()
+    return tuple(entry for entry in raw_nodes if isinstance(entry, dict))
+
+
+def _result_for(
+    grammar: FamilyGrammar,
+    asset: dict[str, Any],
+    runtime: dict[str, Any],
+) -> FamilyGrammarResult:
     parts = _normalised_parts(asset)
+    graph_nodes = _construction_graph_nodes(runtime)
     statuses: list[str] = []
     requirement_results: list[dict[str, Any]] = []
     recommendations: list[str] = []
@@ -352,14 +428,19 @@ def _result_for(grammar: FamilyGrammar, asset: dict[str, Any]) -> FamilyGrammarR
     missing_count = 0
 
     for requirement in grammar.requirements:
-        status, matched = _detect_requirement(requirement, parts)
+        status, matched_parts, matched_graph_nodes = _detect_requirement(
+            requirement, parts, graph_nodes
+        )
         statuses.append(status)
+        evidence: dict[str, Any] = {"matched_parts": list(matched_parts)}
+        if matched_graph_nodes:
+            evidence["matched_graph_nodes"] = list(matched_graph_nodes)
         requirement_results.append(
             {
                 "name": requirement.name,
                 "severity": requirement.severity,
                 "status": status,
-                "evidence": {"matched_parts": list(matched)},
+                "evidence": evidence,
             }
         )
         if status == _STATUS_SATISFIED:
@@ -411,14 +492,21 @@ def evaluate_family_grammar(
             ``runtime["design_brief"]["brief"]["family"]`` (populated by
             the Phase 2 design_brief validator running first in
             ``_PIPELINE``); falls back to ``"generic"`` when the brief
-            is absent.
+            is absent. Also reads ``runtime["construction_graph"]["nodes"]``
+            (Phase 4) and uses the graph as fallback evidence: a
+            requirement whose parts-list signals do not match but whose
+            ``graph_node_types`` allowlist matches a graph node is
+            elevated from ``"missing"`` to ``"partial"``. Absent or
+            malformed graph data preserves the parts-only Phase 3 path.
 
     Returns:
         Additive payload with ``version`` (``"family_grammar_v1"``),
         ``family``, ``coverage``, per-status counts, ``requirement_results``
-        (list of dicts with ``name``, ``severity``, ``status``, ``evidence``),
-        and ``recommendations`` (one entry per missing/partial requirement
-        in declaration order). No top-level ``diagnostics`` field — like
+        (list of dicts with ``name``, ``severity``, ``status``, ``evidence``;
+        ``evidence`` carries ``matched_parts`` always and additionally
+        ``matched_graph_nodes`` when a graph-only elevation fired), and
+        ``recommendations`` (one entry per missing/partial requirement in
+        declaration order). No top-level ``diagnostics`` field — like
         Phases 1 and 2, this validator is informational only and never
         blocks certification.
     """
@@ -426,7 +514,7 @@ def evaluate_family_grammar(
     safe_runtime = runtime if isinstance(runtime, dict) else {}
     family = _resolve_family(safe_runtime)
     grammar = _grammar_for(family)
-    result = _result_for(grammar, safe_asset)
+    result = _result_for(grammar, safe_asset, safe_runtime)
     return {
         "version": result.version,
         "family": result.family,
