@@ -2,13 +2,19 @@
 
 > Companion to `docs/asset-quality/baseline-evidence.md`.
 > Each entry below is a real or potential blocker for Phases 1–15 of
-> `docs/asset-quality/improvement-tasklist.md`. Items marked **CLEARED** are
-> resolved by Phase 0; items marked **OPEN** need user attention before the
-> corresponding phase can ship cleanly.
+> `docs/asset-quality/improvement-tasklist.md`.
+>
+> **Status legend:**
+> - **CLEARED** — resolved by Phase 0 work.
+> - **RESOLVED** — resolved after Phase 0 by a separate event (e.g. main-merge).
+> - **OPEN** — scoped to a specific future phase; does not block earlier phases.
+> - **STANDING RULE** — a coordination rule that applies whenever the relevant phase begins; never a hard blocker by itself.
+> - **NON-BLOCKING** — tracked for completeness; never blocks any phase.
 
-**Date:** 2026-04-29
-**Author:** Phase 0 baseline pass
-**Repository state:** see `baseline-evidence.md` Section 8.
+**Date:** 2026-04-29 (created at Phase 0 close).
+**Last updated:** 2026-04-30 — B-05 marked RESOLVED after main-merge; B-10 reframed as a standing Phase 13 coordination rule.
+**Author:** Phase 0 baseline pass.
+**Repository state at update:** working tree clean on `main` at commit `b230e0d`. The pre-merge state described in `baseline-evidence.md` Section 8 no longer applies; see B-05 below for the resolution.
 
 ---
 
@@ -58,18 +64,24 @@
 
 ## Open — Surface to user before relevant phase
 
-### B-05 — Two unrelated uncommitted workstreams in tree (OPEN, USER DECISION)
+### B-05 — Three uncommitted workstreams in tree (RESOLVED 2026-04-30)
 
-**Symptom:** `git status` shows ~50 modified files (v0.2.0rc1 readiness pass) and ~150 untracked files (Wonder/Scene subsystem) intermixed with the asset-quality docs and Phase 0 additions.
+**Original symptom:** At Phase 0 close, `git status` showed ~50 modified files (v0.2.0rc1 readiness pass) and ~150 untracked entries (Wonder/Scene subsystem) intermixed with the asset-quality docs and Phase 0 additions. Any commit during Phase 1+ work risked pulling in unrelated files as collateral and conflating three independent feature streams in history.
 
-**Why this matters:** Any commit during Phase 1+ work risks pulling in Wonder or readiness-pass files as collateral. A `git add -A` during a future commit would conflate three independent feature streams.
+**Resolution:** All three streams were split into separate feature branches and merged into `main` on 2026-04-30:
 
-**Recommendation (user choice):**
-1. **Commit asset-quality work to a feature branch** (preferred): create `feat/asset-quality-upgrade`, cherry-pick only `docs/asset-quality/`, `lathe/asset_quality/`, and `tests/unit/test_asset_quality_*.py` files there.
-2. **Stash Wonder / readiness work** before Phase 1+: `git stash push -m wonder-wip` + `git stash push -m readiness-pass-wip` would leave a clean tree, but stashes do not preserve untracked file contents reliably across many files.
-3. **Commit each workstream separately on `main`**: requires the user to land Wonder + readiness work first. Slowest path but lowest risk.
+- `feat/asset-quality-phase0` → merge commit `3706fe5` (PR #11) — 7 files, the Phase 0 deliverables.
+- `feat/wonder-subsystem` → merge commit `3bb8de3` (PR #12) — 318 files, the Wonder/Scene subsystem and Roblox export lane.
+- `chore/v0.2.0rc1-readiness` → merge commit `b230e0d` (PR #13) — 49 modified files, the v0.2.0rc1 readiness language/grammar/schema/docs/tests pass.
 
-**Status:** Awaiting user decision. **Phase 1 should not commit anything until this is resolved.** All Phase 0 outputs are additive and can stay uncommitted safely.
+The working tree is now clean. Local `main` and `origin/main` are bit-identical at commit `b230e0d`. Phase 1+ commits no longer risk conflating streams, because no parallel uncommitted work remains in the tree.
+
+**Verification:**
+- `git status --short` → empty.
+- `git rev-parse HEAD` == `git rev-parse origin/main` == `b230e0d`.
+- `git diff --name-only e94a202..b230e0d | wc -l` → 374 = 7 (Phase 0) + 318 (Wonder/Scene) + 49 (readiness, modified). Reconciles exactly with no losses.
+
+**Implication for Phase 1:** none. Phase 1 work can proceed directly on `main` (or on a fresh `feat/asset-quality-phase1` branch) without any commit-strategy preflight.
 
 ---
 
@@ -120,20 +132,20 @@
 
 ---
 
-### B-10 — Schema sync requirement for Phase 13 syntax (OPEN, blocks Phase 13)
+### B-10 — Phase 13 public-syntax coordination rule (STANDING RULE for Phase 13)
 
-**Symptom:** Phase 13 introduces optional `.lth` blocks (`art_direction`, `construction`, `material_graph`, `references`, `kit`). Adding any one of these requires a coordinated update across:
+**Symptom:** Phase 13 introduces optional `.lth` blocks (`art_direction`, `construction`, `material_graph`, `references`, `kit`). Per AGENTS.md *Working agreements / Language contract changes*, any change to the public language surface requires a coordinated update across **all** of these layers in a single PR:
 - `spec/lathe-v0.1.md`
 - `grammar/lathe.lark`
 - `schema/lathe.schema.json`
 - `lathe/parser/`, `lathe/normalizer.py`, `lathe/resolver.py`, `lathe/checker/`
 - examples + tests
 
-**The `git status` already shows all of these files in modified state from the v0.2.0rc1 readiness pass.** Phase 13 work would conflict directly with that pass.
+**Update 2026-04-30:** The earlier in-flight v0.2.0rc1 readiness pass that previously held all of these files in modified state is now merged into `main` (commit `b230e0d`). The hard "wait for readiness merge" gate that originally blocked Phase 13 is therefore removed — Phase 13 can begin whenever the asset-quality upgrade reaches that point.
 
-**Recommendation:** Phase 13 cannot start until the readiness-pass changes are merged or rebased. Phase 1–12 work can proceed independently because they only touch report shapes, not source syntax.
+**Standing rule (still in force whenever Phase 13 begins):** Phase 13 implementation must update the eight layers above together in a single coordinated PR. Phase 1–12 work proceeds independently because it only touches report shapes, additive validators, and new packages under `lathe/asset_quality/` — never the public source syntax. The contract tests in `tests/unit/test_asset_quality_baseline_report_shape.py` verify that Phase 1–12 stays syntax-additive only.
 
-**Status:** Hard blocker for Phase 13. Soft constraint that Phase 1–12 should remain syntax-additive only (validated by the contract tests above).
+**Status:** Standing language-contract coordination rule. Not a hard blocker; applies only when Phase 13 begins. Does not block Phases 1–12.
 
 ---
 
@@ -165,17 +177,23 @@
 
 | ID | Title | Status | Blocks |
 |---|---|---|---|
-| B-01 | `lathe.asset_quality` package missing | CLEARED | Phase 1+ |
-| B-02 | No frozen report-shape contract | CLEARED | Phase 1+ |
-| B-03 | Baseline scores undocumented | CLEARED | Phase 1+ |
+| B-01 | `lathe.asset_quality` package missing | CLEARED | — |
+| B-02 | No frozen report-shape contract | CLEARED | — |
+| B-03 | Baseline scores undocumented | CLEARED | — |
 | B-04 | Stale module references in CLAUDE/AGENTS docs | NON-BLOCKING | — |
-| B-05 | Two unrelated uncommitted workstreams in tree | **OPEN — USER DECISION** | All Phase 1+ commits |
-| B-06 | No moodboard fixtures | OPEN | Phase 11 |
-| B-07 | No kit-library scaffolding | OPEN | Phase 12 |
-| B-08 | No real high-poly producer | OPEN (warning-only OK) | Phase 7 strict |
-| B-09 | No asset-quality CI lane | OPEN | Phase 15 |
-| B-10 | Phase 13 syntax conflicts with readiness pass | OPEN | Phase 13 |
+| B-05 | Three uncommitted workstreams in tree | **RESOLVED 2026-04-30** | — |
+| B-06 | No moodboard / reference fixtures | OPEN | Phase 11 only |
+| B-07 | No kit-library scaffolding | OPEN | Phase 12 only |
+| B-08 | No real high-poly producer | OPEN (warning-only path is fine) | Phase 7 strict mode only |
+| B-09 | No asset-quality CI lane | OPEN | Phase 15 only |
+| B-10 | Phase 13 public-syntax coordination rule | STANDING RULE | Phase 13 only |
 | B-11 | Slow benchmark test | NON-BLOCKING | — |
 | B-12 | CRLF warnings | NON-BLOCKING | — |
 
-**Critical path before Phase 1:** Resolve **B-05** (decide commit strategy) and re-run baseline on the chosen branch / state. Everything else is either cleared by Phase 0 or scoped to a later phase.
+### Phase 1 readiness
+
+**Phase 1 blockers: none.** B-01, B-02, B-03 are cleared by Phase 0; B-05 is resolved by today's main-merges. None of B-06 through B-12 apply to Phase 1.
+
+**Future-phase blockers remain tracked:** B-06 (Phase 11), B-07 (Phase 12), B-08 (Phase 7 strict mode), B-09 (Phase 15), B-10 (Phase 13).
+
+**Standing rule for Phase 13:** Do not start public-syntax work until `spec/lathe-v0.1.md`, `grammar/lathe.lark`, `schema/lathe.schema.json`, `lathe/parser/`, `lathe/normalizer.py`, `lathe/resolver.py`, `lathe/checker/`, examples, and tests can all be updated together in a single coordinated PR. Phases 1–12 are syntax-additive only and are not subject to this rule.
