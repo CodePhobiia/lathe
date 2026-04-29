@@ -15,6 +15,7 @@ from typing import Any
 
 from lathe.asset_quality.diagnostics import (
     VERSION,
+    _RECOMMENDATIONS,
     evaluate_quality_diagnostics,
 )
 
@@ -89,10 +90,17 @@ def test_payload_shape_and_version() -> None:
 
     assert report["version"] == VERSION
     assert VERSION == "asset_quality_diagnostics_v1"
-    assert set(report.keys()) == {"version", "metrics", "warnings", "recommendations"}
+    assert set(report.keys()) == {
+        "version",
+        "metrics",
+        "warnings",
+        "recommendations",
+        "findings",
+    }
     assert isinstance(report["metrics"], dict)
     assert isinstance(report["warnings"], list)
     assert isinstance(report["recommendations"], list)
+    assert isinstance(report["findings"], list)
     assert "diagnostics" not in report
 
 
@@ -247,3 +255,74 @@ def test_no_diagnostics_field_so_validator_pipeline_treats_as_passing() -> None:
     report = evaluate_quality_diagnostics(asset, runtime)
 
     assert "diagnostics" not in report
+
+
+def test_findings_pair_metric_to_recommendation_for_multiple_warnings() -> None:
+    """Trigger all five warnings simultaneously and verify each finding's
+    metric/severity/warning/recommendation are correctly paired.
+
+    Catches a bug in which a developer accidentally swaps recommendations
+    between metrics — the original ``test_warnings_and_recommendations_are_paired``
+    only checks list lengths, not pairing correctness.
+    """
+    asset, runtime = _runtime(
+        visual_metrics={
+            "geometry_tiny_face_penalty": 0.65,
+            "geometry_stair_step_penalty": 0.50,
+            "boolean_scar_penalty": 0.45,
+            "texture_entropy": 0.10,
+            "roughness_variation": 0.05,
+            "surface_chroma_variation": 0.10,
+            "attachment_integration_quality": 0.20,
+            "feature_coherence": 0.30,
+            "silhouette_complexity": 0.30,
+            "detail_density": 0.30,
+        },
+        shape_assessment={"feature_count": 6, "attachment_region_count": 0},
+        highlow={},
+    )
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert {f["metric"] for f in report["findings"]} == {
+        "random_triangulation_penalty",
+        "debug_material_preview_penalty",
+        "highlow_fake_detail_penalty",
+        "attachment_seating_quality",
+        "primary_secondary_tertiary_balance",
+    }
+
+    for finding in report["findings"]:
+        assert finding["severity"] == "warning"
+        assert finding["recommendation"] == _RECOMMENDATIONS[finding["metric"]]
+        assert finding["metric"] in finding["warning"]
+
+    assert len(report["warnings"]) == len(report["findings"])
+    assert len(report["recommendations"]) == len(report["findings"])
+    for i, finding in enumerate(report["findings"]):
+        assert report["warnings"][i] == finding["warning"]
+        assert report["recommendations"][i] == finding["recommendation"]
+
+
+def test_surface_chroma_variation_falls_back_to_texture_entropy_when_missing() -> None:
+    """When ``surface_chroma_variation`` is absent from visual_quality.metrics,
+    debug_material_preview_penalty must use ``texture_entropy`` as the chroma
+    fallback per docs/asset-quality/quality-diagnostics-v1.md §3.2.
+    """
+    asset, runtime = _runtime(
+        visual_metrics={
+            "texture_entropy": 0.30,
+            "roughness_variation": 0.30,
+        }
+    )
+    del runtime["visual_quality"]["metrics"]["surface_chroma_variation"]
+
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    expected = round(
+        min(
+            1.0,
+            0.40 * (1.0 - 0.30) + 0.35 * (1.0 - 0.30) + 0.25 * (1.0 - 0.30),
+        ),
+        6,
+    )
+    assert report["metrics"]["debug_material_preview_penalty"] == expected

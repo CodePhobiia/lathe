@@ -156,6 +156,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                 "metrics": {},
                 "warnings": [],
                 "recommendations": [],
+                "findings": [],
             },
             "diagnostics": [],
             "passes": True,

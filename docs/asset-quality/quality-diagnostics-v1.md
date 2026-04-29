@@ -66,12 +66,42 @@ The validator returns this additive payload, which is exposed under
   ],
   "recommendations": [
     "Add a real high-poly source ..."
+  ],
+  "findings": [
+    {
+      "metric": "highlow_fake_detail_penalty",
+      "severity": "warning",
+      "warning": "hero asset lacks meaningful high-poly/low-poly distinction (highlow_fake_detail_penalty=0.550)",
+      "recommendation": "Add a real high-poly source ..."
+    }
   ]
 }
 ```
 
-`warnings` and `recommendations` are aligned by index — element `i` in
-`recommendations` is the suggested action for `warnings[i]`.
+The three result arrays are index-aligned. `warnings[i]`,
+`recommendations[i]`, and `findings[i]` refer to the same triggered
+metric. The simple-string `warnings` and `recommendations` arrays are
+preserved for backward compatibility with any consumer wired to Phase 1
+RC1; the `findings` array is the structured form intended for downstream
+classifiers (e.g. Phase 10's vision-critique loop) that need to map a
+warning back to its source metric without re-parsing the warning text.
+
+### 2.1 `findings` entry shape
+
+Each `findings[i]` record contains:
+
+| Field | Type | Notes |
+|---|---|---|
+| `metric` | string | One of the five metric names listed in §3. |
+| `severity` | string | Always `"warning"` at Phase 1. Phase 7 strict mode may add `"error"`. |
+| `warning` | string | Identical to `warnings[i]` — verbatim copy for self-contained record. |
+| `recommendation` | string | Identical to `recommendations[i]` — verbatim copy. |
+
+Because `severity` is always `"warning"` at Phase 1, the validator
+remains informational-only and never blocks certification. Phase 7's
+strict-mode opt-in is the first place a `severity: "error"` finding
+could appear; until then, downstream tools may safely treat all Phase 1
+findings as advisory.
 
 ---
 

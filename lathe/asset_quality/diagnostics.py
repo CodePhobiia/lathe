@@ -93,8 +93,6 @@ def _visual_metrics(runtime: dict[str, Any]) -> dict[str, Any]:
 def _random_triangulation_penalty(visual_metrics: dict[str, Any]) -> float:
     tiny = _as_float(visual_metrics.get("geometry_tiny_face_penalty"))
     stair = _as_float(visual_metrics.get("geometry_stair_step_penalty"))
-    if not stair:
-        stair = _as_float(visual_metrics.get("stair_step_penalty"))
     boolean_scar = _as_float(visual_metrics.get("boolean_scar_penalty"))
     return round(min(1.0, 0.45 * tiny + 0.30 * stair + 0.25 * boolean_scar), 6)
 
@@ -188,9 +186,12 @@ def evaluate_quality_diagnostics(
 
     Returns:
         Additive payload with ``version``, ``metrics`` (5 floats),
-        ``warnings`` (list of strings), and ``recommendations``
-        (list of strings). No ``diagnostics`` key — Phase 1 is
-        informational only and never blocks certification pass/fail.
+        ``warnings`` (list of strings), ``recommendations`` (list of
+        strings), and ``findings`` (list of structured records carrying
+        ``metric``, ``severity``, ``warning``, ``recommendation`` —
+        index-aligned with ``warnings`` and ``recommendations``). No
+        top-level ``diagnostics`` key — Phase 1 is informational only
+        and never blocks certification pass/fail.
     """
     visual_metrics = _visual_metrics(runtime)
 
@@ -204,47 +205,61 @@ def evaluate_quality_diagnostics(
         ),
     }
 
+    warning_specs: list[tuple[str, bool, str]] = [
+        (
+            "random_triangulation_penalty",
+            metrics["random_triangulation_penalty"] > _RANDOM_TRI_WARN,
+            "large flat faces split by noisy diagonal topology "
+            f"(random_triangulation_penalty={metrics['random_triangulation_penalty']:.3f})",
+        ),
+        (
+            "debug_material_preview_penalty",
+            metrics["debug_material_preview_penalty"] > _DEBUG_MATERIAL_WARN,
+            "surface appears material-ID/debug colored rather than authored PBR "
+            f"(debug_material_preview_penalty={metrics['debug_material_preview_penalty']:.3f})",
+        ),
+        (
+            "highlow_fake_detail_penalty",
+            metrics["highlow_fake_detail_penalty"] > _HIGHLOW_FAKE_WARN,
+            "hero asset lacks meaningful high-poly/low-poly distinction "
+            f"(highlow_fake_detail_penalty={metrics['highlow_fake_detail_penalty']:.3f})",
+        ),
+        (
+            "attachment_seating_quality",
+            metrics["attachment_seating_quality"] < _ATTACHMENT_SEATING_WARN,
+            "attachments appear stuck-on or under-integrated "
+            f"(attachment_seating_quality={metrics['attachment_seating_quality']:.3f})",
+        ),
+        (
+            "primary_secondary_tertiary_balance",
+            metrics["primary_secondary_tertiary_balance"] < _HIERARCHY_BALANCE_WARN,
+            "asset lacks medium-scale construction hierarchy "
+            f"(primary_secondary_tertiary_balance={metrics['primary_secondary_tertiary_balance']:.3f})",
+        ),
+    ]
+
+    findings: list[dict[str, str]] = []
     warnings: list[str] = []
     recommendations: list[str] = []
-
-    if metrics["random_triangulation_penalty"] > _RANDOM_TRI_WARN:
-        warnings.append(
-            "large flat faces split by noisy diagonal topology "
-            f"(random_triangulation_penalty={metrics['random_triangulation_penalty']:.3f})"
+    for metric, triggered, warning_text in warning_specs:
+        if not triggered:
+            continue
+        recommendation = _RECOMMENDATIONS[metric]
+        warnings.append(warning_text)
+        recommendations.append(recommendation)
+        findings.append(
+            {
+                "metric": metric,
+                "severity": "warning",
+                "warning": warning_text,
+                "recommendation": recommendation,
+            }
         )
-        recommendations.append(_RECOMMENDATIONS["random_triangulation_penalty"])
-
-    if metrics["debug_material_preview_penalty"] > _DEBUG_MATERIAL_WARN:
-        warnings.append(
-            "surface appears material-ID/debug colored rather than authored PBR "
-            f"(debug_material_preview_penalty={metrics['debug_material_preview_penalty']:.3f})"
-        )
-        recommendations.append(_RECOMMENDATIONS["debug_material_preview_penalty"])
-
-    if metrics["highlow_fake_detail_penalty"] > _HIGHLOW_FAKE_WARN:
-        warnings.append(
-            "hero asset lacks meaningful high-poly/low-poly distinction "
-            f"(highlow_fake_detail_penalty={metrics['highlow_fake_detail_penalty']:.3f})"
-        )
-        recommendations.append(_RECOMMENDATIONS["highlow_fake_detail_penalty"])
-
-    if metrics["attachment_seating_quality"] < _ATTACHMENT_SEATING_WARN:
-        warnings.append(
-            "attachments appear stuck-on or under-integrated "
-            f"(attachment_seating_quality={metrics['attachment_seating_quality']:.3f})"
-        )
-        recommendations.append(_RECOMMENDATIONS["attachment_seating_quality"])
-
-    if metrics["primary_secondary_tertiary_balance"] < _HIERARCHY_BALANCE_WARN:
-        warnings.append(
-            "asset lacks medium-scale construction hierarchy "
-            f"(primary_secondary_tertiary_balance={metrics['primary_secondary_tertiary_balance']:.3f})"
-        )
-        recommendations.append(_RECOMMENDATIONS["primary_secondary_tertiary_balance"])
 
     return {
         "version": VERSION,
         "metrics": metrics,
         "warnings": warnings,
         "recommendations": recommendations,
+        "findings": findings,
     }
