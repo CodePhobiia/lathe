@@ -68,6 +68,7 @@
     "mask_programs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "trim_sheets": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "palettes": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "style_packs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "reference_sets": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "reconstruct_policies": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "adapt_policies": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
@@ -85,6 +86,7 @@
     "tests": { "type": "array", "items": { "$ref": "#/$defs/test_like" } },
     "benchmarks": { "type": "array", "items": { "$ref": "#/$defs/test_like" } },
     "spaces": { "type": "array", "items": { "$ref": "#/$defs/space_decl" } },
+    "scenes": { "type": "array", "items": { "$ref": "#/$defs/scene" } },
     "assets": { "type": "array", "items": { "$ref": "#/$defs/asset" } },
     "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } }
   },
@@ -257,6 +259,126 @@
         "select": { "type": "object" }
       }
     },
+    "scene_child": {
+      "type": "object",
+      "required": ["node_type", "name", "type", "role", "framing", "target", "from", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": {
+          "type": "string",
+          "enum": [
+            "scene_style",
+            "scene_region",
+            "scene_object",
+            "scene_relationship",
+            "scene_camera",
+            "scene_light",
+            "scene_curiosity_anchor",
+            "scene_hidden_state",
+            "scene_export"
+          ]
+        },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "role": { "type": "string" },
+        "framing": { "type": "string" },
+        "target": { "type": "string" },
+        "from": { "type": "string" },
+        "values": { "type": "object" }
+      }
+    },
+    "scene_style": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_style" } } }
+      ]
+    },
+    "scene_region": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_region" } } }
+      ]
+    },
+    "scene_object": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_object" } } }
+      ]
+    },
+    "scene_relationship": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_relationship" } } }
+      ]
+    },
+    "scene_camera": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_camera" } } }
+      ]
+    },
+    "scene_light": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_light" } } }
+      ]
+    },
+    "scene_curiosity_anchor": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_curiosity_anchor" } } }
+      ]
+    },
+    "scene_hidden_state": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_hidden_state" } } }
+      ]
+    },
+    "scene_export": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_export" } } }
+      ]
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "node_type",
+        "name",
+        "version",
+        "brief",
+        "prompt",
+        "values",
+        "styles",
+        "regions",
+        "objects",
+        "relationships",
+        "cameras",
+        "lights",
+        "curiosity_anchors",
+        "hidden_state",
+        "exports"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "scene" },
+        "name": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 },
+        "brief": { "type": "string" },
+        "prompt": { "type": "string" },
+        "values": { "type": "object" },
+        "styles": { "type": "array", "items": { "$ref": "#/$defs/scene_style" } },
+        "regions": { "type": "array", "items": { "$ref": "#/$defs/scene_region" } },
+        "objects": { "type": "array", "items": { "$ref": "#/$defs/scene_object" } },
+        "relationships": { "type": "array", "items": { "$ref": "#/$defs/scene_relationship" } },
+        "cameras": { "type": "array", "items": { "$ref": "#/$defs/scene_camera" } },
+        "lights": { "type": "array", "items": { "$ref": "#/$defs/scene_light" } },
+        "curiosity_anchors": { "type": "array", "items": { "$ref": "#/$defs/scene_curiosity_anchor" } },
+        "hidden_state": { "type": "array", "items": { "$ref": "#/$defs/scene_hidden_state" } },
+        "exports": { "type": "array", "items": { "$ref": "#/$defs/scene_export" } }
+      }
+    },
     "profile_like": {
       "type": "object",
       "required": ["node_type", "name", "uses", "defaults", "rules", "repair"],
@@ -296,7 +418,7 @@
       "required": ["node_type", "name", "uses", "values"],
       "additionalProperties": false,
       "properties": {
-        "node_type": { "type": "string", "enum": ["library", "kit", "pattern", "material", "surface_program", "surface_backend", "surface_policy", "decal_library", "mask_program", "trim_sheet", "palette", "reference_set", "reconstruct_policy", "adapt_policy", "assembly_policy", "fit_profile", "transfer_rule", "execution_profile", "render_fixture", "bake_profile", "library_binding", "material_graph", "inspection_policy", "fixture"] },
+        "node_type": { "type": "string", "enum": ["library", "kit", "pattern", "material", "surface_program", "surface_backend", "surface_policy", "decal_library", "mask_program", "trim_sheet", "palette", "style_pack", "reference_set", "reconstruct_policy", "adapt_policy", "assembly_policy", "fit_profile", "transfer_rule", "execution_profile", "render_fixture", "bake_profile", "library_binding", "material_graph", "inspection_policy", "fixture"] },
         "name": { "type": "string" },
         "uses": { "type": "array", "items": { "type": "string" } },
         "values": { "type": "object" }

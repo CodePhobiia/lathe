@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..providers.errors import ShapeProviderError
+from ..errors import ShapeProviderError
 from ..runtime_config import apply_cli_overrides, load_runtime_config
 from ._common import _dump
 

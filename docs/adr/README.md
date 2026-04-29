@@ -30,6 +30,10 @@ Status values: `Proposed` | `Accepted` | `Superseded by NNNN` |
 | [0007](0007-resolver-loc-exception.md) | Accept `lathe/resolver.py` 540 LOC as a file-size exception | Accepted | 2026-04-23 |
 | [0008](0008-geometry-kernel-manifold.md) | Adopt Manifold as the primary geometry kernel | Accepted | 2026-04-24 |
 | [0009](0009-public-contract-index.md) | Maintain a public contract index for downstream boundaries | Accepted | 2026-04-25 |
+| [0010](0010-experimental-scene-source-language.md) | Use experimental v0.3 scene source syntax for Wonder scenes | Proposed | 2026-04-28 |
+| [0011](0011-roblox-export-lane.md) | Keep Roblox export as a constrained target lane | Proposed | 2026-04-28 |
+| [0012](0012-wonder-service-boundary.md) | Keep the Wonder service boundary outside Lathe core | Accepted | 2026-04-28 |
+| [0013](0013-wonder-layer-boundary.md) | Keep the Wonder Layer as a contract runtime boundary | Accepted | 2026-04-29 |
 
 ## Notes
 
@@ -49,3 +53,12 @@ Status values: `Proposed` | `Accepted` | `Superseded by NNNN` |
   reference kernel retained as fallback.
 - **0009** is the index-level rule for public contracts versus
   internal implementation boundaries.
+- **0010** records the Phase 6A scene source design boundary: minimal
+  experimental v0.3 syntax maps to Scene Graph JSON while existing v0.1 asset
+  source remains stable.
+- **0011** keeps Roblox support as a target lane with profile and manifest
+  constraints before any Studio automation is claimed.
+- **0012** keeps service envelopes in Lathe while app concerns remain with
+  Project Wonder.
+- **0013** records the Phase 0 Wonder Layer boundary across core, Wonder,
+  scene runtime, and Project Wonder app ownership.

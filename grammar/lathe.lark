@@ -24,6 +24,7 @@ import_decl: "import" qident
      | mask_program_decl
      | trim_sheet_decl
      | palette_decl
+     | style_pack_decl
      | reference_set_decl
      | reconstruct_policy_decl
      | adapt_policy_decl
@@ -41,6 +42,7 @@ import_decl: "import" qident
      | test_decl
      | benchmark_decl
      | space_decl
+     | scene_decl
      | asset_decl
      | variant_decl
 
@@ -109,6 +111,7 @@ decal_library_decl: "decal_library" IDENT use_clause? "{" assign_stmt* "}"
 mask_program_decl: "mask_program" IDENT use_clause? "{" assign_stmt* "}"
 trim_sheet_decl: "trim_sheet" IDENT use_clause? "{" assign_stmt* "}"
 palette_decl: "palette" IDENT use_clause? "{" assign_stmt* "}"
+style_pack_decl: "style_pack" IDENT "{" assign_stmt* "}"
 reference_set_decl: "reference_set" IDENT use_clause? "{" assign_stmt* "}"
 reconstruct_policy_decl: "reconstruct_policy" IDENT use_clause? "{" assign_stmt* "}"
 adapt_policy_decl: "adapt_policy" IDENT use_clause? "{" assign_stmt* "}"
@@ -126,6 +129,37 @@ fixture_decl: "fixture" IDENT "{" assign_stmt* "}"
 test_decl: "test" IDENT "{" assign_stmt* assert_stmt* "}"
 benchmark_decl: "benchmark" IDENT "{" assign_stmt* assert_stmt* "}"
 space_decl: "space" IDENT "{" space_stmt* "}"
+
+scene_decl: "scene" IDENT "{" scene_item* "}"
+?scene_item: style_scene_block
+           | region_scene_block
+           | object_scene_block
+           | relationship_scene_block
+           | camera_scene_block
+           | camera_intent_scene_block
+           | light_scene_block
+           | lighting_plan_scene_block
+           | curiosity_anchor_scene_block
+           | hidden_state_scene_block
+           | export_scene_block
+           | assign_stmt
+style_scene_block: "style" IDENT "{" assign_stmt* "}"
+scene_type_clause: ":" IDENT
+scene_role_clause: ":" IDENT
+scene_from_clause: "from" qident
+region_scene_block: "region" IDENT scene_type_clause? "{" assign_stmt* "}"
+object_scene_block: "object" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+?object_scene_item: gameplay_scene_block
+                  | assign_stmt
+gameplay_scene_block: "gameplay" "{" assign_stmt* "}"
+relationship_scene_block: "relationship" IDENT scene_type_clause? "{" assign_stmt* "}"
+camera_scene_block: "camera" IDENT scene_type_clause? "{" assign_stmt* "}"
+camera_intent_scene_block: "camera_intent" IDENT scene_type_clause? "{" assign_stmt* "}"
+light_scene_block: "light" IDENT scene_type_clause? "{" assign_stmt* "}"
+lighting_plan_scene_block: "lighting_plan" IDENT scene_type_clause? "{" assign_stmt* "}"
+curiosity_anchor_scene_block: "curiosity_anchor" IDENT "{" assign_stmt* "}"
+hidden_state_scene_block: "hidden_state" IDENT "{" assign_stmt* "}"
+export_scene_block: "export" IDENT "{" assign_stmt* "}"
 
 from_clause: "from" qident
 asset_decl: "asset" IDENT ":" kind from_clause? use_clause? "{" refs_block? intent_block? geometry_block? features_block? source_surface_block? assembly_block? fit_block? transfer_block? reuse_block? constraints_block? ingest_block? assembly_rules_block? execution_block? space_inline_block? search_inline_block? repair_policy_inline_block? build_block? validate_block? package_block? publish_block? "}"

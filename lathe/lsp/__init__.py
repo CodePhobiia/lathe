@@ -15,6 +15,7 @@ def build_symbol_index(program: dict[str, Any]) -> dict[str, Any]:
         "mechanisms",
         "materials",
         "palettes",
+        "style_packs",
         "repair_policies",
         "fixtures",
         "tests",

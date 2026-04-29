@@ -53,6 +53,7 @@ PROGRAM_ARRAY_KEYS = [
     "mask_programs",
     "trim_sheets",
     "palettes",
+    "style_packs",
     "reference_sets",
     "reconstruct_policies",
     "adapt_policies",
@@ -70,6 +71,7 @@ PROGRAM_ARRAY_KEYS = [
     "tests",
     "benchmarks",
     "spaces",
+    "scenes",
     "assets",
     "variants",
 ]
@@ -98,6 +100,7 @@ def _empty_program() -> dict[str, Any]:
         "mask_programs": [],
         "trim_sheets": [],
         "palettes": [],
+        "style_packs": [],
         "reference_sets": [],
         "reconstruct_policies": [],
         "adapt_policies": [],
@@ -115,6 +118,7 @@ def _empty_program() -> dict[str, Any]:
         "tests": [],
         "benchmarks": [],
         "spaces": [],
+        "scenes": [],
         "assets": [],
         "variants": [],
     }

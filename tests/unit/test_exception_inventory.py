@@ -32,7 +32,7 @@ PASS_ALLOWLIST = {
     "lathe/validators/composition.py:127",
     "lathe/validators/composition.py:133",
     "lathe/validators/geometry_integrity.py:267",
-    "lathe/validators/urdf_validation.py:207",
+    "lathe/validators/urdf_validation.py:205",
 }
 
 

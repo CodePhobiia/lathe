@@ -83,6 +83,306 @@ def check_new_declarations(checker: Any) -> None:
                 )
             )
 
+    _check_scenes(checker)
+
+
+def _check_scene_id_prefix(
+    checker: Any,
+    *,
+    scene_name: str,
+    collection: str,
+    item_name: str,
+    prefix: str,
+    code: str,
+) -> None:
+    if item_name.startswith(prefix):
+        return
+    checker.diagnostics.append(
+        diag(
+            code,
+            "invalid_scene_local_id",
+            "error",
+            "typecheck",
+            f"Scene '{scene_name}' {collection} id '{item_name}' must start with '{prefix}'",
+            path=f"scene.{scene_name}.{collection}.{item_name}",
+        )
+    )
+
+
+def _scene_local_ids(scene: dict[str, Any]) -> set[str]:
+    ids = {scene["name"]}
+    for collection in (
+        "regions",
+        "objects",
+        "relationships",
+        "cameras",
+        "lights",
+        "curiosity_anchors",
+        "hidden_state",
+    ):
+        ids.update(item["name"] for item in scene.get(collection, []))
+    return ids
+
+
+def _scene_region_ids(scene: dict[str, Any]) -> set[str]:
+    return {item["name"] for item in scene.get("regions", [])}
+
+
+def _known_style_pack_ids(checker: Any) -> set[str]:
+    from ..scene.style import builtin_style_pack_ids
+
+    return {*checker.resolver.style_pack_map, *builtin_style_pack_ids()}
+
+
+def _check_scene_style_pack_reference(checker: Any, scene: dict[str, Any], style: dict[str, Any]) -> None:
+    values = style.get("values", {})
+    if "style_pack" not in values:
+        return
+    target = values["style_pack"]
+    if target == "" or target is None or not isinstance(target, str):
+        checker.diagnostics.append(
+            diag(
+                "L5414",
+                "invalid_scene_style_pack_reference_type",
+                "error",
+                "typecheck",
+                f"Scene '{scene['name']}' style '{style['name']}' field 'style_pack' must be an identifier",
+                path=f"scene.{scene['name']}.styles.{style['name']}.style_pack",
+            )
+        )
+        return
+    if target in _known_style_pack_ids(checker):
+        return
+    checker.diagnostics.append(
+        diag(
+            "L5413",
+            "unknown_scene_style_pack_reference",
+            "error",
+            "resolve",
+            f"Scene '{scene['name']}' style '{style['name']}' references unknown style_pack '{target}'",
+            path=f"scene.{scene['name']}.styles.{style['name']}.style_pack",
+        )
+    )
+
+
+def _check_scene_duplicate_child_names(checker: Any, scene: dict[str, Any]) -> None:
+    seen: set[str] = set()
+    for collection in (
+        "styles",
+        "regions",
+        "objects",
+        "relationships",
+        "cameras",
+        "lights",
+        "curiosity_anchors",
+        "hidden_state",
+        "exports",
+    ):
+        for item in scene.get(collection, []):
+            name = item["name"]
+            if name in seen:
+                checker.diagnostics.append(
+                    diag(
+                        "L5401",
+                        "duplicate_scene_local_id",
+                        "error",
+                        "resolve",
+                        f"Scene '{scene['name']}' contains duplicate local id '{name}'",
+                        path=f"scene.{scene['name']}.{collection}.{name}",
+                    )
+                )
+            seen.add(name)
+
+
+def _check_scene_reference(
+    checker: Any,
+    *,
+    scene: dict[str, Any],
+    collection: str,
+    item: dict[str, Any],
+    field: str,
+    valid_ids: set[str],
+    code: str,
+) -> None:
+    values = item.get("values", {})
+    if field not in values:
+        return
+    target = values[field]
+    if target == "" or target is None:
+        return
+    if not isinstance(target, str):
+        checker.diagnostics.append(
+            diag(
+                "L5412",
+                "invalid_scene_reference_type",
+                "error",
+                "typecheck",
+                f"Scene '{scene['name']}' {collection} '{item['name']}' field '{field}' must be an identifier",
+                path=f"scene.{scene['name']}.{collection}.{item['name']}.{field}",
+            )
+        )
+        return
+    if target in valid_ids:
+        return
+    checker.diagnostics.append(
+        diag(
+            code,
+            "unknown_scene_reference",
+            "error",
+            "resolve",
+            f"Scene '{scene['name']}' {collection} '{item['name']}' references unknown id '{target}'",
+            path=f"scene.{scene['name']}.{collection}.{item['name']}.{field}",
+        )
+    )
+
+
+def _check_scenes(checker: Any) -> None:
+    for scene in checker.program.get("scenes", []):
+        if not scene["name"]:
+            continue
+        if not isinstance(scene.get("version"), int) or scene["version"] < 1:
+            checker.diagnostics.append(
+                diag(
+                    "L5402",
+                    "invalid_scene_version",
+                    "error",
+                    "typecheck",
+                    f"Scene '{scene['name']}' version must be a positive integer",
+                    path=f"scene.{scene['name']}.version",
+                )
+            )
+        _check_scene_duplicate_child_names(checker, scene)
+        valid_ids = _scene_local_ids(scene)
+        region_ids = _scene_region_ids(scene)
+        for style in scene.get("styles", []):
+            _check_scene_style_pack_reference(checker, scene, style)
+        for region in scene.get("regions", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="regions",
+                item_name=region["name"],
+                prefix="region_",
+                code="L5403",
+            )
+        for obj in scene.get("objects", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="objects",
+                item_name=obj["name"],
+                prefix="obj_",
+                code="L5404",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="objects",
+                item=obj,
+                field="region",
+                valid_ids=region_ids,
+                code="L5405",
+            )
+        for relationship in scene.get("relationships", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="relationships",
+                item_name=relationship["name"],
+                prefix="rel_",
+                code="L5406",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="relationships",
+                item=relationship,
+                field="from",
+                valid_ids=valid_ids,
+                code="L5407",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="relationships",
+                item=relationship,
+                field="to",
+                valid_ids=valid_ids,
+                code="L5407",
+            )
+        for camera in scene.get("cameras", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="cameras",
+                item_name=camera["name"],
+                prefix="camera_",
+                code="L5408",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="cameras",
+                item=camera,
+                field="target",
+                valid_ids=valid_ids,
+                code="L5409",
+            )
+        for light in scene.get("lights", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="lights",
+                item_name=light["name"],
+                prefix="light_",
+                code="L5410",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="lights",
+                item=light,
+                field="target",
+                valid_ids=valid_ids,
+                code="L5411",
+            )
+        for anchor in scene.get("curiosity_anchors", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="curiosity_anchors",
+                item_name=anchor["name"],
+                prefix="curiosity_",
+                code="L5415",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="curiosity_anchors",
+                item=anchor,
+                field="attached_to",
+                valid_ids=valid_ids,
+                code="L5416",
+            )
+        for hidden in scene.get("hidden_state", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="hidden_state",
+                item_name=hidden["name"],
+                prefix="hidden_",
+                code="L5417",
+            )
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="hidden_state",
+                item=hidden,
+                field="attached_to",
+                valid_ids=valid_ids,
+                code="L5418",
+            )
+
     for palette in checker.program.get("palettes", []):
         material_names = list(
             palette.get("values", {}).get("materials", []) or palette.get("values", {}).get("slots", [])

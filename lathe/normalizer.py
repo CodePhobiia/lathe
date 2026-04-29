@@ -20,6 +20,7 @@ from .defaults import (
     MAPPING_DECL_DEFAULTS,
     PROFILE_DEFAULTS,
     PROGRAM_DEFAULTS,
+    SCENE_DEFAULTS,
     SPACE_DEFAULTS,
     STRUCTURED_DECL_DEFAULTS,
     TEST_DECL_DEFAULTS,
@@ -51,6 +52,24 @@ CANONICAL_STRUCTURED_DECL_KEYS = [
 ]
 CANONICAL_MAPPING_DECL_KEYS = ["node_type", "name", "uses", "values"]
 CANONICAL_SPACE_KEYS = ["node_type", "name", "use", "values", "vary", "freeze", "objectives", "select"]
+CANONICAL_SCENE_KEYS = [
+    "node_type",
+    "name",
+    "version",
+    "brief",
+    "prompt",
+    "values",
+    "styles",
+    "regions",
+    "objects",
+    "relationships",
+    "cameras",
+    "lights",
+    "curiosity_anchors",
+    "hidden_state",
+    "exports",
+]
+CANONICAL_SCENE_CHILD_KEYS = ["node_type", "name", "type", "role", "framing", "target", "from", "values"]
 CANONICAL_REPAIR_POLICY_KEYS = ["node_type", "name", "mode", "max_rounds", "allow", "deny"]
 CANONICAL_TEST_KEYS = ["node_type", "name", "values", "asserts"]
 CANONICAL_ASSET_KEYS = [
@@ -305,6 +324,67 @@ def _normalize_variant(variant: dict[str, Any]) -> dict[str, Any]:
     return _ordered(out, CANONICAL_VARIANT_KEYS)
 
 
+def _normalize_scene_child(child: dict[str, Any], node_type: str) -> dict[str, Any]:
+    out = {
+        "node_type": node_type,
+        "name": child["name"],
+        "type": child.get("type", ""),
+        "role": child.get("role", ""),
+        "framing": child.get("framing", ""),
+        "target": child.get("target", ""),
+        "from": child.get("from", ""),
+        "values": deepcopy(child.get("values", {})),
+    }
+    return _ordered(out, CANONICAL_SCENE_CHILD_KEYS)
+
+
+def _normalize_scene(scene: dict[str, Any]) -> dict[str, Any]:
+    out = deep_fill_missing(scene, SCENE_DEFAULTS)
+    values = deepcopy(out.get("values", {}))
+    out["node_type"] = "scene"
+    out["version"] = values.get("version", out.get("version", 1))
+    out["brief"] = str(values.get("brief", out.get("brief", "")) or "")
+    out["prompt"] = str(values.get("prompt", out.get("prompt", "")) or "")
+    out["values"] = values
+    out["styles"] = sorted(
+        [_normalize_scene_child(item, "scene_style") for item in out.get("styles", [])],
+        key=lambda d: d["name"],
+    )
+    out["regions"] = sorted(
+        [_normalize_scene_child(item, "scene_region") for item in out.get("regions", [])],
+        key=lambda d: d["name"],
+    )
+    out["objects"] = sorted(
+        [_normalize_scene_child(item, "scene_object") for item in out.get("objects", [])],
+        key=lambda d: d["name"],
+    )
+    out["relationships"] = sorted(
+        [_normalize_scene_child(item, "scene_relationship") for item in out.get("relationships", [])],
+        key=lambda d: d["name"],
+    )
+    out["cameras"] = sorted(
+        [_normalize_scene_child(item, "scene_camera") for item in out.get("cameras", [])],
+        key=lambda d: d["name"],
+    )
+    out["lights"] = sorted(
+        [_normalize_scene_child(item, "scene_light") for item in out.get("lights", [])],
+        key=lambda d: d["name"],
+    )
+    out["curiosity_anchors"] = sorted(
+        [_normalize_scene_child(item, "scene_curiosity_anchor") for item in out.get("curiosity_anchors", [])],
+        key=lambda d: d["name"],
+    )
+    out["hidden_state"] = sorted(
+        [_normalize_scene_child(item, "scene_hidden_state") for item in out.get("hidden_state", [])],
+        key=lambda d: d["name"],
+    )
+    out["exports"] = sorted(
+        [_normalize_scene_child(item, "scene_export") for item in out.get("exports", [])],
+        key=lambda d: d["name"],
+    )
+    return _ordered(out, CANONICAL_SCENE_KEYS)
+
+
 def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
     """Normalize program.
 
@@ -373,6 +453,10 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         [_normalize_mapping_decl(item, "palette") for item in out.get("palettes", [])],
         key=lambda d: d["name"],
     )
+    out["style_packs"] = sorted(
+        [_normalize_mapping_decl(item, "style_pack") for item in out.get("style_packs", [])],
+        key=lambda d: d["name"],
+    )
     out["execution_profiles"] = sorted(
         [_normalize_mapping_decl(item, "execution_profile") for item in out.get("execution_profiles", [])],
         key=lambda d: d["name"],
@@ -415,6 +499,9 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
     out["spaces"] = sorted(
         [_normalize_space_decl(item) for item in out.get("spaces", [])], key=lambda d: d["name"]
     )
+    out["scenes"] = sorted(
+        [_normalize_scene(item) for item in out.get("scenes", [])], key=lambda d: d["name"]
+    )
     out["assets"] = sorted([normalize_asset(a) for a in out.get("assets", [])], key=lambda d: d["name"])
     out["variants"] = sorted(
         [_normalize_variant(v) for v in out.get("variants", [])], key=lambda d: d["name"]
@@ -452,6 +539,7 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         "mask_programs": out["mask_programs"],
         "trim_sheets": out["trim_sheets"],
         "palettes": out["palettes"],
+        "style_packs": out["style_packs"],
         "execution_profiles": out["execution_profiles"],
         "render_fixtures": out["render_fixtures"],
         "bake_profiles": out["bake_profiles"],
@@ -490,6 +578,7 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         "tests": out["tests"],
         "benchmarks": out["benchmarks"],
         "spaces": out["spaces"],
+        "scenes": out["scenes"],
         "assets": out["assets"],
         "variants": out["variants"],
     }

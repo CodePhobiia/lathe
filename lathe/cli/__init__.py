@@ -7,54 +7,44 @@ Exposes the ``python -m lathe.cli`` entry point and the individual
 from __future__ import annotations
 
 import argparse
+import importlib
 import os
 import sys
+from collections.abc import Callable
+from typing import Any
 
-from ..doctor import collect_doctor_report, dump_doctor_json, format_doctor_report
 from ..errors import BuildError, LatheError, LatheParseError, RuntimeConfigError
 from ._common import _emit_error
-from .bridge_cmd import run_bridge
-from .build_cmd import run_build, run_mode_build, run_render_eval
-from .cache_cmd import register as _register_cache
-from .cache_cmd import run_cache
-from .check_cmd import run_check
-from .completions_cmd import SUPPORTED_SHELLS, run_completions
-from .diff_cmd import register as _register_diff
-from .diff_cmd import run_diff
-from .doctor_cmd import (
-    run_backends,
-    run_doctor,
-    run_probe_blender,
-    run_probe_providers,
-    run_shape_providers,
-)
-from .fmt_cmd import run_fmt
-from .inspect_cmd import (
-    run_bake_audit,
-    run_explain,
-    run_explain_fit,
-    run_export_blend,
-    run_inspect,
-    run_inspect_blend,
-    run_render_fixture,
-    run_serve,
-)
-from .library_cmd import run_library
-from .materialize_cmd import run_diff_asset, run_materialize
-from .parse_cmd import run_normalize, run_parse, run_schema
-from .patch_cmd import run_patch
-from .plan_cmd import run_fit, run_plan, run_surface_plan
-from .publish_cmd import register as _register_publish
-from .publish_cmd import run_publish
-from .ref_cmd import run_ref
-from .snapshot_cmd import register as _register_snapshot
-from .snapshot_cmd import run_snapshot
-from .surface_cmd import run_surface
-from .telemetry_cmd import register as _register_telemetry
-from .telemetry_cmd import run_telemetry
-from .test_cmd import run_audit, run_bench, run_test
 
 __all__ = ["collect_doctor_report", "dump_doctor_json", "format_doctor_report", "main"]
+
+SUPPORTED_SHELLS = ("bash", "zsh", "powershell")
+
+
+def collect_doctor_report(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    """Lazy compatibility wrapper for callers importing from ``lathe.cli``."""
+    from ..doctor import collect_doctor_report as _collect_doctor_report
+
+    return _collect_doctor_report(*args, **kwargs)
+
+
+def dump_doctor_json(*args: Any, **kwargs: Any) -> str:
+    """Lazy compatibility wrapper for callers importing from ``lathe.cli``."""
+    from ..doctor import dump_doctor_json as _dump_doctor_json
+
+    return _dump_doctor_json(*args, **kwargs)
+
+
+def format_doctor_report(*args: Any, **kwargs: Any) -> str:
+    """Lazy compatibility wrapper for callers importing from ``lathe.cli``."""
+    from ..doctor import format_doctor_report as _format_doctor_report
+
+    return _format_doctor_report(*args, **kwargs)
+
+
+def _run_register(module_name: str, sub: argparse._SubParsersAction) -> None:
+    module = importlib.import_module(f".{module_name}", package=__package__)
+    module.register(sub)
 
 
 def _wants_json_error(args: argparse.Namespace) -> bool:
@@ -553,61 +543,71 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ref_copy.add_argument("target_path", help="Destination file (or directory) path")
     p_ref_copy.add_argument("--repo-root", default=None, help="Override repo root for resolution")
 
-    _register_cache(sub)
-    _register_diff(sub)
-    _register_publish(sub)
-    _register_snapshot(sub)
-    _register_telemetry(sub)
+    _run_register("cache_cmd", sub)
+    _run_register("diff_cmd", sub)
+    _run_register("publish_cmd", sub)
+    _run_register("snapshot_cmd", sub)
+    _run_register("telemetry_cmd", sub)
+    _run_register("scene_cmd", sub)
+    _run_register("wonder_cmd", sub)
 
     return parser
 
 
-_DISPATCH = {
-    "doctor": run_doctor,
-    "schema": run_schema,
-    "fmt": run_fmt,
-    "backends": run_backends,
-    "shape-providers": run_shape_providers,
-    "completions": run_completions,
-    "probe-providers": run_probe_providers,
-    "probe-blender": run_probe_blender,
-    "bridge": run_bridge,
-    "test": run_test,
-    "bench": run_bench,
-    "audit": run_audit,
-    "explain": run_explain,
-    "explain-fit": run_explain_fit,
-    "inspect-blend": run_inspect_blend,
-    "inspect": run_inspect,
-    "serve": run_serve,
-    "render-fixture": run_render_fixture,
-    "bake-audit": run_bake_audit,
-    "export-blend": run_export_blend,
-    "diff-asset": run_diff_asset,
-    "library": run_library,
-    "patch": run_patch,
-    "parse": run_parse,
-    "normalize": run_normalize,
-    "fit": run_fit,
-    "check": run_check,
-    "plan": run_plan,
-    "surface-plan": run_surface_plan,
-    "materialize": run_materialize,
-    "surface-build": run_surface,
-    "surface-validate": run_surface,
-    "surface-repair": run_surface,
-    "build": run_build,
-    "cache": run_cache,
-    "diff": run_diff,
-    "ref": run_ref,
-    "snapshot": run_snapshot,
-    "publish": run_publish,
-    "telemetry": run_telemetry,
-    "render-eval": run_render_eval,
-    "adapt": run_mode_build,
-    "assemble": run_mode_build,
-    "reconstruct": run_mode_build,
+_DISPATCH: dict[str, str] = {
+    "doctor": "doctor_cmd:run_doctor",
+    "schema": "parse_cmd:run_schema",
+    "fmt": "fmt_cmd:run_fmt",
+    "backends": "doctor_cmd:run_backends",
+    "shape-providers": "doctor_cmd:run_shape_providers",
+    "completions": "completions_cmd:run_completions",
+    "probe-providers": "doctor_cmd:run_probe_providers",
+    "probe-blender": "doctor_cmd:run_probe_blender",
+    "bridge": "bridge_cmd:run_bridge",
+    "test": "test_cmd:run_test",
+    "bench": "test_cmd:run_bench",
+    "audit": "test_cmd:run_audit",
+    "explain": "inspect_cmd:run_explain",
+    "explain-fit": "inspect_cmd:run_explain_fit",
+    "inspect-blend": "inspect_cmd:run_inspect_blend",
+    "inspect": "inspect_cmd:run_inspect",
+    "serve": "inspect_cmd:run_serve",
+    "render-fixture": "inspect_cmd:run_render_fixture",
+    "bake-audit": "inspect_cmd:run_bake_audit",
+    "export-blend": "inspect_cmd:run_export_blend",
+    "diff-asset": "materialize_cmd:run_diff_asset",
+    "library": "library_cmd:run_library",
+    "patch": "patch_cmd:run_patch",
+    "parse": "parse_cmd:run_parse",
+    "normalize": "parse_cmd:run_normalize",
+    "fit": "plan_cmd:run_fit",
+    "check": "check_cmd:run_check",
+    "plan": "plan_cmd:run_plan",
+    "surface-plan": "plan_cmd:run_surface_plan",
+    "materialize": "materialize_cmd:run_materialize",
+    "surface-build": "surface_cmd:run_surface",
+    "surface-validate": "surface_cmd:run_surface",
+    "surface-repair": "surface_cmd:run_surface",
+    "build": "build_cmd:run_build",
+    "cache": "cache_cmd:run_cache",
+    "diff": "diff_cmd:run_diff",
+    "ref": "ref_cmd:run_ref",
+    "snapshot": "snapshot_cmd:run_snapshot",
+    "publish": "publish_cmd:run_publish",
+    "telemetry": "telemetry_cmd:run_telemetry",
+    "scene": "scene_cmd:run_scene",
+    "wonder": "wonder_cmd:run_wonder",
+    "render-eval": "build_cmd:run_render_eval",
+    "adapt": "build_cmd:run_mode_build",
+    "assemble": "build_cmd:run_mode_build",
+    "reconstruct": "build_cmd:run_mode_build",
 }
+
+
+def _load_handler(spec: str) -> Callable[[argparse.Namespace], None]:
+    module_name, function_name = spec.split(":", 1)
+    module = importlib.import_module(f".{module_name}", package=__package__)
+    return getattr(module, function_name)
 
 
 def main() -> None:
@@ -616,13 +616,14 @@ def main() -> None:
     args = parser.parse_args()
     if getattr(args, "strict_prompt_injection", False):
         os.environ["LATHE_STRICT_PROMPT_INJECTION"] = "1"
-    handler = _DISPATCH.get(args.cmd)
-    if handler is None:
+    handler_spec = _DISPATCH.get(args.cmd)
+    if handler_spec is None:
         raise SystemExit(2)
     debug_traceback = (
         getattr(args, "debug_traceback", False) or os.environ.get("LATHE_DEBUG_TRACEBACK") == "1"
     )
     try:
+        handler = _load_handler(handler_spec)
         handler(args)
     except FileNotFoundError as exc:
         if debug_traceback:

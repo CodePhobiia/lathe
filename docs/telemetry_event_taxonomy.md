@@ -6,7 +6,7 @@
 
 ## Current code state
 
-Telemetry lives in `lathe/telemetry.py`. The module is not a stub — it contains a complete opt-in implementation with one event type (`build_ping`). Config is persisted at an OS-appropriate path (`%APPDATA%\lathe\telemetry.json` on Windows; `~/.config/lathe/telemetry.json` on POSIX; `~/Library/Application Support/lathe/telemetry.json` on macOS). The `platformdirs` package is used when available; a hand-rolled fallback covers the three platforms.
+Telemetry lives in `lathe/telemetry.py`. The module contains a complete opt-in implementation with one event type (`build_ping`). Config is persisted at an OS-appropriate path (`%APPDATA%\lathe\telemetry.json` on Windows; `~/.config/lathe/telemetry.json` on POSIX; `~/Library/Application Support/lathe/telemetry.json` on macOS). The `platformdirs` package is used when available; a hand-rolled fallback covers the three platforms.
 
 Ingest endpoint: `https://telemetry.lathe.dev/ingest` (POST, JSON). The ingest service is not yet provisioned — see Dashboards section.
 

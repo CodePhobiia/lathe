@@ -34,3 +34,5 @@ cache = 70|lathe/cache.py
 cli = 35|lathe/cli
 telemetry = 80|lathe/telemetry.py
 security = 75|lathe/parser/prompt_injection.py,lathe/net.py,lathe/publish/signed_repro.py
+scene = 45|lathe/scene
+wonder = 55|lathe/wonder

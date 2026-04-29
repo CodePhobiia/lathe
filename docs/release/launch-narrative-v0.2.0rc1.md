@@ -35,7 +35,7 @@ This release is not GA, not benchmarked at scale, not security-audited by a thir
 
 | Name | Outlet | Beat | Contact | Status |
 |---|---|---|---|---|
-| (placeholder) | (placeholder) | (placeholder) | (placeholder) | not started |
+| requires-human | requires-human | requires-human | requires-human | not started |
 
 Recommended beats to populate: Godot devlog YouTube/Bluesky, r/godot prominent contributors, game-pipeline / tech-art Bluesky/Twitter-X accounts, AI coding-agent newsletters (e.g. agent-builders who have covered Claude Code or Continue).
 

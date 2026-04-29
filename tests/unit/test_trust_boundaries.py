@@ -8,6 +8,7 @@ from lathe.paths import safe_resolve
 from lathe.runtime_config import load_runtime_config
 from lathe.security import InputClass, TrustLevel, boundary_policy, get_boundary_policies, ingress_boundary
 from lathe.shape.geometry.conditioning import collect_shape_conditioning
+from lathe.wonder import load_and_validate_contract
 
 
 def _input_classes(func) -> set[InputClass]:
@@ -22,6 +23,7 @@ def test_untrusted_ingress_functions_are_marked_with_enforceable_policies() -> N
         safe_load_mesh: {InputClass.EXTERNAL_MESH},
         collect_shape_conditioning: {InputClass.EXTERNAL_IMAGE, InputClass.EXTERNAL_MESH},
         load_runtime_config: {InputClass.RUNTIME_CONFIG},
+        load_and_validate_contract: {InputClass.WONDER_CONTRACT},
         safe_urlopen: {InputClass.NETWORK_PROVIDER},
     }
 

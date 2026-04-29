@@ -33,6 +33,7 @@ A source file has an optional `module`, zero or more `import` declarations, and 
 | `mask_program` | `mask_program_decl` | `mask_programs` |
 | `trim_sheet` | `trim_sheet_decl` | `trim_sheets` |
 | `palette` | `palette_decl` | `palettes` |
+| `style_pack` | `style_pack_decl` | `style_packs` |
 | `reference_set` | `reference_set_decl` | `reference_sets` |
 | `reconstruct_policy` | `reconstruct_policy_decl` | `reconstruct_policies` |
 | `adapt_policy` | `adapt_policy_decl` | `adapt_policies` |
@@ -50,6 +51,7 @@ A source file has an optional `module`, zero or more `import` declarations, and 
 | `test` | `test_decl` | `tests` |
 | `benchmark` | `benchmark_decl` | `benchmarks` |
 | `space` | `space_decl` | `spaces` |
+| `scene` | `scene_decl` | `scenes` |
 | `asset` | `asset_decl` | `assets` |
 | `variant` | `variant_decl` | `variants` |
 

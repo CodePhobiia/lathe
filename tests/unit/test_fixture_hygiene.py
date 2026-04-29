@@ -17,6 +17,7 @@ ALLOWED_TOP_LEVEL = {
     "mock_xatlas.py",
     "sample_programs.py",
     "telemetry",
+    "wonder",
 }
 
 

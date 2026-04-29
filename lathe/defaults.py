@@ -31,6 +31,7 @@ PROGRAM_DEFAULTS = {
     "mask_programs": [],
     "trim_sheets": [],
     "palettes": [],
+    "style_packs": [],
     "reference_sets": [],
     "reconstruct_policies": [],
     "adapt_policies": [],
@@ -48,8 +49,25 @@ PROGRAM_DEFAULTS = {
     "tests": [],
     "benchmarks": [],
     "spaces": [],
+    "scenes": [],
     "assets": [],
     "variants": [],
+}
+
+SCENE_DEFAULTS = {
+    "version": 1,
+    "brief": "",
+    "prompt": "",
+    "values": {},
+    "styles": [],
+    "regions": [],
+    "objects": [],
+    "relationships": [],
+    "cameras": [],
+    "lights": [],
+    "curiosity_anchors": [],
+    "hidden_state": [],
+    "exports": [],
 }
 
 STRUCTURED_DECL_DEFAULTS = {

@@ -115,6 +115,8 @@ class _FastParser(_FastParserExprMixin):
                 program["critics"].append(self._critic())
             elif keyword in self.MAPPING_DECLS:
                 program[self.DECL_KEYS[keyword]].append(self._mapping_decl(keyword))
+            elif keyword == "style_pack":
+                program["style_packs"].append(self._style_pack_decl())
             elif keyword in self.STRUCTURED_DECLS:
                 node_type = "assembly_decl" if keyword == "assembly" else keyword
                 program[self.STRUCTURED_KEYS[keyword]].append(self._structured_decl(node_type, keyword))
@@ -127,6 +129,8 @@ class _FastParser(_FastParserExprMixin):
                 program["benchmarks"].append(self._test_like("benchmark"))
             elif keyword == "space":
                 program["spaces"].append(self._space_decl())
+            elif keyword == "scene":
+                program["scenes"].append(self._scene_decl())
             elif keyword == "asset":
                 program["assets"].append(self._asset_decl())
             elif keyword == "variant":
@@ -192,6 +196,11 @@ class _FastParser(_FastParserExprMixin):
         uses = self._optional_uses()
         values = self._assign_block(node_type)
         return {"node_type": node_type, "name": name, "uses": _dedupe_keep_first(uses), "values": values}
+
+    def _style_pack_decl(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        values = self._assign_block("style_pack")
+        return {"node_type": "style_pack", "name": name, "uses": [], "values": values}
 
     def _simple_mapping_decl(self, node_type: str) -> dict[str, Any]:
         name = self.ts.pop_ident()
@@ -405,6 +414,108 @@ class _FastParser(_FastParserExprMixin):
             "objectives": objectives,
             "select": select,
         }
+
+    def _scene_decl(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        values: list[tuple[str, Any]] = []
+        styles: list[dict[str, Any]] = []
+        regions: list[dict[str, Any]] = []
+        objects: list[dict[str, Any]] = []
+        relationships: list[dict[str, Any]] = []
+        cameras: list[dict[str, Any]] = []
+        lights: list[dict[str, Any]] = []
+        curiosity_anchors: list[dict[str, Any]] = []
+        hidden_state: list[dict[str, Any]] = []
+        exports: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "style":
+                styles.append(self._scene_named_assign_block("scene_style", "style"))
+            elif item == "region":
+                regions.append(self._scene_typed_assign_block("scene_region", "region", field="type"))
+            elif item == "object":
+                objects.append(self._scene_object_block())
+            elif item == "relationship":
+                relationships.append(self._scene_typed_assign_block("scene_relationship", "relationship", field="type"))
+            elif item in {"camera", "camera_intent"}:
+                cameras.append(self._scene_typed_assign_block("scene_camera", item, field="framing"))
+            elif item in {"light", "lighting_plan"}:
+                lights.append(self._scene_typed_assign_block("scene_light", item, field="type"))
+            elif item == "curiosity_anchor":
+                curiosity_anchors.append(self._scene_named_assign_block("scene_curiosity_anchor", item))
+            elif item == "hidden_state":
+                hidden_state.append(self._scene_named_assign_block("scene_hidden_state", item))
+            elif item == "export":
+                exports.append(self._scene_named_assign_block("scene_export", "export"))
+            else:
+                values.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        return {
+            "node_type": "scene",
+            "name": name,
+            "values": self._assignments(values, "scene"),
+            "styles": styles,
+            "regions": regions,
+            "objects": objects,
+            "relationships": relationships,
+            "cameras": cameras,
+            "lights": lights,
+            "curiosity_anchors": curiosity_anchors,
+            "hidden_state": hidden_state,
+            "exports": exports,
+        }
+
+    def _scene_named_assign_block(self, node_type: str, context: str) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        values = self._assign_block(context)
+        return {"node_type": node_type, "name": name, "values": values}
+
+    def _scene_typed_assign_block(self, node_type: str, context: str, *, field: str) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        type_value = ""
+        if self.ts.peek(":"):
+            self.ts.pop(":")
+            type_value = self.ts.pop_ident()
+        values = self._assign_block(context)
+        return {"node_type": node_type, "name": name, field: type_value, "values": values}
+
+    def _scene_object_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        role = ""
+        source = ""
+        if self.ts.peek(":"):
+            self.ts.pop(":")
+            role = self.ts.pop_ident()
+        if self.ts.peek("from"):
+            self.ts.pop("from")
+            source = self._qident()
+        assignments: list[tuple[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "gameplay" and self.ts.peek("{"):
+                assignments.extend(self._prefixed_assign_block("gameplay", "gameplay"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "object")
+        return {
+            "node_type": "scene_object",
+            "name": name,
+            "role": role,
+            "from": source,
+            "values": values,
+        }
+
+    def _prefixed_assign_block(self, prefix: str, context: str) -> list[tuple[str, Any]]:
+        assignments: list[tuple[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            path = self._path()
+            assignments.append((f"{prefix}.{path}", self._assign_value()))
+        self.ts.pop("}")
+        return assignments
 
     def _variant_decl(self) -> dict[str, Any]:
         name = self.ts.pop_ident()

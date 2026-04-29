@@ -1,8 +1,11 @@
 # Examples catalog
 
-Index of every runnable `.lth` source under `examples/`. Every file parses via
-`lathe check`; certification (`lathe build ... --out ...` + `validate/report.json`
-`certified == True`) is tracked per-row.
+Index of every runnable `.lth` source under `examples/`. Asset-oriented files
+parse via `lathe check`; Wonder scene-source bridge files are validated with
+`lathe scene source-to-scene-graph` because their embedded Scene Graph payload
+is the durable source of truth. Certification (`lathe build ... --out ...` +
+`validate/report.json` `certified == True`) is tracked per-row where an asset
+build exists.
 
 Build times assume a local `.venv` with xatlas/manifold3d installed, native
 shape provider, no remote runtime config.
@@ -53,6 +56,22 @@ until promoted into the canonical gallery or expected-certification set.
 | `examples/reconstruct_courier_from_views.lth` | `reconstruct_courier_from_views` | T2 | reference-view reconstruction using checked-in images | varies | x |
 | `examples/satchel_bag.lth` | `satchel_bag` | T2 | soft-prop contract experiment | varies | x |
 | `examples/service_corridor_wall.lth` | `service_corridor_wall` | T2 | modular industrial wall-kit environment slice | varies | x |
+
+## Wonder scene-source bridge examples (`examples/wonder/`)
+
+These `.lth` files are generated from the committed Scene Graph JSON and must
+roundtrip through `lathe scene source-to-scene-graph`. They are not asset build
+targets by themselves.
+
+| File | Scene | Validation | Notes |
+|------|-------|------------|-------|
+| `examples/wonder/abandoned_roblox_mall/scene_source.lth` | `abandoned_roblox_mall` | source bridge roundtrip | Roblox-compatible mall interior seed |
+| `examples/wonder/alchemist_observatory/scene_source.lth` | `alchemist_observatory` | source bridge roundtrip | canonical Wonder seed scene |
+| `examples/wonder/desert_oracle_shrine/scene_source.lth` | `desert_oracle_shrine` | source bridge roundtrip | desert shrine scene seed |
+| `examples/wonder/environment_module_showcase/scene_source.lth` | `environment_module_showcase` | source bridge roundtrip | environment-module showcase |
+| `examples/wonder/mountain_lightning_city/scene_source.lth` | `mountain_lightning_city` | source bridge roundtrip | mountain city scene seed |
+| `examples/wonder/stdlib_component_showcase/scene_source.lth` | `stdlib_component_showcase` | source bridge roundtrip | standard-library component showcase |
+| `examples/wonder/underwater_train_station/scene_source.lth` | `underwater_train_station` | source bridge roundtrip | underwater station scene seed |
 
 ## API examples (`examples/api/`)
 

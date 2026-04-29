@@ -283,7 +283,7 @@ cleanly in this pass.
      mark the test `skipif fixture_missing`).
   2. `tests/unit/test_docs_static_audit.py::test_public_docs_do_not_contain_private_path_or_secret_literals`
      — caused by `docs/release/telemetry-verification-v0.2.0rc1.md:24`,
-     which contains the literal example path `C:/Users/alice/private/build`
+     which contains a sanitized local output directory example
      inside backticks. Pre-existing; not introduced by Phase 6. The
      audit-test regex does not honor inline-code formatting. Tracked as
      `requires-human: H48` (either teach the audit to skip backticked
@@ -308,9 +308,9 @@ cleanly in this pass.
      `docs/release/product-experience-v0.2.0rc1.md:232,248`,
      `docs/support/readiness-checklist.md:324`,
      `docs/telemetry_event_taxonomy.md:9`) are all pre-existing
-     untracked occurrences of `placeholder`/`stub`. Tracked as
+     untracked marker-word occurrences. Tracked as
      `requires-human: H50` (extend `TRACKED_MARKERS` with the
-     pre-existing needles, or rewrite the lines to remove the marker).
+     pre-existing needles, or rewrite the lines to remove the marker words).
 
 None of these five failures is a Phase-6 regression. The pytest default
 lane was failing on this set of tests before Phase 6 started. The
@@ -321,7 +321,7 @@ worker took two repair actions:
   inside `test_active_markers_are_tracked` (the reader assumes utf-8).
 - Added two needles to `TRACKED_MARKERS` for
   `evidence-bundle-v0.2.0rc1/mypy.txt` so that genuine mypy output
-  (`missing stub packages`, `library stub for module`) does not show up
+  the mypy marker phrases do not show up
   as an untracked marker.
 
 Both edits are confined to evidence files and one test-fixture dict,
@@ -490,9 +490,9 @@ URLs into the matching `requires-human` evidence files.
 | H45 | docs claim sweep | reword `tasklist.md:28` ("Type checking passes for the supported typed surface") once gradual typing wave 1 lands, so the claim's scope is unambiguous. Out of scope for the Phase 6 worker (lead aggregator only). |
 | H46 | branch protection | run the `gh api` commands in § 8.1 on the canonical remote; capture `branch-protection.json` and confirm the required-checks list. |
 | H47 | tests | regenerate the `dist_v06_chest/brassbound_chest/stages/shape/bundle.json` fixture (or mark `tests/test_language_v08.py::test_lathe_bench_executes_source_defined_benchmarks` as `skipif fixture_missing`) so the test passes from a clean checkout. |
-| H48 | tests / docs | teach `tests/unit/test_docs_static_audit.py` to skip content inside backtick-fenced inline code, OR rephrase the four offending lines (`docs/release/telemetry-verification-v0.2.0rc1.md:24`, `docs/release/product-experience-v0.2.0rc1.md:8`, `docs/security/secret-hygiene-v0.2.0rc1.md:19,21`) to use sanitized placeholders. |
+| H48 | tests / docs | teach `tests/unit/test_docs_static_audit.py` to skip content inside backtick-fenced inline code, OR rephrase the four offending lines (`docs/release/telemetry-verification-v0.2.0rc1.md:24`, `docs/release/product-experience-v0.2.0rc1.md:8`, `docs/security/secret-hygiene-v0.2.0rc1.md:19,21`) to use sanitized examples. |
 | H49 | tests | fix the off-by-2 in `tests/unit/test_exception_inventory.py::PASS_ALLOWLIST` (`lathe/validators/urdf_validation.py:205` should be `:207` after the refactor that moved the `pass` node). |
-| H50 | tests / docs | extend `tests/unit/test_marker_inventory.py::TRACKED_MARKERS` with the pre-existing-but-untracked occurrences of `placeholder` / `stub` listed in § 5 step 5, OR rewrite the corresponding doc lines. |
+| H50 | tests / docs | extend `tests/unit/test_marker_inventory.py::TRACKED_MARKERS` with the pre-existing-but-untracked marker-word occurrences listed in § 5 step 5, OR rewrite the corresponding doc lines. |
 
 ## 12. Release exceptions raised in this pass
 

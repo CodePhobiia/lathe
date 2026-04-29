@@ -82,6 +82,27 @@ nav:
   - Canonical Gallery: gallery.md
   - Quality Dashboard: quality_dashboard.md
   - Deterministic Builds: deterministic_builds.md
+  - Wonder Readiness:
+      - Overview: wonder-readiness/00_overview.md
+      - Dream Brief: wonder-readiness/01_dream_brief.md
+      - Scene Graph: wonder-readiness/02_scene_graph.md
+      - Scene Patch: wonder-readiness/03_scene_patch.md
+      - Render Inspection: wonder-readiness/04_render_inspection.md
+      - MVP Demo Path: wonder-readiness/05_mvp_demo.md
+      - Scene Language: wonder-readiness/06_scene_language.md
+      - Scene Language Design: wonder-readiness/06_scene_language_design.md
+      - Scene Build Pipeline: wonder-readiness/07_scene_build_pipeline.md
+      - Scene Package: wonder-readiness/08_scene_package.md
+      - Pre-Wonder Baseline: wonder-readiness/pre_wonder_baseline.md
+      - Phase 0 Working Tree: wonder-readiness/phase0_working_tree_classification.md
+      - Scene Validation: wonder-readiness/09_scene_validation.md
+      - Render Repair Loop: wonder-readiness/10_render_repair_loop.md
+      - Curiosity Anchors: wonder-readiness/11_curiosity_anchors.md
+      - World Memory: wonder-readiness/12_world_memory.md
+      - Branching: wonder-readiness/13_branching.md
+      - Roblox Profile: wonder-readiness/14_roblox_profile.md
+      - MVP Demo: wonder-readiness/15_mvp_demo.md
+      - Limitations: wonder-readiness/16_limitations.md
   - Tutorials:
       - Overview: tutorial/index.md
       - Your first asset: tutorial/first_asset.md
@@ -124,6 +145,10 @@ nav:
       - 0007 Resolver LOC exception: adr/0007-resolver-loc-exception.md
       - 0008 Geometry kernel Manifold: adr/0008-geometry-kernel-manifold.md
       - 0009 Public contract index: adr/0009-public-contract-index.md
+      - 0010 Experimental scene source language: adr/0010-experimental-scene-source-language.md
+      - 0011 Roblox export lane: adr/0011-roblox-export-lane.md
+      - 0012 Wonder service boundary: adr/0012-wonder-service-boundary.md
+      - 0013 Wonder Layer boundary: adr/0013-wonder-layer-boundary.md
   - Language Reference:
       - Generated current reference: language_reference.md
       - Normalized schema reference: schema_reference.md
@@ -140,6 +165,8 @@ nav:
       - Capabilities: api/capabilities.md
       - Doctor: api/doctor.md
       - Runtime config: api/runtime_config.md
+      - Wonder: api/wonder.md
+      - Scene: api/scene.md
       - Shape:
           - Backend: api/shape_backend.md
           - Providers: api/shape_providers.md

@@ -129,6 +129,7 @@ def _empty_program() -> dict:
         "mask_programs": [],
         "trim_sheets": [],
         "palettes": [],
+        "style_packs": [],
         "reference_sets": [],
         "reconstruct_policies": [],
         "adapt_policies": [],
