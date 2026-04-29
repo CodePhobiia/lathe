@@ -91,10 +91,51 @@ python -m pytest tests/unit/test_asset_quality_baseline_report_shape.py -v
 # 5 passed
 ```
 
-When this preflight is filed, both commands above succeeded.
+When this preflight was filed, both commands above succeeded.
+
+---
+
+## Phase 1 implementation closure (2026-04-30)
+
+Phase 1 has shipped per the scope above. Deliverables:
+
+| Path | Purpose |
+|---|---|
+| `lathe/asset_quality/diagnostics.py` | `evaluate_quality_diagnostics(asset, runtime)` — 5 deterministic proxy metrics + warning/recommendation emission. |
+| `lathe/core/stages/validate.py` | Registers `quality_diagnostics` `FunctionValidator` in `_PIPELINE` after `visual_quality` (`weight=0.0`); adds additive top-level `quality_diagnostics` key to the validate-stage report. |
+| `tests/unit/test_asset_quality_diagnostics.py` | 13 unit tests covering payload shape, version, numeric metrics, each of the 5 warnings, missing/partial runtime data, paired warnings/recommendations. |
+| `docs/asset-quality/quality-diagnostics-v1.md` | Per-metric reference (formulas, baselines, thresholds, limitations, forward references to Phases 3/4/7/10). |
+
+Key behaviour:
+
+- The hero baselines now correctly surface the **fake high/low** failure
+  mode (`highlow_fake_detail_penalty = 0.55` for both `industrial_crate`
+  and `mechanical_door`, since `high_triangle_count == low_triangle_count`
+  in the existing pipeline).
+- All other Phase 1 metrics stay quiet for the v0.2.0rc1 hero baselines
+  by design — Phase 1 was tuned to flag *clearly* prototype-quality
+  output and not over-warn on mid-tier hero passes.
+- `quality_diagnostics` is registered with `weight=0.0` and returns no
+  blocking `diagnostics` entries, so the aggregate certification score
+  is unchanged. Verified via the existing
+  `tests/unit/test_asset_quality_baseline_report_shape.py` contract suite
+  (still passing).
+
+Forward references for later phases:
+
+- Phase 3 (family grammar) replaces the `primary_secondary_tertiary_balance`
+  proxy with explicit construction-zone coverage.
+- Phase 4 (semantic construction graph) replaces the
+  `attachment_seating_quality` proxy with real edge-type counts over
+  `socket`, `bracket`, `inset_into`, `mounted_on`.
+- Phase 7 (high-poly producer) gives `highlow_fake_detail_penalty` a
+  real path to zero — until then the metric correctly surfaces that the
+  current pipeline does not produce a separate high-poly artifact.
+- Phase 10 (vision critique) consumes the `warnings` strings as
+  semantic-patch hints.
 
 ---
 
 ## Next step
 
-Begin Phase 1 implementation per `docs/asset-quality/improvement-tasklist.md` Section 1.1–1.10.
+Begin Phase 2 (Design Brief IR defaults) per `docs/asset-quality/improvement-tasklist.md` Section 2.

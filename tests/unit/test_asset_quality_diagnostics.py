@@ -1,0 +1,249 @@
+"""Phase 1 tests for ``lathe.asset_quality.diagnostics``.
+
+Covers per task #1.10 of ``docs/asset-quality/improvement-tasklist.md``:
+
+- payload shape / version field
+- metrics are numeric floats
+- each of the five warnings fires for a clearly-bad fixture
+- no warnings fire for a clearly-good fixture
+- missing optional runtime data does not crash
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from lathe.asset_quality.diagnostics import (
+    VERSION,
+    evaluate_quality_diagnostics,
+)
+
+
+def _runtime(
+    *,
+    visual_metrics: dict[str, Any] | None = None,
+    shape_assessment: dict[str, Any] | None = None,
+    highlow: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build a synthetic ``(asset, runtime)`` pair with sensible defaults.
+
+    Each kwarg overrides one nested section. Defaults model an asset that
+    is *clean* (clears all five warnings) so individual tests can dial a
+    single section into a bad state to exercise one warning at a time.
+    """
+    asset = {
+        "name": "diagnostics_fixture",
+        "intent": {"parts": ["body", "lid", "handle_l", "handle_r", "foot_l", "foot_r"]},
+        "build": {"shape": {"mode": "generate"}},
+    }
+    default_visual = {
+        "geometry_tiny_face_penalty": 0.10,
+        "geometry_stair_step_penalty": 0.10,
+        "boolean_scar_penalty": 0.10,
+        "texture_entropy": 0.70,
+        "roughness_variation": 0.60,
+        "surface_chroma_variation": 0.80,
+        "attachment_integration_quality": 0.95,
+        "feature_coherence": 0.90,
+        "silhouette_complexity": 0.85,
+        "detail_density": 0.90,
+    }
+    if visual_metrics:
+        default_visual.update(visual_metrics)
+
+    default_shape_assessment = {
+        "feature_count": 80,
+        "attachment_region_count": 5,
+    }
+    if shape_assessment:
+        default_shape_assessment.update(shape_assessment)
+
+    default_highlow = {
+        "high_mesh_uri": "stages/shape/high.glb",
+        "low_mesh_uri": "stages/topology/low.glb",
+        "high_triangle_count": 5000,
+        "low_triangle_count": 1000,
+    }
+    if highlow is not None:
+        default_highlow = {**default_highlow, **highlow} if highlow else {}
+
+    runtime = {
+        "shape": {
+            "bundle": {
+                "shape_assessment": default_shape_assessment,
+            }
+        },
+        "visual_quality": {"metrics": default_visual},
+        "surface": {
+            "bundle": {
+                "highlow_relation": default_highlow,
+            }
+        },
+    }
+    return asset, runtime
+
+
+def test_payload_shape_and_version() -> None:
+    asset, runtime = _runtime()
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["version"] == VERSION
+    assert VERSION == "asset_quality_diagnostics_v1"
+    assert set(report.keys()) == {"version", "metrics", "warnings", "recommendations"}
+    assert isinstance(report["metrics"], dict)
+    assert isinstance(report["warnings"], list)
+    assert isinstance(report["recommendations"], list)
+    assert "diagnostics" not in report
+
+
+def test_metrics_are_numeric_floats() -> None:
+    asset, runtime = _runtime()
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    expected = {
+        "random_triangulation_penalty",
+        "debug_material_preview_penalty",
+        "highlow_fake_detail_penalty",
+        "attachment_seating_quality",
+        "primary_secondary_tertiary_balance",
+    }
+    assert set(report["metrics"].keys()) == expected
+    for key, value in report["metrics"].items():
+        assert isinstance(value, int | float), f"{key!r} should be numeric"
+        assert 0.0 <= float(value) <= 1.0, f"{key!r} out of [0,1]: {value}"
+
+
+def test_clean_baseline_emits_no_warnings() -> None:
+    asset, runtime = _runtime()
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["warnings"] == []
+    assert report["recommendations"] == []
+
+
+def test_noisy_triangulation_warning_fires() -> None:
+    asset, runtime = _runtime(
+        visual_metrics={
+            "geometry_tiny_face_penalty": 0.65,
+            "geometry_stair_step_penalty": 0.50,
+            "boolean_scar_penalty": 0.45,
+        }
+    )
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["random_triangulation_penalty"] > 0.30
+    assert any("noisy diagonal topology" in w for w in report["warnings"])
+    assert any("panel lines" in r or "topology" in r for r in report["recommendations"])
+
+
+def test_debug_material_preview_warning_fires() -> None:
+    asset, runtime = _runtime(
+        visual_metrics={
+            "texture_entropy": 0.10,
+            "roughness_variation": 0.05,
+            "surface_chroma_variation": 0.10,
+        }
+    )
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["debug_material_preview_penalty"] > 0.50
+    assert any("material-ID" in w or "debug" in w for w in report["warnings"])
+    assert any("PBR" in r for r in report["recommendations"])
+
+
+def test_fake_highlow_warning_fires_when_triangle_counts_match() -> None:
+    asset, runtime = _runtime(
+        highlow={
+            "high_mesh_uri": "stages/shape/high.glb",
+            "low_mesh_uri": "stages/topology/low.glb",
+            "high_triangle_count": 1376,
+            "low_triangle_count": 1376,
+        }
+    )
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["highlow_fake_detail_penalty"] > 0.40
+    assert any("high-poly" in w or "high/low" in w for w in report["warnings"])
+    assert any("high-poly source" in r for r in report["recommendations"])
+
+
+def test_fake_highlow_warning_fires_when_uris_missing() -> None:
+    asset, runtime = _runtime(highlow={})
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["highlow_fake_detail_penalty"] >= 0.99
+    assert any("high-poly" in w or "high/low" in w for w in report["warnings"])
+
+
+def test_weak_attachment_seating_warning_fires() -> None:
+    asset, runtime = _runtime(
+        shape_assessment={"attachment_region_count": 0, "feature_count": 80},
+        visual_metrics={
+            "attachment_integration_quality": 0.20,
+            "feature_coherence": 0.30,
+        },
+    )
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["attachment_seating_quality"] < 0.50
+    assert any("stuck-on" in w or "under-integrated" in w for w in report["warnings"])
+    assert any("socket" in r or "bracket" in r for r in report["recommendations"])
+
+
+def test_weak_hierarchy_balance_warning_fires() -> None:
+    asset, runtime = _runtime(
+        shape_assessment={"feature_count": 6, "attachment_region_count": 5},
+        visual_metrics={
+            "silhouette_complexity": 0.30,
+            "detail_density": 0.30,
+        },
+    )
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["primary_secondary_tertiary_balance"] < 0.50
+    assert any(
+        "medium-scale construction hierarchy" in w or "hierarchy" in w
+        for w in report["warnings"]
+    )
+    assert any("medium-scale" in r or "frames" in r for r in report["recommendations"])
+
+
+def test_missing_runtime_data_does_not_crash() -> None:
+    asset = {"name": "minimal", "intent": {}, "build": {}}
+    runtime: dict[str, Any] = {}
+
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["version"] == VERSION
+    for value in report["metrics"].values():
+        assert isinstance(value, int | float)
+        assert 0.0 <= float(value) <= 1.0
+
+
+def test_partial_runtime_data_does_not_crash() -> None:
+    asset = {"name": "partial", "intent": {"parts": ["body"]}, "build": {}}
+    runtime = {
+        "shape": {"bundle": {}},
+        "visual_quality": {"metrics": {"detail_density": 0.5}},
+        "surface": {"bundle": {}},
+    }
+
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["version"] == VERSION
+    assert isinstance(report["warnings"], list)
+    assert isinstance(report["recommendations"], list)
+
+
+def test_warnings_and_recommendations_are_paired() -> None:
+    asset, runtime = _runtime(highlow={})
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert len(report["warnings"]) == len(report["recommendations"])
+
+
+def test_no_diagnostics_field_so_validator_pipeline_treats_as_passing() -> None:
+    asset, runtime = _runtime(highlow={})
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert "diagnostics" not in report
