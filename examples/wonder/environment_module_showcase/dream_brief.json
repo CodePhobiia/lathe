@@ -1,0 +1,105 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "environment_module_showcase",
+  "title": "Environment Module Showcase",
+  "one_sentence": "A modular room shell assembled from reusable Wonder environment modules.",
+  "source_prompt": "A modular room shell assembled from floor tiles, wall segments, arches, platforms, stairs, background silhouettes, and terrain chunks.",
+  "genre": [
+    "tooling",
+    "environment kit"
+  ],
+  "mood": [
+    "readable",
+    "modular",
+    "place like"
+  ],
+  "scale": "single_room",
+  "intent": {
+    "setting": "A compact room shell that demonstrates modular environment composition.",
+    "emotional_goal": "The first view should feel like a buildable place rather than a prop collection.",
+    "primary_interaction": "Inspect the room shell and terrain edge to choose expansion directions.",
+    "spatial_logic": "A boundary shell contains floor, wall, ceiling, arch, platform, stair, background, and terrain modules on a snap grid."
+  },
+  "style": {
+    "palette": [
+      "warm stone",
+      "weathered green",
+      "soft emissive"
+    ],
+    "materials": [
+      "painted stone",
+      "natural mineral",
+      "soft emissive"
+    ],
+    "lighting": "Soft debug lighting keeps snap-grid modules readable.",
+    "form_language": [
+      "room shell",
+      "snap grid",
+      "clear silhouettes"
+    ],
+    "avoid_styles": [
+      "unsupported mesh claims",
+      "random prop scatter"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "room_shell",
+      "description": "A scene boundary shell that preserves continuity for expansion.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "floor_wall_ceiling_modules",
+      "description": "Floor, wall, and ceiling modules aligned to the same snap grid.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "navigation_modules",
+      "description": "Arch, platform, and stair modules that describe traversal.",
+      "role": "navigation",
+      "priority": "must"
+    },
+    {
+      "id": "terrain_transition",
+      "description": "Terrain and background modules that hint at exterior expansion.",
+      "role": "environment_structure",
+      "priority": "should"
+    }
+  ],
+  "avoid": [
+    "random prop pile",
+    "unsupported runtime import claims"
+  ],
+  "constraints": {
+    "platform": "generic",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 150000,
+      "texture_resolution": 1024,
+      "mobile_friendly": true
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "Show the modular room shell and terrain edge.",
+      "framing": "cinematic_wide"
+    }
+  ],
+  "curiosity_goals": [
+    "Where can the room shell expand next?",
+    "What lies beyond the terrain transition?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "lathe_source",
+    "scene_package"
+  ],
+  "authoring_notes": "Phase 26 environment module fixture. Modules are planning vocabulary; mesh runtime proof is separate."
+}

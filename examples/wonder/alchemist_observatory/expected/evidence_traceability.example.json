@@ -1,0 +1,33 @@
+{
+  "schema_version": "lathe.wonder_evidence_trace.v1",
+  "ok": true,
+  "status": "passed",
+  "tasks_path": "wonder-tasks.md",
+  "evidence_path": "docs/wonder-readiness/evidence.md",
+  "summary": {
+    "checked_tasks": 0,
+    "covered_checked_tasks": 0,
+    "missing_evidence": 0,
+    "evidence_items": 1,
+    "used_evidence_items": 1,
+    "diagnostics": 0
+  },
+  "checked_tasks": [],
+  "evidence_items": [
+    {
+      "evidence_id": "ev_alchemist_observatory_golden_fixture",
+      "kind": "example_artifact",
+      "text": "alchemist_observatory is a committed Wonder golden fixture with proxy-only evidence.",
+      "line": 1,
+      "status": "passed",
+      "paths": [
+        "examples/wonder/alchemist_observatory/dream_brief.json",
+        "examples/wonder/alchemist_observatory/scene_graph.json",
+        "examples/wonder/alchemist_observatory/expected/preview_evidence.example.json"
+      ]
+    }
+  ],
+  "coverage": [],
+  "missing_evidence": [],
+  "diagnostics": []
+}

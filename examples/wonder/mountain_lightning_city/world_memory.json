@@ -1,0 +1,17 @@
+{
+  "schema_version": "lathe.world_memory.v1",
+  "memory_id": "worldmem_mountain_lightning_city",
+  "scene_id": "mountain_lightning_city",
+  "scene_version": 1,
+  "current_branch": "main",
+  "summary": "Continuity memory for the mountain_lightning_city Wonder golden fixture.",
+  "branches": [
+    {
+      "branch_id": "main",
+      "name": "Main continuity",
+      "status": "active",
+      "event_ids": []
+    }
+  ],
+  "events": []
+}

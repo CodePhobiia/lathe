@@ -1,0 +1,41 @@
+name: Wonder Benchmarks
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  wonder-benchmarks:
+    name: deterministic Wonder benchmark lane
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run Wonder benchmark lane
+        run: python scripts/ci_wonder_benchmarks.py
+
+      - name: Upload Wonder benchmark reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonder-ci-benchmark-reports
+          path: |
+            .tmp_tests/wonder_ci_benchmarks/report.json
+            .tmp_tests/wonder_ci_benchmarks/scene_benchmark_report.json
+          if-no-files-found: ignore

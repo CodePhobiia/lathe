@@ -1,0 +1,925 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-plan-v1.json",
+  "title": "Lathe Wonder Scene Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "scene_id",
+    "mode",
+    "metadata",
+    "asset_tasks",
+    "assembly_tasks",
+    "render_tasks",
+    "export_tasks",
+    "warnings",
+    "diagnostics",
+    "cache_keys"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_plan.v1"
+    },
+    "plan_id": {
+      "$ref": "#/$defs/plan_id"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "source_brief_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "source_prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "mode": {
+      "$ref": "#/$defs/mode"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planner",
+        "planner_version",
+        "budgets",
+        "counts",
+        "estimated_complexity"
+      ],
+      "properties": {
+        "planner": {
+          "const": "lathe.scene.planner"
+        },
+        "planner_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "budgets": {
+          "$ref": "#/$defs/budgets"
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "objects",
+            "asset_tasks",
+            "assembly_tasks",
+            "render_tasks",
+            "export_tasks",
+            "materials",
+            "lights",
+            "cameras"
+          ],
+          "properties": {
+            "objects": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "asset_tasks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "assembly_tasks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "render_tasks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "export_tasks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "materials": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "lights": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cameras": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "estimated_complexity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "build_options": {
+          "$ref": "#/$defs/build_options"
+        }
+      }
+    },
+    "asset_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset_task"
+      }
+    },
+    "assembly_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/assembly_task"
+      }
+    },
+    "render_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/render_task"
+      }
+    },
+    "export_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/export_task"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "cache_keys": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/cache_key"
+      }
+    },
+    "branch_reuse": {
+      "$ref": "#/$defs/branch_reuse"
+    }
+  },
+  "$defs": {
+    "mode": {
+      "enum": [
+        "preview",
+        "final"
+      ]
+    },
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^plan_[a-z0-9_]{3,96}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^(asset|assembly|render|export)_task_[a-z0-9_]{3,120}$"
+    },
+    "optional_task_id": {
+      "oneOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/task_id"
+        }
+      ]
+    },
+    "cache_key_text": {
+      "type": "string",
+      "pattern": "^scene_asset\\.v1:[a-z0-9_:]+$"
+    },
+    "build_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "executor",
+        "mode",
+        "runtime_config",
+        "deterministic",
+        "allow_fallback",
+        "strict",
+        "diagnostic_policy",
+        "runtime",
+        "effective_runtime",
+        "fallbacks"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.scene_build_options.v1"
+        },
+        "executor": {
+          "const": "lathe.scene.executor.offline_proxy_v1"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "runtime_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provided",
+            "path"
+          ],
+          "properties": {
+            "provided": {
+              "type": "boolean"
+            },
+            "path": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 500
+            }
+          }
+        },
+        "deterministic": {
+          "type": "boolean"
+        },
+        "allow_fallback": {
+          "type": "boolean"
+        },
+        "strict": {
+          "type": "boolean"
+        },
+        "diagnostic_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scene_validation",
+            "plan_diagnostics",
+            "fallback_diagnostics"
+          ],
+          "properties": {
+            "scene_validation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "plan_diagnostics": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fallback_diagnostics": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider_calls",
+            "asset_build",
+            "asset_materialization",
+            "renderer",
+            "exporter"
+          ],
+          "properties": {
+            "provider_calls": {
+              "const": "not_executed"
+            },
+            "asset_build": {
+              "enum": [
+                "deterministic_proxy_manifest",
+                "lathe.asset_build_pipeline.v1"
+              ]
+            },
+            "asset_materialization": {
+              "enum": [
+                "not_executed",
+                "lathe.scene.materialize.v1"
+              ]
+            },
+            "renderer": {
+              "const": "lathe.scene.proxy_renderer.v1"
+            },
+            "exporter": {
+              "const": "lathe.scene.proxy_glb_exporter.v1"
+            }
+          }
+        },
+        "effective_runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shape_provider",
+            "shape_strict",
+            "shape_allow_fallback"
+          ],
+          "properties": {
+            "shape_provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "shape_strict": {
+              "type": "boolean"
+            },
+            "shape_allow_fallback": {
+              "type": "boolean"
+            }
+          }
+        },
+        "fallbacks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deterministic_proxy_assets",
+            "deterministic_proxy_renderer",
+            "deterministic_proxy_glb_exporter",
+            "provider_fallbacks_executed"
+          ],
+          "properties": {
+            "deterministic_proxy_assets": {
+              "const": true
+            },
+            "deterministic_proxy_renderer": {
+              "const": true
+            },
+            "deterministic_proxy_glb_exporter": {
+              "const": true
+            },
+            "provider_fallbacks_executed": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "json_value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "string_array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_objects",
+        "max_complexity",
+        "render_resolution",
+        "texture_resolution",
+        "quality"
+      ],
+      "properties": {
+        "max_objects": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_complexity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "render_resolution": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "texture_resolution": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "quality": {
+          "$ref": "#/$defs/mode"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "ref",
+        "generated"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "source_asset",
+            "lathe_asset",
+            "source_family",
+            "source_kit",
+            "generated_fallback"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generated": {
+          "type": "boolean"
+        },
+        "source_asset": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "lathe_asset": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "source_family": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "source_kit": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "generated_intent": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        }
+      }
+    },
+    "asset_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "task_type",
+        "mode",
+        "cache_key",
+        "source",
+        "object_ids",
+        "variant",
+        "asset_overrides",
+        "override_fingerprint",
+        "estimated_complexity",
+        "requires_unique_build",
+        "uniqueness_reasons"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "task_type": {
+          "const": "asset_build"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "cache_key": {
+          "$ref": "#/$defs/cache_key_text"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "object_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        },
+        "variant": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asset_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "override_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        },
+        "estimated_complexity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requires_unique_build": {
+          "type": "boolean"
+        },
+        "uniqueness_reasons": {
+          "$ref": "#/$defs/string_array"
+        }
+      }
+    },
+    "assembly_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "task_type",
+        "mode",
+        "object_id",
+        "asset_task_id",
+        "cache_key",
+        "region",
+        "transform",
+        "asset_overrides",
+        "instance_overrides",
+        "depends_on"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "task_type": {
+          "const": "scene_assembly"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "asset_task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "cache_key": {
+          "$ref": "#/$defs/cache_key_text"
+        },
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transform": {
+          "$ref": "#/$defs/json_value"
+        },
+        "asset_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "instance_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/task_id"
+          }
+        }
+      }
+    },
+    "render_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "task_type",
+        "mode",
+        "camera_id",
+        "target",
+        "framing",
+        "passes",
+        "resolution",
+        "depends_on"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "task_type": {
+          "const": "scene_render"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "camera_id": {
+          "type": "string",
+          "pattern": "^camera_[a-z0-9_]{3,80}$"
+        },
+        "target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "framing": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "passes": {
+          "$ref": "#/$defs/string_array"
+        },
+        "resolution": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/task_id"
+          }
+        }
+      }
+    },
+    "export_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "task_type",
+        "mode",
+        "target",
+        "format",
+        "path",
+        "metadata",
+        "source_index",
+        "depends_on"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "task_type": {
+          "const": "scene_export"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/task_id"
+          }
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "name",
+        "severity",
+        "contract",
+        "phase",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^SP[0-9]{4}$"
+        },
+        "name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "severity": {
+          "enum": [
+            "warning",
+            "error"
+          ]
+        },
+        "contract": {
+          "const": "scene_plan"
+        },
+        "phase": {
+          "const": "scene_planning"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repair_hint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        }
+      }
+    },
+    "cache_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cache_key",
+        "asset_task_id",
+        "object_ids",
+        "source",
+        "shareable"
+      ],
+      "properties": {
+        "cache_key": {
+          "$ref": "#/$defs/cache_key_text"
+        },
+        "asset_task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "object_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "shareable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "branch_reuse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "base_plan_id",
+        "branch_plan_id",
+        "mode",
+        "summary",
+        "reusable_asset_tasks",
+        "new_asset_tasks",
+        "skipped_asset_tasks",
+        "base_only_asset_tasks",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.scene_plan_branch_reuse.v1"
+        },
+        "base_plan_id": {
+          "$ref": "#/$defs/plan_id"
+        },
+        "branch_plan_id": {
+          "$ref": "#/$defs/plan_id"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "base_asset_tasks",
+            "branch_asset_tasks",
+            "reusable_asset_tasks",
+            "new_asset_tasks",
+            "skipped_asset_tasks",
+            "base_only_asset_tasks",
+            "reuse_ratio"
+          ],
+          "properties": {
+            "base_asset_tasks": { "type": "integer", "minimum": 0 },
+            "branch_asset_tasks": { "type": "integer", "minimum": 0 },
+            "reusable_asset_tasks": { "type": "integer", "minimum": 0 },
+            "new_asset_tasks": { "type": "integer", "minimum": 0 },
+            "skipped_asset_tasks": { "type": "integer", "minimum": 0 },
+            "base_only_asset_tasks": { "type": "integer", "minimum": 0 },
+            "reuse_ratio": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "reusable_asset_tasks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/branch_reuse_entry" }
+        },
+        "new_asset_tasks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/branch_reuse_entry" }
+        },
+        "skipped_asset_tasks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/branch_reuse_entry" }
+        },
+        "base_only_asset_tasks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/branch_reuse_entry" }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/diagnostic" }
+        }
+      }
+    },
+    "branch_reuse_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "cache_key",
+        "base_asset_task_id",
+        "branch_asset_task_id",
+        "base_object_ids",
+        "branch_object_ids",
+        "source"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "reusable_asset_build",
+            "new_asset_build",
+            "non_shareable",
+            "base_not_shareable",
+            "base_only_asset_build"
+          ]
+        },
+        "cache_key": {
+          "$ref": "#/$defs/cache_key_text"
+        },
+        "base_asset_task_id": {
+          "$ref": "#/$defs/optional_task_id"
+        },
+        "branch_asset_task_id": {
+          "$ref": "#/$defs/optional_task_id"
+        },
+        "base_object_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/object_id" }
+        },
+        "branch_object_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/object_id" }
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        }
+      }
+    }
+  }
+}

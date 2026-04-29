@@ -1,0 +1,40 @@
+name: Wonder Fast
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  wonder-fast:
+    name: deterministic Wonder fast lane
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run Wonder fast lane
+        run: python scripts/ci_wonder_fast.py
+
+      - name: Upload Wonder fast report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonder-ci-fast-report
+          path: .tmp_tests/wonder_ci_fast/report.json
+          if-no-files-found: ignore

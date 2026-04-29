@@ -1,0 +1,88 @@
+{
+  "built_export_targets": [
+    [
+      "glb",
+      "glb",
+      "built"
+    ],
+    [
+      "object_index",
+      "json",
+      "built"
+    ]
+  ],
+  "built_render_pairs": [
+    [
+      "camera_reveal",
+      "beauty",
+      "built"
+    ],
+    [
+      "camera_reveal",
+      "object_id",
+      "built"
+    ],
+    [
+      "camera_warm_lens_detail",
+      "beauty",
+      "built"
+    ],
+    [
+      "camera_warm_lens_detail",
+      "object_id",
+      "built"
+    ],
+    [
+      "camera_topdown_debug",
+      "beauty",
+      "built"
+    ],
+    [
+      "camera_topdown_debug",
+      "object_id",
+      "built"
+    ],
+    [
+      "camera_object_contact_sheet",
+      "beauty",
+      "built"
+    ]
+  ],
+  "diagnostic_summary": {
+    "diagnostics": 0,
+    "errors": 0,
+    "validators": 9,
+    "warnings": 0
+  },
+  "executor": "lathe.scene.executor.offline_proxy_v1",
+  "mode": "preview",
+  "object_ids": [
+    "obj_archive_door_001",
+    "obj_astrolabe_table_001",
+    "obj_candle_cluster_001",
+    "obj_rib_arches_001"
+  ],
+  "offline": true,
+  "planned_export_task_ids": [
+    "export_task_glb_glb_c312a74f24",
+    "export_task_scene_graph_json_cf2b39fbd3",
+    "export_task_scene_package_lathepkg_ea577b2b30"
+  ],
+  "planned_render_task_ids": [
+    "render_task_camera_reveal_3b7c5655ea",
+    "render_task_camera_warm_lens_detail_14ddf14a40",
+    "render_task_camera_topdown_debug_5f9f6a13a1"
+  ],
+  "quality_score": 100,
+  "quality_status": "passed",
+  "runtime": {
+    "asset_build": "deterministic_proxy_manifest",
+    "asset_materialization": "not_executed",
+    "exporter": "lathe.scene.proxy_glb_exporter.v1",
+    "provider_calls": "not_executed",
+    "renderer": "lathe.scene.proxy_renderer.v1"
+  },
+  "scene_id": "alchemist_observatory",
+  "schema_version": "lathe.scene_manifest.v1",
+  "status": "offline_preview_package"
+}

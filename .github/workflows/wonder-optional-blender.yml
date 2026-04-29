@@ -1,0 +1,37 @@
+name: Wonder Optional Blender
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wonder-optional-blender:
+    name: optional Blender lane
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Lathe
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run optional Blender lane
+        run: python scripts/ci_wonder_optional_blender.py
+
+      - name: Upload optional Blender report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wonder-ci-optional-blender-report
+          path: .tmp_tests/wonder_ci_optional_blender/report.json
+          if-no-files-found: ignore

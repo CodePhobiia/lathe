@@ -1,0 +1,32 @@
+{
+  "asset_task_ids": [
+    "asset_task_sealed_archive_door_75255175465a",
+    "asset_task_astrolabe_table_8787fc2f5480",
+    "asset_task_candle_cluster_f7382aad3890",
+    "asset_task_rib_arch_ring_e6d6bd7b75e8"
+  ],
+  "counts": {
+    "assembly_tasks": 4,
+    "asset_tasks": 4,
+    "cameras": 2,
+    "export_tasks": 3,
+    "lights": 2,
+    "materials": 5,
+    "objects": 4,
+    "render_tasks": 3
+  },
+  "export_task_ids": [
+    "export_task_glb_glb_c312a74f24",
+    "export_task_scene_graph_json_cf2b39fbd3",
+    "export_task_scene_package_lathepkg_ea577b2b30"
+  ],
+  "plan_id": "plan_alchemist_observatory_26d46dcaeede",
+  "render_task_ids": [
+    "render_task_camera_reveal_3b7c5655ea",
+    "render_task_camera_warm_lens_detail_14ddf14a40",
+    "render_task_camera_topdown_debug_5f9f6a13a1"
+  ],
+  "scene_id": "alchemist_observatory",
+  "schema_version": "lathe.scene_plan.v1",
+  "source_brief_id": "alchemist_observatory"
+}

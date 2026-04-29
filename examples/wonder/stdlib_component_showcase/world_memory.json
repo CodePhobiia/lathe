@@ -1,0 +1,17 @@
+{
+  "schema_version": "lathe.world_memory.v1",
+  "memory_id": "worldmem_stdlib_component_showcase",
+  "scene_id": "stdlib_component_showcase",
+  "scene_version": 1,
+  "current_branch": "main",
+  "summary": "Continuity memory for the stdlib_component_showcase Wonder golden fixture.",
+  "branches": [
+    {
+      "branch_id": "main",
+      "name": "Main continuity",
+      "status": "active",
+      "event_ids": []
+    }
+  ],
+  "events": []
+}

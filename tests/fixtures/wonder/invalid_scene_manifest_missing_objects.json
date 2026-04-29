@@ -1,0 +1,12 @@
+{
+  "schema_version": "lathe.scene_manifest.v1",
+  "scene_id": "alchemist_observatory",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "offline_preview_package",
+  "offline": true,
+  "planned_renders": [],
+  "planned_exports": [],
+  "built_renders": [],
+  "built_exports": []
+}

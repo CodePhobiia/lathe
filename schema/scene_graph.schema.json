@@ -1,0 +1,890 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-graph-v1.json",
+  "title": "Lathe Wonder Scene Graph v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "version",
+    "prompt",
+    "style_bible",
+    "regions",
+    "objects",
+    "relationships",
+    "materials",
+    "lights",
+    "cameras",
+    "curiosity_anchors",
+    "hidden_state",
+    "exports",
+    "build_artifacts",
+    "memory_events"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_graph.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "brief_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "style_bible": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mood",
+        "palette",
+        "materials",
+        "forms",
+        "lighting"
+      ],
+      "properties": {
+        "mood": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "palette": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "materials": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "forms": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "lighting": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "avoid": {
+          "$ref": "#/$defs/string_tags"
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "room_size": {
+          "$ref": "#/$defs/vector3"
+        },
+        "main_path": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "from",
+            "to",
+            "width"
+          ],
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/scene_ref"
+            },
+            "to": {
+              "$ref": "#/$defs/scene_ref"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "focal_point": {
+          "$ref": "#/$defs/scene_ref"
+        },
+        "density": {
+          "enum": [
+            "sparse",
+            "medium",
+            "dense"
+          ]
+        },
+        "avoid_intersections": {
+          "type": "boolean"
+        },
+        "modular_walls": {
+          "$ref": "#/$defs/modular_wall_constraints"
+        }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "region_id",
+          "name",
+          "type",
+          "purpose",
+          "mood",
+          "bounds"
+        ],
+        "properties": {
+          "region_id": {
+            "$ref": "#/$defs/region_id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "enum": [
+              "interior",
+              "exterior",
+              "threshold",
+              "background",
+              "debug"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mood": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bounds": {
+            "$ref": "#/$defs/bounds"
+          },
+          "semantic_tags": {
+            "$ref": "#/$defs/string_tags"
+          }
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "object_id",
+          "name",
+          "role",
+          "region",
+          "lathe_asset",
+          "transform",
+          "semantic_tags",
+          "state"
+        ],
+        "properties": {
+          "object_id": {
+            "$ref": "#/$defs/object_id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "$ref": "#/$defs/scene_role"
+          },
+          "region": {
+            "$ref": "#/$defs/region_id"
+          },
+          "lathe_asset": {
+            "$ref": "#/$defs/snake_id"
+          },
+          "source_family": {
+            "$ref": "#/$defs/snake_id"
+          },
+          "source_kit": {
+            "$ref": "#/$defs/snake_id"
+          },
+          "variant": {
+            "$ref": "#/$defs/snake_id"
+          },
+          "transform": {
+            "$ref": "#/$defs/transform"
+          },
+          "material_bindings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "slot",
+                "material"
+              ],
+              "properties": {
+                "slot": {
+                  "$ref": "#/$defs/snake_id"
+                },
+                "material": {
+                  "$ref": "#/$defs/material_id"
+                }
+              }
+            }
+          },
+          "semantic_tags": {
+            "$ref": "#/$defs/string_tags"
+          },
+          "state": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/state_value"
+            }
+          },
+          "surface_overrides": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/state_value"
+            }
+          },
+          "affordances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/affordance"
+            }
+          },
+          "provenance": {
+            "$ref": "#/$defs/provenance"
+          }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "relationship_id",
+          "from",
+          "to",
+          "type"
+        ],
+        "properties": {
+          "relationship_id": {
+            "$ref": "#/$defs/relationship_id"
+          },
+          "from": {
+            "$ref": "#/$defs/scene_ref"
+          },
+          "to": {
+            "$ref": "#/$defs/scene_ref"
+          },
+          "type": {
+            "enum": [
+              "adjacent_to",
+              "attached_to",
+              "blocks_path",
+              "contains",
+              "depends_on",
+              "framed_by",
+              "lit_by",
+              "opens_to",
+              "points_toward",
+              "reveals",
+              "supports",
+              "custom"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "material_id",
+          "name",
+          "role"
+        ],
+        "properties": {
+          "material_id": {
+            "$ref": "#/$defs/material_id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "$ref": "#/$defs/snake_id"
+          },
+          "palette_refs": {
+            "$ref": "#/$defs/string_tags"
+          },
+          "pbr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "basecolor": {
+                "type": "string"
+              },
+              "metallic": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "roughness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "emissive": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "lights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "light_id",
+          "type",
+          "color",
+          "intensity",
+          "purpose"
+        ],
+        "properties": {
+          "light_id": {
+            "$ref": "#/$defs/light_id"
+          },
+          "type": {
+            "enum": [
+              "directional",
+              "point",
+              "area",
+              "spot",
+              "emissive_practical",
+              "moonbeam",
+              "candle_cluster"
+            ]
+          },
+          "target": {
+            "$ref": "#/$defs/scene_ref"
+          },
+          "color": {
+            "type": "string",
+            "minLength": 1
+          },
+          "intensity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "cameras": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "camera_id",
+          "target",
+          "framing",
+          "purpose"
+        ],
+        "properties": {
+          "camera_id": {
+            "$ref": "#/$defs/camera_id"
+          },
+          "target": {
+            "$ref": "#/$defs/scene_ref"
+          },
+          "framing": {
+            "$ref": "#/$defs/camera_framing"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "transform": {
+            "$ref": "#/$defs/transform"
+          },
+          "fov_degrees": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 180
+          }
+        }
+      }
+    },
+    "curiosity_anchors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "anchor_id",
+          "visible_clue",
+          "hidden_fact",
+          "attached_to",
+          "suggested_user_actions",
+          "expansion_options"
+        ],
+        "properties": {
+          "anchor_id": {
+            "$ref": "#/$defs/curiosity_id"
+          },
+          "visible_clue": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hidden_fact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "attached_to": {
+            "$ref": "#/$defs/scene_ref"
+          },
+          "suggested_user_actions": {
+            "$ref": "#/$defs/string_tags"
+          },
+          "expansion_options": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "label",
+                "target_scope"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/snake_id"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "target_scope": {
+                  "$ref": "#/$defs/scene_ref"
+                },
+                "required_assets": {
+                  "$ref": "#/$defs/string_tags"
+                },
+                "continuity_constraints": {
+                  "$ref": "#/$defs/string_tags"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hidden_state": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "hidden_id",
+          "attached_to",
+          "fact",
+          "reveal_condition",
+          "visible"
+        ],
+        "properties": {
+          "hidden_id": {
+            "$ref": "#/$defs/hidden_id"
+          },
+          "attached_to": {
+            "$ref": "#/$defs/scene_ref"
+          },
+          "fact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reveal_condition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "format",
+          "path"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/$defs/export_target"
+          },
+          "format": {
+            "$ref": "#/$defs/snake_id"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/state_value"
+            }
+          }
+        }
+      }
+    },
+    "build_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "path",
+          "status"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "scene_manifest",
+              "scene_graph",
+              "lathe_source",
+              "asset_build",
+              "render",
+              "report",
+              "export"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "built",
+              "validated",
+              "failed"
+            ]
+          },
+          "produced_by": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "memory_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "type",
+          "text",
+          "source"
+        ],
+        "properties": {
+          "event_id": {
+            "$ref": "#/$defs/memory_id"
+          },
+          "type": {
+            "enum": [
+              "fact",
+              "decision",
+              "hidden_state",
+              "patch",
+              "validation",
+              "render"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "affected_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/scene_ref"
+            }
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "region_id": {
+      "type": "string",
+      "pattern": "^region_[a-z0-9_]{3,80}$"
+    },
+    "relationship_id": {
+      "type": "string",
+      "pattern": "^rel_[a-z0-9_]{3,80}$"
+    },
+    "material_id": {
+      "type": "string",
+      "pattern": "^mat_[a-z0-9_]{3,80}$"
+    },
+    "light_id": {
+      "type": "string",
+      "pattern": "^light_[a-z0-9_]{3,80}$"
+    },
+    "camera_id": {
+      "type": "string",
+      "pattern": "^camera_[a-z0-9_]{3,80}$"
+    },
+    "curiosity_id": {
+      "type": "string",
+      "pattern": "^curiosity_[a-z0-9_]{3,80}$"
+    },
+    "hidden_id": {
+      "type": "string",
+      "pattern": "^hidden_[a-z0-9_]{3,80}$"
+    },
+    "memory_id": {
+      "type": "string",
+      "pattern": "^mem_[a-z0-9_]{3,80}$"
+    },
+    "scene_ref": {
+      "type": "string",
+      "pattern": "^(obj|region|camera|light|curiosity|hidden)_[a-z0-9_]{3,80}$"
+    },
+    "string_tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      }
+    },
+    "scene_role": {
+      "enum": [
+        "architecture",
+        "hero_prop",
+        "environment_structure",
+        "dressing_prop",
+        "light_fixture",
+        "navigation",
+        "interactive",
+        "narrative_clue"
+      ]
+    },
+    "camera_framing": {
+      "enum": [
+        "cinematic_wide",
+        "inspection",
+        "topdown",
+        "debug",
+        "contact_sheet",
+        "before_after"
+      ]
+    },
+    "export_target": {
+      "enum": [
+        "lathe_source",
+        "scene_graph",
+        "scene_package",
+        "blend",
+        "glb",
+        "usd",
+        "fbx",
+        "roblox_manifest",
+        "godot_manifest",
+        "unity_manifest",
+        "unreal_manifest"
+      ]
+    },
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "center",
+        "size"
+      ],
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/vector3"
+        },
+        "size": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "modular_wall_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/region_id"
+          },
+          "uniqueItems": true
+        },
+        "sides": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "north",
+              "south",
+              "east",
+              "west"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "module_length": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "snap_grid": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "thickness": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        },
+        "scale": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "state_value": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "affordance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "action"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reveals": {
+          "$ref": "#/$defs/scene_ref"
+        },
+        "requires": {
+          "type": "string"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "deterministic_lathe",
+            "provider_generated",
+            "user_supplied",
+            "licensed_reference",
+            "mixed"
+          ]
+        },
+        "license": {
+          "type": "string"
+        },
+        "commercial_use": {
+          "type": "boolean"
+        },
+        "provider": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "schema_version": "lathe.wonder_benchmark_prompts.v1",
+  "suite_id": "wonder_phase_31",
+  "description": "Deterministic prompt corpus for Wonder scene benchmark reports.",
+  "prompts": [
+    {
+      "id": "alchemist_observatory",
+      "title": "Alchemist Observatory",
+      "prompt": "A single-room alchemist observatory with an astrolabe table, moon window, archive door, ritual candles, brass instruments, readable work zones, and two curiosity hooks.",
+      "scene_type": "single_room",
+      "style_variations": ["sacred brass and deep blue glass", "dusty academy with warm candlelight", "clean low-poly ritual lab"],
+      "patch_operations": [
+        {"id": "more_sacred", "instruction": "Make the observatory feel more sacred while preserving object IDs and layout."},
+        {"id": "clearer_archive", "instruction": "Make the archive door read as the next interaction target."},
+        {"id": "brighter_astrolabe", "instruction": "Increase focus on the astrolabe table without moving cameras."}
+      ],
+      "scoring_focus": ["stable_ids", "curiosity_anchors", "style_consistency", "patch_continuity"]
+    },
+    {
+      "id": "mountain_lightning_city",
+      "title": "Mountain Lightning City",
+      "prompt": "A cliffside mountain city powered by captured lightning, with tiered roofs, storm rods, cable bridges, glowing transformer shrines, safe walkable paths, and a reveal camera from below.",
+      "scene_type": "small_courtyard",
+      "style_variations": ["stormlit stone and copper", "painted low-poly alpine town", "dark fantasy electric citadel"],
+      "patch_operations": [
+        {"id": "stronger_silhouette", "instruction": "Strengthen the stepped skyline and lightning rod silhouette."},
+        {"id": "safer_paths", "instruction": "Clarify the main path and railings without changing city scale."},
+        {"id": "add_storm_focus", "instruction": "Make the captured lightning source the visual focal point."}
+      ],
+      "scoring_focus": ["layout_readability", "lighting_intent", "object_count_accuracy", "render_quality"]
+    },
+    {
+      "id": "abandoned_roblox_mall",
+      "title": "Abandoned Roblox Mall",
+      "prompt": "An abandoned Roblox-scale mall atrium with shuttered shops, blocky signage, escalator ruins, coin machines, low-poly debris, mobile-friendly geometry, and a mystery behind one storefront.",
+      "scene_type": "modular_kit",
+      "style_variations": ["bright plastic decay", "early-2010s mall nostalgia", "clean Roblox low-poly horror"],
+      "patch_operations": [
+        {"id": "more_playable", "instruction": "Improve playable path clarity for a Roblox mobile user."},
+        {"id": "brand_safe_signs", "instruction": "Replace risky signage with fictional mall brands."},
+        {"id": "stronger_mystery", "instruction": "Make the hidden storefront hook clearer while preserving layout."}
+      ],
+      "scoring_focus": ["roblox_profile", "mobile_budget", "brand_safety", "continuity_preservation"]
+    },
+    {
+      "id": "underwater_train_station",
+      "title": "Underwater Train Station",
+      "prompt": "An underwater train station sealed inside glass tubes, with a stopped train, ticket booth, kelp shadows, pressure doors, bubbles, emergency lights, and a route to a flooded platform.",
+      "scene_type": "single_room",
+      "style_variations": ["retro transit undersea", "soft bioluminescent blue", "industrial pressure-hull station"],
+      "patch_operations": [
+        {"id": "clearer_water_depth", "instruction": "Increase the sense of underwater depth without obscuring objects."},
+        {"id": "emergency_route", "instruction": "Make the path to the flooded platform more legible."},
+        {"id": "train_focus", "instruction": "Improve focal lighting on the stopped train."}
+      ],
+      "scoring_focus": ["atmosphere", "camera_composition", "path_readability", "render_quality"]
+    },
+    {
+      "id": "desert_oracle_shrine",
+      "title": "Desert Oracle Shrine",
+      "prompt": "A desert oracle shrine half-buried in sand, with carved pillars, sun disks, offering bowls, wind cloth, cracked tile paths, a sealed prophecy chamber, and warm horizon lighting.",
+      "scene_type": "small_courtyard",
+      "style_variations": ["sun-baked sandstone", "mystic teal and gold", "minimal low-poly desert ruins"],
+      "patch_operations": [
+        {"id": "reduce_clutter", "instruction": "Simplify prop clutter while keeping the shrine readable."},
+        {"id": "prophecy_hook", "instruction": "Make the sealed prophecy chamber a stronger curiosity hook."},
+        {"id": "warmer_sunset", "instruction": "Shift lighting toward warm sunset without losing contrast."}
+      ],
+      "scoring_focus": ["semantic_elements", "style_consistency", "curiosity_anchors", "object_count_accuracy"]
+    },
+    {
+      "id": "cozy_witch_greenhouse",
+      "title": "Cozy Witch Greenhouse",
+      "prompt": "A cozy witch greenhouse with hanging herbs, potion benches, moonlit glass panes, seed drawers, a tiny familiar nook, magical plant labels, and a locked cabinet clue.",
+      "scene_type": "single_room",
+      "style_variations": ["warm cottage magic", "storybook low-poly garden", "moonlit apothecary glasshouse"],
+      "patch_operations": [
+        {"id": "cozier_lighting", "instruction": "Make the greenhouse feel cozier without hiding interactable props."},
+        {"id": "label_readability", "instruction": "Clarify magical plant labels and drawer organization."},
+        {"id": "cabinet_clue", "instruction": "Make the locked cabinet clue visible from the reveal camera."}
+      ],
+      "scoring_focus": ["readable_props", "style_consistency", "lighting_intent", "patch_success"]
+    },
+    {
+      "id": "cyberpunk_noodle_alley",
+      "title": "Cyberpunk Noodle Alley",
+      "prompt": "A compact cyberpunk noodle alley with a steaming cart, layered neon signs, rain-slick ground, service doors, cables, stools, trash bins, and a hidden back-room rumor.",
+      "scene_type": "street_corner",
+      "style_variations": ["neon magenta and green", "muted rain-soaked realism", "chunky low-poly arcade"],
+      "patch_operations": [
+        {"id": "sign_balance", "instruction": "Reduce neon clutter while keeping the alley cyberpunk."},
+        {"id": "food_cart_focus", "instruction": "Make the noodle cart the main focal point."},
+        {"id": "rumor_door", "instruction": "Make the back-room rumor door clearer without changing path width."}
+      ],
+      "scoring_focus": ["composition", "style_consistency", "render_quality", "continuity_preservation"]
+    },
+    {
+      "id": "ancient_moon_elevator",
+      "title": "Ancient Moon Elevator",
+      "prompt": "An ancient moon elevator platform with stone machinery, lunar rails, counterweights, star maps, blue crystal controls, safety gates, and a visible ascent destination.",
+      "scene_type": "small_courtyard",
+      "style_variations": ["ancient lunar stone", "celestial brass machinery", "clean fantasy sci-fi platform"],
+      "patch_operations": [
+        {"id": "mechanism_clarity", "instruction": "Clarify how the elevator mechanism works through visible parts."},
+        {"id": "destination_read", "instruction": "Make the ascent destination easier to read from the reveal camera."},
+        {"id": "safer_gate", "instruction": "Improve safety gate visibility for game-readiness."}
+      ],
+      "scoring_focus": ["mechanism_readability", "camera_composition", "game_readiness", "export_validity"]
+    },
+    {
+      "id": "horror_obby_lobby",
+      "title": "Horror Obby Lobby",
+      "prompt": "A horror obby lobby with a start gate, checkpoint pads, warning signs, flickering lights, safe waiting area, visible first obstacle, and playful spooky props suitable for Roblox.",
+      "scene_type": "modular_kit",
+      "style_variations": ["cartoony haunted plastic", "dim arcade horror", "simple mobile-friendly spooky"],
+      "patch_operations": [
+        {"id": "safer_spawn", "instruction": "Make the waiting area and start gate safer and more readable."},
+        {"id": "first_obstacle", "instruction": "Make the first obstacle obvious without adding new hazards."},
+        {"id": "less_intense", "instruction": "Reduce horror intensity while preserving the spooky theme."}
+      ],
+      "scoring_focus": ["roblox_profile", "safety", "path_readability", "mobile_budget"]
+    },
+    {
+      "id": "luxury_tycoon_showroom",
+      "title": "Luxury Tycoon Showroom",
+      "prompt": "A luxury tycoon showroom with display cars or products, polished floors, purchase pads, velvet ropes, glass walls, premium lighting, upgrade signage, and a VIP locked area.",
+      "scene_type": "single_room",
+      "style_variations": ["modern marble and chrome", "gold-accented Roblox tycoon", "minimal premium showroom"],
+      "patch_operations": [
+        {"id": "clearer_purchase", "instruction": "Make purchase pads and upgrade signage clearer."},
+        {"id": "premium_lighting", "instruction": "Make the showroom feel more premium through lighting and materials."},
+        {"id": "vip_hook", "instruction": "Make the VIP locked area a stronger continuation hook."}
+      ],
+      "scoring_focus": ["game_readiness", "semantic_elements", "style_consistency", "export_validity"]
+    }
+  ]
+}

@@ -1,0 +1,507 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-benchmark-report-v1.json",
+  "title": "Lathe Wonder Scene Benchmark Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "scene_version",
+    "generated_by",
+    "status",
+    "budgets",
+    "summary",
+    "scene_metrics",
+    "stage_results",
+    "score_results",
+    "cache_reuse"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_benchmark_report.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "generated_by": {
+      "const": "lathe.scene.bench"
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "failed",
+        "passed_with_exceptions"
+      ]
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preview",
+        "final",
+        "cache_reuse_ratio",
+        "score_thresholds",
+        "final_export_allowed_exceptions"
+      ],
+      "properties": {
+        "preview": {
+          "$ref": "#/$defs/preview_budgets"
+        },
+        "final": {
+          "$ref": "#/$defs/final_budgets"
+        },
+        "cache_reuse_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "score_thresholds": {
+          "$ref": "#/$defs/score_thresholds"
+        },
+        "final_export_allowed_exceptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timings",
+        "scores",
+        "cache_reuse_status",
+        "time_to_first_render"
+      ],
+      "properties": {
+        "timings": {
+          "$ref": "#/$defs/status_counts"
+        },
+        "scores": {
+          "$ref": "#/$defs/status_counts"
+        },
+        "cache_reuse_status": {
+          "$ref": "#/$defs/cache_status"
+        },
+        "time_to_first_render": {
+          "$ref": "#/$defs/timing_summary"
+        }
+      }
+    },
+    "scene_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "regions",
+        "objects",
+        "materials",
+        "lights",
+        "cameras",
+        "curiosity_anchors",
+        "hidden_state",
+        "exports"
+      ],
+      "properties": {
+        "regions": { "type": "integer", "minimum": 0 },
+        "objects": { "type": "integer", "minimum": 0 },
+        "materials": { "type": "integer", "minimum": 0 },
+        "lights": { "type": "integer", "minimum": 0 },
+        "cameras": { "type": "integer", "minimum": 0 },
+        "curiosity_anchors": { "type": "integer", "minimum": 0 },
+        "hidden_state": { "type": "integer", "minimum": 0 },
+        "exports": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "stage_results": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "$ref": "#/$defs/stage_result"
+      }
+    },
+    "score_results": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": {
+        "$ref": "#/$defs/score_result"
+      }
+    },
+    "cache_reuse": {
+      "$ref": "#/$defs/cache_reuse"
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "status_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "failed",
+        "missing",
+        "excepted"
+      ],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "missing": { "type": "integer", "minimum": 0 },
+        "excepted": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "timing_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actual_ms",
+        "budget_ms",
+        "ratio",
+        "status",
+        "passed",
+        "missing_stages"
+      ],
+      "properties": {
+        "actual_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "budget_ms": { "type": "integer", "minimum": 1 },
+        "ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "missing"
+          ]
+        },
+        "passed": { "type": "boolean" },
+        "missing_stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stage_name"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "stage_name": {
+      "enum": [
+        "brief",
+        "scene_graph",
+        "source_generation",
+        "check_plan",
+        "preview_build",
+        "preview_render",
+        "patch_preview",
+        "final_export"
+      ]
+    },
+    "stage_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "label",
+        "mode",
+        "actual_ms",
+        "budget_ms",
+        "ratio",
+        "status",
+        "passed"
+      ],
+      "properties": {
+        "stage": {
+          "$ref": "#/$defs/stage_name"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "enum": [
+            "shared",
+            "preview",
+            "final"
+          ]
+        },
+        "actual_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "budget_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "missing",
+            "excepted"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "exception": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "score_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric",
+        "label",
+        "actual",
+        "threshold",
+        "status",
+        "passed"
+      ],
+      "properties": {
+        "metric": {
+          "$ref": "#/$defs/score_name"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "missing"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "score_name": {
+      "enum": [
+        "prompt_to_brief",
+        "brief_to_scene",
+        "parse_check",
+        "build_success",
+        "scene_validation",
+        "style_consistency",
+        "object_count_accuracy",
+        "render_quality",
+        "patch_success",
+        "continuity_preservation",
+        "export_validity"
+      ]
+    },
+    "cache_status": {
+      "enum": [
+        "passed",
+        "failed",
+        "missing",
+        "skipped"
+      ]
+    },
+    "cache_reuse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hits",
+        "misses",
+        "writes",
+        "eligible",
+        "reuse_ratio",
+        "threshold",
+        "status",
+        "passed",
+        "potential"
+      ],
+      "properties": {
+        "hits": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "misses": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "writes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eligible": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reuse_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "status": {
+          "$ref": "#/$defs/cache_status"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "potential": {
+          "$ref": "#/$defs/cache_potential"
+        }
+      }
+    },
+    "cache_potential": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objects",
+        "cache_groups",
+        "reusable_objects",
+        "potential_reuse_ratio"
+      ],
+      "properties": {
+        "objects": { "type": "integer", "minimum": 0 },
+        "cache_groups": { "type": "integer", "minimum": 0 },
+        "reusable_objects": { "type": "integer", "minimum": 0 },
+        "potential_reuse_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "preview_budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "brief",
+        "scene_graph",
+        "source_generation",
+        "check_plan",
+        "preview_build",
+        "preview_render",
+        "patch_preview"
+      ],
+      "properties": {
+        "brief": { "type": "integer", "const": 10000 },
+        "scene_graph": { "type": "integer", "const": 20000 },
+        "source_generation": { "type": "integer", "const": 10000 },
+        "check_plan": { "type": "integer", "const": 5000 },
+        "preview_build": { "type": "integer", "const": 60000 },
+        "preview_render": { "type": "integer", "const": 30000 },
+        "patch_preview": { "type": "integer", "const": 45000 }
+      }
+    },
+    "final_budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "brief",
+        "scene_graph",
+        "source_generation",
+        "check_plan",
+        "final_export"
+      ],
+      "properties": {
+        "brief": { "type": "integer", "const": 10000 },
+        "scene_graph": { "type": "integer", "const": 20000 },
+        "source_generation": { "type": "integer", "const": 10000 },
+        "check_plan": { "type": "integer", "const": 5000 },
+        "final_export": { "type": "integer", "const": 180000 }
+      }
+    },
+    "score_thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prompt_to_brief",
+        "brief_to_scene",
+        "parse_check",
+        "build_success",
+        "scene_validation",
+        "style_consistency",
+        "object_count_accuracy",
+        "render_quality",
+        "patch_success",
+        "continuity_preservation",
+        "export_validity"
+      ],
+      "properties": {
+        "prompt_to_brief": { "type": "number", "const": 0.8 },
+        "brief_to_scene": { "type": "number", "const": 0.8 },
+        "parse_check": { "type": "number", "const": 1.0 },
+        "build_success": { "type": "number", "const": 1.0 },
+        "scene_validation": { "type": "number", "const": 0.85 },
+        "style_consistency": { "type": "number", "const": 0.8 },
+        "object_count_accuracy": { "type": "number", "const": 0.8 },
+        "render_quality": { "type": "number", "const": 0.8 },
+        "patch_success": { "type": "number", "const": 1.0 },
+        "continuity_preservation": { "type": "number", "const": 0.85 },
+        "export_validity": { "type": "number", "const": 1.0 }
+      }
+    }
+  }
+}

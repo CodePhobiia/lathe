@@ -1,0 +1,41 @@
+{
+  "schema_version": "lathe.scene_plan.v1",
+  "plan_id": "plan_bad_missing_camera_001",
+  "scene_id": "bad_scene",
+  "source_brief_id": "bad_scene",
+  "source_prompt": "Bad plan with no render camera.",
+  "mode": "preview",
+  "metadata": {
+    "planner": "lathe.scene.planner",
+    "planner_version": 1,
+    "budgets": {
+      "max_objects": 32,
+      "max_complexity": 320,
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024,
+      "quality": "preview"
+    },
+    "counts": {
+      "objects": 0,
+      "asset_tasks": 0,
+      "assembly_tasks": 0,
+      "render_tasks": 0,
+      "export_tasks": 0,
+      "materials": 0,
+      "lights": 0,
+      "cameras": 0
+    },
+    "estimated_complexity": 0
+  },
+  "asset_tasks": [],
+  "assembly_tasks": [],
+  "render_tasks": [],
+  "export_tasks": [],
+  "warnings": [],
+  "diagnostics": [],
+  "cache_keys": []
+}
+

@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-diff-v1.json",
+  "title": "Lathe Wonder Scene Diff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "diff_id",
+    "left",
+    "right",
+    "summary",
+    "changes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_diff.v1"
+    },
+    "diff_id": {
+      "type": "string",
+      "pattern": "^diff_[a-z0-9_]{3,128}$"
+    },
+    "left": {
+      "$ref": "#/$defs/scene_ref"
+    },
+    "right": {
+      "$ref": "#/$defs/scene_ref"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16}$"
+    },
+    "scene_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scene_id",
+        "version",
+        "fingerprint"
+      ],
+      "properties": {
+        "scene_id": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/fingerprint"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_changes",
+        "objects_added",
+        "objects_removed",
+        "object_transform_changes",
+        "object_material_changes",
+        "object_state_changes",
+        "materials_added",
+        "materials_removed"
+      ],
+      "properties": {
+        "total_changes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "objects_added": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "objects_removed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "object_transform_changes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "object_material_changes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "object_state_changes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "materials_added": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "materials_removed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "change_kind": {
+      "enum": [
+        "camera_added",
+        "camera_changed",
+        "camera_removed",
+        "curiosity_anchor_added",
+        "curiosity_anchor_changed",
+        "curiosity_anchor_removed",
+        "hidden_state_added",
+        "hidden_state_changed",
+        "hidden_state_removed",
+        "light_added",
+        "light_changed",
+        "light_removed",
+        "material_added",
+        "material_changed",
+        "material_removed",
+        "object_added",
+        "object_changed",
+        "object_material_changed",
+        "object_removed",
+        "object_state_changed",
+        "object_transform_changed",
+        "region_added",
+        "region_changed",
+        "region_removed",
+        "relationship_added",
+        "relationship_changed",
+        "relationship_removed",
+        "scene_metadata_changed"
+      ]
+    },
+    "entity_type": {
+      "enum": [
+        "camera",
+        "curiosity_anchor",
+        "hidden_state",
+        "light",
+        "material",
+        "object",
+        "region",
+        "relationship",
+        "scene"
+      ]
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "change_id",
+        "kind",
+        "operation",
+        "entity_type",
+        "entity_id",
+        "path"
+      ],
+      "properties": {
+        "change_id": {
+          "type": "string",
+          "pattern": "^change_[a-f0-9]{16}$"
+        },
+        "kind": {
+          "$ref": "#/$defs/change_kind"
+        },
+        "operation": {
+          "enum": [
+            "add",
+            "remove",
+            "replace"
+          ]
+        },
+        "entity_type": {
+          "$ref": "#/$defs/entity_type"
+        },
+        "entity_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "left": {},
+        "right": {}
+      }
+    }
+  }
+}

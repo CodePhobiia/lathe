@@ -1,0 +1,60 @@
+{
+  "schema_version": "lathe.wonder_example_catalog.v1",
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "deferred_nonblocking": 0
+  },
+  "examples": [
+    {
+      "name": "abandoned_roblox_mall",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "alchemist_observatory",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "desert_oracle_shrine",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "environment_module_showcase",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "mountain_lightning_city",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "stdlib_component_showcase",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    },
+    {
+      "name": "underwater_train_station",
+      "status": "passed",
+      "scene_source": "valid",
+      "preview_evidence": "present",
+      "deferred_lanes": []
+    }
+  ]
+}

@@ -1,0 +1,1056 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-assembly-v1.json",
+  "title": "Lathe Wonder Scene Assembly IR v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "scene_version",
+    "metadata",
+    "package_paths",
+    "regions",
+    "collections",
+    "materials",
+    "objects",
+    "cameras",
+    "lights",
+    "object_index",
+    "object_selection_payloads",
+    "exports"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_assembly.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "metadata": {
+      "$ref": "#/$defs/assembly_metadata"
+    },
+    "package_paths": {
+      "$ref": "#/$defs/package_paths"
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/region"
+      }
+    },
+    "collections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/collection"
+      }
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/material"
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object"
+      }
+    },
+    "cameras": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/camera"
+      }
+    },
+    "lights": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/light"
+      }
+    },
+    "object_index": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object_index_record"
+      }
+    },
+    "object_selection_payloads": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object_selection_payload"
+      }
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/export_ref"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "region_id": {
+      "type": "string",
+      "pattern": "^region_[a-z0-9_]{3,80}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "material_id": {
+      "type": "string",
+      "pattern": "^mat_[a-z0-9_]{3,80}$"
+    },
+    "camera_id": {
+      "type": "string",
+      "pattern": "^camera_[a-z0-9_]{3,80}$"
+    },
+    "light_id": {
+      "type": "string",
+      "pattern": "^light_[a-z0-9_]{3,80}$"
+    },
+    "scene_ref": {
+      "type": "string",
+      "pattern": "^(obj|region|camera|light|curiosity|hidden)_[a-z0-9_]{3,80}$"
+    },
+    "render_id": {
+      "type": "string",
+      "pattern": "^render_[a-z0-9_]{3,140}$"
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 260,
+      "description": "Package-root-relative planned artifact path; safety is enforced by lathe.scene.assembly."
+    },
+    "json_value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "center",
+        "size"
+      ],
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/vector3"
+        },
+        "size": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        },
+        "scale": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "string_array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "int_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "assembly_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assembler",
+        "assembler_version",
+        "source_schema_version",
+        "runtime",
+        "units",
+        "counts"
+      ],
+      "properties": {
+        "assembler": {
+          "const": "lathe.scene.assembly"
+        },
+        "assembler_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_schema_version": {
+          "const": "lathe.scene_graph.v1"
+        },
+        "runtime": {
+          "const": "deferred_proxy"
+        },
+        "units": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scene",
+            "supported_linear_units"
+          ],
+          "properties": {
+            "scene": {
+              "enum": [
+                "meters"
+              ]
+            },
+            "supported_linear_units": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "enum": [
+                  "centimeters",
+                  "meters",
+                  "millimeters",
+                  "studs"
+                ]
+              }
+            }
+          }
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "regions",
+            "collections",
+            "objects",
+            "materials",
+            "cameras",
+            "lights",
+            "object_selection_payloads",
+            "planned_renders",
+            "exports"
+          ],
+          "properties": {
+            "regions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "collections": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "objects": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "materials": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cameras": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "lights": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "object_selection_payloads": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "planned_renders": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "exports": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "package_paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scene_graph",
+        "scene_assembly",
+        "object_selection_payloads",
+        "scene_assembly_proxy"
+      ],
+      "properties": {
+        "scene_graph": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "scene_assembly": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "object_selection_payloads": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "scene_assembly_proxy": {
+          "$ref": "#/$defs/relative_path"
+        }
+      }
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "region_id",
+        "name",
+        "type",
+        "purpose",
+        "mood",
+        "bounds",
+        "semantic_tags",
+        "source_index"
+      ],
+      "properties": {
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "interior",
+            "exterior",
+            "threshold",
+            "background",
+            "debug"
+          ]
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "mood": {
+          "type": "string"
+        },
+        "bounds": {
+          "$ref": "#/$defs/bounds"
+        },
+        "semantic_tags": {
+          "$ref": "#/$defs/string_array"
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collection_id",
+        "collection_type",
+        "region_id",
+        "object_ids"
+      ],
+      "properties": {
+        "collection_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "collection_type": {
+          "const": "region"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "object_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        }
+      }
+    },
+    "material": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "material_id",
+        "material_index",
+        "name",
+        "role",
+        "palette_refs",
+        "pbr",
+        "source_index"
+      ],
+      "properties": {
+        "material_id": {
+          "$ref": "#/$defs/material_id"
+        },
+        "material_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "palette_refs": {
+          "$ref": "#/$defs/string_array"
+        },
+        "pbr": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "object_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_asset": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "lathe_asset": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "source_family": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "source_kit": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "variant": {
+          "$ref": "#/$defs/snake_id"
+        }
+      }
+    },
+    "object_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "region_id",
+        "name",
+        "role",
+        "source",
+        "semantic_tags",
+        "state",
+        "surface_overrides",
+        "affordances",
+        "provenance",
+        "material_ids",
+        "instancing"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "source": {
+          "$ref": "#/$defs/object_source"
+        },
+        "semantic_tags": {
+          "$ref": "#/$defs/string_array"
+        },
+        "state": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "surface_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "affordances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "material_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/material_id"
+          }
+        },
+        "instancing": {
+          "$ref": "#/$defs/instancing_metadata"
+        }
+      }
+    },
+    "instancing_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "reuse_group_id",
+        "asset_signature",
+        "source",
+        "variant",
+        "shared_asset",
+        "group_object_ids",
+        "asset_fields",
+        "instance_override_fields",
+        "asset_fingerprint",
+        "instance_fingerprint",
+        "instance_fields"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.scene_instancing_metadata.v1"
+        },
+        "reuse_group_id": {
+          "type": "string",
+          "pattern": "^reuse_group_[a-z0-9_]{3,120}$"
+        },
+        "asset_signature": {
+          "type": "string",
+          "pattern": "^scene_instance\\.v1:[a-z0-9_:]+$"
+        },
+        "source": {
+          "$ref": "#/$defs/instancing_source"
+        },
+        "variant": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shared_asset": {
+          "type": "boolean"
+        },
+        "group_object_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        },
+        "asset_fields": {
+          "$ref": "#/$defs/string_array"
+        },
+        "instance_override_fields": {
+          "$ref": "#/$defs/string_array"
+        },
+        "asset_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        },
+        "instance_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        },
+        "instance_fields": {
+          "$ref": "#/$defs/string_array"
+        }
+      }
+    },
+    "instancing_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "ref",
+        "generated"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "source_asset",
+            "lathe_asset",
+            "source_family",
+            "source_kit",
+            "generated_fallback"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "material_assignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "material_id",
+        "material_index",
+        "source_index"
+      ],
+      "properties": {
+        "slot": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "material_id": {
+          "$ref": "#/$defs/material_id"
+        },
+        "material_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "object_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_proxy",
+        "assembly_proxy",
+        "selection_payload"
+      ],
+      "properties": {
+        "asset_proxy": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "assembly_proxy": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "selection_payload": {
+          "$ref": "#/$defs/relative_path"
+        }
+      }
+    },
+    "object": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "region_id",
+        "collection_id",
+        "render_index",
+        "transform",
+        "bounds",
+        "contact_hints",
+        "metadata",
+        "material_assignments",
+        "planned_artifacts",
+        "source_index"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "collection_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "render_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "transform": {
+          "$ref": "#/$defs/transform"
+        },
+        "bounds": {
+          "$ref": "#/$defs/bounds"
+        },
+        "contact_hints": {
+          "$ref": "#/$defs/contact_hints"
+        },
+        "metadata": {
+          "$ref": "#/$defs/object_metadata"
+        },
+        "material_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/material_assignment"
+          }
+        },
+        "planned_artifacts": {
+          "$ref": "#/$defs/object_artifacts"
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "contact_hints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estimated_bottom_z",
+        "floor_clearance",
+        "rests_on_floor",
+        "nearest_resting_surface"
+      ],
+      "properties": {
+        "estimated_bottom_z": {
+          "type": "number"
+        },
+        "floor_clearance": {
+          "type": "number"
+        },
+        "rests_on_floor": {
+          "type": "boolean"
+        },
+        "nearest_resting_surface": {
+          "enum": [
+            "floor",
+            "unresolved"
+          ]
+        }
+      }
+    },
+    "planned_render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "render_id",
+        "render_pass",
+        "render_sequence",
+        "path"
+      ],
+      "properties": {
+        "render_id": {
+          "$ref": "#/$defs/render_id"
+        },
+        "render_pass": {
+          "enum": [
+            "beauty",
+            "object_id",
+            "material_id"
+          ]
+        },
+        "render_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "path": {
+          "$ref": "#/$defs/relative_path"
+        }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camera_id",
+        "target",
+        "framing",
+        "purpose",
+        "transform",
+        "fov_degrees",
+        "planned_renders",
+        "source_index"
+      ],
+      "properties": {
+        "camera_id": {
+          "$ref": "#/$defs/camera_id"
+        },
+        "target": {
+          "$ref": "#/$defs/scene_ref"
+        },
+        "framing": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "transform": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/transform"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fov_degrees": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 180
+        },
+        "planned_renders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/planned_render"
+          }
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "light": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "light_id",
+        "type",
+        "target",
+        "color",
+        "intensity",
+        "purpose",
+        "source_index"
+      ],
+      "properties": {
+        "light_id": {
+          "$ref": "#/$defs/light_id"
+        },
+        "type": {
+          "type": "string"
+        },
+        "target": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/scene_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "color": {
+          "type": "string"
+        },
+        "intensity": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "object_index_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "region_id",
+        "collection_id",
+        "render_index",
+        "material_indices",
+        "primary_material_index",
+        "selection_payload_path"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "collection_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "render_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "material_indices": {
+          "$ref": "#/$defs/int_array"
+        },
+        "primary_material_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "selection_payload_path": {
+          "$ref": "#/$defs/relative_path"
+        }
+      }
+    },
+    "object_selection_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "render_index",
+        "material_index",
+        "material_indices",
+        "payload_path",
+        "metadata"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "render_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "material_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "material_indices": {
+          "$ref": "#/$defs/int_array"
+        },
+        "payload_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "object_id",
+            "region_id",
+            "material_ids"
+          ],
+          "properties": {
+            "object_id": {
+              "$ref": "#/$defs/object_id"
+            },
+            "region_id": {
+              "$ref": "#/$defs/region_id"
+            },
+            "material_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/material_id"
+              }
+            }
+          }
+        }
+      }
+    },
+    "export_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "format",
+        "declared_path",
+        "planned_artifact_path",
+        "metadata",
+        "source_index"
+      ],
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "declared_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planned_artifact_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "lathe.wonder_evidence_trace.v1",
+  "ok": true,
+  "status": "passed",
+  "summary": {
+    "checked_tasks": 1,
+    "covered_checked_tasks": 1,
+    "missing_evidence": 0,
+    "evidence_items": 1,
+    "used_evidence_items": 1,
+    "diagnostics": 0
+  },
+  "coverage_texts": [
+    "Run snapshot command."
+  ]
+}

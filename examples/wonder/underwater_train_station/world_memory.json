@@ -1,0 +1,17 @@
+{
+  "schema_version": "lathe.world_memory.v1",
+  "memory_id": "worldmem_underwater_train_station",
+  "scene_id": "underwater_train_station",
+  "scene_version": 1,
+  "current_branch": "main",
+  "summary": "Continuity memory for the underwater_train_station Wonder golden fixture.",
+  "branches": [
+    {
+      "branch_id": "main",
+      "name": "Main continuity",
+      "status": "active",
+      "event_ids": []
+    }
+  ],
+  "events": []
+}

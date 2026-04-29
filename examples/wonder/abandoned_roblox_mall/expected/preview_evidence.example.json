@@ -1,0 +1,54 @@
+{
+  "schema_version": "lathe.preview_evidence.v1",
+  "scene_id": "abandoned_roblox_mall",
+  "status": "passed",
+  "core_mode": "deterministic_proxy",
+  "preview_build": {
+    "status": "passed",
+    "blocking": true,
+    "evidence_type": "deterministic_proxy_contract",
+    "command": "python -m lathe.cli scene build examples/wonder/abandoned_roblox_mall/scene_graph.json --out .tmp_tests/wonder_preview_evidence/abandoned_roblox_mall",
+    "artifacts": [
+      "scene_package_manifest.json",
+      "reports/scene_plan.json",
+      "reports/wonder_report.json",
+      "reports/scene_manifest.json"
+    ]
+  },
+  "preview_render": {
+    "status": "passed",
+    "blocking": true,
+    "renderer": "lathe.scene.proxy_renderer.v1",
+    "evidence_type": "deterministic_proxy_contract",
+    "command": "python -m lathe.cli scene render examples/wonder/abandoned_roblox_mall/scene_graph.json --out .tmp_tests/wonder_preview_evidence/abandoned_roblox_mall",
+    "artifacts": [
+      "renders/<camera_id>/beauty.png",
+      "reports/scene_render_artifacts.json"
+    ]
+  },
+  "preview_export": {
+    "status": "passed",
+    "blocking": true,
+    "exporter": "lathe.scene.proxy_glb_exporter.v1",
+    "evidence_type": "deterministic_proxy_contract",
+    "command": "python -m lathe.cli scene export examples/wonder/abandoned_roblox_mall/scene_graph.json --target glb --out .tmp_tests/wonder_preview_evidence/abandoned_roblox_mall",
+    "artifacts": [
+      "exports/<scene_id>.glb",
+      "reports/scene_export_artifacts.json"
+    ]
+  },
+  "blender": {
+    "status": "skipped_optional",
+    "blocking": false,
+    "reason": "No Blender process was run for the committed Wave 5 golden fixture."
+  },
+  "roblox": {
+    "status": "skipped_optional",
+    "blocking": false,
+    "reason": "No Roblox Studio import or execution was run for the committed Wave 5 golden fixture."
+  },
+  "notes": [
+    "This file records deterministic/proxy fixture evidence only.",
+    "Real Blender and Roblox lanes remain optional/nonblocking unless separately executed and recorded."
+  ]
+}

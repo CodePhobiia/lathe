@@ -1,0 +1,830 @@
+{
+  "assembly_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Controlled coral forms creeping along one quiet platform edge.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_coral_platform_growth_919b87cb4a74",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:coral_platform_growth:default:33fc13d9bd372966",
+      "depends_on": [
+        "asset_task_coral_platform_growth_919b87cb4a74"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Coral Platform Growth",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "dressing_prop",
+        "semantic_tags": [
+          "dressing_prop",
+          "should",
+          "coral_platform_growth"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_coral_platform_growth_006",
+      "region": "region_underwater_train_station_main",
+      "task_id": "assembly_task_obj_coral_platform_growth_006_d425e58622",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -7.304,
+          -1.78,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          198.0
+        ],
+        "scale": [
+          0.75,
+          0.75,
+          0.75
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A ribbed glass station shell that reveals the ocean outside.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_glass_tube_concourse_c14142a3ae04",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:glass_tube_concourse:default:e9aafe1214758d71",
+      "depends_on": [
+        "asset_task_glass_tube_concourse_c14142a3ae04"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Glass Tube Concourse",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "must",
+          "glass_tube_concourse"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_glass_tube_concourse_001",
+      "region": "region_underwater_train_station_main",
+      "task_id": "assembly_task_obj_glass_tube_concourse_001_41df01d25a",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0.0,
+          -5.76,
+          2.7
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -90.0
+        ],
+        "scale": [
+          1.4,
+          1.4,
+          1.2
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Readable route markers along the station platform.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_platform_edge_markers_da3289a2d73d",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:platform_edge_markers:default:a88b52b2c3eac1ad",
+      "depends_on": [
+        "asset_task_platform_edge_markers_da3289a2d73d"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Platform Edge Markers",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "navigation",
+        "semantic_tags": [
+          "navigation",
+          "should",
+          "platform_edge_markers"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_platform_edge_markers_003",
+      "region": "region_underwater_train_station_main",
+      "task_id": "assembly_task_obj_platform_edge_markers_003_26839fad98",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          7.304,
+          -1.78,
+          0.05
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -18.0
+        ],
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Signal lamps that still glow red at the far tunnel.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_red_signal_lamps_e0ba87c4ce29",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:red_signal_lamps:default:002292e54b9e69f0",
+      "depends_on": [
+        "asset_task_red_signal_lamps_e0ba87c4ce29"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Red Signal Lamps",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "light_fixture",
+        "semantic_tags": [
+          "light_fixture",
+          "must",
+          "red_signal_lamps"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_red_signal_lamps_004",
+      "region": "region_underwater_train_station_main",
+      "task_id": "assembly_task_obj_red_signal_lamps_004_07e4aabeb1",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          4.514,
+          4.66,
+          3.72
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          54.0
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A locked hatch to a maintenance room below the platform.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_sealed_service_hatch_aae86bf45192",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_service_hatch:default:3d6ba252b2a19cf0",
+      "depends_on": [
+        "asset_task_sealed_service_hatch_aae86bf45192"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "Inspect the stopped train and decide whether to open the sealed service hatch.",
+            "id": "use_sealed_service_hatch"
+          }
+        ],
+        "name": "Sealed Service Hatch",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "interactive",
+        "semantic_tags": [
+          "interactive",
+          "should",
+          "sealed_service_hatch"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_sealed_service_hatch_005",
+      "region": "region_underwater_train_station_main",
+      "task_id": "assembly_task_obj_sealed_service_hatch_005_b956f6ebce",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -4.514,
+          4.66,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          126.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A rounded undersea train stopped beside the platform.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_stopped_bathysphere_train_c231cc16cc36",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:stopped_bathysphere_train:default:a9fe10396c9ddb35",
+      "depends_on": [
+        "asset_task_stopped_bathysphere_train_c231cc16cc36"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "Inspect the stopped train and decide whether to open the sealed service hatch.",
+            "id": "inspect_stopped_bathysphere_train",
+            "reveals": "hidden_why_did_the_train_stop_under_the_sea_001"
+          }
+        ],
+        "name": "Stopped Bathysphere Train",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "must",
+          "stopped_bathysphere_train"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_stopped_bathysphere_train_002",
+      "region": "region_underwater_train_station_main",
+      "task_id": "assembly_task_obj_stopped_bathysphere_train_002_1c4e6d85b7",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      }
+    }
+  ],
+  "asset_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Controlled coral forms creeping along one quiet platform edge.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:coral_platform_growth:default:33fc13d9bd372966",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_coral_platform_growth_006"
+      ],
+      "override_fingerprint": "55dd47aef4d2ab7e",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "coral_platform_growth",
+        "ref": "coral_platform_growth",
+        "source_family": "dressing_prop"
+      },
+      "task_id": "asset_task_coral_platform_growth_919b87cb4a74",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A ribbed glass station shell that reveals the ocean outside.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:glass_tube_concourse:default:e9aafe1214758d71",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_glass_tube_concourse_001"
+      ],
+      "override_fingerprint": "33ac2c3220837b87",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "glass_tube_concourse",
+        "ref": "glass_tube_concourse",
+        "source_family": "environment_architecture"
+      },
+      "task_id": "asset_task_glass_tube_concourse_c14142a3ae04",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Readable route markers along the station platform.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:platform_edge_markers:default:a88b52b2c3eac1ad",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_platform_edge_markers_003"
+      ],
+      "override_fingerprint": "02022d60a4fe54dd",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "platform_edge_markers",
+        "ref": "platform_edge_markers",
+        "source_family": "navigation_marker"
+      },
+      "task_id": "asset_task_platform_edge_markers_da3289a2d73d",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Signal lamps that still glow red at the far tunnel.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:red_signal_lamps:default:002292e54b9e69f0",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_red_signal_lamps_004"
+      ],
+      "override_fingerprint": "2364121c0266456d",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "red_signal_lamps",
+        "ref": "red_signal_lamps",
+        "source_family": "practical_light"
+      },
+      "task_id": "asset_task_red_signal_lamps_e0ba87c4ce29",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A locked hatch to a maintenance room below the platform.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_service_hatch:default:3d6ba252b2a19cf0",
+      "estimated_complexity": 15,
+      "mode": "preview",
+      "object_ids": [
+        "obj_sealed_service_hatch_005"
+      ],
+      "override_fingerprint": "f8a720a9f11245d3",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sealed_service_hatch",
+        "ref": "sealed_service_hatch",
+        "source_family": "interactive_mechanism"
+      },
+      "task_id": "asset_task_sealed_service_hatch_aae86bf45192",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_deep_teal_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A rounded undersea train stopped beside the platform.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:stopped_bathysphere_train:default:a9fe10396c9ddb35",
+      "estimated_complexity": 15,
+      "mode": "preview",
+      "object_ids": [
+        "obj_stopped_bathysphere_train_002"
+      ],
+      "override_fingerprint": "0b278c3dac5a0813",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "stopped_bathysphere_train",
+        "ref": "stopped_bathysphere_train",
+        "source_family": "hero_prop"
+      },
+      "task_id": "asset_task_stopped_bathysphere_train_c231cc16cc36",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    }
+  ],
+  "cache_keys": [
+    {
+      "asset_task_id": "asset_task_coral_platform_growth_919b87cb4a74",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:coral_platform_growth:default:33fc13d9bd372966",
+      "object_ids": [
+        "obj_coral_platform_growth_006"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "coral_platform_growth",
+        "ref": "coral_platform_growth",
+        "source_family": "dressing_prop"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_glass_tube_concourse_c14142a3ae04",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:glass_tube_concourse:default:e9aafe1214758d71",
+      "object_ids": [
+        "obj_glass_tube_concourse_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "glass_tube_concourse",
+        "ref": "glass_tube_concourse",
+        "source_family": "environment_architecture"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_platform_edge_markers_da3289a2d73d",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:platform_edge_markers:default:a88b52b2c3eac1ad",
+      "object_ids": [
+        "obj_platform_edge_markers_003"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "platform_edge_markers",
+        "ref": "platform_edge_markers",
+        "source_family": "navigation_marker"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_red_signal_lamps_e0ba87c4ce29",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:red_signal_lamps:default:002292e54b9e69f0",
+      "object_ids": [
+        "obj_red_signal_lamps_004"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "red_signal_lamps",
+        "ref": "red_signal_lamps",
+        "source_family": "practical_light"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_sealed_service_hatch_aae86bf45192",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_service_hatch:default:3d6ba252b2a19cf0",
+      "object_ids": [
+        "obj_sealed_service_hatch_005"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sealed_service_hatch",
+        "ref": "sealed_service_hatch",
+        "source_family": "interactive_mechanism"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_stopped_bathysphere_train_c231cc16cc36",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:stopped_bathysphere_train:default:a9fe10396c9ddb35",
+      "object_ids": [
+        "obj_stopped_bathysphere_train_002"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "stopped_bathysphere_train",
+        "ref": "stopped_bathysphere_train",
+        "source_family": "hero_prop"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "export_tasks": [
+    {
+      "depends_on": [
+        "assembly_task_obj_coral_platform_growth_006_d425e58622",
+        "assembly_task_obj_glass_tube_concourse_001_41df01d25a",
+        "assembly_task_obj_platform_edge_markers_003_26839fad98",
+        "assembly_task_obj_red_signal_lamps_004_07e4aabeb1",
+        "assembly_task_obj_sealed_service_hatch_005_b956f6ebce",
+        "assembly_task_obj_stopped_bathysphere_train_002_1c4e6d85b7"
+      ],
+      "format": "glb",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "dist/exports/underwater_train_station.glb",
+      "source_index": 2,
+      "target": "glb",
+      "task_id": "export_task_glb_glb_9c8ae86066",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "assembly_task_obj_coral_platform_growth_006_d425e58622",
+        "assembly_task_obj_glass_tube_concourse_001_41df01d25a",
+        "assembly_task_obj_platform_edge_markers_003_26839fad98",
+        "assembly_task_obj_red_signal_lamps_004_07e4aabeb1",
+        "assembly_task_obj_sealed_service_hatch_005_b956f6ebce",
+        "assembly_task_obj_stopped_bathysphere_train_002_1c4e6d85b7"
+      ],
+      "format": "json",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "scene_graph.json",
+      "source_index": 0,
+      "target": "scene_graph",
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "render_task_camera_debug_topdown_bc8a62809e",
+        "render_task_camera_hatch_detail_c80e3ced13",
+        "render_task_camera_reveal_3b7c5655ea"
+      ],
+      "format": "lathepkg",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "dist/underwater_train_station.lathepkg",
+      "source_index": 1,
+      "target": "scene_package",
+      "task_id": "export_task_scene_package_lathepkg_46f332ee12",
+      "task_type": "scene_export"
+    }
+  ],
+  "metadata": {
+    "budgets": {
+      "max_complexity": 320,
+      "max_objects": 32,
+      "quality": "preview",
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024
+    },
+    "counts": {
+      "assembly_tasks": 6,
+      "asset_tasks": 6,
+      "cameras": 3,
+      "export_tasks": 3,
+      "lights": 1,
+      "materials": 5,
+      "objects": 6,
+      "render_tasks": 3
+    },
+    "estimated_complexity": 116,
+    "planner": "lathe.scene.planner",
+    "planner_version": 1
+  },
+  "mode": "preview",
+  "plan_id": "plan_underwater_train_station_13f2d23f0889",
+  "render_tasks": [
+    {
+      "camera_id": "camera_debug_topdown",
+      "depends_on": [
+        "assembly_task_obj_coral_platform_growth_006_d425e58622",
+        "assembly_task_obj_glass_tube_concourse_001_41df01d25a",
+        "assembly_task_obj_platform_edge_markers_003_26839fad98",
+        "assembly_task_obj_red_signal_lamps_004_07e4aabeb1",
+        "assembly_task_obj_sealed_service_hatch_005_b956f6ebce",
+        "assembly_task_obj_stopped_bathysphere_train_002_1c4e6d85b7"
+      ],
+      "framing": "topdown",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_stopped_bathysphere_train_002",
+      "task_id": "render_task_camera_debug_topdown_bc8a62809e",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_hatch_detail",
+      "depends_on": [
+        "assembly_task_obj_coral_platform_growth_006_d425e58622",
+        "assembly_task_obj_glass_tube_concourse_001_41df01d25a",
+        "assembly_task_obj_platform_edge_markers_003_26839fad98",
+        "assembly_task_obj_red_signal_lamps_004_07e4aabeb1",
+        "assembly_task_obj_sealed_service_hatch_005_b956f6ebce",
+        "assembly_task_obj_stopped_bathysphere_train_002_1c4e6d85b7"
+      ],
+      "framing": "inspection",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_stopped_bathysphere_train_002",
+      "task_id": "render_task_camera_hatch_detail_c80e3ced13",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_reveal",
+      "depends_on": [
+        "assembly_task_obj_coral_platform_growth_006_d425e58622",
+        "assembly_task_obj_glass_tube_concourse_001_41df01d25a",
+        "assembly_task_obj_platform_edge_markers_003_26839fad98",
+        "assembly_task_obj_red_signal_lamps_004_07e4aabeb1",
+        "assembly_task_obj_sealed_service_hatch_005_b956f6ebce",
+        "assembly_task_obj_stopped_bathysphere_train_002_1c4e6d85b7"
+      ],
+      "framing": "cinematic_wide",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_stopped_bathysphere_train_002",
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render"
+    }
+  ],
+  "scene_id": "underwater_train_station",
+  "schema_version": "lathe.scene_plan.v1",
+  "source_brief_id": "underwater_train_station",
+  "source_prompt": "An underwater train station with arched glass tunnels, a stopped bathysphere train, red signal lamps, coral growth, and a sealed service hatch behind the platform.",
+  "warnings": []
+}

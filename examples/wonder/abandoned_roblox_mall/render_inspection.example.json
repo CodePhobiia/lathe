@@ -1,0 +1,39 @@
+{
+  "schema_version": "lathe.render_inspection.v1",
+  "inspection_id": "inspect_abandoned_roblox_mall_001",
+  "scene_id": "abandoned_roblox_mall",
+  "render_ref": {
+    "image_path": "renders/camera_reveal/beauty.png",
+    "camera_id": "camera_reveal",
+    "render_pass": "beauty"
+  },
+  "status": "passed_with_warnings",
+  "visual_summary": "Deterministic proxy inspection fixture: the scene contract is readable, while final visual judgment remains deferred to real render lanes.",
+  "scores": {
+    "matches_brief": 0.82,
+    "style_consistency": 0.8,
+    "spatial_coherence": 0.84,
+    "composition": 0.82,
+    "curiosity": 0.8,
+    "overall": 0.82
+  },
+  "problems": [
+    {
+      "problem_id": "problem_abandoned_roblox_mall_proxy_only",
+      "severity": "info",
+      "target_id": "obj_fountain_planter_001",
+      "summary": "Only deterministic proxy inspection evidence is committed for this golden fixture.",
+      "evidence": "Blender-backed visual inspection is intentionally not claimed by Wave 5 examples."
+    }
+  ],
+  "recommended_patches": [
+    {
+      "scope": "object",
+      "target_id": "obj_fountain_planter_001",
+      "change": "Use the committed example Scene Patch as the first deterministic revision loop input.",
+      "suggested_patch": {
+        "patch_ref": "scene_patch.example.json"
+      }
+    }
+  ]
+}

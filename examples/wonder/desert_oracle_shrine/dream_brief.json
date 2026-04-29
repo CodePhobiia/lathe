@@ -1,0 +1,130 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "desert_oracle_shrine",
+  "title": "Desert Oracle Shrine",
+  "one_sentence": "A small sunlit shrine courtyard where sand channels, carved stone, and an oracle mirror create a Wonder expansion seed.",
+  "source_prompt": "A desert oracle shrine at sunset, with wind-carved arches, a central mirror altar, sand channels, incense braziers, cloth shade, and a sealed sun door.",
+  "genre": [
+    "ancient mystery",
+    "desert fantasy"
+  ],
+  "mood": [
+    "quiet",
+    "reverent",
+    "sun-warmed"
+  ],
+  "scale": "small_courtyard",
+  "intent": {
+    "setting": "A compact shrine courtyard surrounded by low walls and wind-shaped arches.",
+    "emotional_goal": "The first view should feel peaceful, deliberate, and full of old ritual logic.",
+    "primary_interaction": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+    "spatial_logic": "Sand channels lead from the entry path to the central mirror and onward to the sealed door."
+  },
+  "style": {
+    "palette": [
+      "sun bleached limestone",
+      "lapis tile",
+      "shadow blue",
+      "gold dust",
+      "desert sage"
+    ],
+    "materials": [
+      "carved stone",
+      "polished tile",
+      "woven cloth",
+      "sandstone"
+    ],
+    "lighting": "Low sunset light grazes carved stone while braziers add warm points near the mirror.",
+    "form_language": [
+      "stepped plinths",
+      "wind-carved arches",
+      "cloth canopies",
+      "sand channels",
+      "mirror discs"
+    ],
+    "avoid_styles": [
+      "modern temple signage",
+      "sci-fi holograms",
+      "dense market clutter"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "courtyard_wall_shell",
+      "description": "A low stone wall and arch shell defining the shrine boundary.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "oracle_mirror",
+      "description": "A polished mirror disc mounted on the central altar.",
+      "role": "hero_prop",
+      "priority": "must"
+    },
+    {
+      "id": "sand_channel_path",
+      "description": "A readable sand channel path that connects entry, mirror, and door.",
+      "role": "navigation",
+      "priority": "should"
+    },
+    {
+      "id": "incense_braziers",
+      "description": "Small braziers that mark the ritual circle around the mirror.",
+      "role": "light_fixture",
+      "priority": "must"
+    },
+    {
+      "id": "sealed_sun_door",
+      "description": "A locked door with a sun mark beyond the central mirror.",
+      "role": "interactive",
+      "priority": "should"
+    },
+    {
+      "id": "date_palm_shadows",
+      "description": "Background shade shapes that frame the courtyard edge.",
+      "role": "environment_structure",
+      "priority": "should"
+    }
+  ],
+  "avoid": [
+    "real religious symbols",
+    "weapons",
+    "modern cables"
+  ],
+  "constraints": {
+    "platform": "glb",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 90000,
+      "texture_resolution": 1024,
+      "mobile_friendly": true
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "Show the courtyard shell, mirror altar, and sealed sun door.",
+      "framing": "cinematic_wide"
+    },
+    {
+      "id": "mirror_detail",
+      "purpose": "Inspect the oracle mirror and sand channels.",
+      "framing": "inspection"
+    }
+  ],
+  "curiosity_goals": [
+    "What does the oracle mirror reflect at sunset?",
+    "Why do the sand channels point at the sealed sun door?",
+    "Who tends the incense braziers?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "scene_package",
+    "glb"
+  ],
+  "authoring_notes": "Phase 32 JSON-only Wonder example focused on courtyard modules, ritual navigation, and compact preview budgets."
+}

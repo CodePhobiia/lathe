@@ -1,0 +1,36 @@
+{
+  "schema_version": "lathe.wonder_report.v1",
+  "scene_id": "environment_module_showcase",
+  "scene_version": 1,
+  "mode": "preview",
+  "status": "golden_fixture_ready",
+  "summary": "environment_module_showcase validates as a deterministic Wonder golden fixture with proxy-only preview build/render/export evidence.",
+  "counts": {
+    "objects": 9,
+    "asset_tasks": 9,
+    "assembly_tasks": 9,
+    "render_tasks": 2,
+    "export_tasks": 1,
+    "materials": 5,
+    "lights": 1,
+    "cameras": 1
+  },
+  "optional_lanes": {
+    "blender": {
+      "status": "skipped_optional",
+      "blocking": false,
+      "reason": "Blender-backed rendering is outside Wave 5 example-golden core mode."
+    },
+    "roblox": {
+      "status": "skipped_optional",
+      "blocking": false,
+      "reason": "Roblox Studio execution is outside Wave 5 example-golden core mode."
+    }
+  },
+  "artifacts": {
+    "scene_plan": "expected/scene_plan.example.json",
+    "scene_manifest": "expected/scene_manifest.example.json",
+    "preview_evidence": "expected/preview_evidence.example.json"
+  },
+  "diagnostics": []
+}

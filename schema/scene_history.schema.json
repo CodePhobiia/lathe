@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-history-v1.json",
+  "title": "Lathe Wonder Scene History v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_history.v1"
+    },
+    "history_id": {
+      "type": "string",
+      "pattern": "^scenehist_[a-z0-9_]{3,96}$"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/history_record"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/metadata_value"
+      }
+    }
+  },
+  "$defs": {
+    "memory_id": {
+      "type": "string",
+      "pattern": "^mem_[a-z0-9_]{3,80}$"
+    },
+    "patch_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "payload": {
+          "type": "object"
+        }
+      }
+    },
+    "scene_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/metadata_value"
+      }
+    },
+    "metadata_value": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metadata_value"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/metadata_value"
+          }
+        }
+      ]
+    },
+    "history_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "forward_patch",
+        "inverse_patch",
+        "before_scene_hash",
+        "after_scene_hash",
+        "timestamp",
+        "validation_reports",
+        "render_reports"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/memory_id"
+        },
+        "forward_patch": {
+          "$ref": "#/$defs/patch_ref"
+        },
+        "inverse_patch": {
+          "$ref": "#/$defs/patch_ref"
+        },
+        "before_scene_hash": {
+          "$ref": "#/$defs/scene_hash"
+        },
+        "after_scene_hash": {
+          "$ref": "#/$defs/scene_hash"
+        },
+        "timestamp": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "validation_reports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/report"
+          }
+        },
+        "render_reports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/report"
+          }
+        },
+        "comparison_reports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/report"
+          }
+        }
+      }
+    }
+  }
+}

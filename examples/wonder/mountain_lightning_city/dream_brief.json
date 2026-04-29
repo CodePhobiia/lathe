@@ -1,0 +1,130 @@
+{
+  "schema_version": "lathe.dream_brief.v1",
+  "brief_id": "mountain_lightning_city",
+  "title": "Mountain Lightning City",
+  "one_sentence": "A storm-lit cliff city street where terraces, lanterns, and a lightning rod tower frame a playable Wonder seed.",
+  "source_prompt": "A vertical mountain city during a thunderstorm, with basalt terraces, switchback stairs, copper storm lanterns, a sky bridge gate, and a lightning rod tower that keeps getting struck.",
+  "genre": [
+    "mythic urban",
+    "storm fantasy"
+  ],
+  "mood": [
+    "awe",
+    "danger",
+    "alive"
+  ],
+  "scale": "street_corner",
+  "intent": {
+    "setting": "A compact street corner carved into a high mountain face during an active storm.",
+    "emotional_goal": "The first view should feel tall, charged, and barely safe.",
+    "primary_interaction": "Inspect the lightning rod tower and decide whether to open the sky bridge gate.",
+    "spatial_logic": "A switchback path climbs from the entry landing toward the tower, with terraces and a gate forming the vertical route."
+  },
+  "style": {
+    "palette": [
+      "storm violet",
+      "wet basalt",
+      "copper lantern",
+      "cloud silver",
+      "warning amber"
+    ],
+    "materials": [
+      "stacked basalt",
+      "weathered copper",
+      "rain glass",
+      "painted cloth"
+    ],
+    "lighting": "Cold lightning pulses over wet stone while copper lanterns keep the path readable.",
+    "form_language": [
+      "vertical terraces",
+      "switchback stairs",
+      "sky bridges",
+      "banner lines",
+      "antenna spires"
+    ],
+    "avoid_styles": [
+      "modern skyscraper glass",
+      "real city signage",
+      "photoreal traffic"
+    ]
+  },
+  "required_elements": [
+    {
+      "id": "terrace_wall_modules",
+      "description": "Stacked wall and balcony modules that define the cliff street.",
+      "role": "architecture",
+      "priority": "must"
+    },
+    {
+      "id": "lightning_rod_tower",
+      "description": "A copper tower that repeatedly draws lightning to the city.",
+      "role": "hero_prop",
+      "priority": "must"
+    },
+    {
+      "id": "switchback_stairs",
+      "description": "A readable stair route that climbs between the terraces.",
+      "role": "navigation",
+      "priority": "must"
+    },
+    {
+      "id": "sky_bridge_gate",
+      "description": "A closed gate leading to a narrow bridge lost in storm cloud.",
+      "role": "interactive",
+      "priority": "should"
+    },
+    {
+      "id": "storm_lanterns",
+      "description": "Copper lanterns that mark the safe route through the rain.",
+      "role": "light_fixture",
+      "priority": "must"
+    },
+    {
+      "id": "cloudline_backdrop",
+      "description": "Layered cloud silhouettes that sell the height of the city.",
+      "role": "environment_structure",
+      "priority": "should"
+    }
+  ],
+  "avoid": [
+    "real brand signs",
+    "cars",
+    "modern power grids"
+  ],
+  "constraints": {
+    "platform": "glb",
+    "complexity": "preview",
+    "performance": {
+      "triangle_budget": 120000,
+      "texture_resolution": 1024,
+      "mobile_friendly": false
+    },
+    "content": {
+      "safety_profile": "general",
+      "ip_policy": "original_only"
+    }
+  },
+  "camera_intents": [
+    {
+      "id": "reveal",
+      "purpose": "Show the vertical route, storm lanterns, and tower silhouette.",
+      "framing": "cinematic_wide"
+    },
+    {
+      "id": "tower_detail",
+      "purpose": "Inspect the charged lightning rod and copper grounding rings.",
+      "framing": "inspection"
+    }
+  ],
+  "curiosity_goals": [
+    "Why does lightning strike the same tower?",
+    "What waits beyond the sky bridge gate?",
+    "Who keeps the storm lanterns lit?"
+  ],
+  "export_targets": [
+    "scene_graph",
+    "scene_package",
+    "glb"
+  ],
+  "authoring_notes": "Phase 32 JSON-only Wonder example. The committed Scene Graph is contract source data; build and render artifacts are intentionally not checked in."
+}

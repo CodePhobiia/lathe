@@ -1,0 +1,609 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/layout-plan-v1.json",
+  "title": "Lathe Wonder Layout Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "scene_version",
+    "generated_by",
+    "layout",
+    "regions",
+    "placements",
+    "path_plan",
+    "reuse_groups",
+    "intersections",
+    "wall_segments",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.layout_plan.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "generated_by": {
+      "const": "lathe.scene.layout"
+    },
+    "layout": {
+      "$ref": "#/$defs/layout_contract"
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/region_plan"
+      }
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/placement"
+      }
+    },
+    "path_plan": {
+      "$ref": "#/$defs/path_plan"
+    },
+    "reuse_groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reuse_group"
+      }
+    },
+    "intersections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/intersection"
+      }
+    },
+    "wall_segments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/wall_segment"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "region_id": {
+      "type": "string",
+      "pattern": "^region_[a-z0-9_]{3,80}$"
+    },
+    "region_ref": {
+      "type": "string",
+      "pattern": "^(region_[a-z0-9_]{3,80}|region_unassigned)$"
+    },
+    "scene_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(obj|region|camera|light|curiosity|hidden)_[a-z0-9_]{3,80}$"
+    },
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    },
+    "string_array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "layout_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room_size",
+        "density",
+        "avoid_intersections",
+        "focal_point",
+        "main_path",
+        "modular_walls"
+      ],
+      "properties": {
+        "room_size": {
+          "$ref": "#/$defs/vector3"
+        },
+        "density": {
+          "enum": [
+            "sparse",
+            "medium",
+            "dense"
+          ]
+        },
+        "avoid_intersections": {
+          "type": "boolean"
+        },
+        "focal_point": {
+          "$ref": "#/$defs/scene_ref"
+        },
+        "main_path": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "from",
+            "to",
+            "width"
+          ],
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/scene_ref"
+            },
+            "to": {
+              "$ref": "#/$defs/scene_ref"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "modular_walls": {
+          "$ref": "#/$defs/modular_wall_contract"
+        }
+      }
+    },
+    "region_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "region_id",
+        "center",
+        "size",
+        "min",
+        "max",
+        "source_index"
+      ],
+      "properties": {
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "center": {
+          "$ref": "#/$defs/vector3"
+        },
+        "size": {
+          "$ref": "#/$defs/vector3"
+        },
+        "min": {
+          "$ref": "#/$defs/vector3"
+        },
+        "max": {
+          "$ref": "#/$defs/vector3"
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "region_id",
+        "position",
+        "rotation",
+        "scale",
+        "footprint",
+        "bounds",
+        "anchor",
+        "inside_region",
+        "source_index"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_ref"
+        },
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        },
+        "scale": {
+          "$ref": "#/$defs/vector3"
+        },
+        "footprint": {
+          "$ref": "#/$defs/vector3"
+        },
+        "bounds": {
+          "$ref": "#/$defs/bounds"
+        },
+        "anchor": {
+          "enum": [
+            "authored_transform",
+            "region_center_fallback",
+            "origin_fallback"
+          ]
+        },
+        "inside_region": {
+          "type": "boolean"
+        },
+        "source_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "$ref": "#/$defs/vector3"
+        },
+        "max": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "modular_wall_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "regions",
+        "sides",
+        "module_length",
+        "snap_grid",
+        "height",
+        "thickness"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/region_id"
+          },
+          "uniqueItems": true
+        },
+        "sides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/wall_side"
+          },
+          "uniqueItems": true
+        },
+        "module_length": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "snap_grid": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "thickness": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "wall_side": {
+      "enum": [
+        "north",
+        "south",
+        "east",
+        "west"
+      ]
+    },
+    "wall_segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "segment_id",
+        "region_id",
+        "side",
+        "module_index",
+        "center",
+        "rotation",
+        "length",
+        "height",
+        "thickness",
+        "snap_grid",
+        "bounds",
+        "aligned_to_grid",
+        "source"
+      ],
+      "properties": {
+        "segment_id": {
+          "type": "string",
+          "pattern": "^wall_[a-z0-9_]{3,120}$"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_id"
+        },
+        "side": {
+          "$ref": "#/$defs/wall_side"
+        },
+        "module_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "center": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        },
+        "length": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "thickness": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "snap_grid": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "bounds": {
+          "$ref": "#/$defs/bounds"
+        },
+        "aligned_to_grid": {
+          "type": "boolean"
+        },
+        "source": {
+          "const": "layout.modular_walls"
+        }
+      }
+    },
+    "path_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "width",
+        "waypoints",
+        "blocked_by"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/scene_ref"
+        },
+        "to": {
+          "$ref": "#/$defs/scene_ref"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "waypoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/vector3"
+          }
+        },
+        "blocked_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "ref",
+        "generated"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "source_asset",
+            "lathe_asset",
+            "source_family",
+            "source_kit",
+            "generated_fallback"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "reuse_group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group_id",
+        "asset_signature",
+        "source",
+        "variant",
+        "object_ids",
+        "shared_asset",
+        "asset_fields",
+        "instance_override_fields",
+        "asset_fingerprint",
+        "instance_fingerprints"
+      ],
+      "properties": {
+        "group_id": {
+          "type": "string",
+          "pattern": "^reuse_group_[a-z0-9_]{3,120}$"
+        },
+        "asset_signature": {
+          "type": "string",
+          "pattern": "^scene_instance\\.v1:[a-z0-9_:]+$"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "variant": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "object_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        },
+        "shared_asset": {
+          "type": "boolean"
+        },
+        "asset_fields": {
+          "$ref": "#/$defs/string_array"
+        },
+        "instance_override_fields": {
+          "$ref": "#/$defs/string_array"
+        },
+        "asset_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        },
+        "instance_fingerprints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "object_id",
+              "fingerprint",
+              "fields"
+            ],
+            "properties": {
+              "object_id": {
+                "$ref": "#/$defs/object_id"
+              },
+              "fingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{16}$"
+              },
+              "fields": {
+                "$ref": "#/$defs/string_array"
+              }
+            }
+          }
+        }
+      }
+    },
+    "intersection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_a",
+        "object_b",
+        "region_id",
+        "overlap"
+      ],
+      "properties": {
+        "object_a": {
+          "$ref": "#/$defs/object_id"
+        },
+        "object_b": {
+          "$ref": "#/$defs/object_id"
+        },
+        "region_id": {
+          "$ref": "#/$defs/region_ref"
+        },
+        "overlap": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "severity",
+        "contract",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ]
+        },
+        "contract": {
+          "const": "layout_plan"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,793 @@
+{
+  "schema_version": "lathe.scene_graph.v1",
+  "scene_id": "environment_module_showcase",
+  "version": 1,
+  "prompt": "A modular room shell assembled from Wonder environment modules and terrain chunks.",
+  "style_bible": {
+    "mood": [
+      "readable",
+      "modular",
+      "place like"
+    ],
+    "palette": [
+      "warm stone",
+      "weathered green",
+      "soft emissive"
+    ],
+    "materials": [
+      "painted stone",
+      "natural mineral",
+      "soft emissive"
+    ],
+    "forms": [
+      "room shell",
+      "snap grid",
+      "clear silhouettes"
+    ],
+    "lighting": [
+      "soft key",
+      "debug fill"
+    ],
+    "avoid": []
+  },
+  "layout": {
+    "room_size": [
+      14.0,
+      10.0,
+      6.0
+    ],
+    "main_path": {
+      "from": "region_entry",
+      "to": "obj_env_arch_segment_005",
+      "width": 1.5
+    },
+    "focal_point": "obj_env_arch_segment_005",
+    "density": "medium",
+    "avoid_intersections": true,
+    "modular_walls": {
+      "enabled": true,
+      "regions": [
+        "region_environment_module_room"
+      ],
+      "sides": [
+        "north",
+        "south",
+        "east",
+        "west"
+      ],
+      "module_length": 2.0,
+      "snap_grid": 1.0,
+      "height": 3.0,
+      "thickness": 0.25
+    }
+  },
+  "regions": [
+    {
+      "region_id": "region_environment_module_room",
+      "name": "Environment Module Room",
+      "type": "interior",
+      "purpose": "Validate modular room shell, snap-grid modules, and terrain chunks.",
+      "mood": "readable",
+      "bounds": {
+        "center": [
+          0.0,
+          0.0,
+          2.0
+        ],
+        "size": [
+          14.0,
+          10.0,
+          6.0
+        ]
+      },
+      "semantic_tags": [
+        "env_module",
+        "room_shell"
+      ]
+    },
+    {
+      "region_id": "region_entry",
+      "name": "Entry",
+      "type": "threshold",
+      "purpose": "Start of the modular room path.",
+      "mood": "neutral",
+      "bounds": {
+        "center": [
+          0.0,
+          -4.0,
+          0.5
+        ],
+        "size": [
+          2.0,
+          1.0,
+          1.0
+        ]
+      },
+      "semantic_tags": [
+        "entry"
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "obj_env_room_shell_001",
+      "name": "Room Boundary Shell",
+      "role": "architecture",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_room_shell",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_room_shell_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "env_module",
+        "room_shell",
+        "scene_boundary",
+        "snap_profile_grid_1m"
+      ],
+      "state": {
+        "module_kind": "scene_boundary",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "required",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_floor_tile_002",
+      "name": "Modular Floor Tile",
+      "role": "architecture",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_floor",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_floor_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          -4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "env_module",
+        "floor_tile",
+        "snap_profile_grid_1m",
+        "walkable"
+      ],
+      "state": {
+        "module_kind": "floor",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_wall_segment_003",
+      "name": "Modular Wall Segment",
+      "role": "architecture",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_wall",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_wall_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          -4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "boundary",
+        "env_module",
+        "snap_profile_grid_1m",
+        "wall_segment"
+      ],
+      "state": {
+        "module_kind": "wall",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_ceiling_segment_004",
+      "name": "Modular Ceiling Segment",
+      "role": "architecture",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_ceiling",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_ceiling_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          0.0,
+          4.0,
+          3.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "ceiling_segment",
+        "env_module",
+        "overhead",
+        "snap_profile_grid_1m"
+      ],
+      "state": {
+        "module_kind": "ceiling",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_arch_segment_005",
+      "name": "Modular Arch Segment",
+      "role": "interactive",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_arch",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_arch_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          0.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "arch_segment",
+        "env_module",
+        "snap_profile_grid_1m",
+        "threshold"
+      ],
+      "state": {
+        "module_kind": "threshold",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_platform_module_006",
+      "name": "Modular Platform",
+      "role": "architecture",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_platform",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_platform_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          4.0,
+          -2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "env_module",
+        "platform",
+        "snap_profile_grid_1m",
+        "walkable"
+      ],
+      "state": {
+        "module_kind": "platform",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_stair_module_007",
+      "name": "Modular Stair",
+      "role": "architecture",
+      "region": "region_environment_module_room",
+      "lathe_asset": "architecture_stair",
+      "source_family": "environment_architecture",
+      "source_kit": "architecture_stair_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          4.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "env_module",
+        "navigation",
+        "snap_profile_grid_1m",
+        "stair"
+      ],
+      "state": {
+        "module_kind": "stair",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_background_silhouette_008",
+      "name": "Background Silhouette",
+      "role": "environment_structure",
+      "region": "region_environment_module_room",
+      "lathe_asset": "environment_structure",
+      "source_family": "environment_structure",
+      "source_kit": "environment_structure_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          0.0,
+          4.0,
+          1.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_architecture"
+        }
+      ],
+      "semantic_tags": [
+        "background_silhouette",
+        "env_module",
+        "snap_profile_grid_2m",
+        "vista_blocker"
+      ],
+      "state": {
+        "module_kind": "background",
+        "snap_profile": "grid_2m",
+        "snap_grid": 2.0,
+        "snap_point_count": 2,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    },
+    {
+      "object_id": "obj_env_terrain_chunk_009",
+      "name": "Terrain Chunk",
+      "role": "environment_structure",
+      "region": "region_environment_module_room",
+      "lathe_asset": "natural_terrain_chunk",
+      "source_family": "environment_structure",
+      "source_kit": "natural_terrain_chunk_kit",
+      "variant": "module_default",
+      "transform": {
+        "position": [
+          0.0,
+          2.0,
+          0.5
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "material_bindings": [
+        {
+          "slot": "body",
+          "material": "mat_stdlib_natural"
+        }
+      ],
+      "semantic_tags": [
+        "env_module",
+        "ground",
+        "snap_profile_grid_1m",
+        "terrain_chunk"
+      ],
+      "state": {
+        "module_kind": "terrain",
+        "snap_profile": "grid_1m",
+        "snap_grid": 1.0,
+        "snap_point_count": 4,
+        "boundary_role": "member",
+        "mesh_runtime": "not_claimed"
+      },
+      "affordances": [],
+      "provenance": {
+        "source": "deterministic_lathe",
+        "commercial_use": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "relationship_id": "rel_env_floor_supports_wall",
+      "from": "obj_env_floor_tile_002",
+      "to": "obj_env_wall_segment_003",
+      "type": "supports",
+      "description": "Floor tiles provide the snap plane for wall segments."
+    },
+    {
+      "relationship_id": "rel_env_shell_contains_modules",
+      "from": "obj_env_room_shell_001",
+      "to": "obj_env_floor_tile_002",
+      "type": "contains",
+      "description": "The boundary shell contains the modular floor, wall, arch, platform, stair, and terrain modules."
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "mat_stdlib_architecture",
+      "name": "Stdlib Architecture Stone",
+      "role": "architecture",
+      "palette_refs": [
+        "warm stone",
+        "aged plaster"
+      ],
+      "pbr": {
+        "basecolor": "#8f897c",
+        "metallic": 0.0,
+        "roughness": 0.82
+      }
+    },
+    {
+      "material_id": "mat_stdlib_dressing",
+      "name": "Stdlib Dressing Wood",
+      "role": "surface",
+      "palette_refs": [
+        "simple wood",
+        "painted trim"
+      ],
+      "pbr": {
+        "basecolor": "#9a6f46",
+        "metallic": 0.0,
+        "roughness": 0.72
+      }
+    },
+    {
+      "material_id": "mat_stdlib_natural",
+      "name": "Stdlib Natural Form",
+      "role": "terrain",
+      "palette_refs": [
+        "weathered green",
+        "mineral gray"
+      ],
+      "pbr": {
+        "basecolor": "#6f7f62",
+        "metallic": 0.0,
+        "roughness": 0.88
+      }
+    },
+    {
+      "material_id": "mat_stdlib_hero",
+      "name": "Stdlib Hero Metal",
+      "role": "mechanism",
+      "palette_refs": [
+        "aged brass",
+        "dark iron"
+      ],
+      "pbr": {
+        "basecolor": "#9a7a45",
+        "metallic": 0.65,
+        "roughness": 0.48
+      }
+    },
+    {
+      "material_id": "mat_stdlib_light",
+      "name": "Stdlib Soft Emissive",
+      "role": "accent",
+      "palette_refs": [
+        "soft emissive",
+        "moon blue"
+      ],
+      "pbr": {
+        "basecolor": "#f2c36b",
+        "metallic": 0.0,
+        "roughness": 0.35,
+        "emissive": "#f2c36b"
+      }
+    }
+  ],
+  "lights": [
+    {
+      "light_id": "light_env_module_key",
+      "type": "area",
+      "target": "obj_env_arch_segment_005",
+      "color": "soft emissive",
+      "intensity": 0.7,
+      "purpose": "Readable debug light for modular room assembly."
+    }
+  ],
+  "cameras": [
+    {
+      "camera_id": "camera_reveal",
+      "target": "obj_env_arch_segment_005",
+      "framing": "cinematic_wide",
+      "purpose": "Reveal the modular environment shell.",
+      "transform": {
+        "position": [
+          -6.0,
+          -8.0,
+          4.0
+        ],
+        "rotation": [
+          58.0,
+          0.0,
+          -32.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "fov_degrees": 50.0
+    }
+  ],
+  "curiosity_anchors": [
+    {
+      "anchor_id": "curiosity_env_boundary_shell",
+      "visible_clue": "The boundary shell shows where future rooms can attach.",
+      "hidden_fact": "The room shell stores the continuity boundary for future scene expansion.",
+      "attached_to": "obj_env_room_shell_001",
+      "suggested_user_actions": [
+        "inspect shell",
+        "expand room"
+      ],
+      "expansion_options": [
+        {
+          "id": "expand_adjacent_room",
+          "label": "Add an adjacent room using the same snap grid.",
+          "target_scope": "region_environment_module_room",
+          "required_assets": [
+            "env_room_shell",
+            "env_wall_segment",
+            "env_floor_tile"
+          ],
+          "continuity_constraints": [
+            "preserve snap grid",
+            "preserve boundary shell"
+          ]
+        }
+      ]
+    },
+    {
+      "anchor_id": "curiosity_env_terrain_transition",
+      "visible_clue": "A terrain chunk breaks the clean floor grid near the room edge.",
+      "hidden_fact": "The terrain chunk marks where exterior generation can begin.",
+      "attached_to": "obj_env_terrain_chunk_009",
+      "suggested_user_actions": [
+        "inspect terrain edge",
+        "open exterior"
+      ],
+      "expansion_options": [
+        {
+          "id": "open_exterior_edge",
+          "label": "Generate an exterior terrain transition.",
+          "target_scope": "obj_env_terrain_chunk_009",
+          "required_assets": [
+            "env_terrain_chunk",
+            "env_background_silhouette"
+          ],
+          "continuity_constraints": [
+            "preserve room shell"
+          ]
+        }
+      ]
+    }
+  ],
+  "hidden_state": [
+    {
+      "hidden_id": "hidden_env_boundary_shell",
+      "attached_to": "obj_env_room_shell_001",
+      "fact": "The room shell stores the continuity boundary for future scene expansion.",
+      "reveal_condition": "User inspects the boundary shell.",
+      "visible": false
+    },
+    {
+      "hidden_id": "hidden_env_terrain_transition",
+      "attached_to": "obj_env_terrain_chunk_009",
+      "fact": "The terrain chunk marks where exterior generation can begin.",
+      "reveal_condition": "User inspects the terrain chunk.",
+      "visible": false
+    }
+  ],
+  "exports": [
+    {
+      "target": "scene_graph",
+      "format": "json",
+      "path": "exports/environment_module_showcase.scene_graph.json"
+    }
+  ],
+  "build_artifacts": [],
+  "memory_events": [
+    {
+      "event_id": "mem_env_module_showcase_created",
+      "type": "fact",
+      "text": "The environment module showcase validates room shells, snap-grid modules, background silhouettes, and terrain chunks.",
+      "affected_ids": [
+        "region_environment_module_room"
+      ],
+      "source": "lathe.scene.environment"
+    }
+  ]
+}

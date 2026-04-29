@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/roblox-export-bundle-v1.json",
+  "title": "Lathe Wonder Roblox Export Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "stack_id",
+    "scene_id",
+    "profile_id",
+    "mode",
+    "status",
+    "paths",
+    "formats",
+    "manifest_summary",
+    "artifacts",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.roblox_export_bundle.v1"
+    },
+    "stack_id": {
+      "const": "lathe.stack.roblox_asset_kit_v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "preview",
+        "final"
+      ]
+    },
+    "status": {
+      "enum": [
+        "built",
+        "failed"
+      ]
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "manifest",
+        "glb_folder",
+        "fbx_folder",
+        "thumbnails",
+        "import_instructions"
+      ],
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/package_path"
+        },
+        "manifest": {
+          "$ref": "#/$defs/package_path"
+        },
+        "glb_folder": {
+          "$ref": "#/$defs/package_path"
+        },
+        "fbx_folder": {
+          "$ref": "#/$defs/package_path"
+        },
+        "thumbnails": {
+          "$ref": "#/$defs/package_path"
+        },
+        "import_instructions": {
+          "$ref": "#/$defs/package_path"
+        }
+      }
+    },
+    "formats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "glb",
+        "fbx"
+      ],
+      "properties": {
+        "glb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "built",
+                "not_built"
+              ]
+            }
+          }
+        },
+        "fbx": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason",
+            "handoff_manifest"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "handoff_required",
+                "not_built"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "handoff_manifest": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "manifest_summary": {
+      "type": "object"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "report_path": {
+      "$ref": "#/$defs/package_path"
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "package_path": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "(^/|^[A-Za-z]:|(^|/)\\.\\.(?:/|$))"
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": [
+        "target",
+        "format",
+        "path",
+        "status"
+      ],
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "$ref": "#/$defs/package_path"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "json_value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/json_value"
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "name",
+        "severity",
+        "contract",
+        "phase",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/json_value"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,830 @@
+{
+  "assembly_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A low stone wall and arch shell defining the shrine boundary.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_courtyard_wall_shell_7efeaac47eee",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:courtyard_wall_shell:default:8f03ed1faa6e2201",
+      "depends_on": [
+        "asset_task_courtyard_wall_shell_7efeaac47eee"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Courtyard Wall Shell",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "architecture",
+        "semantic_tags": [
+          "architecture",
+          "must",
+          "courtyard_wall_shell"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_courtyard_wall_shell_001",
+      "region": "region_desert_oracle_shrine_main",
+      "task_id": "assembly_task_obj_courtyard_wall_shell_001_62b5fc3125",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0.0,
+          -4.48,
+          2.25
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -90.0
+        ],
+        "scale": [
+          1.4,
+          1.4,
+          1.2
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Background shade shapes that frame the courtyard edge.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_date_palm_shadows_a27cd710312f",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:date_palm_shadows:default:cb6c2d9c2581460c",
+      "depends_on": [
+        "asset_task_date_palm_shadows_a27cd710312f"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Date Palm Shadows",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "environment_structure",
+        "semantic_tags": [
+          "environment_structure",
+          "should",
+          "date_palm_shadows"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_date_palm_shadows_006",
+      "region": "region_desert_oracle_shrine_main",
+      "task_id": "assembly_task_obj_date_palm_shadows_006_eccd254828",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -5.478,
+          -1.384,
+          1.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          198.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Small braziers that mark the ritual circle around the mirror.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_incense_braziers_e45dc09ff50c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:incense_braziers:default:46c5f6f78b5ed19c",
+      "depends_on": [
+        "asset_task_incense_braziers_e45dc09ff50c"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Incense Braziers",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "light_fixture",
+        "semantic_tags": [
+          "light_fixture",
+          "must",
+          "incense_braziers"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_incense_braziers_004",
+      "region": "region_desert_oracle_shrine_main",
+      "task_id": "assembly_task_obj_incense_braziers_004_317b3ec5c8",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          3.386,
+          3.624,
+          3.1
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          54.0
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A polished mirror disc mounted on the central altar.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "asset_task_id": "asset_task_oracle_mirror_24b4686510ba",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:oracle_mirror:default:8242f453fb044abe",
+      "depends_on": [
+        "asset_task_oracle_mirror_24b4686510ba"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+            "id": "inspect_oracle_mirror",
+            "reveals": "hidden_what_does_the_oracle_mirror_reflect_at_sunset_001"
+          }
+        ],
+        "name": "Oracle Mirror",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "hero_prop",
+        "semantic_tags": [
+          "hero_prop",
+          "must",
+          "oracle_mirror"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_oracle_mirror_002",
+      "region": "region_desert_oracle_shrine_main",
+      "task_id": "assembly_task_obj_oracle_mirror_002_30041f70ea",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.0
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A readable sand channel path that connects entry, mirror, and door.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_sand_channel_path_3656ad112a11",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sand_channel_path:default:a72b58a2c81860f8",
+      "depends_on": [
+        "asset_task_sand_channel_path_3656ad112a11"
+      ],
+      "instance_overrides": {
+        "affordances": [],
+        "name": "Sand Channel Path",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "navigation",
+        "semantic_tags": [
+          "navigation",
+          "should",
+          "sand_channel_path"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_sand_channel_path_003",
+      "region": "region_desert_oracle_shrine_main",
+      "task_id": "assembly_task_obj_sand_channel_path_003_9bd5be817e",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          5.478,
+          -1.384,
+          0.05
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -18.0
+        ],
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ]
+      }
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A locked door with a sun mark beyond the central mirror.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "asset_task_id": "asset_task_sealed_sun_door_1309690f9469",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_sun_door:default:343ff42f33d4842f",
+      "depends_on": [
+        "asset_task_sealed_sun_door_1309690f9469"
+      ],
+      "instance_overrides": {
+        "affordances": [
+          {
+            "action": "Inspect the oracle mirror and decide whether to unlock the sealed sun door.",
+            "id": "use_sealed_sun_door"
+          }
+        ],
+        "name": "Sealed Sun Door",
+        "provenance": {
+          "commercial_use": true,
+          "source": "deterministic_lathe"
+        },
+        "role": "interactive",
+        "semantic_tags": [
+          "interactive",
+          "should",
+          "sealed_sun_door"
+        ]
+      },
+      "mode": "preview",
+      "object_id": "obj_sealed_sun_door_005",
+      "region": "region_desert_oracle_shrine_main",
+      "task_id": "assembly_task_obj_sealed_sun_door_005_d94d12a2e3",
+      "task_type": "scene_assembly",
+      "transform": {
+        "position": [
+          -3.386,
+          3.624,
+          0.75
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          126.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "asset_tasks": [
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A low stone wall and arch shell defining the shrine boundary.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:courtyard_wall_shell:default:8f03ed1faa6e2201",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_courtyard_wall_shell_001"
+      ],
+      "override_fingerprint": "740358b7e6704fc1",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "courtyard_wall_shell",
+        "ref": "courtyard_wall_shell",
+        "source_family": "environment_architecture"
+      },
+      "task_id": "asset_task_courtyard_wall_shell_7efeaac47eee",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Background shade shapes that frame the courtyard edge.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:date_palm_shadows:default:cb6c2d9c2581460c",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_date_palm_shadows_006"
+      ],
+      "override_fingerprint": "6240f91b014e7065",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "date_palm_shadows",
+        "ref": "date_palm_shadows",
+        "source_family": "environment_structure"
+      },
+      "task_id": "asset_task_date_palm_shadows_a27cd710312f",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "Small braziers that mark the ritual circle around the mirror.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:incense_braziers:default:46c5f6f78b5ed19c",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_incense_braziers_004"
+      ],
+      "override_fingerprint": "9ef2967825da55a0",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "incense_braziers",
+        "ref": "incense_braziers",
+        "source_family": "practical_light"
+      },
+      "task_id": "asset_task_incense_braziers_e45dc09ff50c",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A polished mirror disc mounted on the central altar.",
+          "lowered_from": "dream_brief",
+          "priority": "must"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:oracle_mirror:default:8242f453fb044abe",
+      "estimated_complexity": 15,
+      "mode": "preview",
+      "object_ids": [
+        "obj_oracle_mirror_002"
+      ],
+      "override_fingerprint": "fc7f416196417add",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "oracle_mirror",
+        "ref": "oracle_mirror",
+        "source_family": "hero_prop"
+      },
+      "task_id": "asset_task_oracle_mirror_24b4686510ba",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A readable sand channel path that connects entry, mirror, and door.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sand_channel_path:default:a72b58a2c81860f8",
+      "estimated_complexity": 13,
+      "mode": "preview",
+      "object_ids": [
+        "obj_sand_channel_path_003"
+      ],
+      "override_fingerprint": "2313647a4a8f59e7",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sand_channel_path",
+        "ref": "sand_channel_path",
+        "source_family": "navigation_marker"
+      },
+      "task_id": "asset_task_sand_channel_path_3656ad112a11",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    },
+    {
+      "asset_overrides": {
+        "material_bindings": [
+          {
+            "material": "mat_sun_bleached_limestone_001",
+            "slot": "primary"
+          }
+        ],
+        "state": {
+          "description": "A locked door with a sun mark beyond the central mirror.",
+          "lowered_from": "dream_brief",
+          "priority": "should"
+        }
+      },
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_sun_door:default:343ff42f33d4842f",
+      "estimated_complexity": 15,
+      "mode": "preview",
+      "object_ids": [
+        "obj_sealed_sun_door_005"
+      ],
+      "override_fingerprint": "86b23ba1bfe5b00b",
+      "requires_unique_build": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sealed_sun_door",
+        "ref": "sealed_sun_door",
+        "source_family": "interactive_mechanism"
+      },
+      "task_id": "asset_task_sealed_sun_door_1309690f9469",
+      "task_type": "asset_build",
+      "uniqueness_reasons": [
+        "asset_overrides"
+      ],
+      "variant": null
+    }
+  ],
+  "cache_keys": [
+    {
+      "asset_task_id": "asset_task_courtyard_wall_shell_7efeaac47eee",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:courtyard_wall_shell:default:8f03ed1faa6e2201",
+      "object_ids": [
+        "obj_courtyard_wall_shell_001"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "courtyard_wall_shell",
+        "ref": "courtyard_wall_shell",
+        "source_family": "environment_architecture"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_date_palm_shadows_a27cd710312f",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:date_palm_shadows:default:cb6c2d9c2581460c",
+      "object_ids": [
+        "obj_date_palm_shadows_006"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "date_palm_shadows",
+        "ref": "date_palm_shadows",
+        "source_family": "environment_structure"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_incense_braziers_e45dc09ff50c",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:incense_braziers:default:46c5f6f78b5ed19c",
+      "object_ids": [
+        "obj_incense_braziers_004"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "incense_braziers",
+        "ref": "incense_braziers",
+        "source_family": "practical_light"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_oracle_mirror_24b4686510ba",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:oracle_mirror:default:8242f453fb044abe",
+      "object_ids": [
+        "obj_oracle_mirror_002"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "oracle_mirror",
+        "ref": "oracle_mirror",
+        "source_family": "hero_prop"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_sand_channel_path_3656ad112a11",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sand_channel_path:default:a72b58a2c81860f8",
+      "object_ids": [
+        "obj_sand_channel_path_003"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sand_channel_path",
+        "ref": "sand_channel_path",
+        "source_family": "navigation_marker"
+      }
+    },
+    {
+      "asset_task_id": "asset_task_sealed_sun_door_1309690f9469",
+      "cache_key": "scene_asset.v1:preview:lathe_asset:sealed_sun_door:default:343ff42f33d4842f",
+      "object_ids": [
+        "obj_sealed_sun_door_005"
+      ],
+      "shareable": true,
+      "source": {
+        "generated": false,
+        "kind": "lathe_asset",
+        "lathe_asset": "sealed_sun_door",
+        "ref": "sealed_sun_door",
+        "source_family": "interactive_mechanism"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "export_tasks": [
+    {
+      "depends_on": [
+        "assembly_task_obj_courtyard_wall_shell_001_62b5fc3125",
+        "assembly_task_obj_date_palm_shadows_006_eccd254828",
+        "assembly_task_obj_incense_braziers_004_317b3ec5c8",
+        "assembly_task_obj_oracle_mirror_002_30041f70ea",
+        "assembly_task_obj_sand_channel_path_003_9bd5be817e",
+        "assembly_task_obj_sealed_sun_door_005_d94d12a2e3"
+      ],
+      "format": "glb",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "dist/exports/desert_oracle_shrine.glb",
+      "source_index": 2,
+      "target": "glb",
+      "task_id": "export_task_glb_glb_ae7294d907",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "assembly_task_obj_courtyard_wall_shell_001_62b5fc3125",
+        "assembly_task_obj_date_palm_shadows_006_eccd254828",
+        "assembly_task_obj_incense_braziers_004_317b3ec5c8",
+        "assembly_task_obj_oracle_mirror_002_30041f70ea",
+        "assembly_task_obj_sand_channel_path_003_9bd5be817e",
+        "assembly_task_obj_sealed_sun_door_005_d94d12a2e3"
+      ],
+      "format": "json",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "scene_graph.json",
+      "source_index": 0,
+      "target": "scene_graph",
+      "task_id": "export_task_scene_graph_json_cf2b39fbd3",
+      "task_type": "scene_export"
+    },
+    {
+      "depends_on": [
+        "render_task_camera_debug_topdown_bc8a62809e",
+        "render_task_camera_mirror_detail_e008fc286b",
+        "render_task_camera_reveal_3b7c5655ea"
+      ],
+      "format": "lathepkg",
+      "metadata": {
+        "lowered_from": "dream_brief",
+        "planned_only": true
+      },
+      "mode": "preview",
+      "path": "dist/desert_oracle_shrine.lathepkg",
+      "source_index": 1,
+      "target": "scene_package",
+      "task_id": "export_task_scene_package_lathepkg_2e1270e42c",
+      "task_type": "scene_export"
+    }
+  ],
+  "metadata": {
+    "budgets": {
+      "max_complexity": 320,
+      "max_objects": 32,
+      "quality": "preview",
+      "render_resolution": [
+        1280,
+        720
+      ],
+      "texture_resolution": 1024
+    },
+    "counts": {
+      "assembly_tasks": 6,
+      "asset_tasks": 6,
+      "cameras": 3,
+      "export_tasks": 3,
+      "lights": 1,
+      "materials": 5,
+      "objects": 6,
+      "render_tasks": 3
+    },
+    "estimated_complexity": 116,
+    "planner": "lathe.scene.planner",
+    "planner_version": 1
+  },
+  "mode": "preview",
+  "plan_id": "plan_desert_oracle_shrine_49c6398ed15c",
+  "render_tasks": [
+    {
+      "camera_id": "camera_debug_topdown",
+      "depends_on": [
+        "assembly_task_obj_courtyard_wall_shell_001_62b5fc3125",
+        "assembly_task_obj_date_palm_shadows_006_eccd254828",
+        "assembly_task_obj_incense_braziers_004_317b3ec5c8",
+        "assembly_task_obj_oracle_mirror_002_30041f70ea",
+        "assembly_task_obj_sand_channel_path_003_9bd5be817e",
+        "assembly_task_obj_sealed_sun_door_005_d94d12a2e3"
+      ],
+      "framing": "topdown",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_oracle_mirror_002",
+      "task_id": "render_task_camera_debug_topdown_bc8a62809e",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_mirror_detail",
+      "depends_on": [
+        "assembly_task_obj_courtyard_wall_shell_001_62b5fc3125",
+        "assembly_task_obj_date_palm_shadows_006_eccd254828",
+        "assembly_task_obj_incense_braziers_004_317b3ec5c8",
+        "assembly_task_obj_oracle_mirror_002_30041f70ea",
+        "assembly_task_obj_sand_channel_path_003_9bd5be817e",
+        "assembly_task_obj_sealed_sun_door_005_d94d12a2e3"
+      ],
+      "framing": "inspection",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_oracle_mirror_002",
+      "task_id": "render_task_camera_mirror_detail_e008fc286b",
+      "task_type": "scene_render"
+    },
+    {
+      "camera_id": "camera_reveal",
+      "depends_on": [
+        "assembly_task_obj_courtyard_wall_shell_001_62b5fc3125",
+        "assembly_task_obj_date_palm_shadows_006_eccd254828",
+        "assembly_task_obj_incense_braziers_004_317b3ec5c8",
+        "assembly_task_obj_oracle_mirror_002_30041f70ea",
+        "assembly_task_obj_sand_channel_path_003_9bd5be817e",
+        "assembly_task_obj_sealed_sun_door_005_d94d12a2e3"
+      ],
+      "framing": "cinematic_wide",
+      "mode": "preview",
+      "passes": [
+        "beauty",
+        "object_id"
+      ],
+      "resolution": [
+        1280,
+        720
+      ],
+      "target": "obj_oracle_mirror_002",
+      "task_id": "render_task_camera_reveal_3b7c5655ea",
+      "task_type": "scene_render"
+    }
+  ],
+  "scene_id": "desert_oracle_shrine",
+  "schema_version": "lathe.scene_plan.v1",
+  "source_brief_id": "desert_oracle_shrine",
+  "source_prompt": "A desert oracle shrine at sunset, with wind-carved arches, a central mirror altar, sand channels, incense braziers, cloth shade, and a sealed sun door.",
+  "warnings": []
+}

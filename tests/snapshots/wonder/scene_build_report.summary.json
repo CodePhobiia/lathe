@@ -1,0 +1,99 @@
+{
+  "artifact_keys": [
+    "asset_reuse_report",
+    "object_selection_payloads",
+    "scene_assembly",
+    "scene_build_proxy",
+    "scene_export_artifacts",
+    "scene_graph",
+    "scene_graph_normalized",
+    "scene_manifest",
+    "scene_package_manifest",
+    "scene_plan",
+    "scene_quality_report",
+    "scene_render_artifacts",
+    "validation_report",
+    "wonder_report",
+    "world_memory"
+  ],
+  "asset_materialization": {
+    "builds_failed": 0,
+    "builds_requested": 0,
+    "builds_succeeded": 0,
+    "manifest_path": null,
+    "requested": false
+  },
+  "asset_statuses": [
+    "built"
+  ],
+  "asset_task_ids": [
+    "asset_task_sealed_archive_door_75255175465a",
+    "asset_task_astrolabe_table_8787fc2f5480",
+    "asset_task_candle_cluster_f7382aad3890",
+    "asset_task_rib_arch_ring_e6d6bd7b75e8"
+  ],
+  "cache_reuse": {
+    "asset_tasks": 4,
+    "built_assets": 4,
+    "reused_assets": 0
+  },
+  "counts": {
+    "assembly_tasks": 4,
+    "asset_builds_failed": 0,
+    "asset_builds_requested": 0,
+    "asset_builds_succeeded": 0,
+    "asset_tasks": 4,
+    "export_artifacts": 2,
+    "export_tasks": 3,
+    "render_artifacts": 7,
+    "render_tasks": 3
+  },
+  "diagnostics": [],
+  "executor": "lathe.scene.executor.offline_proxy_v1",
+  "mode": "preview",
+  "provider_fallback_trace": {
+    "effective_runtime": {
+      "shape_allow_fallback": true,
+      "shape_provider": "auto",
+      "shape_strict": false
+    },
+    "fallbacks": {
+      "deterministic_proxy_assets": true,
+      "deterministic_proxy_glb_exporter": true,
+      "deterministic_proxy_renderer": true,
+      "provider_fallbacks_executed": false
+    },
+    "diagnostic_policy": {
+      "fallback_diagnostics": "warnings_allowed",
+      "plan_diagnostics": "errors_are_errors",
+      "scene_validation": "errors_are_errors"
+    },
+    "runtime": {
+      "asset_build": "deterministic_proxy_manifest",
+      "asset_materialization": "not_executed",
+      "exporter": "lathe.scene.proxy_glb_exporter.v1",
+      "provider_calls": "not_executed",
+      "renderer": "lathe.scene.proxy_renderer.v1"
+    }
+  },
+  "quality": {
+    "score": 100,
+    "status": "passed",
+    "summary": {
+      "diagnostics": 0,
+      "errors": 0,
+      "validators": 9,
+      "warnings": 0
+    }
+  },
+  "runtime": {
+    "asset_build": "deterministic_proxy_manifest",
+    "asset_materialization": "not_executed",
+    "exporter": "lathe.scene.proxy_glb_exporter.v1",
+    "provider_calls": "not_executed",
+    "renderer": "lathe.scene.proxy_renderer.v1"
+  },
+  "scene_id": "alchemist_observatory",
+  "schema_version": "lathe.scene_build_report.v1",
+  "status": "proxy_scene_package_built"
+}
