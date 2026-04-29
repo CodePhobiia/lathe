@@ -34,6 +34,7 @@ _DEBUG_MATERIAL_WARN = 0.50
 _HIGHLOW_FAKE_WARN = 0.40
 _ATTACHMENT_SEATING_WARN = 0.50
 _HIERARCHY_BALANCE_WARN = 0.50
+_FAMILY_GRAMMAR_COVERAGE_WARN = 0.50
 
 
 _RECOMMENDATIONS: dict[str, str] = {
@@ -63,6 +64,11 @@ _RECOMMENDATIONS: dict[str, str] = {
         "tertiary details so the asset reads as designed rather than "
         "blockout."
     ),
+    "family_grammar_coverage": (
+        "Add the family-grammar requirements flagged in the "
+        "family_grammar.requirement_results section — see the "
+        "recommendations there for specifics."
+    ),
 }
 
 
@@ -88,6 +94,25 @@ def _shape_assessment(runtime: dict[str, Any]) -> dict[str, Any]:
 
 def _visual_metrics(runtime: dict[str, Any]) -> dict[str, Any]:
     return _as_dict(_as_dict(runtime.get("visual_quality")).get("metrics"))
+
+
+def _family_grammar_coverage(runtime: dict[str, Any]) -> tuple[float, bool]:
+    """Return ``(coverage, evidence_present)`` from runtime.
+
+    When the family_grammar validator has not run (or no ``coverage``
+    field is present), evidence_present is ``False`` and coverage
+    defaults to ``1.0`` so no warning fires. When evidence is present
+    but malformed, the default also remains ``1.0`` and the boolean
+    stays ``False`` so the warning is suppressed.
+    """
+    family_grammar = runtime.get("family_grammar")
+    if not isinstance(family_grammar, dict):
+        return 1.0, False
+    coverage = family_grammar.get("coverage")
+    try:
+        return float(coverage), True
+    except (TypeError, ValueError):
+        return 1.0, False
 
 
 def _random_triangulation_penalty(visual_metrics: dict[str, Any]) -> float:
@@ -185,15 +210,20 @@ def evaluate_quality_diagnostics(
             validator pipeline) ``visual_quality`` evidence.
 
     Returns:
-        Additive payload with ``version``, ``metrics`` (5 floats),
-        ``warnings`` (list of strings), ``recommendations`` (list of
-        strings), and ``findings`` (list of structured records carrying
-        ``metric``, ``severity``, ``warning``, ``recommendation`` —
-        index-aligned with ``warnings`` and ``recommendations``). No
-        top-level ``diagnostics`` key — Phase 1 is informational only
-        and never blocks certification pass/fail.
+        Additive payload with ``version``, ``metrics`` (6 floats —
+        the 5 Phase 1 metrics plus the Phase 3 ``family_grammar_coverage``
+        sourced from ``runtime["family_grammar"]``), ``warnings`` (list
+        of strings), ``recommendations`` (list of strings), and
+        ``findings`` (list of structured records carrying ``metric``,
+        ``severity``, ``warning``, ``recommendation`` — index-aligned
+        with ``warnings`` and ``recommendations``). No top-level
+        ``diagnostics`` key — Phase 1 is informational only and never
+        blocks certification pass/fail.
     """
     visual_metrics = _visual_metrics(runtime)
+    family_grammar_coverage_value, family_grammar_evidence_present = (
+        _family_grammar_coverage(runtime)
+    )
 
     metrics = {
         "random_triangulation_penalty": _random_triangulation_penalty(visual_metrics),
@@ -203,6 +233,7 @@ def evaluate_quality_diagnostics(
         "primary_secondary_tertiary_balance": _primary_secondary_tertiary_balance(
             asset, runtime
         ),
+        "family_grammar_coverage": round(family_grammar_coverage_value, 6),
     }
 
     warning_specs: list[tuple[str, bool, str]] = [
@@ -235,6 +266,13 @@ def evaluate_quality_diagnostics(
             metrics["primary_secondary_tertiary_balance"] < _HIERARCHY_BALANCE_WARN,
             "asset lacks medium-scale construction hierarchy "
             f"(primary_secondary_tertiary_balance={metrics['primary_secondary_tertiary_balance']:.3f})",
+        ),
+        (
+            "family_grammar_coverage",
+            family_grammar_evidence_present
+            and metrics["family_grammar_coverage"] < _FAMILY_GRAMMAR_COVERAGE_WARN,
+            "family grammar coverage is below threshold "
+            f"(family_grammar_coverage={metrics['family_grammar_coverage']:.3f})",
         ),
     ]
 

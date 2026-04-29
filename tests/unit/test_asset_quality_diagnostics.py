@@ -114,6 +114,7 @@ def test_metrics_are_numeric_floats() -> None:
         "highlow_fake_detail_penalty",
         "attachment_seating_quality",
         "primary_secondary_tertiary_balance",
+        "family_grammar_coverage",
     }
     assert set(report["metrics"].keys()) == expected
     for key, value in report["metrics"].items():

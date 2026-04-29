@@ -101,6 +101,9 @@ _VALIDATE_REPORT_REQUIRED_KEYS: frozenset[str] = frozenset(
         "failure_summary",
         "semantic_repairs_applied",
         "reselection_attempts",
+        "quality_diagnostics",
+        "design_brief",
+        "family_grammar",
     }
 )
 
