@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ...asset_quality.design_brief import evaluate_design_brief
 from ...asset_quality.diagnostics import evaluate_quality_diagnostics
 from ...validators.composition import (
     FunctionValidator,
@@ -26,6 +27,12 @@ from ..evaluators import evaluate_critic, evaluate_metric, evaluate_rule
 
 _PIPELINE = ValidatorPipeline(
     [
+        FunctionValidator(
+            name="design_brief",
+            fn=evaluate_design_brief,
+            stage_dependencies=[],
+            weight=0.0,
+        ),
         FunctionValidator(
             name="semantic_quality",
             fn=evaluate_semantic_quality,
@@ -163,18 +170,37 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    design_brief_entry = cert_bundle["validators"].get(
+        "design_brief",
+        {
+            "evidence": {
+                "version": "design_brief_v1",
+                "brief": {},
+                "family_inference": {
+                    "matched_family": "generic",
+                    "match_signal": "default",
+                    "match_token": "",
+                },
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
     integrity_report = integrity_entry["evidence"]
     urdf_report = urdf_entry.get("evidence", {})
     quality_diagnostics_report = quality_diagnostics_entry.get("evidence", {})
+    design_brief_report = design_brief_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
     executor.runtime["geometry_integrity"] = integrity_report
     executor.runtime["urdf_validation"] = urdf_report
     executor.runtime["quality_diagnostics"] = quality_diagnostics_report
+    executor.runtime["design_brief"] = design_brief_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
@@ -238,6 +264,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "geometry_integrity": {**integrity_report, "diagnostics": integrity_entry["diagnostics"]},
         "urdf_validation": {**urdf_report, "diagnostics": urdf_entry.get("diagnostics", [])},
         "quality_diagnostics": quality_diagnostics_report,
+        "design_brief": design_brief_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),
