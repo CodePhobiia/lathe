@@ -14,6 +14,7 @@ from ...asset_quality.construction_graph import evaluate_construction_graph
 from ...asset_quality.design_brief import evaluate_design_brief
 from ...asset_quality.diagnostics import evaluate_quality_diagnostics
 from ...asset_quality.family_grammar import evaluate_family_grammar
+from ...asset_quality.grammar_lowering import evaluate_grammar_lowering
 from ...validators.composition import (
     FunctionValidator,
     ValidatorPipeline,
@@ -44,6 +45,12 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="family_grammar",
             fn=evaluate_family_grammar,
+            stage_dependencies=[],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="grammar_lowering",
+            fn=evaluate_grammar_lowering,
             stage_dependencies=[],
             weight=0.0,
         ),
@@ -238,6 +245,43 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    grammar_lowering_entry = cert_bundle["validators"].get(
+        "grammar_lowering",
+        {
+            "evidence": {
+                "version": "grammar_lowering_v1",
+                "family": "generic",
+                "shape_program": {
+                    "version": "shape_ir_v2",
+                    "asset_name": "unnamed_asset",
+                    "family": "generic",
+                    "ops": [],
+                },
+                "shape_program_summary": {
+                    "op_count": 0,
+                    "ops_by_family": {
+                        "solid_ops": 0,
+                        "boolean_ops": 0,
+                        "edge_ops": 0,
+                        "repetition_ops": 0,
+                        "integration_ops": 0,
+                        "wear_ops": 0,
+                    },
+                    "ops_by_requirement": {},
+                },
+                "synthesized_graph_nodes": [],
+                "synthesized_node_count": 0,
+                "v1_lowering": {
+                    "v1_record_count": 0,
+                    "diagnostics": [],
+                    "unsupported_ops": [],
+                },
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -247,6 +291,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     design_brief_report = design_brief_entry.get("evidence", {})
     family_grammar_report = family_grammar_entry.get("evidence", {})
     construction_graph_report = construction_graph_entry.get("evidence", {})
+    grammar_lowering_report = grammar_lowering_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -256,6 +301,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["design_brief"] = design_brief_report
     executor.runtime["construction_graph"] = construction_graph_report
     executor.runtime["family_grammar"] = family_grammar_report
+    executor.runtime["grammar_lowering"] = grammar_lowering_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
@@ -322,6 +368,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "design_brief": design_brief_report,
         "construction_graph": construction_graph_report,
         "family_grammar": family_grammar_report,
+        "grammar_lowering": grammar_lowering_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),
