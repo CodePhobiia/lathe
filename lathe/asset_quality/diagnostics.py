@@ -141,6 +141,25 @@ def _debug_material_preview_penalty(visual_metrics: dict[str, Any]) -> float:
 
 
 def _highlow_fake_detail_penalty(runtime: dict[str, Any]) -> float:
+    """Compute the prototype-look penalty for the high/low relation.
+
+    When Phase 7's ``runtime["highlow_relation"]`` evidence is present
+    the penalty is sourced from the strengthened ``realness_score`` —
+    ``penalty = 1.0 - realness_score``. The Phase 7 score consumes
+    distinct URIs, triangle delta, bake-map completeness, and manifest
+    quality so a "hidden fake" with distinct URIs but identical maps
+    is no longer credited as real.
+
+    When that evidence is absent (e.g. legacy callers, unit tests that
+    mock only the surface bundle), the function falls back to the
+    Phase 1 heuristic over the surface bundle's ``highlow_relation``
+    record so the metric stays defined at every callsite.
+    """
+    highlow_evidence = runtime.get("highlow_relation")
+    if isinstance(highlow_evidence, dict) and "realness_score" in highlow_evidence:
+        realness_score = _as_float(highlow_evidence.get("realness_score"))
+        penalty = 1.0 - max(0.0, min(1.0, realness_score))
+        return round(max(0.0, min(1.0, penalty)), 6)
     surface_bundle = _as_dict(_as_dict(runtime.get("surface")).get("bundle"))
     highlow = _as_dict(surface_bundle.get("highlow_relation"))
     high_uri = highlow.get("high_mesh_uri")

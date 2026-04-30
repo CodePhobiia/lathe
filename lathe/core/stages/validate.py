@@ -15,6 +15,7 @@ from ...asset_quality.design_brief import evaluate_design_brief
 from ...asset_quality.diagnostics import evaluate_quality_diagnostics
 from ...asset_quality.family_grammar import evaluate_family_grammar
 from ...asset_quality.grammar_lowering import evaluate_grammar_lowering
+from ...asset_quality.highlow_relation import evaluate_highlow_relation
 from ...validators.composition import (
     FunctionValidator,
     ValidatorPipeline,
@@ -68,6 +69,12 @@ _PIPELINE = ValidatorPipeline(
             name="flow_quality",
             fn=evaluate_flow_quality,
             stage_dependencies=["shape", "topology", "uv", "surface"],
+        ),
+        FunctionValidator(
+            name="highlow_relation",
+            fn=evaluate_highlow_relation,
+            stage_dependencies=["topology", "surface"],
+            weight=0.0,
         ),
         FunctionValidator(
             name="geometry_integrity",
@@ -282,6 +289,33 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    highlow_relation_entry = cert_bundle["validators"].get(
+        "highlow_relation",
+        {
+            "evidence": {
+                "version": "highlow_relation_v1",
+                "is_real_highlow": False,
+                "realness_score": 0.0,
+                "high_mesh_uri": None,
+                "low_mesh_uri": None,
+                "runtime_low_uri": None,
+                "high_triangle_count": None,
+                "low_triangle_count": None,
+                "triangle_delta_ratio": 0.0,
+                "distinct_uris": False,
+                "distinct_triangle_counts": False,
+                "bake_maps": [],
+                "bake_map_count_present": 0,
+                "bake_map_count_expected": 4,
+                "skipped_reasons": [],
+                "warnings": [],
+                "diagnostics": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -292,6 +326,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     family_grammar_report = family_grammar_entry.get("evidence", {})
     construction_graph_report = construction_graph_entry.get("evidence", {})
     grammar_lowering_report = grammar_lowering_entry.get("evidence", {})
+    highlow_relation_report = highlow_relation_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -302,12 +337,14 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["construction_graph"] = construction_graph_report
     executor.runtime["family_grammar"] = family_grammar_report
     executor.runtime["grammar_lowering"] = grammar_lowering_report
+    executor.runtime["highlow_relation"] = highlow_relation_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
     diagnostics.extend(integrity_entry["diagnostics"])
     diagnostics.extend(urdf_entry.get("diagnostics", []))
     diagnostics.extend(gameplay_tag_entry.get("diagnostics", []))
+    diagnostics.extend(highlow_relation_entry.get("diagnostics", []))
     diagnostics.extend(executor.runtime.get("execution", {}).get("bundle", {}).get("diagnostics", []))
     rule_results = []
     for rule in executor.asset["validate"].get("rules", []):
@@ -369,6 +406,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "construction_graph": construction_graph_report,
         "family_grammar": family_grammar_report,
         "grammar_lowering": grammar_lowering_report,
+        "highlow_relation": highlow_relation_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),

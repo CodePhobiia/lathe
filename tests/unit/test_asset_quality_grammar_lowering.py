@@ -11,7 +11,8 @@ Covers per task #6 of ``docs/asset-quality/improvement-tasklist.md``:
   ``NODE_TYPES`` frozenset.
 - Coverage improves: starting from the baseline parts list, merging the
   recipe's synthesized graph nodes into the construction graph
-  strictly raises ``family_grammar.coverage`` (predicted 0.40 -> 0.70).
+  strictly raises the ``family_grammar`` coverage value (predicted
+  0.40 -> 0.70).
 - The validator entry point's payload shape is exactly the seven keys
   declared in the master prompt.
 - The validator never adds a top-level ``diagnostics`` key (informational
@@ -407,10 +408,11 @@ def test_recipe_synthesized_nodes_lift_family_grammar_coverage() -> None:
     foot_l, foot_r]`` parts list (which yields 0.40 coverage with only
     the parts-derived construction graph), merging the recipe's
     synthesized graph nodes into the construction graph must STRICTLY
-    raise ``family_grammar.coverage`` because ``corner_guards``,
-    ``trim_bands``, ``fasteners``, ``warning_or_decal_zones``, and
-    ``edge_wear_masks`` get elevated from ``"missing"`` to ``"partial"``
-    via Phase 4's graph-elevation path. Predicted: 0.40 -> 0.70."""
+    raise the ``family_grammar`` coverage value because
+    ``corner_guards``, ``trim_bands``, ``fasteners``,
+    ``warning_or_decal_zones``, and ``edge_wear_masks`` get elevated
+    from ``"missing"`` to ``"partial"`` via Phase 4's graph-elevation
+    path. Predicted: 0.40 -> 0.70."""
     asset = _crate_asset()
     baseline_runtime = _crate_runtime(_BASELINE_GRAPH_NODES)
     baseline_payload = evaluate_family_grammar(asset, baseline_runtime)

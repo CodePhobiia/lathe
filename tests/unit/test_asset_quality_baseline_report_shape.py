@@ -106,6 +106,7 @@ _VALIDATE_REPORT_REQUIRED_KEYS: frozenset[str] = frozenset(
         "family_grammar",
         "construction_graph",
         "grammar_lowering",
+        "highlow_relation",
     }
 )
 
