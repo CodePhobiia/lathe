@@ -79,7 +79,9 @@ def test_payload_shape_and_version() -> None:
 
     assert payload["version"] == VERSION
     assert VERSION == "design_brief_v1"
-    assert set(payload.keys()) == {"version", "brief", "family_inference"}
+    # Phase 13 added an additive ``user_provided_via_experimental`` key.
+    # The Phase 2 baseline keys must remain a subset of the payload.
+    assert {"version", "brief", "family_inference"}.issubset(payload.keys())
     assert isinstance(payload["brief"], dict)
     assert set(payload["brief"].keys()) == _EXPECTED_BRIEF_FIELDS
     assert set(payload["family_inference"].keys()) == {

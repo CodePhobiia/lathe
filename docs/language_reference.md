@@ -87,6 +87,7 @@ Asset body blocks are accepted in the grammar order below.
 | `validate` | `validate_block` | `validate` |
 | `package` | `package_block` | `package` |
 | `publish` | `publish_block` | `publish` |
+| `experimental` | `experimental_block` | `experimental` |
 
 `search { ... }` is a source alias that normalizes into the same `space` field as `space { ... }`.
 

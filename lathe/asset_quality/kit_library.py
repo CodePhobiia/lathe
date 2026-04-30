@@ -793,7 +793,43 @@ def _normalize_skipped(records: tuple[SkippedReason, ...]) -> list[SkippedReason
     return out
 
 
-def _empty_library_payload(asset_name: str, family: str) -> dict[str, Any]:
+def _experimental_kit_declared_parts(asset: dict[str, Any]) -> list[str]:
+    """Return the user-declared kit part list from ``experimental.kit.use``.
+
+    Phase 13: returns the deduplicated list of strings the author
+    declared inside ``experimental.kit.use``. Tolerates absence and
+    non-string entries by skipping them; returns ``[]`` when the
+    block is missing entirely. Surfaced in the kit-library evidence
+    payload as ``user_provided_via_experimental.declared_parts`` —
+    Phase 13 does NOT filter the loaded library by this list, the
+    declaration is informational evidence only.
+    """
+    if not isinstance(asset, dict):
+        return []
+    experimental = asset.get("experimental")
+    if not isinstance(experimental, dict):
+        return []
+    kit_block = experimental.get("kit")
+    if not isinstance(kit_block, dict):
+        return []
+    raw_use = kit_block.get("use")
+    if not isinstance(raw_use, list):
+        return []
+    out: list[str] = []
+    seen: set[str] = set()
+    for entry in raw_use:
+        if not isinstance(entry, str):
+            continue
+        if entry in seen:
+            continue
+        seen.add(entry)
+        out.append(entry)
+    return out
+
+
+def _empty_library_payload(
+    asset_name: str, family: str, declared_parts: list[str]
+) -> dict[str, Any]:
     library = KitLibrary(base_path="", parts=(), skipped=())
     return {
         "version": KIT_LIBRARY_VERSION,
@@ -808,6 +844,7 @@ def _empty_library_payload(asset_name: str, family: str) -> dict[str, Any]:
         ],
         "warnings": [],
         "diagnostics": [],
+        "user_provided_via_experimental": {"declared_parts": list(declared_parts)},
     }
 
 
@@ -840,14 +877,15 @@ def evaluate_kit_library(
 
     asset_name = _resolve_asset_name(safe_asset)
     family = _resolve_family(safe_asset, safe_runtime)
+    declared_parts = _experimental_kit_declared_parts(safe_asset)
 
     raw = safe_runtime.get("_kit_library")
     if raw is None:
-        return _empty_library_payload(asset_name, family)
+        return _empty_library_payload(asset_name, family, declared_parts)
 
     library = _coerce_kit_library(raw)
     if library is None:
-        return _empty_library_payload(asset_name, family)
+        return _empty_library_payload(asset_name, family, declared_parts)
 
     skipped_records = _normalize_skipped(library.skipped)
 
@@ -860,4 +898,5 @@ def evaluate_kit_library(
         "skipped_reasons": [record.to_dict() for record in skipped_records],
         "warnings": [],
         "diagnostics": [],
+        "user_provided_via_experimental": {"declared_parts": list(declared_parts)},
     }

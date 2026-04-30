@@ -97,6 +97,7 @@ CANONICAL_ASSET_KEYS = [
     "validate",
     "package",
     "publish",
+    "experimental",
 ]
 CANONICAL_VARIANT_KEYS = ["node_type", "name", "on", "patches"]
 
@@ -246,6 +247,31 @@ def _normalize_profile_like(decl: dict[str, Any], node_type: str) -> dict[str, A
     return _ordered(out, CANONICAL_PROFILE_KEYS)
 
 
+def _normalize_experimental(experimental: Any) -> dict[str, Any]:
+    """Normalize the Phase 13 experimental block.
+
+    Defaults to an empty dict when the asset omits ``experimental``. Keeps
+    only the three MVP sub-blocks (``art_direction``, ``references``,
+    ``kit``) the user wrote — sub-blocks are NOT defaulted. Unknown
+    sub-blocks captured by the parser as ``_unknown_subblocks`` are
+    forwarded so the checker can surface ``L7100`` diagnostics.
+    """
+    if not isinstance(experimental, dict):
+        return {}
+    out: dict[str, Any] = {}
+    if "art_direction" in experimental and isinstance(experimental["art_direction"], dict):
+        out["art_direction"] = deepcopy(experimental["art_direction"])
+    if "references" in experimental and isinstance(experimental["references"], dict):
+        out["references"] = deepcopy(experimental["references"])
+    if "kit" in experimental and isinstance(experimental["kit"], dict):
+        out["kit"] = deepcopy(experimental["kit"])
+    if "_unknown_subblocks" in experimental and isinstance(
+        experimental["_unknown_subblocks"], list
+    ):
+        out["_unknown_subblocks"] = list(experimental["_unknown_subblocks"])
+    return out
+
+
 def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
     """Normalize asset.
 
@@ -274,6 +300,7 @@ def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
         deep_fill_missing(out.get("space", {}), ASSET_SPACE_DEFAULTS), with_name=False
     )
     out["repair_policy"] = _normalize_repair_policy_spec(out.get("repair_policy", {}))
+    out["experimental"] = _normalize_experimental(out.get("experimental", {}))
 
     for path in [
         (out["intent"], "style"),

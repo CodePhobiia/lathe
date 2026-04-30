@@ -139,7 +139,9 @@ def test_evaluate_reference_board_returns_v1_payload() -> None:
 
     assert payload["version"] == REFERENCE_BOARD_VERSION
     assert payload["version"] == "reference_board_v1"
-    assert set(payload.keys()) == {
+    # Phase 13 added an additive ``user_provided_via_experimental`` key.
+    # The Phase 11 baseline keys must remain a subset of the payload.
+    assert {
         "version",
         "asset_name",
         "family",
@@ -148,7 +150,7 @@ def test_evaluate_reference_board_returns_v1_payload() -> None:
         "skipped_reasons",
         "warnings",
         "diagnostics",
-    }
+    }.issubset(payload.keys())
     assert set(payload["board"].keys()) == {
         "mood",
         "silhouettes",

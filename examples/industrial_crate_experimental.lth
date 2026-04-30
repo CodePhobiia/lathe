@@ -1,0 +1,210 @@
+module studio.props.crates
+import std.families.industrial_crate
+
+profile unreal_shipping_prop_experimental {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract shipping_prop_experimental uses unreal_shipping_prop_experimental {
+  defaults {
+    build.interfaces.clearance = 2cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 24mb)
+
+  prefer silhouette_readability weight 0.3
+  prefer part_coherence weight 0.2
+}
+
+critic cargo_prop_experimental(a: asset) = weighted {
+  prompt_match 0.25
+  silhouette_readability 0.15
+  topology_quality 0.20
+  material_quality 0.15
+  runtime_efficiency 0.10
+  part_coherence 0.15
+}
+
+asset industrial_crate: hard_surface_prop from industrial_crate_family uses shipping_prop_experimental {
+  intent {
+    role = "reinforced industrial cargo crate"
+    style = ["utility", "industrial", "shipping"]
+    parts = [
+      body,
+      latch_plate,
+      handle_l,
+      handle_r,
+      foot_l,
+      foot_r,
+    ]
+    materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+    negatives = ["ornate", "organic", "toy_like"]
+    scale = 0.9m
+    interactions = [lift, stack, secure_cargo]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [cargo_panel_break, lid_break, latch_cut, foot_split]
+    edge_classes = [hero_bevel, cargo_bevel, support_bevel]
+    integration_rules = [boolean_union, preserve_lid_break, preserve_corner_guards]
+  }
+
+  features {
+    density = hero
+    allow = [inset_panel, trim_band, fastener_strip, support_bracket, edge_break, clasp_set]
+  }
+
+  surface {
+    program = industrial_crate_hero
+    patterns = [cargo_fastener_grid, warning_stripe_band]
+    palette = industrial_crate_hero_palette
+    material_zones = [painted_steel_body, rubber_trim_dark, warning_paint]
+    materials = [painted_steel_body, rubber_trim_dark, warning_paint]
+    decals = [shipping_mark, warning_band, trim_band, service_label]
+    bake = [normal, ao, curvature, id]
+  }
+
+  assembly {
+    components = [crate_body_shell, crate_lid_frame, crate_latch_plate, crate_warning_plate, crate_handle_l, crate_handle_r, crate_foot_l, crate_foot_r]
+    mechanisms = [crate_latch_mechanism]
+  }
+
+  search {
+    use = crate_hero_search
+  }
+
+  repair_policy {
+    use = hero_hardsurface_repair
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 5
+      seed = 31
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 12000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = [shipping_mark, warning_band, trim_band, service_label]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [socket(id: cargo_anchor, socket_type: attach)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 5
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 24mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = cargo_prop_experimental
+    threshold = 0.84
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "props/crates/industrial_crate"
+    version = "0.1.0"
+    tags = ["crate", "industrial", "cargo"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+
+  experimental {
+    art_direction {
+      style_tags = ["weathered_industrial", "well_used"]
+      wear = "heavy"
+      material_age = "aged"
+      detail_density = "high"
+    }
+    references {
+      use = "refs/asset_quality/industrial_crate"
+    }
+    kit {
+      use = ["fasteners.hex_bolt_m6", "rails.foot_rail_bar"]
+    }
+  }
+}

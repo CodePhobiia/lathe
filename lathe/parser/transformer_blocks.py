@@ -7,6 +7,7 @@ blocks.
 
 from __future__ import annotations
 
+import ast as py_ast
 from typing import Any
 
 from lark import Transformer, v_args
@@ -394,6 +395,58 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
             The result.
         """
         return {"node_type": "publish", "values": self._assignments(assignments, "publish")}
+
+    def experimental_block(self, *entries: Any) -> dict[str, Any]:
+        """Phase 13 experimental wrapper.
+
+        Args:
+            *entries: experimental sub-block entries.
+
+        Returns:
+            The merged values dict for the experimental wrapper.
+        """
+        values: dict[str, Any] = {}
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            kind = entry.get("node_type")
+            if kind == "experimental_art_direction":
+                values["art_direction"] = entry["values"]
+            elif kind == "experimental_references":
+                values["references"] = entry["values"]
+            elif kind == "experimental_kit":
+                values["kit"] = entry["values"]
+        return {"node_type": "experimental", "values": values}
+
+    def experimental_art_direction_block(self, *fields: Any) -> dict[str, Any]:
+        """Phase 13 ``experimental.art_direction`` block."""
+        out: dict[str, Any] = {}
+        for field in fields:
+            if isinstance(field, tuple) and len(field) == 2:
+                out[field[0]] = field[1]
+        return {"node_type": "experimental_art_direction", "values": out}
+
+    def experimental_art_direction_style_tags(self, value: Any) -> tuple[str, Any]:
+        return ("style_tags", list(value) if isinstance(value, list) else value)
+
+    def experimental_art_direction_wear(self, value: Any) -> tuple[str, Any]:
+        return ("wear", py_ast.literal_eval(value) if isinstance(value, str) else value)
+
+    def experimental_art_direction_material_age(self, value: Any) -> tuple[str, Any]:
+        return ("material_age", py_ast.literal_eval(value) if isinstance(value, str) else value)
+
+    def experimental_art_direction_detail_density(self, value: Any) -> tuple[str, Any]:
+        return ("detail_density", py_ast.literal_eval(value) if isinstance(value, str) else value)
+
+    def experimental_references_block(self, value: Any) -> dict[str, Any]:
+        """Phase 13 ``experimental.references`` block."""
+        path = py_ast.literal_eval(value) if isinstance(value, str) else value
+        return {"node_type": "experimental_references", "values": {"use": path}}
+
+    def experimental_kit_block(self, value: Any) -> dict[str, Any]:
+        """Phase 13 ``experimental.kit`` block."""
+        items = list(value) if isinstance(value, list) else value
+        return {"node_type": "experimental_kit", "values": {"use": items}}
 
     def ensure_rule(self, expr: Any) -> dict[str, Any]:
         """Ensure rule.

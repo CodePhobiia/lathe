@@ -60,6 +60,8 @@ class _FastParser(_FastParserExprMixin):
         "publish",
     }
     BUILD_BLOCKS = {"shape", "topology", "uv", "surface", "rig", "interfaces", "physics", "optimize"}
+    EXPERIMENTAL_SUBBLOCKS = {"art_direction", "references", "kit"}
+    EXPERIMENTAL_ART_DIRECTION_FIELDS = {"style_tags", "wear", "material_age", "detail_density"}
     DECL_KEYS = {
         "library": "libraries",
         "kit": "kits",
@@ -301,6 +303,7 @@ class _FastParser(_FastParserExprMixin):
             "validate": {},
             "package": {},
             "publish": {},
+            "experimental": {},
         }
         self.ts.pop("{")
         while not self.ts.peek("}"):
@@ -316,10 +319,77 @@ class _FastParser(_FastParserExprMixin):
                 values["build"] = self._build_block()
             elif block == "validate":
                 values["validate"] = self._validate_block()
+            elif block == "experimental":
+                values["experimental"] = self._experimental_block()
             else:
                 raise LatheParseError(f"Unexpected asset block '{block}'")
         self.ts.pop("}")
         return values
+
+    def _experimental_block(self) -> dict[str, Any]:
+        """Parse the Phase 13 experimental block.
+
+        All experimental sub-blocks live INSIDE this single wrapper. The
+        wrapper itself is OPTIONAL on the asset; absence is the default
+        and produces no ``experimental`` key downstream. The sub-block
+        names are loose by design — unknown sub-blocks are tolerated at
+        the parser level so the checker can emit an actionable
+        ``L7100`` diagnostic instead of a hard parse error. Order is
+        free; duplicates are taken last-wins.
+        """
+        out: dict[str, Any] = {}
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            sub_block = self.ts.pop_ident()
+            if sub_block == "art_direction":
+                out["art_direction"] = self._experimental_art_direction_block()
+            elif sub_block == "references":
+                out["references"] = self._experimental_references_block()
+            elif sub_block == "kit":
+                out["kit"] = self._experimental_kit_block()
+            else:
+                # Tolerated by the parser; flagged as L7100 by the
+                # checker. Skip the block body so parsing recovers.
+                out.setdefault("_unknown_subblocks", []).append(sub_block)
+                self._skip_block_body()
+        self.ts.pop("}")
+        return out
+
+    def _experimental_art_direction_block(self) -> dict[str, Any]:
+        """Parse ``art_direction { ... }`` inside the experimental block.
+
+        Field names are NOT enforced at the parser level — every
+        recognized assignment lands in ``values``; the checker (L7101,
+        L7102) decides which ones are in the MVP whitelist and whether
+        their value types are valid.
+        """
+        return self._assign_block("experimental.art_direction")
+
+    def _experimental_references_block(self) -> dict[str, Any]:
+        """Parse ``references { use = "<path>" }`` inside experimental."""
+        return self._assign_block("experimental.references")
+
+    def _experimental_kit_block(self) -> dict[str, Any]:
+        """Parse ``kit { use = [<part>, ...] }`` inside experimental."""
+        return self._assign_block("experimental.kit")
+
+    def _skip_block_body(self) -> None:
+        """Skip a balanced ``{ ... }`` block, preserving brace nesting."""
+        self.ts.pop("{")
+        depth = 1
+        while depth > 0:
+            if self.ts.eof():
+                raise LatheParseError("Unterminated experimental sub-block")
+            tok = self.ts.peek()
+            if tok == "{":
+                self.ts.pop("{")
+                depth += 1
+                continue
+            if tok == "}":
+                self.ts.pop("}")
+                depth -= 1
+                continue
+            self.ts.pop()
 
     def _build_block(self) -> dict[str, Any]:
         values: dict[str, Any] = {}

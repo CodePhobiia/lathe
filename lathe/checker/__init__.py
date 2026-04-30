@@ -13,6 +13,7 @@ from typing import Any
 from ..resolver import Resolver
 from .assets import check_assets_and_variants
 from .declarations import check_new_declarations
+from .experimental import check_experimental_block
 from .language import (
     check_critics,
     check_duplicate_names,
@@ -44,6 +45,7 @@ class Checker:
         check_new_declarations(self)
         check_assets_and_variants(self)
         check_tests_and_benchmarks(self)
+        check_experimental_block(self)
         return self.diagnostics
 
 

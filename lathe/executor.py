@@ -93,7 +93,7 @@ STAGE_ORDER = [
 
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
-BUILD_CACHE_VERSION = "v12_rc1"
+BUILD_CACHE_VERSION = "v13_rc1"
 log = logging.getLogger(__name__)
 
 
@@ -189,7 +189,9 @@ def _strict_highlow_cache_flag() -> bool:
     return raw.strip().lower() in {"1", "true", "yes"}
 
 
-def _safe_load_reference_board(asset_name: str) -> dict[str, Any] | None:
+def _safe_load_reference_board(
+    asset_name: str, experimental_path: str | None = None
+) -> dict[str, Any] | None:
     """Load the Phase 11 reference board without crashing the build.
 
     Wraps :func:`lathe.asset_quality.reference_board.load_reference_board`
@@ -198,8 +200,18 @@ def _safe_load_reference_board(asset_name: str) -> dict[str, Any] | None:
     exception is swallowed and ``None`` is published — the validator
     then emits a structured ``reference_board_not_loaded`` skipped
     reason in place of the missing board.
+
+    Phase 13: when ``experimental_path`` is provided (resolved by the
+    resolver from ``asset.experimental.references.use``) the loader
+    uses it as the per-asset directory and the convention base path
+    is bypassed.
     """
     try:
+        if experimental_path:
+            from pathlib import Path as _Path
+
+            override = _Path(experimental_path)
+            return load_reference_board(override.name, base_path=override.parent)
         return load_reference_board(asset_name)
     except Exception:  # pragma: no cover - defensive guard
         return None
@@ -318,7 +330,17 @@ class BuildExecutor:
         # Phase 11: publish the reference / moodboard fixtures so the
         # validator can build the additive ``reference_board`` payload and
         # the design-brief layer can merge reference negatives.
-        self.runtime["_reference_board"] = _safe_load_reference_board(self.asset_name)
+        # Phase 13: honor the optional experimental override path.
+        experimental_refs = self.asset.get("experimental", {}).get("references", {})
+        experimental_refs_path = experimental_refs.get("_resolved_path") if isinstance(experimental_refs, dict) else None
+        if experimental_refs_path and isinstance(experimental_refs_path, str):
+            self.runtime["_reference_board"] = _safe_load_reference_board(
+                self.asset_name, experimental_path=experimental_refs_path
+            )
+            self.runtime["_reference_board_user_provided_via_experimental"] = True
+        else:
+            self.runtime["_reference_board"] = _safe_load_reference_board(self.asset_name)
+            self.runtime["_reference_board_user_provided_via_experimental"] = False
         # Phase 12: publish the standard hard-surface kit library so the
         # validator can build the additive ``kit_library`` payload.
         self.runtime["_kit_library"] = _safe_load_kit_library()

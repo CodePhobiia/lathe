@@ -243,7 +243,57 @@ The additive V1.3.1 layer formalizes Codex-operated, Lathe-governed Blender exec
 
 V1.3.1 adds traceable recovery branch intent across `reselect_candidate`, `repair_candidate`, `regenerate_candidate`, and `patch_source`. A `patch_source` branch may be proposed by tooling, but persistent semantic changes must still round-trip through Lathe source.
 
-### 4.6 Experimental v0.3 Scene Source Syntax
+### 4.6 Phase 13 Experimental Asset-Quality Syntax (additive)
+
+Phase 13 adds an OPTIONAL `experimental { ... }` wrapper inside an asset. The stable public surface (`profile`, `contract`, `critic`, `asset`, `variant`, build-stage names) is unchanged. The wrapper is the explicit gating mechanism: without it, none of the Phase 13 sub-blocks parse, and there is exactly one place to remove the surface later.
+
+#### Stability promise
+
+- Experimental syntax is allowed to change between minor versions. The stable public surface listed above does not change as a side effect.
+- Existing examples that omit the wrapper continue to parse, normalize, resolve, check, and build identically.
+- Sub-blocks inside `experimental { }` are NOT defaulted by the normalizer — only present when the user wrote them.
+
+#### MVP sub-blocks
+
+```lathe
+experimental {
+  art_direction {
+    style_tags = ["weathered_industrial", "well_used"]
+    wear = "heavy"
+    material_age = "aged"
+    detail_density = "high"
+  }
+  references {
+    use = "refs/asset_quality/industrial_crate"
+  }
+  kit {
+    use = ["fasteners.hex_bolt_m6", "rails.foot_rail_bar"]
+  }
+}
+```
+
+- `art_direction { ... }` overrides the design-brief defaults for the four whitelisted fields above (Phase 2 brief). Unspecified fields keep the family default.
+- `references { use = "<path>" }` overrides the convention-based reference-board base path (Phase 11 fixtures). The path resolves relative to the source `.lth` file.
+- `kit { use = [<part>, ...] }` declares hard-surface kit parts (Phase 12 library) the asset intends to use. Each entry uses the `<category>.<name>` format. The declaration is informational evidence; the loaded library is not filtered by it.
+
+#### Diagnostics
+
+- `L7100 — experimental_unknown_subblock`: a sub-block name other than `art_direction`, `references`, or `kit`.
+- `L7101 — experimental_art_direction_unknown_field`: a field outside the four-field MVP whitelist.
+- `L7102 — experimental_art_direction_invalid_value`: a field value of the wrong type (e.g. `wear: 42`).
+- `L7103 — experimental_references_invalid_path`: `references.use` is not a string or does not resolve to an existing directory.
+- `L7104 — experimental_kit_unknown_part`: an entry that is not present in the loaded kit library (warning when the library can't be loaded).
+- `L7105 — experimental_kit_invalid_format`: an entry that is not a string in `<category>.<name>` format, or `kit.use` is not a list.
+
+Each diagnostic carries actionable `suggested_repairs` so authors and LLM-based authors can repair from evidence alone.
+
+#### Migration notes
+
+- Pre-Phase-13 sources continue to work without modification.
+- Phase 13 does NOT add a new top-level validate report key. User opt-in surfaces as `user_provided_via_experimental` annotations inside the existing `design_brief`, `reference_board`, and `kit_library` evidence sections.
+- Future sub-blocks (`construction { ... }`, `material_graph { ... }`) are reserved for forward phases. They will land additively under the same `experimental { }` wrapper.
+
+### 4.7 Experimental v0.3 Scene Source Syntax
 
 The experimental V0.3 scene layer adds a first-class top-level `scene` declaration without changing asset semantics. Scene source is additive: existing `asset` and `variant` declarations continue to parse, normalize, resolve, check, plan, and build through the asset compiler. Asset planners ignore `scene` declarations until a scene-specific planning command is invoked.
 
@@ -573,6 +623,7 @@ Canonical section order:
 17. `validate`
 18. `package`
 19. `publish`
+20. `experimental` (Phase 13, optional, opt-in)
 
 ### 10.4 Source-visible authoring blocks
 

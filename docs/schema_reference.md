@@ -96,7 +96,11 @@ Every root field above is required in normalized JSON. Missing source declaratio
 | `weighted_item` | `metric`, `weight` | `false` |
 | `critic` | `node_type`, `name`, `param`, `body` | `false` |
 | `validate` | `rules`, `threshold`, `repair` | `true` |
-| `asset` | `node_type`, `name`, `kind`, `from`, `uses`, `refs`, `intent`, `geometry`, `features`, `surface`, `assembly`, `fit`, `transfer`, `reuse`, `constraints`, `ingest`, `assembly_rules`, `execution`, `space`, `repair_policy`, `build`, `validate`, `package`, `publish` | `true` |
+| `experimental_art_direction` | - | `false` |
+| `experimental_references` | `use` | `false` |
+| `experimental_kit` | `use` | `false` |
+| `experimental_block` | - | `false` |
+| `asset` | `node_type`, `name`, `kind`, `from`, `uses`, `refs`, `intent`, `geometry`, `features`, `surface`, `assembly`, `fit`, `transfer`, `reuse`, `constraints`, `ingest`, `assembly_rules`, `execution`, `space`, `repair_policy`, `build`, `validate`, `package`, `publish`, `experimental` | `true` |
 | `test_like` | `node_type`, `name`, `values`, `asserts` | `false` |
 | `patch` | `op`, `path` | `true` |
 | `variant` | `node_type`, `name`, `on`, `patches` | `false` |
@@ -288,6 +292,7 @@ Every root field above is required in normalized JSON. Missing source declaratio
 | publish.visibility | "private" |
 | publish.approval | "required" |
 | publish.channel | "dev" |
+| experimental | {} |
 
 ### Build Stage Defaults
 

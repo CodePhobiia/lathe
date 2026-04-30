@@ -298,6 +298,8 @@ ASSET_PUBLISH_DEFAULTS = {
     "channel": "dev",
 }
 
+ASSET_EXPERIMENTAL_DEFAULTS: dict[str, Any] = {}
+
 ASSET_DEFAULTS = {
     "from": "",
     "uses": [],
@@ -320,6 +322,7 @@ ASSET_DEFAULTS = {
     "validate": deepcopy(ASSET_VALIDATE_DEFAULTS),
     "package": deepcopy(ASSET_PACKAGE_DEFAULTS),
     "publish": deepcopy(ASSET_PUBLISH_DEFAULTS),
+    "experimental": deepcopy(ASSET_EXPERIMENTAL_DEFAULTS),
 }
 
 VARIANT_DEFAULTS = {

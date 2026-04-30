@@ -476,9 +476,46 @@
         "repair": { "$ref": "#/$defs/repair_policy_spec" }
       }
     },
+    "experimental_art_direction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "style_tags": { "type": "array", "items": { "type": "string" } },
+        "wear": { "type": "string" },
+        "material_age": { "type": "string" },
+        "detail_density": { "type": "string" }
+      }
+    },
+    "experimental_references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["use"],
+      "properties": {
+        "use": { "type": "string" },
+        "_resolved_path": { "type": "string" }
+      }
+    },
+    "experimental_kit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["use"],
+      "properties": {
+        "use": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "experimental_block": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "art_direction": { "$ref": "#/$defs/experimental_art_direction" },
+        "references": { "$ref": "#/$defs/experimental_references" },
+        "kit": { "$ref": "#/$defs/experimental_kit" },
+        "_unknown_subblocks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "asset": {
       "type": "object",
-      "required": ["node_type", "name", "kind", "from", "uses", "refs", "intent", "geometry", "features", "surface", "assembly", "fit", "transfer", "reuse", "constraints", "ingest", "assembly_rules", "execution", "space", "repair_policy", "build", "validate", "package", "publish"],
+      "required": ["node_type", "name", "kind", "from", "uses", "refs", "intent", "geometry", "features", "surface", "assembly", "fit", "transfer", "reuse", "constraints", "ingest", "assembly_rules", "execution", "space", "repair_policy", "build", "validate", "package", "publish", "experimental"],
       "additionalProperties": true,
       "properties": {
         "node_type": { "const": "asset" },
@@ -504,7 +541,8 @@
         "build": { "type": "object" },
         "validate": { "$ref": "#/$defs/validate" },
         "package": { "type": "object" },
-        "publish": { "type": "object" }
+        "publish": { "type": "object" },
+        "experimental": { "$ref": "#/$defs/experimental_block" }
       }
     },
     "test_like": {

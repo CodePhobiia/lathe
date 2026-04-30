@@ -265,6 +265,90 @@ def _merge_negative_constraints(
     return tuple(merged)
 
 
+_EXPERIMENTAL_ART_DIRECTION_WHITELIST: tuple[str, ...] = (
+    "style_tags",
+    "wear",
+    "material_age",
+    "detail_density",
+)
+
+
+def _experimental_art_direction(asset: dict[str, Any]) -> dict[str, Any]:
+    """Return the user-provided ``experimental.art_direction`` overrides.
+
+    Reads ``asset["experimental"]["art_direction"]`` when present and
+    returns only fields in the MVP whitelist with valid types. Used to
+    mutate the family-default brief and to surface
+    ``user_provided_via_experimental`` evidence.
+    """
+    experimental = asset.get("experimental")
+    if not isinstance(experimental, dict):
+        return {}
+    art_direction = experimental.get("art_direction")
+    if not isinstance(art_direction, dict):
+        return {}
+    out: dict[str, Any] = {}
+    for field in _EXPERIMENTAL_ART_DIRECTION_WHITELIST:
+        if field not in art_direction:
+            continue
+        value = art_direction[field]
+        if field == "style_tags":
+            if isinstance(value, list) and all(isinstance(item, str) for item in value):
+                out[field] = list(value)
+        elif isinstance(value, str):
+            out[field] = value
+    return out
+
+
+def _apply_art_direction_overrides(
+    brief: DesignBrief, overrides: dict[str, Any]
+) -> tuple[DesignBrief, list[str]]:
+    """Return ``(updated_brief, applied_fields)`` for art-direction overrides.
+
+    Replaces brief fields named in ``_EXPERIMENTAL_ART_DIRECTION_WHITELIST``
+    with the user-provided values. Returns the original brief and an
+    empty list when no whitelisted overrides apply.
+    """
+    if not overrides:
+        return brief, []
+    applied: list[str] = []
+    style_tags = brief.style_tags
+    wear = brief.wear
+    material_age = brief.material_age
+    detail_density = brief.detail_density
+    if "style_tags" in overrides:
+        style_tags = tuple(overrides["style_tags"])
+        applied.append("style_tags")
+    if "wear" in overrides:
+        wear = overrides["wear"]
+        applied.append("wear")
+    if "material_age" in overrides:
+        material_age = overrides["material_age"]
+        applied.append("material_age")
+    if "detail_density" in overrides:
+        detail_density = overrides["detail_density"]
+        applied.append("detail_density")
+    if not applied:
+        return brief, []
+    return (
+        DesignBrief(
+            asset_name=brief.asset_name,
+            family=brief.family,
+            role=brief.role,
+            style_tags=style_tags,
+            silhouette=brief.silhouette,
+            bevel_language=brief.bevel_language,
+            shape_language=brief.shape_language,
+            detail_density=detail_density,
+            wear=wear,
+            material_age=material_age,
+            greeble_style=brief.greeble_style,
+            negative_constraints=brief.negative_constraints,
+        ),
+        applied,
+    )
+
+
 def evaluate_design_brief(
     asset: dict[str, Any], runtime: dict[str, Any]
 ) -> dict[str, Any]:
@@ -272,7 +356,10 @@ def evaluate_design_brief(
 
     Args:
         asset: normalized asset dict. May omit ``intent``, ``name``, or
-            ``kind``; the function tolerates partial/empty input.
+            ``kind``; the function tolerates partial/empty input. Phase
+            13 reads ``asset["experimental"]["art_direction"]`` and
+            applies whitelisted overrides on top of the family default
+            brief.
         runtime: stage-bundle runtime dict. Phase 2 does not consume any
             stage runtime evidence directly — the brief itself is
             derived from the asset alone. Phase 11 adds a single read
@@ -285,38 +372,42 @@ def evaluate_design_brief(
 
     Returns:
         Additive payload with ``version`` (``"design_brief_v1"``),
-        ``brief`` (12-field dict from :meth:`DesignBrief.to_dict`), and
+        ``brief`` (12-field dict from :meth:`DesignBrief.to_dict`),
         ``family_inference`` (``matched_family``/``match_signal``/
-        ``match_token``). No top-level ``diagnostics`` key — like
-        Phase 1, this validator is informational only and never blocks
-        certification.
+        ``match_token``), and Phase-13
+        ``user_provided_via_experimental`` (always present, with an
+        empty ``fields`` list when no overrides apply). No top-level
+        ``diagnostics`` key — like Phase 1, this validator is
+        informational only and never blocks certification.
     """
     safe_asset = asset if isinstance(asset, dict) else {}
     safe_runtime = runtime if isinstance(runtime, dict) else {}
     asset_name = _as_str(safe_asset.get("name")) or "unnamed_asset"
     family, signal, token = _infer_family(safe_asset)
     base_brief = _build_default_brief(asset_name=asset_name, family=family)
+    overrides = _experimental_art_direction(safe_asset)
+    brief_with_overrides, applied_fields = _apply_art_direction_overrides(base_brief, overrides)
     reference_negatives = _reference_negative_constraints(safe_runtime)
     merged_negatives = _merge_negative_constraints(
-        base_brief.negative_constraints, reference_negatives
+        brief_with_overrides.negative_constraints, reference_negatives
     )
-    if merged_negatives != base_brief.negative_constraints:
+    if merged_negatives != brief_with_overrides.negative_constraints:
         brief = DesignBrief(
-            asset_name=base_brief.asset_name,
-            family=base_brief.family,
-            role=base_brief.role,
-            style_tags=base_brief.style_tags,
-            silhouette=base_brief.silhouette,
-            bevel_language=base_brief.bevel_language,
-            shape_language=base_brief.shape_language,
-            detail_density=base_brief.detail_density,
-            wear=base_brief.wear,
-            material_age=base_brief.material_age,
-            greeble_style=base_brief.greeble_style,
+            asset_name=brief_with_overrides.asset_name,
+            family=brief_with_overrides.family,
+            role=brief_with_overrides.role,
+            style_tags=brief_with_overrides.style_tags,
+            silhouette=brief_with_overrides.silhouette,
+            bevel_language=brief_with_overrides.bevel_language,
+            shape_language=brief_with_overrides.shape_language,
+            detail_density=brief_with_overrides.detail_density,
+            wear=brief_with_overrides.wear,
+            material_age=brief_with_overrides.material_age,
+            greeble_style=brief_with_overrides.greeble_style,
             negative_constraints=merged_negatives,
         )
     else:
-        brief = base_brief
+        brief = brief_with_overrides
     return {
         "version": VERSION,
         "brief": brief.to_dict(),
@@ -325,4 +416,5 @@ def evaluate_design_brief(
             "match_signal": signal,
             "match_token": token,
         },
+        "user_provided_via_experimental": {"fields": list(applied_fields)},
     }

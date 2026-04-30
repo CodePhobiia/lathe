@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 # re-export — authoritative definitions live in lathe/errors.py
@@ -679,7 +680,48 @@ class Resolver:
         merged.setdefault("constraints", {})
         merged["constraints"]["resolved_assembly_policy"] = resolved_policies["assembly_policy"]
 
+        # Phase 13: resolve `experimental.references.use` to an absolute
+        # path relative to the source `.lth` file. The checker validates
+        # the resolved path; the executor uses `_resolved_path` to override
+        # the convention reference-board base path.
+        experimental = merged.get("experimental")
+        if isinstance(experimental, dict):
+            references = experimental.get("references")
+            if isinstance(references, dict):
+                use_value = references.get("use")
+                if isinstance(use_value, str) and use_value:
+                    references["_resolved_path"] = self._resolve_experimental_reference_path(
+                        use_value
+                    )
+            merged["experimental"] = experimental
+
         return normalize_asset(merged)
+
+    def _resolve_experimental_reference_path(self, use_value: str) -> str:
+        """Resolve ``experimental.references.use`` to an absolute path.
+
+        Mirrors how the parser's import resolver locates files: prefers
+        a path relative to the source ``.lth`` file, otherwise resolves
+        against the repo root. Returns an empty string when no
+        candidate is found so the checker can surface ``L7103``.
+        """
+        source_path = self.program.get("_source_path")
+        candidates: list[Path] = []
+        rel = Path(use_value)
+        if source_path:
+            candidates.append((Path(source_path).resolve().parent / rel))
+        candidates.append(Path.cwd() / rel)
+        for candidate in candidates:
+            try:
+                resolved = candidate.resolve()
+            except (OSError, RuntimeError):
+                continue
+            if resolved.exists():
+                return str(resolved)
+        try:
+            return str((candidates[0]).resolve())
+        except (OSError, RuntimeError):
+            return ""
 
 
 def materialize_asset(

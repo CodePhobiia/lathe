@@ -629,6 +629,9 @@ def evaluate_reference_board(
     safe_asset = asset if isinstance(asset, dict) else {}
     safe_runtime = runtime if isinstance(runtime, dict) else {}
 
+    user_provided_via_experimental = bool(
+        safe_runtime.get("_reference_board_user_provided_via_experimental")
+    )
     raw = safe_runtime.get("_reference_board")
     if raw is None:
         asset_name = _resolve_asset_name(safe_asset, {})
@@ -654,6 +657,7 @@ def evaluate_reference_board(
             "skipped_reasons": [not_loaded.to_dict()],
             "warnings": [],
             "diagnostics": [],
+            "user_provided_via_experimental": user_provided_via_experimental,
         }
 
     raw_dict = _as_dict(raw)
@@ -679,4 +683,5 @@ def evaluate_reference_board(
         "skipped_reasons": [record.to_dict() for record in skipped_records],
         "warnings": [],
         "diagnostics": [],
+        "user_provided_via_experimental": user_provided_via_experimental,
     }

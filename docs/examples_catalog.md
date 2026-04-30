@@ -31,6 +31,7 @@ tracked so regressions surface, but they are not release-polish proof today.
 |------|--------|------|----------|-------|------|
 | `examples/brassbound_chest.lth` | `brassbound_chest` | T0 | hero loot chest, wood+brass PBR, lid mechanism | ~45s | o |
 | `examples/industrial_crate.lth` | `industrial_crate` | T0 | steel shipping crate, warning paint, latch | ~2s | o |
+| `examples/industrial_crate_experimental.lth` | `industrial_crate` | T0 | Phase 13 experimental wrapper: art_direction overrides + references override + kit declaration | ~2s | o |
 | `examples/mechanical_door.lth` | `mechanical_door` | T0 | env module, hinged door w/ handle | ~37s | o |
 | `examples/courier_drone.lth` | `courier_drone` | T0 | quad rotor, cargo hatch, battery sockets | ~2s | o |
 | `examples/console_terminal.lth` | `console_terminal` | T0 | wall console, screen + keypad | ~75s | o |

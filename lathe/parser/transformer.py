@@ -878,6 +878,7 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
         validate: dict[str, Any] = {}
         package: dict[str, Any] = {}
         publish: dict[str, Any] = {}
+        experimental: dict[str, Any] = {}
         for item in rest:
             if item is None:
                 continue
@@ -927,6 +928,8 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 package = item["values"]
             elif isinstance(item, dict) and item.get("node_type") == "publish":
                 publish = item["values"]
+            elif isinstance(item, dict) and item.get("node_type") == "experimental":
+                experimental = item["values"]
             else:
                 raise LatheParseError(f"Unexpected asset item: {item!r}")
         return {
@@ -954,6 +957,7 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
             "validate": validate,
             "package": package,
             "publish": publish,
+            "experimental": experimental,
         }
 
     def variant_decl(self, name: str, base: str, *patches: Any) -> dict[str, Any]:

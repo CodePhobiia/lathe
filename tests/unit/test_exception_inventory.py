@@ -7,12 +7,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCAN_ROOTS = ("lathe", "scripts")
 BROAD_EXCEPTION_ALLOWLIST = {
     "lathe/backends.py:624",
+    "lathe/checker/experimental.py:384",
     "lathe/cli/build_cmd.py:220",
     "lathe/core/stages/package.py:148",
     "lathe/core/stages/package.py:389",
     "lathe/doctor.py:400",
-    "lathe/executor.py:204",
-    "lathe/executor.py:219",
+    "lathe/executor.py:216",
+    "lathe/executor.py:231",
     "lathe/repair_loop.py:275",
     "lathe/scaffold_compiler.py:110",
     "lathe/scaffold_compiler.py:136",

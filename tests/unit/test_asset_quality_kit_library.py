@@ -163,7 +163,9 @@ def test_evaluate_kit_library_returns_v1_payload() -> None:
 
     assert payload["version"] == KIT_LIBRARY_VERSION
     assert payload["version"] == "kit_library_v1"
-    assert set(payload.keys()) == {
+    # Phase 13 added an additive ``user_provided_via_experimental`` key.
+    # The Phase 12 baseline keys must remain a subset of the payload.
+    assert {
         "version",
         "asset_name",
         "family",
@@ -172,7 +174,7 @@ def test_evaluate_kit_library_returns_v1_payload() -> None:
         "skipped_reasons",
         "warnings",
         "diagnostics",
-    }
+    }.issubset(payload.keys())
     assert set(payload["library"].keys()) == {"base_path", "parts", "skipped"}
     assert set(payload["summary"].keys()) == {
         "part_count",
