@@ -278,6 +278,10 @@ class BuildExecutor:
         physics_bundle = stage_physics.run(self, interfaces_bundle)
         optimize_bundle = stage_optimize.run(self, physics_bundle)
         stage_execution.run(self, optimize_bundle)
+        # Phase 10: publish a redacted snapshot of the runtime config so the
+        # vision-critique validator can read the optional ``vision_critique``
+        # provider block without ever seeing raw api keys / endpoints.
+        self.runtime["_runtime_config"] = redact_secrets(self.runtime_config)
         validate_bundle = stage_validate.run(self, optimize_bundle)
         repair_rounds: list[dict[str, Any]] = []
         if not validate_bundle["certified"]:

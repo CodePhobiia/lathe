@@ -43,6 +43,15 @@ TRACKED_MARKERS = {
     "docs/security/ci_gates.md": ("placeholder (e.g.",),
     "docs/templates/gallery_index.html.j2": (".placeholder",),
     "lathe/mesh_ingest.py": ("NotImplementedError",),
+    "lathe/asset_quality/vision_critique.py": (
+        "stub",
+        "Stub",
+        "NotImplementedError",
+    ),
+    "docs/asset-quality/vision-critique-loop.md": (
+        "stub",
+        "Stub",
+    ),
     "scripts/render_gallery.py": (
         "no_blender.txt` placeholder",
         '<div class="placeholder">',
