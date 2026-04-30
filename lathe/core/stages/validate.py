@@ -17,6 +17,7 @@ from ...asset_quality.family_grammar import evaluate_family_grammar
 from ...asset_quality.grammar_lowering import evaluate_grammar_lowering
 from ...asset_quality.highlow_relation import evaluate_highlow_relation
 from ...asset_quality.material_wear_graph import evaluate_material_wear_graph
+from ...asset_quality.preview_evidence import evaluate_preview_evidence
 from ...validators.composition import (
     FunctionValidator,
     ValidatorPipeline,
@@ -80,6 +81,12 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="material_wear_graph",
             fn=evaluate_material_wear_graph,
+            stage_dependencies=["surface"],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="preview_evidence",
+            fn=evaluate_preview_evidence,
             stage_dependencies=["surface"],
             weight=0.0,
         ),
@@ -365,6 +372,41 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    preview_evidence_entry = cert_bundle["validators"].get(
+        "preview_evidence",
+        {
+            "evidence": {
+                "version": "preview_evidence_v1",
+                "asset_name": "unnamed_asset",
+                "previews": {
+                    "final_beauty": [],
+                    "material_ids": [],
+                    "wireframe": [],
+                    "uv_layout": [],
+                    "collision": [],
+                    "lod_sheet": [],
+                    "bake_maps": [],
+                    "comparison_sheet": [],
+                },
+                "preview_summary": {
+                    "final_beauty_present": False,
+                    "material_ids_present": False,
+                    "wireframe_present": False,
+                    "bake_map_count": 0,
+                    "comparison_sheet_present": False,
+                    "distinct_final_from_material_ids": False,
+                    "total_preview_count": 0,
+                },
+                "report_links": [],
+                "skipped_reasons": [],
+                "warnings": [],
+                "diagnostics": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -377,6 +419,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     grammar_lowering_report = grammar_lowering_entry.get("evidence", {})
     highlow_relation_report = highlow_relation_entry.get("evidence", {})
     material_wear_graph_report = material_wear_graph_entry.get("evidence", {})
+    preview_evidence_report = preview_evidence_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -389,6 +432,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["grammar_lowering"] = grammar_lowering_report
     executor.runtime["highlow_relation"] = highlow_relation_report
     executor.runtime["material_wear_graph"] = material_wear_graph_report
+    executor.runtime["preview_evidence"] = preview_evidence_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
@@ -459,6 +503,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "grammar_lowering": grammar_lowering_report,
         "highlow_relation": highlow_relation_report,
         "material_wear_graph": material_wear_graph_report,
+        "preview_evidence": preview_evidence_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),
