@@ -23,6 +23,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from .asset_quality.kit_library import KitLibrary, load_kit_library
 from .asset_quality.reference_board import load_reference_board
 from .cache_paths import CACHE_MANIFEST_FILENAME, lathe_cache_dir
 from .capabilities import deterministic_backend_reports, probe_topology_backend  # noqa: F401
@@ -92,7 +93,7 @@ STAGE_ORDER = [
 
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
-BUILD_CACHE_VERSION = "v11_rc1"
+BUILD_CACHE_VERSION = "v12_rc1"
 log = logging.getLogger(__name__)
 
 
@@ -204,6 +205,21 @@ def _safe_load_reference_board(asset_name: str) -> dict[str, Any] | None:
         return None
 
 
+def _safe_load_kit_library() -> KitLibrary | None:
+    """Load the Phase 12 kit library without crashing the build.
+
+    Wraps :func:`lathe.asset_quality.kit_library.load_kit_library`
+    in a permissive try/except. Any unexpected exception is swallowed
+    and ``None`` is published — the validator then emits a structured
+    ``kit_library_not_loaded`` skipped reason in place of the missing
+    library.
+    """
+    try:
+        return load_kit_library()
+    except Exception:  # pragma: no cover - defensive guard
+        return None
+
+
 class BuildExecutor:
     """BuildExecutor."""
 
@@ -303,6 +319,9 @@ class BuildExecutor:
         # validator can build the additive ``reference_board`` payload and
         # the design-brief layer can merge reference negatives.
         self.runtime["_reference_board"] = _safe_load_reference_board(self.asset_name)
+        # Phase 12: publish the standard hard-surface kit library so the
+        # validator can build the additive ``kit_library`` payload.
+        self.runtime["_kit_library"] = _safe_load_kit_library()
         validate_bundle = stage_validate.run(self, optimize_bundle)
         repair_rounds: list[dict[str, Any]] = []
         if not validate_bundle["certified"]:

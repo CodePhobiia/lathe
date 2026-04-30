@@ -111,6 +111,7 @@ _VALIDATE_REPORT_REQUIRED_KEYS: frozenset[str] = frozenset(
         "preview_evidence",
         "vision_critique",
         "reference_board",
+        "kit_library",
     }
 )
 

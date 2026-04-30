@@ -16,6 +16,7 @@ from ...asset_quality.diagnostics import evaluate_quality_diagnostics
 from ...asset_quality.family_grammar import evaluate_family_grammar
 from ...asset_quality.grammar_lowering import evaluate_grammar_lowering
 from ...asset_quality.highlow_relation import evaluate_highlow_relation
+from ...asset_quality.kit_library import evaluate_kit_library
 from ...asset_quality.material_wear_graph import evaluate_material_wear_graph
 from ...asset_quality.preview_evidence import evaluate_preview_evidence
 from ...asset_quality.reference_board import evaluate_reference_board
@@ -101,6 +102,12 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="reference_board",
             fn=evaluate_reference_board,
+            stage_dependencies=[],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="kit_library",
+            fn=evaluate_kit_library,
             stage_dependencies=[],
             weight=0.0,
         ),
@@ -492,6 +499,45 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    kit_library_entry = cert_bundle["validators"].get(
+        "kit_library",
+        {
+            "evidence": {
+                "version": "kit_library_v1",
+                "asset_name": "unnamed_asset",
+                "family": "generic",
+                "library": {
+                    "base_path": "",
+                    "parts": [],
+                    "skipped": [],
+                },
+                "summary": {
+                    "part_count": 0,
+                    "parts_by_category": {
+                        "fasteners": 0,
+                        "corner_guards": 0,
+                        "handles": 0,
+                        "rails": 0,
+                        "warning_labels": 0,
+                    },
+                    "categories_covered": 0,
+                    "all_required_categories_present": False,
+                    "parts_for_family_count": 0,
+                },
+                "skipped_reasons": [
+                    {
+                        "category": "kit_library",
+                        "reason": "kit_library_not_loaded",
+                    }
+                ],
+                "warnings": [],
+                "diagnostics": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -507,6 +553,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     preview_evidence_report = preview_evidence_entry.get("evidence", {})
     vision_critique_report = vision_critique_entry.get("evidence", {})
     reference_board_report = reference_board_entry.get("evidence", {})
+    kit_library_report = kit_library_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -522,6 +569,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["preview_evidence"] = preview_evidence_report
     executor.runtime["vision_critique"] = vision_critique_report
     executor.runtime["reference_board"] = reference_board_report
+    executor.runtime["kit_library"] = kit_library_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
@@ -595,6 +643,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "preview_evidence": preview_evidence_report,
         "vision_critique": vision_critique_report,
         "reference_board": reference_board_report,
+        "kit_library": kit_library_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),

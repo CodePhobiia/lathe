@@ -1,0 +1,42 @@
+{
+  "name": "trim_band_strip",
+  "category": "rails",
+  "kind": "procedural",
+  "procedural_recipe": {
+    "primitive": "thin_band_strip_with_seam",
+    "length_mm": 600.0,
+    "width_mm": 28.0,
+    "thickness_mm": 1.5,
+    "seam_step_mm": 100.0
+  },
+  "material_zones": ["dark_bare_metal_underlayer"],
+  "sockets": [
+    {
+      "name": "band_start",
+      "anchor_axis": "-x",
+      "default_position": [0.0, 0.0, 0.0]
+    },
+    {
+      "name": "band_end",
+      "anchor_axis": "+x",
+      "default_position": [0.6, 0.0, 0.0]
+    }
+  ],
+  "placement_constraints": {
+    "face": "any",
+    "normal_axis": "any",
+    "requires_flat_surface": true
+  },
+  "scale_range": {"min": 0.6, "max": 1.6},
+  "allowed_families": ["*"],
+  "lod_behavior": {
+    "strategy": "drop_at_lod2",
+    "retained_for_collision": false
+  },
+  "bake_group": "trim_metal",
+  "provenance": {
+    "source": "std/kits/hardsurface (Phase 12 internal)",
+    "version": "v1",
+    "license": "internal"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "caution_yellow_strip",
+  "category": "warning_labels",
+  "kind": "procedural",
+  "procedural_recipe": {
+    "primitive": "decal_strip",
+    "length_mm": 220.0,
+    "height_mm": 26.0,
+    "stripe_pattern": "diagonal_yellow_black",
+    "stripe_period_mm": 12.0
+  },
+  "material_zones": ["warning_label_yellow"],
+  "sockets": [
+    {
+      "name": "decal_anchor",
+      "anchor_axis": "+y",
+      "default_position": [0.0, 0.0, 0.0]
+    }
+  ],
+  "placement_constraints": {
+    "face": "any",
+    "normal_axis": "any",
+    "requires_flat_surface": true
+  },
+  "scale_range": {"min": 0.7, "max": 1.5},
+  "allowed_families": ["*"],
+  "lod_behavior": {
+    "strategy": "drop_at_lod2",
+    "retained_for_collision": false
+  },
+  "bake_group": "warning_decals",
+  "provenance": {
+    "source": "std/kits/hardsurface (Phase 12 internal)",
+    "version": "v1",
+    "license": "internal"
+  }
+}

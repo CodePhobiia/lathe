@@ -1,0 +1,37 @@
+{
+  "name": "recessed_inset_grip",
+  "category": "handles",
+  "kind": "procedural",
+  "procedural_recipe": {
+    "primitive": "rounded_rect_inset_with_lip",
+    "outer_width_mm": 120.0,
+    "outer_height_mm": 50.0,
+    "inset_depth_mm": 18.0,
+    "lip_radius_mm": 6.0
+  },
+  "material_zones": ["painted_steel_body", "dark_bare_metal_underlayer"],
+  "sockets": [
+    {
+      "name": "grip_anchor",
+      "anchor_axis": "+x",
+      "default_position": [0.0, 0.0, 0.0]
+    }
+  ],
+  "placement_constraints": {
+    "face": "any",
+    "normal_axis": "any",
+    "requires_flat_surface": true
+  },
+  "scale_range": {"min": 0.85, "max": 1.25},
+  "allowed_families": ["industrial_crate", "supply_container", "service_cabinet"],
+  "lod_behavior": {
+    "strategy": "drop_at_lod3",
+    "retained_for_collision": true
+  },
+  "bake_group": "trim_metal",
+  "provenance": {
+    "source": "std/kits/hardsurface (Phase 12 internal)",
+    "version": "v1",
+    "license": "internal"
+  }
+}

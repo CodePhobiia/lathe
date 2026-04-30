@@ -1,0 +1,37 @@
+{
+  "name": "biohazard_orange_decal",
+  "category": "warning_labels",
+  "kind": "procedural",
+  "procedural_recipe": {
+    "primitive": "decal_circle",
+    "diameter_mm": 90.0,
+    "icon": "biohazard_trefoil",
+    "background_color": "safety_orange",
+    "icon_color": "matte_black"
+  },
+  "material_zones": ["warning_label_orange"],
+  "sockets": [
+    {
+      "name": "decal_anchor",
+      "anchor_axis": "+y",
+      "default_position": [0.0, 0.0, 0.0]
+    }
+  ],
+  "placement_constraints": {
+    "face": "any",
+    "normal_axis": "any",
+    "requires_flat_surface": true
+  },
+  "scale_range": {"min": 0.6, "max": 1.4},
+  "allowed_families": ["industrial_crate", "supply_container", "service_cabinet"],
+  "lod_behavior": {
+    "strategy": "drop_at_lod2",
+    "retained_for_collision": false
+  },
+  "bake_group": "warning_decals",
+  "provenance": {
+    "source": "std/kits/hardsurface (Phase 12 internal)",
+    "version": "v1",
+    "license": "internal"
+  }
+}

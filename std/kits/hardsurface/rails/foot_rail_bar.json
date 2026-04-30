@@ -1,0 +1,41 @@
+{
+  "name": "foot_rail_bar",
+  "category": "rails",
+  "kind": "procedural",
+  "procedural_recipe": {
+    "primitive": "rectangular_bar_with_chamfer",
+    "length_mm": 480.0,
+    "cross_section_mm": [22.0, 14.0],
+    "chamfer_mm": 0.8
+  },
+  "material_zones": ["painted_steel_body", "dark_bare_metal_underlayer"],
+  "sockets": [
+    {
+      "name": "rail_start",
+      "anchor_axis": "-x",
+      "default_position": [0.0, 0.0, 0.0]
+    },
+    {
+      "name": "rail_end",
+      "anchor_axis": "+x",
+      "default_position": [0.48, 0.0, 0.0]
+    }
+  ],
+  "placement_constraints": {
+    "face": "bottom",
+    "normal_axis": "-y",
+    "requires_flat_surface": true
+  },
+  "scale_range": {"min": 0.7, "max": 1.5},
+  "allowed_families": ["industrial_crate", "supply_container"],
+  "lod_behavior": {
+    "strategy": "drop_at_lod3",
+    "retained_for_collision": true
+  },
+  "bake_group": "trim_metal",
+  "provenance": {
+    "source": "std/kits/hardsurface (Phase 12 internal)",
+    "version": "v1",
+    "license": "internal"
+  }
+}
