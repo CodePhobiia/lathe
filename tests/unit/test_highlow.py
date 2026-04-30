@@ -118,6 +118,17 @@ class HighLowEdgeCaseTests(unittest.TestCase):
         self.assertEqual(payload["low_mesh_uri"], "")
         self.assertEqual(payload["source"], "")
 
+    def test_none_uris_are_preserved_as_missing_evidence(self) -> None:
+        rel = HighLowRelation(
+            high_mesh_uri=None,
+            low_mesh_uri=None,
+            bake_cage_offset_cm=0.0,
+            source="missing_evidence",
+        )
+        payload = rel.to_dict()
+        self.assertIsNone(payload["high_mesh_uri"])
+        self.assertIsNone(payload["low_mesh_uri"])
+
     def test_missing_required_field_raises_typeerror(self) -> None:
         # Dataclass constructor enforces required-field presence — a malformed
         # call (omitting a required positional/keyword) raises TypeError.

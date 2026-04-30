@@ -324,7 +324,10 @@ def _surface_evidence(runtime: dict[str, Any], surface_bundle: dict[str, Any]) -
     low_stats = runtime.get("topology", {}).get("bundle", {}).get("mesh_stats", {})
     high_triangles = float(highlow.get("high_triangle_count", high_stats.get("triangle_count", 0)))
     low_triangles = float(highlow.get("low_triangle_count", low_stats.get("triangle_count", 0)))
-    triangle_delta = abs(high_triangles - low_triangles) / max(1.0, high_triangles)
+    if high_triangles > low_triangles >= 0.0:
+        triangle_delta = (high_triangles - low_triangles) / max(1.0, high_triangles)
+    else:
+        triangle_delta = 0.0
     highlow_realness = min(1.0, (0.45 if distinct_mesh_uris else 0.0) + min(0.55, triangle_delta / 0.18))
     requested_decals = list(surface_bundle.get("decal_masks", [])) + list(surface_bundle.get("patterns", []))
     if requested_decals:

@@ -13,8 +13,8 @@ from dataclasses import asdict, dataclass
 class HighLowRelation:
     """HighLowRelation."""
 
-    high_mesh_uri: str
-    low_mesh_uri: str
+    high_mesh_uri: str | None
+    low_mesh_uri: str | None
     bake_cage_offset_cm: float
     source: str
     high_triangle_count: int = 0

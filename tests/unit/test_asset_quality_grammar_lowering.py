@@ -9,16 +9,17 @@ Covers per task #6 of ``docs/asset-quality/improvement-tasklist.md``:
   empty).
 - Synthesized ``node_type`` values are members of Phase 4's
   ``NODE_TYPES`` frozenset.
-- Coverage improves: starting from the baseline parts list, merging the
-  recipe's synthesized graph nodes into the construction graph
-  strictly raises the ``family_grammar`` coverage value (predicted
-  0.40 -> 0.70).
+- Coverage improves: starting from the baseline parts list, publishing
+  the recipe's synthesized graph nodes under ``grammar_lowering``
+  strictly raises the live ``family_grammar`` coverage value
+  (predicted 0.40 -> 0.70).
 - The validator entry point's payload shape is exactly the seven keys
   declared in the master prompt.
 - The validator never adds a top-level ``diagnostics`` key (informational
   contract — mirrors Phases 1 through 5).
-- ``lower_to_v1`` on the recipe produces exactly 1 v1 record (the body
-  ``solid.box``) plus per-op ``no_v1_equivalent`` diagnostics.
+- ``lower_to_v1`` on the recipe produces exactly 3 v1 records (the body
+  ``solid.box`` plus two rail approximations) plus per-op
+  ``no_v1_equivalent`` diagnostics.
 - The recipe is deterministic across calls.
 - A generic family falls back to an empty program + zero synthesized
   nodes.
@@ -34,7 +35,7 @@ from typing import Any
 
 import pytest
 
-from lathe.asset_quality.construction_graph import NODE_TYPES
+from lathe.asset_quality.construction_graph import NODE_TYPES, evaluate_construction_graph
 from lathe.asset_quality.family_grammar import evaluate_family_grammar
 from lathe.asset_quality.grammar_lowering import (
     GRAMMAR_LOWERING_VERSION,
@@ -48,6 +49,7 @@ from lathe.asset_quality.shape_ir_v2 import (
     ShapeProgram,
     lower_to_v1,
 )
+from lathe.validators.composition import FunctionValidator, ValidatorPipeline
 
 
 _BASELINE_PARTS: tuple[str, ...] = (
@@ -318,16 +320,13 @@ def test_shape_program_summary_ops_by_family_breakdown() -> None:
     assert sum(by_family.values()) == 13
 
 
-def test_v1_lowering_yields_exactly_one_v1_record_for_body_solid_box() -> None:
-    """Only ``solid.box`` from Phase 5's ``_V1_LOWERERS`` is lowerable
-    in the recipe. Everything else (op.inset, op.cut_panel_line,
-    op.corner_guard_set, op.mount_plate, op.socket, solid.rail,
-    op.trim_band, op.fastener_grid, op.repeat, op.chip_edges) emits a
-    ``no_v1_equivalent`` diagnostic instead."""
+def test_v1_lowering_yields_three_v1_records_for_body_and_rails() -> None:
+    """``solid.box`` and both ``solid.rail`` ops lower to v1 records.
+    The remaining semantic ops still emit ``no_v1_equivalent``."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
     v1 = payload["v1_lowering"]
 
-    assert v1["v1_record_count"] == 1
+    assert v1["v1_record_count"] == 3
     assert v1["unsupported_ops"] == []
 
     diagnostic_op_names = {item["op"] for item in v1["diagnostics"]}
@@ -339,7 +338,6 @@ def test_v1_lowering_yields_exactly_one_v1_record_for_body_solid_box() -> None:
         "op.corner_guard_set",
         "op.mount_plate",
         "op.socket",
-        "solid.rail",
         "op.trim_band",
         "op.fastener_grid",
         "op.repeat",
@@ -351,12 +349,12 @@ def test_v1_lowering_yields_exactly_one_v1_record_for_body_solid_box() -> None:
 
 
 def test_v1_lowering_diagnostics_count_matches_unsupported_op_count() -> None:
-    """Every recipe op except the body's ``solid.box`` produces a
-    ``no_v1_equivalent`` diagnostic (12 of 13 ops)."""
+    """Every recipe op except ``solid.box`` and two rails produces a
+    ``no_v1_equivalent`` diagnostic (10 of 13 ops)."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
     v1 = payload["v1_lowering"]
 
-    assert len(v1["diagnostics"]) == 12
+    assert len(v1["diagnostics"]) == 10
 
 
 def test_recipe_is_deterministic_across_invocations() -> None:
@@ -388,16 +386,21 @@ def test_every_recipe_op_is_a_member_of_all_ops() -> None:
         )
 
 
-def test_lower_to_v1_on_recipe_produces_one_v1_record() -> None:
+def test_lower_to_v1_on_recipe_produces_three_v1_records() -> None:
     """Direct ``lower_to_v1`` invocation on the recipe's program. Mirrors
     Phase 5's adapter contract end-to-end."""
     result = industrial_crate_recipe(brief={}, parts=(), graph_nodes=())
 
     adapter_result = lower_to_v1(result.shape_program)
 
-    assert len(adapter_result.v1_records) == 1
+    assert len(adapter_result.v1_records) == 3
     assert adapter_result.v1_records[0]["primitive_type"] == "box"
     assert adapter_result.v1_records[0]["part"] == "body"
+    assert [record["v2_op"] for record in adapter_result.v1_records] == [
+        "solid.box",
+        "solid.rail",
+        "solid.rail",
+    ]
     assert adapter_result.unsupported_ops == ()
 
 
@@ -406,9 +409,9 @@ def test_recipe_synthesized_nodes_lift_family_grammar_coverage() -> None:
 
     Starting from the baseline ``[body, latch_plate, handle_l, handle_r,
     foot_l, foot_r]`` parts list (which yields 0.40 coverage with only
-    the parts-derived construction graph), merging the recipe's
-    synthesized graph nodes into the construction graph must STRICTLY
-    raise the ``family_grammar`` coverage value because
+    the parts-derived construction graph), publishing the recipe's
+    synthesized graph nodes under ``runtime["grammar_lowering"]`` must
+    STRICTLY raise the live ``family_grammar`` coverage value because
     ``corner_guards``, ``trim_bands``, ``fasteners``,
     ``warning_or_decal_zones``, and ``edge_wear_masks`` get elevated
     from ``"missing"`` to ``"partial"`` via Phase 4's graph-elevation
@@ -419,11 +422,9 @@ def test_recipe_synthesized_nodes_lift_family_grammar_coverage() -> None:
     baseline_coverage = baseline_payload["coverage"]
     assert baseline_coverage == 0.4
 
-    recipe_result = industrial_crate_recipe(brief={}, parts=(), graph_nodes=())
-    merged_nodes = list(_BASELINE_GRAPH_NODES) + list(
-        recipe_result.synthesized_graph_nodes
-    )
-    merged_runtime = _crate_runtime(tuple(merged_nodes))
+    grammar_payload = evaluate_grammar_lowering(asset, baseline_runtime)
+    merged_runtime = _crate_runtime(_BASELINE_GRAPH_NODES)
+    merged_runtime["grammar_lowering"] = grammar_payload
     merged_payload = evaluate_family_grammar(asset, merged_runtime)
     merged_coverage = merged_payload["coverage"]
 
@@ -432,6 +433,37 @@ def test_recipe_synthesized_nodes_lift_family_grammar_coverage() -> None:
         f"baseline={baseline_coverage}, merged={merged_coverage}"
     )
     assert merged_coverage == 0.7
+
+
+def test_validator_pipeline_lifts_family_grammar_coverage_live() -> None:
+    pipeline = ValidatorPipeline(
+        [
+            FunctionValidator(
+                name="construction_graph",
+                fn=evaluate_construction_graph,
+                stage_dependencies=[],
+                weight=0.0,
+            ),
+            FunctionValidator(
+                name="grammar_lowering",
+                fn=evaluate_grammar_lowering,
+                stage_dependencies=[],
+                weight=0.0,
+            ),
+            FunctionValidator(
+                name="family_grammar",
+                fn=evaluate_family_grammar,
+                stage_dependencies=[],
+                weight=0.0,
+            ),
+        ]
+    )
+    runtime = _crate_runtime()
+    report = pipeline.run(runtime, _crate_asset(), artifacts={})
+
+    family_evidence = report["validators"]["family_grammar"]["evidence"]
+    assert family_evidence["coverage"] == 0.7
+    assert runtime["family_grammar"]["coverage"] == 0.7
 
 
 def test_recipe_brief_parts_and_graph_arguments_are_currently_ignored() -> None:

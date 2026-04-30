@@ -22,7 +22,7 @@ Covers per task #7 of ``docs/asset-quality/improvement-tasklist.md``:
   evidence is absent.
 - The evaluator is deterministic — identical input yields identical
   output.
-- The payload shape contract is exactly the 17 keys declared in the
+- The payload shape contract is exactly the 18 keys declared in the
   master prompt.
 - The ``FunctionValidator`` wrapper preserves ``passes`` semantics —
   default mode keeps ``passes=True``; strict mode flips it to
@@ -65,6 +65,7 @@ _PAYLOAD_KEYS: frozenset[str] = frozenset(
         "skipped_reasons",
         "warnings",
         "diagnostics",
+        "required",
     }
 )
 
@@ -140,6 +141,24 @@ def _runtime_real() -> dict[str, Any]:
     }
 
 
+def _runtime_inverted_counts() -> dict[str, Any]:
+    """Runtime with low-poly triangles exceeding the high-poly source."""
+    return {
+        "surface": {
+            "bundle": {
+                "highlow_relation": {
+                    "high_mesh_uri": "stages/shape/high.glb",
+                    "low_mesh_uri": "stages/topology/low.glb",
+                    "high_triangle_count": 1000,
+                    "low_triangle_count": 2000,
+                },
+                "outputs": _bake_outputs_full(),
+            }
+        },
+        "topology": {"bundle": {"mesh_uri": "stages/topology/low.glb"}},
+    }
+
+
 def _runtime_skipped() -> dict[str, Any]:
     """Runtime with a missing high-poly source plus partial bake outputs."""
     return {
@@ -162,6 +181,10 @@ def _runtime_skipped() -> dict[str, Any]:
 
 def _asset() -> dict[str, Any]:
     return {"name": "industrial_crate", "intent": {"parts": ["body"]}}
+
+
+def _nonhero_asset() -> dict[str, Any]:
+    return {"name": "generic_widget", "intent": {"parts": ["body"]}}
 
 
 def test_bake_map_evidence_is_frozen() -> None:
@@ -188,15 +211,17 @@ def test_highlow_evidence_is_frozen() -> None:
         skipped_reasons=(),
         is_real_highlow=False,
         realness_score=0.0,
+        required=True,
     )
     with pytest.raises(FrozenInstanceError):
         record.realness_score = 1.0  # type: ignore[misc]
 
 
-def test_payload_shape_contract_matches_seventeen_keys() -> None:
+def test_payload_shape_contract_matches_eighteen_keys() -> None:
     payload = evaluate_highlow_relation(_asset(), _runtime_industrial_crate())
     assert set(payload.keys()) == _PAYLOAD_KEYS
     assert payload["version"] == HIGHLOW_RELATION_VERSION
+    assert payload["required"] is True
 
 
 def test_fake_fixture_is_clearly_fake() -> None:
@@ -227,6 +252,16 @@ def test_real_fixture_clears_warning() -> None:
     assert payload["triangle_delta_ratio"] >= 0.20
     assert payload["bake_map_count_present"] == 4
     assert payload["skipped_reasons"] == []
+
+
+def test_inverted_triangle_counts_do_not_receive_detail_credit() -> None:
+    payload = evaluate_highlow_relation(_asset(), _runtime_inverted_counts())
+
+    assert payload["triangle_delta_ratio"] == 0.0
+    assert payload["distinct_triangle_counts"] is True
+    assert payload["is_real_highlow"] is False
+    assert payload["warnings"], "inverted counts should fire a hero warning"
+    assert "inverted high/low" in payload["warnings"][0]
 
 
 def test_skipped_fixture_records_structured_reasons() -> None:
@@ -288,6 +323,23 @@ def test_strict_mode_does_not_diagnose_real_fixture(
     monkeypatch.setenv("LATHE_STRICT_HIGHLOW", "1")
     payload = evaluate_highlow_relation(_asset(), _runtime_real())
     assert payload["diagnostics"] == []
+
+
+def test_nonhero_assets_do_not_require_highlow_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LATHE_STRICT_HIGHLOW", "1")
+    runtime = _runtime_fake()
+
+    payload = evaluate_highlow_relation(_nonhero_asset(), runtime)
+    runtime["highlow_relation"] = payload
+    quality_payload = evaluate_quality_diagnostics(_nonhero_asset(), runtime)
+
+    assert payload["required"] is False
+    assert payload["warnings"] == []
+    assert payload["diagnostics"] == []
+    assert quality_payload["metrics"]["highlow_fake_detail_penalty"] == 0.0
+    assert not any("highlow_fake_detail_penalty" in w for w in quality_payload["warnings"])
 
 
 def test_function_validator_default_passes_even_on_low_score() -> None:

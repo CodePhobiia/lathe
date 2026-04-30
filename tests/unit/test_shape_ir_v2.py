@@ -289,6 +289,44 @@ def test_lower_to_v1_emits_no_v1_equivalent_for_op_bevel() -> None:
     assert result.unsupported_ops == ()
 
 
+def test_lower_to_v1_lowers_solid_rail_as_box_approximation() -> None:
+    op = ShapeOp(
+        op="solid.rail",
+        target="body.bottom_front",
+        parameters={"length_cm": 60.0, "profile_cm": 4.0},
+        purpose="foot_rails.front",
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "box"
+    assert record["part"] == "body.bottom_front"
+    assert record["extents"] == (60.0, 4.0, 4.0)
+    assert record["tags"] == ["rail_approx"]
+    assert record["v2_op"] == "solid.rail"
+    assert result.diagnostics == ()
+
+
+def test_lower_to_v1_lowers_solid_panel_as_thin_box_approximation() -> None:
+    op = ShapeOp(
+        op="solid.panel",
+        target="body.front_panel",
+        parameters={"width_cm": 32.0, "height_cm": 20.0, "thickness_cm": 1.5},
+        purpose="lid_seam.panel",
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "box"
+    assert record["part"] == "body.front_panel"
+    assert record["extents"] == (32.0, 20.0, 1.5)
+    assert record["tags"] == ["panel_approx"]
+    assert record["v2_op"] == "solid.panel"
+    assert result.diagnostics == ()
+
+
 def test_lower_to_v1_emits_no_v1_equivalent_for_op_weld_seam() -> None:
     op = ShapeOp(
         op="op.weld_seam",
@@ -329,6 +367,22 @@ def test_lower_to_v1_missing_required_param_does_not_crash() -> None:
     codes = sorted({diagnostic["code"] for diagnostic in result.diagnostics})
     assert codes == ["missing_required_param"]
     assert len(result.diagnostics) == 2
+
+
+def test_lower_to_v1_parameter_type_mismatch_does_not_crash() -> None:
+    op = ShapeOp(
+        op="solid.panel",
+        target="body.front_panel",
+        parameters={"width_cm": "wide", "height_cm": 20.0, "thickness_cm": 1.5},
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert result.v1_records == ()
+    assert len(result.diagnostics) == 1
+    diagnostic = result.diagnostics[0]
+    assert diagnostic["code"] == "parameter_type_mismatch"
+    assert diagnostic["op"] == "solid.panel"
+    assert "width_cm" in diagnostic["reason"]
 
 
 def test_lower_to_v1_empty_program_is_empty_result() -> None:

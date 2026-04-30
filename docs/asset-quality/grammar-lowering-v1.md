@@ -61,19 +61,14 @@ zero synthesized nodes.
   `lathe/shape_providers.py`, or `lathe/shape_ir.py`.
 - Mutate `runtime["construction_graph"]["nodes"]`. The recipe's
   synthesized graph nodes live under
-  `runtime["grammar_lowering"]["synthesized_graph_nodes"]` — they are
-  evidence, not graph-state mutation. The "coverage improves" unit
-  test demonstrates synthetic merging at unit-test scope only; the
-  live pipeline does not auto-merge in Phase 6.
-- Change `family_grammar.py`'s evidence sources. Phase 4's
-  family_grammar reads only `runtime["construction_graph"]["nodes"]`.
-  Live pipeline coverage stays at 0.40 for the `industrial_crate.lth`
-  baseline until a future phase explicitly opts in to merging the
-  synthesized nodes.
-- Generate real geometry. v2 ops are an authoring layer; only the
-  `solid.box` body lowers to a v1 primitive at Phase 6. The other 12
-  ops remain as authoring intent until Phase 7's high-poly producer
-  turns them into real construction.
+  `runtime["grammar_lowering"]["synthesized_graph_nodes"]`. The
+  family-grammar validator merges them into a read-only evidence view,
+  so live coverage improves without rewriting the construction graph
+  bundle.
+- Generate real high-poly geometry. v2 ops are an authoring layer; the
+  `solid.box` body and two `solid.rail` feet lower to v1 primitives at
+  Phase 6. The other 10 ops remain as semantic authoring intent until a
+  later construction/high-poly producer makes them real.
 - Block certification. Like Phases 1 through 5, the validator is
   registered with `weight=0.0` and emits no top-level `diagnostics`
   field.
@@ -88,12 +83,12 @@ v2 ops it emits and the synthesized graph nodes it adds.
 
 | # | Requirement | v2 ops | Synthesized graph nodes | Notes |
 |---:|---|---|---|---|
-| 1 | `body_shell` | 1x `solid.box` (92cm x 58cm x 64cm) | 1x `primary_volume` (`recipe.body_shell`) | Spec §7.3 canonical industrial-crate dimensions. The only recipe op that lowers to a v1 record at Phase 6. |
+| 1 | `body_shell` | 1x `solid.box` (92cm x 58cm x 64cm) | 1x `primary_volume` (`recipe.body_shell`) | Spec §7.3 canonical industrial-crate dimensions. Lowers to a v1 `box`. |
 | 2 | `lid_seam` | 1x `op.inset` (depth=0.4cm) + 1x `op.cut_panel_line` | 1x `panel` (`recipe.lid_seam`) | Inset followed by a panel cut produces the visible top-band lid seam. |
 | 3 | `corner_guards` | 1x `op.corner_guard_set` (size=4cm, count=8) | 8x `guard` (`recipe.corner_guard_0` ... `recipe.corner_guard_7`) | One node per body corner so the construction graph reflects per-corner authoring intent. |
 | 4 | `latch_or_latch_plate` | 1x `op.mount_plate` (8cm x 6cm) | 1x `inset` (`recipe.latch_plate`) | Mount plate on the body's front face; node tagged `inset` so latch sits in a recessed surface. |
 | 5 | `recessed_or_bracketed_handles` | 2x `op.socket` (mount=`recessed_bracket`) | 2x `handle` (`recipe.handle_l`, `recipe.handle_r`) | Two recessed brackets — left and right — match the canonical part-list naming convention. |
-| 6 | `foot_rails_or_feet` | 2x `solid.rail` (60cm length, 4cm profile) | 2x `rail` (`recipe.foot_rail_front`, `recipe.foot_rail_back`) | Two rails span the bottom of the body. |
+| 6 | `foot_rails_or_feet` | 2x `solid.rail` (60cm length, 4cm profile) | 2x `rail` (`recipe.foot_rail_front`, `recipe.foot_rail_back`) | Two rails span the bottom of the body and lower to v1 box approximations. |
 | 7 | `trim_bands` | 1x `op.trim_band` (width=2cm) | 1x `trim` (`recipe.trim_band_mid`) | Single mid-plane band breaks up the body shell. |
 | 8 | `fasteners` | 1x `op.fastener_grid` (rows=2, cols=2, spacing=8cm) | 1x `fastener` (`recipe.fastener_grid_front`) | A 2x2 grid on the front face. |
 | 9 | `warning_or_decal_zones` | 1x `op.repeat` (count=1, axis=z) | 1x `decal_zone` (`recipe.warning_decal_zone`) | ShapeIR v2 has no first-class decal-zone op at Phase 5; `op.repeat` carries the intent (one repetition along z) and is paired with the graph node so Phase 8's material/wear graph can locate the zone. A future ShapeIR layer may add `op.decal_zone` and replace this slot. |
@@ -160,7 +155,7 @@ The validator returns this additive payload, which is exposed under
   ],
   "synthesized_node_count": 19,
   "v1_lowering": {
-    "v1_record_count": 1,
+    "v1_record_count": 3,
     "diagnostics": [
       {"code": "no_v1_equivalent", "op": "op.inset", "reason": "..."}
     ],
@@ -181,8 +176,8 @@ The validator returns this additive payload, which is exposed under
 | `shape_program_summary.ops_by_requirement` | object | Counts of ops by triggering requirement, keyed off the leading token of each op's `purpose` (`<requirement>.<suffix>`). |
 | `synthesized_graph_nodes` | array | Construction-graph node dicts compatible with Phase 4 (`node_id`, `node_type`, `attributes`). |
 | `synthesized_node_count` | int | `len(synthesized_graph_nodes)`. |
-| `v1_lowering.v1_record_count` | int | Number of v1 records emitted by Phase 5's adapter (1 for the body box). |
-| `v1_lowering.diagnostics` | array | Per-op `no_v1_equivalent` diagnostics for the 12 ops not yet covered by `_V1_LOWERERS`. |
+| `v1_lowering.v1_record_count` | int | Number of v1 records emitted by Phase 5's adapter (3 for the body box plus two rail approximations). |
+| `v1_lowering.diagnostics` | array | Per-op `no_v1_equivalent` diagnostics for the 10 ops not yet covered by `_V1_LOWERERS`. |
 | `v1_lowering.unsupported_ops` | array | Empty for the recipe (every op is a member of `ALL_OPS`). |
 
 No top-level `diagnostics` field — like Phases 1 through 5, this
@@ -194,17 +189,18 @@ validator is informational only and never blocks certification.
 
 Phase 5's `lower_to_v1` walks the recipe's 13-op program and:
 
-- emits **1 v1 record** for the `solid.box` body (covered by the
-  Phase 5 `_V1_LOWERERS` table for `solid.box`);
-- emits a **`no_v1_equivalent`** diagnostic for each of the other 12 ops
+- emits **3 v1 records** for the `solid.box` body and the two
+  `solid.rail` foot rails (rail records are v1 box approximations
+  tagged `rail_approx`);
+- emits a **`no_v1_equivalent`** diagnostic for each of the other 10 ops
   (`op.inset`, `op.cut_panel_line`, `op.corner_guard_set`,
-  `op.mount_plate`, `op.socket` x2, `solid.rail` x2, `op.trim_band`,
+  `op.mount_plate`, `op.socket` x2, `op.trim_band`,
   `op.fastener_grid`, `op.repeat`, `op.chip_edges`).
 
 `v1_lowering.unsupported_ops` is empty: every recipe op is a member of
 `ALL_OPS`. The `no_v1_equivalent` diagnostics are evidence for
-forward phases — Phase 7's high-poly producer turns those v2 ops into
-v1-supported records.
+forward phases; a later construction/high-poly producer turns those v2
+ops into real construction.
 
 ---
 
@@ -219,7 +215,7 @@ The Phase 4 family-grammar validator detects requirements via:
 The recipe's synthesized graph nodes use `node_type` values drawn from
 Phase 4's `NODE_TYPES` frozenset (`primary_volume`, `panel`, `guard`,
 `inset`, `handle`, `rail`, `trim`, `fastener`, `decal_zone`,
-`wear_zone`). When merged into the construction graph, these nodes
+`wear_zone`). When published under `runtime["grammar_lowering"]`, these nodes
 elevate **five** baseline-missing requirements to `"partial"`:
 
 - `corner_guards` (via `guard` nodes);
@@ -233,39 +229,40 @@ elevate **five** baseline-missing requirements to `"partial"`:
 (per Phase 4), and the recipe synthesizes a `panel` node
 (`recipe.lid_seam`). The baseline parts list contains no part matching
 the `lid` token, so without the recipe the status would stay
-`missing`; with the merged `panel` node Phase 4's elevation logic
+`missing`; with the grammar-lowered `panel` node Phase 4's elevation logic
 flips it to `partial`.
 
-**Predicted coverage with merged nodes:** 0.40 baseline ->
+**Predicted coverage with grammar-lowered nodes:** 0.40 baseline ->
 **0.70 merged** (4 satisfied + 6 partial = 4.0 + 3.0 / 10 = 0.70).
 
 The verification suite's `test_recipe_synthesized_nodes_lift_family_grammar_coverage`
-asserts this exact lift. The live pipeline does not auto-merge the
-synthesized nodes in Phase 6 — that opt-in lands later. Phase 6 surfaces
-the synthesized nodes as evidence so a downstream phase can wire them
-in deliberately.
+asserts this exact lift. The live pipeline runs `grammar_lowering`
+before `family_grammar`, and `family_grammar` merges these nodes into
+its read-only evidence view while leaving the construction graph bundle
+unchanged.
 
 ---
 
 ## 6. Pipeline placement
 
 The validator is registered in `lathe/core/stages/validate.py:_PIPELINE`
-**immediately after** `family_grammar` and **before**
-`quality_diagnostics`, both with `stage_dependencies=[]` and
+**immediately after** `construction_graph` and **before**
+`family_grammar`, all with `stage_dependencies=[]` and
 `weight=0.0`. Topological order plus FIFO tie-break preserves the
 registration-order placement, so:
 
 1. `design_brief` runs first and publishes the inferred family.
 2. `construction_graph` runs second and publishes the parts-derived
    graph.
-3. `family_grammar` runs third, reads the brief + graph, and publishes
-   the coverage result.
-4. `grammar_lowering` runs fourth, reads the brief + parts + current
+3. `grammar_lowering` runs third, reads the brief + parts + current
    graph, and publishes the recipe result.
+4. `family_grammar` runs fourth, reads the brief + graph plus the
+   grammar-lowered synthesized nodes, and publishes the lifted coverage
+   result.
 5. `quality_diagnostics` runs later (after `shape`/`topology`/`uv`/
-   `surface` are present) and is positioned to read the recipe in a
-   future phase if it ever wants to. Phase 6 does not add a metric to
-   `quality_diagnostics`.
+   `surface` are present) and can read the lifted
+   `family_grammar.coverage` metric. Phase 6 does not add a new metric
+   to `quality_diagnostics`.
 
 The pipeline composition layer (`lathe/validators/composition.py:287-291`)
 publishes each validator's evidence into `runtime[validator.name]`,
@@ -285,7 +282,7 @@ informational evidence only.
 
 | Phase | Consumes | Use |
 |---|---|---|
-| Phase 7 — High-poly producer | `shape_program.ops` + `v1_lowering.diagnostics` | Turns each `no_v1_equivalent` op into a real v1-supported construction step. The recipe defines *what* should exist; the high-poly producer makes it *real*. |
+| Phase 8+ — Construction/high-poly producer | `shape_program.ops` + `v1_lowering.diagnostics` | Turns each `no_v1_equivalent` op into a real construction step. The recipe defines *what* should exist; the producer makes it *real*. |
 | Phase 8 — Material/Wear graph | `synthesized_graph_nodes` (filtered by `node_type == "wear_zone"` / `"decal_zone"` / `"material_zone"`) | Drives wear-mask authoring intent and per-zone material policies from the recipe's wear/decal nodes. |
 | Phase 11 — References | `shape_program_summary.ops_by_requirement` | Filters reference selection to fixtures that exemplify each grammar requirement covered by the recipe. |
 | Phase 12 — Kit | the entire recipe layer | Each kit asset declares which recipe variants it satisfies for assembly-level coverage. |

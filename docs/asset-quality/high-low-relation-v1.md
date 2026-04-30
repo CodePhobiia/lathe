@@ -37,9 +37,10 @@ a richer evidence record that:
 - compares the runtime low-poly mesh URI against the surface bundle's
   declared low URI;
 - computes a strengthened realness score consuming distinct URIs,
-  triangle delta, bake-map completeness, and manifest quality;
+  positive high-over-low triangle delta, bake-map completeness, and
+  manifest quality;
 - emits a warning when the score is below the warning threshold
-  (`is_real_highlow == False`).
+  (`is_real_highlow == False`) and the asset is hero-surface scoped.
 
 The Phase 1 `highlow_fake_detail_penalty` metric now consumes this
 evidence when present (`penalty = 1.0 - realness_score`) and falls
@@ -54,6 +55,8 @@ defined.
   record.
 - Scores the relation with four weighted credits and emits the
   `is_real_highlow` verdict.
+- Publishes a `required` flag so non-hero/generic assets can carry
+  evidence without receiving hero-only warnings or penalties.
 - Records structured `skipped_reason` entries for every missing bake
   map and every absent URI.
 - Publishes the result on `runtime["highlow_relation"]` and emits an
@@ -130,13 +133,14 @@ Returned by `evaluate_highlow_relation(asset, runtime)`:
   "warnings": [
     "hero asset uses fake high/low: high_triangle_count == low_triangle_count == 1376; consider a real high-poly producer (Phase 8+)."
   ],
-  "diagnostics": []
+  "diagnostics": [],
+  "required": true
 }
 ```
 
-The 17 top-level keys above are the stable contract returned directly
+The 18 top-level keys above are the stable contract returned directly
 by `evaluate_highlow_relation`. The published `runtime["highlow_relation"]`
-and `report["highlow_relation"]` payloads contain 16 keys — the
+and `report["highlow_relation"]` payloads contain 17 keys — the
 `FunctionValidator.evaluate` wrapper extracts `diagnostics` out of the
 evidence dict and routes it to the validator-pipeline's per-validator
 `diagnostics` field per the standard contract (see
@@ -167,6 +171,9 @@ realness_score = clamp(
 ```
 
 `is_real_highlow == realness_score >= 0.80` is the warning threshold.
+`triangle_delta_ratio` is directional: it is `(high - low) / high`
+only when `high_triangle_count > low_triangle_count >= 0`; missing,
+equal, or inverted counts yield `0.0`.
 
 ### Reference values
 
@@ -174,6 +181,7 @@ realness_score = clamp(
 |---|---|---|---|---|---|
 | Fake (no URIs, no maps) | False | 0.0 | 0 / 4 | yes | 0.0 |
 | Industrial crate baseline | True | 0.0 | 4 / 4 | no | 0.50 |
+| Inverted counts (low > high) | True | 0.0 | 4 / 4 | no | 0.50 |
 | Real (distinct + 30% delta + 4 maps) | True | >= 0.20 | 4 / 4 | no | 0.80 |
 
 The industrial crate baseline lands at exactly 0.50, well above 0.05
@@ -210,12 +218,13 @@ The validator is registered in `lathe/core/stages/validate.py`'s
 ```
 design_brief
 construction_graph
-family_grammar
 grammar_lowering
+family_grammar
 semantic_quality
 visual_quality
 flow_quality
 highlow_relation        # Phase 7
+material_wear_graph
 geometry_integrity
 quality_diagnostics
 urdf_validation
@@ -247,6 +256,8 @@ flip the validator behaviour:
   flips `passes=False`, and `validate.py:run` extends the top-level
   `diagnostics` list with the strict-mode entry. This causes
   `certified` to drop to `False` regardless of the aggregate score.
+- The build-cache fingerprint includes the strict-mode flag, so a
+  non-strict cached build cannot be restored for a strict build.
 
 ### When to use strict mode
 
@@ -349,7 +360,7 @@ Strict-mode smoke check:
 LATHE_STRICT_HIGHLOW=1 python -c "
 from lathe.asset_quality.highlow_relation import evaluate_highlow_relation
 runtime = {'surface': {'bundle': {'highlow_relation': {'high_mesh_uri': None, 'low_mesh_uri': None, 'high_triangle_count': 0, 'low_triangle_count': 0}, 'outputs': {}}}}
-r = evaluate_highlow_relation({'name': 'x'}, runtime)
+r = evaluate_highlow_relation({'name': 'industrial_crate'}, runtime)
 assert r['diagnostics'], 'strict mode should produce a diagnostic'
 print('strict mode OK')
 "

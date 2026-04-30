@@ -53,8 +53,8 @@ Primitives that introduce new geometry. Each requires extents.
 | `solid.rounded_box` | `width_cm`, `height_cm`, `depth_cm`, `radius_cm` | Lowers to v1 `box` + `rounding=radius_cm`. |
 | `solid.cylinder` | `radius_cm`, `height_cm` | Lowers cleanly to v1 `cylinder`. |
 | `solid.prism` | `width_cm`, `height_cm`, `depth_cm` | Lowered as a v1 `box` approximation tagged `prism_approx`. |
-| `solid.rail` | `length_cm`, `profile_cm` | No v1 equivalent; recorded for Phase 6/7+. |
-| `solid.panel` | `width_cm`, `height_cm`, `thickness_cm` | No v1 equivalent today. |
+| `solid.rail` | `length_cm`, `profile_cm` | Lowered as a v1 `box` approximation tagged `rail_approx`. |
+| `solid.panel` | `width_cm`, `height_cm`, `thickness_cm` | Lowered as a thin v1 `box` approximation tagged `panel_approx`. |
 
 Example:
 
@@ -145,7 +145,7 @@ Semantic wear masks that Phase 8's material/wear graph will consume.
 2. **Required-parameter check.** For each key in `_REQUIRED_PARAMS[op.op]` that is not present in `op.parameters`, append `f"missing_required_param: {key}"` to the diagnostics list. The list preserves declaration order from the required-parameter table.
 3. The op is valid iff the diagnostics list is empty after step 2.
 
-`validate_op` does not type-check parameter values today. Type checking is reserved for a later phase if a need arises; the corresponding diagnostic code (`parameter_type_mismatch`) is documented in the module docstring for forward compatibility.
+`validate_op` does not type-check parameter values today. The v1 adapter does type-check numeric dimensions for lowerable ops and emits `parameter_type_mismatch` if a required dimension is present but not numeric/finite.
 
 ## 5. v2-to-v1 Adapter
 
@@ -163,16 +163,19 @@ Per-op behaviour:
 | `solid.rounded_box` | Lowered to v1 `box` with `rounding=radius_cm` and `tags=["rounded"]`. |
 | `solid.cylinder` | Lowered to v1 `cylinder` (`axis="y"`, `radius`, `height`). |
 | `solid.prism` | Lowered to v1 `box` tagged `prism_approx` (best-effort approximation; v1 has no prism primitive). |
+| `solid.rail` | Lowered to v1 `box` tagged `rail_approx` (`length_cm`, `profile_cm`, `profile_cm`). |
+| `solid.panel` | Lowered to v1 `box` tagged `panel_approx` (`width_cm`, `height_cm`, `thickness_cm`). |
 | All other valid ops | Emit `no_v1_equivalent` diagnostic; no v1 record. |
 | Op not in `ALL_OPS` | Emit `unsupported_v2_op` diagnostic; no v1 record. |
 | Missing required param | Emit one `missing_required_param` per missing key; no v1 record. |
+| Non-numeric lowerable dimension | Emit `parameter_type_mismatch`; no v1 record. |
 
 ### Diagnostic codes
 
 - `unsupported_v2_op` — op name is not a member of any family in `ALL_OPS`.
 - `missing_required_param` — a required parameter (per `_REQUIRED_PARAMS`) is absent.
 - `no_v1_equivalent` — op is valid in v2 but the v1 IR does not model it.
-- `parameter_type_mismatch` — reserved for a future type-checking pass.
+- `parameter_type_mismatch` — a lowerable op carries a present but non-numeric/invalid dimension value.
 
 ## 6. Compatibility Guarantees
 
@@ -206,7 +209,7 @@ python -c "from lathe.asset_quality.shape_ir_v2 import SHAPE_IR_V2_VERSION, ALL_
 
 Expected:
 
-- 25 unit tests pass.
+- ShapeIR v2 unit tests pass.
 - Baseline-report-shape and marker-inventory tests pass unchanged.
 - CLI `check` returns `{"ok": true, "diagnostics": []}` on `industrial_crate.lth`.
 - Final smoke prints `shape_ir_v2 30`.

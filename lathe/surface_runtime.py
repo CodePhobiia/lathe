@@ -356,21 +356,24 @@ def build_surface_bundle(
         ),
         {},
     )
+    high_triangle_count = int(selected_candidate.get("mesh_stats", {}).get("triangle_count", 0))
+    low_triangle_count = int(topology_bundle.get("mesh_stats", {}).get("triangle_count", 0))
+    if high_triangle_count > low_triangle_count >= 0:
+        distinction_ratio = round(
+            (high_triangle_count - low_triangle_count)
+            / max(1, high_triangle_count),
+            6,
+        )
+    else:
+        distinction_ratio = 0.0
     low_relation = HighLowRelation(
-        high_mesh_uri=high_mesh_uri or "stages\\shape\\candidate_00.glb",
-        low_mesh_uri=topology_bundle.get("mesh_uri", "stages\\topology\\topology.glb"),
+        high_mesh_uri=high_mesh_uri,
+        low_mesh_uri=topology_bundle.get("mesh_uri"),
         bake_cage_offset_cm=1.25,
         source="hero_surface_runtime_v1",
-        high_triangle_count=int(selected_candidate.get("mesh_stats", {}).get("triangle_count", 0)),
-        low_triangle_count=int(topology_bundle.get("mesh_stats", {}).get("triangle_count", 0)),
-        distinction_ratio=round(
-            abs(
-                int(selected_candidate.get("mesh_stats", {}).get("triangle_count", 0))
-                - int(topology_bundle.get("mesh_stats", {}).get("triangle_count", 0))
-            )
-            / max(1, int(selected_candidate.get("mesh_stats", {}).get("triangle_count", 0))),
-            6,
-        ),
+        high_triangle_count=high_triangle_count,
+        low_triangle_count=low_triangle_count,
+        distinction_ratio=distinction_ratio,
         bake_groups=[
             entry.get("bake_group", entry.get("part"))
             for entry in selected_candidate.get("mesh_ir", {}).get("bake_groups", [])

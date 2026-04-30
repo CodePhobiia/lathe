@@ -77,6 +77,7 @@ def _runtime(
         "visual_quality": {"metrics": default_visual},
         "surface": {
             "bundle": {
+                "surface_manifest": {"hero_surface": True},
                 "highlow_relation": default_highlow,
             }
         },
@@ -182,6 +183,17 @@ def test_fake_highlow_warning_fires_when_uris_missing() -> None:
 
     assert report["metrics"]["highlow_fake_detail_penalty"] >= 0.99
     assert any("high-poly" in w or "high/low" in w for w in report["warnings"])
+
+
+def test_nonhero_assets_do_not_receive_highlow_penalty() -> None:
+    asset, runtime = _runtime(highlow={})
+    asset["name"] = "generic_widget"
+    runtime["surface"]["bundle"]["surface_manifest"]["hero_surface"] = False
+
+    report = evaluate_quality_diagnostics(asset, runtime)
+
+    assert report["metrics"]["highlow_fake_detail_penalty"] == 0.0
+    assert not any("highlow_fake_detail_penalty" in w for w in report["warnings"])
 
 
 def test_weak_attachment_seating_warning_fires() -> None:

@@ -16,6 +16,7 @@ from ...asset_quality.diagnostics import evaluate_quality_diagnostics
 from ...asset_quality.family_grammar import evaluate_family_grammar
 from ...asset_quality.grammar_lowering import evaluate_grammar_lowering
 from ...asset_quality.highlow_relation import evaluate_highlow_relation
+from ...asset_quality.material_wear_graph import evaluate_material_wear_graph
 from ...validators.composition import (
     FunctionValidator,
     ValidatorPipeline,
@@ -44,14 +45,14 @@ _PIPELINE = ValidatorPipeline(
             weight=0.0,
         ),
         FunctionValidator(
-            name="family_grammar",
-            fn=evaluate_family_grammar,
+            name="grammar_lowering",
+            fn=evaluate_grammar_lowering,
             stage_dependencies=[],
             weight=0.0,
         ),
         FunctionValidator(
-            name="grammar_lowering",
-            fn=evaluate_grammar_lowering,
+            name="family_grammar",
+            fn=evaluate_family_grammar,
             stage_dependencies=[],
             weight=0.0,
         ),
@@ -74,6 +75,12 @@ _PIPELINE = ValidatorPipeline(
             name="highlow_relation",
             fn=evaluate_highlow_relation,
             stage_dependencies=["topology", "surface"],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="material_wear_graph",
+            fn=evaluate_material_wear_graph,
+            stage_dependencies=["surface"],
             weight=0.0,
         ),
         FunctionValidator(
@@ -310,6 +317,48 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                 "skipped_reasons": [],
                 "warnings": [],
                 "diagnostics": [],
+                "required": False,
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
+    material_wear_graph_entry = cert_bundle["validators"].get(
+        "material_wear_graph",
+        {
+            "evidence": {
+                "version": "material_wear_v1",
+                "family": "generic",
+                "graph": {
+                    "family": "generic",
+                    "version": "material_wear_v1",
+                    "materials": [],
+                    "underlayers": [],
+                    "wear_masks": [],
+                },
+                "graph_summary": {
+                    "material_zone_count": 0,
+                    "underlayer_count": 0,
+                    "wear_mask_count": 0,
+                    "wear_masks_by_type": {},
+                    "bound_to_construction_nodes": 0,
+                    "bound_to_edge_targets": 0,
+                    "bound_to_both": 0,
+                },
+                "binding_validation": {
+                    "all_node_bindings_resolved": True,
+                    "orphan_node_bindings": [],
+                    "construction_graph_node_count": 0,
+                },
+                "uniform_noise": {
+                    "is_uniform_noise": True,
+                    "uniform_noise_score": 1.0,
+                    "zone_diversity": 0.0,
+                    "wear_binding_ratio": 0.0,
+                    "warnings": [],
+                },
+                "skipped_reasons": [],
             },
             "diagnostics": [],
             "passes": True,
@@ -327,6 +376,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     construction_graph_report = construction_graph_entry.get("evidence", {})
     grammar_lowering_report = grammar_lowering_entry.get("evidence", {})
     highlow_relation_report = highlow_relation_entry.get("evidence", {})
+    material_wear_graph_report = material_wear_graph_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -338,6 +388,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["family_grammar"] = family_grammar_report
     executor.runtime["grammar_lowering"] = grammar_lowering_report
     executor.runtime["highlow_relation"] = highlow_relation_report
+    executor.runtime["material_wear_graph"] = material_wear_graph_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
@@ -407,6 +458,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "family_grammar": family_grammar_report,
         "grammar_lowering": grammar_lowering_report,
         "highlow_relation": highlow_relation_report,
+        "material_wear_graph": material_wear_graph_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),

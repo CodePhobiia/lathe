@@ -43,11 +43,9 @@ Adapter and validator emit the following stable diagnostic codes:
 - ``no_v1_equivalent`` — the op is valid in v2 but the v1 IR has no
   primitive that models it. The op is recorded for Phase 6/7+ but is
   not emitted as a v1 record.
-- ``parameter_type_mismatch`` — reserved for a future phase. The
-  current ``validate_op`` only checks for parameter *presence*; a
-  later pass (Phase 8 or earlier, on demand) will type-check parameter
-  *values* and emit this code when a value's type does not match the
-  expected schema for its op.
+- ``parameter_type_mismatch`` — emitted by the v1 adapter when a
+  lowerable op carries a present but non-numeric dimension parameter.
+  ``validate_op`` remains a presence-only syntactic check.
 
 Phase placement
 ---------------
@@ -61,6 +59,7 @@ industrial_crate grammar into v2 operations.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -237,8 +236,9 @@ class V1AdapterResult:
     ``v1_records`` are dicts shaped to be compatible with the v1
     ``ShapePrimitive`` payload. ``diagnostics`` collects per-op codes
     (``unsupported_v2_op``, ``missing_required_param``,
-    ``no_v1_equivalent``). ``unsupported_ops`` deduplicates the op names
-    that had no v1 equivalent; the order matches first occurrence.
+    ``parameter_type_mismatch``, ``no_v1_equivalent``).
+    ``unsupported_ops`` deduplicates unknown op names; the order
+    matches first occurrence.
     """
 
     v1_records: tuple[dict[str, Any], ...]
@@ -271,12 +271,25 @@ def validate_op(op: ShapeOp) -> tuple[bool, list[str]]:
     return (not diagnostics, diagnostics)
 
 
+def _float_param(parameters: dict[str, Any], key: str) -> float:
+    value = parameters[key]
+    if isinstance(value, bool):
+        raise ValueError(f"parameter '{key}' must be numeric")
+    try:
+        converted = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"parameter '{key}' must be numeric") from exc
+    if not math.isfinite(converted):
+        raise ValueError(f"parameter '{key}' must be finite")
+    return converted
+
+
 def _v1_record_for_solid_box(op: ShapeOp) -> dict[str, Any]:
     """Lower a ``solid.box`` op to a v1-compatible record."""
     parameters = op.parameters
-    width = float(parameters["width_cm"])
-    height = float(parameters["height_cm"])
-    depth = float(parameters["depth_cm"])
+    width = _float_param(parameters, "width_cm")
+    height = _float_param(parameters, "height_cm")
+    depth = _float_param(parameters, "depth_cm")
     return {
         "primitive_type": "box",
         "part": op.target or "body",
@@ -293,10 +306,10 @@ def _v1_record_for_solid_box(op: ShapeOp) -> dict[str, Any]:
 def _v1_record_for_solid_rounded_box(op: ShapeOp) -> dict[str, Any]:
     """Lower a ``solid.rounded_box`` op to a v1 box record + rounding."""
     parameters = op.parameters
-    width = float(parameters["width_cm"])
-    height = float(parameters["height_cm"])
-    depth = float(parameters["depth_cm"])
-    radius = float(parameters["radius_cm"])
+    width = _float_param(parameters, "width_cm")
+    height = _float_param(parameters, "height_cm")
+    depth = _float_param(parameters, "depth_cm")
+    radius = _float_param(parameters, "radius_cm")
     return {
         "primitive_type": "box",
         "part": op.target or "body",
@@ -313,8 +326,8 @@ def _v1_record_for_solid_rounded_box(op: ShapeOp) -> dict[str, Any]:
 def _v1_record_for_solid_cylinder(op: ShapeOp) -> dict[str, Any]:
     """Lower a ``solid.cylinder`` op to a v1-compatible cylinder record."""
     parameters = op.parameters
-    radius = float(parameters["radius_cm"])
-    height = float(parameters["height_cm"])
+    radius = _float_param(parameters, "radius_cm")
+    height = _float_param(parameters, "height_cm")
     return {
         "primitive_type": "cylinder",
         "part": op.target or "body",
@@ -337,9 +350,9 @@ def _v1_record_for_solid_prism(op: ShapeOp) -> dict[str, Any]:
     box with the same extents and tag the record as ``prism_approx``.
     """
     parameters = op.parameters
-    width = float(parameters["width_cm"])
-    height = float(parameters["height_cm"])
-    depth = float(parameters["depth_cm"])
+    width = _float_param(parameters, "width_cm")
+    height = _float_param(parameters, "height_cm")
+    depth = _float_param(parameters, "depth_cm")
     return {
         "primitive_type": "box",
         "part": op.target or "body",
@@ -353,11 +366,50 @@ def _v1_record_for_solid_prism(op: ShapeOp) -> dict[str, Any]:
     }
 
 
+def _v1_record_for_solid_rail(op: ShapeOp) -> dict[str, Any]:
+    """Lower a ``solid.rail`` op to a v1 box approximation."""
+    parameters = op.parameters
+    length = _float_param(parameters, "length_cm")
+    profile = _float_param(parameters, "profile_cm")
+    return {
+        "primitive_type": "box",
+        "part": op.target or "rail",
+        "center": (0.0, 0.0, 0.0),
+        "extents": (length, profile, profile),
+        "tags": ["rail_approx"],
+        "blend_mode": "union",
+        "rounding": 0.0,
+        "v2_op": op.op,
+        "v2_purpose": op.purpose,
+    }
+
+
+def _v1_record_for_solid_panel(op: ShapeOp) -> dict[str, Any]:
+    """Lower a ``solid.panel`` op to a thin v1 box approximation."""
+    parameters = op.parameters
+    width = _float_param(parameters, "width_cm")
+    height = _float_param(parameters, "height_cm")
+    thickness = _float_param(parameters, "thickness_cm")
+    return {
+        "primitive_type": "box",
+        "part": op.target or "panel",
+        "center": (0.0, 0.0, 0.0),
+        "extents": (width, height, thickness),
+        "tags": ["panel_approx"],
+        "blend_mode": "union",
+        "rounding": 0.0,
+        "v2_op": op.op,
+        "v2_purpose": op.purpose,
+    }
+
+
 _V1_LOWERERS: dict[str, _V1Lowerer] = {
     "solid.box": _v1_record_for_solid_box,
     "solid.rounded_box": _v1_record_for_solid_rounded_box,
     "solid.cylinder": _v1_record_for_solid_cylinder,
     "solid.prism": _v1_record_for_solid_prism,
+    "solid.rail": _v1_record_for_solid_rail,
+    "solid.panel": _v1_record_for_solid_panel,
 }
 
 
@@ -373,8 +425,11 @@ def lower_to_v1(program: ShapeProgram) -> V1AdapterResult:
       ``missing_required_param`` diagnostic per missing key and skip
       the v1 record.
     - If the op is a v1-lowerable solid (``solid.box``,
-      ``solid.rounded_box``, ``solid.cylinder``, ``solid.prism``),
+      ``solid.rounded_box``, ``solid.cylinder``, ``solid.prism``,
+      ``solid.rail``, ``solid.panel``),
       produce the corresponding v1 record.
+    - If a lowerable op carries a present but non-numeric dimension,
+      emit ``parameter_type_mismatch`` and skip the v1 record.
     - Otherwise the op is valid in v2 but has no v1 equivalent: emit a
       ``no_v1_equivalent`` diagnostic. The op is recorded for Phase 6/7+
       consumers; no v1 record is produced.
@@ -432,7 +487,16 @@ def lower_to_v1(program: ShapeProgram) -> V1AdapterResult:
             )
             continue
 
-        v1_records.append(lowerer(op))
+        try:
+            v1_records.append(lowerer(op))
+        except (TypeError, ValueError) as exc:
+            diagnostics.append(
+                {
+                    "code": "parameter_type_mismatch",
+                    "op": op.op,
+                    "reason": str(exc),
+                }
+            )
 
     return V1AdapterResult(
         v1_records=tuple(v1_records),

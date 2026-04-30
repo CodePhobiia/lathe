@@ -254,3 +254,24 @@ class TestBuildSurfaceBundle:
         maps_dir = tmp_workspace / "maps"
         assert (maps_dir / "basecolor.png").exists()
         assert (maps_dir / "normal.png").exists()
+
+    def test_missing_selected_high_mesh_remains_none(self, tmp_workspace: Path) -> None:
+        asset = _asset(
+            family="console_terminal",
+            build_surface_overrides={"resolution": 128, "maps": ["basecolor", "normal"]},
+        )
+        shape_bundle = _shape_bundle(family="console_terminal")
+        shape_bundle["selected_candidate_id"] = "missing_candidate"
+
+        result = build_surface_bundle(
+            asset=asset,
+            out_dir=tmp_workspace,
+            shape_bundle=shape_bundle,
+            shape_runtime_mesh=_runtime_mesh(),
+            topology_bundle=_topology_bundle(),
+            uv_runtime_mesh=_runtime_mesh(),
+        )
+
+        assert result["highlow_relation"]["high_mesh_uri"] is None
+        assert result["highlow_relation"]["low_mesh_uri"] == "stages\\topology\\topology.glb"
+        assert result["highlow_relation"]["distinction_ratio"] == 0.0

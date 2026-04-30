@@ -223,6 +223,26 @@ def test_build_executor_resolves_cache_root_after_env_override(monkeypatch, tmp_
     assert executor.cache_dir.is_relative_to(custom_cache / "builds")
 
 
+def test_build_executor_cache_key_includes_strict_highlow_env(monkeypatch, tmp_path):
+    from lathe.executor import BuildExecutor
+    from lathe.parser import parse_file
+
+    root = Path(__file__).resolve().parents[2]
+    program = parse_file(root / "examples" / "api" / "socket.lth")
+
+    monkeypatch.delenv("LATHE_STRICT_HIGHLOW", raising=False)
+    normal = BuildExecutor(program, "api_socket", tmp_path / "out" / "normal")
+    normal_fingerprint = normal._build_cache_environment_fingerprint()
+
+    monkeypatch.setenv("LATHE_STRICT_HIGHLOW", "1")
+    strict = BuildExecutor(program, "api_socket", tmp_path / "out" / "strict")
+    strict_fingerprint = strict._build_cache_environment_fingerprint()
+
+    assert normal.cache_key != strict.cache_key
+    assert normal_fingerprint["asset_quality"] == {"strict_highlow": False}
+    assert strict_fingerprint["asset_quality"] == {"strict_highlow": True}
+
+
 def test_cache_manifest_records_required_identity_fields(tmp_path):
     from lathe.executor import BUILD_CACHE_VERSION, BuildExecutor
     from lathe.parser import parse_file

@@ -13,20 +13,20 @@ Per-requirement reference: ``docs/asset-quality/grammar-lowering-v1.md``.
 Design summary
 --------------
 
-Phase 6 is **internal IR + recipe + adapter wiring only**. It does not
+Phase 6 is **internal IR + recipe + adapter wiring** plus live
+family-grammar evidence. It does not
 touch ``.lth`` syntax, ``lathe.shape.intent_mesh_handoff_v1``, the
 public schema, or the v1 shape bundle. The recipe is a pure function
 that takes a design brief, a parts list, and the current
 construction-graph nodes and returns a frozen :class:`RecipeResult`
 with a :class:`ShapeProgram` and a tuple of synthesized graph nodes.
 
-The recipe's synthesized graph nodes are evidence — they live under
-``runtime["grammar_lowering"]["synthesized_graph_nodes"]`` and are
-**not** merged into ``runtime["construction_graph"]["nodes"]``. The
-"coverage improves" unit test demonstrates that, when the synthesized
-nodes are merged with the baseline graph, the family grammar coverage
-strictly increases. The live pipeline does not auto-merge in Phase 6;
-that opt-in happens in a later phase.
+The recipe's synthesized graph nodes live under
+``runtime["grammar_lowering"]["synthesized_graph_nodes"]``. The live
+validator pipeline runs grammar lowering before family grammar, and
+``family_grammar`` merges those synthesized nodes into its read-only
+evidence view so coverage reflects the recipe without mutating
+``runtime["construction_graph"]["nodes"]``.
 
 The validator never produces blocking diagnostics. v2-adapter
 diagnostics for ops that have no v1 equivalent are surfaced under the
@@ -38,7 +38,7 @@ Pipeline placement
 ------------------
 
 The validator is registered in ``lathe/core/stages/validate.py``'s
-``_PIPELINE`` immediately after ``family_grammar`` and before
+``_PIPELINE`` immediately before ``family_grammar`` and before
 ``quality_diagnostics``, both with ``stage_dependencies=[]`` and
 ``weight=0.0``. Topological order plus FIFO tie-break preserves the
 registration-order placement.
@@ -86,9 +86,8 @@ class RecipeResult:
     ``shape_program`` is the :class:`ShapeProgram` (Phase 5) the recipe
     emitted — its ops carry stable ``purpose`` strings keyed off the
     triggering grammar requirement. ``synthesized_graph_nodes`` is the
-    tuple of graph-node dicts the recipe would add to the construction
-    graph if a downstream phase chose to merge them; the live pipeline
-    does not auto-merge in Phase 6.
+    tuple of graph-node dicts the family-grammar validator merges into
+    its read-only evidence view.
     """
 
     family: str
@@ -126,9 +125,7 @@ def _industrial_crate_body_shell() -> tuple[tuple[ShapeOp, ...], tuple[dict[str,
 
     Emits one ``solid.box`` op carrying the spec-canonical industrial
     crate dimensions (92cm x 58cm x 64cm) and one ``primary_volume``
-    graph node. The op is the only recipe op that lowers to a v1
-    record under Phase 5's adapter; the rest emit ``no_v1_equivalent``
-    diagnostics until Phase 7's high-poly producer lands.
+    graph node.
     """
     ops = (
         ShapeOp(

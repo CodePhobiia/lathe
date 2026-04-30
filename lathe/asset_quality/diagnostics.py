@@ -26,6 +26,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .highlow_relation import is_highlow_required
+
 
 VERSION = "asset_quality_diagnostics_v1"
 
@@ -140,7 +142,7 @@ def _debug_material_preview_penalty(visual_metrics: dict[str, Any]) -> float:
     )
 
 
-def _highlow_fake_detail_penalty(runtime: dict[str, Any]) -> float:
+def _highlow_fake_detail_penalty(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
     """Compute the prototype-look penalty for the high/low relation.
 
     When Phase 7's ``runtime["highlow_relation"]`` evidence is present
@@ -157,9 +159,13 @@ def _highlow_fake_detail_penalty(runtime: dict[str, Any]) -> float:
     """
     highlow_evidence = runtime.get("highlow_relation")
     if isinstance(highlow_evidence, dict) and "realness_score" in highlow_evidence:
+        if highlow_evidence.get("required") is False:
+            return 0.0
         realness_score = _as_float(highlow_evidence.get("realness_score"))
         penalty = 1.0 - max(0.0, min(1.0, realness_score))
         return round(max(0.0, min(1.0, penalty)), 6)
+    if not is_highlow_required(asset, runtime):
+        return 0.0
     surface_bundle = _as_dict(_as_dict(runtime.get("surface")).get("bundle"))
     highlow = _as_dict(surface_bundle.get("highlow_relation"))
     high_uri = highlow.get("high_mesh_uri")
@@ -167,8 +173,8 @@ def _highlow_fake_detail_penalty(runtime: dict[str, Any]) -> float:
     distinct_uris = bool(high_uri and low_uri and high_uri != low_uri)
     high_triangles = _as_float(highlow.get("high_triangle_count"))
     low_triangles = _as_float(highlow.get("low_triangle_count"))
-    if high_triangles > 0.0:
-        triangle_delta = abs(high_triangles - low_triangles) / max(1.0, high_triangles)
+    if high_triangles > low_triangles >= 0.0:
+        triangle_delta = (high_triangles - low_triangles) / max(1.0, high_triangles)
     else:
         triangle_delta = 0.0
     realness = min(
@@ -247,7 +253,7 @@ def evaluate_quality_diagnostics(
     metrics = {
         "random_triangulation_penalty": _random_triangulation_penalty(visual_metrics),
         "debug_material_preview_penalty": _debug_material_preview_penalty(visual_metrics),
-        "highlow_fake_detail_penalty": _highlow_fake_detail_penalty(runtime),
+        "highlow_fake_detail_penalty": _highlow_fake_detail_penalty(asset, runtime),
         "attachment_seating_quality": _attachment_seating_quality(asset, runtime),
         "primary_secondary_tertiary_balance": _primary_secondary_tertiary_balance(
             asset, runtime

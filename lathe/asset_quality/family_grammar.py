@@ -397,20 +397,44 @@ def _compute_coverage(
 
 
 def _construction_graph_nodes(runtime: dict[str, Any]) -> tuple[dict[str, Any], ...]:
-    """Return the construction-graph node dicts published by Phase 4.
+    """Return construction-graph nodes plus grammar-lowered recipe nodes.
 
     Tolerates an absent or malformed ``runtime["construction_graph"]``
     block by returning the empty tuple. Phase 3 callers that do not
     populate ``runtime["construction_graph"]`` therefore retain their
     original parts-only detection.
+
+    Phase 6 publishes synthesized nodes under
+    ``runtime["grammar_lowering"]["synthesized_graph_nodes"]``. They
+    are merged into this read-only evidence view, with existing graph
+    node IDs taking precedence, so the live construction-graph bundle is
+    not mutated while family grammar coverage can reflect the recipe.
     """
     construction_graph = runtime.get("construction_graph")
-    if not isinstance(construction_graph, dict):
-        return ()
-    raw_nodes = construction_graph.get("nodes")
+    raw_nodes = construction_graph.get("nodes") if isinstance(construction_graph, dict) else []
     if not isinstance(raw_nodes, list):
-        return ()
-    return tuple(entry for entry in raw_nodes if isinstance(entry, dict))
+        raw_nodes = []
+    grammar_lowering = runtime.get("grammar_lowering")
+    raw_synthesized = (
+        grammar_lowering.get("synthesized_graph_nodes")
+        if isinstance(grammar_lowering, dict)
+        else []
+    )
+    if not isinstance(raw_synthesized, list):
+        raw_synthesized = []
+
+    merged: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for entry in [*raw_nodes, *raw_synthesized]:
+        if not isinstance(entry, dict):
+            continue
+        node_id = entry.get("node_id")
+        if isinstance(node_id, str) and node_id:
+            if node_id in seen_ids:
+                continue
+            seen_ids.add(node_id)
+        merged.append(entry)
+    return tuple(merged)
 
 
 def _result_for(

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import tempfile
 import time
@@ -90,7 +91,7 @@ STAGE_ORDER = [
 
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
-BUILD_CACHE_VERSION = "v10_rc2"
+BUILD_CACHE_VERSION = "v10_rc3"
 log = logging.getLogger(__name__)
 
 
@@ -179,6 +180,13 @@ def _shape_provider_registry_fingerprint() -> list[dict[str, Any]]:
     return sorted(providers, key=lambda item: str(item.get("id", "")))
 
 
+def _strict_highlow_cache_flag() -> bool:
+    raw = os.environ.get("LATHE_STRICT_HIGHLOW")
+    if raw is None:
+        return False
+    return raw.strip().lower() in {"1", "true", "yes"}
+
+
 class BuildExecutor:
     """BuildExecutor."""
 
@@ -236,6 +244,9 @@ class BuildExecutor:
             "selected_backends": _selected_backend_fingerprint(self.selected_backends),
             "deterministic_backends": _deterministic_backend_fingerprint(self.runtime_config),
             "shape_providers": _shape_provider_registry_fingerprint(),
+            "asset_quality": {
+                "strict_highlow": _strict_highlow_cache_flag(),
+            },
         }
 
     def build(self) -> dict[str, Any]:

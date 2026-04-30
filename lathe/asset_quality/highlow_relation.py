@@ -99,6 +99,19 @@ _STRICT_ENV_VAR = "LATHE_STRICT_HIGHLOW"
 _DIAGNOSTIC_CODE = "L6701"
 _DIAGNOSTIC_NAME = "highlow_fake_detail"
 
+_HERO_FAMILIES: frozenset[str] = frozenset(
+    {
+        "brassbound_chest",
+        "courier_drone",
+        "console_terminal",
+        "industrial_crate",
+        "mechanical_door",
+        "service_cabinet",
+        "control_pedestal",
+        "supply_container",
+    }
+)
+
 
 @dataclass(frozen=True)
 class BakeMapEvidence:
@@ -139,6 +152,7 @@ class HighlowEvidence:
     skipped_reasons: tuple[dict[str, str], ...]
     is_real_highlow: bool
     realness_score: float
+    required: bool
 
 
 def _as_dict(value: Any) -> dict[str, Any]:
@@ -166,6 +180,54 @@ def _strict_mode_enabled() -> bool:
     if raw is None:
         return False
     return raw.strip().lower() in _STRICT_TRUTHY_VALUES
+
+
+def _normalise_family_token(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    token = value.strip().lower()
+    if not token:
+        return None
+    if token.endswith("_family"):
+        token = token[: -len("_family")]
+    return token
+
+
+def _family_tokens_from_runtime(runtime: dict[str, Any]) -> list[str]:
+    tokens: list[str] = []
+    design_brief = _as_dict(runtime.get("design_brief"))
+    brief = _as_dict(design_brief.get("brief"))
+    shape_bundle = _as_dict(_as_dict(runtime.get("shape")).get("bundle"))
+    asset_graph = _as_dict(shape_bundle.get("asset_graph"))
+    for value in (brief.get("family"), asset_graph.get("family")):
+        token = _normalise_family_token(value)
+        if token:
+            tokens.append(token)
+    return tokens
+
+
+def _family_tokens_from_asset(asset: dict[str, Any]) -> list[str]:
+    tokens: list[str] = []
+    for value in (
+        asset.get("name"),
+        _as_dict(asset.get("assembly")).get("family"),
+        asset.get("family"),
+    ):
+        token = _normalise_family_token(value)
+        if token:
+            tokens.append(token)
+    return tokens
+
+
+def is_highlow_required(asset: dict[str, Any], runtime: dict[str, Any]) -> bool:
+    """Return whether Phase 7 high/low evidence is required for this asset."""
+    surface_bundle = _surface_bundle(runtime)
+    manifest = _as_dict(surface_bundle.get("surface_manifest"))
+    hero_surface = manifest.get("hero_surface")
+    if isinstance(hero_surface, bool):
+        return hero_surface
+    tokens = _family_tokens_from_runtime(runtime) + _family_tokens_from_asset(asset)
+    return any(token in _HERO_FAMILIES for token in tokens)
 
 
 def _surface_bundle(runtime: dict[str, Any]) -> dict[str, Any]:
@@ -229,15 +291,17 @@ def _bake_map_evidence(
 def _triangle_delta_ratio(
     high_triangle_count: int | None, low_triangle_count: int | None
 ) -> float:
-    """Return ``|high - low| / max(1, high)`` as a non-negative float.
+    """Return positive high-over-low detail delta as a non-negative float.
 
-    ``None`` triangle counts collapse to ``0`` for the purposes of the
-    ratio so missing-evidence cases yield ``0.0`` instead of crashing.
+    The relation only earns triangle credit when the high-poly source
+    has strictly more triangles than the runtime low mesh. Missing,
+    zero, negative, or inverted counts yield ``0.0``.
     """
     high_value = float(high_triangle_count) if isinstance(high_triangle_count, int) else 0.0
     low_value = float(low_triangle_count) if isinstance(low_triangle_count, int) else 0.0
-    denominator = max(1.0, high_value)
-    return round(abs(high_value - low_value) / denominator, 6)
+    if high_value <= 0.0 or low_value < 0.0 or high_value <= low_value:
+        return 0.0
+    return round((high_value - low_value) / max(1.0, high_value), 6)
 
 
 def _compute_realness_score(
@@ -303,9 +367,9 @@ def _runtime_low_uri(topology_bundle: dict[str, Any]) -> str | None:
 
 
 def _build_evidence(asset: dict[str, Any], runtime: dict[str, Any]) -> HighlowEvidence:
-    del asset
     surface_bundle = _surface_bundle(runtime)
     topology_bundle = _topology_bundle(runtime)
+    required = is_highlow_required(asset, runtime)
     highlow = _as_dict(surface_bundle.get("highlow_relation"))
     high_mesh_uri = _as_str_or_none(highlow.get("high_mesh_uri"))
     low_mesh_uri = _as_str_or_none(highlow.get("low_mesh_uri"))
@@ -363,6 +427,7 @@ def _build_evidence(asset: dict[str, Any], runtime: dict[str, Any]) -> HighlowEv
         skipped_reasons=tuple(skipped_reasons),
         is_real_highlow=is_real_highlow,
         realness_score=realness_score,
+        required=required,
     )
 
 
@@ -391,6 +456,17 @@ def _warning_text(evidence: HighlowEvidence) -> str:
         return (
             f"hero asset uses fake high/low: high_triangle_count == low_triangle_count "
             f"== {high_count}; consider a real high-poly producer (Phase 8+)."
+        )
+    if (
+        high_count is not None
+        and low_count is not None
+        and high_count > 0
+        and low_count > high_count
+    ):
+        return (
+            f"hero asset uses inverted high/low: low_triangle_count ({low_count}) "
+            f"exceeds high_triangle_count ({high_count}); consider a real "
+            f"high-poly producer (Phase 8+)."
         )
     if not evidence.high_mesh_uri:
         return (
@@ -457,7 +533,7 @@ def evaluate_highlow_relation(
     skipped_reasons_payload = [dict(record) for record in evidence.skipped_reasons]
     warnings: list[str] = []
     diagnostics: list[dict[str, Any]] = []
-    if not evidence.is_real_highlow:
+    if evidence.required and not evidence.is_real_highlow:
         warnings.append(_warning_text(evidence))
         if _strict_mode_enabled():
             diagnostics.append(_diagnostic_record(evidence))
@@ -479,4 +555,5 @@ def evaluate_highlow_relation(
         "skipped_reasons": skipped_reasons_payload,
         "warnings": warnings,
         "diagnostics": diagnostics,
+        "required": evidence.required,
     }
