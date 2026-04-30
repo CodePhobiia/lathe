@@ -23,6 +23,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from .asset_quality.reference_board import load_reference_board
 from .cache_paths import CACHE_MANIFEST_FILENAME, lathe_cache_dir
 from .capabilities import deterministic_backend_reports, probe_topology_backend  # noqa: F401
 from .checker import check_program
@@ -91,7 +92,7 @@ STAGE_ORDER = [
 
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
-BUILD_CACHE_VERSION = "v10_rc3"
+BUILD_CACHE_VERSION = "v11_rc1"
 log = logging.getLogger(__name__)
 
 
@@ -185,6 +186,22 @@ def _strict_highlow_cache_flag() -> bool:
     if raw is None:
         return False
     return raw.strip().lower() in {"1", "true", "yes"}
+
+
+def _safe_load_reference_board(asset_name: str) -> dict[str, Any] | None:
+    """Load the Phase 11 reference board without crashing the build.
+
+    Wraps :func:`lathe.asset_quality.reference_board.load_reference_board`
+    in a permissive try/except so a corrupt fixture or filesystem
+    error never breaks the executor's lifecycle. Any unexpected
+    exception is swallowed and ``None`` is published — the validator
+    then emits a structured ``reference_board_not_loaded`` skipped
+    reason in place of the missing board.
+    """
+    try:
+        return load_reference_board(asset_name)
+    except Exception:  # pragma: no cover - defensive guard
+        return None
 
 
 class BuildExecutor:
@@ -282,6 +299,10 @@ class BuildExecutor:
         # vision-critique validator can read the optional ``vision_critique``
         # provider block without ever seeing raw api keys / endpoints.
         self.runtime["_runtime_config"] = redact_secrets(self.runtime_config)
+        # Phase 11: publish the reference / moodboard fixtures so the
+        # validator can build the additive ``reference_board`` payload and
+        # the design-brief layer can merge reference negatives.
+        self.runtime["_reference_board"] = _safe_load_reference_board(self.asset_name)
         validate_bundle = stage_validate.run(self, optimize_bundle)
         repair_rounds: list[dict[str, Any]] = []
         if not validate_bundle["certified"]:

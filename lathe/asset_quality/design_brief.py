@@ -37,6 +37,21 @@ the validate-stage report. Existing report fields are preserved and the
 validator never produces blocking diagnostics — like Phase 1, this layer
 is informational evidence for downstream classifiers and grammar
 checks.
+
+Phase 11 negative-constraint integration
+----------------------------------------
+
+When the executor publishes a reference board to
+``runtime["_reference_board"]`` (see
+``lathe.asset_quality.reference_board``), the brief's
+``negative_constraints`` field is extended with each
+reference-negative constraint string. Existing per-family default
+constraints come first; reference negatives are appended in the order
+they appear in the fixture, deduplicated against the existing list.
+This is the only Phase 11 edit to ``design_brief.py`` — every other
+field of the brief (asset name, family, role, style tags, silhouette,
+bevel/shape language, detail density, wear, material age, greeble
+style) is unchanged.
 """
 
 from __future__ import annotations
@@ -203,6 +218,53 @@ def _build_default_brief(asset_name: str, family: str) -> DesignBrief:
     )
 
 
+def _reference_negative_constraints(runtime: dict[str, Any]) -> tuple[str, ...]:
+    """Extract negative constraint strings from a Phase 11 reference board.
+
+    Reads ``runtime["_reference_board"]`` (the raw dict the executor
+    publishes from ``lathe.asset_quality.reference_board.load_reference_board``).
+    Tolerates missing/None/non-dict slots by returning an empty tuple.
+    Each entry is preserved in fixture order; the caller dedupes.
+    """
+    raw = runtime.get("_reference_board") if isinstance(runtime, dict) else None
+    if not isinstance(raw, dict):
+        return ()
+    negatives = raw.get("negatives")
+    if not isinstance(negatives, list):
+        return ()
+    out: list[str] = []
+    for entry in negatives:
+        if not isinstance(entry, dict):
+            continue
+        constraint = entry.get("constraint")
+        if isinstance(constraint, str) and constraint:
+            out.append(constraint)
+    return tuple(out)
+
+
+def _merge_negative_constraints(
+    existing: tuple[str, ...], references: tuple[str, ...]
+) -> tuple[str, ...]:
+    """Append reference negatives to existing brief constraints.
+
+    Existing brief values are preserved in their original order and
+    placed first; reference values are appended in fixture order.
+    Duplicates are dropped while preserving first-occurrence order so
+    the result is deterministic regardless of how the reference list
+    overlaps the brief defaults.
+    """
+    seen: set[str] = set()
+    merged: list[str] = []
+    for value in (*existing, *references):
+        if not isinstance(value, str) or not value:
+            continue
+        if value in seen:
+            continue
+        seen.add(value)
+        merged.append(value)
+    return tuple(merged)
+
+
 def evaluate_design_brief(
     asset: dict[str, Any], runtime: dict[str, Any]
 ) -> dict[str, Any]:
@@ -212,9 +274,14 @@ def evaluate_design_brief(
         asset: normalized asset dict. May omit ``intent``, ``name``, or
             ``kind``; the function tolerates partial/empty input.
         runtime: stage-bundle runtime dict. Phase 2 does not consume any
-            runtime evidence directly — the brief is derived from the
-            asset alone — but the parameter is kept for parity with the
-            ``FunctionValidator`` signature.
+            stage runtime evidence directly — the brief itself is
+            derived from the asset alone. Phase 11 adds a single read
+            of ``runtime["_reference_board"]`` (the raw dict the
+            executor publishes from
+            :func:`lathe.asset_quality.reference_board.load_reference_board`)
+            to merge reference-supplied negative constraints into the
+            brief's ``negative_constraints`` field. When the slot is
+            missing the brief is identical to the Phase 2 baseline.
 
     Returns:
         Additive payload with ``version`` (``"design_brief_v1"``),
@@ -224,11 +291,32 @@ def evaluate_design_brief(
         Phase 1, this validator is informational only and never blocks
         certification.
     """
-    del runtime
     safe_asset = asset if isinstance(asset, dict) else {}
+    safe_runtime = runtime if isinstance(runtime, dict) else {}
     asset_name = _as_str(safe_asset.get("name")) or "unnamed_asset"
     family, signal, token = _infer_family(safe_asset)
-    brief = _build_default_brief(asset_name=asset_name, family=family)
+    base_brief = _build_default_brief(asset_name=asset_name, family=family)
+    reference_negatives = _reference_negative_constraints(safe_runtime)
+    merged_negatives = _merge_negative_constraints(
+        base_brief.negative_constraints, reference_negatives
+    )
+    if merged_negatives != base_brief.negative_constraints:
+        brief = DesignBrief(
+            asset_name=base_brief.asset_name,
+            family=base_brief.family,
+            role=base_brief.role,
+            style_tags=base_brief.style_tags,
+            silhouette=base_brief.silhouette,
+            bevel_language=base_brief.bevel_language,
+            shape_language=base_brief.shape_language,
+            detail_density=base_brief.detail_density,
+            wear=base_brief.wear,
+            material_age=base_brief.material_age,
+            greeble_style=base_brief.greeble_style,
+            negative_constraints=merged_negatives,
+        )
+    else:
+        brief = base_brief
     return {
         "version": VERSION,
         "brief": brief.to_dict(),

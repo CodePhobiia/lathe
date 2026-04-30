@@ -18,6 +18,7 @@ from ...asset_quality.grammar_lowering import evaluate_grammar_lowering
 from ...asset_quality.highlow_relation import evaluate_highlow_relation
 from ...asset_quality.material_wear_graph import evaluate_material_wear_graph
 from ...asset_quality.preview_evidence import evaluate_preview_evidence
+from ...asset_quality.reference_board import evaluate_reference_board
 from ...asset_quality.vision_critique import evaluate_vision_critique
 from ...validators.composition import (
     FunctionValidator,
@@ -95,6 +96,12 @@ _PIPELINE = ValidatorPipeline(
             name="vision_critique",
             fn=evaluate_vision_critique,
             stage_dependencies=["surface"],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="reference_board",
+            fn=evaluate_reference_board,
+            stage_dependencies=[],
             weight=0.0,
         ),
         FunctionValidator(
@@ -451,6 +458,40 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
             "score": 1.0,
         },
     )
+    reference_board_entry = cert_bundle["validators"].get(
+        "reference_board",
+        {
+            "evidence": {
+                "version": "reference_board_v1",
+                "asset_name": "unnamed_asset",
+                "family": "generic",
+                "board": {
+                    "mood": None,
+                    "silhouettes": [],
+                    "materials": [],
+                    "negatives": [],
+                },
+                "summary": {
+                    "has_mood": False,
+                    "silhouette_count": 0,
+                    "material_count": 0,
+                    "negative_count": 0,
+                    "all_required_present": False,
+                },
+                "skipped_reasons": [
+                    {
+                        "category": "reference_board",
+                        "reason": "reference_board_not_loaded",
+                    }
+                ],
+                "warnings": [],
+                "diagnostics": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
     semantic_report = semantic_entry["evidence"]
     visual_report = visual_entry["evidence"]
     flow_report = flow_entry["evidence"]
@@ -465,6 +506,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     material_wear_graph_report = material_wear_graph_entry.get("evidence", {})
     preview_evidence_report = preview_evidence_entry.get("evidence", {})
     vision_critique_report = vision_critique_entry.get("evidence", {})
+    reference_board_report = reference_board_entry.get("evidence", {})
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -479,6 +521,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["material_wear_graph"] = material_wear_graph_report
     executor.runtime["preview_evidence"] = preview_evidence_report
     executor.runtime["vision_critique"] = vision_critique_report
+    executor.runtime["reference_board"] = reference_board_report
     diagnostics.extend(semantic_entry["diagnostics"])
     diagnostics.extend(visual_entry["diagnostics"])
     diagnostics.extend(flow_entry["diagnostics"])
@@ -551,6 +594,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "material_wear_graph": material_wear_graph_report,
         "preview_evidence": preview_evidence_report,
         "vision_critique": vision_critique_report,
+        "reference_board": reference_board_report,
         "rule_results": rule_results,
         "diagnostics": diagnostics,
         "repair_policy": executor.asset["validate"].get("repair", {}),

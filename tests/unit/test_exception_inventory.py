@@ -11,6 +11,7 @@ BROAD_EXCEPTION_ALLOWLIST = {
     "lathe/core/stages/package.py:148",
     "lathe/core/stages/package.py:389",
     "lathe/doctor.py:400",
+    "lathe/executor.py:203",
     "lathe/repair_loop.py:275",
     "lathe/scaffold_compiler.py:110",
     "lathe/scaffold_compiler.py:136",

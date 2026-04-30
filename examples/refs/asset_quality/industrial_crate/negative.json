@@ -1,0 +1,7 @@
+{
+  "negatives": [
+    {"constraint": "no_chrome_finishes", "rationale": "industrial crates are matte, not specular"},
+    {"constraint": "no_clean_geometry", "rationale": "asset must show field-use wear, not factory polish"},
+    {"constraint": "no_consumer_aesthetics", "rationale": "industrial palette only, no decorative consumer styling"}
+  ]
+}

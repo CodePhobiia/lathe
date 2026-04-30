@@ -1,0 +1,10 @@
+{
+  "silhouettes": [
+    {
+      "intent": "rectangular_chest_with_corner_guards",
+      "proportions": {"width_to_height": 1.44, "depth_to_width": 0.63},
+      "descriptors": ["recessed_handles", "trim_band_centered", "foot_rails_below_body"],
+      "image_uri": null
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "materials": [
+    {
+      "target": "painted_steel_body",
+      "pbr_hints": {"roughness": 0.62, "metallic": 0.85, "albedo_value": 0.34},
+      "descriptors": ["matte_industrial_paint", "edge_wear_breakthrough"]
+    },
+    {
+      "target": "dark_bare_metal_underlayer",
+      "pbr_hints": {"roughness": 0.45, "metallic": 1.0, "albedo_value": 0.18},
+      "descriptors": ["polished_underbody", "exposed_at_wear_zones"]
+    }
+  ]
+}

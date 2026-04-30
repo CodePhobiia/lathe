@@ -110,6 +110,7 @@ _VALIDATE_REPORT_REQUIRED_KEYS: frozenset[str] = frozenset(
         "material_wear_graph",
         "preview_evidence",
         "vision_critique",
+        "reference_board",
     }
 )
 
