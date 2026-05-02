@@ -1,0 +1,19 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "issues": [
+    {
+      "evidence_view": "high_low_relation",
+      "issue_id": "phase14-proxy-bake",
+      "recommendation": "Run a real high-poly to low-poly bake before strict certification.",
+      "severity": "warning"
+    },
+    {
+      "evidence_view": "preview_evidence",
+      "issue_id": "phase14-preview-missing",
+      "recommendation": "Generate final beauty, material-ID, wireframe, and comparison-sheet previews before strict certification.",
+      "severity": "warning"
+    }
+  ],
+  "provider": "deterministic_stub",
+  "schema_version": "lathe.asset_quality.vision_critique.v1"
+}

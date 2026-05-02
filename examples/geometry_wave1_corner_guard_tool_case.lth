@@ -1,0 +1,36 @@
+module examples.geometry_wave1.corner_guard_tool_case
+
+asset geometry_wave1_corner_guard_tool_case: hard_surface_prop {
+  intent {
+    role = "corner guarded tool case"
+    style = ["workshop", "durable", "wave1_geometry"]
+    parts = [body, lid, latch_plate, carry_handle, corner_socket_l, corner_socket_r]
+    materials = [painted_steel, dark_rubber, worn_plastic]
+    scale = 0.75m
+  }
+
+  features {
+    density = high
+    allow = [corner_guard, edge_break, panel_seam, bolt_grid]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 106
+      symmetry = x
+      detail_density = high
+      edge_complexity = hero
+      edge_treatment = guarded
+      panelization = medium
+      greeble_density = medium
+      detail_zones = [body, lid]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -1,0 +1,43 @@
+module examples.geometry_wave7.blade_like_repair_tool
+
+asset geometry_wave7_blade_like_repair_tool: hard_surface_prop {
+  intent {
+    role = "blade-like sci fi repair tool with forward head, guard cowl, and service handle"
+    style = ["prototype", "industrial", "tool"]
+    parts = [body, blade_head, guard_cowl, handle_frame, socket_plate, power_cell]
+    materials = [painted_steel, bare_metal, grip_rubber]
+    scale = 0.7m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, grip_rubber]
+    material_layers = [painted_steel, bare_metal, grip_rubber]
+    wear_story = prototype
+    story_decals = [calibration_id, handled_edges]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 704
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, modular]
+      silhouette_profile = blade_like
+      silhouette_motifs = [blade, guard_cowl, handle, spine]
+      silhouette_intensity = hero
+      module_categories = [blade, power_cell]
+      module_count = 2
+      detail_zones = [body, blade_head, guard_cowl, handle_frame]
+      zone_blade_head_module_categories = [blade]
+      zone_blade_head_module_count = 3
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

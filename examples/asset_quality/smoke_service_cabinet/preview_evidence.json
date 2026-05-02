@@ -1,0 +1,34 @@
+{
+  "asset_id": "smoke_service_cabinet",
+  "schema_version": "lathe.asset_quality.preview_evidence.v1",
+  "truthfulness": {
+    "external_renderer_used": false,
+    "reason": "Smoke fixture uses truthful skipped preview lanes only."
+  },
+  "views": {
+    "comparison_sheet": {
+      "blocking_for_strict": true,
+      "blocking_for_warning": false,
+      "reason": "No comparison-sheet producer executed.",
+      "status": "skipped"
+    },
+    "final_beauty": {
+      "blocking_for_strict": true,
+      "blocking_for_warning": false,
+      "reason": "No preview producer executed.",
+      "status": "skipped"
+    },
+    "material_ids": {
+      "blocking_for_strict": true,
+      "blocking_for_warning": false,
+      "reason": "No material-ID producer executed.",
+      "status": "skipped"
+    },
+    "wireframe": {
+      "blocking_for_strict": true,
+      "blocking_for_warning": false,
+      "reason": "No wireframe producer executed.",
+      "status": "skipped"
+    }
+  }
+}

@@ -149,7 +149,16 @@ STAGE_CONTRACTS: dict[str, StageContract] = {
     "validate": StageContract(
         stage="validate",
         inputs=("optimize bundle", "validator runtime", "validate rules", "critic score config"),
-        output_schema=("certified", "threshold", "score", "diagnostics", "failure_summary"),
+        output_schema=(
+            "certified",
+            "threshold",
+            "score",
+            "diagnostics",
+            "failure_summary",
+            "quality_diagnostics",
+            "preview_evidence",
+            "vision_critique",
+        ),
         artifact="stages/validate/report.json",
         trace_records=("stage_bundle_refs.validate", "diagnostics", "repairs_applied"),
         failure_modes=("validator diagnostic", "ensure rule failure", "score below threshold"),

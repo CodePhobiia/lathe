@@ -1,0 +1,53 @@
+{
+  "asset_id": "quality_engine_sci_fi_crate",
+  "coverage": 1.0,
+  "family_id": "sci_fi_crate_family",
+  "missing_required_rules": [],
+  "required_rules": [
+    "body_shell",
+    "corner_guards",
+    "recessed_panels",
+    "lid_seam",
+    "latch",
+    "handles",
+    "feet",
+    "material_zones",
+    "wear_anchors"
+  ],
+  "rules_used": {
+    "body_shell": [
+      "reinforced_shell"
+    ],
+    "corner_guards": [
+      "corner_guard_set"
+    ],
+    "feet": [
+      "foot_rail_pair"
+    ],
+    "handles": [
+      "recessed_side_handles"
+    ],
+    "latch": [
+      "front_latch_plate"
+    ],
+    "lid_seam": [
+      "lid_seam_band"
+    ],
+    "material_zones": [
+      "painted_body_zone",
+      "rubber_contact_zone"
+    ],
+    "recessed_panels": [
+      "front_recessed_panel",
+      "side_recessed_panels"
+    ],
+    "wear_anchors": [
+      "edge_wear_anchors"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "status": {
+    "strict": "covered_by_proxy_quality_engine_fixture",
+    "warning": "pass"
+  }
+}

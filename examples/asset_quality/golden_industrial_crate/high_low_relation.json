@@ -1,0 +1,34 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "certification": {
+    "strict_blockers": [
+      "real_bake_not_executed"
+    ],
+    "strict_pass": false,
+    "warning_pass": true
+  },
+  "high_source": "shape_ir_v2 and construction_graph proxy high-detail intent",
+  "low_target": "runtime_proxy_mesh",
+  "maps": {
+    "ao": {
+      "evidence": "preview_evidence.json",
+      "reason": "AO is represented as proxy evidence only; no real bake producer executed.",
+      "status": "proxy"
+    },
+    "curvature": {
+      "evidence": "material_wear_graph.json",
+      "reason": "Curvature intent is represented by semantic convex-edge wear anchors.",
+      "status": "proxy"
+    },
+    "material_id": {
+      "reason": "No material-ID image was generated in Phase 14.",
+      "status": "skipped"
+    },
+    "normal": {
+      "reason": "No real bake producer in this lane.",
+      "status": "skipped"
+    }
+  },
+  "mode": "proxy_bake",
+  "schema_version": "lathe.asset_quality.high_low_relation.v1"
+}

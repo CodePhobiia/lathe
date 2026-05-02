@@ -1,0 +1,37 @@
+module examples.geometry_wave1.panelized_terminal_bank
+
+asset geometry_wave1_panelized_terminal_bank: env_module {
+  intent {
+    role = "panelized terminal bank wall module"
+    style = ["sci_fi", "operations", "wave1_geometry"]
+    parts = [body, screen_panel_l, screen_panel_r, frame_panel, vent_panel, socket_plate]
+    materials = [painted_steel, smoked_glass, black_rubber]
+    scale = 2.3m
+  }
+
+  features {
+    density = hero
+    allow = [panel_seam, layer_plate, groove_channel, socket_point, bolt_grid]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 119
+      symmetry = x
+      detail_density = hero
+      panelization = hero
+      groove_density = high
+      greeble_density = high
+      surface_layer_count = 3
+      modular_attachment_points = 4
+      detail_zones = [body, frame_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -101,6 +101,9 @@ def run(executor: Any, topology_bundle: dict[str, Any]) -> dict[str, Any]:
         "uv_sets": uv_meta["uv_sets"],
         "packing_report": uv_meta["packing_report"],
         "texel_density": uv_meta["texel_density"],
+        "uv_organization": uv_meta.get("uv_organization", {}),
+        "chart_manifest": uv_meta.get("chart_manifest", []),
+        "material_id_layout": uv_meta.get("material_id_layout", {}),
         **uv_semantics,
         "adapter_report": {**adapter_report, "actual_adapter": actual_adapter, "execution": execution},
         "provenance": {

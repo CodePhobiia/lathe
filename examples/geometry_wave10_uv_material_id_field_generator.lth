@@ -1,0 +1,60 @@
+module examples.geometry_wave10.uv_material_id_field_generator
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave10_uv_material_id_field_generator: hard_surface_prop {
+  intent {
+    role = "battle worn field generator with uv charts grouped by material family"
+    style = ["field_worn", "industrial", "modular"]
+    parts = [body, generator_core, cable_bank, leg_mount, shield_plate, warning_label]
+    materials = [painted_steel, bare_metal, rubber, signal_glass]
+    scale = 1.1m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, rubber, signal_glass]
+    zones.body = painted_steel
+    zones.generator_core = signal_glass
+    zones.cable_bank = rubber
+    zones.leg_mount = bare_metal
+    zones.shield_plate = painted_steel
+    zones.warning_label = bare_metal
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1004
+      symmetry = x
+      style_pack = battle_worn_field
+      silhouette_profile = reinforced_field
+      silhouette_motifs = [outrigger, guard_cowl, cable_bank]
+      detail_density = hero
+      detail_zones = [body, generator_core, cable_bank, leg_mount]
+      zone_generator_core_motifs = [outset_panel, raised_ridge, socket_point]
+      zone_cable_bank_attachment_motifs = [cable, rail, guard_bar]
+      zone_cable_bank_attachment_count = 5
+      lod_levels = 4
+    }
+    uv {
+      sets = [base, lightmap]
+      resolution = 1024px
+      chart_grouping = material
+      material_id_strategy = per_material_zone
+      texture_set_strategy = field_repair_sets
+      island_naming = semantic
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

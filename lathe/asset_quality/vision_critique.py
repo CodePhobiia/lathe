@@ -122,6 +122,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from .semantic_critique import critique_quality_plan
 
 VISION_CRITIQUE_VERSION = "vision_critique_v1"
 
@@ -150,7 +151,11 @@ _PUBLIC_SURFACE_TOKENS: frozenset[str] = frozenset(
     {"profile", "contract", "critic", "asset", "variant"}
 )
 
-_SHAPE_CONTRACT_TOKEN = "lathe.shape.intent_mesh_handoff_v1"
+_SHAPE_CONTRACT_ID = "lathe.shape.intent_mesh_handoff_v1"
+
+_SECRET_CONFIG_KEY_TOKENS: frozenset[str] = frozenset(
+    {"key", "token", "secret", "password", "credential", "endpoint", "url"}
+)
 
 _DEBUG_MATERIAL_THRESHOLD = 0.50
 _HIGHLOW_FAKE_THRESHOLD = 0.40
@@ -268,7 +273,7 @@ def _issue_id(evidence_view: str, recommendation: str) -> str:
     Using ``blake2b`` keeps the id short and independent of Python's
     ``hash()`` randomization. Same input -> same output across runs.
     """
-    payload = f"{evidence_view}|{recommendation}".encode("utf-8")
+    payload = f"{evidence_view}|{recommendation}".encode()
     return hashlib.blake2b(payload, digest_size=8).hexdigest()
 
 
@@ -530,9 +535,13 @@ def _stub_preview_evidence_issue(
     distinct = summary.get("distinct_final_from_material_ids")
     if distinct is True:
         return None
-    if not summary.get("material_ids_present", False) and not summary.get(
-        "final_beauty_present", False
-    ):
+    material_ids_declared = bool(
+        summary.get("material_ids_declared", summary.get("material_ids_present", False))
+    )
+    final_beauty_declared = bool(
+        summary.get("final_beauty_declared", summary.get("final_beauty_present", False))
+    )
+    if not material_ids_declared and not final_beauty_declared:
         # No previews requested at all — Phase 9 already handles this
         # via skipped reasons; do not synthesise a Phase 10 issue.
         return None
@@ -658,6 +667,36 @@ _PROVIDER_REGISTRY: dict[str, Callable[[dict[str, Any]], _ExternalVisionProvider
 }
 
 
+def _is_valid_external_issue(issue: Any) -> bool:
+    if not isinstance(issue, CritiqueIssue):
+        return False
+    if issue.severity not in _SEVERITY_RANK:
+        return False
+    if not isinstance(issue.issue_id, str) or not issue.issue_id:
+        return False
+    if not isinstance(issue.evidence_view, str) or not issue.evidence_view:
+        return False
+    if not isinstance(issue.recommendation, str) or not issue.recommendation:
+        return False
+    if not isinstance(issue.patch_proposals, tuple):
+        return False
+    return all(isinstance(patch, PatchProposal) for patch in issue.patch_proposals)
+
+
+def _validated_external_issues(
+    value: Any,
+) -> tuple[tuple[CritiqueIssue, ...], str | None]:
+    if isinstance(value, tuple):
+        issues = value
+    elif isinstance(value, list):
+        issues = tuple(value)
+    else:
+        return (), "vision_provider_invalid_output"
+    if not all(_is_valid_external_issue(issue) for issue in issues):
+        return (), "vision_provider_invalid_output"
+    return issues, None
+
+
 def _resolve_provider(
     config: dict[str, Any],
     asset: dict[str, Any],
@@ -739,8 +778,18 @@ def _resolve_provider(
             skipped_reasons,
         )
 
-    if not isinstance(external_issues, tuple):
-        external_issues = tuple(external_issues or ())
+    external_issues, invalid_reason = _validated_external_issues(external_issues)
+    if invalid_reason is not None:
+        skipped_reasons.append(SkippedReason("vision_provider", invalid_reason))
+        return (
+            CritiqueProvider(
+                name=_DETERMINISTIC_STUB_NAME,
+                version=_DETERMINISTIC_STUB_VERSION,
+                configured=False,
+            ),
+            (),
+            skipped_reasons,
+        )
     return (
         CritiqueProvider(
             name=str(getattr(provider, "name", provider_id)),
@@ -777,7 +826,7 @@ def _validate_patch(
     field_segments = [segment for segment in patch.field.split(".") if segment]
     if len(field_segments) < 2:
         return False, "field_path_malformed"
-    if _SHAPE_CONTRACT_TOKEN in patch.field:
+    if _SHAPE_CONTRACT_ID in patch.field:
         return False, "touches_shape_contract"
     if any(segment in _PUBLIC_SURFACE_TOKENS for segment in field_segments):
         return False, "touches_public_surface"
@@ -890,6 +939,75 @@ def _summary(
     }
 
 
+def _safe_config_keys(config: dict[str, Any]) -> list[str]:
+    keys: list[str] = []
+    for key in sorted(config):
+        lowered = key.lower()
+        if any(token in lowered for token in _SECRET_CONFIG_KEY_TOKENS):
+            continue
+        keys.append(str(key))
+    return keys
+
+
+def _provider_config_evidence(
+    config: dict[str, Any], provider: CritiqueProvider
+) -> dict[str, Any]:
+    requested_provider = config.get("provider")
+    return {
+        "enabled": bool(config.get("enabled", False)) if config else False,
+        "requested_provider": (
+            requested_provider if isinstance(requested_provider, str) else None
+        ),
+        "resolved_provider": provider.name,
+        "external_provider_configured": provider.configured,
+        "safe_config_keys": _safe_config_keys(config),
+        "sensitive_values_redacted": True,
+    }
+
+
+def _before_after_metrics(runtime: dict[str, Any]) -> dict[str, Any]:
+    summary = _preview_summary(runtime)
+    comparison_sheet_present = bool(summary.get("comparison_sheet_present", False))
+    comparison_sheet_requested = bool(summary.get("comparison_sheet_requested", False))
+    if comparison_sheet_present:
+        skipped_reason = None
+    elif comparison_sheet_requested:
+        skipped_reason = "comparison_sheet_renderer_unavailable"
+    else:
+        skipped_reason = "comparison_sheet_not_requested"
+    return {
+        "available": comparison_sheet_present,
+        "comparison_sheet_requested": comparison_sheet_requested,
+        "before": {},
+        "after": {},
+        "delta": {},
+        "skipped_reason": skipped_reason,
+    }
+
+
+def _iteration_history(
+    *,
+    provider: CritiqueProvider,
+    summary: dict[str, Any],
+    before_after_metrics: dict[str, Any],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "iteration": 0,
+            "provider": provider.name,
+            "external_provider_configured": provider.configured,
+            "issue_count": int(summary.get("issue_count", 0)),
+            "patch_count": int(summary.get("patch_count", 0)),
+            "approved_patch_count": int(summary.get("approved_patches", 0)),
+            "before_after_available": bool(
+                before_after_metrics.get("available", False)
+            ),
+            "applied": False,
+            "status": "evidence_recorded",
+        }
+    ]
+
+
 def evaluate_vision_critique(
     asset: dict[str, Any], runtime: dict[str, Any]
 ) -> dict[str, Any]:
@@ -936,16 +1054,30 @@ def evaluate_vision_critique(
 
     patch_validation = _validate_patches(combined_issues)
     summary = _summary(combined_issues, patch_validation)
+    before_after = _before_after_metrics(safe_runtime)
+    provider_config = _provider_config_evidence(config, provider)
+    quality_plan = _as_dict(safe_runtime.get("quality_plan"))
+    history = _iteration_history(
+        provider=provider,
+        summary=summary,
+        before_after_metrics=before_after,
+    )
     skipped_payload = [record.to_dict() for record in _sort_skipped(skipped_reasons)]
 
-    return {
+    payload = {
         "version": VISION_CRITIQUE_VERSION,
         "asset_name": asset_name,
         "provider": provider.to_dict(),
+        "provider_config": provider_config,
         "issues": [issue.to_dict() for issue in combined_issues],
         "patch_validation": patch_validation,
         "summary": summary,
+        "iteration_history": history,
+        "before_after_metrics": before_after,
         "skipped_reasons": skipped_payload,
         "warnings": [],
         "diagnostics": [],
     }
+    if quality_plan:
+        payload["quality_plan_critique"] = critique_quality_plan(quality_plan)
+    return payload

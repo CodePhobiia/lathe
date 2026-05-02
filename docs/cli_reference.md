@@ -15,12 +15,13 @@ python scripts/generate_cli_reference.py
 ```text
 $ python -m lathe.cli --help
 usage: lathe [-h] [--debug-traceback] [--strict-prompt-injection]
-             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,scene,wonder} ...
+             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,asset-quality,scene,wonder}
+             ...
 
 Lathe 3D asset compiler/runtime
 
 positional arguments:
-  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,scene,wonder}
+  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,asset-quality,scene,wonder}
     parse               Parse a .lth file to raw AST JSON
     normalize           Normalize a .lth file to canonical JSON
     fmt                 Rewrite Lathe sources in canonical form
@@ -65,6 +66,7 @@ positional arguments:
     publish             Publish a completed build to a configured target
     snapshot            Emit a canonical hash-based snapshot for a completed build
     telemetry           Manage opt-in anonymous build-ping telemetry
+    asset-quality       Validate and certify Phase 14 asset-quality example fixtures
     scene               Operate on scene packages and World Memory
     wonder              Validate Wonder-readiness JSON contracts
 
@@ -709,8 +711,8 @@ options:
 
 ```text
 $ python -m lathe.cli patch --help
-usage: lathe patch [-h]
-                   --op {add_component_to_family,change_repair_policy,update_material_palette,widen_search_bounds,freeze_dimension,add_benchmark_fixture}
+usage: lathe patch [-h] --op
+                   {add_component_to_family,change_repair_policy,update_material_palette,widen_search_bounds,freeze_dimension,add_benchmark_fixture}
                    --target TARGET --value VALUE [--value2 VALUE2]
                    file
 
@@ -1029,12 +1031,109 @@ options:
   -h, --help  show this help message and exit
 ```
 
+## `lathe asset-quality`
+
+```text
+$ python -m lathe.cli asset-quality --help
+usage: lathe asset-quality [-h]
+                           {validate-example,certify,catalog-examples,patch,compare-before-after}
+                           ...
+
+positional arguments:
+  {validate-example,certify,catalog-examples,patch,compare-before-after}
+    validate-example    Validate one asset-quality example fixture
+    certify             Write a computed certificate and report for one example fixture
+    catalog-examples    Catalog all direct asset-quality example fixture directories
+    patch               Apply a deterministic semantic patch to one example fixture
+    compare-before-after
+                        Compare two asset-quality example fixtures
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `lathe asset-quality validate-example`
+
+```text
+$ python -m lathe.cli asset-quality validate-example --help
+usage: lathe asset-quality validate-example [-h] [--mode {warning,strict}] example_dir
+
+positional arguments:
+  example_dir
+
+options:
+  -h, --help            show this help message and exit
+  --mode {warning,strict}
+                        Certification mode to validate (default: warning)
+```
+
+## `lathe asset-quality certify`
+
+```text
+$ python -m lathe.cli asset-quality certify --help
+usage: lathe asset-quality certify [-h] --out OUT [--mode {warning,strict}] example_dir
+
+positional arguments:
+  example_dir
+
+options:
+  -h, --help            show this help message and exit
+  --out OUT             Output directory
+  --mode {warning,strict}
+                        Certification mode to write (default: warning)
+```
+
+## `lathe asset-quality catalog-examples`
+
+```text
+$ python -m lathe.cli asset-quality catalog-examples --help
+usage: lathe asset-quality catalog-examples [-h] [--out OUT] examples_root
+
+positional arguments:
+  examples_root
+
+options:
+  -h, --help     show this help message and exit
+  --out OUT      Optional JSON output path
+```
+
+## `lathe asset-quality patch`
+
+```text
+$ python -m lathe.cli asset-quality patch --help
+usage: lathe asset-quality patch [-h] --out OUT example_dir patch_json
+
+positional arguments:
+  example_dir
+  patch_json
+
+options:
+  -h, --help   show this help message and exit
+  --out OUT    Output fixture directory
+```
+
+## `lathe asset-quality compare-before-after`
+
+```text
+$ python -m lathe.cli asset-quality compare-before-after --help
+usage: lathe asset-quality compare-before-after [-h] --out OUT before_dir after_dir
+
+positional arguments:
+  before_dir
+  after_dir
+
+options:
+  -h, --help  show this help message and exit
+  --out OUT   Output comparison JSON path
+```
+
 ## `lathe scene`
 
 ```text
 $ python -m lathe.cli scene --help
 usage: lathe scene [-h]
-                   {check,plan,materialize,build,render,export,validate,bench,style-pack,layout,camera-lighting,assemble,roblox-manifest,roblox-export,patch,branch,diff,merge,rollback,inspect-render,propose-repairs,repair,curiosity,expand-anchor,scene-graph-to-source,source-to-scene-graph,package,memory} ...
+                   {check,plan,materialize,build,render,export,validate,bench,style-pack,layout,camera-lighting,assemble,roblox-manifest,roblox-export,patch,branch,diff,merge,rollback,inspect-render,propose-repairs,repair,curiosity,expand-anchor,scene-graph-to-source,source-to-scene-graph,package,memory}
+                   ...
 
 Operate on folder-based Scene Packages and World Memory JSON contracts.
 
@@ -1634,7 +1733,8 @@ options:
 ```text
 $ python -m lathe.cli wonder --help
 usage: lathe wonder [-h]
-                    {schemas,capabilities,status,env-probe,evidence-trace,alpha-gate,readiness-report,schema,validate-brief,validate-scene,check-scene-graph,decompose-brief,lower-brief,brief-to-scene,check-brief-scene,validate-patch,validate-scene-history,validate-camera-lock,validate-render-comparison,validate-llm-repair-playbook,append-memory-event,redact-memory,apply-patch,rollback-scene,branch-history,lock-camera,compare-renders,demo-before-after,validate-example,catalog-examples,validate-render-inspection,validate-world-memory,validate-scene-manifest,validate-wonder-report,validate-plan,validate-scene-materialization-manifest,generate-scene-plan,validate-scene-assembly,validate-scene-branch,validate-scene-diff,validate-scene-quality-report,validate-scene-repair-report,validate-scene-benchmark-report,validate-style-pack,validate-layout-plan,validate-game-readiness,validate-asset-provenance-scene,validate-roblox-profile,validate-roblox-manifest,validate-roblox-export-bundle,validate-roblox-fbx-handoff,diagnose-for-llm,repair-playbook,apply-semantic-patch,validate-package-manifest,init-package} ...
+                    {schemas,capabilities,status,env-probe,evidence-trace,alpha-gate,readiness-report,schema,validate-brief,validate-scene,check-scene-graph,decompose-brief,lower-brief,brief-to-scene,check-brief-scene,validate-patch,validate-scene-history,validate-camera-lock,validate-render-comparison,validate-llm-repair-playbook,append-memory-event,redact-memory,apply-patch,rollback-scene,branch-history,lock-camera,compare-renders,demo-before-after,validate-example,catalog-examples,validate-render-inspection,validate-world-memory,validate-scene-manifest,validate-wonder-report,validate-plan,validate-scene-materialization-manifest,generate-scene-plan,validate-scene-assembly,validate-scene-branch,validate-scene-diff,validate-scene-quality-report,validate-scene-repair-report,validate-scene-benchmark-report,validate-style-pack,validate-layout-plan,validate-game-readiness,validate-asset-provenance-scene,validate-roblox-profile,validate-roblox-manifest,validate-roblox-export-bundle,validate-roblox-fbx-handoff,diagnose-for-llm,repair-playbook,apply-semantic-patch,validate-package-manifest,init-package}
+                    ...
 
 Validate Dream Brief, Scene Graph, Scene Patch, Render Inspection, World Memory, Scene Package
 Manifest, and lightweight brief/scene consistency contracts.
@@ -2007,8 +2107,8 @@ options:
 
 ```text
 $ python -m lathe.cli wonder append-memory-event --help
-usage: lathe wonder append-memory-event [-h] --event EVENT --idempotency-key IDEMPOTENCY_KEY
-                                        --out OUT
+usage: lathe wonder append-memory-event [-h] --event EVENT --idempotency-key IDEMPOTENCY_KEY --out
+                                        OUT
                                         world_memory
 
 positional arguments:
@@ -2073,8 +2173,8 @@ options:
 
 ```text
 $ python -m lathe.cli wonder branch-history --help
-usage: lathe wonder branch-history [-h] --memory MEMORY --branch BRANCH [--history HISTORY]
-                                   --out OUT
+usage: lathe wonder branch-history [-h] --memory MEMORY --branch BRANCH [--history HISTORY] --out
+                                   OUT
 
 options:
   -h, --help         show this help message and exit

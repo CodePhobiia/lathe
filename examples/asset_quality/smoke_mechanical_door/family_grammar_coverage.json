@@ -1,0 +1,26 @@
+{
+  "asset_id": "smoke_mechanical_door",
+  "coverage": 0.8,
+  "family": "mechanical_door",
+  "missing_rules": [
+    "strict_renderer_preview"
+  ],
+  "required_rules": [
+    "door_leaf",
+    "outer_frame",
+    "inset_panels",
+    "hinge_or_track",
+    "lock_or_handle",
+    "threshold_wear"
+  ],
+  "rules_used": [
+    "door_leaf",
+    "outer_frame",
+    "inset_panels",
+    "hinge_or_track",
+    "lock_or_handle",
+    "threshold_wear"
+  ],
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "warning_status": "pass"
+}

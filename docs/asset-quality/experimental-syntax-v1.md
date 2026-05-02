@@ -42,7 +42,9 @@ The `experimental` wrapper is OPTIONAL. Without it, the asset behaves
 exactly as in Phase 12. Only `art_direction`, `references`, and `kit`
 sub-blocks are recognized in the MVP; any other identifier inside
 `experimental { ... }` is tolerated by the parser but flagged by the
-checker as `L7100`.
+checker as `L7100`. Variants that patch `experimental.*` are checked
+after materialization and receive the same diagnostics as authored
+assets.
 
 ## MVP sub-blocks
 
@@ -85,7 +87,9 @@ experimental {
 
 The reference-board evidence carries
 `user_provided_via_experimental: true` whenever the override drives the
-loader, independent of whether the load succeeded.
+loader, independent of whether the load succeeded. `references` only
+accepts `use` plus the internal `_resolved_path`; extra fields are
+reported as `L7103`.
 
 ### `kit { use = [<part>, ...] }`
 
@@ -104,7 +108,10 @@ experimental {
 The kit-library evidence carries
 `user_provided_via_experimental: { "declared_parts": [...] }`. Phase 13
 does NOT filter the loaded library by the declared list — the
-declaration is informational evidence only.
+declaration is informational evidence only. Each declared part must be
+allowed for the materialized asset family: a part whose
+`allowed_families` lacks that family and lacks `"*"` reports `L7106`.
+`kit` only accepts `use`; extra fields report `L7105`.
 
 ## Diagnostic codes
 
@@ -116,6 +123,7 @@ declaration is informational evidence only.
 | L7103  | experimental_references_invalid_path             | error    | `references.use` is not a string, or it does not resolve to an existing directory.   |
 | L7104  | experimental_kit_unknown_part                    | error    | A kit-use entry is not present in the loaded kit library. Warning when the library cannot load. |
 | L7105  | experimental_kit_invalid_format                  | error    | A kit-use entry is malformed (non-string, missing dot, not exactly `<category>.<name>`). |
+| L7106  | experimental_kit_disallowed_family               | error    | A kit-use entry exists but its `allowed_families` excludes the materialized asset family. |
 
 Every diagnostic carries `suggested_repairs` — at least one short
 actionable string per code — so authors and LLM-based authors can

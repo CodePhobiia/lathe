@@ -1,0 +1,252 @@
+module studio.props.weapons
+import std.families.hero_sword
+
+material tempered_steel_blade {
+  basecolor = [186, 196, 200]
+  metallic = 1.0
+  roughness = 0.34
+  roughness_range = [0.22, 0.46]
+  emissive = [0, 0, 0]
+  surface_profile = brushed_metal
+  wear = 0.18
+  normal_intensity = 0.16
+}
+
+material dark_leather_grip {
+  basecolor = [42, 30, 24]
+  metallic = 0.0
+  roughness = 0.72
+  roughness_range = [0.58, 0.86]
+  emissive = [0, 0, 0]
+  surface_profile = leather_wrap
+  wear = 0.22
+  normal_intensity = 0.18
+}
+
+material brass_guard_trim {
+  basecolor = [170, 126, 54]
+  metallic = 1.0
+  roughness = 0.42
+  roughness_range = [0.30, 0.58]
+  emissive = [0, 0, 0]
+  surface_profile = aged_metal
+  wear = 0.16
+  normal_intensity = 0.12
+}
+
+pattern blade_fuller_line {
+  family = linear_repeat
+  spacing_cm = 16.0
+  emphasis = long_centerline_readability
+}
+
+pattern leather_wrap_ridges {
+  family = linear_repeat
+  spacing_cm = 2.2
+  emphasis = grip_readability
+}
+
+palette knight_sword_palette {
+  materials = [tempered_steel_blade, dark_leather_grip, brass_guard_trim]
+}
+
+surface_program knight_sword_surface {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [blade_edge_highlight, subtle_guard_wear]
+  patterns = [blade_fuller_line, leather_wrap_ridges]
+  zones.blade = tempered_steel_blade
+  zones.grip = dark_leather_grip
+  zones.guard = brass_guard_trim
+  zones.pommel = brass_guard_trim
+}
+
+profile weapon_prop_base {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract hero_weapon_prop uses weapon_prop_base {
+  defaults {
+    build.interfaces.clearance = 1cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 16mb)
+
+  prefer silhouette_readability weight 0.35
+  prefer part_coherence weight 0.20
+}
+
+critic sword_prop_critic(a: asset) = weighted {
+  prompt_match 0.26
+  silhouette_readability 0.22
+  topology_quality 0.18
+  material_quality 0.14
+  runtime_efficiency 0.10
+  part_coherence 0.10
+}
+
+asset hero_sword: hard_surface_prop from hero_sword_family uses hero_weapon_prop {
+  intent {
+    role = "hero medieval longsword with straight double-edged blade"
+    style = ["medieval", "hero_weapon", "clean_silhouette", "game_ready"]
+    parts = [
+      long_tapered_blade,
+      central_fuller,
+      sharp_tip,
+      crossguard,
+      leather_wrapped_grip,
+      round_pommel,
+    ]
+    materials = [tempered_steel_blade, dark_leather_grip, brass_guard_trim]
+    negatives = ["gun", "axe", "sci_fi", "toy_like", "organic"]
+    scale = 1.25m
+    interactions = [equip, swing, inspect, display_on_wall]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [blade_fuller_break, guard_socket, grip_wrap_seam, pommel_join]
+    edge_classes = [sharp_blade_edge, guard_bevel, grip_ridge, pommel_bevel]
+    integration_rules = [boolean_union, preserve_blade_symmetry, preserve_crossguard_width]
+  }
+
+  features {
+    density = hero
+    allow = [edge_break, trim_band, support_bracket, fastener_strip]
+  }
+
+  surface {
+    program = knight_sword_surface
+    patterns = [blade_fuller_line, leather_wrap_ridges]
+    palette = knight_sword_palette
+    material_zones = [tempered_steel_blade, dark_leather_grip, brass_guard_trim]
+    materials = [tempered_steel_blade, dark_leather_grip, brass_guard_trim]
+    decals = [blade_edge_highlight, subtle_guard_wear]
+    bake = [normal, ao, curvature, id]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 5
+      seed = 113
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 9000
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = [blade_edge_highlight, subtle_guard_wear]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [socket(id: hand_grip_socket, socket_type: attach)]
+      pivots = [pivot(id: grip_center, pivot_type: hand_hold)]
+      clearance = 1cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 4
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = sword_prop_critic
+    threshold = 0.74
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        reauthor_surface_layer,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "props/weapons/hero_sword"
+    version = "0.1.0"
+    tags = ["weapon", "interactable", "static"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}
+
+test hero_sword_language_surface {
+  asset = hero_sword
+  assert from == hero_sword_family
+  assert intent.scale == 1.25m
+  assert build.shape.mode == generate
+  assert validate.threshold == 0.74
+}

@@ -422,6 +422,11 @@ def test_patch_nonnumeric_value2_emits_cli_error_without_traceback() -> None:
 _NEGATIVE_COMMAND_PATHS = [
     ("adapt",),
     ("assemble",),
+    ("asset-quality", "catalog-examples"),
+    ("asset-quality", "compare-before-after"),
+    ("asset-quality", "certify"),
+    ("asset-quality", "patch"),
+    ("asset-quality", "validate-example"),
     ("audit",),
     ("backends",),
     ("bake-audit",),

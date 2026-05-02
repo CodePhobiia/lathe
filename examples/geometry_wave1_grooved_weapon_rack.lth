@@ -1,0 +1,37 @@
+module examples.geometry_wave1.grooved_weapon_rack
+
+asset geometry_wave1_grooved_weapon_rack: hard_surface_prop {
+  intent {
+    role = "grooved modular weapon rack"
+    style = ["armory", "industrial", "wave1_geometry"]
+    parts = [body, rail_l, rail_r, clamp_l, clamp_r, socket_plate]
+    materials = [painted_steel, dark_rubber, bare_metal]
+    scale = 1.3m
+  }
+
+  features {
+    density = high
+    allow = [groove_channel, raised_ridge, socket_point, corner_guard]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 120
+      symmetry = x
+      detail_density = high
+      edge_complexity = high
+      panelization = medium
+      groove_density = hero
+      ridge_density = high
+      modular_attachment_points = 6
+      detail_zones = [body, socket_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

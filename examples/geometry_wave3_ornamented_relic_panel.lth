@@ -1,0 +1,44 @@
+module examples.geometry_wave3.ornamented_relic_panel
+
+asset geometry_wave3_ornamented_relic_panel: env_module {
+  intent {
+    role = "ornamented relic wall panel with straps and guard bars"
+    style = ["luxury", "ancient", "ornamental"]
+    parts = [body, frame_l, frame_r, socket_plate, anchor_plate]
+    materials = [dark_wood, aged_brass, emerald_glass]
+    scale = 1.5m
+  }
+
+  surface {
+    material_layers = [dark_wood, aged_brass, emerald_glass]
+    wear_story = ancient
+    wear_level = high
+    story_decals = [etched_runes, rubbed_edges]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 304
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [luxury]
+      attachment_motifs = [ornament, strap, guard_bar]
+      attachment_count = 7
+      detail_zones = [body, socket_plate]
+      zone_body_attachment_motifs = [ornament, strap]
+      zone_body_attachment_count = 8
+      zone_socket_plate_attachment_motifs = [ornament, guard_bar]
+      zone_socket_plate_attachment_count = 6
+      radial_detail_repeats = 8
+      surface_layer_count = 4
+      trim_density = high
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

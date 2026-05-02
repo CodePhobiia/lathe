@@ -19,6 +19,7 @@ from ...asset_quality.highlow_relation import evaluate_highlow_relation
 from ...asset_quality.kit_library import evaluate_kit_library
 from ...asset_quality.material_wear_graph import evaluate_material_wear_graph
 from ...asset_quality.preview_evidence import evaluate_preview_evidence
+from ...asset_quality.quality_planner import evaluate_quality_plan
 from ...asset_quality.reference_board import evaluate_reference_board
 from ...asset_quality.vision_critique import evaluate_vision_critique
 from ...validators.composition import (
@@ -61,6 +62,12 @@ _PIPELINE = ValidatorPipeline(
             weight=0.0,
         ),
         FunctionValidator(
+            name="quality_plan",
+            fn=evaluate_quality_plan,
+            stage_dependencies=[],
+            weight=0.0,
+        ),
+        FunctionValidator(
             name="semantic_quality",
             fn=evaluate_semantic_quality,
             stage_dependencies=["shape", "topology"],
@@ -88,6 +95,12 @@ _PIPELINE = ValidatorPipeline(
             weight=0.0,
         ),
         FunctionValidator(
+            name="quality_diagnostics",
+            fn=evaluate_quality_diagnostics,
+            stage_dependencies=["shape", "topology", "uv", "surface"],
+            weight=0.0,
+        ),
+        FunctionValidator(
             name="preview_evidence",
             fn=evaluate_preview_evidence,
             stage_dependencies=["surface"],
@@ -96,7 +109,7 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="vision_critique",
             fn=evaluate_vision_critique,
-            stage_dependencies=["surface"],
+            stage_dependencies=["surface", "quality_diagnostics", "preview_evidence"],
             weight=0.0,
         ),
         FunctionValidator(
@@ -115,12 +128,6 @@ _PIPELINE = ValidatorPipeline(
             name="geometry_integrity",
             fn=evaluate_geometry_integrity,
             stage_dependencies=["topology"],
-        ),
-        FunctionValidator(
-            name="quality_diagnostics",
-            fn=evaluate_quality_diagnostics,
-            stage_dependencies=["shape", "topology", "uv", "surface"],
-            weight=0.0,
         ),
         build_urdf_validator(),
         build_gameplay_tag_validator(),
@@ -180,6 +187,13 @@ def _failure_summary(
         "blocking_diagnostics": blocking,
         "next_steps": next_steps,
     }
+
+
+def _report_section_with_diagnostics(entry: dict[str, Any]) -> dict[str, Any]:
+    """Return validator evidence with its nested diagnostics restored."""
+    evidence = dict(entry.get("evidence", {}))
+    evidence["diagnostics"] = list(entry.get("diagnostics", []))
+    return evidence
 
 
 def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
@@ -281,6 +295,26 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                 "edge_count": 0,
                 "node_types_present": [],
                 "edge_types_present": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
+    quality_plan_entry = cert_bundle["validators"].get(
+        "quality_plan",
+        {
+            "evidence": {
+                "schema_version": "lathe.asset_quality.quality_plan.v1",
+                "asset_id": "unnamed_asset",
+                "family": "generic",
+                "object_family": "prop",
+                "metrics": {},
+                "semantic_critique": {
+                    "schema_version": "lathe.asset_quality.semantic_critique.v1",
+                    "issue_count": 0,
+                    "repairs": [],
+                },
             },
             "diagnostics": [],
             "passes": True,
@@ -413,8 +447,13 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                     "final_beauty_present": False,
                     "material_ids_present": False,
                     "wireframe_present": False,
+                    "final_beauty_declared": False,
+                    "material_ids_declared": False,
+                    "wireframe_declared": False,
                     "bake_map_count": 0,
                     "comparison_sheet_present": False,
+                    "comparison_sheet_requested": False,
+                    "comparison_sheet_renderer_available": False,
                     "distinct_final_from_material_ids": False,
                     "total_preview_count": 0,
                 },
@@ -439,6 +478,14 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                     "version": "v1",
                     "configured": False,
                 },
+                "provider_config": {
+                    "enabled": False,
+                    "requested_provider": None,
+                    "resolved_provider": "deterministic_stub",
+                    "external_provider_configured": False,
+                    "safe_config_keys": [],
+                    "sensitive_values_redacted": True,
+                },
                 "issues": [],
                 "patch_validation": {
                     "all_patches_valid": True,
@@ -455,6 +502,20 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                     },
                     "patch_count": 0,
                     "approved_patches": 0,
+                },
+                "quality_plan_critique": {
+                    "schema_version": "lathe.asset_quality.semantic_critique.v1",
+                    "issue_count": 0,
+                    "repairs": [],
+                },
+                "iteration_history": [],
+                "before_after_metrics": {
+                    "available": False,
+                    "comparison_sheet_requested": False,
+                    "before": {},
+                    "after": {},
+                    "delta": {},
+                    "skipped_reason": "comparison_sheet_not_requested",
                 },
                 "skipped_reasons": [],
                 "warnings": [],
@@ -543,17 +604,18 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     flow_report = flow_entry["evidence"]
     integrity_report = integrity_entry["evidence"]
     urdf_report = urdf_entry.get("evidence", {})
-    quality_diagnostics_report = quality_diagnostics_entry.get("evidence", {})
-    design_brief_report = design_brief_entry.get("evidence", {})
-    family_grammar_report = family_grammar_entry.get("evidence", {})
-    construction_graph_report = construction_graph_entry.get("evidence", {})
-    grammar_lowering_report = grammar_lowering_entry.get("evidence", {})
-    highlow_relation_report = highlow_relation_entry.get("evidence", {})
-    material_wear_graph_report = material_wear_graph_entry.get("evidence", {})
-    preview_evidence_report = preview_evidence_entry.get("evidence", {})
-    vision_critique_report = vision_critique_entry.get("evidence", {})
-    reference_board_report = reference_board_entry.get("evidence", {})
-    kit_library_report = kit_library_entry.get("evidence", {})
+    quality_diagnostics_report = _report_section_with_diagnostics(quality_diagnostics_entry)
+    design_brief_report = _report_section_with_diagnostics(design_brief_entry)
+    family_grammar_report = _report_section_with_diagnostics(family_grammar_entry)
+    construction_graph_report = _report_section_with_diagnostics(construction_graph_entry)
+    quality_plan_report = _report_section_with_diagnostics(quality_plan_entry)
+    grammar_lowering_report = _report_section_with_diagnostics(grammar_lowering_entry)
+    highlow_relation_report = _report_section_with_diagnostics(highlow_relation_entry)
+    material_wear_graph_report = _report_section_with_diagnostics(material_wear_graph_entry)
+    preview_evidence_report = _report_section_with_diagnostics(preview_evidence_entry)
+    vision_critique_report = _report_section_with_diagnostics(vision_critique_entry)
+    reference_board_report = _report_section_with_diagnostics(reference_board_entry)
+    kit_library_report = _report_section_with_diagnostics(kit_library_entry)
     executor.runtime["semantic_quality"] = semantic_report
     executor.runtime["visual_quality"] = visual_report
     executor.runtime["flow_quality"] = flow_report
@@ -563,6 +625,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["design_brief"] = design_brief_report
     executor.runtime["construction_graph"] = construction_graph_report
     executor.runtime["family_grammar"] = family_grammar_report
+    executor.runtime["quality_plan"] = quality_plan_report
     executor.runtime["grammar_lowering"] = grammar_lowering_report
     executor.runtime["highlow_relation"] = highlow_relation_report
     executor.runtime["material_wear_graph"] = material_wear_graph_report
@@ -637,6 +700,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "design_brief": design_brief_report,
         "construction_graph": construction_graph_report,
         "family_grammar": family_grammar_report,
+        "quality_plan": quality_plan_report,
         "grammar_lowering": grammar_lowering_report,
         "highlow_relation": highlow_relation_report,
         "material_wear_graph": material_wear_graph_report,

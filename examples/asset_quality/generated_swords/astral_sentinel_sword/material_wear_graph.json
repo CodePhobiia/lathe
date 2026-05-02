@@ -1,0 +1,98 @@
+{
+  "asset_id": "quality_engine_astral_sentinel_sword",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 5,
+    "underlayer_count": 1,
+    "wear_mask_count": 5
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "starforged_blade"
+      ],
+      "zone_id": "starforged_blade_steel",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "aether_crystal_fuller",
+        "guard_crystal_socket"
+      ],
+      "zone_id": "aether_crystal_core",
+      "zone_type": "accent_material"
+    },
+    {
+      "bound_nodes": [
+        "crescent_crossguard",
+        "moonstone_pommel"
+      ],
+      "zone_id": "moon_gold_guard",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "midnight_wrapped_grip"
+      ],
+      "zone_id": "midnight_leather_grip",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "starforged_blade",
+        "crescent_crossguard"
+      ],
+      "zone_id": "edge_highlight_wear",
+      "zone_type": "wear_overlay"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "skipped_reasons": [
+    {
+      "reason": "real_bake_map_generation_not_implemented",
+      "tool": "surface_runtime"
+    }
+  ],
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.04,
+    "warnings": []
+  },
+  "wear_masks": [
+    {
+      "bound_edge_target": "blade.left_edge",
+      "bound_node_id": "edge_wear_anchors",
+      "mask_id": "left_starforged_edge_chips",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "blade.right_edge",
+      "bound_node_id": "edge_wear_anchors",
+      "mask_id": "right_starforged_edge_chips",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "guard.crystal_socket",
+      "bound_node_id": "guard_crystal_socket",
+      "mask_id": "crystal_socket_glow_grime",
+      "mask_type": "concave_grime"
+    },
+    {
+      "bound_edge_target": "grip.wrap_ridges",
+      "bound_node_id": "hand_polish_anchors",
+      "mask_id": "midnight_grip_hand_polish",
+      "mask_type": "handle_touch_wear"
+    },
+    {
+      "bound_edge_target": "pommel.outer_bevel",
+      "bound_node_id": "moonstone_pommel",
+      "mask_id": "moonstone_pommel_scuff",
+      "mask_type": "convex_edge_wear"
+    }
+  ]
+}

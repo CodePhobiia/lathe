@@ -1,0 +1,37 @@
+module examples.geometry_wave2.modular_socket_drone_pylon
+
+asset geometry_wave2_modular_socket_drone_pylon: mechanical_assembly {
+  intent {
+    role = "modular drone pylon with swappable socket rails"
+    style = ["prototype", "modular", "near_future"]
+    parts = [body, rotor_fl, rotor_fr, rotor_rl, rotor_rr, socket_plate, sensor_panel]
+    materials = [anodized_aluminum, carbon_fiber, amber_glass]
+    scale = 1.0m
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 205
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, modular]
+      module_sockets = [battery_slot, payload_rail, sensor_bus]
+      detail_zones = [body, socket_plate, sensor_panel]
+      zone_body_motifs = [layer_plate, panel_seam, trim_strip]
+      zone_socket_plate_motifs = [socket_point, bolt_grid, radial_detail_array]
+      zone_socket_plate_modular_attachment_points = 9
+      zone_socket_plate_radial_detail_repeats = 9
+      zone_sensor_panel_motifs = [outset_panel, linear_detail_array, panel_seam]
+      zone_sensor_panel_linear_detail_repeats = 5
+    }
+    rig { type = none joints = [] }
+    interfaces {
+      sockets = [socket(id: battery_slot, socket_type: slot), socket(id: payload_rail, socket_type: rail)]
+    }
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

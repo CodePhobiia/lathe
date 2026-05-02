@@ -38,7 +38,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.material_wear_graph import (
     MATERIAL_WEAR_VERSION,
     WEAR_MASK_TYPES,
@@ -46,10 +45,10 @@ from lathe.asset_quality.material_wear_graph import (
     MaterialWearGraph,
     MaterialZone,
     WearMask,
-    evaluate_material_wear_graph,
     _industrial_crate_default_graph,
+    evaluate_material_wear_graph,
 )
-
+from lathe.surface_runtime import _material_wear_graph_hooks
 
 _PAYLOAD_KEYS: frozenset[str] = frozenset(
     {
@@ -66,11 +65,28 @@ _PAYLOAD_KEYS: frozenset[str] = frozenset(
 
 _RECIPE_NODES: tuple[dict[str, Any], ...] = (
     {"node_id": "recipe.body_shell", "node_type": "primary_volume", "attributes": {}},
+    {"node_id": "recipe.lid_seam", "node_type": "panel", "attributes": {}},
     {"node_id": "recipe.handle_l", "node_type": "handle", "attributes": {}},
     {"node_id": "recipe.handle_r", "node_type": "handle", "attributes": {}},
     {"node_id": "recipe.foot_rail_front", "node_type": "rail", "attributes": {}},
     {"node_id": "recipe.foot_rail_back", "node_type": "rail", "attributes": {}},
     {"node_id": "recipe.warning_decal_zone", "node_type": "decal_zone", "attributes": {}},
+    *tuple(
+        {"node_id": f"recipe.corner_guard_{index}", "node_type": "guard", "attributes": {}}
+        for index in range(8)
+    ),
+)
+
+
+_SHAPE_OP_TARGETS: tuple[str, ...] = (
+    "body.outer_edges",
+    "body.top_band",
+    "body.bottom_front",
+    "body.bottom_back",
+    "body.left_face",
+    "body.right_face",
+    "body.front_face",
+    "body.corners",
 )
 
 
@@ -78,6 +94,8 @@ def _runtime_industrial_crate(
     *,
     bake_maps_present: int = 4,
     surface_zone_count: int = 1,
+    include_surface_outputs: bool = True,
+    include_edge_targets: bool = True,
     extra_recipe_nodes: tuple[dict[str, Any], ...] = (),
 ) -> dict[str, Any]:
     """Return a runtime dict that mirrors a live industrial_crate build.
@@ -95,15 +113,27 @@ def _runtime_industrial_crate(
         {"material": f"mat_{index}", "part": "body"}
         for index in range(surface_zone_count)
     ]
-    return {
+    surface_bundle: dict[str, Any] = {"material_zones": surface_zones}
+    if include_surface_outputs:
+        surface_bundle["outputs"] = {"basecolor": {"uri": "maps/basecolor.png"}}
+    runtime = {
         "design_brief": {"brief": {"family": "industrial_crate"}},
         "construction_graph": {"nodes": []},
         "grammar_lowering": {
-            "synthesized_graph_nodes": list(_RECIPE_NODES) + list(extra_recipe_nodes)
+            "synthesized_graph_nodes": list(_RECIPE_NODES) + list(extra_recipe_nodes),
+            "shape_program": {
+                "ops": [
+                    {"op": "op.test", "target": target, "parameters": {}}
+                    for target in _SHAPE_OP_TARGETS
+                ]
+            },
         },
         "highlow_relation": {"bake_maps": bake_maps},
-        "surface": {"bundle": {"material_zones": surface_zones}},
+        "surface": {"bundle": surface_bundle},
     }
+    if not include_edge_targets:
+        runtime["grammar_lowering"]["shape_program"] = {"ops": []}
+    return runtime
 
 
 # ----------------------------------------------------------------------------
@@ -144,6 +174,32 @@ def test_wear_mask_dataclass_is_frozen() -> None:
         mask.intensity = 0.5  # type: ignore[misc]
 
 
+def test_wear_mask_validates_bounds_and_freezes_parameters() -> None:
+    """Mutable constructor parameters are defensively copied and frozen."""
+    raw_parameters = {"scale": {"value": 1}}
+    mask = WearMask(
+        mask_id="x",
+        mask_type="convex_edge_wear",
+        intensity=0.1,
+        bound_node_id=None,
+        bound_edge_target="body.outer_edges",
+        parameters=raw_parameters,
+    )
+    raw_parameters["scale"]["value"] = 2
+    assert mask.parameters["scale"]["value"] == 1
+    with pytest.raises(TypeError):
+        mask.parameters["new"] = 1  # type: ignore[index]
+    with pytest.raises(ValueError):
+        WearMask(
+            mask_id="bad",
+            mask_type="convex_edge_wear",
+            intensity=1.5,
+            bound_node_id=None,
+            bound_edge_target="body.outer_edges",
+            parameters={},
+        )
+
+
 def test_material_zone_dataclass_is_frozen() -> None:
     """``MaterialZone`` is immutable."""
     zone = MaterialZone(
@@ -157,6 +213,34 @@ def test_material_zone_dataclass_is_frozen() -> None:
     )
     with pytest.raises(FrozenInstanceError):
         zone.roughness = 0.9  # type: ignore[misc]
+
+
+def test_material_zone_validates_bounds_and_freezes_parameters() -> None:
+    """Roughness/metalness are bounded and parameter dicts are immutable."""
+    raw_parameters = {"finish": {"clearcoat": 0.1}}
+    zone = MaterialZone(
+        zone_id="x",
+        zone_type="base_material",
+        base_color="#000000",
+        roughness=0.5,
+        metalness=0.0,
+        bound_part=None,
+        parameters=raw_parameters,
+    )
+    raw_parameters["finish"]["clearcoat"] = 0.8
+    assert zone.parameters["finish"]["clearcoat"] == 0.1
+    with pytest.raises(TypeError):
+        zone.parameters["new"] = 1  # type: ignore[index]
+    with pytest.raises(ValueError):
+        MaterialZone(
+            zone_id="bad",
+            zone_type="base_material",
+            base_color="#000000",
+            roughness=-0.1,
+            metalness=0.0,
+            bound_part=None,
+            parameters={},
+        )
 
 
 def test_material_wear_graph_dataclass_is_frozen() -> None:
@@ -178,14 +262,13 @@ def test_material_wear_graph_dataclass_is_frozen() -> None:
 
 
 def test_industrial_crate_default_carries_expected_counts() -> None:
-    """Spec Section 12.3: 1 base material + 1 underlayer + 7 wear masks
-    (one per type, plus mirrored foot and handle pairs)."""
+    """Spec Section 12.3: 1 base material + 1 underlayer + 15 wear masks."""
     graph = _industrial_crate_default_graph()
     assert graph.family == "industrial_crate"
     assert graph.version == MATERIAL_WEAR_VERSION
     assert len(graph.materials) == 1
     assert len(graph.underlayers) == 1
-    assert len(graph.wear_masks) == 7
+    assert len(graph.wear_masks) == 15
 
 
 def test_industrial_crate_default_mask_types_cover_full_registry() -> None:
@@ -303,36 +386,51 @@ def test_orphan_bindings_appear_in_orphan_node_bindings_list() -> None:
     binding = payload["binding_validation"]
     assert binding["all_node_bindings_resolved"] is False
     expected_orphans = {
-        "recipe.wear.foot_scuff_l",
-        "recipe.wear.foot_scuff_r",
-        "recipe.wear.handle_touch_l",
-        "recipe.wear.handle_touch_r",
-        "recipe.wear.warning_decal",
+        mask["mask_id"]
+        for mask in payload["graph"]["wear_masks"]
+        if mask["bound_node_id"] is not None
     }
     assert set(binding["orphan_node_bindings"]) == expected_orphans
     assert binding["construction_graph_node_count"] == 0
 
 
 def test_graph_summary_breakdown_matches_default_graph() -> None:
-    """``graph_summary`` reflects the seven-mask default and the
-    edge-vs-node binding split."""
+    """``graph_summary`` reflects resolved bindings, not declarations."""
     runtime = _runtime_industrial_crate()
     payload = evaluate_material_wear_graph({}, runtime)
     summary = payload["graph_summary"]
     assert summary["material_zone_count"] == 1
     assert summary["underlayer_count"] == 1
-    assert summary["wear_mask_count"] == 7
+    assert summary["wear_mask_count"] == 15
     assert summary["wear_masks_by_type"] == {
         "concave_grime": 1,
-        "convex_edge_wear": 1,
+        "convex_edge_wear": 9,
         "decal_wear": 1,
         "handle_touch_wear": 2,
         "lower_contact_scuff": 2,
     }
-    # Two convex/concave masks are edge-bound; five are node-bound.
-    assert summary["bound_to_construction_nodes"] == 5
-    assert summary["bound_to_edge_targets"] == 2
-    assert summary["bound_to_both"] == 0
+    assert summary["bound_to_construction_nodes"] == 14
+    assert summary["bound_to_edge_targets"] == 15
+    assert summary["bound_to_both"] == 14
+    assert summary["declared_node_bindings"] == 14
+    assert summary["declared_edge_bindings"] == 15
+    assert summary["resolved_bindings"] == 15
+
+
+def test_edge_bindings_require_shape_or_construction_edge_evidence() -> None:
+    """Edge bindings are not considered resolved merely because strings exist."""
+    runtime = _runtime_industrial_crate(include_edge_targets=False)
+    payload = evaluate_material_wear_graph({}, runtime)
+    summary = payload["graph_summary"]
+    binding = payload["binding_validation"]
+    assert summary["declared_edge_bindings"] == 15
+    assert summary["bound_to_edge_targets"] == 0
+    assert binding["all_edge_bindings_resolved"] is False
+    assert set(binding["orphan_edge_bindings"]) == {
+        mask["mask_id"]
+        for mask in payload["graph"]["wear_masks"]
+        if mask["bound_edge_target"] is not None
+    }
 
 
 # ----------------------------------------------------------------------------
@@ -372,12 +470,12 @@ def test_uniform_fixture_score_is_high_and_warns() -> None:
 def test_industrial_crate_baseline_score_lands_at_documented_value() -> None:
     """Industrial crate default with all bindings resolved lands at the
     documented baseline of approximately ``0.27`` (1 material zone +
-    7 wear masks all resolved)."""
+    all wear masks resolved)."""
     runtime = _runtime_industrial_crate(surface_zone_count=1)
     payload = evaluate_material_wear_graph({}, runtime)
     noise = payload["uniform_noise"]
     # 1 material + 1 surface zone -> max(1, 1)/3 = 0.333.
-    # All 7 wear masks resolved -> binding_ratio = 1.0.
+    # All wear masks resolved -> binding_ratio = 1.0.
     # Score = 1 - (0.4 * 0.333 + 0.6 * 1.0) = 1 - 0.7333 = 0.2667.
     assert noise["uniform_noise_score"] == pytest.approx(0.266667, abs=1e-4)
     assert noise["zone_diversity"] == pytest.approx(0.333333, abs=1e-4)
@@ -400,6 +498,109 @@ def test_generic_family_falls_back_to_empty_graph_with_warning() -> None:
     assert noise["warnings"]
 
 
+def test_user_authored_material_wear_graph_values_are_consumed() -> None:
+    """Resolved ``surface.material_graph`` with v1-shaped values replaces defaults."""
+    asset = {
+        "surface": {
+            "material_graph": "custom_graph",
+            "resolved_material_graph": {
+                "name": "custom_graph",
+                "values": {
+                    "materials": [
+                        {
+                            "zone_id": "paint",
+                            "zone_type": "base_material",
+                            "base_color": "#101010",
+                            "roughness": 0.5,
+                            "metalness": 0.0,
+                            "bound_part": "body",
+                            "parameters": {},
+                        }
+                    ],
+                    "wear_masks": [
+                        {
+                            "mask_id": "wear.edge",
+                            "mask_type": "convex_edge_wear",
+                            "intensity": 0.4,
+                            "bound_node_id": None,
+                            "bound_edge_target": "body.outer_edges",
+                            "parameters": {},
+                        }
+                    ],
+                },
+            },
+        }
+    }
+    runtime = _runtime_industrial_crate()
+    payload = evaluate_material_wear_graph(asset, runtime)
+    assert payload["graph_summary"]["graph_source"] == "surface.material_graph"
+    assert payload["graph_summary"]["material_graph_reference"] == "custom_graph"
+    assert payload["graph"]["materials"][0]["zone_id"] == "paint"
+    assert payload["graph_summary"]["wear_mask_count"] == 1
+    assert payload["binding_validation"]["orphan_edge_bindings"] == []
+
+
+def test_non_lowerable_surface_material_graph_is_skipped_with_evidence() -> None:
+    """Legacy material_graph metadata is carried as a skip, not invented as wear."""
+    asset = {
+        "surface": {
+            "material_graph": "aged_brass_graph",
+            "resolved_material_graph": {
+                "name": "aged_brass_graph",
+                "values": {
+                    "base": "aged_brass",
+                    "layers": ["patina", "edge_wear"],
+                    "outputs": ["basecolor"],
+                },
+            },
+        }
+    }
+    runtime = _runtime_industrial_crate()
+    payload = evaluate_material_wear_graph(asset, runtime)
+    assert payload["graph_summary"]["graph_source"] == "family_default"
+    assert {
+        "tool": "surface.material_graph",
+        "reason": "resolved_material_graph_not_lowerable_to_material_wear_graph_v1",
+        "evidence": "aged_brass_graph",
+    } in payload["skipped_reasons"]
+
+
+def test_surface_runtime_material_wear_hooks_carry_material_graph_metadata() -> None:
+    """Surface bundles can carry additive material/wear hook metadata."""
+    hooks = _material_wear_graph_hooks(
+        {
+            "material_graph": "aged_brass_graph",
+            "resolved_material_graph": {
+                "name": "aged_brass_graph",
+                "values": {"base": "aged_brass"},
+            },
+        }
+    )
+    assert hooks["version"] == MATERIAL_WEAR_VERSION
+    assert hooks["material_graph"] == "aged_brass_graph"
+    assert hooks["has_resolved_material_graph"] is True
+    assert hooks["mask_textures_generated"] is False
+    assert hooks["surface_maps_driven_by_material_wear_graph"] is False
+    assert {
+        "tool": "surface_runtime",
+        "reason": "mask_texture_generation_not_implemented",
+    } in hooks["skipped_reasons"]
+
+
+def test_metadata_only_surface_zones_do_not_suppress_uniform_noise_warning() -> None:
+    """Surface zone metadata without map evidence is not enough for a clean score."""
+    runtime = _runtime_industrial_crate(
+        surface_zone_count=3,
+        include_surface_outputs=False,
+        include_edge_targets=False,
+    )
+    runtime["grammar_lowering"]["synthesized_graph_nodes"] = []
+    payload = evaluate_material_wear_graph({}, runtime)
+    noise = payload["uniform_noise"]
+    assert noise["uniform_noise_score"] >= 0.85
+    assert noise["is_uniform_noise"] is True
+
+
 # ----------------------------------------------------------------------------
 # Skipped reasons
 # ----------------------------------------------------------------------------
@@ -415,12 +616,20 @@ def test_skipped_reasons_records_incomplete_bake_maps() -> None:
     ]
 
 
-def test_skipped_reasons_empty_when_full_bake_maps_present() -> None:
-    """With all four canonical bake maps present, ``skipped_reasons``
-    is empty (no synthetic gaps invented)."""
+def test_skipped_reasons_record_unimplemented_surface_hooks() -> None:
+    """Full bake maps do not hide unimplemented material/wear surface hooks."""
     runtime = _runtime_industrial_crate(bake_maps_present=4)
     payload = evaluate_material_wear_graph({}, runtime)
-    assert payload["skipped_reasons"] == []
+    assert payload["skipped_reasons"] == [
+        {
+            "tool": "surface_runtime",
+            "reason": "mask_texture_generation_not_implemented",
+        },
+        {
+            "tool": "surface_runtime",
+            "reason": "surface_map_driving_not_implemented",
+        },
+    ]
 
 
 # ----------------------------------------------------------------------------

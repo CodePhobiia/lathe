@@ -75,6 +75,17 @@ key of the validate-stage report:
     "negative_count": 1,
     "all_required_present": true
   },
+  "provenance": {
+    "root_path": "examples/refs/asset_quality/industrial_crate",
+    "status": "loaded",
+    "files": {
+      "mood": {
+        "local_path": "examples/refs/asset_quality/industrial_crate/mood.json",
+        "status": "loaded",
+        "sha256": "..."
+      }
+    }
+  },
   "skipped_reasons": [],
   "warnings": [],
   "diagnostics": []
@@ -185,11 +196,26 @@ The loader never raises. Behaviour is:
 
 - Missing per-asset directory: return `None`.
 - Directory exists but a sub-file is missing: include the category
-  in `skipped` with `reason="reference_missing"`.
+  in `skipped` with `reason="reference_missing"` and mirror the
+  issue into `warnings` / `diagnostics`.
 - Sub-file exists but cannot be parsed as JSON or has an
   unparseable top-level shape: include the category in `skipped`
-  with `reason="reference_malformed"`.
+  with `reason="reference_malformed"` and mirror the issue into
+  `warnings` / `diagnostics`.
+- Loaded files carry provenance metadata: local path, status,
+  SHA-256, size, and list entry count where applicable. This same
+  file-content fingerprint participates in the executor build-cache
+  key, so editing a reference fixture invalidates stale cached builds.
+- Malformed list entries, such as a silhouette without `intent` or a
+  material without `target`, are skipped by the validator and surfaced
+  as `reference_malformed` warnings/diagnostics with the entry path.
 - Extra unknown fields on any sub-file are tolerated and ignored.
+
+When `experimental.references.use` is present, the resolver only
+accepts paths contained under the source `.lth` directory or under the
+repository root, using Lathe's shared `safe_resolve` path guard. Path
+escapes and absolute local paths do not load arbitrary directories; the
+executor publishes structured `reference_invalid_path` evidence instead.
 
 ## Design brief integration
 

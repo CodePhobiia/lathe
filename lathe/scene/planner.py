@@ -510,6 +510,9 @@ def _asset_overrides(item: Mapping[str, Any]) -> dict[str, Any]:
     state = item.get("state")
     if isinstance(state, Mapping) and state:
         overrides["state"] = _normal_json(state)
+    surface_overrides = item.get("surface_overrides")
+    if isinstance(surface_overrides, Mapping) and surface_overrides:
+        overrides["surface_overrides"] = _normal_json(surface_overrides)
     return overrides
 
 

@@ -1,0 +1,116 @@
+{
+  "asset_id": "quality_engine_environment_shop_counter",
+  "forbidden_failure_modes": [
+    "floating signage",
+    "material zones without semantic purpose",
+    "random decorative noise",
+    "random primitive stack",
+    "style mismatch between parts",
+    "unbounded procedural noise",
+    "unreadable material zones",
+    "unusable scale",
+    "weak thumbnail read"
+  ],
+  "materials": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "touch/contact material"
+    ]
+  },
+  "motifs": {
+    "allowed": [
+      "shop",
+      "environment",
+      "cozy",
+      "modular",
+      "trim bands",
+      "surface edge",
+      "support rhythm"
+    ],
+    "forbidden": [
+      "floating signage",
+      "unusable scale",
+      "random decorative noise",
+      "unreadable material zones"
+    ],
+    "placement_rules": [
+      "place motifs on usable edges, supports, and customer-facing faces"
+    ]
+  },
+  "object_family": "furniture",
+  "platform": {
+    "target": "realtime_environment_prop",
+    "texture_policy": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 3000,
+    "triangle_budget_warning": 4500
+  },
+  "proportion_policy": {
+    "exaggeration_allowed_when_style_requires": true,
+    "functional_scale_required": true,
+    "scale_anchors": [
+      "human contact surface",
+      "support structure",
+      "usable clearance"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.art_direction.v1",
+  "silhouette": {
+    "forbidden_shapes": [
+      "floating signage",
+      "unusable scale",
+      "random decorative noise",
+      "unreadable material zones"
+    ],
+    "required_distinctive_features": [
+      "usable counter surface",
+      "customer-facing display panel",
+      "raised shop sign",
+      "support base",
+      "trim bands"
+    ],
+    "target_strength": "high",
+    "thumbnail_size_px": 128
+  },
+  "style_intent": {
+    "audience": "realtime_environment_prop",
+    "genre": "fantasy",
+    "mood": [
+      "shop",
+      "environment",
+      "cozy",
+      "modular",
+      "storytelling"
+    ],
+    "quality_bar": "phase14c_universal_quality_warning",
+    "substyle": "modular fantasy shop counter with readable use and warm material storytelling"
+  },
+  "surface_story": {
+    "decals": [
+      "shop signage",
+      "trim labels"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "countertop rub",
+      "front-edge scuffs",
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "visual_hierarchy": {
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "primary_read": "furniture identity through usable counter surface",
+    "secondary_read": "functional parts and silhouette accents remain readable",
+    "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+  }
+}

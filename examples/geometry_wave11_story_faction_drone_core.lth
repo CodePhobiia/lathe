@@ -1,0 +1,55 @@
+module examples.geometry_wave11.story_faction_drone_core
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave11_story_faction_drone_core: hard_surface_prop {
+  intent {
+    role = "sleek drone core with faction markings and calibration story decals"
+    style = ["sleek", "prototype", "faction_marked"]
+    parts = [body, sensor_face, wing_socket_l, wing_socket_r, antenna_deck, calibration_panel]
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    scale = 0.9m
+  }
+
+  surface {
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    zones.body = ceramic_composite
+    zones.sensor_face = signal_glass
+    zones.wing_socket_l = brushed_aluminum
+    zones.wing_socket_r = brushed_aluminum
+    zones.antenna_deck = brushed_aluminum
+    zones.calibration_panel = signal_glass
+    story_decals = [calibration_id, calibration_stripe, unit_17, thin_color_bar]
+    faction_marks = [blue_wing_mark]
+    story_targets = [sensor_face, calibration_panel, antenna_deck]
+    story_density = high
+    story_asymmetry = left_bias
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1103
+      symmetry = x
+      style_pack = sleek_sci_fi
+      silhouette_profile = sleek_winged
+      detail_density = high
+      detail_zones = [body, sensor_face, antenna_deck]
+      zone_sensor_face_module_categories = [sensor_pod, antenna]
+      zone_sensor_face_module_count = 3
+      lod_levels = 4
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

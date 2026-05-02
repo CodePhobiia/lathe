@@ -1,0 +1,36 @@
+module examples.geometry_wave1.panelized_medical_case
+
+asset geometry_wave1_panelized_medical_case: hard_surface_prop {
+  intent {
+    role = "panelized medical equipment case"
+    style = ["clean", "field_medical", "wave1_geometry"]
+    parts = [body, lid, latch_plate, handle_l, handle_r, foot_l, foot_r]
+    materials = [painted_steel, white_plastic, red_marking]
+    scale = 0.7m
+  }
+
+  features {
+    density = high
+    allow = [panel_seam, layer_plate, corner_guard, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 113
+      symmetry = x
+      detail_density = high
+      edge_complexity = medium
+      panelization = hero
+      surface_layer_count = 3
+      modular_attachment_points = 2
+      detail_zones = [body, lid]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

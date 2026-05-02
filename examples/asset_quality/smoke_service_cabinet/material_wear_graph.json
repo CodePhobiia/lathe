@@ -1,0 +1,57 @@
+{
+  "asset_id": "smoke_service_cabinet",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 3,
+    "wear_mask_count": 4
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "cabinet_body"
+      ],
+      "zone_id": "painted_cabinet_metal"
+    },
+    {
+      "bound_nodes": [
+        "vent_stack",
+        "pull_handle"
+      ],
+      "zone_id": "dark_trim_metal"
+    },
+    {
+      "bound_nodes": [
+        "label_zone"
+      ],
+      "zone_id": "aged_service_label"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.1
+  },
+  "wear_masks": [
+    {
+      "bound_node_id": "base_plinth",
+      "mask_id": "base_grime"
+    },
+    {
+      "bound_node_id": "pull_handle",
+      "mask_id": "handle_polish"
+    },
+    {
+      "bound_node_id": "center_door_gap",
+      "mask_id": "door_gap_grime"
+    },
+    {
+      "bound_node_id": "label_zone",
+      "mask_id": "label_edge_wear"
+    }
+  ]
+}

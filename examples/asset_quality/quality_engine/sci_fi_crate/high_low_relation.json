@@ -1,0 +1,32 @@
+{
+  "asset_id": "quality_engine_sci_fi_crate",
+  "certification": {
+    "strict_blockers": [
+      "real_bake_not_executed"
+    ],
+    "strict_pass": false,
+    "warning_pass": true
+  },
+  "high_source": "quality_plan.json and semantic construction graph fixture",
+  "low_target": "proxy/sci_fi_crate_runtime.glb",
+  "maps": {
+    "ao": {
+      "evidence": "material_wear_graph.json",
+      "status": "proxy"
+    },
+    "curvature": {
+      "evidence": "material_wear_graph.json",
+      "status": "proxy"
+    },
+    "material_id": {
+      "evidence": "previews/material_ids.png",
+      "status": "present"
+    },
+    "normal": {
+      "reason": "No real high-to-low bake producer is executed in Phase 14C.",
+      "status": "skipped"
+    }
+  },
+  "mode": "proxy_bake",
+  "schema_version": "lathe.asset_quality.high_low_relation.v1"
+}

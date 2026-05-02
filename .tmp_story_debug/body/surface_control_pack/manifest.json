@@ -1,0 +1,240 @@
+{
+  "schema": "lathe.surface_control_pack.v1",
+  "target_resolution": 128,
+  "required_maps": [
+    "basecolor",
+    "normal",
+    "roughness"
+  ],
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "painted_steel",
+      "basecolor": [
+        104,
+        112,
+        122
+      ],
+      "metallic": 1.0,
+      "roughness": 0.42,
+      "roughness_range": [
+        0.28,
+        0.56
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "brushed_metal",
+      "wear": 0.2,
+      "normal_intensity": 0.08,
+      "wear_story": "none",
+      "story_marks": [
+        "unit_17",
+        "scrape_cluster",
+        "red_bar",
+        "heat_warning"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "screen_panel",
+      "material": "bare_metal",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.58,
+      "roughness_range": [
+        0.48,
+        0.68
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.1,
+      "normal_intensity": 0.07,
+      "wear_story": "none",
+      "story_marks": [
+        "unit_17",
+        "scrape_cluster",
+        "red_bar",
+        "heat_warning"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "warning_label",
+      "material": "bare_metal",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.58,
+      "roughness_range": [
+        0.48,
+        0.68
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.1,
+      "normal_intensity": 0.07,
+      "wear_story": "none",
+      "story_marks": [
+        "unit_17",
+        "scrape_cluster",
+        "red_bar",
+        "heat_warning"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    }
+  ],
+  "per_zone_constraints": {
+    "body": {
+      "material": "painted_steel",
+      "metallic": 1.0,
+      "roughness": 0.42
+    },
+    "screen_panel": {
+      "material": "bare_metal",
+      "metallic": 0.0,
+      "roughness": 0.58
+    },
+    "warning_label": {
+      "material": "bare_metal",
+      "metallic": 0.0,
+      "roughness": 0.58
+    }
+  },
+  "semantic_descriptors": {
+    "surface_program": "",
+    "policy": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "material_layers": [],
+    "wear_story": ""
+  },
+  "images": {
+    "uv_layout": "surface_control_pack\\uv_layout.png",
+    "padded_island_mask": "surface_control_pack\\padded_island_mask.png",
+    "material_zone_mask": "surface_control_pack\\material_zone_mask.png",
+    "ao": "surface_control_pack\\ao.png",
+    "curvature": "surface_control_pack\\curvature.png",
+    "normal_reference": "surface_control_pack\\normal_reference.png",
+    "preview": "surface_control_pack\\preview.png"
+  },
+  "material_id_layout": {
+    "per_part": {
+      "body": "matid_01_painted_steel",
+      "screen_panel": "matid_02_signal_glass",
+      "warning_label": "matid_03_bare_metal"
+    }
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "hero",
+    "asymmetry": "hero_asymmetric",
+    "targets": [
+      "body"
+    ],
+    "placement_count": 4,
+    "placements": [
+      {
+        "decal": "unit_17",
+        "target_part": "body",
+        "material": "painted_steel",
+        "material_id": "matid_01_painted_steel",
+        "anchor_uv": [
+          0.722954,
+          0.431631
+        ],
+        "scale": 0.235695,
+        "rotation_deg": 3,
+        "layer": "story",
+        "mask_id": "story_01_unit_17"
+      },
+      {
+        "decal": "scrape_cluster",
+        "target_part": "body",
+        "material": "painted_steel",
+        "material_id": "matid_01_painted_steel",
+        "anchor_uv": [
+          0.532851,
+          0.181213
+        ],
+        "scale": 0.397182,
+        "rotation_deg": 3,
+        "layer": "story",
+        "mask_id": "story_02_scrape_cluster"
+      },
+      {
+        "decal": "red_bar",
+        "target_part": "body",
+        "material": "painted_steel",
+        "material_id": "matid_01_painted_steel",
+        "anchor_uv": [
+          0.874367,
+          0.137508
+        ],
+        "scale": 0.385102,
+        "rotation_deg": -9,
+        "layer": "story",
+        "mask_id": "story_03_red_bar"
+      },
+      {
+        "decal": "heat_warning",
+        "target_part": "body",
+        "material": "painted_steel",
+        "material_id": "matid_01_painted_steel",
+        "anchor_uv": [
+          0.434605,
+          0.834347
+        ],
+        "scale": 0.344934,
+        "rotation_deg": -9,
+        "layer": "story",
+        "mask_id": "story_04_heat_warning"
+      }
+    ]
+  }
+}

@@ -4,9 +4,16 @@ from typing import Any
 
 
 def build_atlas_assembly_ir(
-    surface_cfg: dict[str, Any], control_pack: dict[str, Any], outputs: dict[str, Any]
+    surface_cfg: dict[str, Any],
+    control_pack: dict[str, Any],
+    outputs: dict[str, Any],
+    *,
+    uv_organization: dict[str, Any] | None = None,
+    chart_manifest: list[dict[str, Any]] | None = None,
+    material_id_layout: dict[str, Any] | None = None,
+    surface_story_placement_plan: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    ir = {
         "schema": "lathe.atlas_assembly_ir.v1",
         "mode": "zone_first",
         "control_pack": control_pack.get("manifest_uri"),
@@ -17,3 +24,12 @@ def build_atlas_assembly_ir(
         },
         "outputs": {name: entry["uri"] for name, entry in outputs.items()},
     }
+    if uv_organization:
+        ir["uv_organization"] = dict(uv_organization)
+    if chart_manifest:
+        ir["chart_manifest"] = list(chart_manifest)
+    if material_id_layout:
+        ir["material_id_layout"] = dict(material_id_layout)
+    if surface_story_placement_plan:
+        ir["surface_story_placement_plan"] = dict(surface_story_placement_plan)
+    return ir

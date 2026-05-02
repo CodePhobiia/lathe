@@ -1,0 +1,382 @@
+{
+  "art_direction_ir": {
+    "asset_id": "quality_engine_sci_fi_crate",
+    "family": "sci_fi_crate",
+    "family_metadata_summary": {
+      "coverage": 1.0,
+      "missing_required_count": 0,
+      "required_rule_count": 9
+    },
+    "forbidden_failure_modes": [
+      "chrome consumer finish",
+      "flat unbroken cube",
+      "material zones without semantic purpose",
+      "random greebles",
+      "random primitive stack",
+      "style mismatch between parts",
+      "toy-like proportions",
+      "unbounded procedural noise",
+      "weak thumbnail read"
+    ],
+    "forbidden_visual_failure_modes": [
+      "chrome consumer finish",
+      "flat unbroken cube",
+      "material zones without semantic purpose",
+      "random greebles",
+      "random primitive stack",
+      "style mismatch between parts",
+      "toy-like proportions",
+      "unbounded procedural noise",
+      "weak thumbnail read"
+    ],
+    "materials": {
+      "contrast_policy": "primary/secondary/accent/readability",
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay",
+        "feature-linked material: reinforced box shell"
+      ]
+    },
+    "motifs": {
+      "allowed": [
+        "sci-fi",
+        "industrial",
+        "rugged",
+        "field-repaired",
+        "reinforced corners",
+        "panel seams",
+        "labels"
+      ],
+      "forbidden": [
+        "flat unbroken cube",
+        "random greebles",
+        "chrome consumer finish",
+        "toy-like proportions"
+      ],
+      "placement_rules": [
+        "place motifs on panels, corners, latches, and decals"
+      ]
+    },
+    "object_family": "container",
+    "platform": {
+      "target": "mobile_realtime",
+      "texture_policy": "deterministic_pbr_proxy",
+      "triangle_budget_strict": 1500,
+      "triangle_budget_warning": 2500
+    },
+    "proportion_policy": {
+      "exaggeration_allowed_when_style_requires": true,
+      "functional_scale_required": true,
+      "scale_anchors": [
+        "body volume",
+        "lid/seam scale",
+        "handle and foot clearance"
+      ]
+    },
+    "reference_summary": {
+      "has_reference_board": false,
+      "material_count": 0,
+      "negative_count": 0,
+      "silhouette_count": 0
+    },
+    "schema_version": "lathe.asset_quality.art_direction_ir.v1",
+    "silhouette": {
+      "forbidden_shapes": [
+        "flat unbroken cube",
+        "random greebles",
+        "chrome consumer finish",
+        "toy-like proportions"
+      ],
+      "required_distinctive_features": [
+        "reinforced box shell",
+        "corner guards",
+        "recessed panels",
+        "front latch",
+        "side handles"
+      ],
+      "target_strength": "high",
+      "thumbnail_size_px": 128
+    },
+    "style_intent": {
+      "audience": "mobile_realtime",
+      "genre": "sci-fi",
+      "mood": [
+        "sci-fi",
+        "industrial",
+        "rugged",
+        "field-repaired",
+        "hard-surface"
+      ],
+      "quality_bar": "phase14c_universal_quality_warning",
+      "substyle": "used modular sci-fi cargo crate with functional construction logic"
+    },
+    "surface_story": {
+      "decals": [
+        "warning labels",
+        "serial marks",
+        "orientation arrows"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ],
+      "wear_logic": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ]
+    },
+    "visual_hierarchy": {
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "primary_read": "container identity through reinforced box shell",
+      "secondary_read": "functional parts and silhouette accents remain readable",
+      "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+    }
+  },
+  "asset_id": "quality_engine_sci_fi_crate",
+  "certification_targets": {
+    "dimensions": [
+      "silhouette_strength",
+      "proportion_intent",
+      "material_contrast",
+      "detail_hierarchy",
+      "motif_coherence",
+      "surface_storytelling",
+      "functional_readability",
+      "style_consistency",
+      "procedural_noise_penalty"
+    ],
+    "required_dimensions": [
+      "silhouette_strength",
+      "proportion_intent",
+      "material_contrast",
+      "detail_hierarchy",
+      "motif_coherence",
+      "surface_storytelling",
+      "functional_readability",
+      "style_consistency",
+      "procedural_noise_penalty"
+    ],
+    "strict_min_score": 90,
+    "strict_minimum": 0.9,
+    "warning_min_score": 75,
+    "warning_minimum": 0.75
+  },
+  "detail_density_zones": {
+    "primary": [
+      "reinforced_shell"
+    ],
+    "secondary": [
+      "outer_frame",
+      "recessed_side_handles"
+    ],
+    "tertiary": [
+      "edge_wear_anchors",
+      "front_recessed_panel"
+    ]
+  },
+  "detail_requirements": {
+    "density_zones": {
+      "primary": [
+        "reinforced_shell"
+      ],
+      "secondary": [
+        "outer_frame",
+        "recessed_side_handles"
+      ],
+      "tertiary": [
+        "edge_wear_anchors",
+        "front_recessed_panel"
+      ]
+    },
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "tertiary_detail_budget": "bounded"
+  },
+  "family": "sci_fi_crate",
+  "likely_failure_modes": [
+    "chrome consumer finish",
+    "flat unbroken cube",
+    "material zones without semantic purpose",
+    "random greebles",
+    "random primitive stack",
+    "style mismatch between parts",
+    "toy-like proportions",
+    "unbounded procedural noise",
+    "weak thumbnail read"
+  ],
+  "material_requirements": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "feature-linked material: reinforced box shell"
+    ]
+  },
+  "material_separation_requirements": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "feature-linked material: reinforced box shell"
+    ]
+  },
+  "metrics": {
+    "detail_hierarchy": 1.0,
+    "functional_readability": 0.77,
+    "material_contrast": 0.945,
+    "motif_coherence": 0.78,
+    "procedural_noise_penalty": 0.11,
+    "proportion_intent": 0.785,
+    "silhouette_strength": 1.0,
+    "style_consistency": 1.0,
+    "surface_storytelling": 0.92
+  },
+  "motif_language": {
+    "allowed": [
+      "sci-fi",
+      "industrial",
+      "rugged",
+      "field-repaired",
+      "reinforced corners",
+      "panel seams",
+      "labels"
+    ],
+    "forbidden": [
+      "flat unbroken cube",
+      "random greebles",
+      "chrome consumer finish",
+      "toy-like proportions"
+    ],
+    "placement_rules": [
+      "place motifs on panels, corners, latches, and decals"
+    ]
+  },
+  "motif_requirements": {
+    "allowed": [
+      "sci-fi",
+      "industrial",
+      "rugged",
+      "field-repaired",
+      "reinforced corners",
+      "panel seams",
+      "labels"
+    ],
+    "forbidden": [
+      "flat unbroken cube",
+      "random greebles",
+      "chrome consumer finish",
+      "toy-like proportions"
+    ],
+    "placement_rules": [
+      "place motifs on panels, corners, latches, and decals"
+    ]
+  },
+  "object_family": "container",
+  "platform": {
+    "target": "mobile_realtime",
+    "texture_policy": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 1500,
+    "triangle_budget_warning": 2500
+  },
+  "primary_secondary_tertiary": {
+    "primary": [
+      "reinforced_shell"
+    ],
+    "secondary": [
+      "outer_frame",
+      "recessed_side_handles"
+    ],
+    "tertiary": [
+      "edge_wear_anchors",
+      "front_recessed_panel"
+    ]
+  },
+  "proportion_requirements": {
+    "exaggeration_allowed_when_style_requires": true,
+    "functional_scale_required": true,
+    "scale_anchors": [
+      "body volume",
+      "lid/seam scale",
+      "handle and foot clearance"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.quality_plan.v1",
+  "semantic_critique": {
+    "asset_id": "quality_engine_sci_fi_crate",
+    "issue_count": 0,
+    "issues": [],
+    "repairs": [],
+    "schema_version": "lathe.asset_quality.semantic_critique.v1",
+    "source_quality_plan": "quality_plan.json",
+    "summary": {
+      "highest_priority_issue": null,
+      "status": "pass"
+    }
+  },
+  "silhouette_requirements": [
+    "reinforced box shell",
+    "corner guards",
+    "recessed panels",
+    "front latch",
+    "side handles",
+    "body_shell",
+    "corner_guards",
+    "recessed_panels",
+    "lid_seam"
+  ],
+  "source_art_direction": "art_direction.json",
+  "source_family_metadata": "family_grammar_coverage.json",
+  "style_pack": {
+    "present": false
+  },
+  "surface_story": {
+    "decals": [
+      "warning labels",
+      "serial marks",
+      "orientation arrows"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "surface_story_requirements": {
+    "decals": [
+      "warning labels",
+      "serial marks",
+      "orientation arrows"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "visual_hierarchy": {
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "primary_read": "container identity through reinforced box shell",
+    "secondary_read": "functional parts and silhouette accents remain readable",
+    "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+  }
+}

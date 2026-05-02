@@ -16,12 +16,19 @@ import trimesh
 from .assembly_kernel import compile_assembly_blueprint
 from .asset_graph import AssetGraph
 from .blueprints import resolve_blueprint
-from .candidate_search import apply_candidate_params, generate_candidate_params, objective_weights
+from .candidate_search import (
+    apply_candidate_params,
+    apply_quality_adapters_to_candidate_params,
+    apply_style_modifiers_to_candidate_params,
+    generate_candidate_params,
+    objective_weights,
+)
 from .constants import RNG_PRIME_OFFSET
 from .errors import ContractViolation
 from .feature_grammar import compile_feature_enhancements
 from .fidelity import infer_fidelity_profile
 from .geometry import resolve_geometry_kernel
+from .geometry_detail import geometry_detail_controls_from_authoring
 from .geometry_kernel import fuse_shape_ir
 from .repair_executor import execute_shape_repairs
 from .repair_planner import plan_shape_repairs
@@ -274,6 +281,63 @@ def _selection_notes(
     return notes
 
 
+def _game_pipeline_hints(asset_graph: AssetGraph, shape_ir: ShapeIR) -> dict[str, Any]:
+    """Collect authored game-asset structure hints produced by generation."""
+    controls = geometry_detail_controls_from_authoring(asset_graph.authoring)
+    optimize = asset_graph.authoring.get("optimize", {})
+    physics = asset_graph.authoring.get("physics", {})
+    package = asset_graph.authoring.get("package", {})
+    if not isinstance(optimize, dict):
+        optimize = {}
+    if not isinstance(physics, dict):
+        physics = {}
+    if not isinstance(package, dict):
+        package = {}
+
+    lod_levels = int(controls.lod_levels or optimize.get("lods", 0) or 0)
+    collision_proxy = str(controls.collision_proxy or physics.get("collision", "") or "")
+    export_profiles = list(controls.export_profiles)
+    package_formats = package.get("formats", [])
+    if isinstance(package_formats, list):
+        export_profiles = list(dict.fromkeys([*export_profiles, *[str(item) for item in package_formats]]))
+    material_id_strategy = (
+        "zone_and_part_material_ids"
+        if shape_ir.assessment.get("geometry_detail_zone_count", 0)
+        else "part_material_ids"
+    )
+    hints: dict[str, Any] = {
+        "material_id_strategy": material_id_strategy,
+        "uv_island_strategy": "preserve_part_borders_and_detail_zones",
+        "bake_target": "high_to_low" if lod_levels else "single_mesh",
+    }
+    if lod_levels:
+        hints["lod_levels_requested"] = lod_levels
+        hints["lod_policy"] = "author_requested"
+    if controls.highlow_mode:
+        hints["highlow_mode"] = controls.highlow_mode
+        hints["highlow_low_lod"] = int(controls.highlow_low_lod)
+        hints["highlow_bake_cage_offset_cm"] = float(controls.highlow_bake_cage_offset_cm)
+    if collision_proxy:
+        hints["collision_proxy"] = collision_proxy
+    if export_profiles:
+        hints["export_profiles"] = export_profiles
+    if shape_ir.assessment.get("geometry_detail_module_sockets"):
+        hints["module_sockets"] = list(shape_ir.assessment["geometry_detail_module_sockets"])
+    if shape_ir.assessment.get("geometry_detail_attachment_motifs"):
+        hints["attachment_motifs"] = list(shape_ir.assessment["geometry_detail_attachment_motifs"])
+    if shape_ir.assessment.get("geometry_detail_module_categories"):
+        hints["module_categories"] = list(shape_ir.assessment["geometry_detail_module_categories"])
+    if shape_ir.assessment.get("geometry_detail_zones"):
+        hints["detail_zones"] = list(shape_ir.assessment["geometry_detail_zones"])
+    if shape_ir.assessment.get("geometry_detail_style_packs"):
+        hints["style_packs"] = list(shape_ir.assessment["geometry_detail_style_packs"])
+    if shape_ir.assessment.get("geometry_detail_silhouette_profiles"):
+        hints["silhouette_profiles"] = list(shape_ir.assessment["geometry_detail_silhouette_profiles"])
+    if shape_ir.assessment.get("geometry_detail_silhouette_motifs"):
+        hints["silhouette_motifs"] = list(shape_ir.assessment["geometry_detail_silhouette_motifs"])
+    return hints
+
+
 def _runtime_from_shape_ir(
     asset_graph: AssetGraph,
     shape_ir: ShapeIR,
@@ -289,6 +353,7 @@ def _runtime_from_shape_ir(
     geometry_kernel_id: str | None = None,
 ) -> dict[str, Any]:
     part_colors = {part.name: _make_color(part.name) for part in asset_graph.parts}
+    game_pipeline_hints = _game_pipeline_hints(asset_graph, shape_ir)
     fused_mesh_ir, integration_report = fuse_shape_ir(shape_ir, fidelity_profile)
     if geometry_kernel_id and isinstance(integration_report, dict):
         integration_report.setdefault("geometry_kernel", geometry_kernel_id)
@@ -328,6 +393,9 @@ def _runtime_from_shape_ir(
                         "native_scaffold": True,
                         "mode": mode,
                         "blueprint_id": shape_ir.blueprint_id,
+                        "quality_plan_consumed": bool(conditioning.get("quality_plan_consumed")),
+                        "quality_generation_source_stage": conditioning.get("quality_generation_source_stage"),
+                        "quality_conditioning": dict(conditioning.get("quality_conditioning", {})),
                     },
                     "blueprint_id": shape_ir.blueprint_id,
                     "primitives_used": list(shape_ir.primitives_used),
@@ -335,6 +403,7 @@ def _runtime_from_shape_ir(
                     "repairs_applied": repairs_applied,
                     "feature_report": feature_report,
                     "candidate_params": candidate_params,
+                    "game_pipeline_hints": game_pipeline_hints,
                     "integration_report": integration_report,
                     "mesh_ir": None,
                 },
@@ -381,6 +450,9 @@ def _runtime_from_shape_ir(
                 "native_scaffold": True,
                 "mode": mode,
                 "blueprint_id": shape_ir.blueprint_id,
+                "quality_plan_consumed": bool(conditioning.get("quality_plan_consumed")),
+                "quality_generation_source_stage": conditioning.get("quality_generation_source_stage"),
+                "quality_conditioning": dict(conditioning.get("quality_conditioning", {})),
             },
             "blueprint_id": shape_ir.blueprint_id,
             "primitives_used": list(shape_ir.primitives_used),
@@ -388,6 +460,7 @@ def _runtime_from_shape_ir(
             "repairs_applied": repairs_applied,
             "feature_report": feature_report,
             "candidate_params": candidate_params,
+            "game_pipeline_hints": game_pipeline_hints,
             "integration_report": integration_report,
             "mesh_ir": mesh_ir_payload,
         },
@@ -425,6 +498,10 @@ def compile_scaffold_candidates(
     for index in range(search_count):
         rng = _candidate_rng(seed, index)
         params = generate_candidate_params(asset_graph, seed=seed, candidate_index=index, fidelity=fidelity)
+        params = apply_quality_adapters_to_candidate_params(
+            params, conditioning.get("quality_conditioning")
+        )
+        params = apply_style_modifiers_to_candidate_params(params, asset_graph)
         blueprint = apply_candidate_params(
             resolve_blueprint(asset_graph, conditioning, rng, index), params, asset_graph
         )
@@ -459,6 +536,46 @@ def compile_scaffold_candidates(
                 break
             round_index += 1
         feature_report["shape_assessment"] = dict(repaired_shape_ir.assessment)
+        feature_report["geometry_detail_feature_count"] = int(
+            repaired_shape_ir.assessment.get("geometry_detail_feature_count", 0) or 0
+        )
+        feature_report["geometry_detail_feature_types"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_feature_types", [])
+        )
+        feature_report["geometry_detail_operator_counts"] = dict(
+            repaired_shape_ir.assessment.get("geometry_detail_operator_counts", {})
+        )
+        feature_report["geometry_detail_zone_count"] = int(
+            repaired_shape_ir.assessment.get("geometry_detail_zone_count", 0) or 0
+        )
+        feature_report["geometry_detail_zones"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_zones", [])
+        )
+        feature_report["geometry_detail_edge_metadata"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_edge_metadata", [])
+        )
+        feature_report["geometry_detail_style_modifiers"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_style_modifiers", [])
+        )
+        feature_report["geometry_detail_style_packs"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_style_packs", [])
+        )
+        feature_report["geometry_detail_module_sockets"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_module_sockets", [])
+        )
+        feature_report["geometry_detail_attachment_motifs"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_attachment_motifs", [])
+        )
+        feature_report["geometry_detail_module_categories"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_module_categories", [])
+        )
+        feature_report["geometry_detail_silhouette_profiles"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_silhouette_profiles", [])
+        )
+        feature_report["geometry_detail_silhouette_motifs"] = list(
+            repaired_shape_ir.assessment.get("geometry_detail_silhouette_motifs", [])
+        )
+        feature_report["game_pipeline_hints"] = _game_pipeline_hints(asset_graph, repaired_shape_ir)
         feature_report["feature_ops_used"] = sorted(
             set(feature_report.get("feature_ops_used", []))
             | set(repaired_shape_ir.assessment.get("feature_types", []))
@@ -539,5 +656,6 @@ def compile_scaffold_candidates(
             "repairs": repairs,
             "authoritative_candidate_reason": "native_assembly_blueprint",
             "geometry_kernel": geometry_kernel_id,
+            "game_pipeline_hints": _game_pipeline_hints(asset_graph, first_ir),
         },
     }

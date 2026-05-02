@@ -1,0 +1,50 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "Blade, fuller, guard, grip, and pommel remain traceable semantic parts.",
+    "focal_point_readability": "The viewer reads the guard socket and central fuller before secondary wrap details.",
+    "material_storytelling": "Steel, leather, and brass zones separate by role, wear, and roughness language.",
+    "ornament_intentionality": "Detail follows blade centerline, guard collars, grip wrap, and pommel bevels rather than random striping.",
+    "proportion_quality": "Long blade, narrow grip, broad guard, and weighted pommel keep a believable medieval weapon silhouette.",
+    "silhouette_readability": "The weapon reads as a straight double-edged longsword at thumbnail distance."
+  },
+  "asset_id": "hero_sword",
+  "certification_tier": "phase14c_hero_art_direction_warning",
+  "family": "hero_sword",
+  "platform_profile": {
+    "target": "game_runtime_proxy",
+    "texture_budget": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 7000,
+    "triangle_budget_warning": 9000
+  },
+  "required_features": [
+    "straight tapered steel blade",
+    "central fuller with readable termination",
+    "crossguard wider than blade",
+    "wrapped leather grip",
+    "brass guard and pommel material zone",
+    "edge wear and grip handling wear intent",
+    "thumbnail-readable silhouette hierarchy"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "source": {
+    "lathe_asset": "examples/hero_sword.lth",
+    "package_dir": "dist_sword/hero_sword"
+  },
+  "style": {
+    "forbidden": [
+      "random primitive stack",
+      "noisy decorative striping",
+      "toy-like guard scale",
+      "unreadable material zones",
+      "sci-fi weapon language"
+    ],
+    "keywords": [
+      "medieval",
+      "hard-surface",
+      "hero weapon",
+      "clean silhouette",
+      "crafted but runtime-safe"
+    ],
+    "theme": "artist-directed medieval hero longsword with readable materials and restrained ornament"
+  }
+}

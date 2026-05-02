@@ -1,0 +1,44 @@
+module examples.geometry_wave4.ancient_patina_relic_terminal
+
+asset geometry_wave4_ancient_patina_relic_terminal: hard_surface_prop {
+  intent {
+    role = "ancient patina terminal with oxidized brass, dark wood, and glass accents"
+    style = ["ancient", "ornamental", "mysterious"]
+    parts = [body, frame, screen_panel, side_trim_l, side_trim_r, base_plinth, socket_plate]
+    materials = [dark_wood, aged_brass, emerald_glass]
+    scale = 1.2m
+  }
+
+  surface {
+    materials = [dark_wood, aged_brass, emerald_glass]
+    material_layers = [aged_brass, dark_wood, emerald_glass]
+    wear_story = ancient
+    wear_level = hero
+    story_decals = [etched_runes, rubbed_edges, crest_mark]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 402
+      symmetry = radial
+      detail_density = hero
+      style_modifiers = [ornamental, elegant]
+      edge_treatment = beveled
+      detail_motifs = [raised_ridge, inset_panel, radial_detail_array, trim_strip]
+      attachment_motifs = [ornament, guard_bar, strap]
+      attachment_count = 5
+      detail_zones = [body, frame, screen_panel, socket_plate]
+      zone_frame_motifs = [raised_ridge, radial_detail_array, trim_strip]
+      zone_frame_radial_detail_repeats = 9
+      zone_screen_panel_motifs = [inset_panel, panel_seam]
+      zone_socket_plate_motifs = [socket_point, bolt_grid]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -1,0 +1,43 @@
+module examples.geometry_wave9.real_highlow_tool_head
+
+asset geometry_wave9_real_highlow_tool_head: hard_surface_prop {
+  intent {
+    role = "blade-like repair tool with real LOD-pair high/low surface relation"
+    style = ["prototype", "industrial", "tool"]
+    parts = [body, blade_head, guard_cowl, handle_frame, socket_plate, power_cell]
+    materials = [painted_steel, bare_metal, grip_rubber]
+    scale = 0.7m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, grip_rubber]
+    material_layers = [painted_steel, bare_metal, grip_rubber]
+    wear_story = prototype
+    story_decals = [calibration_id, handled_edges]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 904
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, modular]
+      silhouette_profile = blade_like
+      silhouette_motifs = [blade, guard_cowl, handle, spine]
+      module_categories = [blade, power_cell]
+      module_count = 2
+      lod_levels = 4
+      highlow_mode = lod_pair
+      highlow_low_lod = 3
+      highlow_bake_cage_offset_cm = 1.25
+      detail_zones = [body, blade_head, guard_cowl, handle_frame]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

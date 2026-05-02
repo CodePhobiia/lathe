@@ -1,0 +1,24 @@
+{
+  "asset_id": "smoke_service_cabinet",
+  "coverage": 0.8,
+  "family": "service_cabinet",
+  "missing_rules": [
+    "strict_renderer_preview"
+  ],
+  "required_rules": [
+    "cabinet_body",
+    "door_panels",
+    "vent_or_handle",
+    "label_zone",
+    "base_contact_wear"
+  ],
+  "rules_used": [
+    "cabinet_body",
+    "door_panels",
+    "vent_or_handle",
+    "label_zone",
+    "base_contact_wear"
+  ],
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "warning_status": "pass"
+}

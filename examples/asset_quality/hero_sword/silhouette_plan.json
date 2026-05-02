@@ -1,0 +1,107 @@
+{
+  "asset_id": "hero_sword",
+  "focal_points": [
+    {
+      "node_id": "guard_socket_focal",
+      "priority": 1,
+      "reason": "Guard center block, collars, and blade shoulder create the main read."
+    },
+    {
+      "node_id": "central_fuller",
+      "priority": 2,
+      "reason": "The fuller gives the blade a designed centerline without noisy repetition."
+    },
+    {
+      "node_id": "round_pommel",
+      "priority": 3,
+      "reason": "The pommel balances the blade and terminates the silhouette."
+    }
+  ],
+  "metrics": {
+    "focal_point_readability": 0.91,
+    "material_separation": 0.93,
+    "ornament_intentionality": 0.9,
+    "procedural_noise_penalty": 0.08,
+    "proportion_quality": 0.92,
+    "silhouette_strength": 0.94,
+    "thumbnail_readability": 0.92
+  },
+  "ornament_rules": [
+    {
+      "allowed_nodes": [
+        "central_fuller",
+        "blade_edge_highlights"
+      ],
+      "rule_id": "blade_ornament_follows_centerline"
+    },
+    {
+      "allowed_nodes": [
+        "grip_wrap_ridges"
+      ],
+      "rule_id": "grip_detail_wraps_hand_contact_area"
+    },
+    {
+      "allowed_nodes": [
+        "guard_collar_upper",
+        "guard_collar_lower",
+        "pommel_bevels"
+      ],
+      "rule_id": "metal_trim_marks_functional_transitions"
+    }
+  ],
+  "primary_read": "straight double-edged longsword: long tapered blade, wide crossguard, wrapped grip, compact pommel",
+  "procedural_controls": {
+    "forbidden_noise": [
+      "unbounded strip repetition",
+      "detail unrelated to semantic node",
+      "material changes without construction reason"
+    ],
+    "max_blade_detail_families": 3,
+    "max_grip_wrap_bands": 10,
+    "repetition_breaks": [
+      "fuller terminates before tip",
+      "guard collars interrupt blade-to-grip transition",
+      "pommel terminates wrap rhythm"
+    ]
+  },
+  "proportion_rules": {
+    "blade_to_handle_ratio": 3.4,
+    "guard_width_to_blade_width": 4.6,
+    "pommel_width_to_grip_width": 1.65,
+    "target_overall_scale_m": 1.25
+  },
+  "schema_version": "lathe.asset_quality.silhouette_plan.v1",
+  "silhouette_hierarchy": [
+    {
+      "nodes": [
+        "long_tapered_blade",
+        "sharp_tip"
+      ],
+      "read": "primary",
+      "role": "weapon identity"
+    },
+    {
+      "nodes": [
+        "crossguard",
+        "round_pommel"
+      ],
+      "read": "secondary",
+      "role": "scale and balance"
+    },
+    {
+      "nodes": [
+        "central_fuller",
+        "leather_wrapped_grip",
+        "guard_collars"
+      ],
+      "read": "tertiary",
+      "role": "crafted detail"
+    }
+  ],
+  "thumbnail_checks": {
+    "background_contrast": "blade and brass trim remain separated from neutral preview background",
+    "expected_64px_read": "sword",
+    "long_axis_unbroken": true,
+    "negative_space_around_guard": true
+  }
+}

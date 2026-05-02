@@ -1,0 +1,38 @@
+module examples.geometry_wave1.greebled_data_core
+
+asset geometry_wave1_greebled_data_core: hard_surface_prop {
+  intent {
+    role = "greebled data core"
+    style = ["sci_fi", "server_room", "wave1_geometry"]
+    parts = [body, screen_panel, vent_panel, socket_plate, base_plate]
+    materials = [painted_steel, smoked_glass, emissive_blue]
+    scale = 1.0m
+  }
+
+  features {
+    density = hero
+    allow = [bolt_grid, socket_point, groove_channel, raised_ridge, layer_plate]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 125
+      symmetry = x
+      detail_density = hero
+      panelization = medium
+      groove_density = medium
+      ridge_density = high
+      greeble_density = hero
+      surface_layer_count = 2
+      modular_attachment_points = 8
+      detail_zones = [body, socket_plate, vent_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

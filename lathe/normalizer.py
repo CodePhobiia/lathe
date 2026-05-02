@@ -61,7 +61,19 @@ CANONICAL_SCENE_KEYS = [
     "values",
     "styles",
     "regions",
+    "groups",
+    "placement_zones",
+    "modules",
+    "kits",
+    "variant_families",
+    "generators",
+    "biomes",
+    "scatters",
+    "environments",
     "objects",
+    "arrays",
+    "sockets",
+    "attachments",
     "relationships",
     "cameras",
     "lights",
@@ -314,6 +326,7 @@ def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
         (out["build"]["interfaces"], "sockets"),
         (out["build"]["interfaces"], "pivots"),
         (out["build"]["interfaces"], "anchors"),
+        (out["build"]["interfaces"], "connections"),
         (out["package"], "formats"),
         (out["package"], "previews"),
         (out["publish"], "tags"),
@@ -381,8 +394,56 @@ def _normalize_scene(scene: dict[str, Any]) -> dict[str, Any]:
         [_normalize_scene_child(item, "scene_region") for item in out.get("regions", [])],
         key=lambda d: d["name"],
     )
+    out["groups"] = sorted(
+        [_normalize_scene_child(item, "scene_group") for item in out.get("groups", [])],
+        key=lambda d: d["name"],
+    )
+    out["placement_zones"] = sorted(
+        [_normalize_scene_child(item, "scene_placement_zone") for item in out.get("placement_zones", [])],
+        key=lambda d: d["name"],
+    )
+    out["modules"] = sorted(
+        [_normalize_scene_child(item, "scene_module") for item in out.get("modules", [])],
+        key=lambda d: d["name"],
+    )
+    out["kits"] = sorted(
+        [_normalize_scene_child(item, "scene_kit") for item in out.get("kits", [])],
+        key=lambda d: d["name"],
+    )
+    out["variant_families"] = sorted(
+        [_normalize_scene_child(item, "scene_variant_family") for item in out.get("variant_families", [])],
+        key=lambda d: d["name"],
+    )
+    out["generators"] = sorted(
+        [_normalize_scene_child(item, "scene_generator") for item in out.get("generators", [])],
+        key=lambda d: d["name"],
+    )
+    out["biomes"] = sorted(
+        [_normalize_scene_child(item, "scene_biome") for item in out.get("biomes", [])],
+        key=lambda d: d["name"],
+    )
+    out["scatters"] = sorted(
+        [_normalize_scene_child(item, "scene_scatter") for item in out.get("scatters", [])],
+        key=lambda d: d["name"],
+    )
+    out["environments"] = sorted(
+        [_normalize_scene_child(item, "scene_environment") for item in out.get("environments", [])],
+        key=lambda d: d["name"],
+    )
     out["objects"] = sorted(
         [_normalize_scene_child(item, "scene_object") for item in out.get("objects", [])],
+        key=lambda d: d["name"],
+    )
+    out["arrays"] = sorted(
+        [_normalize_scene_child(item, "scene_array") for item in out.get("arrays", [])],
+        key=lambda d: d["name"],
+    )
+    out["sockets"] = sorted(
+        [_normalize_scene_child(item, "scene_socket") for item in out.get("sockets", [])],
+        key=lambda d: d["name"],
+    )
+    out["attachments"] = sorted(
+        [_normalize_scene_child(item, "scene_attachment") for item in out.get("attachments", [])],
         key=lambda d: d["name"],
     )
     out["relationships"] = sorted(
@@ -526,6 +587,10 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
     out["spaces"] = sorted(
         [_normalize_space_decl(item) for item in out.get("spaces", [])], key=lambda d: d["name"]
     )
+    out["worlds"] = sorted(
+        [{**_normalize_scene(item), "node_type": "world"} for item in out.get("worlds", [])],
+        key=lambda d: d["name"],
+    )
     out["scenes"] = sorted(
         [_normalize_scene(item) for item in out.get("scenes", [])], key=lambda d: d["name"]
     )
@@ -605,6 +670,7 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         "tests": out["tests"],
         "benchmarks": out["benchmarks"],
         "spaces": out["spaces"],
+        "worlds": out["worlds"],
         "scenes": out["scenes"],
         "assets": out["assets"],
         "variants": out["variants"],

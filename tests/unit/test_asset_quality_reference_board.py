@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.design_brief import evaluate_design_brief
 from lathe.asset_quality.reference_board import (
     REFERENCE_BOARD_VERSION,
@@ -40,7 +39,6 @@ from lathe.asset_quality.reference_board import (
     load_reference_board,
 )
 from lathe.core.stages.validate import _PIPELINE
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _INDUSTRIAL_FIXTURES = (
@@ -247,6 +245,9 @@ def test_load_reference_board_loads_industrial_crate_fixtures() -> None:
     assert isinstance(raw["negatives"], list)
     assert len(raw["negatives"]) == 3
     assert raw["skipped"] == []
+    assert raw["provenance"]["status"] == "loaded"
+    assert raw["provenance"]["files"]["mood"]["status"] == "loaded"
+    assert raw["provenance"]["files"]["mood"]["sha256"]
 
 
 def test_load_reference_board_skips_missing_subfile(tmp_path: Path) -> None:
@@ -280,6 +281,31 @@ def test_load_reference_board_skips_malformed_json(tmp_path: Path) -> None:
         entry for entry in raw["skipped"] if entry["reason"] == "reference_malformed"
     ]
     assert any(entry["category"] == "mood" for entry in malformed)
+    assert raw["warnings"]
+    assert raw["diagnostics"]
+    assert raw["provenance"]["files"]["mood"]["status"] == "malformed"
+
+
+def test_evaluate_reference_board_reports_malformed_entries() -> None:
+    raw = {
+        "asset_name": "demo_asset",
+        "family": None,
+        "mood": None,
+        "silhouettes": [{"proportions": {"width_to_height": 1.0}}, "bad"],
+        "materials": [{"pbr_hints": {"roughness": 0.5}}],
+        "negatives": [{"rationale": "missing constraint"}],
+        "skipped": [],
+    }
+
+    payload = evaluate_reference_board({"name": "demo_asset"}, {"_reference_board": raw})
+
+    assert payload["board"]["silhouettes"] == []
+    assert payload["board"]["materials"] == []
+    assert payload["board"]["negatives"] == []
+    assert {"category": "silhouette", "reason": "reference_malformed"} in payload["skipped_reasons"]
+    assert {"category": "materials", "reason": "reference_malformed"} in payload["skipped_reasons"]
+    assert {"category": "negative", "reason": "reference_malformed"} in payload["skipped_reasons"]
+    assert any(diagnostic["path"] == "silhouettes[0]" for diagnostic in payload["diagnostics"])
 
 
 def test_loader_tolerates_extra_fields(tmp_path: Path) -> None:

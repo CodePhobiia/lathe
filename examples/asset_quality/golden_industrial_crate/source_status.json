@@ -1,0 +1,10 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "public_source": "../../industrial_crate_experimental.lth",
+  "schema_version": "lathe.asset_quality.source_status.v1",
+  "status": "external_source_checked",
+  "notes": [
+    "Phase 14 keeps the golden fixture as deterministic evidence JSON.",
+    "The referenced public .lth source remains the canonical authoring smoke source and is validated separately."
+  ]
+}

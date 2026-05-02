@@ -1,0 +1,41 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "Blade, guard, grip, crystal focal piece, and pommel remain traceable semantic parts.",
+    "functional_readability": "The asset reads as a magical weapon with a clear grip, guard, striking blade, and focal crystal.",
+    "material_storytelling": "Cold steel, dark grip, luminous crystal, and silver trim separate by role and wear.",
+    "silhouette_readability": "The weapon reads at thumbnail distance through a long blade, wide guard, and bright focal accent."
+  },
+  "asset_id": "quality_engine_fantasy_weapon",
+  "certification_tier": "phase14c_universal_quality_warning",
+  "family": "fantasy_weapon",
+  "platform_profile": {
+    "target": "roblox_fantasy_rpg",
+    "texture_budget": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 7000,
+    "triangle_budget_warning": 9000
+  },
+  "required_features": [
+    "long magical blade",
+    "wide readable guard",
+    "wrapped grip",
+    "crystal focal accent",
+    "edge wear and hand-contact wear"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "random primitive stack",
+      "unbounded stripe repetition",
+      "muddy material zones",
+      "sci-fi gun language"
+    ],
+    "keywords": [
+      "fantasy",
+      "celestial",
+      "frost",
+      "hero",
+      "premium"
+    ],
+    "theme": "celestial frost fantasy weapon with luminous crystal accents"
+  }
+}

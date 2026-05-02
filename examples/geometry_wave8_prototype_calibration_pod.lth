@@ -1,0 +1,39 @@
+module examples.geometry_wave8.prototype_calibration_pod
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave8_prototype_calibration_pod: hard_surface_prop {
+  intent {
+    role = "prototype calibration pod with generated ID decals and clean sci fi trim bands"
+    style = ["prototype", "sleek", "calibration"]
+    parts = [body, sensor_face, calibration_panel, wing_socket_l, wing_socket_r, antenna_deck]
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    scale = 0.8m
+  }
+
+  surface {
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 802
+      symmetry = x
+      style_pack = sleek_sci_fi
+      silhouette_profile = sleek_winged
+      silhouette_motifs = [wing, sensor_mast, spine]
+      detail_zones = [body, sensor_face, calibration_panel]
+      zone_sensor_face_module_categories = [sensor_pod, antenna]
+      zone_sensor_face_module_count = 3
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

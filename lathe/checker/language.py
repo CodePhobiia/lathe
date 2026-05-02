@@ -57,6 +57,7 @@ def check_duplicate_names(checker: Any) -> None:
         ("tests", "L2015"),
         ("benchmarks", "L2016"),
         ("spaces", "L2017"),
+        ("worlds", "L2018"),
         ("scenes", "L2018"),
         ("assets", "L2004"),
         ("variants", "L2005"),

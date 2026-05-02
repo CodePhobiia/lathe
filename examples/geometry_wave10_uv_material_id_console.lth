@@ -1,0 +1,58 @@
+module examples.geometry_wave10.uv_material_id_console
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave10_uv_material_id_console: hard_surface_prop {
+  intent {
+    role = "industrial console with semantic UV charts and material id masks"
+    style = ["industrial", "game_ready", "trimmed"]
+    parts = [body, console_panel, screen_panel, trim_rail, side_socket_l, side_socket_r]
+    materials = [painted_steel, bare_metal, signal_glass]
+    scale = 1.0m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, signal_glass]
+    zones.body = painted_steel
+    zones.console_panel = signal_glass
+    zones.screen_panel = signal_glass
+    zones.trim_rail = bare_metal
+    zones.side_socket_l = bare_metal
+    zones.side_socket_r = bare_metal
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1001
+      symmetry = x
+      style_pack = industrial_hero
+      silhouette_profile = wide_heavy
+      detail_density = hero
+      detail_zones = [body, console_panel, trim_rail]
+      zone_console_panel_motifs = [outset_panel, panel_seam, linear_detail_array]
+      zone_trim_rail_motifs = [trim_strip, bolt_grid]
+      lod_levels = 4
+    }
+    uv {
+      sets = [base, lightmap]
+      resolution = 1024px
+      chart_grouping = material
+      material_id_strategy = per_material_zone
+      texture_set_strategy = hero_surface_sets
+      island_naming = semantic
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

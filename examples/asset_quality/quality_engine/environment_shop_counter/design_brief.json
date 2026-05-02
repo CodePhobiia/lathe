@@ -1,0 +1,42 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "Countertop, base, display face, sign, supports, trim, and wear anchors remain semantic parts.",
+    "functional_readability": "The asset reads as a usable shop counter with customer-facing display and checkout surface.",
+    "material_storytelling": "Wood, painted trim, glass/display material, signage accent, and contact wear separate by role.",
+    "silhouette_readability": "The broad counter surface, front display, and raised sign create a readable environment prop."
+  },
+  "asset_id": "quality_engine_environment_shop_counter",
+  "certification_tier": "phase14c_universal_quality_warning",
+  "family": "environment_shop_counter",
+  "platform_profile": {
+    "target": "realtime_environment_prop",
+    "texture_budget": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 3000,
+    "triangle_budget_warning": 4500
+  },
+  "required_features": [
+    "usable counter surface",
+    "customer-facing display panel",
+    "raised shop sign",
+    "support base",
+    "trim bands",
+    "edge wear and countertop contact wear"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "floating signage",
+      "unusable scale",
+      "random decorative noise",
+      "unreadable material zones"
+    ],
+    "keywords": [
+      "shop",
+      "environment",
+      "cozy",
+      "modular",
+      "storytelling"
+    ],
+    "theme": "modular fantasy shop counter with readable use and warm material storytelling"
+  }
+}

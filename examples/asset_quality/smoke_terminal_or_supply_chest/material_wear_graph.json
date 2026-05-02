@@ -1,0 +1,57 @@
+{
+  "asset_id": "smoke_terminal_or_supply_chest",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 3,
+    "wear_mask_count": 4
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "chest_body"
+      ],
+      "zone_id": "painted_chest_body"
+    },
+    {
+      "bound_nodes": [
+        "interaction_face",
+        "accent_screen_zone"
+      ],
+      "zone_id": "dark_control_face"
+    },
+    {
+      "bound_nodes": [
+        "keypad_panel"
+      ],
+      "zone_id": "accent_button_material"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.1
+  },
+  "wear_masks": [
+    {
+      "bound_node_id": "lid_panel_seam",
+      "mask_id": "lid_grime"
+    },
+    {
+      "bound_node_id": "keypad_panel",
+      "mask_id": "button_touch_wear"
+    },
+    {
+      "bound_node_id": "bottom_skid",
+      "mask_id": "skid_contact_scuff"
+    },
+    {
+      "bound_node_id": "front_face_frame",
+      "mask_id": "frame_edge_wear"
+    }
+  ]
+}

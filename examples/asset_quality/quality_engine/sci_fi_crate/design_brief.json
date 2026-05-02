@@ -1,0 +1,43 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "Shell, frame, corner armor, seam, latch, handles, and feet remain traceable semantic parts.",
+    "functional_readability": "The object reads as a rugged carryable sci-fi utility crate.",
+    "material_storytelling": "Painted steel, rubber pads, bare metal wear, and warning decals separate by role.",
+    "silhouette_readability": "Reinforced corners, recessed panels, and feet break the box silhouette."
+  },
+  "asset_id": "quality_engine_sci_fi_crate",
+  "certification_tier": "phase14c_universal_quality_warning",
+  "family": "sci_fi_crate",
+  "platform_profile": {
+    "target": "mobile_realtime",
+    "texture_budget": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 1500,
+    "triangle_budget_warning": 2500
+  },
+  "required_features": [
+    "reinforced box shell",
+    "corner guards",
+    "recessed panels",
+    "front latch",
+    "side handles",
+    "foot rails",
+    "warning decal"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "flat unbroken cube",
+      "random greebles",
+      "chrome consumer finish",
+      "toy-like proportions"
+    ],
+    "keywords": [
+      "sci-fi",
+      "industrial",
+      "rugged",
+      "field-repaired",
+      "hard-surface"
+    ],
+    "theme": "used modular sci-fi cargo crate with functional construction logic"
+  }
+}

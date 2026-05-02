@@ -1,0 +1,48 @@
+module examples.geometry_wave5.modular_sensor_drone_core
+
+asset geometry_wave5_modular_sensor_drone_core: hard_surface_prop {
+  intent {
+    role = "modular sensor drone core with swappable sensor pods, antennas, wings, and power cells"
+    style = ["prototype", "modular", "industrial"]
+    parts = [body, sensor_face, power_spine, wing_socket_l, wing_socket_r, antenna_deck]
+    materials = [painted_steel, bare_metal, smoked_glass]
+    scale = 0.9m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, smoked_glass]
+    material_layers = [painted_steel, bare_metal, smoked_glass]
+    wear_story = prototype
+    wear_level = light
+    story_decals = [calibration_stripe, serial_plate]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 501
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, modular]
+      lod_levels = 4
+      module_categories = [sensor_pod, power_cell, wing, antenna]
+      module_count = 3
+      module_sockets = [sensor_bus, wing_mount, power_rail]
+      detail_motifs = [panel_seam, socket_point, trim_strip]
+      attachment_motifs = [rail, cable, vent_stack]
+      detail_zones = [body, sensor_face, power_spine, antenna_deck]
+      zone_sensor_face_module_categories = [sensor, antenna]
+      zone_sensor_face_module_count = 3
+      zone_power_spine_module_categories = [battery, cable]
+      zone_power_spine_module_count = 3
+      zone_antenna_deck_module_categories = [antenna, sensor_pod]
+      zone_antenna_deck_module_count = 2
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

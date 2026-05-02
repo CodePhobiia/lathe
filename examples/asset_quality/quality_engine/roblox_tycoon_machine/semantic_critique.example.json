@@ -1,0 +1,12 @@
+{
+  "asset_id": "quality_engine_roblox_tycoon_machine",
+  "issue_count": 0,
+  "issues": [],
+  "repairs": [],
+  "schema_version": "lathe.asset_quality.semantic_critique.v1",
+  "source_quality_plan": "quality_plan.json",
+  "summary": {
+    "highest_priority_issue": null,
+    "status": "pass"
+  }
+}

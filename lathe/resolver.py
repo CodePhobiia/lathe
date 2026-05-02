@@ -16,12 +16,14 @@ from typing import Any
 from .errors import ResolutionError, UnresolvedNameError
 from .logging_utils import debug as log_debug
 from .normalizer import normalize_asset
+from .paths import PathGuardError, safe_resolve
 from .utils import append_by_path, deep_merge, has_path, remove_by_path, set_by_path, unset_by_path
 
 __all__ = ["ResolutionError", "Resolver", "UnresolvedNameError", "materialize_asset"]
 
 
 log = logging.getLogger(__name__)
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _resolve_optional(name: str, mapping: dict[str, Any], kind: str) -> Any | None:
@@ -128,6 +130,7 @@ class Resolver:
         self.test_map = {decl["name"]: decl for decl in program.get("tests", [])}
         self.benchmark_map = {decl["name"]: decl for decl in program.get("benchmarks", [])}
         self.space_map = {decl["name"]: decl for decl in program.get("spaces", [])}
+        self.world_map = {decl["name"]: decl for decl in program.get("worlds", [])}
         self.scene_map = {decl["name"]: decl for decl in program.get("scenes", [])}
         self.asset_map = {decl["name"]: decl for decl in program.get("assets", [])}
         self.variant_map = {decl["name"]: decl for decl in program.get("variants", [])}
@@ -700,28 +703,35 @@ class Resolver:
     def _resolve_experimental_reference_path(self, use_value: str) -> str:
         """Resolve ``experimental.references.use`` to an absolute path.
 
-        Mirrors how the parser's import resolver locates files: prefers
-        a path relative to the source ``.lth`` file, otherwise resolves
-        against the repo root. Returns an empty string when no
-        candidate is found so the checker can surface ``L7103``.
+        Mirrors how the parser's import resolver locates files while
+        using the shared hardened path resolver: first try a path
+        contained under the source ``.lth`` directory, then a repo-root
+        relative path. Returns an empty string when no contained
+        candidate is found so downstream checks can surface ``L7103``.
         """
         source_path = self.program.get("_source_path")
-        candidates: list[Path] = []
-        rel = Path(use_value)
+        roots: list[Path] = []
         if source_path:
-            candidates.append((Path(source_path).resolve().parent / rel))
-        candidates.append(Path.cwd() / rel)
-        for candidate in candidates:
+            roots.append(Path(source_path).resolve().parent)
+        roots.append(_REPO_ROOT)
+        last_error = ""
+        for root in roots:
             try:
-                resolved = candidate.resolve()
-            except (OSError, RuntimeError):
+                resolved = safe_resolve(root, use_value)
+            except (PathGuardError, OSError, RuntimeError) as exc:
+                last_error = str(exc)
                 continue
             if resolved.exists():
                 return str(resolved)
-        try:
-            return str((candidates[0]).resolve())
-        except (OSError, RuntimeError):
-            return ""
+        if last_error:
+            log_debug(
+                log,
+                "lathe.resolver.experimental_reference_path_rejected",
+                "experimental.references.use path {path!r} rejected: {error}",
+                path=use_value,
+                error=last_error,
+            )
+        return ""
 
 
 def materialize_asset(

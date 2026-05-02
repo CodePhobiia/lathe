@@ -1,0 +1,43 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "all visible major forms trace to semantic parts",
+    "material_storytelling": "wear is anchored to exposed edges, handles, feet, and recessed seams",
+    "silhouette_readability": "clear reinforced utility crate at thumbnail distance"
+  },
+  "asset_id": "golden_industrial_crate",
+  "certification_tier": "phase14_warning",
+  "family": "industrial_crate",
+  "platform_profile": {
+    "target": "game_runtime_proxy",
+    "texture_budget": "proxy_or_deferred",
+    "triangle_budget_strict": 1500,
+    "triangle_budget_warning": 2500
+  },
+  "required_features": [
+    "beveled outer shell",
+    "reinforced corners",
+    "recessed side panels",
+    "lid seam access face",
+    "latch and handle affordance",
+    "feet or base contact rails",
+    "material-zone separation",
+    "edge wear and contact grime intent"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "toy-like proportions",
+      "random greebles",
+      "flat unbroken cube",
+      "chrome consumer finish"
+    ],
+    "keywords": [
+      "rugged",
+      "modular",
+      "edge-worn",
+      "readable silhouette",
+      "field-repaired"
+    ],
+    "theme": "used hard-surface sci-fi utility crate"
+  }
+}

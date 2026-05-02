@@ -1,0 +1,44 @@
+module examples.geometry_wave2.layered_material_crate
+
+asset geometry_wave2_layered_material_crate: hard_surface_prop {
+  intent {
+    role = "layered material crate with worn exposed underlayers"
+    style = ["industrial", "battle_worn", "modular"]
+    parts = [body, lid, latch_plate, trim_l, trim_r, foot_l, foot_r]
+    materials = [painted_steel, exposed_metal, hazard_paint]
+    scale = 0.95m
+  }
+
+  surface {
+    material_layers = [painted_steel, exposed_metal, hazard_paint]
+    wear_story = battle_worn
+    wear_level = high
+    story_decals = [unit_17, scrape_cluster]
+    faction_marks = [red_bar]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 204
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [industrial, battle_worn]
+      detail_motifs = [panel_seam, trim_strip, bolt_grid, outset_panel, groove_channel]
+      edge_complexity = high
+      edge_treatment = beveled
+      panelization = high
+      trim_density = high
+      greeble_density = high
+      outset_depth = high
+      surface_layer_count = 4
+      detail_zones = [body, lid, latch_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

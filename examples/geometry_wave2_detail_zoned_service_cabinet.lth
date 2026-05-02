@@ -1,0 +1,49 @@
+module examples.geometry_wave2.detail_zoned_service_cabinet
+
+asset geometry_wave2_detail_zoned_service_cabinet: hard_surface_prop {
+  intent {
+    role = "zoned service cabinet with differentiated detail maps"
+    style = ["industrial", "modular", "service_bay"]
+    parts = [body, door_l, door_r, vent_panel, socket_plate, handle_l, handle_r]
+    materials = [painted_steel, dark_rubber, amber_glass]
+    scale = 1.2m
+  }
+
+  surface {
+    material_layers = [painted_steel, exposed_metal, warning_paint]
+    wear_story = field_used
+    wear_level = medium
+    story_decals = [service_id, handled_edges]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 202
+      symmetry = x
+      detail_density = high
+      style_modifiers = [industrial, modular]
+      detail_zones = [body, door_l, door_r, vent_panel, socket_plate]
+      zone_body_density = hero
+      zone_body_motifs = [panel_seam, outset_panel, corner_guard]
+      zone_body_falloff = edges
+      zone_door_l_density = high
+      zone_door_l_motifs = [panel_seam, trim_strip, bolt_grid]
+      zone_door_r_density = high
+      zone_door_r_motifs = [panel_seam, trim_strip, bolt_grid]
+      zone_vent_panel_density = high
+      zone_vent_panel_motifs = [groove_channel, raised_ridge, linear_detail_array]
+      zone_vent_panel_linear_detail_repeats = 5
+      zone_socket_plate_density = hero
+      zone_socket_plate_motifs = [socket_point, bolt_grid, radial_detail_array]
+      zone_socket_plate_modular_attachment_points = 6
+      zone_socket_plate_radial_detail_repeats = 6
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

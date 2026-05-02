@@ -1,0 +1,68 @@
+{
+  "asset_id": "smoke_service_cabinet",
+  "edges": [
+    {
+      "edge_type": "attached_to",
+      "source_id": "left_door_panel",
+      "target_id": "cabinet_body"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "vent_stack",
+      "target_id": "left_door_panel"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "base_grime_anchor",
+      "target_id": "base_plinth"
+    }
+  ],
+  "family": "service_cabinet",
+  "nodes": [
+    {
+      "category": "shell",
+      "node_id": "cabinet_body",
+      "semantic_role": "vertical cabinet body"
+    },
+    {
+      "category": "frame",
+      "node_id": "door_frame",
+      "semantic_role": "door surround frame"
+    },
+    {
+      "category": "panel",
+      "node_id": "left_door_panel",
+      "semantic_role": "service door panel"
+    },
+    {
+      "category": "seam",
+      "node_id": "center_door_gap",
+      "semantic_role": "center door seam"
+    },
+    {
+      "category": "handle",
+      "node_id": "pull_handle",
+      "semantic_role": "cabinet pull handle"
+    },
+    {
+      "category": "base_contact",
+      "node_id": "base_plinth",
+      "semantic_role": "floor-contact plinth"
+    },
+    {
+      "category": "material_zone",
+      "node_id": "label_zone",
+      "semantic_role": "decal label material zone"
+    },
+    {
+      "category": "wear_anchor",
+      "node_id": "base_grime_anchor",
+      "semantic_role": "base and handle grime anchor"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "runtime_proxy_triangle_count": 980,
+    "unclassified_major_primitives": 0
+  }
+}

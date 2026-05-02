@@ -1,0 +1,46 @@
+module examples.geometry_wave4.salvaged_tool_surface_story
+
+asset geometry_wave4_salvaged_tool_surface_story: hard_surface_prop {
+  intent {
+    role = "salvaged repair tool with chipped paint, grime, straps, and exposed underlayers"
+    style = ["salvaged", "field_used", "industrial"]
+    parts = [body, grip, emitter_tip, vent_bank, cable_socket, guard, rear_cap]
+    materials = [painted_steel, bare_metal, black_rubber]
+    scale = 0.8m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, black_rubber]
+    material_layers = [painted_steel, bare_metal, black_rubber]
+    wear_story = salvaged
+    wear_level = heavy
+    story_decals = [scrape_cluster, maintenance_label, heat_warning]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 404
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, field_used]
+      edge_treatment = chamfered
+      detail_motifs = [groove_channel, raised_ridge, panel_seam, trim_strip, bolt_grid]
+      attachment_motifs = [cable, strap, handle_bar, vent_stack]
+      attachment_count = 5
+      detail_zones = [body, grip, vent_bank, cable_socket]
+      zone_grip_motifs = [raised_ridge, linear_detail_array]
+      zone_grip_linear_detail_repeats = 7
+      zone_vent_bank_motifs = [groove_channel, linear_detail_array]
+      zone_vent_bank_attachment_motifs = [vent_stack, cable]
+      zone_cable_socket_motifs = [socket_point, radial_detail_array]
+      zone_cable_socket_radial_detail_repeats = 7
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

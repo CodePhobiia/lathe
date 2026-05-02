@@ -1,0 +1,38 @@
+module examples.geometry_wave8.arcane_brass_trim_gate
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave8_arcane_brass_trim_gate: env_module {
+  intent {
+    role = "arcane brass trim gate with relic decal library and ornate trim sheet"
+    style = ["ancient", "luxury", "ornate"]
+    parts = [wall_body, central_inset, brass_ridge_l, brass_ridge_r, rune_socket, spire_cap]
+    materials = [worn_brass, dark_wood, inset_glass]
+    scale = 1.4m
+  }
+
+  surface {
+    materials = [worn_brass, dark_wood, inset_glass]
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 804
+      symmetry = x
+      style_pack = arcane_luxury
+      silhouette_profile = ornate_spire
+      silhouette_motifs = [spire, spine, blade, guard_cowl]
+      detail_zones = [wall_body, central_inset, rune_socket, spire_cap]
+      zone_central_inset_radial_detail_repeats = 10
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

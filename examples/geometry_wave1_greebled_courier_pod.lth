@@ -1,0 +1,38 @@
+module examples.geometry_wave1.greebled_courier_pod
+
+asset geometry_wave1_greebled_courier_pod: mechanical_assembly {
+  intent {
+    role = "greebled courier drone pod"
+    style = ["near_future", "industrial", "wave1_geometry"]
+    parts = [body, rotor_fl, rotor_fr, rotor_rl, rotor_rr, cargo_door, landing_leg_l, landing_leg_r]
+    materials = [anodized_aluminum, carbon_fiber, amber_glass]
+    scale = 0.85m
+  }
+
+  features {
+    density = hero
+    allow = [bolt_grid, groove_channel, raised_ridge, socket_point, rotor_shroud]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 108
+      symmetry = x
+      detail_density = high
+      edge_complexity = high
+      panelization = medium
+      groove_density = high
+      ridge_density = high
+      greeble_density = hero
+      modular_attachment_points = 4
+      detail_zones = [body, cargo_door]
+    }
+    rig { type = rigid_mechanical joints = [rotor_fl, rotor_fr, rotor_rl, rotor_rr] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

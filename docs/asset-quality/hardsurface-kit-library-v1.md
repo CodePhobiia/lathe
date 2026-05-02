@@ -84,6 +84,9 @@ authoritative. Required top-level fields:
   enum is `always_present`, `drop_at_lod1`, `drop_at_lod2`,
   `drop_at_lod3`)
 - `bake_group` (string)
+- `preview_thumbnail` (optional string URI; when omitted the loader
+  emits a deterministic `kit://hardsurface/<category>/<name>/preview_thumbnail`
+  metadata fallback)
 - `provenance` (`{source, version, license}` — license enum is
   `internal`, `CC0`, `MIT`)
 
@@ -160,6 +163,10 @@ authors get a hard signal when the schema and the data drift.
   `("kit_part_<filename>", "kit_part_schema_violation:<detail>")`
   where `<detail>` carries the offending field (e.g.
   `missing_field_category`, `invalid_field_scale_range_order`).
+- Duplicate part name:
+  `("kit_part_<filename>", "kit_part_duplicate_name:<name>")`.
+  Kit-part names are globally unique across categories; the first
+  valid part wins and later duplicates are skipped.
 
 Failures are non-fatal — the loader returns whatever parts DID parse.
 
@@ -205,6 +212,8 @@ with one of the fixed reason tokens:
 - `kit_part_malformed` — a candidate JSON file fails parse.
 - `kit_part_schema_violation:<detail>` — a candidate JSON file
   parses but fails schema validation.
+- `kit_part_duplicate_name:<name>`: a candidate JSON file reuses a
+  name already loaded from an earlier valid part.
 
 Skipped reasons are deduplicated and sorted by `(category, reason)`.
 The loader never fabricates a part for a missing or malformed

@@ -1,0 +1,50 @@
+module examples.geometry_wave2.wave_a_edge_array_tool
+
+asset geometry_wave2_wave_a_edge_array_tool: hard_surface_prop {
+  intent {
+    role = "edge and detail array authoring tool"
+    style = ["industrial", "wave2_geometry"]
+    parts = [body, service_panel, socket_plate, handle_l, handle_r]
+    materials = [painted_steel, bare_metal, signal_glass]
+    scale = 0.85m
+  }
+
+  features {
+    density = hero
+    allow = [edge_break, panel_seam, trim_strip, groove_channel, raised_ridge, bolt_grid, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 201
+      symmetry = x
+      detail_density = hero
+      detail_motifs = [panel_seam, groove_channel, raised_ridge, inset_panel, outset_panel, trim_strip, bolt_grid, socket_point, linear_detail_array, radial_detail_array]
+      edge_complexity = high
+      edge_treatment = chamfered
+      edge_hardness = hard
+      bevel_width = 0.35
+      chamfer_width = 0.25
+      panelization = high
+      groove_density = high
+      ridge_density = high
+      trim_density = high
+      inset_depth = high
+      outset_depth = high
+      greeble_density = high
+      surface_layer_count = 3
+      modular_attachment_points = 4
+      linear_detail_repeats = 5
+      radial_detail_repeats = 8
+      detail_array_axis = x
+      detail_zones = [body, service_panel, socket_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

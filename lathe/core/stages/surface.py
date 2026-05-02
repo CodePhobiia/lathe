@@ -31,8 +31,10 @@ def run(executor: Any, uv_bundle: dict[str, Any], *, repair_mode: str | None = N
         shape_runtime_mesh=executor.runtime["shape"]["runtime_mesh"],
         topology_bundle=executor.runtime["topology"]["bundle"],
         uv_runtime_mesh=executor.runtime["uv"]["runtime_mesh"],
+        uv_bundle=uv_bundle,
         repair_mode=repair_mode,
         runtime_config=executor.runtime_config,
+        quality_generation=executor.runtime.get("_quality_generation"),
     )
     executor.runtime["surface"] = {"bundle": bundle, "stage_dir": stage_dir}
     dump_json(stage_dir / "bundle.json", bundle)

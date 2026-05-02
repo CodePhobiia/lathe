@@ -235,13 +235,13 @@
           "state": {
             "type": "object",
             "additionalProperties": {
-              "$ref": "#/$defs/state_value"
+              "$ref": "#/$defs/surface_value"
             }
           },
           "surface_overrides": {
             "type": "object",
             "additionalProperties": {
-              "$ref": "#/$defs/state_value"
+              "$ref": "#/$defs/surface_value"
             }
           },
           "affordances": {
@@ -289,6 +289,9 @@
               "opens_to",
               "points_toward",
               "reveals",
+              "connects_to",
+              "routes_to",
+              "snaps_to",
               "supports",
               "custom"
             ]
@@ -714,7 +717,15 @@
         "topdown",
         "debug",
         "contact_sheet",
-        "before_after"
+        "before_after",
+        "close_up",
+        "medium",
+        "wide",
+        "establishing",
+        "hero",
+        "orbit",
+        "tracking",
+        "dolly"
       ]
     },
     "export_target": {
@@ -833,6 +844,25 @@
         },
         {
           "type": "null"
+        }
+      ]
+    },
+    "surface_value": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/state_value"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/state_value"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/surface_value"
+          }
         }
       ]
     },

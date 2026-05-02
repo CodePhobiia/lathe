@@ -1,0 +1,36 @@
+module examples.geometry_wave1.beveled_maintenance_hatch
+
+asset geometry_wave1_beveled_maintenance_hatch: env_module {
+  intent {
+    role = "beveled maintenance hatch"
+    style = ["industrial", "wall_mount", "wave1_geometry"]
+    parts = [body, hatch_panel, hinge_l, hinge_r, handle, lock_plate]
+    materials = [painted_steel, black_rubber, warning_paint]
+    scale = 1.4m
+  }
+
+  features {
+    density = high
+    allow = [corner_guard, edge_break, panel_seam, groove_channel]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 116
+      symmetry = x
+      detail_density = high
+      edge_complexity = hero
+      edge_treatment = beveled
+      panelization = high
+      groove_density = medium
+      detail_zones = [body, hatch_panel]
+    }
+    rig { type = rigid_mechanical joints = [hatch_panel] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

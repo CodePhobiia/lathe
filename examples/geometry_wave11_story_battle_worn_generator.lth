@@ -1,0 +1,56 @@
+module examples.geometry_wave11.story_battle_worn_generator
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave11_story_battle_worn_generator: hard_surface_prop {
+  intent {
+    role = "battle worn generator with targeted heat marks and repair labels"
+    style = ["field_worn", "battle_worn", "repairable"]
+    parts = [body, generator_core, heat_vent_l, heat_vent_r, cable_bank, warning_label]
+    materials = [painted_steel, bare_metal, rubber, signal_glass]
+    scale = 1.2m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, rubber, signal_glass]
+    zones.body = painted_steel
+    zones.generator_core = signal_glass
+    zones.heat_vent_l = bare_metal
+    zones.heat_vent_r = bare_metal
+    zones.cable_bank = rubber
+    zones.warning_label = bare_metal
+    wear_story = battle_worn
+    wear_level = high
+    story_decals = [heat_warning, scrape_cluster, operator_label, warning_band]
+    story_targets = [generator_core, heat_vent_l, heat_vent_r, warning_label]
+    story_density = hero
+    story_asymmetry = right_bias
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1102
+      symmetry = x
+      style_pack = battle_worn_field
+      silhouette_profile = reinforced_field
+      detail_density = hero
+      detail_zones = [body, generator_core, cable_bank]
+      zone_cable_bank_attachment_motifs = [cable, rail, guard_bar]
+      zone_cable_bank_attachment_count = 5
+      lod_levels = 4
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

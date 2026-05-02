@@ -1,0 +1,38 @@
+module examples.geometry_wave6.battle_worn_field_generator
+
+asset geometry_wave6_battle_worn_field_generator: hard_surface_prop {
+  intent {
+    role = "battle worn field generator with shield plates, straps, cells, and scars"
+    style = ["battle_worn", "industrial", "field_used"]
+    parts = [body, generator_core, shield_plate_l, shield_plate_r, cable_bank, leg_mount]
+    materials = [chipped_paint, bare_metal, grime]
+    scale = 1.1m
+  }
+
+  surface {
+    materials = [chipped_paint, bare_metal, grime]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 603
+      symmetry = x
+      style_pack = battle_worn_field
+      style_intensity = hero
+      detail_zones = [body, generator_core, cable_bank, leg_mount]
+      zone_generator_core_module_categories = [power_cell, shield_plate]
+      zone_generator_core_module_count = 3
+      zone_cable_bank_attachment_motifs = [cable, strap, guard_bar]
+      zone_cable_bank_attachment_count = 6
+      collision_proxy = convex_hull
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -27,7 +27,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.vision_critique import (
     VISION_CRITIQUE_VERSION,
     CritiqueIssue,
@@ -38,15 +37,17 @@ from lathe.asset_quality.vision_critique import (
 )
 from lathe.validators.composition import FunctionValidator, ValidatorPipeline
 
-
 _PAYLOAD_KEYS: frozenset[str] = frozenset(
     {
         "version",
         "asset_name",
         "provider",
+        "provider_config",
         "issues",
         "patch_validation",
         "summary",
+        "iteration_history",
+        "before_after_metrics",
         "skipped_reasons",
         "warnings",
         "diagnostics",
@@ -82,7 +83,11 @@ def _baseline_runtime() -> dict[str, Any]:
             "preview_summary": {
                 "final_beauty_present": True,
                 "material_ids_present": True,
+                "final_beauty_declared": True,
+                "material_ids_declared": True,
                 "distinct_final_from_material_ids": True,
+                "comparison_sheet_present": False,
+                "comparison_sheet_requested": False,
             },
         },
         "design_brief": {
@@ -162,9 +167,12 @@ def test_evaluate_vision_critique_returns_v1_payload() -> None:
     assert not extra, f"unexpected keys: {sorted(extra)}"
     assert payload["asset_name"] == "industrial_crate"
     assert isinstance(payload["provider"], dict)
+    assert isinstance(payload["provider_config"], dict)
     assert isinstance(payload["issues"], list)
     assert isinstance(payload["patch_validation"], dict)
     assert isinstance(payload["summary"], dict)
+    assert isinstance(payload["iteration_history"], list)
+    assert isinstance(payload["before_after_metrics"], dict)
     assert isinstance(payload["skipped_reasons"], list)
     assert payload["warnings"] == []
     assert payload["diagnostics"] == []
@@ -378,6 +386,38 @@ def test_external_provider_skipped_does_not_crash_build() -> None:
     assert isinstance(payload["summary"], dict)
 
 
+def test_external_provider_invalid_output_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    from lathe.asset_quality import vision_critique
+
+    class BadVisionProvider(vision_critique._ExternalVisionProvider):
+        name = "bad_vision_provider"
+        version = "v0"
+
+        def critique(
+            self, asset: dict[str, Any], runtime: dict[str, Any]
+        ) -> tuple[CritiqueIssue, ...]:
+            return ("not-a-critique-issue",)  # type: ignore[return-value]
+
+    monkeypatch.setitem(
+        vision_critique._PROVIDER_REGISTRY,
+        "bad_vision_provider",
+        BadVisionProvider,
+    )
+    runtime = _baseline_runtime()
+    runtime["_runtime_config"] = {
+        "vision_critique": {
+            "enabled": True,
+            "provider": "bad_vision_provider",
+        }
+    }
+
+    payload = evaluate_vision_critique(_baseline_asset(), runtime)
+
+    skipped_tokens = {record["reason"] for record in payload["skipped_reasons"]}
+    assert "vision_provider_invalid_output" in skipped_tokens
+    assert payload["provider"]["name"] == "deterministic_stub"
+
+
 # ---------------------------------------------------------------------------
 # Patch validation
 # ---------------------------------------------------------------------------
@@ -397,8 +437,7 @@ def _payload_with_synthetic_issue(issue: CritiqueIssue) -> dict[str, Any]:
     # canonical surface to test rejections in isolation.
     from lathe.asset_quality.vision_critique import _validate_patches
 
-    bundle = _validate_patches((issue,))
-    return bundle
+    return _validate_patches((issue,))
 
 
 def test_patch_validation_rejects_shape_contract_changes() -> None:
@@ -628,6 +667,37 @@ def test_summary_counts_match_issues() -> None:
     assert summary["approved_patches"] == payload["patch_validation"]["approved_count"]
 
 
+def test_phase_10_loop_evidence_blocks_are_truthful() -> None:
+    runtime = _baseline_runtime()
+    runtime["_runtime_config"] = {
+        "vision_critique": {
+            "enabled": True,
+            "provider": "mock_http_vision_provider",
+            "api_key": "[REDACTED]",
+            "endpoint": "[REDACTED]",
+            "model": "vision-v0",
+        }
+    }
+    runtime["preview_evidence"]["preview_summary"]["comparison_sheet_requested"] = True
+    payload = evaluate_vision_critique(_baseline_asset(), runtime)
+
+    assert payload["provider_config"] == {
+        "enabled": True,
+        "requested_provider": "mock_http_vision_provider",
+        "resolved_provider": "deterministic_stub",
+        "external_provider_configured": False,
+        "safe_config_keys": ["enabled", "model", "provider"],
+        "sensitive_values_redacted": True,
+    }
+    assert payload["before_after_metrics"]["available"] is False
+    assert (
+        payload["before_after_metrics"]["skipped_reason"]
+        == "comparison_sheet_renderer_unavailable"
+    )
+    assert payload["iteration_history"][0]["applied"] is False
+    assert payload["iteration_history"][0]["status"] == "evidence_recorded"
+
+
 def test_no_phase_1_through_9_evidence_emits_skipped_provider_only() -> None:
     payload = evaluate_vision_critique({}, {})
 
@@ -679,3 +749,12 @@ def test_redacted_runtime_config_is_used_when_present() -> None:
     assert "api_key" not in payload_text
     assert "endpoint" not in payload_text
     assert payload["provider"]["name"] == "deterministic_stub"
+
+
+def test_validate_pipeline_orders_vision_after_current_diagnostics() -> None:
+    from lathe.core.stages.validate import _PIPELINE
+
+    names = [validator.name for validator in _PIPELINE.validators]
+
+    assert names.index("quality_diagnostics") < names.index("vision_critique")
+    assert names.index("preview_evidence") < names.index("vision_critique")

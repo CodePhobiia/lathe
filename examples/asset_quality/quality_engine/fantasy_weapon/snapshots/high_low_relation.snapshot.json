@@ -1,0 +1,5 @@
+{
+  "schema_version": "lathe.asset_quality.snapshot.v1",
+  "sha256": "bb16f7d8559d16a69c3b59a4c62d24df153ad47752431a23997e7701818ae221",
+  "snapshot_of": "high_low_relation.json"
+}

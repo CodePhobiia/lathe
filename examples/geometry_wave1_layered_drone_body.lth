@@ -1,0 +1,37 @@
+module examples.geometry_wave1.layered_drone_body
+
+asset geometry_wave1_layered_drone_body: mechanical_assembly {
+  intent {
+    role = "layered courier drone body"
+    style = ["near_future", "aerial_robotics", "wave1_geometry"]
+    parts = [body, rotor_fl, rotor_fr, rotor_rl, rotor_rr, sensor_panel, landing_leg_l, landing_leg_r]
+    materials = [anodized_aluminum, carbon_fiber, amber_glass]
+    scale = 0.95m
+  }
+
+  features {
+    density = hero
+    allow = [layer_plate, panel_seam, groove_channel, rotor_shroud, bolt_grid]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 118
+      symmetry = x
+      detail_density = high
+      edge_complexity = medium
+      panelization = high
+      groove_density = high
+      greeble_density = medium
+      surface_layer_count = 4
+      detail_zones = [body, sensor_panel]
+    }
+    rig { type = rigid_mechanical joints = [rotor_fl, rotor_fr, rotor_rl, rotor_rr] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

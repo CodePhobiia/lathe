@@ -1,0 +1,59 @@
+module examples.geometry_wave10.uv_material_id_relic_gate
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave10_uv_material_id_relic_gate: env_module {
+  intent {
+    role = "ornate relic gate with separate metal stone and glass material id islands"
+    style = ["arcane", "ornate", "game_ready"]
+    parts = [wall_body, central_inset, rune_socket, brass_trim, glass_eye, spire_cap]
+    materials = [ancient_stone, aged_brass, signal_glass]
+    scale = 2.4m
+  }
+
+  surface {
+    materials = [ancient_stone, aged_brass, signal_glass]
+    zones.wall_body = ancient_stone
+    zones.central_inset = ancient_stone
+    zones.rune_socket = aged_brass
+    zones.brass_trim = aged_brass
+    zones.glass_eye = signal_glass
+    zones.spire_cap = aged_brass
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1003
+      symmetry = x
+      style_pack = arcane_luxury
+      silhouette_profile = ornate_spire
+      silhouette_motifs = [spire, finial, frame_tower]
+      detail_density = hero
+      detail_zones = [wall_body, central_inset, rune_socket, brass_trim]
+      zone_rune_socket_motifs = [socket_point, radial_detail_array, ornament]
+      zone_rune_socket_radial_detail_repeats = 8
+      lod_levels = 3
+    }
+    uv {
+      sets = [base, lightmap]
+      resolution = 1024px
+      chart_grouping = material
+      material_id_strategy = per_material_zone
+      texture_set_strategy = hero_surface_sets
+      island_naming = semantic
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

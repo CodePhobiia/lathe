@@ -1,0 +1,37 @@
+module examples.geometry_wave1.cutline_floor_module
+
+asset geometry_wave1_cutline_floor_module: env_module {
+  intent {
+    role = "cut line floor module"
+    style = ["modular", "industrial_floor", "wave1_geometry"]
+    parts = [body, frame_panel, access_panel_l, access_panel_r, socket_plate]
+    materials = [painted_steel, black_rubber, warning_paint]
+    scale = 2.0m
+  }
+
+  features {
+    density = high
+    allow = [panel_seam, groove_channel, bolt_grid, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 126
+      symmetry = x
+      detail_density = high
+      edge_complexity = medium
+      panelization = hero
+      groove_density = high
+      greeble_density = medium
+      modular_attachment_points = 4
+      detail_zones = [body, access_panel_l, access_panel_r]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

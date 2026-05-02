@@ -26,6 +26,12 @@ def relative_uri(root: Path, path: Path) -> str:
     return str(path.relative_to(root)).replace("/", "\\")
 
 
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
 def write_image(image: Image.Image, path: Path) -> dict[str, Any]:
     """Write image.
 
@@ -52,6 +58,12 @@ def write_surface_control_pack(
     curvature: Image.Image,
     normal: Image.Image,
     id_map: Image.Image,
+    wear_mask: Image.Image | None = None,
+    material_layer_mask: Image.Image | None = None,
+    uv_organization: dict[str, Any] | None = None,
+    chart_manifest: list[dict[str, Any]] | None = None,
+    material_id_layout: dict[str, Any] | None = None,
+    surface_story_placement_plan: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write surface control pack.
 
@@ -83,6 +95,12 @@ def write_surface_control_pack(
         "normal_reference": write_image(normal.convert("RGB"), pack_dir / "normal_reference.png"),
         "preview": write_image(preview, pack_dir / "preview.png"),
     }
+    if wear_mask is not None:
+        outputs["wear_mask"] = write_image(wear_mask.convert("L"), pack_dir / "wear_mask.png")
+    if material_layer_mask is not None:
+        outputs["material_layer_mask"] = write_image(
+            material_layer_mask.convert("L"), pack_dir / "material_layer_mask.png"
+        )
     required_maps = list(surface_cfg.get("maps", []))
     manifest = {
         "schema": "lathe.surface_control_pack.v1",
@@ -94,6 +112,9 @@ def write_surface_control_pack(
                 "material": entry["material"],
                 "metallic": entry.get("metallic", 0.0),
                 "roughness": entry.get("roughness", 0.5),
+                "surface_profile": entry.get("surface_profile", ""),
+                "procedural_layers": list(entry.get("procedural_layers", [])),
+                "surface_features": list(entry.get("surface_features", [])),
             }
             for entry in material_zones
         },
@@ -103,9 +124,23 @@ def write_surface_control_pack(
             "decal_libraries": list(source_surface.get("decal_libraries", [])),
             "mask_programs": list(source_surface.get("mask_programs", [])),
             "trim_sheets": list(source_surface.get("trim_sheets", [])),
+            "material_layers": [
+                str(item)
+                for item in _as_list(source_surface.get("material_layers") or source_surface.get("layers"))
+            ],
+            "wear_story": source_surface.get("wear_story", source_surface.get("usage_history", "")),
+            "surface_grammar": source_surface.get("surface_grammar", {}),
         },
         "images": {name: relative_uri(out_dir, Path(entry["uri"])) for name, entry in outputs.items()},
     }
+    if uv_organization:
+        manifest["uv_organization"] = dict(uv_organization)
+    if chart_manifest:
+        manifest["chart_manifest"] = list(chart_manifest)
+    if material_id_layout:
+        manifest["material_id_layout"] = dict(material_id_layout)
+    if surface_story_placement_plan:
+        manifest["surface_story_placement_plan"] = dict(surface_story_placement_plan)
     manifest_path = pack_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return {

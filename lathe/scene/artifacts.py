@@ -257,6 +257,7 @@ def export_scene_glb(
     mode: SceneArtifactMode = "preview",
     filename: str | None = None,
     include_collision_nodes: bool = False,
+    nested_assemblies: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Export deterministic proxy GLB geometry and identity sidecars."""
     scene_id = _scene_id(scene_graph)
@@ -274,6 +275,7 @@ def export_scene_glb(
             }
         ],
         include_collision_nodes=include_collision_nodes,
+        nested_assemblies=nested_assemblies,
     )
 
 
@@ -421,6 +423,7 @@ def export_scene_glbs(
     mode: SceneArtifactMode = "preview",
     export_tasks: Sequence[Mapping[str, Any]] | None = None,
     include_collision_nodes: bool = False,
+    nested_assemblies: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Export deterministic proxy GLBs for declared GLB scene export tasks."""
     package_root = Path(package_dir)
@@ -457,6 +460,7 @@ def export_scene_glbs(
                 mode=mode,
                 include_collision_nodes=include_collision_nodes,
                 task=task,
+                nested_assemblies=nested_assemblies,
             )
         )
     report = {
@@ -464,6 +468,14 @@ def export_scene_glbs(
         "scene_id": scene_id,
         "mode": mode,
         "exporter": PROXY_EXPORTER_ID,
+        "nested_assemblies": {
+            "requested": len(nested_assemblies or []),
+            "placed_nodes": sum(
+                int(artifact.get("nested_assembly_nodes", 0))
+                for artifact in artifacts
+                if isinstance(artifact, Mapping)
+            ),
+        },
         "artifacts": artifacts,
         "diagnostics": diagnostics,
     }
@@ -519,6 +531,7 @@ def _export_one_proxy_glb(
     mode: SceneArtifactMode,
     include_collision_nodes: bool,
     task: Mapping[str, Any],
+    nested_assemblies: Sequence[Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     try:
         import numpy as np
@@ -549,7 +562,10 @@ def _export_one_proxy_glb(
     instancing_by_object_id = instancing_metadata_by_object_id(scene_graph)
     object_records: list[dict[str, Any]] = []
     collision_records: list[dict[str, Any]] = []
+    object_transforms: dict[str, Any] = {}
+    object_by_id: dict[str, _ObjectRecord] = {}
     for item in objects:
+        object_by_id[item.object_id] = item
         instancing = instancing_by_object_id.get(item.object_id, {})
         glb_extras = _glb_object_extras(scene_id=scene_id, item=item, instancing=instancing)
         mesh = trimesh.creation.box(extents=item.extents)
@@ -561,6 +577,7 @@ def _export_one_proxy_glb(
             "sxyz",
         )
         transform[:3, 3] = np.array(item.position, dtype=float)
+        object_transforms[item.object_id] = transform.copy()
         mesh.apply_transform(transform)
         mesh.metadata.update(
             {
@@ -613,6 +630,17 @@ def _export_one_proxy_glb(
             }
         )
 
+    nested_records = _add_nested_assembly_geometry(
+        scene=scene,
+        package_root=package_root,
+        scene_id=scene_id,
+        nested_assemblies=nested_assemblies or [],
+        object_by_id=object_by_id,
+        object_transforms=object_transforms,
+        np=np,
+        trimesh=trimesh,
+    )
+
     floor = _floor_mesh(scene_graph)
     if floor is not None:
         scene.add_geometry(floor, node_name="region_floor_proxy", geom_name="region_floor_proxy")
@@ -645,6 +673,7 @@ def _export_one_proxy_glb(
         "identity": identity,
         "collision_policy": "simple_box_proxy" if include_collision_nodes else "not_exported",
         "collision_nodes": collision_records,
+        "nested_assemblies": nested_records,
         "objects": object_records,
         "materials": [
             {"material_id": material_id, "material_index": index}
@@ -665,6 +694,7 @@ def _export_one_proxy_glb(
             "bytes": glb_path.stat().st_size,
             "object_count": len(objects),
             "collision_nodes": len(collision_records),
+            "nested_assembly_nodes": len(nested_records),
             "identity": identity,
             "mode": mode,
         },
@@ -1475,6 +1505,186 @@ def _floor_mesh(scene_graph: Mapping[str, Any]):
     return mesh
 
 
+def _add_nested_assembly_geometry(
+    *,
+    scene: Any,
+    package_root: Path,
+    scene_id: str,
+    nested_assemblies: Sequence[Mapping[str, Any]],
+    object_by_id: Mapping[str, _ObjectRecord],
+    object_transforms: Mapping[str, Any],
+    np: Any,
+    trimesh: Any,
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for assembly in nested_assemblies:
+        if not isinstance(assembly, Mapping):
+            continue
+        parent_object_id = _assembly_parent_object_id(assembly, object_by_id)
+        if parent_object_id is None:
+            continue
+        parent = object_by_id[parent_object_id]
+        parent_transform = object_transforms.get(parent_object_id)
+        if parent_transform is None:
+            continue
+        materialization_root = _string_field(assembly, "materialization_root") or "source/materialized_assets"
+        for child in assembly.get("children", []) or []:
+            if not isinstance(child, Mapping):
+                continue
+            child_mesh_entry = _child_mesh_entry(child)
+            if child_mesh_entry is None:
+                continue
+            child_uri = str(child_mesh_entry.get("uri") or "")
+            child_path = _safe_package_path(package_root, f"{materialization_root}/{child_uri}")
+            source_exists = child_path.is_file()
+            proxy_extents = _nested_child_proxy_extents(parent=parent, child=child)
+            mesh = trimesh.creation.box(extents=proxy_extents)
+            mesh.visual.face_colors = _nested_child_proxy_color(child)
+            placement = child.get("placement") if isinstance(child.get("placement"), Mapping) else {}
+            local_transform = _nested_local_transform(placement, parent=parent, np=np)
+            mesh.apply_transform(parent_transform @ local_transform)
+            child_asset_name = _string_field(child, "asset_name") or "nested_child"
+            node_name = _safe_scene_node_name(f"nested_{parent_object_id}_{child_asset_name}")
+            mesh.metadata.update(
+                {
+                    "lathe_scene_id": scene_id,
+                    "lathe_nested_assembly": True,
+                    "lathe_parent_object_id": parent_object_id,
+                    "lathe_child_asset_name": child_asset_name,
+                    "lathe_slot_id": _string_field(child, "slot_id") or "",
+                    "lathe_source_uri": child_uri,
+                    "lathe_source_exists": source_exists,
+                    "lathe_nested_reference_proxy": True,
+                }
+            )
+            scene.add_geometry(mesh, node_name=node_name, geom_name=node_name)
+            records.append(
+                _nested_record(
+                    assembly=assembly,
+                    child=child,
+                    parent_object_id=parent_object_id,
+                    child_uri=child_uri,
+                    node_name=node_name,
+                    status="placed_reference" if source_exists else "placed_missing_reference",
+                    source_exists=source_exists,
+                    proxy_extents=proxy_extents,
+                )
+            )
+    return records
+
+
+def _assembly_parent_object_id(
+    assembly: Mapping[str, Any],
+    object_by_id: Mapping[str, _ObjectRecord],
+) -> str | None:
+    object_ids = assembly.get("scene_object_ids")
+    if isinstance(object_ids, Sequence) and not isinstance(object_ids, str | bytes | bytearray):
+        for object_id in object_ids:
+            if isinstance(object_id, str) and object_id in object_by_id:
+                return object_id
+    explicit = _string_field(assembly, "scene_object_id")
+    if explicit in object_by_id:
+        return explicit
+    parent = _string_field(assembly, "parent_asset_name")
+    if parent in object_by_id:
+        return parent
+    return None
+
+
+def _child_mesh_entry(child: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    for key in ("consumable_outputs", "outputs"):
+        outputs = child.get(key)
+        if not isinstance(outputs, Sequence) or isinstance(outputs, str | bytes | bytearray):
+            continue
+        for output in outputs:
+            if not isinstance(output, Mapping):
+                continue
+            if _string_field(output, "format") == "glb" and _string_field(output, "uri"):
+                return output
+    return None
+
+
+def _nested_child_proxy_extents(*, parent: _ObjectRecord, child: Mapping[str, Any]) -> tuple[float, float, float]:
+    slot_kind = _string_field(child, "slot_kind") or ""
+    ratios = {
+        "vehicle": (0.34, 0.20, 0.18),
+        "boat": (0.42, 0.18, 0.16),
+        "machine": (0.26, 0.24, 0.24),
+        "interior": (0.46, 0.38, 0.28),
+        "furniture": (0.18, 0.14, 0.16),
+        "foliage": (0.24, 0.24, 0.30),
+    }.get(slot_kind, (0.22, 0.18, 0.18))
+    return tuple(max(0.05, round(float(parent.extents[index]) * ratios[index], 6)) for index in range(3))
+
+
+def _nested_child_proxy_color(child: Mapping[str, Any]) -> tuple[int, int, int, int]:
+    slot_kind = _string_field(child, "slot_kind") or ""
+    return {
+        "vehicle": (72, 160, 220, 230),
+        "boat": (65, 145, 185, 230),
+        "machine": (185, 170, 105, 230),
+        "interior": (180, 125, 210, 230),
+        "furniture": (198, 148, 94, 230),
+        "foliage": (84, 170, 96, 230),
+    }.get(slot_kind, (158, 170, 184, 230))
+
+
+def _nested_local_transform(placement: Mapping[str, Any], *, parent: _ObjectRecord, np: Any) -> Any:
+    matrix = np.eye(4)
+    raw_transform = placement.get("local_transform")
+    if (
+        isinstance(raw_transform, Sequence)
+        and not isinstance(raw_transform, str | bytes | bytearray)
+        and len(raw_transform) == 4
+    ):
+        try:
+            matrix = np.array(raw_transform, dtype=float)
+        except (TypeError, ValueError):
+            matrix = np.eye(4)
+        if matrix.shape != (4, 4):
+            matrix = np.eye(4)
+    matrix = matrix.copy()
+    matrix[:3, 3] = matrix[:3, 3] * np.array(parent.extents, dtype=float)
+    return matrix
+
+
+def _nested_record(
+    *,
+    assembly: Mapping[str, Any],
+    child: Mapping[str, Any],
+    parent_object_id: str,
+    child_uri: str,
+    node_name: str,
+    status: str,
+    fit_scale: float | None = None,
+    source_exists: bool | None = None,
+    proxy_extents: Sequence[float] | None = None,
+) -> dict[str, Any]:
+    payload = {
+        "status": status,
+        "parent_object_id": parent_object_id,
+        "parent_asset_name": _string_field(assembly, "parent_asset_name") or "",
+        "child_asset_name": _string_field(child, "asset_name") or "",
+        "slot_id": _string_field(child, "slot_id") or "",
+        "slot_kind": _string_field(child, "slot_kind") or "",
+        "node_name": node_name,
+        "source_uri": child_uri,
+        "placement": _normal_json(child.get("placement") if isinstance(child.get("placement"), Mapping) else {}),
+    }
+    if fit_scale is not None:
+        payload["fit_scale"] = fit_scale
+    if source_exists is not None:
+        payload["source_exists"] = source_exists
+    if proxy_extents is not None:
+        payload["proxy_extents"] = [float(value) for value in proxy_extents]
+    return payload
+
+
+def _safe_scene_node_name(value: str) -> str:
+    name = _SAFE_FILE_RE.sub("_", value.lower()).strip("_")
+    return name[:120].rstrip("_") or "nested_child"
+
+
 def _validate_glb_identity(glb_path: Path, object_ids: Sequence[str]) -> dict[str, Any]:
     try:
         import trimesh
@@ -1718,6 +1928,7 @@ __all__ = [
     "SUPPORTED_RENDER_PASSES",
     "SceneArtifactError",
     "export_scene_glb",
+    "export_scene_glbs",
     "export_scene_id_mask_bundle",
     "export_scene_usd",
     "render_scene_graph",

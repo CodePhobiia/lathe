@@ -119,6 +119,8 @@ class _FastParser(_FastParserExprMixin):
                 program[self.DECL_KEYS[keyword]].append(self._mapping_decl(keyword))
             elif keyword == "style_pack":
                 program["style_packs"].append(self._style_pack_decl())
+            elif keyword in {"faction_pack", "biome_kit", "architecture_grammar", "object_grammar"}:
+                program["style_packs"].append(self._style_system_decl(keyword))
             elif keyword in self.STRUCTURED_DECLS:
                 node_type = "assembly_decl" if keyword == "assembly" else keyword
                 program[self.STRUCTURED_KEYS[keyword]].append(self._structured_decl(node_type, keyword))
@@ -131,6 +133,8 @@ class _FastParser(_FastParserExprMixin):
                 program["benchmarks"].append(self._test_like("benchmark"))
             elif keyword == "space":
                 program["spaces"].append(self._space_decl())
+            elif keyword == "world":
+                program["worlds"].append(self._scene_decl(node_type="world"))
             elif keyword == "scene":
                 program["scenes"].append(self._scene_decl())
             elif keyword == "asset":
@@ -203,6 +207,13 @@ class _FastParser(_FastParserExprMixin):
         name = self.ts.pop_ident()
         values = self._assign_block("style_pack")
         return {"node_type": "style_pack", "name": name, "uses": [], "values": values}
+
+    def _style_system_decl(self, keyword: str) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        uses = self._optional_uses()
+        values = self._assign_block(keyword)
+        values["_style_system"] = keyword
+        return {"node_type": "style_pack", "name": name, "uses": _dedupe_keep_first(uses), "values": values}
 
     def _simple_mapping_decl(self, node_type: str) -> dict[str, Any]:
         name = self.ts.pop_ident()
@@ -485,12 +496,25 @@ class _FastParser(_FastParserExprMixin):
             "select": select,
         }
 
-    def _scene_decl(self) -> dict[str, Any]:
+    def _scene_decl(self, *, node_type: str = "scene") -> dict[str, Any]:
         name = self.ts.pop_ident()
         values: list[tuple[str, Any]] = []
         styles: list[dict[str, Any]] = []
+        style_packs: list[dict[str, Any]] = []
         regions: list[dict[str, Any]] = []
+        groups: list[dict[str, Any]] = []
+        placement_zones: list[dict[str, Any]] = []
+        modules: list[dict[str, Any]] = []
+        kits: list[dict[str, Any]] = []
+        variant_families: list[dict[str, Any]] = []
+        generators: list[dict[str, Any]] = []
+        biomes: list[dict[str, Any]] = []
+        scatters: list[dict[str, Any]] = []
+        environments: list[dict[str, Any]] = []
         objects: list[dict[str, Any]] = []
+        arrays: list[dict[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
         relationships: list[dict[str, Any]] = []
         cameras: list[dict[str, Any]] = []
         lights: list[dict[str, Any]] = []
@@ -502,10 +526,549 @@ class _FastParser(_FastParserExprMixin):
             item = self.ts.pop_ident()
             if item == "style":
                 styles.append(self._scene_named_assign_block("scene_style", "style"))
+            elif item == "style_pack" and self.ts.kind() == "ident":
+                style_packs.append(self._scene_named_assign_block("scene_style_pack", "style_pack"))
+            elif item in {"faction_pack", "biome_kit", "architecture_grammar", "object_grammar"} and self.ts.kind() == "ident":
+                style_packs.append(self._scene_style_system_block(item))
             elif item == "region":
                 regions.append(self._scene_typed_assign_block("scene_region", "region", field="type"))
-            elif item == "object":
-                objects.append(self._scene_object_block())
+            elif item in {"group", "collection"}:
+                groups.append(self._scene_named_assign_block("scene_group", item))
+            elif item == "placement_zone":
+                placement_zones.append(self._scene_typed_assign_block("scene_placement_zone", "placement_zone", field="type"))
+            elif item == "module":
+                modules.append(self._scene_object_block(node_type="scene_module", construct="module"))
+            elif item == "kit":
+                kits.append(self._scene_kit_block())
+            elif item == "variant_family":
+                variant_families.append(self._scene_variant_family_block())
+            elif item == "generator":
+                generators.append(self._scene_generator_block())
+            elif item == "biome":
+                biomes.append(self._scene_biome_block())
+            elif item == "scatter":
+                scatters.append(self._scene_scatter_block())
+            elif item == "environment":
+                environments.append(self._scene_environment_block())
+            elif item in {"object", "instance"}:
+                objects.append(self._scene_object_block(construct=item))
+            elif item == "terrain":
+                objects.append(self._scene_terrain_block())
+            elif item in {
+                "road",
+                "bridge",
+                "building",
+                "building_envelope",
+                "floor_stack",
+                "facade_grid",
+                "facade_bay",
+                "roof_profile",
+                "vertical_core",
+                "entrance_plan",
+                "site_compound",
+                "building_lot",
+                "courtyard_plan",
+                "pedestrian_path",
+                "service_alley",
+                "parking_zone",
+                "loading_zone",
+                "exterior_utility",
+                "building_complex",
+                "harbor_complex",
+                "dockyard",
+                "vehicle_yard",
+                "hangar_complex",
+                "factory_complex",
+                "production_line",
+                "industrial_district",
+                "transport_corridor",
+                "supply_network",
+                "resource_region",
+                "settlement",
+                "civilization",
+                "culture_system",
+                "law_code",
+                "policy_rule",
+                "economy_model",
+                "trade_policy",
+                "diplomacy_state",
+                "social_graph",
+                "social_relation",
+                "population_group",
+                "labor_system",
+                "ritual_calendar",
+                "festival",
+                "belief_system",
+                "cultural_marker",
+                "civic_institution",
+                "quest",
+                "objective",
+                "mission",
+                "objective_chain",
+                "success_condition",
+                "failure_condition",
+                "reward_table",
+                "loot_table",
+                "inventory_slot",
+                "crafting_station",
+                "recipe",
+                "shop",
+                "vendor",
+                "currency",
+                "reputation_rule",
+                "unlock_rule",
+                "progression_track",
+                "gameplay_rule",
+                "interactable",
+                "encounter",
+                "director",
+                "encounter_director",
+                "director_intent",
+                "pacing_curve",
+                "threat_budget",
+                "spawn_wave",
+                "spawn_budget",
+                "combat_phase",
+                "stealth_phase",
+                "escalation_rule",
+                "adaptive_difficulty",
+                "encounter_beat",
+                "director_signal",
+                "threat_zone",
+                "reinforcement_route",
+                "simulation_layer",
+                "heat_field",
+                "noise_field",
+                "visibility_field",
+                "resource_flow",
+                "faction_pressure",
+                "territory_influence",
+                "alarm_grid",
+                "patrol_density",
+                "hazard_field",
+                "sensor_grid",
+                "cover_map",
+                "flow_gate",
+                "world_metric",
+                "simulation_probe",
+                "traversal_gate",
+                "resource_economy",
+                "control_zone",
+                "npc",
+                "agent",
+                "crowd",
+                "schedule",
+                "patrol_route",
+                "dialogue_tree",
+                "inventory_loadout",
+                "spawn_ecology",
+                "biome_system",
+                "habitat_zone",
+                "species_population",
+                "food_web",
+                "predator_prey_link",
+                "migration_route",
+                "nesting_site",
+                "resource_patch",
+                "resource_regeneration",
+                "growth_cycle",
+                "weather_ecology_link",
+                "ecological_pressure",
+                "land_use_plan",
+                "farm_plot",
+                "hunting_ground",
+                "fishing_ground",
+                "grazing_range",
+                "extraction_site",
+                "pollution_source",
+                "conservation_zone",
+                "restoration_project",
+                "scarcity_loop",
+                "settlement_pressure",
+                "resource_claim",
+                "harvest_cycle",
+                "carrying_capacity_rule",
+                "biome_impact",
+                "supply_chain",
+                "logistics_hub",
+                "storage_depot",
+                "stockpile",
+                "input_buffer",
+                "output_buffer",
+                "processing_stage",
+                "refinery_stage",
+                "workshop_stage",
+                "assembly_stage",
+                "market_node",
+                "demand_sink",
+                "supply_route",
+                "transport_leg",
+                "bottleneck",
+                "throughput_rule",
+                "failure_mode",
+                "production_strategy",
+                "production_priority",
+                "quota_rule",
+                "allocation_rule",
+                "rationing_policy",
+                "strategic_reserve",
+                "trade_embargo",
+                "sabotage_target",
+                "maintenance_plan",
+                "repair_schedule",
+                "mobilization_order",
+                "production_mode",
+                "wartime_production",
+                "peacetime_production",
+                "procurement_contract",
+                "readiness_level",
+                "conflict_system",
+                "strategic_objective",
+                "war_plan",
+                "battlefront",
+                "escalation_ladder",
+                "treaty",
+                "ceasefire",
+                "alliance",
+                "rival_claim",
+                "diplomatic_demand",
+                "negotiation_channel",
+                "sanction",
+                "espionage_cell",
+                "covert_operation",
+                "disaster_response",
+                "emergency_order",
+                "faction_ai",
+                "doctrine_model",
+                "goal_stack",
+                "threat_model",
+                "perception_feed",
+                "decision_rule",
+                "policy_selector",
+                "action_option",
+                "response_plan",
+                "escalation_choice",
+                "deescalation_choice",
+                "resource_strategy",
+                "logistics_priority",
+                "diplomatic_posture",
+                "contingency_plan",
+                "adaptive_order",
+                "operational_plan",
+                "order_queue",
+                "world_order",
+                "patrol_order",
+                "convoy_order",
+                "construction_order",
+                "repair_order",
+                "relief_order",
+                "mission_order",
+                "scheduled_action",
+                "task_assignment",
+                "crew_roster",
+                "convoy_route",
+                "construction_queue",
+                "repair_crew",
+                "relief_team",
+                "settlement_evolution",
+                "growth_phase",
+                "expansion_zone",
+                "construction_stage",
+                "upgrade_plan",
+                "district_upgrade",
+                "building_upgrade",
+                "infrastructure_upgrade",
+                "material_delivery",
+                "staffing_plan",
+                "occupancy_plan",
+                "worksite",
+                "build_permit",
+                "damage_repair_plan",
+                "demolition_plan",
+                "renovation_project",
+                "city_plan",
+                "zoning_rule",
+                "zoning_district",
+                "parcel_grid",
+                "land_parcel",
+                "parcel_subdivision",
+                "block_plan",
+                "street_hierarchy",
+                "transit_node",
+                "civic_service_plan",
+                "service_coverage",
+                "utility_corridor",
+                "district_site_plan",
+                "street_crossing",
+                "perimeter_plan",
+                "security_gate",
+                "landscape_zone",
+                "traffic_flow",
+                "service_flow",
+                "access_sequence",
+                "public_entry",
+                "service_entry",
+                "threshold_transition",
+                "entry_lobby",
+                "access_checkpoint",
+                "loading_path",
+                "wayfinding_node",
+                "circulation_core",
+                "stair_run",
+                "elevator_bank",
+                "egress_route",
+                "emergency_exit",
+                "corridor_spine",
+                "floor_transition",
+                "public_circulation",
+                "service_circulation",
+                "stair_detail",
+                "tread_pattern",
+                "landing_platform",
+                "handrail_run",
+                "corridor_shell",
+                "door_rhythm",
+                "ceiling_service_grid",
+                "egress_surface_plan",
+                "room_route_binding",
+                "power_grid",
+                "substation",
+                "transformer_bank",
+                "power_line",
+                "water_network",
+                "pump_station",
+                "water_tower",
+                "sewer_network",
+                "treatment_plant",
+                "data_network",
+                "data_hub",
+                "fiber_line",
+                "transit_line",
+                "transit_station",
+                "service_connection",
+                "maintenance_access",
+                "building_service_plan",
+                "service_core",
+                "utility_room",
+                "mechanical_room",
+                "electrical_panel",
+                "meter_bank",
+                "plumbing_stack",
+                "hvac_system",
+                "ventilation_duct",
+                "elevator_core",
+                "service_elevator",
+                "service_shaft",
+                "fire_suppression",
+                "sprinkler_zone",
+                "waste_chute",
+                "loading_dock",
+                "room_program",
+                "bathroom",
+                "kitchen",
+                "lab_room",
+                "med_bay",
+                "workshop_room",
+                "control_room",
+                "storage_room",
+                "office_room",
+                "bedroom",
+                "fixture_cluster",
+                "appliance_bank",
+                "workstation_cluster",
+                "cabinet_wall",
+                "counter_run",
+                "sanitary_fixture",
+                "lab_bench",
+                "medical_bed",
+                "tool_rack",
+                "room_adjacency",
+                "room_connection",
+                "door_opening",
+                "corridor_link",
+                "wall_run",
+                "room_socket",
+                "fixture_socket",
+                "socket_binding",
+                "fixture_placement",
+                "furniture_placement",
+                "service_placement",
+                "wall_attachment",
+                "anchor_rule",
+                "placement_constraint",
+                "auto_layout",
+                "room_layout_plan",
+                "fixture_layout",
+                "furniture_layout",
+                "service_layout",
+                "wall_fixture_layout",
+                "layout_solver",
+                "room_bounds",
+                "wall_side_rule",
+                "socket_priority",
+                "clearance_zone",
+                "layout_slot",
+                "footprint_packer",
+                "placement_footprint",
+                "occupancy_grid",
+                "fit_profile",
+                "collision_rule",
+                "service_reach",
+                "room_packing_solver",
+                "packing_slot",
+                "packed_transform",
+                "clearance_reservation",
+                "service_anchor_map",
+                "room_content_plan",
+                "content_family_binding",
+                "furniture_asset",
+                "fixture_asset",
+                "packed_child_asset",
+                "content_surface_plan",
+                "content_material_zone",
+                "content_finish_preset",
+                "content_wear_profile",
+                "content_marking_set",
+                "room_pack_preset",
+                "footprint_size_preset",
+                "packing_policy_preset",
+                "clearance_preset",
+                "service_reach_preset",
+                "role_item_set",
+                "public_space_plan",
+                "growth_boundary",
+                "district_dependency",
+                "development_pressure",
+                "climate_zone",
+                "climate_risk_map",
+                "flood_risk",
+                "fire_risk",
+                "heat_risk",
+                "resource_constraint",
+                "protected_land",
+                "green_infrastructure",
+                "stormwater_system",
+                "cooling_corridor",
+                "evacuation_route",
+                "emergency_shelter",
+                "resilience_plan",
+                "climate_adaptation",
+                "transit_oriented_growth",
+                "risk_mitigation",
+                "faction_behavior",
+                "behavior_graph",
+                "event",
+                "event_emitter",
+                "trigger_volume",
+                "timer",
+                "state_machine",
+                "state_transition",
+                "conditional_spawn",
+                "alert_network",
+                "scene_state",
+                "scene_mutation",
+                "timeline",
+                "sequencer",
+                "animation_clip",
+                "action",
+                "action_pose",
+                "motion_path",
+                "moving_part",
+                "door_action",
+                "gate_action",
+                "machine_cycle",
+                "vfx_emitter",
+                "sound_cue",
+                "physics_body",
+                "physics_joint",
+                "hinge_joint",
+                "physics_constraint",
+                "breakable_part",
+                "damage_state",
+                "debris_field",
+                "rope",
+                "cable",
+                "cloth_flag",
+                "force_field",
+                "destruction_event",
+                "surface_layer",
+                "material_zone",
+                "decal",
+                "wear_pattern",
+                "damage_surface",
+                "surface_transition",
+                "weather_system",
+                "atmosphere",
+                "wind_zone",
+                "liquid_body",
+                "puddle_field",
+                "fire_source",
+                "smoke_emitter",
+                "mist_volume",
+                "wetness_zone",
+                "heat_haze",
+                "time_of_day",
+                "environment_effect",
+                "shot",
+                "shot_sequence",
+                "camera_rail",
+                "look_at_target",
+                "focal_zone",
+                "cutscene_beat",
+                "orbit_camera",
+                "inspection_camera",
+                "focus_pull",
+                "camera_volume",
+                "presentation_rig",
+                "composition_guide",
+                "ambient_bed",
+                "sound_zone",
+                "reverb_space",
+                "acoustic_occluder",
+                "sound_propagation",
+                "music_state",
+                "music_transition",
+                "stinger",
+                "foley_emitter",
+                "audio_bus",
+                "listener_zone",
+                "acoustic_material",
+                "interaction_prompt",
+                "interaction_zone",
+                "affordance",
+                "usable",
+                "pickup",
+                "inspect_point",
+                "terminal",
+                "control_panel",
+                "switch",
+                "lever",
+                "button",
+                "door_lock",
+                "quest_marker",
+                "signage",
+                "map_marker",
+                "diegetic_hud",
+                "ui_anchor",
+                "interior",
+                "city_block",
+                "district",
+                "room_cluster",
+                "street_grid",
+                "floorplan",
+                "road_intersection",
+                "infrastructure",
+                "service_network",
+                "access",
+                "route",
+            }:
+                objects.append(self._scene_object_block(construct=item))
+            elif item == "array":
+                arrays.append(self._scene_object_block(node_type="scene_array", construct="array"))
+            elif item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
             elif item == "relationship":
                 relationships.append(self._scene_typed_assign_block("scene_relationship", "relationship", field="type"))
             elif item in {"camera", "camera_intent"}:
@@ -522,12 +1085,25 @@ class _FastParser(_FastParserExprMixin):
                 values.append((self._finish_path(item), self._assign_value()))
         self.ts.pop("}")
         return {
-            "node_type": "scene",
+            "node_type": node_type,
             "name": name,
             "values": self._assignments(values, "scene"),
             "styles": styles,
+            "style_packs": style_packs,
             "regions": regions,
+            "groups": groups,
+            "placement_zones": placement_zones,
+            "modules": modules,
+            "kits": kits,
+            "variant_families": variant_families,
+            "generators": generators,
+            "biomes": biomes,
+            "scatters": scatters,
+            "environments": environments,
             "objects": objects,
+            "arrays": arrays,
+            "sockets": sockets,
+            "attachments": attachments,
             "relationships": relationships,
             "cameras": cameras,
             "lights": lights,
@@ -541,6 +1117,12 @@ class _FastParser(_FastParserExprMixin):
         values = self._assign_block(context)
         return {"node_type": node_type, "name": name, "values": values}
 
+    def _scene_style_system_block(self, keyword: str) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        values = self._assign_block(keyword)
+        values["_style_system"] = keyword
+        return {"node_type": "scene_style_pack", "name": name, "values": values}
+
     def _scene_typed_assign_block(self, node_type: str, context: str, *, field: str) -> dict[str, Any]:
         name = self.ts.pop_ident()
         type_value = ""
@@ -550,7 +1132,7 @@ class _FastParser(_FastParserExprMixin):
         values = self._assign_block(context)
         return {"node_type": node_type, "name": name, field: type_value, "values": values}
 
-    def _scene_object_block(self) -> dict[str, Any]:
+    def _scene_object_block(self, *, node_type: str = "scene_object", construct: str = "object") -> dict[str, Any]:
         name = self.ts.pop_ident()
         role = ""
         source = ""
@@ -570,10 +1152,245 @@ class _FastParser(_FastParserExprMixin):
                 assignments.append((self._finish_path(item), self._assign_value()))
         self.ts.pop("}")
         values = self._assignments(assignments, "object")
+        if construct != "object":
+            values.setdefault("_construct", construct)
+        return {
+            "node_type": node_type,
+            "name": name,
+            "role": role,
+            "from": source,
+            "values": values,
+        }
+
+    def _scene_kit_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        role = ""
+        source = ""
+        if self.ts.peek(":"):
+            self.ts.pop(":")
+            role = self.ts.pop_ident()
+        if self.ts.peek("from"):
+            self.ts.pop("from")
+            source = self._qident()
+        assignments: list[tuple[str, Any]] = []
+        parts: list[dict[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "part":
+                parts.append(self._scene_object_block(node_type="scene_kit_part", construct="part"))
+            elif item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "kit")
+        values["_parts"] = parts
+        values["_sockets"] = sockets
+        values["_attachments"] = attachments
+        return {
+            "node_type": "scene_kit",
+            "name": name,
+            "role": role,
+            "from": source,
+            "values": values,
+        }
+
+    def _scene_variant_family_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        assignments: list[tuple[str, Any]] = []
+        options: list[dict[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        constraints: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "option":
+                options.append(self._scene_object_block(node_type="scene_variant_option", construct="option"))
+            elif item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
+            elif item == "constraint" and self.ts.kind() == "ident":
+                constraints.append(self._scene_typed_assign_block("scene_constraint", "constraint", field="type"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "variant_family")
+        values["_options"] = options
+        values["_sockets"] = sockets
+        values["_attachments"] = attachments
+        values["_constraints"] = constraints
+        return {"node_type": "scene_variant_family", "name": name, "values": values}
+
+    def _scene_generator_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        role = ""
+        source = ""
+        if self.ts.peek(":"):
+            self.ts.pop(":")
+            role = self.ts.pop_ident()
+        if self.ts.peek("from"):
+            self.ts.pop("from")
+            source = self._qident()
+        assignments: list[tuple[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        constraints: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
+            elif item == "constraint" and self.ts.kind() == "ident":
+                constraints.append(self._scene_typed_assign_block("scene_constraint", "constraint", field="type"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "generator")
+        values["_sockets"] = sockets
+        values["_attachments"] = attachments
+        values["_constraints"] = constraints
+        return {
+            "node_type": "scene_generator",
+            "name": name,
+            "role": role,
+            "from": source,
+            "values": values,
+        }
+
+    def _scene_biome_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        assignments: list[tuple[str, Any]] = []
+        options: list[dict[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        constraints: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "option":
+                options.append(self._scene_object_block(node_type="scene_variant_option", construct="option"))
+            elif item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
+            elif item == "constraint" and self.ts.kind() == "ident":
+                constraints.append(self._scene_typed_assign_block("scene_constraint", "constraint", field="type"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "biome")
+        values["_options"] = options
+        values["_sockets"] = sockets
+        values["_attachments"] = attachments
+        values["_constraints"] = constraints
+        return {"node_type": "scene_biome", "name": name, "values": values}
+
+    def _scene_scatter_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        role = ""
+        source = ""
+        if self.ts.peek(":"):
+            self.ts.pop(":")
+            role = self.ts.pop_ident()
+        if self.ts.peek("from"):
+            self.ts.pop("from")
+            source = self._qident()
+        assignments: list[tuple[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        constraints: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
+            elif item == "constraint" and self.ts.kind() == "ident":
+                constraints.append(self._scene_typed_assign_block("scene_constraint", "constraint", field="type"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "scatter")
+        values["_sockets"] = sockets
+        values["_attachments"] = attachments
+        values["_constraints"] = constraints
+        return {
+            "node_type": "scene_scatter",
+            "name": name,
+            "role": role,
+            "from": source,
+            "values": values,
+        }
+
+    def _scene_environment_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        role = ""
+        source = ""
+        if self.ts.peek(":"):
+            self.ts.pop(":")
+            role = self.ts.pop_ident()
+        if self.ts.peek("from"):
+            self.ts.pop("from")
+            source = self._qident()
+        assignments: list[tuple[str, Any]] = []
+        sockets: list[dict[str, Any]] = []
+        attachments: list[dict[str, Any]] = []
+        constraints: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "socket" and self.ts.kind() == "ident":
+                sockets.append(self._scene_typed_assign_block("scene_socket", "socket", field="type"))
+            elif item == "attach" and self.ts.kind() == "ident":
+                attachments.append(self._scene_typed_assign_block("scene_attachment", "attach", field="type"))
+            elif item == "constraint" and self.ts.kind() == "ident":
+                constraints.append(self._scene_typed_assign_block("scene_constraint", "constraint", field="type"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "environment")
+        values["_sockets"] = sockets
+        values["_attachments"] = attachments
+        values["_constraints"] = constraints
+        return {
+            "node_type": "scene_environment",
+            "name": name,
+            "role": role,
+            "from": source,
+            "values": values,
+        }
+
+    def _scene_terrain_block(self) -> dict[str, Any]:
+        name = self.ts.pop_ident()
+        source = ""
+        if self.ts.peek("from"):
+            self.ts.pop("from")
+            source = self._qident()
+        assignments: list[tuple[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            item = self.ts.pop_ident()
+            if item == "gameplay" and self.ts.peek("{"):
+                assignments.extend(self._prefixed_assign_block("gameplay", "gameplay"))
+            else:
+                assignments.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "terrain")
+        values.setdefault("_construct", "terrain")
         return {
             "node_type": "scene_object",
             "name": name,
-            "role": role,
+            "role": "environment_structure",
             "from": source,
             "values": values,
         }

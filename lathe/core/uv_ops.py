@@ -14,6 +14,7 @@ import trimesh
 from .common import unit_to_cm, unit_to_px_per_m
 from .geometry import derived_lightmap_uv
 from .mesh import RuntimeMesh
+from ..uv_organization import build_uv_organization
 
 
 def _uv_resolution(asset: dict[str, Any], *, default: int = 2048) -> int:
@@ -35,13 +36,21 @@ def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[Runt
     """
     mesh = runtime_mesh.mesh
     face_parts = runtime_mesh.face_parts
-    unique_parts = sorted(set(face_parts))
-    cells = math.ceil(math.sqrt(max(1, len(unique_parts))))
-    cell_size = 1.0 / cells
     resolution = _uv_resolution(asset)
     padding_px = asset["build"]["uv"].get("padding", {"type": "unit", "value": 8, "unit": "px"})
     padding_norm = min(0.1, float(unit_to_cm(padding_px)) / float(resolution))
-    part_to_cell = {part: (idx % cells, idx // cells) for idx, part in enumerate(unique_parts)}
+    requested_sets = list(asset["build"]["uv"].get("sets", ["base"]))
+    organization = build_uv_organization(
+        asset,
+        list(face_parts),
+        resolution=resolution,
+        padding_normalized=padding_norm,
+        requested_sets=requested_sets,
+    )
+    chart_ids = [entry["chart_id"] for entry in organization["chart_manifest"]]
+    cells = math.ceil(math.sqrt(max(1, len(chart_ids))))
+    cell_size = 1.0 / cells
+    chart_to_cell = {chart_id: (idx % cells, idx // cells) for idx, chart_id in enumerate(chart_ids)}
 
     vertices = mesh.vertices[mesh.faces].reshape(-1, 3)
     faces = np.arange(len(vertices), dtype=np.int64).reshape(-1, 3)
@@ -64,7 +73,8 @@ def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[Runt
         span = np.maximum(maxs - mins, 1e-6)
         local = (projected - mins) / span
         part = face_parts[face_index]
-        cell_x, cell_y = part_to_cell[part]
+        chart_id = organization["part_to_chart"].get(part, chart_ids[0] if chart_ids else "uvc_01_mesh")
+        cell_x, cell_y = chart_to_cell.get(chart_id, (0, 0))
         u0 = cell_x * cell_size + padding_norm * cell_size
         v0 = cell_y * cell_size + padding_norm * cell_size
         usable = cell_size * (1.0 - 2.0 * padding_norm)
@@ -87,7 +97,6 @@ def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[Runt
     )
 
     uv_sets = []
-    requested_sets = list(asset["build"]["uv"].get("sets", ["base"]))
     for name, coords in [("base", uv), ("lightmap", uv_lightmap)]:
         if name not in requested_sets:
             continue
@@ -108,13 +117,21 @@ def apply_box_uv(runtime_mesh: RuntimeMesh, asset: dict[str, Any]) -> tuple[Runt
     meta = {
         "uv_sets": uv_sets,
         "packing_report": {
-            "chart_count": len(unique_parts),
+            "chart_count": len(chart_ids),
+            "semantic_grouping": organization["chart_grouping"],
             "resolution": resolution,
             "cells": cells,
             "padding_normalized": round(padding_norm, 6),
             "pack_rotate": bool(asset["build"]["uv"].get("pack_rotate", True)),
         },
         "texel_density": {"requested_px_per_m": px_per_m, "actual_px_per_m": px_per_m},
+        "uv_organization": {
+            key: value
+            for key, value in organization.items()
+            if key not in {"chart_manifest", "material_id_layout"}
+        },
+        "chart_manifest": organization["chart_manifest"],
+        "material_id_layout": organization["material_id_layout"],
     }
     return runtime, meta
 
@@ -160,6 +177,16 @@ def apply_xatlas_uv(
     )
 
     requested_sets = list(asset["build"]["uv"].get("sets", ["base"]))
+    resolution = int(((runtime_config or {}).get("uv", {}).get("xatlas", {}) or {}).get("resolution", 2048))
+    padding_px = asset["build"]["uv"].get("padding", {"type": "unit", "value": 8, "unit": "px"})
+    padding_norm = min(0.1, float(unit_to_cm(padding_px)) / max(1.0, float(resolution)))
+    organization = build_uv_organization(
+        asset,
+        face_parts,
+        resolution=resolution,
+        padding_normalized=padding_norm,
+        requested_sets=requested_sets,
+    )
     uv_sets = []
     for name, coords in [("base", base_uv), ("lightmap", lightmap_uv)]:
         if name not in requested_sets:
@@ -178,18 +205,24 @@ def apply_xatlas_uv(
         )
     texel_density = asset["build"]["uv"].get("texel_density")
     px_per_m = round(unit_to_px_per_m(texel_density), 6) if texel_density is not None else None
-    resolution = int(((runtime_config or {}).get("uv", {}).get("xatlas", {}) or {}).get("resolution", 2048))
-    padding_px = asset["build"]["uv"].get("padding", {"type": "unit", "value": 8, "unit": "px"})
-    padding_norm = min(0.1, float(unit_to_cm(padding_px)) / max(1.0, float(resolution)))
     meta = {
         "uv_sets": uv_sets,
         "packing_report": {
             "chart_count": max(1, len(set(face_parts))),
+            "semantic_chart_count": organization["chart_count"],
+            "semantic_grouping": organization["chart_grouping"],
             "resolution": resolution,
             "padding_normalized": round(padding_norm, 6),
             "pack_rotate": bool(asset["build"]["uv"].get("pack_rotate", True)),
         },
         "texel_density": {"requested_px_per_m": px_per_m, "actual_px_per_m": px_per_m},
+        "uv_organization": {
+            key: value
+            for key, value in organization.items()
+            if key not in {"chart_manifest", "material_id_layout"}
+        },
+        "chart_manifest": organization["chart_manifest"],
+        "material_id_layout": organization["material_id_layout"],
     }
     execution = {
         "mode": "xatlas",

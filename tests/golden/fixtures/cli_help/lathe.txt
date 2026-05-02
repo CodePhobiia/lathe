@@ -1,10 +1,11 @@
 usage: lathe [-h] [--debug-traceback] [--strict-prompt-injection]
-             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,scene,wonder} ...
+             {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,asset-quality,scene,wonder}
+             ...
 
 Lathe 3D asset compiler/runtime
 
 positional arguments:
-  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,scene,wonder}
+  {parse,normalize,fmt,schema,backends,shape-providers,completions,probe-providers,doctor,check,plan,materialize,build,probe-blender,export-blend,inspect-blend,render-eval,bridge,inspect,serve,render-fixture,bake-audit,library,surface-plan,surface-build,surface-validate,surface-repair,fit,adapt,assemble,reconstruct,test,bench,audit,explain,explain-fit,diff-asset,patch,ref,cache,diff,publish,snapshot,telemetry,asset-quality,scene,wonder}
     parse               Parse a .lth file to raw AST JSON
     normalize           Normalize a .lth file to canonical JSON
     fmt                 Rewrite Lathe sources in canonical form
@@ -49,6 +50,7 @@ positional arguments:
     publish             Publish a completed build to a configured target
     snapshot            Emit a canonical hash-based snapshot for a completed build
     telemetry           Manage opt-in anonymous build-ping telemetry
+    asset-quality       Validate and certify Phase 14 asset-quality example fixtures
     scene               Operate on scene packages and World Memory
     wonder              Validate Wonder-readiness JSON contracts
 

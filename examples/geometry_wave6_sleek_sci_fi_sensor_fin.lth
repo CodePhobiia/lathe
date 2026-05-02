@@ -1,0 +1,37 @@
+module examples.geometry_wave6.sleek_sci_fi_sensor_fin
+
+asset geometry_wave6_sleek_sci_fi_sensor_fin: hard_surface_prop {
+  intent {
+    role = "sleek sci fi sensor fin with elegant layered ridges and swappable pods"
+    style = ["sleek", "prototype", "modular"]
+    parts = [body, sensor_face, dorsal_fin, wing_socket_l, wing_socket_r, antenna_spine]
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    scale = 0.8m
+  }
+
+  surface {
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 602
+      symmetry = x
+      style_pack = sleek_sci_fi
+      style_intensity = high
+      detail_zones = [sensor_face, dorsal_fin, antenna_spine]
+      zone_sensor_face_module_categories = [sensor_pod, antenna]
+      zone_sensor_face_module_count = 3
+      zone_dorsal_fin_density = hero
+      zone_dorsal_fin_motifs = [raised_ridge, radial_detail_array, layer_plate]
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

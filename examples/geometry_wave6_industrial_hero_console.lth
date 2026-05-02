@@ -1,0 +1,38 @@
+module examples.geometry_wave6.industrial_hero_console
+
+asset geometry_wave6_industrial_hero_console: hard_surface_prop {
+  intent {
+    role = "industrial hero console with heavy modular panel construction"
+    style = ["industrial", "brutalist", "modular"]
+    parts = [body, console_panel, side_socket_l, side_socket_r, service_rail, screen_panel]
+    materials = [painted_steel, bare_metal, rubber]
+    scale = 1.4m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, rubber]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 601
+      symmetry = x
+      style_pack = industrial_hero
+      style_intensity = hero
+      lod_levels = 4
+      collision_proxy = convex_decomp
+      export_profiles = [glb, usd, godot]
+      detail_zones = [body, console_panel, side_socket_l, side_socket_r]
+      zone_console_panel_density = hero
+      zone_console_panel_module_categories = [power_cell, antenna]
+      zone_console_panel_module_count = 3
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb, usd] }
+}

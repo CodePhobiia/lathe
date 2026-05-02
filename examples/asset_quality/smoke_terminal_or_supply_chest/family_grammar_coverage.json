@@ -1,0 +1,26 @@
+{
+  "asset_id": "smoke_terminal_or_supply_chest",
+  "coverage": 0.8,
+  "family": "supply_chest",
+  "missing_rules": [
+    "strict_renderer_preview"
+  ],
+  "required_rules": [
+    "primary_body",
+    "interaction_face",
+    "control_affordance",
+    "panel_seams",
+    "accent_material_zone",
+    "contact_wear"
+  ],
+  "rules_used": [
+    "primary_body",
+    "interaction_face",
+    "control_affordance",
+    "panel_seams",
+    "accent_material_zone",
+    "contact_wear"
+  ],
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "warning_status": "pass"
+}

@@ -9,11 +9,19 @@ from __future__ import annotations
 
 import importlib.metadata
 import warnings
+from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
+
+import trimesh
+from PIL import Image
+from trimesh.visual.material import PBRMaterial
+from trimesh.visual.texture import TextureVisuals
 
 from ...engine_manifests import ADAPTERS as _ENGINE_ADAPTERS
 from ...engine_manifests import manifest_filename as _engine_manifest_filename
 from ...errors import BuildError
+from ...nested_assets import nested_asset_manifest_for_signature
 from ...paths import PathGuardError, safe_resolve
 from ...security import redact_secrets
 from ...selector_manifest import build_selector_manifest, write_selector_manifest
@@ -35,6 +43,8 @@ STAGE_ORDER_FOR_TRACE = [
     "validate",
     "package",
 ]
+
+PBR_TEXTURE_MAPS = ("basecolor", "normal", "orm", "ao", "emissive")
 
 
 def _compiler_version() -> str:
@@ -69,6 +79,163 @@ def _copy_package_artifact(src: Any, dst: Any) -> None:
     dst.write_bytes(src.read_bytes())
 
 
+def _resolve_surface_texture_path(executor: Any, surface_bundle: dict[str, Any], map_name: str) -> Path | None:
+    outputs = surface_bundle.get("outputs", {})
+    if not isinstance(outputs, dict):
+        return None
+    entry = outputs.get(map_name)
+    if not isinstance(entry, dict):
+        return None
+    uri = entry.get("uri")
+    if not uri:
+        return None
+    try:
+        path = safe_resolve(executor.stage_dirs["surface"], str(uri))
+    except (PathGuardError, TypeError, ValueError, OSError):
+        return None
+    return path if path.exists() and path.is_file() else None
+
+
+def _copy_surface_textures(executor: Any, stage_dir: Path) -> dict[str, Path]:
+    surface_bundle = executor.runtime.get("surface", {}).get("bundle", {})
+    if not isinstance(surface_bundle, dict):
+        return {}
+    texture_dir = stage_dir / "textures"
+    copied: dict[str, Path] = {}
+    for map_name in PBR_TEXTURE_MAPS:
+        src = _resolve_surface_texture_path(executor, surface_bundle, map_name)
+        if src is None:
+            continue
+        dst = texture_dir / src.name
+        _copy_package_artifact(src, dst)
+        copied[map_name] = dst
+    return copied
+
+
+def _open_texture(path: Path, mode: str) -> Image.Image:
+    with Image.open(path) as image:
+        return image.convert(mode)
+
+
+def _mesh_with_pbr_textures(mesh: trimesh.Trimesh, texture_paths: dict[str, Path]) -> trimesh.Trimesh:
+    basecolor_path = texture_paths.get("basecolor")
+    uv = getattr(mesh.visual, "uv", None)
+    if basecolor_path is None or uv is None:
+        return mesh
+
+    material = PBRMaterial(
+        name="lathe_pbr_atlas",
+        baseColorTexture=_open_texture(basecolor_path, "RGBA"),
+        normalTexture=_open_texture(texture_paths["normal"], "RGB") if "normal" in texture_paths else None,
+        metallicRoughnessTexture=_open_texture(texture_paths["orm"], "RGB") if "orm" in texture_paths else None,
+        occlusionTexture=_open_texture(texture_paths["ao"], "RGB") if "ao" in texture_paths else None,
+        emissiveTexture=_open_texture(texture_paths["emissive"], "RGB") if "emissive" in texture_paths else None,
+        metallicFactor=1.0,
+        roughnessFactor=1.0,
+    )
+    textured = mesh.copy()
+    textured.visual = TextureVisuals(uv=uv.copy(), material=material)
+    return textured
+
+
+def _game_asset_manifest_requested(package_cfg: dict[str, Any]) -> bool:
+    manifests = package_cfg.get("manifests", [])
+    if not isinstance(manifests, list):
+        manifests = [manifests]
+    return bool(package_cfg.get("game_asset_manifest", False)) or "game_asset_manifest" in {
+        str(item) for item in manifests
+    }
+
+
+def _build_game_asset_manifest(
+    *,
+    executor: Any,
+    outputs: list[dict[str, Any]],
+    optimize_bundle: dict[str, Any],
+    texture_outputs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    surface_bundle = (executor.runtime.get("surface") or {}).get("bundle") or {}
+    uv_bundle = (executor.runtime.get("uv") or {}).get("bundle") or {}
+    physics_bundle = (executor.runtime.get("physics") or {}).get("bundle") or {}
+    interfaces_bundle = (executor.runtime.get("interfaces") or {}).get("bundle") or {}
+    return {
+        "schema": "lathe.game_asset_manifest.v1",
+        "asset_id": executor.asset_name,
+        "kind": executor.asset.get("kind"),
+        "formats": list(executor.asset.get("package", {}).get("formats", [])),
+        "primary_outputs": [
+            entry for entry in outputs if entry.get("format") in {"glb", "gltf", "usd", "obj"}
+        ],
+        "textures": texture_outputs,
+        "lods": list(optimize_bundle.get("lods") or []),
+        "highlow_relation": dict(
+            optimize_bundle.get("highlow_relation")
+            or surface_bundle.get("highlow_relation")
+            or executor.runtime.get("highlow_relation")
+            or {}
+        ),
+        "collision": dict(optimize_bundle.get("collision") or physics_bundle.get("collision", {}) or {}),
+        "interfaces": {
+            "sockets": list(interfaces_bundle.get("sockets") or []),
+            "pivots": list(interfaces_bundle.get("pivots") or []),
+            "anchors": list(interfaces_bundle.get("anchors") or []),
+            "connections": list(interfaces_bundle.get("connections") or []),
+            "connection_slots": list(interfaces_bundle.get("connection_slots") or []),
+        },
+        "materials": {
+            "material_slots": surface_bundle.get("material_slots", 0),
+            "material_zones": list(surface_bundle.get("material_zones") or []),
+            "material_id_layout": dict(surface_bundle.get("material_id_layout") or {}),
+        },
+        "uv": {
+            "uv_sets": list(uv_bundle.get("uv_sets") or []),
+            "packing_report": dict(uv_bundle.get("packing_report") or {}),
+            "uv_organization": dict(uv_bundle.get("uv_organization") or {}),
+            "chart_manifest": list(uv_bundle.get("chart_manifest") or []),
+        },
+        "surface_story": dict(surface_bundle.get("surface_story_placement_plan") or {}),
+        "nested_assets": _nested_assets_for_package(executor),
+    }
+
+
+def _write_game_asset_manifest(
+    *,
+    executor: Any,
+    stage_dir: Path,
+    outputs: list[dict[str, Any]],
+    optimize_bundle: dict[str, Any],
+    texture_outputs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    manifest = _build_game_asset_manifest(
+        executor=executor,
+        outputs=outputs,
+        optimize_bundle=optimize_bundle,
+        texture_outputs=texture_outputs,
+    )
+    path = stage_dir / "game_asset_manifest.json"
+    dump_json(path, manifest)
+    return output_entry(executor.out_dir, path, "game_asset_manifest")
+
+
+def _nested_assets_for_package(executor: Any) -> dict[str, Any]:
+    shape_bundle = (executor.runtime.get("shape") or {}).get("bundle") or {}
+    asset_graph = shape_bundle.get("asset_graph") if isinstance(shape_bundle, Mapping) else {}
+    if isinstance(asset_graph, Mapping):
+        authoring = asset_graph.get("authoring") if isinstance(asset_graph.get("authoring"), Mapping) else {}
+        nested_assets = nested_asset_manifest_for_signature(authoring.get("nested_assets"))
+        if nested_assets.get("summary", {}).get("nested_asset_count"):
+            return nested_assets
+    shape_irs = shape_bundle.get("shape_ir", []) if isinstance(shape_bundle, Mapping) else []
+    for item in shape_irs:
+        if not isinstance(item, Mapping):
+            continue
+        signature = item.get("signature") if isinstance(item.get("signature"), Mapping) else {}
+        nested_assets = nested_asset_manifest_for_signature(signature.get("nested_assets"))
+        if nested_assets.get("summary", {}).get("nested_asset_count"):
+            return nested_assets
+    return {}
+
+
 def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[str, Any]) -> dict[str, Any]:
     """Run.
 
@@ -84,6 +251,8 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
     package_cfg = executor.asset["package"]
     optimize_runtime: RuntimeMesh = executor.runtime["optimize"]["runtime_mesh"]
     mesh = optimize_runtime.mesh.copy()
+    texture_paths = _copy_surface_textures(executor, stage_dir)
+    package_mesh = _mesh_with_pbr_textures(mesh, texture_paths)
     outputs: list[dict[str, Any]] = []
     if "usd" in package_cfg.get("formats", []):
         usd_path = stage_dir / f"{executor.asset_name}.usda"
@@ -91,10 +260,10 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         outputs.append(output_entry(executor.out_dir, usd_path, "usd"))
     if "glb" in package_cfg.get("formats", []):
         glb_path = stage_dir / f"{executor.asset_name}.glb"
-        export_glb(mesh, glb_path)
+        export_glb(package_mesh, glb_path)
         outputs.append(output_entry(executor.out_dir, glb_path, "glb"))
     if "gltf" in package_cfg.get("formats", []):
-        gltf_paths = export_gltf(mesh, stage_dir, executor.asset_name)
+        gltf_paths = export_gltf(package_mesh, stage_dir, executor.asset_name)
         for path in gltf_paths:
             outputs.append(
                 output_entry(executor.out_dir, path, "gltf" if path.suffix == ".gltf" else "gltf_resource")
@@ -128,6 +297,22 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         dst = stage_dir / src.name
         _copy_package_artifact(src, dst)
         outputs.append(output_entry(executor.out_dir, dst, kind_name))
+
+    texture_outputs = [
+        output_entry(executor.out_dir, path, f"{map_name}_texture")
+        for map_name, path in texture_paths.items()
+    ]
+    outputs.extend(texture_outputs)
+    game_asset_manifest_entry = None
+    if _game_asset_manifest_requested(package_cfg):
+        game_asset_manifest_entry = _write_game_asset_manifest(
+            executor=executor,
+            stage_dir=stage_dir,
+            outputs=outputs,
+            optimize_bundle=optimize_bundle_local,
+            texture_outputs=texture_outputs,
+        )
+        outputs.append(game_asset_manifest_entry)
 
     # STAGE-10: engine-specific manifests (godot/unity/unreal). Emitted at the
     # executor.out_dir root — NOT inside stages/package/ — so they sit next to
@@ -208,11 +393,17 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         "formats": list(package_cfg.get("formats", [])),
         "outputs": outputs,
         "output_hashes": {entry["uri"]: entry["sha256"] for entry in outputs},
+        "textures": texture_outputs,
         "previews": previews,
         "trace_path": None,
         "normalized_source_path": relpath(executor.out_dir, executor.normalized_asset_path),
         "build_timestamp": None,
     }
+    if game_asset_manifest_entry is not None:
+        manifest["game_asset_manifest_path"] = game_asset_manifest_entry["uri"]
+    nested_assets = _nested_assets_for_package(executor)
+    if nested_assets:
+        manifest["nested_assets"] = nested_assets
     trace_path = None
     if package_cfg.get("include_trace", True):
         trace_path = stage_dir / "trace_manifest.json"
@@ -228,8 +419,13 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         "trace_path": relpath(executor.out_dir, trace_path) if trace_path else None,
         "normalized_source_path": relpath(executor.out_dir, executor.normalized_asset_path),
         "previews": previews,
+        "textures": texture_outputs,
         "engine_manifests": engine_manifest_entries,
     }
+    if nested_assets:
+        bundle["nested_assets"] = nested_assets
+    if game_asset_manifest_entry is not None:
+        bundle["game_asset_manifest_path"] = game_asset_manifest_entry["uri"]
     executor.runtime["package"] = {"bundle": bundle}
     dump_json(stage_dir / "bundle.json", bundle)
     selector_manifest_path = _write_selector_manifest(executor, validate_bundle)
@@ -296,6 +492,20 @@ def _build_engine_context(
         for piv in interfaces.get("pivots", []) or []
         if isinstance(piv, dict) and (piv.get("id") or piv.get("name"))
     ]
+    connections = [
+        {
+            "id": conn.get("id"),
+            "source": conn.get("source"),
+            "target": conn.get("target"),
+            "relation": conn.get("relation"),
+            "source_role": conn.get("source_role"),
+            "target_role": conn.get("target_role"),
+            "compatible": conn.get("compatible", True),
+            "compatibility_score": conn.get("compatibility_score"),
+        }
+        for conn in interfaces.get("connections", []) or []
+        if isinstance(conn, dict) and conn.get("id") and conn.get("source")
+    ]
     collisions: list[dict[str, Any]] = []
     collision_info = optimize_bundle.get("collision") or {}
     if collision_info.get("hull_uri"):
@@ -353,6 +563,7 @@ def _build_engine_context(
         "lods": lods_ctx,
         "sockets": sockets,
         "pivots": pivots,
+        "connections": connections,
         "collisions": collisions,
         "materials": materials,
         "gameplay_tags": gameplay_tags,

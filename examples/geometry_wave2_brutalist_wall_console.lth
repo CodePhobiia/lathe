@@ -1,0 +1,43 @@
+module examples.geometry_wave2.brutalist_wall_console
+
+asset geometry_wave2_brutalist_wall_console: env_module {
+  intent {
+    role = "brutalist wall console with heavy plates and sockets"
+    style = ["brutalist", "industrial", "sci_fi"]
+    parts = [body, screen_panel, vent_panel, console_panel, socket_plate, bracket_l, bracket_r]
+    materials = [painted_steel, smoked_glass, rubber_trim]
+    scale = 1.6m
+  }
+
+  surface {
+    material_layers = [painted_steel, dark_bare_metal, screen_glass]
+    wear_story = factory_new
+    story_decals = [calibration_stripe]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 203
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [brutalist, modular]
+      edge_treatment = guarded
+      edge_hardness = hard
+      detail_zones = [body, vent_panel, console_panel, socket_plate]
+      zone_body_motifs = [corner_guard, trim_strip, panel_seam, linear_detail_array]
+      zone_body_linear_detail_repeats = 6
+      zone_vent_panel_motifs = [groove_channel, raised_ridge]
+      zone_console_panel_motifs = [outset_panel, bolt_grid, panel_seam]
+      zone_socket_plate_motifs = [socket_point, radial_detail_array, bolt_grid]
+      zone_socket_plate_modular_attachment_points = 8
+      zone_socket_plate_radial_detail_repeats = 8
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

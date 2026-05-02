@@ -113,7 +113,19 @@ def _scene_local_ids(scene: dict[str, Any]) -> set[str]:
     ids = {scene["name"]}
     for collection in (
         "regions",
+        "groups",
+        "placement_zones",
+        "modules",
+        "kits",
+        "variant_families",
+        "generators",
+        "biomes",
+        "scatters",
+        "environments",
         "objects",
+        "arrays",
+        "sockets",
+        "attachments",
         "relationships",
         "cameras",
         "lights",
@@ -170,7 +182,19 @@ def _check_scene_duplicate_child_names(checker: Any, scene: dict[str, Any]) -> N
     for collection in (
         "styles",
         "regions",
+        "groups",
+        "placement_zones",
+        "modules",
+        "kits",
+        "variant_families",
+        "generators",
+        "biomes",
+        "scatters",
+        "environments",
         "objects",
+        "arrays",
+        "sockets",
+        "attachments",
         "relationships",
         "cameras",
         "lights",
@@ -237,7 +261,7 @@ def _check_scene_reference(
 
 
 def _check_scenes(checker: Any) -> None:
-    for scene in checker.program.get("scenes", []):
+    for scene in [*checker.program.get("worlds", []), *checker.program.get("scenes", [])]:
         if not scene["name"]:
             continue
         if not isinstance(scene.get("version"), int) or scene["version"] < 1:
@@ -265,6 +289,15 @@ def _check_scenes(checker: Any) -> None:
                 prefix="region_",
                 code="L5403",
             )
+        for group in scene.get("groups", []):
+            _check_scene_id_prefix(
+                checker,
+                scene_name=scene["name"],
+                collection="groups",
+                item_name=group["name"],
+                prefix="group_",
+                code="L5403",
+            )
         for obj in scene.get("objects", []):
             _check_scene_id_prefix(
                 checker,
@@ -279,6 +312,16 @@ def _check_scenes(checker: Any) -> None:
                 scene=scene,
                 collection="objects",
                 item=obj,
+                field="region",
+                valid_ids=region_ids,
+                code="L5405",
+            )
+        for array in scene.get("arrays", []):
+            _check_scene_reference(
+                checker,
+                scene=scene,
+                collection="arrays",
+                item=array,
                 field="region",
                 valid_ids=region_ids,
                 code="L5405",

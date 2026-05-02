@@ -1,0 +1,49 @@
+module examples.geometry_wave2.game_pipeline_panel_kit
+
+asset geometry_wave2_game_pipeline_panel_kit: env_module {
+  intent {
+    role = "game-ready modular wall panel kit piece"
+    style = ["industrial", "modular", "runtime_ready"]
+    parts = [body, frame_l, frame_r, vent_panel, socket_plate, anchor_plate]
+    materials = [painted_steel, bare_metal, rubber_trim]
+    scale = 2.0m
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 206
+      symmetry = x
+      detail_density = high
+      style_modifiers = [industrial, modular]
+      module_sockets = [snap_left, snap_right, cable_port]
+      lod_levels = 4
+      collision_proxy = convex_decomp
+      export_profiles = [glb, usd, godot]
+      detail_zones = [body, vent_panel, socket_plate]
+      zone_body_motifs = [panel_seam, trim_strip, corner_guard]
+      zone_vent_panel_motifs = [groove_channel, raised_ridge, linear_detail_array]
+      zone_vent_panel_linear_detail_repeats = 6
+      zone_socket_plate_motifs = [socket_point, bolt_grid]
+      zone_socket_plate_modular_attachment_points = 6
+    }
+    rig { type = none joints = [] }
+    interfaces {
+      sockets = [socket(id: snap_left, socket_type: attachment_point), socket(id: snap_right, socket_type: attachment_point)]
+    }
+    physics {
+      collision = convex_decomp
+      max_hulls = 8
+    }
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 24mb
+    }
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb, usd] }
+}

@@ -1,0 +1,24 @@
+// doc:
+//   purpose: hard-surface family for a hero sword prop (steel blade, leather grip, brass guard).
+//   exports: family hero_sword_family
+//   used_by: examples/hero_sword.lth
+//   stability: experimental
+//   layer: V0.14
+module std.families.hero_sword
+
+family hero_sword_family: hard_surface_prop {
+  runtime_family = hero_sword
+  blueprint_id = lathe.blueprint.hero_sword_v1
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [blade_fuller_break, guard_socket, grip_wrap_seam, pommel_join]
+    edge_classes = [sharp_blade_edge, guard_bevel, grip_ridge, pommel_bevel]
+    integration_rules = [boolean_union, preserve_blade_symmetry, preserve_crossguard_width]
+  }
+
+  features {
+    allow = [edge_break, trim_band, support_bracket, fastener_strip]
+    density = hero
+  }
+}

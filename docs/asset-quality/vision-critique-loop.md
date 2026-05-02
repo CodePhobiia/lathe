@@ -68,6 +68,10 @@ structured reason tokens.
 - Sorts issues deterministically by
   `(severity_rank, issue_id)` and skipped reasons by
   `(category, reason)`.
+- Emits loop evidence for `provider_config`,
+  `iteration_history`, and `before_after_metrics`. Phase 10 does
+  not render before/after imagery, so those metrics truthfully
+  report unavailable comparison-sheet evidence.
 - Publishes the result on `runtime["vision_critique"]` and emits
   the additive `vision_critique` key on the validate-stage
   report (the **24th top-level key**, on top of the 23 from
@@ -107,6 +111,14 @@ structured reason tokens.
     "version": "v1",
     "configured": false
   },
+  "provider_config": {
+    "enabled": false,
+    "requested_provider": null,
+    "resolved_provider": "deterministic_stub",
+    "external_provider_configured": false,
+    "safe_config_keys": [],
+    "sensitive_values_redacted": true
+  },
   "issues": [
     {
       "issue_id": "<16-char hex>",
@@ -136,6 +148,27 @@ structured reason tokens.
     "issues_by_severity": {"info": 0, "warning": 2, "error": 0},
     "patch_count": 3,
     "approved_patches": 3
+  },
+  "iteration_history": [
+    {
+      "iteration": 0,
+      "provider": "deterministic_stub",
+      "external_provider_configured": false,
+      "issue_count": 2,
+      "patch_count": 3,
+      "approved_patch_count": 3,
+      "before_after_available": false,
+      "applied": false,
+      "status": "evidence_recorded"
+    }
+  ],
+  "before_after_metrics": {
+    "available": false,
+    "comparison_sheet_requested": false,
+    "before": {},
+    "after": {},
+    "delta": {},
+    "skipped_reason": "comparison_sheet_not_requested"
   },
   "skipped_reasons": [
     {"category": "vision_provider", "reason": "vision_provider_not_configured"}
@@ -196,6 +229,7 @@ The mux is governed by
 | `enabled: true`, no `provider` id       | Stub only; emits `vision_provider_misconfigured`  |
 | Provider id not in registry             | Stub only; emits `vision_provider_unknown`        |
 | Provider raises `ConnectionError` / `TimeoutError` / `OSError` | Stub only; emits `vision_provider_unavailable` |
+| Provider returns non-`CritiqueIssue` / non-`PatchProposal` data | Stub only; emits `vision_provider_invalid_output` |
 | Provider succeeds                       | External issues join stub issues; `provider.configured = True` |
 
 In every case, the deterministic stub still runs and the
@@ -215,7 +249,7 @@ critique issues using fixed thresholds:
 | `quality_diagnostics`     | `metrics.random_triangulation_penalty > 0.30`                  | `shape_ir_v2.ops.cut_panel_line`, `design_brief.shape_language` |
 | `family_grammar`          | `family_grammar.coverage < 0.70`                               | `family_grammar.missing_requirements` |
 | `material_wear_graph`     | `uniform_noise.is_uniform_noise == True`                       | `design_brief.wear`              |
-| `preview_evidence`        | `preview_summary.distinct_final_from_material_ids == False`    | `design_brief.negative_constraints` |
+| `preview_evidence`        | `preview_summary.distinct_final_from_material_ids == False` and preview declarations show material-ID/final-beauty evidence is relevant | `design_brief.negative_constraints` |
 
 Each signal emits a deterministic `issue_id` so identical
 inputs always produce identical issue ids — the stub is a pure
@@ -260,19 +294,23 @@ instead of a fabricated critique:
 | `vision_provider_misconfigured`    | Block enabled but no `provider` id |
 | `vision_provider_unknown`          | Provider id not in `_PROVIDER_REGISTRY` |
 | `vision_provider_unavailable`      | Registered provider raised `ConnectionError`, `TimeoutError`, or `OSError` |
+| `vision_provider_invalid_output`   | Registered provider returned data outside the Phase 10 critique contract |
 
-All four tokens land under `category: "vision_provider"`. The
-deterministic stub still runs in all four cases.
+All provider tokens land under `category: "vision_provider"`. The
+deterministic stub still runs in all skipped-provider cases.
 
 ---
 
 ## 8. Pipeline placement
 
 The validator is registered in
-`lathe/core/stages/validate.py` `_PIPELINE` immediately after
-`preview_evidence` and before `geometry_integrity`. Output
-additively appears under the top-level `vision_critique` key of
-the validate-stage report.
+`lathe/core/stages/validate.py` `_PIPELINE` after
+`quality_diagnostics` and `preview_evidence`, and before
+`reference_board`. This ensures the deterministic stub reads the
+current Phase 1 diagnostics plus the current Phase 9 preview
+evidence in the same validate run. Output additively appears
+under the top-level `vision_critique` key of the validate-stage
+report.
 
 The executor publishes
 `runtime["_runtime_config"] = redact_secrets(self.runtime_config)`

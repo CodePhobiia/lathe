@@ -274,7 +274,7 @@ experimental {
 
 - `art_direction { ... }` overrides the design-brief defaults for the four whitelisted fields above (Phase 2 brief). Unspecified fields keep the family default.
 - `references { use = "<path>" }` overrides the convention-based reference-board base path (Phase 11 fixtures). The path resolves relative to the source `.lth` file.
-- `kit { use = [<part>, ...] }` declares hard-surface kit parts (Phase 12 library) the asset intends to use. Each entry uses the `<category>.<name>` format. The declaration is informational evidence; the loaded library is not filtered by it.
+- `kit { use = [<part>, ...] }` declares hard-surface kit parts (Phase 12 library) the asset intends to use. Each entry uses the `<category>.<name>` format and must be allowed for the materialized asset family by the kit part's `allowed_families` metadata. The declaration is informational evidence; the loaded library is not filtered by it.
 
 #### Diagnostics
 
@@ -284,6 +284,8 @@ experimental {
 - `L7103 — experimental_references_invalid_path`: `references.use` is not a string or does not resolve to an existing directory.
 - `L7104 — experimental_kit_unknown_part`: an entry that is not present in the loaded kit library (warning when the library can't be loaded).
 - `L7105 — experimental_kit_invalid_format`: an entry that is not a string in `<category>.<name>` format, or `kit.use` is not a list.
+
+- `L7106 - experimental_kit_disallowed_family`: an entry exists but its `allowed_families` excludes the materialized asset family.
 
 Each diagnostic carries actionable `suggested_repairs` so authors and LLM-based authors can repair from evidence alone.
 
@@ -758,6 +760,8 @@ Canonical fields:
 - `embed_textures`
 - `include_trace`
 - `naming`
+- `game_asset_manifest`
+- `manifests`
 
 ### 12.6 `publish`
 
@@ -850,6 +854,30 @@ Defaults:
 - `symmetry = none`
 - `preserve = []`
 
+Additive geometry/detail authoring controls may be supplied in the same
+`shape` block. They are optional and lower into the stable
+`lathe.shape.intent_mesh_handoff_v1` scaffold contract as generated detail
+parts, feature metadata, and downstream pipeline hints. Supported controls
+include:
+
+- density and edge controls: `detail_density`, `edge_complexity`,
+  `edge_treatment`, `edge_hardness`, `bevel_width`, `chamfer_width`
+- surface form controls: `panelization`, `groove_density`, `ridge_density`,
+  `trim_density`, `inset_depth`, `outset_depth`, `surface_layer_count`
+- repeated detail and attachment controls: `linear_detail_repeats`,
+  `radial_detail_repeats`, `detail_array_axis`, `modular_attachment_points`,
+  `module_sockets`, `module_categories`, `module_count`,
+  `attachment_motifs`, `attachment_count`
+- art-directed construction controls: `detail_motifs`, `detail_zones`,
+  `style_pack`, `style_packs`, `style_intensity`, `style_modifiers`,
+  `silhouette_profile`, `silhouette_motifs`, `silhouette_intensity`
+- game-pipeline controls: `lod_levels`, `highlow_mode`, `highlow_low_lod`,
+  `highlow_bake_cage_offset_cm`, `collision_proxy`, `export_profiles`
+
+Fields prefixed with `zone_` define named detail-zone overrides; for example
+`zone_door_module_categories = [vent, latch]` and
+`zone_door_module_count = 3` concentrate motifs on the named part/zone.
+
 ### 13.2 `topology`
 
 Defaults:
@@ -871,6 +899,27 @@ Defaults:
 - `pack_rotate = true`
 - `udims = []`
 
+Additive game-asset organization controls:
+
+- `chart_grouping`: semantic chart grouping strategy. Supported values are
+  `part`, `material`, `material_zone`, `part_material`, `detail_zone`, and
+  `zone`.
+- `material_id_strategy`: material-ID layout strategy. `per_material_zone`
+  emits deterministic material IDs, per-part assignments, and stable ID
+  colors for downstream masks/previews.
+- `texture_set_strategy`: optional texture-set organization hint, such as
+  `hero_surface_sets`, for atlas/control-pack consumers.
+- `layout_strategy` / `atlas_layout`: optional atlas layout label. The
+  deterministic reference UV path currently records this as metadata while
+  packing charts with the built-in grid.
+- `island_naming`: semantic island-name policy. Defaults to `semantic`.
+- `preserve_detail_zones`: when true, asks the UV organization layer to keep
+  named detail zones distinct when using `detail_zone`/`zone` grouping.
+
+UV builds should emit `uv_organization`, `chart_manifest`, and
+`material_id_layout` metadata when these controls or `surface.id_map` are
+requested.
+
 ### 13.4 `surface`
 
 Defaults:
@@ -882,6 +931,22 @@ Defaults:
 - `bakes = []`
 - `decals = []`
 - `id_map = false`
+
+Additive surface-story authoring controls may be supplied in the asset
+`surface` block:
+
+- `story_decals`, `faction_marks`, and `markings`: decals/labels/symbols
+  that should be painted into the generated surface maps.
+- `story_targets`, `decal_targets`, or `story_regions`: preferred part/zone
+  targets for those marks.
+- `story_density` / `decal_density`: density label for placement metadata.
+- `story_asymmetry` / `asymmetry`: placement bias such as `left`, `right`, or
+  `hero_asymmetric`.
+
+Surface builds should emit `surface_story_placement_plan` metadata when
+decals or story marks are present. Hero surface builds use that plan to place
+labels, scratches, warning bars, heat marks, and other story decals at
+deterministic UV anchors.
 
 ### 13.5 `rig`
 
@@ -930,6 +995,28 @@ Defaults:
 - `mesh_compression = false`
 - `strip_hidden_faces = false`
 - `instance_candidates = false`
+
+### 13.9 `package`
+
+Defaults:
+
+- `backend = auto`
+- `formats = []` (normalizes to `[usd, glb]` when omitted)
+- `manifest = true`
+- `previews = []`
+- `embed_textures = false`
+- `include_trace = true`
+- `naming = auto`
+
+Additive game-pipeline manifest controls:
+
+- `game_asset_manifest = true` emits `stages/package/game_asset_manifest.json`.
+- `manifests = [game_asset_manifest]` is an equivalent opt-in form.
+
+The game asset manifest collects the package outputs, texture outputs, LODs,
+high/low relation, collision hints, sockets/pivots/anchors, material zones,
+material-ID layout, UV organization, chart manifest, and surface-story
+placement plan into one downstream-consumable artifact.
 
 ---
 

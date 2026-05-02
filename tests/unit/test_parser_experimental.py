@@ -10,8 +10,7 @@ Covers:
 
 from __future__ import annotations
 
-from lathe.parser import parse_text
-
+from lathe.parser import GRAMMAR_PATH, parse_text
 
 _BASE_ASSET = """
 asset crate: hard_surface_prop {
@@ -118,3 +117,36 @@ def test_unknown_subblock_is_tolerated_by_parser() -> None:
 """
     )
     assert asset["experimental"].get("_unknown_subblocks") == ["construction"]
+
+
+def test_references_extra_field_reaches_checker_surface() -> None:
+    asset = _parse_asset(
+        """
+    references {
+      use = "examples/refs/asset_quality/industrial_crate"
+      unexpected = "nope"
+    }
+"""
+    )
+    assert asset["experimental"]["references"]["unexpected"] == "nope"
+
+
+def test_kit_extra_field_reaches_checker_surface() -> None:
+    asset = _parse_asset(
+        """
+    kit {
+      use = ["fasteners.hex_bolt_m6"]
+      mode = "decorate"
+    }
+"""
+    )
+    assert asset["experimental"]["kit"]["mode"] == "decorate"
+
+
+def test_formal_grammar_keeps_experimental_blocks_checker_visible() -> None:
+    grammar = GRAMMAR_PATH.read_text(encoding="utf-8")
+
+    assert 'experimental_art_direction_block: "art_direction" "{" assign_stmt* "}"' in grammar
+    assert 'experimental_references_block: "references" "{" assign_stmt* "}"' in grammar
+    assert 'experimental_kit_block: "kit" "{" assign_stmt* "}"' in grammar
+    assert 'experimental_unknown_subblock: IDENT "{" assign_stmt* "}"' in grammar

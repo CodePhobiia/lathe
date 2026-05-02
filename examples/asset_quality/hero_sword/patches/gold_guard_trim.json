@@ -1,0 +1,32 @@
+{
+  "asset_id": "hero_sword",
+  "notes": [
+    "Shift only the crossguard focal zone from aged brass to warmer gold trim."
+  ],
+  "operations": [
+    {
+      "bound_nodes": [
+        "crossguard",
+        "guard_socket_focal"
+      ],
+      "material": "gold_guard_trim",
+      "operation": "modify_material",
+      "preserve": [
+        "construction_identity",
+        "blade.length",
+        "guard.width"
+      ],
+      "properties": {
+        "base_color": "#d8ad4c",
+        "metalness": 1.0,
+        "roughness": 0.36
+      },
+      "target": "material_wear_graph.material_zones.brass_guard_trim"
+    }
+  ],
+  "preserve": [
+    "construction_identity",
+    "overall_silhouette"
+  ],
+  "schema_version": "lathe.asset_quality.semantic_patch.v1"
+}

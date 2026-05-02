@@ -1,0 +1,42 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "Dropper body, conveyor output, bright button, service panel, and status display remain traceable semantic parts.",
+    "functional_readability": "The player can read where items output, what button to press, and what panel is decorative/service access.",
+    "material_storytelling": "Bright plastic, dark conveyor rubber, metal frame, and glowing status accents separate cleanly.",
+    "silhouette_readability": "The machine reads as a Roblox tycoon dropper at thumbnail distance."
+  },
+  "asset_id": "quality_engine_roblox_tycoon_machine",
+  "certification_tier": "phase14c_universal_quality_warning",
+  "family": "roblox_tycoon_machine",
+  "platform_profile": {
+    "target": "roblox_runtime_proxy",
+    "texture_budget": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 3500,
+    "triangle_budget_warning": 5000
+  },
+  "required_features": [
+    "readable dropper body",
+    "conveyor output",
+    "large upgrade button",
+    "status display",
+    "service panel",
+    "bright Roblox-safe material separation"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "unclear interaction affordance",
+      "tiny unreadable controls",
+      "photoreal grime",
+      "overdense microdetail"
+    ],
+    "keywords": [
+      "roblox",
+      "tycoon",
+      "bright",
+      "playful",
+      "runtime-safe"
+    ],
+    "theme": "bright Roblox tycoon machine with clear interactive affordances"
+  }
+}

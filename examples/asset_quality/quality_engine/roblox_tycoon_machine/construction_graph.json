@@ -1,0 +1,143 @@
+{
+  "asset_id": "quality_engine_roblox_tycoon_machine",
+  "edges": [
+    {
+      "edge_type": "attached_to",
+      "source_id": "dropper_port",
+      "target_id": "dropper_body"
+    },
+    {
+      "edge_type": "aligned_with",
+      "source_id": "output_conveyor",
+      "target_id": "dropper_port"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "upgrade_button",
+      "target_id": "dropper_body"
+    },
+    {
+      "edge_type": "inset_into",
+      "source_id": "front_service_panel",
+      "target_id": "dropper_body"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "button_touch_wear",
+      "target_id": "upgrade_button"
+    }
+  ],
+  "family": "roblox_tycoon_machine",
+  "nodes": [
+    {
+      "bounds": {
+        "depth": 0.42,
+        "height": 0.8,
+        "width": 0.58
+      },
+      "category": "machine_body",
+      "material_zone_ref": "bright_plastic_body",
+      "node_id": "dropper_body",
+      "semantic_role": "primary tycoon machine body"
+    },
+    {
+      "bounds": {
+        "depth": 0.18,
+        "height": 0.16,
+        "width": 0.2
+      },
+      "category": "port",
+      "material_zone_ref": "metal_output_port",
+      "node_id": "dropper_port",
+      "semantic_role": "item output opening"
+    },
+    {
+      "bounds": {
+        "depth": 0.75,
+        "height": 0.08,
+        "width": 0.36
+      },
+      "category": "conveyor",
+      "material_zone_ref": "rubber_conveyor",
+      "node_id": "output_conveyor",
+      "semantic_role": "output path for generated items"
+    },
+    {
+      "bounds": {
+        "depth": 0.08,
+        "height": 0.1,
+        "width": 0.1
+      },
+      "category": "button",
+      "material_zone_ref": "red_button_accent",
+      "node_id": "upgrade_button",
+      "semantic_role": "large readable player interaction"
+    },
+    {
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.18,
+        "width": 0.24
+      },
+      "category": "display",
+      "material_zone_ref": "glow_status_accent",
+      "node_id": "status_display",
+      "semantic_role": "machine status readout"
+    },
+    {
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.26,
+        "width": 0.32
+      },
+      "category": "panel",
+      "material_zone_ref": "bright_plastic_body",
+      "node_id": "front_service_panel",
+      "semantic_role": "service access panel"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "bright_plastic_body",
+      "node_id": "material_bright_body",
+      "semantic_role": "Roblox-safe plastic body material"
+    },
+    {
+      "bounds": {},
+      "category": "decal",
+      "material_zone_ref": "arrow_decal_accent",
+      "node_id": "output_arrow_decal",
+      "semantic_role": "directional output affordance decal"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "button_touch_wear",
+      "node_id": "button_touch_wear",
+      "semantic_role": "player touch wear anchor"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "conveyor_scuff_anchor",
+      "node_id": "conveyor_scuff_anchor",
+      "semantic_role": "conveyor contact scuff anchor"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 5,
+    "major_silhouette_nodes": [
+      "dropper_body",
+      "dropper_port",
+      "output_conveyor",
+      "upgrade_button",
+      "status_display"
+    ],
+    "node_count": 10,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 3200,
+    "unclassified_major_primitives": 0
+  }
+}

@@ -1,0 +1,44 @@
+module examples.geometry_wave3.cabled_console_bank
+
+asset geometry_wave3_cabled_console_bank: hard_surface_prop {
+  intent {
+    role = "cabled console bank with handle bars and routed service loops"
+    style = ["industrial", "service_bay", "modular"]
+    parts = [body, screen_panel, console_panel, socket_plate, stand_base]
+    materials = [painted_steel, smoked_glass, rubber_trim]
+    scale = 1.4m
+  }
+
+  surface {
+    material_layers = [painted_steel, rubber_trim, smoked_glass]
+    wear_story = used
+    wear_level = medium
+    story_decals = [operator_labels, cable_tags]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 303
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [industrial, modular]
+      attachment_motifs = [cable, handle_bar, rail, vent_stack]
+      attachment_count = 5
+      detail_zones = [body, console_panel, socket_plate]
+      zone_console_panel_attachment_motifs = [cable, vent_stack]
+      zone_console_panel_attachment_count = 5
+      zone_socket_plate_attachment_motifs = [handle_bar, rail, cable]
+      zone_socket_plate_attachment_count = 4
+      panelization = high
+      trim_density = high
+      modular_attachment_points = 5
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

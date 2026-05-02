@@ -1,0 +1,31 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "family": "industrial_crate",
+  "references": {
+    "materials": [
+      "painted_steel_edge_wear",
+      "dark_rubber_contact_scuff",
+      "faded_warning_decal"
+    ],
+    "mood": [
+      "field_repaired",
+      "well_used",
+      "matte_industrial"
+    ],
+    "negative_constraints": [
+      "no_chrome_finishes",
+      "no_clean_geometry",
+      "no_consumer_aesthetics"
+    ],
+    "silhouette": [
+      "rectangular_chest_with_corner_guards",
+      "recessed_handles",
+      "raised_frame"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.reference_board.v1",
+  "truthfulness": {
+    "external_images_used": false,
+    "reason": "Phase 14 fixture records textual reference targets only; no external image ingestion is claimed."
+  }
+}

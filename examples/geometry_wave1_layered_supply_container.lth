@@ -1,0 +1,38 @@
+module examples.geometry_wave1.layered_supply_container
+
+asset geometry_wave1_layered_supply_container: hard_surface_prop {
+  intent {
+    role = "layered supply container"
+    style = ["utility", "field_ready", "wave1_geometry"]
+    parts = [body, lid_panel, strap_band, latch_plate, handle_l, handle_r, foot_l, foot_r]
+    materials = [painted_steel, dark_rubber, warning_paint]
+    scale = 1.0m
+  }
+
+  features {
+    density = hero
+    allow = [layer_plate, panel_seam, raised_ridge, corner_guard, bolt_grid]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 105
+      symmetry = x
+      detail_density = hero
+      edge_complexity = guarded
+      edge_treatment = guarded
+      panelization = high
+      ridge_density = high
+      greeble_density = medium
+      surface_layer_count = 4
+      detail_zones = [body, lid_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

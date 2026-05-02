@@ -1,0 +1,148 @@
+{
+  "asset_id": "quality_engine_astral_sentinel_sword",
+  "edges": [
+    {
+      "edge_type": "inset_into",
+      "source_id": "aether_crystal_fuller",
+      "target_id": "starforged_blade"
+    },
+    {
+      "edge_type": "sockets",
+      "source_id": "crescent_crossguard",
+      "target_id": "starforged_blade"
+    },
+    {
+      "edge_type": "inset_into",
+      "source_id": "guard_crystal_socket",
+      "target_id": "crescent_crossguard"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "midnight_wrapped_grip",
+      "target_id": "crescent_crossguard"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "moonstone_pommel",
+      "target_id": "midnight_wrapped_grip"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "edge_wear_anchors",
+      "target_id": "starforged_blade"
+    }
+  ],
+  "family": "fantasy_weapon",
+  "nodes": [
+    {
+      "bounds": {
+        "depth": 0.022,
+        "height": 0.98,
+        "width": 0.105
+      },
+      "category": "blade",
+      "material_zone_ref": "starforged_blade_steel",
+      "node_id": "starforged_blade",
+      "semantic_role": "long readable astral blade"
+    },
+    {
+      "bounds": {
+        "depth": 0.012,
+        "height": 0.66,
+        "width": 0.026
+      },
+      "category": "focal_detail",
+      "material_zone_ref": "aether_crystal_core",
+      "node_id": "aether_crystal_fuller",
+      "semantic_role": "bright crystal centerline fuller"
+    },
+    {
+      "bounds": {
+        "depth": 0.05,
+        "height": 0.05,
+        "width": 0.48
+      },
+      "category": "guard",
+      "material_zone_ref": "moon_gold_guard",
+      "node_id": "crescent_crossguard",
+      "semantic_role": "wide crescent hand stop and secondary silhouette"
+    },
+    {
+      "bounds": {
+        "depth": 0.048,
+        "height": 0.062,
+        "width": 0.085
+      },
+      "category": "focal_detail",
+      "material_zone_ref": "aether_crystal_core",
+      "node_id": "guard_crystal_socket",
+      "semantic_role": "small glowing socket tying blade to guard"
+    },
+    {
+      "bounds": {
+        "depth": 0.052,
+        "height": 0.24,
+        "width": 0.052
+      },
+      "category": "grip",
+      "material_zone_ref": "midnight_leather_grip",
+      "node_id": "midnight_wrapped_grip",
+      "semantic_role": "dark hand contact wrap"
+    },
+    {
+      "bounds": {
+        "depth": 0.086,
+        "height": 0.075,
+        "width": 0.12
+      },
+      "category": "pommel",
+      "material_zone_ref": "moon_gold_guard",
+      "node_id": "moonstone_pommel",
+      "semantic_role": "counterweight and silhouette terminator"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "starforged_blade_steel",
+      "node_id": "material_starforged_steel",
+      "semantic_role": "cool primary blade material"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "aether_crystal_core",
+      "node_id": "material_aether_crystal",
+      "semantic_role": "cyan magical accent material"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "edge_highlight_wear",
+      "node_id": "edge_wear_anchors",
+      "semantic_role": "blade edge and guard-cap wear anchors"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "handling_wear",
+      "node_id": "hand_polish_anchors",
+      "semantic_role": "grip and pommel hand-contact polish anchors"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 6,
+    "major_silhouette_nodes": [
+      "starforged_blade",
+      "aether_crystal_fuller",
+      "crescent_crossguard",
+      "midnight_wrapped_grip",
+      "moonstone_pommel"
+    ],
+    "node_count": 10,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 5792,
+    "unclassified_major_primitives": 0
+  }
+}

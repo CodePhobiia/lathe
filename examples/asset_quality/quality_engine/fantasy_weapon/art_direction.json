@@ -1,0 +1,114 @@
+{
+  "asset_id": "quality_engine_fantasy_weapon",
+  "forbidden_failure_modes": [
+    "material zones without semantic purpose",
+    "muddy material zones",
+    "random primitive stack",
+    "sci-fi gun language",
+    "style mismatch between parts",
+    "unbounded procedural noise",
+    "unbounded stripe repetition",
+    "weak thumbnail read"
+  ],
+  "materials": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "edge or focal trim material"
+    ]
+  },
+  "motifs": {
+    "allowed": [
+      "fantasy",
+      "celestial",
+      "frost",
+      "premium",
+      "edge line",
+      "centerline",
+      "guard transition"
+    ],
+    "forbidden": [
+      "random primitive stack",
+      "unbounded stripe repetition",
+      "muddy material zones",
+      "sci-fi gun language"
+    ],
+    "placement_rules": [
+      "place motifs on centerlines, guards, grips, and terminations"
+    ]
+  },
+  "object_family": "weapon",
+  "platform": {
+    "target": "roblox_fantasy_rpg",
+    "texture_policy": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 7000,
+    "triangle_budget_warning": 9000
+  },
+  "proportion_policy": {
+    "exaggeration_allowed_when_style_requires": true,
+    "functional_scale_required": true,
+    "scale_anchors": [
+      "handle scale",
+      "blade or striking surface length",
+      "guard/affordance width"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.art_direction.v1",
+  "silhouette": {
+    "forbidden_shapes": [
+      "random primitive stack",
+      "unbounded stripe repetition",
+      "muddy material zones",
+      "sci-fi gun language"
+    ],
+    "required_distinctive_features": [
+      "long magical blade",
+      "wide readable guard",
+      "wrapped grip",
+      "crystal focal accent",
+      "edge wear and hand-contact wear"
+    ],
+    "target_strength": "high",
+    "thumbnail_size_px": 128
+  },
+  "style_intent": {
+    "audience": "roblox_fantasy_rpg",
+    "genre": "fantasy",
+    "mood": [
+      "fantasy",
+      "celestial",
+      "frost",
+      "hero",
+      "premium"
+    ],
+    "quality_bar": "phase14c_universal_quality_warning",
+    "substyle": "celestial frost fantasy weapon with luminous crystal accents"
+  },
+  "surface_story": {
+    "decals": [
+      "only when decal improves function or theme read"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "edge chips near striking surfaces",
+      "hand polish on grip",
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "visual_hierarchy": {
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "primary_read": "weapon identity through long magical blade",
+    "secondary_read": "functional parts and silhouette accents remain readable",
+    "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+  }
+}

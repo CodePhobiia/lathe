@@ -1,0 +1,39 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "cabinet body, doors, vents, labels, and handles are semantic nodes",
+    "material_storytelling": "grime collects around base, vents, and handles",
+    "silhouette_readability": "reads as a vertical industrial service cabinet"
+  },
+  "asset_id": "smoke_service_cabinet",
+  "certification_tier": "phase14_smoke_warning",
+  "family": "service_cabinet",
+  "platform_profile": {
+    "target": "game_runtime_proxy",
+    "texture_budget": "proxy_or_deferred",
+    "triangle_budget_strict": 1300,
+    "triangle_budget_warning": 2000
+  },
+  "required_features": [
+    "vertical cabinet body",
+    "doors drawers or panels",
+    "vents or handles",
+    "label or decal zone",
+    "base grime",
+    "stable construction graph"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "random greebles",
+      "consumer appliance styling",
+      "flat unbroken box"
+    ],
+    "keywords": [
+      "utility",
+      "service",
+      "industrial",
+      "maintenance"
+    ],
+    "theme": "wall or floor service utility cabinet"
+  }
+}

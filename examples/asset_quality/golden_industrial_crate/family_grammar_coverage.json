@@ -1,0 +1,72 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "coverage": 1.0,
+  "family": "industrial_crate",
+  "missing_rules": [],
+  "optional_rules": [
+    "serial_label_variants",
+    "stacking_socket_variants"
+  ],
+  "required_rules": [
+    "outer_shell",
+    "reinforced_frame",
+    "corner_protection",
+    "recessed_panels",
+    "lid_seam",
+    "latch_or_handle",
+    "bevel_policy",
+    "material_zones",
+    "wear_mask_anchors"
+  ],
+  "rules_used": [
+    "outer_shell",
+    "reinforced_frame",
+    "corner_protection",
+    "recessed_panels",
+    "lid_seam",
+    "latch_or_handle",
+    "bevel_policy",
+    "material_zones",
+    "wear_mask_anchors"
+  ],
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "strict_status": "pass",
+  "traceability": {
+    "bevel_policy": [
+      "body_shell",
+      "corner_guard_set"
+    ],
+    "corner_protection": [
+      "corner_guard_set"
+    ],
+    "latch_or_handle": [
+      "front_latch",
+      "side_handle_l",
+      "side_handle_r"
+    ],
+    "lid_seam": [
+      "lid_seam"
+    ],
+    "material_zones": [
+      "material_painted_steel",
+      "material_rubber_feet",
+      "material_warning_decal"
+    ],
+    "outer_shell": [
+      "body_shell"
+    ],
+    "recessed_panels": [
+      "left_recessed_panel",
+      "right_recessed_panel"
+    ],
+    "reinforced_frame": [
+      "front_frame",
+      "rear_frame"
+    ],
+    "wear_mask_anchors": [
+      "wear_edge_anchors",
+      "wear_contact_anchors"
+    ]
+  },
+  "warning_status": "pass"
+}

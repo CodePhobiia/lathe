@@ -1,0 +1,42 @@
+module examples.geometry_wave9.real_highlow_relic_spire
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave9_real_highlow_relic_spire: env_module {
+  intent {
+    role = "ornate relic spire with hero detail and explicit low runtime mesh"
+    style = ["luxury", "ancient", "spined"]
+    parts = [wall_body, central_inset, spire_l, spire_r, rune_socket, blade_finial]
+    materials = [worn_brass, dark_wood, inset_glass]
+    scale = 1.4m
+  }
+
+  surface {
+    materials = [worn_brass, dark_wood, inset_glass]
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 903
+      symmetry = x
+      style_pack = arcane_luxury
+      silhouette_profile = ornate_spire
+      silhouette_motifs = [spire, spine, blade, guard_cowl]
+      detail_density = hero
+      radial_detail_repeats = 10
+      lod_levels = 4
+      highlow_mode = lod_pair
+      highlow_low_lod = 2
+      highlow_bake_cage_offset_cm = 1.5
+      detail_zones = [wall_body, central_inset, rune_socket, blade_finial]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -1,0 +1,39 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "door frame, leaf, hinges, lock, and threshold are semantic nodes",
+    "material_storytelling": "wear collects at handle, hinge, threshold, and exposed edges",
+    "silhouette_readability": "reads as an industrial mechanical access door"
+  },
+  "asset_id": "smoke_mechanical_door",
+  "certification_tier": "phase14_smoke_warning",
+  "family": "mechanical_door",
+  "platform_profile": {
+    "target": "game_runtime_proxy",
+    "texture_budget": "proxy_or_deferred",
+    "triangle_budget_strict": 1200,
+    "triangle_budget_warning": 1800
+  },
+  "required_features": [
+    "planar panel hierarchy",
+    "frame and threshold alignment",
+    "hinge or track affordance",
+    "lock or handle affordance",
+    "material zones",
+    "edge and threshold wear intent"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "random greebles",
+      "flat unbroken slab",
+      "toy-like scale"
+    ],
+    "keywords": [
+      "industrial",
+      "access",
+      "panelized",
+      "worn threshold"
+    ],
+    "theme": "used hard-surface service door"
+  }
+}

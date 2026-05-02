@@ -239,8 +239,30 @@ def test_build_executor_cache_key_includes_strict_highlow_env(monkeypatch, tmp_p
     strict_fingerprint = strict._build_cache_environment_fingerprint()
 
     assert normal.cache_key != strict.cache_key
-    assert normal_fingerprint["asset_quality"] == {"strict_highlow": False}
-    assert strict_fingerprint["asset_quality"] == {"strict_highlow": True}
+    assert normal_fingerprint["asset_quality"]["strict_highlow"] is False
+    assert strict_fingerprint["asset_quality"]["strict_highlow"] is True
+
+
+def test_build_executor_cache_key_includes_reference_fixture_content(tmp_path):
+    from lathe.executor import BuildExecutor
+    from tests.unit.test_resolver_experimental import _program
+
+    fixture_dir = tmp_path / "refs" / "asset_quality" / "industrial_crate"
+    fixture_dir.mkdir(parents=True)
+    mood_path = fixture_dir / "mood.json"
+    mood_path.write_text(json.dumps({"palette": ["a"], "lighting": "warm"}), encoding="utf-8")
+
+    program = _program({"references": {"use": "refs/asset_quality/industrial_crate"}})
+    program["_source_path"] = str(tmp_path / "asset.lth")
+
+    first = BuildExecutor(program, "crate", tmp_path / "out" / "first")
+    first_fingerprint = first._build_cache_environment_fingerprint()["asset_quality"]["reference_board"]
+    mood_path.write_text(json.dumps({"palette": ["b"], "lighting": "warm"}), encoding="utf-8")
+    second = BuildExecutor(program, "crate", tmp_path / "out" / "second")
+    second_fingerprint = second._build_cache_environment_fingerprint()["asset_quality"]["reference_board"]
+
+    assert first.cache_key != second.cache_key
+    assert first_fingerprint["files"]["mood"]["sha256"] != second_fingerprint["files"]["mood"]["sha256"]
 
 
 def test_cache_manifest_records_required_identity_fields(tmp_path):

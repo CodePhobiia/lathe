@@ -1,0 +1,39 @@
+module examples.geometry_wave1.low_detail_counterpart
+
+asset geometry_wave1_low_detail_counterpart: hard_surface_prop {
+  intent {
+    role = "low detail counterpart crate"
+    style = ["industrial", "simple", "wave1_geometry"]
+    parts = [body, lid, latch_plate, handle_l, handle_r]
+    materials = [painted_steel, dark_rubber]
+    scale = 0.9m
+  }
+
+  features {
+    density = low
+    allow = [panel_seam, edge_break]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 127
+      symmetry = x
+      detail_density = low
+      edge_complexity = low
+      panelization = low
+      groove_density = off
+      ridge_density = off
+      greeble_density = off
+      surface_layer_count = 0
+      modular_attachment_points = 0
+      detail_zones = [body]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.78 }
+  package { formats = [glb] }
+}

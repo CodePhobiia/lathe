@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import unittest
 
+import numpy as np
 from lathe.assembly_kernel import (
     AssemblyBlueprint,
     BlueprintComponent,
@@ -23,6 +24,7 @@ from lathe.assembly_kernel import (
     refresh_shape_ir,
 )
 from lathe.asset_graph import build_asset_graph
+from lathe.blueprints import resolve_blueprint
 from lathe.shape_ir import ShapeIR
 
 
@@ -134,6 +136,49 @@ class CompileAssemblyBlueprintTests(unittest.TestCase):
         shape_ir = compile_assembly_blueprint(asset_graph, blueprint)
         self.assertEqual(len(shape_ir.primitives), 4)
         self.assertEqual(len(shape_ir.regions), 1)
+
+    def test_sword_blueprint_produces_weapon_regions(self) -> None:
+        asset_graph = build_asset_graph(
+            {
+                "name": "hero_sword",
+                "kind": "hard_surface_prop",
+                "intent": {
+                    "role": "hero medieval sword",
+                    "parts": [
+                        "long_tapered_blade",
+                        "central_fuller",
+                        "sharp_tip",
+                        "crossguard",
+                        "leather_wrapped_grip",
+                        "round_pommel",
+                    ],
+                    "scale": {"type": "unit", "value": 1.25, "unit": "m"},
+                },
+                "assembly": {
+                    "resolved_family": {
+                        "values": {
+                            "runtime_family": "hero_sword",
+                            "blueprint_id": "lathe.blueprint.hero_sword_v1",
+                        }
+                    },
+                    "resolved_components": [],
+                },
+                "build": {"shape": {"symmetry": "x"}, "rig": {}, "interfaces": {}},
+                "validate": {"threshold": 0.74},
+            }
+        )
+        blueprint = resolve_blueprint(asset_graph, {}, np.random.default_rng(113), 0)
+        shape_ir = compile_assembly_blueprint(asset_graph, blueprint)
+
+        self.assertEqual(blueprint.blueprint_id, "lathe.blueprint.hero_sword_v1")
+        self.assertEqual(
+            {region.component for region in shape_ir.regions},
+            {"blade", "fuller", "blade_tip", "guard", "grip", "pommel"},
+        )
+        self.assertIn("long_tapered_blade", {primitive.part for primitive in shape_ir.primitives})
+        self.assertGreaterEqual(shape_ir.assessment["feature_count"], 24)
+        self.assertGreaterEqual(shape_ir.assessment["primitive_count"], 32)
+        self.assertGreater(shape_ir.signature["expected_extents"][1], 120.0)
 
     def test_unsupported_component_type_raises_value_error(self) -> None:
         asset_graph = _asset_graph(["body"])

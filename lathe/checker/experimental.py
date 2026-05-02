@@ -1,10 +1,11 @@
 """Phase 13 experimental-syntax checks.
 
-Validates the optional ``experimental { ... }`` block on assets:
+Validates the optional ``experimental { ... }`` block on assets and
+materialized variants:
 unknown sub-blocks (``L7100``), the ``art_direction`` field
 whitelist (``L7101``/``L7102``), the ``references.use`` path
 (``L7103``), and the ``kit.use`` part-list format/membership
-(``L7104``/``L7105``).
+(``L7104``/``L7105``/``L7106``).
 
 Phase 13 only — the stable public surface is unchanged. A clean
 ``experimental`` block produces zero diagnostics.
@@ -15,8 +16,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from ..errors import ResolutionError
+from ..paths import PathGuardError, safe_resolve
 from .utils import diag
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 _EXPERIMENTAL_SUBBLOCKS: tuple[str, ...] = ("art_direction", "references", "kit")
 _ART_DIRECTION_WHITELIST: tuple[str, ...] = (
     "style_tags",
@@ -29,11 +33,20 @@ _ART_DIRECTION_WHITELIST: tuple[str, ...] = (
 def check_experimental_block(checker: Any) -> None:
     """Validate the Phase 13 ``experimental`` block on every asset.
 
-    Iterates the program's assets directly (not the materialized view)
-    so the diagnostics report on what the user wrote, not on the
-    overlay produced by ``uses`` chains and family inheritance.
+    Iterates materialized assets and variants so variant patches that
+    add or mutate ``experimental`` receive the same validation as base
+    assets. Resolution failures are already reported by the asset
+    checker, so this pass skips them to avoid duplicate noise.
     """
-    for asset in checker.program.get("assets", []):
+    names = [asset.get("name", "") for asset in checker.program.get("assets", [])]
+    names.extend(variant.get("name", "") for variant in checker.program.get("variants", []))
+    for name in names:
+        if not name:
+            continue
+        try:
+            asset = checker.resolver.materialize_asset(name)
+        except ResolutionError:
+            continue
         experimental = asset.get("experimental")
         if not isinstance(experimental, dict) or not experimental:
             continue
@@ -48,15 +61,22 @@ def check_experimental_block(checker: Any) -> None:
                 checker, asset_name, experimental.get("references") or {}
             )
         if "kit" in experimental:
-            _check_kit(checker, asset_name, experimental.get("kit") or {})
+            _check_kit(checker, asset, experimental.get("kit") or {})
 
 
 def _check_unknown_subblocks(
     checker: Any, asset_name: str, experimental: dict[str, Any]
 ) -> None:
-    unknowns = experimental.get("_unknown_subblocks") or []
-    if not isinstance(unknowns, list):
-        return
+    raw_unknowns = experimental.get("_unknown_subblocks") or []
+    unknowns = raw_unknowns if isinstance(raw_unknowns, list) else []
+    keyed_unknowns = [
+        key
+        for key in experimental
+        if isinstance(key, str)
+        and key not in _EXPERIMENTAL_SUBBLOCKS
+        and key != "_unknown_subblocks"
+    ]
+    unknowns = [*unknowns, *keyed_unknowns]
     for entry in unknowns:
         if not isinstance(entry, str) or not entry:
             continue
@@ -146,25 +166,24 @@ def _check_art_direction(
                         ],
                     )
                 )
-        else:
-            if not isinstance(value, str):
-                checker.diagnostics.append(
-                    diag(
-                        "L7102",
-                        "experimental_art_direction_invalid_value",
-                        "error",
-                        "typecheck",
-                        (
-                            f"Asset '{asset_name}' experimental.art_direction.{field} "
-                            f"must be a string"
-                        ),
-                        asset=asset_name,
-                        path=f"experimental.art_direction.{field}",
-                        suggested_repairs=[
-                            f'Use a string value, e.g. {field} = "..."',
-                        ],
-                    )
+        elif not isinstance(value, str):
+            checker.diagnostics.append(
+                diag(
+                    "L7102",
+                    "experimental_art_direction_invalid_value",
+                    "error",
+                    "typecheck",
+                    (
+                        f"Asset '{asset_name}' experimental.art_direction.{field} "
+                        f"must be a string"
+                    ),
+                    asset=asset_name,
+                    path=f"experimental.art_direction.{field}",
+                    suggested_repairs=[
+                        f'Use a string value, e.g. {field} = "..."',
+                    ],
                 )
+            )
 
 
 def _check_references(
@@ -189,6 +208,16 @@ def _check_references(
             )
         )
         return
+    _check_unknown_fields(
+        checker,
+        asset_name,
+        "experimental.references",
+        references,
+        {"use", "_resolved_path"},
+        code="L7103",
+        name="experimental_references_invalid_path",
+        suggested="Remove the unsupported field from references",
+    )
     use_value = references.get("use")
     if not isinstance(use_value, str) or not use_value:
         checker.diagnostics.append(
@@ -236,21 +265,47 @@ def _check_references(
 def _resolve_path_for_check(
     checker: Any, resolved_path: Any, use_value: str
 ) -> Path | None:
-    if isinstance(resolved_path, str) and resolved_path:
-        return Path(resolved_path)
     source_path = checker.program.get("_source_path") if isinstance(checker.program, dict) else None
+    roots: list[Path] = []
     if source_path:
+        roots.append(Path(source_path).resolve().parent)
+    roots.append(_REPO_ROOT)
+    if isinstance(resolved_path, str) and resolved_path:
         try:
-            return (Path(source_path).resolve().parent / Path(use_value)).resolve()
+            candidate = Path(resolved_path).resolve()
         except (OSError, RuntimeError):
             return None
-    try:
-        return (Path.cwd() / Path(use_value)).resolve()
-    except (OSError, RuntimeError):
+        if _path_within_any_root(candidate, roots):
+            return candidate
         return None
+    for root in roots:
+        try:
+            candidate = safe_resolve(root, use_value)
+        except (PathGuardError, OSError, RuntimeError):
+            continue
+        if candidate.exists():
+            return candidate
+    return None
 
 
-def _check_kit(checker: Any, asset_name: str, kit: Any) -> None:
+def _path_within_any_root(candidate: Path, roots: list[Path]) -> bool:
+    for root in roots:
+        try:
+            resolved_root = root.resolve()
+        except (OSError, RuntimeError):
+            continue
+        if candidate == resolved_root:
+            return True
+        try:
+            candidate.relative_to(resolved_root)
+        except ValueError:
+            continue
+        return True
+    return False
+
+
+def _check_kit(checker: Any, asset: dict[str, Any], kit: Any) -> None:
+    asset_name = asset.get("name", "")
     if not isinstance(kit, dict):
         checker.diagnostics.append(
             diag(
@@ -270,6 +325,16 @@ def _check_kit(checker: Any, asset_name: str, kit: Any) -> None:
             )
         )
         return
+    _check_unknown_fields(
+        checker,
+        asset_name,
+        "experimental.kit",
+        kit,
+        {"use"},
+        code="L7105",
+        name="experimental_kit_invalid_format",
+        suggested="Remove the unsupported field from kit",
+    )
     raw_use = kit.get("use")
     if not isinstance(raw_use, list):
         checker.diagnostics.append(
@@ -291,9 +356,11 @@ def _check_kit(checker: Any, asset_name: str, kit: Any) -> None:
         )
         return
     library = _safe_load_kit_library_for_check()
-    known_part_keys: set[str] | None = (
-        _kit_library_part_keys(library) if library is not None else None
+    known_parts: dict[str, Any] | None = (
+        _kit_library_parts_by_key(library) if library is not None else None
     )
+    asset_families = _asset_family_candidates(asset)
+    asset_family = asset_families[0]
     for entry in raw_use:
         if not isinstance(entry, str) or not entry:
             checker.diagnostics.append(
@@ -334,7 +401,7 @@ def _check_kit(checker: Any, asset_name: str, kit: Any) -> None:
                 )
             )
             continue
-        if known_part_keys is None:
+        if known_parts is None:
             checker.diagnostics.append(
                 diag(
                     "L7104",
@@ -354,7 +421,8 @@ def _check_kit(checker: Any, asset_name: str, kit: Any) -> None:
                 )
             )
             continue
-        if entry not in known_part_keys:
+        part = known_parts.get(entry)
+        if part is None:
             checker.diagnostics.append(
                 diag(
                     "L7104",
@@ -374,6 +442,66 @@ def _check_kit(checker: Any, asset_name: str, kit: Any) -> None:
                     ],
                 )
             )
+            continue
+        allowed_families = getattr(part, "allowed_families", ())
+        if (
+            isinstance(allowed_families, tuple)
+            and "*" not in allowed_families
+            and not any(family in allowed_families for family in asset_families)
+        ):
+            checker.diagnostics.append(
+                diag(
+                    "L7106",
+                    "experimental_kit_disallowed_family",
+                    "error",
+                    "typecheck",
+                    (
+                        f"Asset '{asset_name}' experimental.kit.use entry "
+                        f"'{entry}' is not allowed for family '{asset_family}'"
+                    ),
+                    asset=asset_name,
+                    path="experimental.kit.use",
+                    details={
+                        "entry": entry,
+                        "family": asset_family,
+                        "family_candidates": list(asset_families),
+                        "allowed_families": list(allowed_families),
+                    },
+                    suggested_repairs=[
+                        f"Use a kit part whose allowed_families includes '{asset_family}'",
+                        f"Remove '{entry}' from kit.use",
+                    ],
+                )
+            )
+
+
+def _check_unknown_fields(
+    checker: Any,
+    asset_name: str,
+    block_path: str,
+    values: dict[str, Any],
+    allowed: set[str],
+    *,
+    code: str,
+    name: str,
+    suggested: str,
+) -> None:
+    for field in sorted(set(values) - allowed):
+        checker.diagnostics.append(
+            diag(
+                code,
+                name,
+                "error",
+                "typecheck",
+                f"Asset '{asset_name}' {block_path} field '{field}' is not supported",
+                asset=asset_name,
+                path=f"{block_path}.{field}",
+                details={"field": field},
+                suggested_repairs=[
+                    f"{suggested}: '{field}'",
+                ],
+            )
+        )
 
 
 def _safe_load_kit_library_for_check() -> Any:
@@ -385,14 +513,38 @@ def _safe_load_kit_library_for_check() -> Any:
         return None
 
 
-def _kit_library_part_keys(library: Any) -> set[str]:
-    keys: set[str] = set()
+def _kit_library_parts_by_key(library: Any) -> dict[str, Any]:
+    parts_by_key: dict[str, Any] = {}
     parts = getattr(library, "parts", None)
     if parts is None:
-        return keys
+        return parts_by_key
     for part in parts:
         category = getattr(part, "category", None)
         name = getattr(part, "name", None)
         if isinstance(category, str) and isinstance(name, str) and category and name:
-            keys.add(f"{category}.{name}")
-    return keys
+            parts_by_key[f"{category}.{name}"] = part
+    return parts_by_key
+
+
+def _asset_family_candidates(asset: dict[str, Any]) -> tuple[str, ...]:
+    candidates: list[str] = []
+    assembly = asset.get("assembly")
+    if isinstance(assembly, dict):
+        family = assembly.get("family")
+        if isinstance(family, str) and family:
+            candidates.extend(_family_aliases(family))
+    family = asset.get("family")
+    if isinstance(family, str) and family:
+        candidates.extend(_family_aliases(family))
+    from_family = asset.get("from")
+    if isinstance(from_family, str) and from_family:
+        candidates.extend(_family_aliases(from_family))
+    deduped = tuple(dict.fromkeys(candidates))
+    return deduped or ("generic",)
+
+
+def _family_aliases(family: str) -> tuple[str, ...]:
+    if family.endswith("_family"):
+        canonical = family[: -len("_family")]
+        return (canonical, family) if canonical else (family,)
+    return (family,)

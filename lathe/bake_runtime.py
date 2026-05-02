@@ -87,18 +87,218 @@ def _glass_pattern(size: int, seed: float) -> np.ndarray:
     return np.clip(0.46 + scanlines * 0.08 + glow * 0.22 + (_noise_field(size, seed) - 0.5) * 0.04, 0.0, 1.0)
 
 
+def _water_pattern(size: int, seed: float) -> np.ndarray:
+    x, y = _coord_grid(size)
+    ripples = np.sin((x * (18.0 + seed * 4.0) + y * 3.2 + seed * 5.0) * np.pi * 2.0)
+    cross = np.sin((y * (22.0 + seed * 6.0) - x * 2.4 + seed * 2.1) * np.pi * 2.0)
+    return np.clip(0.52 + ripples * 0.18 + cross * 0.10 + (_noise_field(size, seed) - 0.5) * 0.10, 0.0, 1.0)
+
+
+def _sand_pattern(size: int, seed: float) -> np.ndarray:
+    x, y = _coord_grid(size)
+    dunes = np.sin((x * (10.0 + seed * 3.0) + y * (2.2 + seed)) * np.pi * 2.0)
+    fine = np.sin((x * 82.0 + y * 17.0 + seed * 9.0) * np.pi * 2.0)
+    return np.clip(0.55 + dunes * 0.16 + fine * 0.06 + (_noise_field(size, seed) - 0.5) * 0.16, 0.0, 1.0)
+
+
+def _vegetation_pattern(size: int, seed: float) -> np.ndarray:
+    x, y = _coord_grid(size)
+    tuft = np.sin((x * (38.0 + seed * 6.0) + seed) * np.pi * 2.0) * np.sin((y * (21.0 + seed * 4.0)) * np.pi * 2.0)
+    blotch = _noise_field(size, seed + 0.19)
+    return np.clip(0.46 + tuft * 0.10 + (blotch - 0.5) * 0.38, 0.0, 1.0)
+
+
+def _snow_pattern(size: int, seed: float) -> np.ndarray:
+    x, y = _coord_grid(size)
+    drift = np.sin((x * (5.0 + seed * 2.0) + y * (8.0 + seed * 2.5)) * np.pi * 2.0)
+    sparkle = np.sin((x * 96.0 - y * 61.0 + seed * 13.0) * np.pi * 2.0)
+    return np.clip(0.68 + drift * 0.12 + sparkle * 0.035 + (_noise_field(size, seed) - 0.5) * 0.08, 0.0, 1.0)
+
+
+def _cracked_pattern(size: int, seed: float) -> np.ndarray:
+    x, y = _coord_grid(size)
+    strata = np.sin((y * (14.0 + seed * 5.0) + x * 1.6 + seed * 3.1) * np.pi * 2.0)
+    cracks = np.abs(np.sin((x * (17.0 + seed * 7.0) - y * 11.0 + seed * 5.2) * np.pi * 2.0))
+    cracks = np.where(cracks > 0.93, 0.0, 1.0)
+    return np.clip(0.50 + strata * 0.16 + (_noise_field(size, seed) - 0.5) * 0.18 - (1.0 - cracks) * 0.44, 0.0, 1.0)
+
+
+def _mud_pattern(size: int, seed: float) -> np.ndarray:
+    x, y = _coord_grid(size)
+    clumps = _noise_field(size, seed + 0.41)
+    channels = np.sin((x * (13.0 + seed * 4.0) + y * (9.0 + seed * 3.0)) * np.pi * 2.0)
+    return np.clip(0.42 + (clumps - 0.5) * 0.42 + channels * 0.08, 0.0, 1.0)
+
+
 def _profile_pattern(profile: str, size: int, seed: float) -> np.ndarray:
     if profile == "wood_grain":
         return _wood_pattern(size, seed)
     if profile in {"brushed_metal", "worn_brass"}:
         return _metal_pattern(size, seed)
-    if profile == "fabric_lining":
+    if profile in {"fabric_lining", "woven_fabric"}:
         return _fabric_pattern(size, seed)
     if profile == "screen_glass":
         return _glass_pattern(size, seed)
-    if profile in {"painted_panel", "neutral_panel", "carbon_rubber"}:
+    if profile in {"water_ripple", "foam_wash"}:
+        return _water_pattern(size, seed)
+    if profile in {"sand_ripple", "wind_streaks"}:
+        return _sand_pattern(size, seed)
+    if profile in {"grass_mottle", "leaf_litter"}:
+        return _vegetation_pattern(size, seed)
+    if profile in {"snow_drift", "ice_scratch"}:
+        return _snow_pattern(size, seed)
+    if profile in {"cracked_stone", "stratified_stone", "basalt_crack", "lava_crack", "rock_scree"}:
+        return _cracked_pattern(size, seed)
+    if profile in {"mud_silt", "concrete_mottle"}:
+        return _mud_pattern(size, seed)
+    if profile in {"painted_panel", "neutral_panel", "carbon_rubber", "emissive_panel"}:
         return _paint_pattern(size, seed)
     return _noise_field(size, seed)
+
+
+def _material_layer_color(name: str, fallback: np.ndarray) -> np.ndarray:
+    lname = name.lower()
+    if "water" in lname:
+        return np.asarray([48.0, 116.0, 146.0], dtype=np.float64)
+    if "foam" in lname:
+        return np.asarray([218.0, 232.0, 224.0], dtype=np.float64)
+    if "salt" in lname:
+        return np.asarray([202.0, 208.0, 198.0], dtype=np.float64)
+    if "sand" in lname:
+        return np.asarray([174.0, 145.0, 92.0], dtype=np.float64)
+    if "mud" in lname or "silt" in lname or "soil" in lname or "dust" in lname or "grime" in lname:
+        if "grime" in lname:
+            return np.asarray([56.0, 56.0, 50.0], dtype=np.float64)
+        return np.asarray([84.0, 62.0, 40.0], dtype=np.float64)
+    if "grass" in lname or "moss" in lname or "algae" in lname or "lichen" in lname:
+        return np.asarray([70.0, 112.0, 64.0], dtype=np.float64)
+    if "leaf" in lname or "bark" in lname:
+        return np.asarray([124.0, 84.0, 38.0], dtype=np.float64)
+    if "fungus" in lname or "mushroom" in lname:
+        return np.asarray([154.0, 128.0, 98.0], dtype=np.float64)
+    if "flower" in lname or "petal" in lname or "blossom" in lname:
+        return np.asarray([186.0, 92.0, 132.0], dtype=np.float64)
+    if "terracotta" in lname or "planter" in lname:
+        return np.asarray([146.0, 76.0, 48.0], dtype=np.float64)
+    if "canvas" in lname or "cloth" in lname or "rope" in lname or "upholstery" in lname:
+        return np.asarray([126.0, 118.0, 92.0], dtype=np.float64)
+    if "laminate" in lname:
+        return np.asarray([154.0, 150.0, 136.0], dtype=np.float64)
+    if "snow" in lname or "frost" in lname:
+        return np.asarray([220.0, 226.0, 228.0], dtype=np.float64)
+    if "ice" in lname:
+        return np.asarray([174.0, 214.0, 228.0], dtype=np.float64)
+    if "lava" in lname:
+        return np.asarray([220.0, 74.0, 18.0], dtype=np.float64)
+    if "basalt" in lname or "stone" in lname or "rock" in lname:
+        return np.asarray([104.0, 104.0, 98.0], dtype=np.float64)
+    if "hazard" in lname or "warning" in lname:
+        return np.asarray([216.0, 164.0, 42.0], dtype=np.float64)
+    if "cast_iron" in lname or "iron" in lname:
+        return np.asarray([58.0, 62.0, 64.0], dtype=np.float64)
+    if "galvanized" in lname:
+        return np.asarray([132.0, 140.0, 140.0], dtype=np.float64)
+    if "safety_grate" in lname or "grate" in lname:
+        return np.asarray([118.0, 126.0, 124.0], dtype=np.float64)
+    if "gasket" in lname or "insulation" in lname:
+        return np.asarray([34.0, 40.0, 46.0], dtype=np.float64)
+    if "rubber_tread" in lname or "tread" in lname:
+        return np.asarray([34.0, 36.0, 36.0], dtype=np.float64)
+    if "paint" in lname:
+        return np.asarray([88.0, 102.0, 120.0], dtype=np.float64)
+    if "brass" in lname or "gold" in lname:
+        return np.asarray([190.0, 150.0, 72.0], dtype=np.float64)
+    if "copper" in lname:
+        return np.asarray([176.0, 92.0, 52.0], dtype=np.float64)
+    if "metal" in lname or "steel" in lname or "aluminum" in lname:
+        return np.asarray([138.0, 144.0, 148.0], dtype=np.float64)
+    if "rubber" in lname or "carbon" in lname:
+        return np.asarray([38.0, 42.0, 46.0], dtype=np.float64)
+    if "plastic" in lname:
+        return np.asarray([72.0, 82.0, 92.0], dtype=np.float64)
+    if "glass" in lname or "screen" in lname:
+        return np.asarray([76.0, 124.0, 196.0], dtype=np.float64)
+    if "wood" in lname or "oak" in lname:
+        return np.asarray([118.0, 72.0, 42.0], dtype=np.float64)
+    return fallback
+
+
+def _wear_layer_intensity(zone: dict[str, Any], kind: str) -> float:
+    for layer in zone.get("wear_layers", []) or []:
+        if isinstance(layer, dict) and str(layer.get("kind", "")) == kind:
+            return float(layer.get("intensity", 0.0))
+    return 0.0
+
+
+def _surface_material_masks(
+    zone: dict[str, Any],
+    *,
+    size: int,
+    seed: float,
+    curvature: np.ndarray,
+    ao: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    layers = [str(item) for item in zone.get("procedural_layers", []) or [] if str(item)]
+    if not layers:
+        zero = np.zeros((size, size), dtype=np.float64)
+        return zero, zero
+
+    x, y = _coord_grid(size)
+    noise = _noise_field(size, seed + 0.173)
+    role = str(zone.get("material_layer_role", "base"))
+    layer_count = len(layers)
+    underlayer_strength = 0.18 if layer_count >= 2 else 0.0
+    if role == "secondary":
+        underlayer_strength += 0.10
+    elif role == "accent":
+        underlayer_strength += 0.06
+    wear = float(zone.get("wear", 0.0))
+    chip_bias = np.clip((curvature - 0.46) * (1.40 + wear) + (noise - 0.58) * 1.25, 0.0, 1.0)
+    underlayer_mask = np.clip(chip_bias * (underlayer_strength + wear * 0.36), 0.0, 1.0)
+
+    if layer_count < 3:
+        return underlayer_mask, np.zeros((size, size), dtype=np.float64)
+
+    stripe_phase = seed * 3.1
+    stripe_width = 0.36 if any("hazard" in item.lower() or "warning" in item.lower() for item in layers) else 0.18
+    stripe_wave = np.sin((x * (7.0 + seed * 1.7) + y * (2.4 + seed) + stripe_phase) * np.pi * 2.0)
+    edge_band = np.clip((curvature - 0.42) * 2.4 + (0.76 - ao) * 0.72, 0.0, 1.0)
+    accent_mask = np.where(stripe_wave > 1.0 - stripe_width, 1.0, 0.0)
+    accent_mask = np.clip(accent_mask * (0.40 + edge_band * 0.45), 0.0, 1.0)
+    return underlayer_mask, accent_mask
+
+
+def _surface_wear_masks(
+    zone: dict[str, Any],
+    *,
+    size: int,
+    seed: float,
+    curvature: np.ndarray,
+    ao: np.ndarray,
+) -> dict[str, np.ndarray]:
+    x, y = _coord_grid(size)
+    noise = _noise_field(size, seed + 0.391)
+    wear = float(zone.get("wear", 0.0))
+    edge_intensity = max(wear, _wear_layer_intensity(zone, "edge_wear"))
+    scratch_intensity = max(wear * 0.52, _wear_layer_intensity(zone, "micro_scratches"))
+    grime_intensity = _wear_layer_intensity(zone, "dirt_grime")
+    chip_intensity = _wear_layer_intensity(zone, "paint_chips")
+    patina_intensity = _wear_layer_intensity(zone, "patina")
+
+    scratch_wave = np.sin((x * (96.0 + seed * 21.0) + y * (8.0 + seed * 3.0)) * np.pi * 2.0)
+    scratch_mask = np.clip((np.abs(scratch_wave) - 0.90) * 9.0, 0.0, 1.0) * scratch_intensity
+    edge_mask = np.clip((curvature - 0.44) * 2.7 + (noise - 0.62) * 0.55, 0.0, 1.0) * edge_intensity
+    grime_mask = np.clip((0.78 - ao) * 1.25 + (noise - 0.55) * 0.42, 0.0, 1.0) * grime_intensity
+    chip_mask = np.clip((noise - 0.61) * 2.0 + edge_mask * 0.90, 0.0, 1.0) * chip_intensity
+    patina_mask = np.clip((noise - 0.47) * 1.2 + (1.0 - curvature) * 0.25, 0.0, 1.0) * patina_intensity
+
+    return {
+        "edge_wear": edge_mask,
+        "micro_scratches": scratch_mask,
+        "dirt_grime": grime_mask,
+        "paint_chips": chip_mask,
+        "patina": patina_mask,
+    }
 
 
 def _color_mask(image: np.ndarray, color: tuple[int, int, int]) -> np.ndarray:
@@ -241,6 +441,49 @@ def bake_basecolor_map(
         values += variation[..., None]
         values += edge_wear[..., None] * np.asarray([46.0, 42.0, 38.0], dtype=np.float64)
         values -= cavity_darkening[..., None] * np.asarray([38.0, 34.0, 28.0], dtype=np.float64)
+
+        layer_mask, accent_mask = _surface_material_masks(
+            zone,
+            size=source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=ao,
+        )
+        layers = [str(item) for item in zone.get("procedural_layers", []) or [] if str(item)]
+        if len(layers) >= 2:
+            underlayer_color = _material_layer_color(layers[1], base)
+            values = values * (1.0 - layer_mask[..., None] * 0.84) + underlayer_color * (
+                layer_mask[..., None] * 0.84
+            )
+        if len(layers) >= 3:
+            accent_color = _material_layer_color(layers[2], base)
+            values = values * (1.0 - accent_mask[..., None] * 0.72) + accent_color * (
+                accent_mask[..., None] * 0.72
+            )
+
+        wear_masks = _surface_wear_masks(
+            zone,
+            size=source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=ao,
+        )
+        chip_color = (
+            _material_layer_color(layers[1], base)
+            if len(layers) >= 2
+            else np.asarray([150.0, 150.0, 145.0], dtype=np.float64)
+        )
+        values = values * (1.0 - wear_masks["paint_chips"][..., None] * 0.88) + chip_color * (
+            wear_masks["paint_chips"][..., None] * 0.88
+        )
+        values += wear_masks["micro_scratches"][..., None] * np.asarray(
+            [42.0, 39.0, 35.0], dtype=np.float64
+        )
+        values -= wear_masks["dirt_grime"][..., None] * np.asarray([82.0, 72.0, 58.0], dtype=np.float64)
+        values += wear_masks["edge_wear"][..., None] * np.asarray([38.0, 34.0, 30.0], dtype=np.float64)
+        values = values * (1.0 - wear_masks["patina"][..., None] * 0.54) + np.asarray(
+            [72.0, 128.0, 106.0], dtype=np.float64
+        ) * (wear_masks["patina"][..., None] * 0.54)
         out[mask] = np.clip(values[mask], 0.0, 255.0)
     return Image.fromarray(out.astype(np.uint8), mode="RGB")
 
@@ -279,8 +522,28 @@ def enhance_normal_map(
             str(zone.get("surface_profile", "neutral_panel")), id_source.shape[0], seed
         )
         intensity = float(zone.get("normal_intensity", 0.05))
+        wear_masks = _surface_wear_masks(
+            zone,
+            size=id_source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=np.ones_like(curvature),
+        )
+        layer_mask, accent_mask = _surface_material_masks(
+            zone,
+            size=id_source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=np.ones_like(curvature),
+        )
         x_detail = (pattern - 0.5) * (44.0 * intensity)
         y_detail = ((curvature - 0.5) + (pattern - 0.5) * 0.65) * (40.0 * intensity)
+        x_detail += (wear_masks["micro_scratches"] - wear_masks["dirt_grime"] * 0.28) * (28.0 + intensity * 82.0)
+        y_detail += (
+            wear_masks["paint_chips"] * 24.0
+            - wear_masks["patina"] * 12.0
+            + (layer_mask + accent_mask) * 18.0
+        )
         out[..., 0][mask] = np.clip(source[..., 0][mask] + x_detail[mask], 0.0, 255.0)
         out[..., 1][mask] = np.clip(source[..., 1][mask] + y_detail[mask], 0.0, 255.0)
     nx = (out[..., 0] / 255.0) * 2.0 - 1.0
@@ -343,11 +606,87 @@ def bake_roughness_map(
         )
         values = roughness_min + (roughness_max - roughness_min) * np.clip(pattern * 1.08, 0.0, 1.0)
         wear = float(zone.get("wear", 0.0))
+        wear_masks = _surface_wear_masks(
+            zone,
+            size=id_source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=ao,
+        )
+        layer_mask, accent_mask = _surface_material_masks(
+            zone,
+            size=id_source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=ao,
+        )
         values = np.clip(
             values + (1.0 - ao) * 0.12 - np.clip(curvature - 0.48, 0.0, 0.42) * wear * 0.48, 0.02, 0.98
         )
+        values = np.clip(
+            values
+            - wear_masks["edge_wear"] * 0.20
+            + wear_masks["micro_scratches"] * 0.10
+            + wear_masks["dirt_grime"] * 0.24
+            + wear_masks["paint_chips"] * 0.16
+            + wear_masks["patina"] * 0.18
+            + layer_mask * 0.08
+            - accent_mask * 0.06,
+            0.02,
+            0.98,
+        )
         out[mask] = values[mask] * 255.0
     return Image.fromarray(out.astype(np.uint8), mode="L")
+
+
+def bake_wear_mask(
+    id_map: Image.Image, material_zones: list[dict[str, Any]], curvature_map: Image.Image, ao_map: Image.Image
+) -> Image.Image:
+    id_source = np.asarray(id_map, dtype=np.uint8)
+    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float64) / 255.0
+    ao = np.asarray(ao_map.convert("L"), dtype=np.float64) / 255.0
+    out = np.zeros(id_source.shape[:2], dtype=np.float64)
+    for zone in material_zones:
+        color = tuple(int(value) for value in zone["basecolor"])
+        mask = _color_mask(id_source, color)
+        if not np.any(mask):
+            continue
+        seed = _hash_seed(f"wear-mask:{zone['part']}:{zone['material']}")
+        masks = _surface_wear_masks(
+            zone,
+            size=id_source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=ao,
+        )
+        combined = np.maximum.reduce(list(masks.values()))
+        out[mask] = np.maximum(out[mask], combined[mask] * 255.0)
+    return Image.fromarray(np.clip(out, 0.0, 255.0).astype(np.uint8), mode="L")
+
+
+def bake_material_layer_mask(
+    id_map: Image.Image, material_zones: list[dict[str, Any]], curvature_map: Image.Image, ao_map: Image.Image
+) -> Image.Image:
+    id_source = np.asarray(id_map, dtype=np.uint8)
+    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float64) / 255.0
+    ao = np.asarray(ao_map.convert("L"), dtype=np.float64) / 255.0
+    out = np.zeros(id_source.shape[:2], dtype=np.float64)
+    for zone in material_zones:
+        color = tuple(int(value) for value in zone["basecolor"])
+        mask = _color_mask(id_source, color)
+        if not np.any(mask):
+            continue
+        seed = _hash_seed(f"layer-mask:{zone['part']}:{zone['material']}")
+        layer_mask, accent_mask = _surface_material_masks(
+            zone,
+            size=id_source.shape[0],
+            seed=seed,
+            curvature=curvature,
+            ao=ao,
+        )
+        combined = np.maximum(layer_mask, accent_mask)
+        out[mask] = np.maximum(out[mask], combined[mask] * 255.0)
+    return Image.fromarray(np.clip(out, 0.0, 255.0).astype(np.uint8), mode="L")
 
 
 def bake_metallic_map(id_map: Image.Image, material_zones: list[dict[str, Any]]) -> Image.Image:
@@ -385,7 +724,11 @@ def bake_emissive_map(id_map: Image.Image, material_zones: list[dict[str, Any]])
 
 
 def apply_decal_overlays(
-    basecolor_map: Image.Image, roughness_map: Image.Image, emissive_map: Image.Image, decals: list[str]
+    basecolor_map: Image.Image,
+    roughness_map: Image.Image,
+    emissive_map: Image.Image,
+    decals: list[str],
+    placements: list[dict[str, Any]] | None = None,
 ) -> tuple[Image.Image, Image.Image, Image.Image]:
     if not decals:
         return basecolor_map, roughness_map, emissive_map
@@ -397,6 +740,21 @@ def apply_decal_overlays(
     rough_draw = ImageDraw.Draw(roughness, "L")
     emissive_draw = ImageDraw.Draw(emissive, "RGB")
     width, height = basecolor.size
+    placement_by_decal = {
+        str(item.get("decal", "")).lower(): item
+        for item in (placements or [])
+        if isinstance(item, dict)
+    }
+
+    def anchor_for(name: str, default_x: float, default_y: float) -> tuple[float, float]:
+        placement = placement_by_decal.get(str(name).lower())
+        anchor = placement.get("anchor_uv") if isinstance(placement, dict) else None
+        if isinstance(anchor, list) and len(anchor) >= 2:
+            return (
+                max(0.02, min(0.96, float(anchor[0]))),
+                max(0.02, min(0.96, float(anchor[1]))),
+            )
+        return default_x, default_y
 
     def draw_label_block(
         x0: float, y0: float, x1: float, y1: float, color: tuple[int, int, int], roughness_value: int
@@ -404,6 +762,126 @@ def apply_decal_overlays(
         rect = [int(x0 * width), int(y0 * height), int(x1 * width), int(y1 * height)]
         base_draw.rectangle(rect, fill=color)
         rough_draw.rectangle(rect, fill=roughness_value)
+
+    def draw_story_label(name: str) -> None:
+        seed = _hash_seed(f"label:{name}")
+        x0, y0 = anchor_for(name, 0.08 + seed * 0.28, 0.08 + (1.0 - seed) * 0.16)
+        x0 = min(0.72, x0)
+        y0 = min(0.82, y0)
+        draw_label_block(x0, y0, x0 + 0.24, y0 + 0.065, (222, 220, 208), 148)
+        draw_label_block(x0 + 0.025, y0 + 0.017, x0 + 0.19, y0 + 0.027, (32, 36, 42), 126)
+        draw_label_block(x0 + 0.025, y0 + 0.038, x0 + 0.15, y0 + 0.047, (32, 36, 42), 126)
+
+    def draw_scrape_cluster(name: str) -> None:
+        seed = _hash_seed(f"scrape:{name}")
+        ax, ay = anchor_for(name, 0.28 + seed * 0.46, 0.30 + (1.0 - seed) * 0.34)
+        cx = int(width * ax)
+        cy = int(height * ay)
+        span = max(18, width // 9)
+        for index in range(7):
+            offset = int((index - 3) * max(4, width // 80))
+            length = int(span * (0.45 + (index % 3) * 0.16))
+            y = cy + offset
+            base_draw.line(
+                [(cx - length // 2, y + length // 5), (cx + length // 2, y - length // 5)],
+                fill=(196, 188, 166),
+                width=max(1, width // 180),
+            )
+            rough_draw.line(
+                [(cx - length // 2, y + length // 5), (cx + length // 2, y - length // 5)],
+                fill=92,
+                width=max(1, width // 140),
+            )
+
+    def draw_edge_rub() -> None:
+        inset = max(4, width // 48)
+        for step in range(3):
+            color = (184 - step * 18, 174 - step * 16, 148 - step * 14)
+            rect = [inset + step * 5, inset + step * 5, width - inset - step * 5, height - inset - step * 5]
+            base_draw.rectangle(rect, outline=color, width=max(1, width // 160))
+            rough_draw.rectangle(rect, outline=104 + step * 8, width=max(1, width // 160))
+
+    def draw_rune_cluster(name: str) -> None:
+        seed = _hash_seed(f"rune:{name}")
+        base_x = int(width * (0.32 + seed * 0.22))
+        base_y = int(height * (0.38 + seed * 0.18))
+        step = max(10, width // 32)
+        rune_color = (92, 178, 138)
+        for index in range(5):
+            x = base_x + (index - 2) * step
+            y = base_y + int(np.sin(index + seed) * step * 0.35)
+            h = max(12, height // 24)
+            base_draw.line([(x, y - h // 2), (x, y + h // 2)], fill=rune_color, width=max(1, width // 180))
+            base_draw.line([(x - h // 4, y), (x + h // 4, y - h // 3)], fill=rune_color, width=max(1, width // 180))
+            rough_draw.line([(x, y - h // 2), (x, y + h // 2)], fill=84, width=max(1, width // 150))
+            emissive_draw.line([(x, y - h // 2), (x, y + h // 2)], fill=(18, 62, 40), width=max(1, width // 170))
+
+    def draw_color_bar(name: str, color: tuple[int, int, int]) -> None:
+        _, ay = anchor_for(name, 0.50, 0.62)
+        top = int(height * max(0.08, min(0.88, ay)))
+        bar_h = max(8, height // 28)
+        base_draw.rectangle([int(width * 0.16), top, int(width * 0.84), top + bar_h], fill=color)
+        rough_draw.rectangle([int(width * 0.16), top, int(width * 0.84), top + bar_h], fill=112)
+
+    def draw_heat_marks(name: str) -> None:
+        ax, ay = anchor_for(name, 0.66, 0.42)
+        cx = int(width * ax)
+        cy = int(height * ay)
+        for radius, color in (
+            (max(18, width // 12), (84, 92, 116)),
+            (max(12, width // 16), (124, 86, 58)),
+            (max(7, width // 24), (174, 126, 58)),
+        ):
+            base_draw.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], outline=color, width=max(2, width // 120))
+            rough_draw.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], outline=118, width=max(1, width // 150))
+
+    def draw_calibration_marks(name: str) -> None:
+        _, ay = anchor_for(name, 0.50, 0.18)
+        x0 = int(width * 0.18)
+        x1 = int(width * 0.82)
+        y = int(height * max(0.06, min(0.86, ay)))
+        base_draw.line([(x0, y), (x1, y)], fill=(118, 176, 212), width=max(1, width // 160))
+        rough_draw.line([(x0, y), (x1, y)], fill=98, width=max(1, width // 160))
+        for index in range(9):
+            x = x0 + int((x1 - x0) * index / 8)
+            base_draw.line([(x, y - 6), (x, y + 6)], fill=(210, 226, 232), width=max(1, width // 220))
+
+    def draw_mottled_patches(name: str, color: tuple[int, int, int], roughness_value: int) -> None:
+        seed = _hash_seed(f"mottle:{name}")
+        for index in range(18):
+            px = int(width * ((seed + index * 0.137) % 1.0))
+            py = int(height * ((seed * 0.71 + index * 0.191) % 1.0))
+            rx = max(4, int(width * (0.010 + ((seed + index * 0.043) % 0.026))))
+            ry = max(3, int(height * (0.008 + ((seed + index * 0.031) % 0.022))))
+            base_draw.ellipse([px - rx, py - ry, px + rx, py + ry], fill=color)
+            rough_draw.ellipse([px - rx, py - ry, px + rx, py + ry], fill=roughness_value)
+
+    def draw_wavy_band(name: str, color: tuple[int, int, int], roughness_value: int) -> None:
+        seed = _hash_seed(f"wavy:{name}")
+        y0 = int(height * (0.55 + (seed - 0.5) * 0.16))
+        points = []
+        for index in range(18):
+            x = int(width * index / 17)
+            y = y0 + int(np.sin(index * 0.9 + seed * 4.0) * max(4, height // 44))
+            points.append((x, y))
+        base_draw.line(points, fill=color, width=max(2, width // 75))
+        rough_draw.line(points, fill=roughness_value, width=max(2, width // 75))
+
+    def draw_crack_network(name: str, emissive: bool = False) -> None:
+        seed = _hash_seed(f"cracks:{name}")
+        for index in range(9):
+            x = int(width * ((seed + index * 0.173) % 1.0))
+            y = int(height * ((seed * 0.53 + index * 0.127) % 1.0))
+            length = max(18, int(width * (0.08 + ((seed + index * 0.037) % 0.09))))
+            angle = (seed + index * 0.37) * np.pi
+            x2 = int(x + np.cos(angle) * length)
+            y2 = int(y + np.sin(angle) * length)
+            color = (38, 34, 30)
+            glow = (210, 64, 18)
+            base_draw.line([(x, y), (x2, y2)], fill=glow if emissive else color, width=max(1, width // 130))
+            rough_draw.line([(x, y), (x2, y2)], fill=92, width=max(1, width // 130))
+            if emissive:
+                emissive_draw.line([(x, y), (x2, y2)], fill=(220, 74, 18), width=max(1, width // 120))
 
     for decal in decals:
         name = str(decal).lower()
@@ -437,6 +915,14 @@ def apply_decal_overlays(
             draw_label_block(0.14, 0.26, 0.28, 0.29, (32, 36, 42), 132)
             draw_label_block(0.62, 0.18, 0.84, 0.24, (214, 214, 208), 146)
             draw_label_block(0.64, 0.26, 0.80, 0.29, (28, 32, 40), 132)
+        if (
+            "unit" in name
+            or "operator_label" in name
+            or "cable_tag" in name
+            or "calibration_id" in name
+            or "service_number" in name
+        ):
+            draw_story_label(name)
         if "warning" in name:
             stripe_height = max(14, height // 18)
             top = int(height * 0.72)
@@ -458,6 +944,39 @@ def apply_decal_overlays(
             )
         if "trim" in name and "wear" not in name:
             draw_label_block(0.10, 0.82, 0.90, 0.86, (56, 62, 70), 144)
+        if "scrape" in name or "scratch" in name:
+            draw_scrape_cluster(name)
+        if "rubbed" in name or "handled" in name or "edge" in name:
+            draw_edge_rub()
+        if "rune" in name or "etched" in name:
+            draw_rune_cluster(name)
+        if "red_bar" in name:
+            draw_color_bar(name, (170, 38, 44))
+        if "stripe" in name and "warning" not in name:
+            draw_color_bar(name, (74, 132, 180))
+        if "heat" in name:
+            draw_heat_marks(name)
+        if "calibration" in name:
+            draw_calibration_marks(name)
+        if "moss" in name or "lichen" in name or "algae" in name:
+            draw_mottled_patches(name, (70, 118, 68), 172)
+        if "leaf" in name:
+            draw_mottled_patches(name, (128, 82, 34), 184)
+        if "mud" in name or "silt" in name:
+            draw_mottled_patches(name, (78, 58, 38), 218)
+        if "foam" in name or "shoreline" in name or "waterline" in name:
+            draw_wavy_band(name, (218, 232, 224), 142)
+        if "snow" in name or "frost" in name:
+            draw_wavy_band(name, (224, 230, 232), 188)
+            draw_mottled_patches(name, (232, 236, 238), 204)
+        if "trail" in name or "scuff" in name:
+            draw_scrape_cluster(name)
+        if "crack" in name or "strata" in name:
+            draw_crack_network(name, emissive="lava" in name)
+        if "lava" in name:
+            draw_crack_network(name, emissive=True)
+        if "sand" in name or "wind" in name:
+            draw_wavy_band(name, (184, 150, 92), 220)
 
     return basecolor, roughness, emissive
 

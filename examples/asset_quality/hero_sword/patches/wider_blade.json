@@ -1,0 +1,33 @@
+{
+  "asset_id": "hero_sword",
+  "notes": [
+    "Widen the blade read without changing blade length, guard width, or construction identity."
+  ],
+  "operations": [
+    {
+      "bounds": {
+        "width": 0.108
+      },
+      "metrics": {
+        "proportion_quality": 0.93,
+        "thumbnail_readability": 0.93
+      },
+      "node_id": "long_tapered_blade",
+      "operation": "adjust_proportion",
+      "preserve": [
+        "blade.length",
+        "guard.width",
+        "construction_identity"
+      ],
+      "target": "silhouette_plan.proportion_rules.guard_width_to_blade_width",
+      "value": 4.1
+    }
+  ],
+  "preserve": [
+    "construction_identity",
+    "blade.length",
+    "guard.width",
+    "overall_silhouette"
+  ],
+  "schema_version": "lathe.asset_quality.semantic_patch.v1"
+}

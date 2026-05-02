@@ -86,6 +86,7 @@
     "tests": { "type": "array", "items": { "$ref": "#/$defs/test_like" } },
     "benchmarks": { "type": "array", "items": { "$ref": "#/$defs/test_like" } },
     "spaces": { "type": "array", "items": { "$ref": "#/$defs/space_decl" } },
+    "worlds": { "type": "array", "items": { "$ref": "#/$defs/world" } },
     "scenes": { "type": "array", "items": { "$ref": "#/$defs/scene" } },
     "assets": { "type": "array", "items": { "$ref": "#/$defs/asset" } },
     "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } }
@@ -269,7 +270,19 @@
           "enum": [
             "scene_style",
             "scene_region",
+            "scene_group",
+            "scene_placement_zone",
+            "scene_module",
+            "scene_kit",
+            "scene_variant_family",
+            "scene_generator",
+            "scene_biome",
+            "scene_scatter",
+            "scene_environment",
             "scene_object",
+            "scene_array",
+            "scene_socket",
+            "scene_attachment",
             "scene_relationship",
             "scene_camera",
             "scene_light",
@@ -299,10 +312,82 @@
         { "properties": { "node_type": { "const": "scene_region" } } }
       ]
     },
+    "scene_group": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_group" } } }
+      ]
+    },
+    "scene_placement_zone": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_placement_zone" } } }
+      ]
+    },
+    "scene_module": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_module" } } }
+      ]
+    },
+    "scene_kit": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_kit" } } }
+      ]
+    },
+    "scene_variant_family": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_variant_family" } } }
+      ]
+    },
+    "scene_generator": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_generator" } } }
+      ]
+    },
+    "scene_biome": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_biome" } } }
+      ]
+    },
+    "scene_scatter": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_scatter" } } }
+      ]
+    },
+    "scene_environment": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_environment" } } }
+      ]
+    },
     "scene_object": {
       "allOf": [
         { "$ref": "#/$defs/scene_child" },
         { "properties": { "node_type": { "const": "scene_object" } } }
+      ]
+    },
+    "scene_array": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_array" } } }
+      ]
+    },
+    "scene_socket": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_socket" } } }
+      ]
+    },
+    "scene_attachment": {
+      "allOf": [
+        { "$ref": "#/$defs/scene_child" },
+        { "properties": { "node_type": { "const": "scene_attachment" } } }
       ]
     },
     "scene_relationship": {
@@ -352,7 +437,19 @@
         "values",
         "styles",
         "regions",
+        "groups",
+        "placement_zones",
+        "modules",
+        "kits",
+        "variant_families",
+        "generators",
+        "biomes",
+        "scatters",
+        "environments",
         "objects",
+        "arrays",
+        "sockets",
+        "attachments",
         "relationships",
         "cameras",
         "lights",
@@ -370,7 +467,81 @@
         "values": { "type": "object" },
         "styles": { "type": "array", "items": { "$ref": "#/$defs/scene_style" } },
         "regions": { "type": "array", "items": { "$ref": "#/$defs/scene_region" } },
+        "groups": { "type": "array", "items": { "$ref": "#/$defs/scene_group" } },
+        "placement_zones": { "type": "array", "items": { "$ref": "#/$defs/scene_placement_zone" } },
+        "modules": { "type": "array", "items": { "$ref": "#/$defs/scene_module" } },
+        "kits": { "type": "array", "items": { "$ref": "#/$defs/scene_kit" } },
+        "variant_families": { "type": "array", "items": { "$ref": "#/$defs/scene_variant_family" } },
+        "generators": { "type": "array", "items": { "$ref": "#/$defs/scene_generator" } },
+        "biomes": { "type": "array", "items": { "$ref": "#/$defs/scene_biome" } },
+        "scatters": { "type": "array", "items": { "$ref": "#/$defs/scene_scatter" } },
+        "environments": { "type": "array", "items": { "$ref": "#/$defs/scene_environment" } },
         "objects": { "type": "array", "items": { "$ref": "#/$defs/scene_object" } },
+        "arrays": { "type": "array", "items": { "$ref": "#/$defs/scene_array" } },
+        "sockets": { "type": "array", "items": { "$ref": "#/$defs/scene_socket" } },
+        "attachments": { "type": "array", "items": { "$ref": "#/$defs/scene_attachment" } },
+        "relationships": { "type": "array", "items": { "$ref": "#/$defs/scene_relationship" } },
+        "cameras": { "type": "array", "items": { "$ref": "#/$defs/scene_camera" } },
+        "lights": { "type": "array", "items": { "$ref": "#/$defs/scene_light" } },
+        "curiosity_anchors": { "type": "array", "items": { "$ref": "#/$defs/scene_curiosity_anchor" } },
+        "hidden_state": { "type": "array", "items": { "$ref": "#/$defs/scene_hidden_state" } },
+        "exports": { "type": "array", "items": { "$ref": "#/$defs/scene_export" } }
+      }
+    },
+    "world": {
+      "type": "object",
+      "required": [
+        "node_type",
+        "name",
+        "version",
+        "brief",
+        "prompt",
+        "values",
+        "styles",
+        "regions",
+        "groups",
+        "placement_zones",
+        "modules",
+        "kits",
+        "variant_families",
+        "generators",
+        "biomes",
+        "scatters",
+        "environments",
+        "objects",
+        "arrays",
+        "sockets",
+        "attachments",
+        "relationships",
+        "cameras",
+        "lights",
+        "curiosity_anchors",
+        "hidden_state",
+        "exports"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "world" },
+        "name": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 },
+        "brief": { "type": "string" },
+        "prompt": { "type": "string" },
+        "values": { "type": "object" },
+        "styles": { "type": "array", "items": { "$ref": "#/$defs/scene_style" } },
+        "regions": { "type": "array", "items": { "$ref": "#/$defs/scene_region" } },
+        "groups": { "type": "array", "items": { "$ref": "#/$defs/scene_group" } },
+        "placement_zones": { "type": "array", "items": { "$ref": "#/$defs/scene_placement_zone" } },
+        "modules": { "type": "array", "items": { "$ref": "#/$defs/scene_module" } },
+        "kits": { "type": "array", "items": { "$ref": "#/$defs/scene_kit" } },
+        "variant_families": { "type": "array", "items": { "$ref": "#/$defs/scene_variant_family" } },
+        "generators": { "type": "array", "items": { "$ref": "#/$defs/scene_generator" } },
+        "biomes": { "type": "array", "items": { "$ref": "#/$defs/scene_biome" } },
+        "scatters": { "type": "array", "items": { "$ref": "#/$defs/scene_scatter" } },
+        "environments": { "type": "array", "items": { "$ref": "#/$defs/scene_environment" } },
+        "objects": { "type": "array", "items": { "$ref": "#/$defs/scene_object" } },
+        "arrays": { "type": "array", "items": { "$ref": "#/$defs/scene_array" } },
+        "sockets": { "type": "array", "items": { "$ref": "#/$defs/scene_socket" } },
+        "attachments": { "type": "array", "items": { "$ref": "#/$defs/scene_attachment" } },
         "relationships": { "type": "array", "items": { "$ref": "#/$defs/scene_relationship" } },
         "cameras": { "type": "array", "items": { "$ref": "#/$defs/scene_camera" } },
         "lights": { "type": "array", "items": { "$ref": "#/$defs/scene_light" } },

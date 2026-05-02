@@ -1,0 +1,62 @@
+{
+  "asset_id": "hero_sword",
+  "detail_hierarchy": {
+    "primary": [
+      "long_tapered_blade",
+      "sharp_tip"
+    ],
+    "secondary": [
+      "crossguard",
+      "round_pommel"
+    ],
+    "status": "semantic",
+    "tertiary": [
+      "central_fuller",
+      "grip_wrap_ridges",
+      "guard_socket_focal"
+    ]
+  },
+  "ops": [
+    {
+      "node_id": "long_tapered_blade",
+      "op": "solid.blade"
+    },
+    {
+      "node_id": "sharp_tip",
+      "op": "solid.blade_tip"
+    },
+    {
+      "node_id": "central_fuller",
+      "op": "surface.inset_channel"
+    },
+    {
+      "node_id": "crossguard",
+      "op": "solid.crossbar"
+    },
+    {
+      "node_id": "guard_socket_focal",
+      "op": "solid.collar_block"
+    },
+    {
+      "node_id": "leather_wrapped_grip",
+      "op": "solid.grip_core"
+    },
+    {
+      "node_id": "grip_wrap_ridges",
+      "op": "repeat.wrap_ridge"
+    },
+    {
+      "node_id": "round_pommel",
+      "op": "solid.pommel"
+    },
+    {
+      "node_id": "edge_wear_anchors",
+      "op": "mask.convex_edge_wear"
+    },
+    {
+      "node_id": "handling_wear_anchors",
+      "op": "mask.hand_contact_wear"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.shape_ir_v2.v1"
+}

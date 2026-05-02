@@ -1,0 +1,68 @@
+{
+  "asset_id": "smoke_terminal_or_supply_chest",
+  "edges": [
+    {
+      "edge_type": "attached_to",
+      "source_id": "interaction_face",
+      "target_id": "chest_body"
+    },
+    {
+      "edge_type": "inset_into",
+      "source_id": "keypad_panel",
+      "target_id": "interaction_face"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "control_wear_anchor",
+      "target_id": "keypad_panel"
+    }
+  ],
+  "family": "supply_chest",
+  "nodes": [
+    {
+      "category": "shell",
+      "node_id": "chest_body",
+      "semantic_role": "compact supply chest body"
+    },
+    {
+      "category": "frame",
+      "node_id": "front_face_frame",
+      "semantic_role": "interaction face frame"
+    },
+    {
+      "category": "panel",
+      "node_id": "interaction_face",
+      "semantic_role": "screen and controls face"
+    },
+    {
+      "category": "seam",
+      "node_id": "lid_panel_seam",
+      "semantic_role": "lid and front panel seam"
+    },
+    {
+      "category": "handle",
+      "node_id": "keypad_panel",
+      "semantic_role": "keypad and lock affordance"
+    },
+    {
+      "category": "base_contact",
+      "node_id": "bottom_skid",
+      "semantic_role": "lower skid contact"
+    },
+    {
+      "category": "material_zone",
+      "node_id": "accent_screen_zone",
+      "semantic_role": "accent material zone"
+    },
+    {
+      "category": "wear_anchor",
+      "node_id": "control_wear_anchor",
+      "semantic_role": "control and lower contact wear anchor"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "runtime_proxy_triangle_count": 1040,
+    "unclassified_major_primitives": 0
+  }
+}

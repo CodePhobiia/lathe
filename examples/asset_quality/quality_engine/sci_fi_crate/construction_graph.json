@@ -1,0 +1,130 @@
+{
+  "asset_id": "quality_engine_sci_fi_crate",
+  "edges": [
+    {
+      "edge_type": "attached_to",
+      "source_id": "corner_guard_set",
+      "target_id": "reinforced_shell"
+    },
+    {
+      "edge_type": "inset_into",
+      "source_id": "front_recessed_panel",
+      "target_id": "reinforced_shell"
+    },
+    {
+      "edge_type": "wraps_around",
+      "source_id": "lid_seam_band",
+      "target_id": "reinforced_shell"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "front_latch_plate",
+      "target_id": "lid_seam_band"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "edge_wear_anchors",
+      "target_id": "corner_guard_set"
+    }
+  ],
+  "family": "sci_fi_crate",
+  "nodes": [
+    {
+      "bounds": {
+        "depth": 0.64,
+        "height": 0.58,
+        "width": 0.92
+      },
+      "category": "shell",
+      "material_zone_ref": "painted_body_zone",
+      "node_id": "reinforced_shell",
+      "semantic_role": "primary crate volume"
+    },
+    {
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.58,
+        "width": 0.92
+      },
+      "category": "frame",
+      "material_zone_ref": "bare_edge_metal",
+      "node_id": "outer_frame",
+      "semantic_role": "protective perimeter frame"
+    },
+    {
+      "bounds": {},
+      "category": "corner_guard",
+      "material_zone_ref": "bare_edge_metal",
+      "node_id": "corner_guard_set",
+      "semantic_role": "eight reinforced corners"
+    },
+    {
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.22,
+        "width": 0.5
+      },
+      "category": "panel",
+      "material_zone_ref": "painted_body_zone",
+      "node_id": "front_recessed_panel",
+      "semantic_role": "front recessed face panel"
+    },
+    {
+      "bounds": {},
+      "category": "seam",
+      "material_zone_ref": "bare_edge_metal",
+      "node_id": "lid_seam_band",
+      "semantic_role": "visible lid/body break"
+    },
+    {
+      "bounds": {},
+      "category": "latch",
+      "material_zone_ref": "bare_edge_metal",
+      "node_id": "front_latch_plate",
+      "semantic_role": "front access affordance"
+    },
+    {
+      "bounds": {},
+      "category": "handle",
+      "material_zone_ref": "rubber_contact_zone",
+      "node_id": "recessed_side_handles",
+      "semantic_role": "carry affordance"
+    },
+    {
+      "bounds": {},
+      "category": "feet",
+      "material_zone_ref": "rubber_contact_zone",
+      "node_id": "foot_rail_pair",
+      "semantic_role": "ground clearance"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "painted_body_zone",
+      "node_id": "material_painted_body",
+      "semantic_role": "painted steel material zone"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "edge_chipped_paint",
+      "node_id": "edge_wear_anchors",
+      "semantic_role": "paint chips on exposed crate edges"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 5,
+    "major_silhouette_nodes": [
+      "reinforced_shell",
+      "outer_frame",
+      "corner_guard_set",
+      "foot_rail_pair"
+    ],
+    "node_count": 10,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 1400,
+    "unclassified_major_primitives": 0
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "asset_id": "hero_sword",
+  "coverage": 1.0,
+  "family_id": "hero_sword_family",
+  "missing_required_rules": [],
+  "optional_rules": [
+    "edge_highlight_wear",
+    "pommel_bevel",
+    "guard_cap_trim"
+  ],
+  "required_rules": [
+    "blade",
+    "fuller",
+    "tip",
+    "crossguard",
+    "wrapped_grip",
+    "pommel",
+    "material_zones",
+    "wear_anchors"
+  ],
+  "rules_used": {
+    "blade": [
+      "long_tapered_blade"
+    ],
+    "crossguard": [
+      "crossguard"
+    ],
+    "fuller": [
+      "central_fuller"
+    ],
+    "material_zones": [
+      "material_tempered_steel"
+    ],
+    "pommel": [
+      "round_pommel"
+    ],
+    "tip": [
+      "sharp_tip"
+    ],
+    "wear_anchors": [
+      "edge_wear_anchors",
+      "handling_wear_anchors"
+    ],
+    "wrapped_grip": [
+      "leather_wrapped_grip",
+      "grip_wrap_ridges"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "status": {
+    "strict": "covered_by_proxy_art_direction_fixture",
+    "warning": "pass"
+  }
+}

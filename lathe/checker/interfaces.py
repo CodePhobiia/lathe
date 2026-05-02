@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from lathe.interface_connections import coerce_interface_connection, connection_constructor
 from lathe.interface_entries import coerce_interface_entry, interface_constructor
 
 from .utils import diag
@@ -52,6 +53,11 @@ def _entry_type(entry: Any) -> str | None:
     if raw is None:
         return None
     return str(raw)
+
+
+def _connection_endpoint_ids(connection: Any) -> tuple[str, str]:
+    coerced = coerce_interface_connection(connection)
+    return str(coerced.get("source") or ""), str(coerced.get("target") or "")
 
 
 def _check_constructor(
@@ -94,6 +100,7 @@ def check_interfaces(
     sockets = interfaces.get("sockets") or []
     pivots = interfaces.get("pivots") or []
     anchors = interfaces.get("anchors") or []
+    connections = interfaces.get("connections") or []
 
     # Unknown socket_type
     for idx, entry in enumerate(sockets):
@@ -186,3 +193,42 @@ def check_interfaces(
                 )
             else:
                 seen[aid] = f"{label}s[{idx}]"
+
+    local_ids = set(seen)
+    for idx, entry in enumerate(connections):
+        constructor = connection_constructor(entry)
+        if isinstance(entry, dict) and entry.get("type") == "call" and constructor is None:
+            checker.diagnostics.append(
+                diag(
+                    "L4705",
+                    "interface_connection_constructor_mismatch",
+                    "error",
+                    "typecheck",
+                    (
+                        "Interface connection entries must use connection(...), "
+                        "connect(...), attach(...), or attachment(...)."
+                    ),
+                    asset=asset_name,
+                    path=f"build.interfaces.connections[{idx}]",
+                )
+            )
+            continue
+        source_id, target_id = _connection_endpoint_ids(entry)
+        for field, endpoint in (("source", source_id), ("target", target_id)):
+            if not endpoint or endpoint in local_ids or "." in endpoint or ":" in endpoint:
+                continue
+            checker.diagnostics.append(
+                diag(
+                    "L4706",
+                    "unresolved_interface_connection_endpoint",
+                    "warning",
+                    "typecheck",
+                    (
+                        f"Connection endpoint '{endpoint}' does not match a local socket, "
+                        "pivot, or anchor; it will be treated as an external/deferred endpoint."
+                    ),
+                    asset=asset_name,
+                    path=f"build.interfaces.connections[{idx}].{field}",
+                    details={"endpoint": endpoint, "known_interface_ids": sorted(local_ids)},
+                )
+            )

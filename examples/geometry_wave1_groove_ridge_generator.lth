@@ -1,0 +1,36 @@
+module examples.geometry_wave1.groove_ridge_generator
+
+asset geometry_wave1_groove_ridge_generator: mechanical_assembly {
+  intent {
+    role = "grooved ridge generator housing"
+    style = ["industrial", "energy_core", "wave1_geometry"]
+    parts = [body, service_panel, vent_panel, socket_plate, support_l, support_r]
+    materials = [painted_steel, smoked_glass, black_rubber]
+    scale = 1.1m
+  }
+
+  features {
+    density = hero
+    allow = [groove_channel, raised_ridge, panel_seam, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 114
+      symmetry = x
+      detail_density = hero
+      panelization = medium
+      groove_density = hero
+      ridge_density = hero
+      modular_attachment_points = 4
+      detail_zones = [body, service_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

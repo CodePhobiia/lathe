@@ -1,0 +1,57 @@
+{
+  "asset_id": "smoke_mechanical_door",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 3,
+    "wear_mask_count": 4
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "door_leaf"
+      ],
+      "zone_id": "painted_door_metal"
+    },
+    {
+      "bound_nodes": [
+        "outer_frame",
+        "lock_handle"
+      ],
+      "zone_id": "dark_trim_metal"
+    },
+    {
+      "bound_nodes": [
+        "threshold"
+      ],
+      "zone_id": "threshold_grime"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.1
+  },
+  "wear_masks": [
+    {
+      "bound_node_id": "outer_frame",
+      "mask_id": "frame_edge_wear"
+    },
+    {
+      "bound_node_id": "lock_handle",
+      "mask_id": "handle_touch_wear"
+    },
+    {
+      "bound_node_id": "threshold",
+      "mask_id": "threshold_scuff"
+    },
+    {
+      "bound_node_id": "center_panel_seam",
+      "mask_id": "panel_grime"
+    }
+  ]
+}

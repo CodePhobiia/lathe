@@ -1,0 +1,38 @@
+module examples.geometry_wave1.trimmed_sensor_pylon
+
+asset geometry_wave1_trimmed_sensor_pylon: env_module {
+  intent {
+    role = "trimmed sensor pylon"
+    style = ["sci_fi", "maintenance", "wave1_geometry"]
+    parts = [body, sensor_panel, frame_panel, access_hatch, socket_plate]
+    materials = [painted_steel, smoked_glass, warning_paint]
+    scale = 1.8m
+  }
+
+  features {
+    density = high
+    allow = [layer_plate, panel_seam, groove_channel, raised_ridge]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 109
+      symmetry = x
+      detail_density = high
+      edge_complexity = crisp
+      edge_treatment = crisp
+      panelization = high
+      groove_density = medium
+      ridge_density = medium
+      surface_layer_count = 3
+      detail_zones = [body, sensor_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

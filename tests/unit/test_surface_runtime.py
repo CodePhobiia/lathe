@@ -157,10 +157,13 @@ class TestBuildSurfaceBundle:
             uv_runtime_mesh=_runtime_mesh(),
         )
         manifest = result["surface_manifest"]
-        assert manifest["patterns"] == ["hex_mesh_v1"]
+        assert manifest["patterns"][0] == "hex_mesh_v1"
+        assert "decal_library_std_surface_decal_library_industrial_v1" in manifest["patterns"]
+        assert "trim_sheet_std_surface_trim_metal_strips_v1" in manifest["patterns"]
         assert manifest["decal_libraries"] == ["std.surface.decal_library.industrial_v1"]
         assert manifest["mask_programs"] == ["std.surface.mask.seam_highlight_v1"]
         assert manifest["trim_sheets"] == ["std.surface.trim.metal_strips_v1"]
+        assert set(manifest["library_driven_decals"]) >= {"hazard_stripe", "trim_sheet_metal_strips"}
         assert manifest["surface_policy"] == "std.surface.policy.game_pbr_v1"
         assert manifest["bake_profile"] == "std.surface.bake_profile.hero_v1"
         assert manifest["render_fixture"] == "std.surface.render.booth_v1"

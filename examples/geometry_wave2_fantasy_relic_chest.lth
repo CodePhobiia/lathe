@@ -1,0 +1,42 @@
+module examples.geometry_wave2.fantasy_relic_chest
+
+asset geometry_wave2_fantasy_relic_chest: hard_surface_prop {
+  intent {
+    role = "stylized fantasy relic chest with ornamental radial hardware"
+    style = ["luxury", "ancient", "ornamental"]
+    parts = [body, lid, lock_plate, hinge_l, hinge_r, handle_l, handle_r, foot_l, foot_r]
+    materials = [dark_wood, aged_brass, emerald_glass]
+    scale = 1.0m
+  }
+
+  surface {
+    material_layers = [dark_wood, aged_brass, emerald_glass]
+    wear_story = ancient
+    wear_level = high
+    story_decals = [etched_runes, rubbed_edges]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 208
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [luxury]
+      edge_treatment = rounded
+      edge_hardness = soft
+      detail_zones = [body, lid, lock_plate]
+      zone_body_motifs = [layer_plate, trim_strip, raised_ridge]
+      zone_lid_motifs = [outset_panel, radial_detail_array, trim_strip]
+      zone_lid_radial_detail_repeats = 10
+      zone_lock_plate_motifs = [radial_detail_array, bolt_grid, inset_panel]
+      zone_lock_plate_radial_detail_repeats = 8
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

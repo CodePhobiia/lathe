@@ -1,0 +1,54 @@
+module examples.geometry_wave11.story_marked_service_cabinet
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave11_story_marked_service_cabinet: hard_surface_prop {
+  intent {
+    role = "service cabinet with targeted labels scratches and faction markings"
+    style = ["industrial", "used", "story_marked"]
+    parts = [body, door_l, door_r, vent_panel, service_label, handle_bar]
+    materials = [painted_steel, bare_metal, rubber]
+    scale = 1.4m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, rubber]
+    zones.body = painted_steel
+    zones.door_l = painted_steel
+    zones.door_r = painted_steel
+    zones.vent_panel = bare_metal
+    zones.service_label = bare_metal
+    zones.handle_bar = rubber
+    story_decals = [unit_17, scrape_cluster, red_bar, handled_edges]
+    faction_marks = [maintenance_delta]
+    story_targets = [door_l, door_r, service_label]
+    story_density = hero
+    story_asymmetry = hero_asymmetric
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1101
+      symmetry = x
+      style_pack = industrial_hero
+      detail_density = hero
+      detail_zones = [body, door_l, door_r, vent_panel]
+      zone_vent_panel_motifs = [groove_channel, raised_ridge, linear_detail_array]
+      zone_vent_panel_linear_detail_repeats = 5
+      lod_levels = 4
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

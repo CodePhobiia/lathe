@@ -1,0 +1,38 @@
+module examples.geometry_wave1.ridged_exhaust_vent
+
+asset geometry_wave1_ridged_exhaust_vent: env_module {
+  intent {
+    role = "ridged exhaust vent wall panel"
+    style = ["industrial", "sci_fi", "wave1_geometry"]
+    parts = [body, vent_panel, grille_panel, frame_panel, socket_plate]
+    materials = [painted_steel, dark_rubber, heat_stained_metal]
+    scale = 1.7m
+  }
+
+  features {
+    density = hero
+    allow = [raised_ridge, groove_channel, panel_seam, bolt_grid, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 123
+      symmetry = x
+      detail_density = hero
+      edge_complexity = crisp
+      panelization = high
+      groove_density = high
+      ridge_density = hero
+      greeble_density = high
+      modular_attachment_points = 4
+      detail_zones = [body, vent_panel, grille_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

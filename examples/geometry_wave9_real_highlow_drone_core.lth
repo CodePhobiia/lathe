@@ -1,0 +1,43 @@
+module examples.geometry_wave9.real_highlow_drone_core
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave9_real_highlow_drone_core: hard_surface_prop {
+  intent {
+    role = "hero drone core with authored high-to-low LOD bake relation"
+    style = ["prototype", "modular", "winged"]
+    parts = [body, sensor_face, wing_socket_l, wing_socket_r, antenna_deck, power_spine]
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    scale = 0.9m
+  }
+
+  surface {
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 901
+      symmetry = x
+      style_pack = sleek_sci_fi
+      silhouette_profile = sleek_winged
+      silhouette_motifs = [wing, spine, sensor_mast]
+      detail_density = hero
+      lod_levels = 4
+      highlow_mode = lod_pair
+      highlow_low_lod = 3
+      highlow_bake_cage_offset_cm = 1.75
+      detail_zones = [body, sensor_face, antenna_deck]
+      zone_sensor_face_module_categories = [sensor_pod, antenna]
+      zone_sensor_face_module_count = 3
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -135,11 +135,11 @@ publish).
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
 
 REFERENCE_BOARD_VERSION = "reference_board_v1"
 
@@ -159,6 +159,19 @@ _CATEGORY_REFERENCE_BOARD = "reference_board"
 _REASON_MISSING = "reference_missing"
 _REASON_MALFORMED = "reference_malformed"
 _REASON_NOT_LOADED = "reference_board_not_loaded"
+_REASON_LOADER_ERROR = "reference_loader_error"
+
+_STATUS_LOADED = "loaded"
+_STATUS_MISSING = "missing"
+_STATUS_MALFORMED = "malformed"
+_STATUS_ERROR = "error"
+
+_CATEGORY_FILENAMES = {
+    _CATEGORY_MOOD: _MOOD_FILENAME,
+    _CATEGORY_SILHOUETTE: _SILHOUETTE_FILENAME,
+    _CATEGORY_MATERIALS: _MATERIALS_FILENAME,
+    _CATEGORY_NEGATIVE: _NEGATIVE_FILENAME,
+}
 
 
 @dataclass(frozen=True)
@@ -263,14 +276,86 @@ class ReferenceBoard:
 # ---------------------------------------------------------------------------
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _path_metadata(path: Path, *, status: str, reason: str | None = None) -> dict[str, Any]:
+    metadata: dict[str, Any] = {
+        "local_path": str(path),
+        "status": status,
+    }
+    if reason:
+        metadata["reason"] = reason
+    if status == _STATUS_LOADED:
+        try:
+            metadata["sha256"] = _sha256_file(path)
+            metadata["size_bytes"] = path.stat().st_size
+        except OSError as exc:
+            metadata["status"] = _STATUS_ERROR
+            metadata["reason"] = str(exc)
+    return metadata
+
+
+def _issue(
+    *,
+    category: str,
+    reason: str,
+    message: str,
+    path: str | None = None,
+    index: int | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "category": category,
+        "reason": reason,
+        "message": message,
+    }
+    if path is not None:
+        payload["path"] = path
+    if index is not None:
+        payload["index"] = index
+    return payload
+
+
+def _append_issue(
+    skipped: list[dict[str, Any]],
+    warnings: list[dict[str, Any]],
+    diagnostics: list[dict[str, Any]],
+    *,
+    category: str,
+    reason: str,
+    message: str,
+    path: str | None = None,
+    index: int | None = None,
+) -> None:
+    issue = _issue(category=category, reason=reason, message=message, path=path, index=index)
+    skipped.append(issue)
+    warnings.append(issue)
+    diagnostics.append(
+        {
+            "code": "RB1001" if reason == _REASON_MISSING else "RB1002",
+            "severity": "warning",
+            "category": category,
+            "reason": reason,
+            "message": message,
+            **({"path": path} if path is not None else {}),
+            **({"index": index} if index is not None else {}),
+        }
+    )
+
+
 def _resolve_base_path(base_path: Path | None) -> Path:
     if base_path is None:
         return _DEFAULT_BASE_PATH
     return base_path if isinstance(base_path, Path) else Path(str(base_path))
 
 
-def _read_json(path: Path) -> tuple[Any, str | None]:
-    """Return ``(parsed, error_token)`` for a JSON file at ``path``.
+def _read_json(path: Path) -> tuple[Any, str | None, str | None]:
+    """Return ``(parsed, error_token, error_message)`` for ``path``.
 
     ``error_token`` is ``None`` on success; ``"reference_malformed"``
     on parse failure or unreadable file. The loader never raises —
@@ -279,12 +364,12 @@ def _read_json(path: Path) -> tuple[Any, str | None]:
     """
     try:
         text = path.read_text(encoding="utf-8")
-    except OSError:
-        return None, _REASON_MALFORMED
+    except OSError as exc:
+        return None, _REASON_MALFORMED, str(exc)
     try:
-        return json.loads(text), None
-    except (json.JSONDecodeError, ValueError):
-        return None, _REASON_MALFORMED
+        return json.loads(text), None, None
+    except (json.JSONDecodeError, ValueError) as exc:
+        return None, _REASON_MALFORMED, str(exc)
 
 
 def _list_payload(payload: Any, key: str) -> list[Any] | None:
@@ -339,15 +424,25 @@ def load_reference_board(
     if not root.exists() or not root.is_dir():
         return None
 
-    skipped: list[dict[str, str]] = []
+    skipped: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    diagnostics: list[dict[str, Any]] = []
+    provenance: dict[str, Any] = {
+        "root_path": str(root),
+        "status": _STATUS_LOADED,
+        "files": {},
+    }
 
-    mood = _load_mood(root, skipped)
+    mood = _load_mood(root, skipped, warnings, diagnostics, provenance)
     silhouettes = _load_list_file(
         root,
         _SILHOUETTE_FILENAME,
         _CATEGORY_SILHOUETTE,
         "silhouettes",
         skipped,
+        warnings,
+        diagnostics,
+        provenance,
     )
     materials = _load_list_file(
         root,
@@ -355,6 +450,9 @@ def load_reference_board(
         _CATEGORY_MATERIALS,
         "materials",
         skipped,
+        warnings,
+        diagnostics,
+        provenance,
     )
     negatives = _load_list_file(
         root,
@@ -362,7 +460,12 @@ def load_reference_board(
         _CATEGORY_NEGATIVE,
         "negatives",
         skipped,
+        warnings,
+        diagnostics,
+        provenance,
     )
+    if skipped:
+        provenance["status"] = "partial"
 
     return {
         "asset_name": asset_name,
@@ -372,21 +475,59 @@ def load_reference_board(
         "materials": materials,
         "negatives": negatives,
         "skipped": skipped,
+        "warnings": warnings,
+        "diagnostics": diagnostics,
+        "provenance": provenance,
     }
 
 
-def _load_mood(root: Path, skipped: list[dict[str, str]]) -> dict[str, Any] | None:
+def _load_mood(
+    root: Path,
+    skipped: list[dict[str, Any]],
+    warnings: list[dict[str, Any]],
+    diagnostics: list[dict[str, Any]],
+    provenance: dict[str, Any],
+) -> dict[str, Any] | None:
     path = root / _MOOD_FILENAME
+    files = provenance.setdefault("files", {})
     if not path.exists() or not path.is_file():
-        skipped.append({"category": _CATEGORY_MOOD, "reason": _REASON_MISSING})
+        files[_CATEGORY_MOOD] = _path_metadata(path, status=_STATUS_MISSING, reason=_REASON_MISSING)
+        _append_issue(
+            skipped,
+            warnings,
+            diagnostics,
+            category=_CATEGORY_MOOD,
+            reason=_REASON_MISSING,
+            message=f"Reference mood fixture is missing: {path}",
+            path=str(path),
+        )
         return None
-    payload, error = _read_json(path)
+    payload, error, error_message = _read_json(path)
     if error is not None:
-        skipped.append({"category": _CATEGORY_MOOD, "reason": error})
+        files[_CATEGORY_MOOD] = _path_metadata(path, status=_STATUS_MALFORMED, reason=error)
+        _append_issue(
+            skipped,
+            warnings,
+            diagnostics,
+            category=_CATEGORY_MOOD,
+            reason=error,
+            message=f"Reference mood fixture could not be parsed: {error_message or path}",
+            path=str(path),
+        )
         return None
     if not isinstance(payload, dict):
-        skipped.append({"category": _CATEGORY_MOOD, "reason": _REASON_MALFORMED})
+        files[_CATEGORY_MOOD] = _path_metadata(path, status=_STATUS_MALFORMED, reason=_REASON_MALFORMED)
+        _append_issue(
+            skipped,
+            warnings,
+            diagnostics,
+            category=_CATEGORY_MOOD,
+            reason=_REASON_MALFORMED,
+            message="Reference mood fixture must be a JSON object",
+            path=str(path),
+        )
         return None
+    files[_CATEGORY_MOOD] = _path_metadata(path, status=_STATUS_LOADED)
     return payload
 
 
@@ -395,21 +536,141 @@ def _load_list_file(
     filename: str,
     category: str,
     list_key: str,
-    skipped: list[dict[str, str]],
+    skipped: list[dict[str, Any]],
+    warnings: list[dict[str, Any]],
+    diagnostics: list[dict[str, Any]],
+    provenance: dict[str, Any],
 ) -> list[Any]:
     path = root / filename
+    files = provenance.setdefault("files", {})
     if not path.exists() or not path.is_file():
-        skipped.append({"category": category, "reason": _REASON_MISSING})
+        files[category] = _path_metadata(path, status=_STATUS_MISSING, reason=_REASON_MISSING)
+        _append_issue(
+            skipped,
+            warnings,
+            diagnostics,
+            category=category,
+            reason=_REASON_MISSING,
+            message=f"Reference {category} fixture is missing: {path}",
+            path=str(path),
+        )
         return []
-    payload, error = _read_json(path)
+    payload, error, error_message = _read_json(path)
     if error is not None:
-        skipped.append({"category": category, "reason": error})
+        files[category] = _path_metadata(path, status=_STATUS_MALFORMED, reason=error)
+        _append_issue(
+            skipped,
+            warnings,
+            diagnostics,
+            category=category,
+            reason=error,
+            message=f"Reference {category} fixture could not be parsed: {error_message or path}",
+            path=str(path),
+        )
         return []
     items = _list_payload(payload, list_key)
     if items is None:
-        skipped.append({"category": category, "reason": _REASON_MALFORMED})
+        files[category] = _path_metadata(path, status=_STATUS_MALFORMED, reason=_REASON_MALFORMED)
+        _append_issue(
+            skipped,
+            warnings,
+            diagnostics,
+            category=category,
+            reason=_REASON_MALFORMED,
+            message=f"Reference {category} fixture must be a JSON list or object with '{list_key}'",
+            path=str(path),
+        )
         return []
+    files[category] = {
+        **_path_metadata(path, status=_STATUS_LOADED),
+        "entry_count": len(items),
+        "entries": [
+            {
+                "index": index,
+                "status": _STATUS_LOADED if isinstance(entry, dict) else _STATUS_MALFORMED,
+            }
+            for index, entry in enumerate(items)
+        ],
+    }
     return items
+
+
+def make_reference_board_error(
+    asset_name: str,
+    *,
+    message: str,
+    reason: str = _REASON_LOADER_ERROR,
+    path: str | None = None,
+) -> dict[str, Any]:
+    """Return structured loader-failure evidence for executor publication."""
+    issue = _issue(
+        category=_CATEGORY_REFERENCE_BOARD,
+        reason=reason,
+        message=message,
+        path=path,
+    )
+    return {
+        "asset_name": asset_name,
+        "family": None,
+        "mood": None,
+        "silhouettes": [],
+        "materials": [],
+        "negatives": [],
+        "skipped": [issue],
+        "warnings": [issue],
+        "diagnostics": [
+            {
+                "code": "RB1003",
+                "severity": "warning",
+                "category": _CATEGORY_REFERENCE_BOARD,
+                "reason": reason,
+                "message": message,
+                **({"path": path} if path is not None else {}),
+            }
+        ],
+        "provenance": {
+            "root_path": path,
+            "status": _STATUS_ERROR,
+            "reason": reason,
+        },
+    }
+
+
+def reference_board_fingerprint(
+    asset_name: str,
+    base_path: Path | None = None,
+) -> dict[str, Any]:
+    """Return a stable content fingerprint for reference fixture inputs."""
+    fingerprint: dict[str, Any] = {
+        "asset_name": asset_name,
+        "status": _STATUS_MISSING,
+        "files": {},
+    }
+    if not isinstance(asset_name, str) or not asset_name:
+        fingerprint["status"] = _STATUS_ERROR
+        fingerprint["reason"] = "invalid_asset_name"
+        return fingerprint
+    root = _resolve_base_path(base_path) / asset_name
+    if not root.exists() or not root.is_dir():
+        return fingerprint
+    fingerprint["status"] = _STATUS_LOADED
+    files: dict[str, Any] = {}
+    for category, filename in sorted(_CATEGORY_FILENAMES.items()):
+        path = root / filename
+        if not path.exists() or not path.is_file():
+            files[category] = {"status": _STATUS_MISSING, "reason": _REASON_MISSING}
+            continue
+        metadata = _path_metadata(path, status=_STATUS_LOADED)
+        files[category] = {
+            "status": metadata.get("status"),
+            "sha256": metadata.get("sha256"),
+            "size_bytes": metadata.get("size_bytes"),
+        }
+        if metadata.get("status") != _STATUS_LOADED:
+            files[category]["reason"] = metadata.get("reason")
+            fingerprint["status"] = _STATUS_ERROR
+    fingerprint["files"] = files
+    return fingerprint
 
 
 # ---------------------------------------------------------------------------
@@ -599,6 +860,104 @@ def _normalize_skipped(raw: list[Any]) -> list[SkippedReason]:
     return records
 
 
+def _json_object_list(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [entry for entry in value if isinstance(entry, dict)]
+
+
+def _normalize_issue_list(value: Any) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for entry in _json_object_list(value):
+        stable = json.dumps(entry, sort_keys=True, default=str)
+        if stable in seen:
+            continue
+        seen.add(stable)
+        normalized.append(entry)
+    return normalized
+
+
+def _entry_malformed_issue(
+    category: str,
+    path: str,
+    index: int,
+    message: str,
+) -> dict[str, Any]:
+    return _issue(
+        category=category,
+        reason=_REASON_MALFORMED,
+        message=message,
+        path=path,
+        index=index,
+    )
+
+
+def _entry_quality_issues(raw: dict[str, Any]) -> list[dict[str, Any]]:
+    issues: list[dict[str, Any]] = []
+    list_specs = (
+        ("silhouettes", _CATEGORY_SILHOUETTE, "intent"),
+        ("materials", _CATEGORY_MATERIALS, "target"),
+        ("negatives", _CATEGORY_NEGATIVE, "constraint"),
+    )
+    for key, category, required_field in list_specs:
+        entries = raw.get(key)
+        if not isinstance(entries, list):
+            continue
+        for index, entry in enumerate(entries):
+            path = f"{key}[{index}]"
+            if not isinstance(entry, dict):
+                issues.append(
+                    _entry_malformed_issue(
+                        category,
+                        path,
+                        index,
+                        f"Reference {category} entry {index} must be a JSON object",
+                    )
+                )
+                continue
+            if not isinstance(entry.get(required_field), str) or not entry.get(required_field):
+                issues.append(
+                    _entry_malformed_issue(
+                        category,
+                        path,
+                        index,
+                        (
+                            f"Reference {category} entry {index} must include "
+                            f"a non-empty '{required_field}' string"
+                        ),
+                    )
+                )
+    mood = raw.get("mood")
+    if mood is not None and not isinstance(mood, dict):
+        issues.append(
+            _issue(
+                category=_CATEGORY_MOOD,
+                reason=_REASON_MALFORMED,
+                message="Reference mood payload must be a JSON object",
+                path="mood",
+            )
+        )
+    return issues
+
+
+def _issues_to_diagnostics(issues: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    diagnostics: list[dict[str, Any]] = []
+    for issue in issues:
+        diagnostics.append(
+            {
+                "code": "RB1002",
+                "severity": "warning",
+                "category": issue.get("category"),
+                "reason": issue.get("reason"),
+                "message": issue.get("message"),
+                **({"path": issue["path"]} if isinstance(issue.get("path"), str) else {}),
+                **({"index": issue["index"]} if isinstance(issue.get("index"), int) else {}),
+            }
+        )
+    return diagnostics
+
+
 def evaluate_reference_board(
     asset: dict[str, Any], runtime: dict[str, Any]
 ) -> dict[str, Any]:
@@ -654,6 +1013,7 @@ def evaluate_reference_board(
             "family": family,
             "board": empty_board.to_dict(),
             "summary": _build_summary(empty_board),
+            "provenance": {},
             "skipped_reasons": [not_loaded.to_dict()],
             "warnings": [],
             "diagnostics": [],
@@ -672,7 +1032,12 @@ def evaluate_reference_board(
         materials=_build_materials(_as_list(raw_dict.get("materials"))),
         negatives=_build_negatives(_as_list(raw_dict.get("negatives"))),
     )
-    skipped_records = _normalize_skipped(_as_list(raw_dict.get("skipped")))
+    entry_issues = _entry_quality_issues(raw_dict)
+    skipped_records = _normalize_skipped([*_as_list(raw_dict.get("skipped")), *entry_issues])
+    warnings = _normalize_issue_list([*_as_list(raw_dict.get("warnings")), *entry_issues])
+    diagnostics = _normalize_issue_list(
+        [*_as_list(raw_dict.get("diagnostics")), *_issues_to_diagnostics(entry_issues)]
+    )
 
     return {
         "version": REFERENCE_BOARD_VERSION,
@@ -680,8 +1045,9 @@ def evaluate_reference_board(
         "family": family,
         "board": board.to_dict(),
         "summary": _build_summary(board),
+        "provenance": _as_dict(raw_dict.get("provenance")),
         "skipped_reasons": [record.to_dict() for record in skipped_records],
-        "warnings": [],
-        "diagnostics": [],
+        "warnings": warnings,
+        "diagnostics": diagnostics,
         "user_provided_via_experimental": user_provided_via_experimental,
     }

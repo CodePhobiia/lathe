@@ -1,0 +1,46 @@
+module examples.geometry_wave2.aaa_sci_fi_tool
+
+asset geometry_wave2_aaa_sci_fi_tool: hard_surface_prop {
+  intent {
+    role = "AAA sci-fi repair tool demonstrator"
+    style = ["prototype", "industrial", "hero_prop"]
+    parts = [body, grip, emitter_tip, socket_plate, heat_vent_l, heat_vent_r, guard]
+    materials = [brushed_steel, black_rubber, blue_emissive_glass]
+    scale = 0.75m
+  }
+
+  surface {
+    material_layers = [brushed_steel, black_rubber, blue_emissive_glass]
+    wear_story = field_used
+    wear_level = medium
+    story_decals = [serial_plate, heat_warning]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 207
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, industrial, modular]
+      edge_treatment = chamfered
+      edge_hardness = crisp
+      bevel_width = 0.28
+      detail_zones = [body, grip, socket_plate, heat_vent_l, heat_vent_r]
+      zone_body_motifs = [panel_seam, outset_panel, trim_strip, bolt_grid]
+      zone_grip_motifs = [raised_ridge, linear_detail_array]
+      zone_grip_linear_detail_repeats = 7
+      zone_socket_plate_motifs = [socket_point, radial_detail_array]
+      zone_socket_plate_modular_attachment_points = 5
+      zone_socket_plate_radial_detail_repeats = 7
+      zone_heat_vent_l_motifs = [groove_channel, raised_ridge]
+      zone_heat_vent_r_motifs = [groove_channel, raised_ridge]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

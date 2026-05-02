@@ -1,0 +1,44 @@
+module examples.geometry_wave4.battle_worn_material_stack
+
+asset geometry_wave4_battle_worn_material_stack: hard_surface_prop {
+  intent {
+    role = "battle worn layered material stack with exposed underpaint and warning accent"
+    style = ["industrial", "battle_worn", "hero_prop"]
+    parts = [body, lid, trim_l, trim_r, corner_guard_l, corner_guard_r, socket_plate]
+    materials = [painted_steel, bare_metal, hazard_paint]
+    scale = 0.95m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, hazard_paint]
+    material_layers = [painted_steel, bare_metal, hazard_paint]
+    wear_story = battle_worn
+    wear_level = high
+    story_decals = [unit_17, scrape_cluster, warning_band]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 401
+      symmetry = x
+      detail_density = hero
+      edge_treatment = chamfered
+      detail_motifs = [panel_seam, trim_strip, bolt_grid, outset_panel, groove_channel]
+      attachment_motifs = [rail, strap, guard_bar]
+      attachment_count = 4
+      detail_zones = [body, lid, socket_plate]
+      zone_body_motifs = [panel_seam, trim_strip, bolt_grid]
+      zone_lid_motifs = [outset_panel, groove_channel, linear_detail_array]
+      zone_lid_linear_detail_repeats = 5
+      zone_socket_plate_motifs = [socket_point, radial_detail_array]
+      zone_socket_plate_radial_detail_repeats = 6
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

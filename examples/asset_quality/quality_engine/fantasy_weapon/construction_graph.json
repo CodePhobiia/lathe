@@ -1,0 +1,143 @@
+{
+  "asset_id": "quality_engine_fantasy_weapon",
+  "edges": [
+    {
+      "edge_type": "inset_into",
+      "source_id": "central_moon_channel",
+      "target_id": "moonlit_blade"
+    },
+    {
+      "edge_type": "sockets",
+      "source_id": "silver_crossguard",
+      "target_id": "moonlit_blade"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "wrapped_grip",
+      "target_id": "silver_crossguard"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "crescent_pommel",
+      "target_id": "wrapped_grip"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "edge_wear_anchors",
+      "target_id": "moonlit_blade"
+    }
+  ],
+  "family": "fantasy_weapon",
+  "nodes": [
+    {
+      "bounds": {
+        "depth": 0.02,
+        "height": 0.92,
+        "width": 0.1
+      },
+      "category": "blade",
+      "material_zone_ref": "frost_steel_blade",
+      "node_id": "moonlit_blade",
+      "semantic_role": "long readable magical blade"
+    },
+    {
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.62,
+        "width": 0.024
+      },
+      "category": "focal_detail",
+      "material_zone_ref": "frost_steel_blade",
+      "node_id": "central_moon_channel",
+      "semantic_role": "blade centerline ornament"
+    },
+    {
+      "bounds": {
+        "depth": 0.045,
+        "height": 0.044,
+        "width": 0.44
+      },
+      "category": "guard",
+      "material_zone_ref": "silver_guard_trim",
+      "node_id": "silver_crossguard",
+      "semantic_role": "wide hand stop and secondary silhouette"
+    },
+    {
+      "bounds": {
+        "depth": 0.05,
+        "height": 0.07,
+        "width": 0.09
+      },
+      "category": "focal_detail",
+      "material_zone_ref": "glowing_crystal_core",
+      "node_id": "crystal_guard_core",
+      "semantic_role": "primary magical focal point"
+    },
+    {
+      "bounds": {
+        "depth": 0.052,
+        "height": 0.23,
+        "width": 0.052
+      },
+      "category": "grip",
+      "material_zone_ref": "dark_wrapped_grip",
+      "node_id": "wrapped_grip",
+      "semantic_role": "hand contact grip"
+    },
+    {
+      "bounds": {
+        "depth": 0.08,
+        "height": 0.07,
+        "width": 0.11
+      },
+      "category": "pommel",
+      "material_zone_ref": "silver_guard_trim",
+      "node_id": "crescent_pommel",
+      "semantic_role": "counterweight and silhouette terminator"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "frost_steel_blade",
+      "node_id": "material_frost_steel",
+      "semantic_role": "cold steel material zone"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "glowing_crystal_core",
+      "node_id": "material_crystal_accent",
+      "semantic_role": "luminous accent material zone"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "edge_highlight_wear",
+      "node_id": "edge_wear_anchors",
+      "semantic_role": "blade edge and guard cap wear anchors"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "handling_wear",
+      "node_id": "handling_wear_anchors",
+      "semantic_role": "grip handling wear anchors"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 5,
+    "major_silhouette_nodes": [
+      "moonlit_blade",
+      "silver_crossguard",
+      "crystal_guard_core",
+      "wrapped_grip",
+      "crescent_pommel"
+    ],
+    "node_count": 10,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 6200,
+    "unclassified_major_primitives": 0
+  }
+}

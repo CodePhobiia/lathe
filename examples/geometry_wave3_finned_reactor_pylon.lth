@@ -1,0 +1,38 @@
+module examples.geometry_wave3.finned_reactor_pylon
+
+asset geometry_wave3_finned_reactor_pylon: env_module {
+  intent {
+    role = "finned reactor pylon with vent stacks and cable routes"
+    style = ["prototype", "industrial", "sci_fi"]
+    parts = [body, vent_panel, socket_plate, anchor_plate, bracket_l, bracket_r]
+    materials = [brushed_steel, black_rubber, blue_emissive_glass]
+    scale = 1.8m
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 302
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, industrial]
+      attachment_motifs = [fin, vent_stack, cable, rail]
+      attachment_count = 6
+      detail_zones = [body, vent_panel, socket_plate]
+      zone_body_attachment_motifs = [fin, rail]
+      zone_body_attachment_count = 6
+      zone_vent_panel_attachment_motifs = [vent_stack, cable]
+      zone_vent_panel_attachment_count = 5
+      zone_socket_plate_attachment_motifs = [rail, cable]
+      groove_density = high
+      ridge_density = high
+      modular_attachment_points = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

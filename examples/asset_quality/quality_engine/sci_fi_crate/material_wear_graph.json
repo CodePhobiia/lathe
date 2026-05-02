@@ -1,0 +1,100 @@
+{
+  "asset_id": "quality_engine_sci_fi_crate",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 5,
+    "underlayer_count": 1,
+    "wear_mask_count": 5
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "reinforced_shell",
+        "front_recessed_panel"
+      ],
+      "zone_id": "painted_body_zone",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "outer_frame",
+        "corner_guard_set",
+        "front_latch_plate"
+      ],
+      "zone_id": "bare_edge_metal",
+      "zone_type": "underlayer"
+    },
+    {
+      "bound_nodes": [
+        "recessed_side_handles",
+        "foot_rail_pair"
+      ],
+      "zone_id": "rubber_contact_zone",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "front_recessed_panel"
+      ],
+      "zone_id": "warning_decal_accent",
+      "zone_type": "accent_material"
+    },
+    {
+      "bound_nodes": [
+        "corner_guard_set",
+        "lid_seam_band"
+      ],
+      "zone_id": "edge_chipped_paint",
+      "zone_type": "wear_overlay"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "skipped_reasons": [
+    {
+      "reason": "real_bake_map_generation_not_implemented",
+      "tool": "surface_runtime"
+    }
+  ],
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.07,
+    "warnings": []
+  },
+  "wear_masks": [
+    {
+      "bound_edge_target": "corner_guard.outer_edges",
+      "bound_node_id": "edge_wear_anchors",
+      "mask_id": "corner_guard_chipped_paint",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "lid_seam.recess",
+      "bound_node_id": "lid_seam_band",
+      "mask_id": "lid_seam_grime",
+      "mask_type": "concave_grime"
+    },
+    {
+      "bound_edge_target": "handle.touch_zone",
+      "bound_node_id": "recessed_side_handles",
+      "mask_id": "handle_touch_polish",
+      "mask_type": "handle_touch_wear"
+    },
+    {
+      "bound_edge_target": "feet.ground_contact",
+      "bound_node_id": "foot_rail_pair",
+      "mask_id": "foot_rail_contact_scuff",
+      "mask_type": "contact_dirt"
+    },
+    {
+      "bound_edge_target": "front_panel.decal_edges",
+      "bound_node_id": "front_recessed_panel",
+      "mask_id": "warning_decal_scratches",
+      "mask_type": "decal_breakup"
+    }
+  ]
+}

@@ -119,7 +119,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 PREVIEW_EVIDENCE_VERSION = "preview_evidence_v1"
 
 
@@ -259,6 +258,46 @@ def _as_str_or_none(value: Any) -> str | None:
     return None
 
 
+def _is_external_or_absolute_uri(uri: str) -> bool:
+    normalized = uri.replace("\\", "/")
+    return (
+        "://" in normalized
+        or normalized.startswith("/")
+        or (len(normalized) >= 2 and normalized[1] == ":")
+    )
+
+
+def _asset_root_surface_map_uri(uri: str, map_name: str) -> str | None:
+    """Return an asset-root-resolvable surface-map URI.
+
+    The surface stage writes its bundle from ``stages/surface`` and often
+    records map-local URIs such as ``maps/normal.png``. The validate report is
+    consumed from the asset root, so Phase 9 lifts those links to
+    ``stages/surface/maps/<name>.png``. Absolute or external URIs are rejected
+    because they are not asset-root-resolvable report links.
+    """
+    normalized = uri.replace("\\", "/").strip()
+    if not normalized or _is_external_or_absolute_uri(normalized):
+        return None
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("stages/surface/maps/"):
+        return normalized
+    if normalized.startswith("surface/maps/"):
+        return f"stages/{normalized}"
+    if normalized.startswith("maps/"):
+        return f"stages/surface/{normalized}"
+    if "/" not in normalized:
+        return f"stages/surface/maps/{normalized}"
+    if normalized.startswith("stages/"):
+        return normalized
+    # Unknown relative paths may still be asset-root-resolvable, but surface
+    # bake maps are expected under stages/surface/maps. Keep the evidence
+    # conservative instead of publishing a misleading link.
+    extension = normalized.rsplit(".", 1)[-1] if "." in normalized else "png"
+    return f"stages/surface/maps/{map_name}.{extension}"
+
+
 def _resolve_asset_name(asset: dict[str, Any]) -> str:
     name = asset.get("name")
     if isinstance(name, str) and name:
@@ -309,9 +348,12 @@ def _resolve_bake_map_uri(outputs: dict[str, Any], map_name: str) -> str | None:
     """
     entry = outputs.get(map_name)
     if isinstance(entry, str) and entry:
-        return entry
+        return _asset_root_surface_map_uri(entry, map_name)
     if isinstance(entry, dict):
-        return _as_str_or_none(entry.get("uri"))
+        uri = _as_str_or_none(entry.get("uri"))
+        if uri is None:
+            return None
+        return _asset_root_surface_map_uri(uri, map_name)
     return None
 
 
@@ -479,9 +521,10 @@ def _build_preview_summary(
 ) -> dict[str, Any]:
     """Compute the flat summary block consumed by humans + Phase 10.
 
-    All flags are conservative: ``final_beauty_present`` is True only
-    when the final beauty preview is declared, ``distinct_final_from_material_ids``
-    is True only when both are declared *and* their paths differ.
+    All ``*_present`` flags are truthful rendered-presence flags. Validate runs
+    before package, so renderable previews are only declared/expected here and
+    are not marked present. The companion ``*_declared`` flags carry the
+    package-config intent Phase 10 can safely reason over.
     Bake-map count is the number of entries with a non-None URI (an
     entry with ``uri=None`` reflects an incomplete surface bundle and
     is recorded but not counted as present).
@@ -489,21 +532,38 @@ def _build_preview_summary(
     final_entries = categories.get("final_beauty", [])
     material_id_entries = categories.get("material_ids", [])
     wireframe_entries = categories.get("wireframe", [])
-    final_beauty_present = bool(final_entries)
-    material_ids_present = bool(material_id_entries)
-    wireframe_present = bool(wireframe_entries)
+    final_beauty_declared = bool(final_entries)
+    material_ids_declared = bool(material_id_entries)
+    wireframe_declared = bool(wireframe_entries)
+    final_beauty_present = False
+    material_ids_present = False
+    wireframe_present = False
     distinct_final_from_material_ids = False
-    if final_beauty_present and material_ids_present:
+    if final_beauty_declared and material_ids_declared:
         final_paths = {entry.path for entry in final_entries}
         material_id_paths = {entry.path for entry in material_id_entries}
-        distinct_final_from_material_ids = bool(final_paths.isdisjoint(material_id_paths))
+        final_modes = {entry.mode for entry in final_entries}
+        material_id_modes = {entry.mode for entry in material_id_entries}
+        final_names = {entry.name for entry in final_entries}
+        material_id_names = {entry.name for entry in material_id_entries}
+        distinct_final_from_material_ids = bool(
+            final_paths.isdisjoint(material_id_paths)
+            and final_names.isdisjoint(material_id_names)
+            and final_modes == {"shaded"}
+            and material_id_modes == {"material_ids"}
+        )
     bake_map_count = sum(1 for entry in bake_maps if entry.uri is not None)
     return {
         "final_beauty_present": final_beauty_present,
         "material_ids_present": material_ids_present,
         "wireframe_present": wireframe_present,
+        "final_beauty_declared": final_beauty_declared,
+        "material_ids_declared": material_ids_declared,
+        "wireframe_declared": wireframe_declared,
         "bake_map_count": bake_map_count,
         "comparison_sheet_present": comparison_sheet_present,
+        "comparison_sheet_requested": False,
+        "comparison_sheet_renderer_available": False,
         "distinct_final_from_material_ids": distinct_final_from_material_ids,
         "total_preview_count": total_preview_count,
     }
@@ -567,8 +627,8 @@ def _build_warnings(summary: dict[str, Any]) -> list[str]:
     """
     warnings_list: list[str] = []
     if (
-        not summary.get("final_beauty_present", False)
-        and summary.get("material_ids_present", False)
+        not summary.get("final_beauty_declared", False)
+        and summary.get("material_ids_declared", False)
     ):
         warnings_list.append(
             "package.previews requests 'material_ids' but not 'turntable' — "
@@ -643,6 +703,7 @@ def evaluate_preview_evidence(
         comparison_sheet_present=False,
         total_preview_count=total_preview_count,
     )
+    summary["comparison_sheet_requested"] = comparison_sheet_requested
     warnings_list = _build_warnings(summary)
     previews_payload = _build_previews_payload(categories, bake_maps)
     report_links = _build_report_links(categories, bake_maps)

@@ -1,0 +1,36 @@
+module examples.geometry_wave1.riveted_field_radio
+
+asset geometry_wave1_riveted_field_radio: hard_surface_prop {
+  intent {
+    role = "riveted field radio terminal"
+    style = ["field_equipment", "industrial", "wave1_geometry"]
+    parts = [body, screen_panel, speaker_panel, knob_panel, carry_handle, socket_plate]
+    materials = [painted_steel, smoked_glass, black_rubber]
+    scale = 0.55m
+  }
+
+  features {
+    density = hero
+    allow = [bolt_grid, panel_seam, raised_ridge, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 117
+      symmetry = x
+      detail_density = hero
+      panelization = high
+      ridge_density = medium
+      greeble_density = hero
+      modular_attachment_points = 3
+      detail_zones = [body, speaker_panel, socket_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

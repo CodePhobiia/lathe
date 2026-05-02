@@ -1,0 +1,39 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "body, interaction face, controls, seams, and lock are semantic nodes",
+    "material_storytelling": "wear appears on interaction controls, lock, corners, and lower contact surfaces",
+    "silhouette_readability": "reads as a compact supply chest or terminal"
+  },
+  "asset_id": "smoke_terminal_or_supply_chest",
+  "certification_tier": "phase14_smoke_warning",
+  "family": "supply_chest",
+  "platform_profile": {
+    "target": "game_runtime_proxy",
+    "texture_budget": "proxy_or_deferred",
+    "triangle_budget_strict": 1400,
+    "triangle_budget_warning": 2200
+  },
+  "required_features": [
+    "distinct interaction face",
+    "screen keypad button lock or handle affordance",
+    "panel seams",
+    "accent material zone",
+    "readable silhouette",
+    "no random greeble clusters"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "random greebles",
+      "flat unbroken cube",
+      "unreadable control face"
+    ],
+    "keywords": [
+      "utility",
+      "interactive",
+      "compact",
+      "accented"
+    ],
+    "theme": "compact hard-surface supply chest with interaction face"
+  }
+}

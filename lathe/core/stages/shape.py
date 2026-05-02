@@ -32,6 +32,7 @@ from ...shape_backend import (
 )
 from ...surface_ir import SurfaceIR
 from ...transfer_ir import TransferIR
+from ...shape.geometry.conditioning import merge_quality_generation_conditioning
 from ..common import dump_json, relpath, resolve_seed
 from ..errors import BuildError, shape_handoff_contract_error
 from ..geometry import mesh_stats
@@ -77,7 +78,10 @@ def run(executor: Any) -> dict[str, Any]:
     fit_ir = FitIR.from_asset(executor.asset)
     transfer_ir = TransferIR.from_asset(executor.asset)
     kit_ir = KitIR.from_asset(executor.asset)
-    conditioning = _shape_collect_conditioning(executor.asset, executor.source_root)
+    conditioning = merge_quality_generation_conditioning(
+        _shape_collect_conditioning(executor.asset, executor.source_root),
+        executor.runtime.get("_quality_generation"),
+    )
     provider_result = _shape_run_backend(
         backend["id"],
         executor.asset,
@@ -133,6 +137,7 @@ def run(executor: Any) -> dict[str, Any]:
             "repairs_applied": meta.get("repairs_applied", []),
             "feature_report": meta.get("feature_report", {}),
             "candidate_params": meta.get("candidate_params", {}),
+            "game_pipeline_hints": meta.get("game_pipeline_hints", {}),
             "integration_report": meta.get("integration_report", {}),
         }
         candidates.append(candidate)

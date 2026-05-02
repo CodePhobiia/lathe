@@ -1,0 +1,37 @@
+module examples.geometry_wave7.ornate_spire_relic_gate
+
+asset geometry_wave7_ornate_spire_relic_gate: env_module {
+  intent {
+    role = "ornate spire relic gate with tall towers, spines, and blade-like finials"
+    style = ["luxury", "ancient", "spined"]
+    parts = [wall_body, central_inset, spire_l, spire_r, rune_socket, blade_finial]
+    materials = [worn_brass, dark_wood, inset_glass]
+    scale = 1.5m
+  }
+
+  surface {
+    materials = [worn_brass, dark_wood, inset_glass]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 703
+      symmetry = x
+      style_pack = arcane_luxury
+      silhouette_profile = ornate_spire
+      silhouette_motifs = [spire, spine, blade, guard_cowl]
+      silhouette_intensity = high
+      detail_zones = [wall_body, central_inset, rune_socket, blade_finial]
+      zone_central_inset_radial_detail_repeats = 10
+      zone_rune_socket_motifs = [radial_detail_array, ornament, socket_point]
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

@@ -1,0 +1,44 @@
+module examples.geometry_wave3.rail_strap_field_generator
+
+asset geometry_wave3_rail_strap_field_generator: hard_surface_prop {
+  intent {
+    role = "field generator with rails, straps, and guarded service hardware"
+    style = ["industrial", "modular", "field_used"]
+    parts = [body, console_panel, socket_plate, handle_l, handle_r, foot_l, foot_r]
+    materials = [painted_steel, bare_metal, warning_paint]
+    scale = 1.1m
+  }
+
+  surface {
+    material_layers = [painted_steel, bare_metal, warning_paint]
+    wear_story = field_used
+    wear_level = medium
+    story_decals = [service_number, handled_edges]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 301
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [industrial, modular]
+      attachment_motifs = [rail, strap, guard_bar, handle_bar]
+      attachment_count = 4
+      detail_zones = [body, console_panel, socket_plate]
+      zone_body_attachment_motifs = [rail, strap, guard_bar]
+      zone_body_attachment_count = 4
+      zone_console_panel_attachment_motifs = [handle_bar, rail]
+      zone_socket_plate_attachment_motifs = [rail, guard_bar]
+      panelization = high
+      trim_density = high
+      greeble_density = high
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

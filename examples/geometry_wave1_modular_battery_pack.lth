@@ -1,0 +1,36 @@
+module examples.geometry_wave1.modular_battery_pack
+
+asset geometry_wave1_modular_battery_pack: hard_surface_prop {
+  intent {
+    role = "modular socket battery pack"
+    style = ["utility", "power_system", "wave1_geometry"]
+    parts = [body, top_panel, socket_plate, handle_l, handle_r, foot_l, foot_r]
+    materials = [painted_steel, black_rubber, warning_paint]
+    scale = 0.8m
+  }
+
+  features {
+    density = hero
+    allow = [socket_point, panel_seam, bolt_grid, corner_guard]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 110
+      symmetry = x
+      detail_density = high
+      edge_complexity = high
+      panelization = medium
+      greeble_density = high
+      modular_attachment_points = 8
+      detail_zones = [body, socket_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

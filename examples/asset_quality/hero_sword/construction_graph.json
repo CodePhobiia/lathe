@@ -1,0 +1,240 @@
+{
+  "asset_id": "hero_sword",
+  "edges": [
+    {
+      "attributes": {
+        "placement": "centered on blade face"
+      },
+      "edge_type": "inset_into",
+      "source_id": "central_fuller",
+      "target_id": "long_tapered_blade"
+    },
+    {
+      "attributes": {
+        "placement": "continues blade taper"
+      },
+      "edge_type": "terminates",
+      "source_id": "sharp_tip",
+      "target_id": "long_tapered_blade"
+    },
+    {
+      "attributes": {
+        "placement": "perpendicular hand stop"
+      },
+      "edge_type": "sockets",
+      "source_id": "crossguard",
+      "target_id": "long_tapered_blade"
+    },
+    {
+      "attributes": {
+        "placement": "below crossguard"
+      },
+      "edge_type": "attached_to",
+      "source_id": "leather_wrapped_grip",
+      "target_id": "crossguard"
+    },
+    {
+      "attributes": {
+        "placement": "end counterweight"
+      },
+      "edge_type": "attached_to",
+      "source_id": "round_pommel",
+      "target_id": "leather_wrapped_grip"
+    },
+    {
+      "attributes": {
+        "placement": "blade edge and guard caps"
+      },
+      "edge_type": "wears_on",
+      "source_id": "edge_wear_anchors",
+      "target_id": "long_tapered_blade"
+    },
+    {
+      "attributes": {
+        "placement": "hand contact ridges"
+      },
+      "edge_type": "wears_on",
+      "source_id": "handling_wear_anchors",
+      "target_id": "leather_wrapped_grip"
+    }
+  ],
+  "family": "hero_sword",
+  "nodes": [
+    {
+      "annotations": {
+        "bevel": "controlled double-edge bevels",
+        "silhouette": "primary contributor"
+      },
+      "bounds": {
+        "depth": 0.018,
+        "height": 0.875,
+        "width": 0.094
+      },
+      "category": "blade",
+      "material_zone_ref": "tempered_steel_blade",
+      "node_id": "long_tapered_blade",
+      "parent_id": null,
+      "semantic_role": "long straight double-edged blade"
+    },
+    {
+      "annotations": {
+        "inset": "shallow center channel",
+        "ornament": "functional mass-lightening groove"
+      },
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.595,
+        "width": 0.023
+      },
+      "category": "fuller",
+      "material_zone_ref": "tempered_steel_blade",
+      "node_id": "central_fuller",
+      "parent_id": "long_tapered_blade",
+      "semantic_role": "blade fuller centerline"
+    },
+    {
+      "annotations": {
+        "bevel": "faceted point",
+        "silhouette": "primary contributor"
+      },
+      "bounds": {
+        "depth": 0.018,
+        "height": 0.088,
+        "width": 0.09
+      },
+      "category": "tip",
+      "material_zone_ref": "tempered_steel_blade",
+      "node_id": "sharp_tip",
+      "parent_id": "long_tapered_blade",
+      "semantic_role": "tapered thrusting point"
+    },
+    {
+      "annotations": {
+        "bevel": "brass cylindrical bar with capped ends",
+        "socket": "blade-to-grip transition"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.04,
+        "width": 0.425
+      },
+      "category": "guard",
+      "material_zone_ref": "brass_guard_trim",
+      "node_id": "crossguard",
+      "parent_id": "long_tapered_blade",
+      "semantic_role": "wide hand stop and visual crossbar"
+    },
+    {
+      "annotations": {
+        "focal_priority": 1,
+        "material_transition": "steel to brass to leather"
+      },
+      "bounds": {
+        "depth": 0.052,
+        "height": 0.064,
+        "width": 0.08
+      },
+      "category": "focal_detail",
+      "material_zone_ref": "brass_guard_trim",
+      "node_id": "guard_socket_focal",
+      "parent_id": "crossguard",
+      "semantic_role": "primary read at blade-to-hilt transition"
+    },
+    {
+      "annotations": {
+        "pattern": "bounded leather wrap ridges"
+      },
+      "bounds": {
+        "depth": 0.052,
+        "height": 0.225,
+        "width": 0.052
+      },
+      "category": "grip",
+      "material_zone_ref": "dark_leather_grip",
+      "node_id": "leather_wrapped_grip",
+      "parent_id": "crossguard",
+      "semantic_role": "hand grip with readable wrap"
+    },
+    {
+      "annotations": {
+        "instances": 8,
+        "repetition_policy": "bounded hand-contact rhythm"
+      },
+      "bounds": {
+        "depth": 0.056,
+        "height": 0.006,
+        "width": 0.056
+      },
+      "category": "focal_detail",
+      "material_zone_ref": "dark_leather_grip",
+      "node_id": "grip_wrap_ridges",
+      "parent_id": "leather_wrapped_grip",
+      "semantic_role": "controlled leather wrap bands"
+    },
+    {
+      "annotations": {
+        "bevel": "compact counterweight bevels",
+        "silhouette": "secondary contributor"
+      },
+      "bounds": {
+        "depth": 0.088,
+        "height": 0.075,
+        "width": 0.088
+      },
+      "category": "pommel",
+      "material_zone_ref": "brass_guard_trim",
+      "node_id": "round_pommel",
+      "parent_id": "leather_wrapped_grip",
+      "semantic_role": "weighted pommel and grip terminator"
+    },
+    {
+      "annotations": {
+        "material": "dominant blade metal"
+      },
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "tempered_steel_blade",
+      "node_id": "material_tempered_steel",
+      "parent_id": "long_tapered_blade",
+      "semantic_role": "steel blade material zone"
+    },
+    {
+      "annotations": {
+        "mask": "blade edges, fuller edges, guard caps, pommel bevels"
+      },
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "edge_highlight_wear",
+      "node_id": "edge_wear_anchors",
+      "parent_id": "long_tapered_blade",
+      "semantic_role": "convex metal wear anchors"
+    },
+    {
+      "annotations": {
+        "mask": "grip ridges and guard contact area"
+      },
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "handling_wear",
+      "node_id": "handling_wear_anchors",
+      "parent_id": "leather_wrapped_grip",
+      "semantic_role": "hand-contact wear anchors"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 7,
+    "major_silhouette_nodes": [
+      "long_tapered_blade",
+      "sharp_tip",
+      "crossguard",
+      "leather_wrapped_grip",
+      "round_pommel"
+    ],
+    "node_count": 11,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 6452,
+    "unclassified_major_primitives": 0
+  }
+}

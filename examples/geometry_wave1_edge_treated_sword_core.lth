@@ -1,0 +1,37 @@
+module examples.geometry_wave1.edge_treated_sword_core
+
+asset geometry_wave1_edge_treated_sword_core: hard_surface_prop {
+  intent {
+    role = "edge treated hero sword"
+    style = ["hero_weapon", "faceted", "wave1_geometry"]
+    parts = [long_tapered_blade, central_fuller, sharp_tip, crossguard, leather_wrapped_grip, round_pommel]
+    materials = [polished_steel, dark_leather, brass_trim]
+    scale = 1.25m
+  }
+
+  features {
+    density = hero
+    allow = [raised_ridge, groove_channel, panel_seam, corner_guard, edge_break]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 122
+      symmetry = x
+      detail_density = high
+      edge_complexity = hero
+      edge_treatment = beveled
+      groove_density = high
+      ridge_density = hero
+      greeble_density = low
+      detail_zones = [long_tapered_blade, central_fuller, crossguard]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

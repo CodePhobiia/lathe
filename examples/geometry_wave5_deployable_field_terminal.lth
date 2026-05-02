@@ -1,0 +1,47 @@
+module examples.geometry_wave5.deployable_field_terminal
+
+asset geometry_wave5_deployable_field_terminal: hard_surface_prop {
+  intent {
+    role = "deployable terminal with leg, shield plate, antenna, and power-cell modules"
+    style = ["industrial", "field_used", "modular"]
+    parts = [body, screen_panel, lower_frame, leg_bay, antenna_mount, side_shield_l, side_shield_r]
+    materials = [painted_steel, bare_metal, signal_glass]
+    scale = 1.15m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, signal_glass]
+    material_layers = [painted_steel, bare_metal, signal_glass]
+    wear_story = field_used
+    wear_level = medium
+    story_decals = [service_number, handled_edges, warning_band]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 503
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [industrial, modular]
+      lod_levels = 4
+      module_categories = [leg, shield_plate, antenna, power_cell]
+      module_count = 4
+      module_sockets = [leg_socket, shield_lug, signal_mast]
+      detail_motifs = [panel_seam, trim_strip, socket_point, linear_detail_array]
+      attachment_motifs = [rail, strap, cable, guard_bar]
+      detail_zones = [body, lower_frame, leg_bay, antenna_mount]
+      zone_leg_bay_module_categories = [leg, battery]
+      zone_leg_bay_module_count = 4
+      zone_antenna_mount_module_categories = [antenna, sensor]
+      zone_antenna_mount_module_count = 2
+      zone_lower_frame_module_categories = [shield_plate, leg]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

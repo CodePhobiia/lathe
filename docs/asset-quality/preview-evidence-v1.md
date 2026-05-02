@@ -66,15 +66,20 @@ that add a real before / after pipeline.
   `runtime["surface"]["bundle"]["outputs"]` /
   `runtime["surface"]["bundle"]["bake_outputs"]` to populate the
   `bake_maps` category with per-role evidence (`normal_map`,
-  `ao_map`, `curvature_map`, `id_map`).
+  `ao_map`, `curvature_map`, `id_map`). Surface-stage local
+  `maps/<name>.png` links are lifted to asset-root
+  `stages/surface/maps/<name>.png` report links.
 - Records structured `skipped_reasons` for every absent category,
   including unrecognised preview names (`unknown_preview_<name>`),
   bake maps without a published URI, and the comparison sheet
   (always — Phase 9 intentionally does not yet ship a renderer
   for it).
-- Computes the `distinct_final_from_material_ids` flag — the
-  single truthful signal that a build's evidence carries an
-  art-quality preview rather than just debug imagery.
+- Computes declared-vs-present preview summary fields. During
+  validate, renderable previews are expected but not present yet
+  because package runs later.
+- Computes the `distinct_final_from_material_ids` flag from
+  conservative declared evidence: final and material-ID entries
+  must have distinct names, modes, and expected paths.
 - Publishes the result on `runtime["preview_evidence"]` and emits
   the additive `preview_evidence` key on the validate-stage
   report (the 23rd top-level key, on top of the 22 from Phases 0
@@ -86,9 +91,9 @@ that add a real before / after pipeline.
 - Touch the package stage (`lathe/core/stages/package.py` is
   unchanged). The package stage continues to render its previews
   unchanged after validate completes.
-- Verify on disk. Validate runs before package, so the layer
-  emits *declared* paths only — the build is deterministic, so a
-  declared path is truthful.
+- Verify package-rendered preview files on disk. Validate runs
+  before package, so the layer emits *declared/expected* paths
+  only and keeps `*_present=False` for renderable previews.
 - Touch `.lth` source syntax. The Phase 9 contract is internal —
   Phase 13 will add the public surface-program syntax that lets
   authors override defaults; until then, the layer reads the
@@ -182,11 +187,16 @@ returns a payload with the following exact eight top-level keys:
         "comparison_sheet": [],     # always empty in Phase 9
     },
     "preview_summary": {
-        "final_beauty_present":              bool,
-        "material_ids_present":              bool,
-        "wireframe_present":                 bool,
+        "final_beauty_present":              bool,   # always False in Phase 9
+        "material_ids_present":              bool,   # always False in Phase 9
+        "wireframe_present":                 bool,   # always False in Phase 9
+        "final_beauty_declared":             bool,
+        "material_ids_declared":             bool,
+        "wireframe_declared":                bool,
         "bake_map_count":                    int,    # entries with uri != None
         "comparison_sheet_present":          bool,   # always False in Phase 9
+        "comparison_sheet_requested":        bool,
+        "comparison_sheet_renderer_available": bool, # always False in Phase 9
         "distinct_final_from_material_ids":  bool,
         "total_preview_count":               int,    # sum across renderable categories
     },
@@ -238,17 +248,22 @@ intentionally does not ship a comparison-sheet renderer (see §6).
 
 ## 5. Final beauty distinction rule
 
-The single truthful signal that a build's evidence carries an
-art-quality preview is the `distinct_final_from_material_ids`
-flag. It is `True` iff:
+The conservative signal that a build's declared evidence expects
+an art-quality preview distinct from the material-ID debug render
+is the `distinct_final_from_material_ids` flag. It is `True` iff:
 
 1. the final beauty preview is requested (`turntable` is in
    `package.previews`), AND
 2. the material-ID preview is requested (`material_ids` is in
    `package.previews`), AND
-3. the two paths are distinct (always true today, since each
-   preview lands at its own filename — the check is defensive
-   against future config drift).
+3. the expected paths are distinct, AND
+4. the declared names and modes are semantically distinct
+   (`turntable` / `shaded` versus `material_ids` /
+   `material_ids`).
+
+The flag is a declared-evidence distinction, not an on-disk
+rendered-file presence check. The rendered-file truth lives in
+the `*_present` fields, which remain `False` during validate.
 
 If only `material_ids` is requested without `turntable`, the
 flag stays `False` *and* a warning fires:
@@ -325,8 +340,8 @@ top-level `preview_evidence` key, taking the report from 22 to
   `comparison_sheet_present` flag to gate which critique modes
   fire.
 - **Phase 14 — Golden Examples.** The crate MVP golden example
-  expects `final_beauty_present=True`,
-  `material_ids_present=True`,
+  expects `final_beauty_declared=True`,
+  `material_ids_declared=True`,
   `distinct_final_from_material_ids=True`, and four bake-map
   URIs — Phase 9 provides the contract those expectations land
   against.

@@ -16,9 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import jsonschema
-
 from lathe.normalizer import normalize_asset, normalize_program
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SCHEMA_PATH = _REPO_ROOT / "schema" / "lathe.schema.json"
@@ -157,11 +155,29 @@ def test_kit_use_must_be_list_of_strings() -> None:
     assert errors
 
 
+def test_kit_rejects_extra_fields() -> None:
+    program = _program_with_asset({})
+    program["assets"][0]["experimental"] = {
+        "kit": {"use": ["fasteners.hex_bolt_m6"], "mode": "decorate"}
+    }
+    errors = _validate_program_strict_asset(program)
+    assert any("mode" in err or "additional" in err.lower() for err in errors), errors
+
+
 def test_references_use_required() -> None:
     program = _program_with_asset({})
     program["assets"][0]["experimental"] = {"references": {}}
     errors = _validate_program_strict_asset(program)
     assert any("use" in err for err in errors), errors
+
+
+def test_references_rejects_extra_fields() -> None:
+    program = _program_with_asset({})
+    program["assets"][0]["experimental"] = {
+        "references": {"use": "refs/asset_quality/industrial_crate", "mode": "board"}
+    }
+    errors = _validate_program_strict_asset(program)
+    assert any("mode" in err or "additional" in err.lower() for err in errors), errors
 
 
 def test_existing_industrial_crate_program_validates() -> None:

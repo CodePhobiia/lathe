@@ -1,0 +1,37 @@
+module examples.geometry_wave1.bolted_power_pedestal
+
+asset geometry_wave1_bolted_power_pedestal: hard_surface_prop {
+  intent {
+    role = "bolted control pedestal"
+    style = ["industrial", "service_console", "wave1_geometry"]
+    parts = [body, console_panel, screen_panel, base_plate, socket_plate, foot_l, foot_r]
+    materials = [painted_steel, smoked_glass, black_rubber]
+    scale = 1.2m
+  }
+
+  features {
+    density = hero
+    allow = [bolt_grid, socket_point, raised_ridge, panel_seam, layer_plate]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 107
+      symmetry = x
+      detail_density = hero
+      panelization = medium
+      ridge_density = high
+      greeble_density = hero
+      surface_layer_count = 2
+      modular_attachment_points = 6
+      detail_zones = [body, console_panel, socket_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

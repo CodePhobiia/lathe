@@ -1,0 +1,41 @@
+{
+  "acceptance_goals": {
+    "construction_intent": "Blade, crystal fuller, crescent guard, grip, pommel, material zones, and wear anchors remain traceable semantic parts.",
+    "functional_readability": "The viewer can identify blade, hand stop, grip, counterweight, and magical focal channel.",
+    "material_storytelling": "Cold steel, cyan crystal, moon-gold trim, and midnight leather separate by role and contact wear.",
+    "silhouette_readability": "Readable as a premium fantasy longsword at thumbnail distance through blade, crescent guard, and pommel termination."
+  },
+  "asset_id": "quality_engine_astral_sentinel_sword",
+  "certification_tier": "phase14c_universal_quality_warning",
+  "family": "fantasy_weapon",
+  "platform_profile": {
+    "target": "realtime_fantasy_action_rpg",
+    "texture_budget": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 7000,
+    "triangle_budget_warning": 9000
+  },
+  "required_features": [
+    "long starforged blade",
+    "bright crystal fuller",
+    "crescent crossguard",
+    "midnight wrapped grip",
+    "moonstone pommel"
+  ],
+  "schema_version": "lathe.asset_quality.design_brief.v1",
+  "style": {
+    "forbidden": [
+      "random primitive stack",
+      "unbounded stripe repetition",
+      "muddy material zones",
+      "sci-fi rifle language"
+    ],
+    "keywords": [
+      "fantasy",
+      "astral",
+      "sentinel",
+      "crystal",
+      "premium"
+    ],
+    "theme": "astral sentinel fantasy sword with crystal fuller and crescent guard"
+  }
+}

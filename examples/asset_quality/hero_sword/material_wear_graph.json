@@ -1,0 +1,110 @@
+{
+  "asset_id": "hero_sword",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 5,
+    "underlayer_count": 1,
+    "wear_mask_count": 6
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "long_tapered_blade",
+        "sharp_tip",
+        "central_fuller"
+      ],
+      "zone_id": "tempered_steel_blade",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "leather_wrapped_grip",
+        "grip_wrap_ridges"
+      ],
+      "zone_id": "dark_leather_grip",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "crossguard",
+        "guard_socket_focal",
+        "round_pommel"
+      ],
+      "zone_id": "brass_guard_trim",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "long_tapered_blade",
+        "central_fuller",
+        "crossguard",
+        "round_pommel"
+      ],
+      "zone_id": "edge_highlight_wear",
+      "zone_type": "wear_overlay"
+    },
+    {
+      "bound_nodes": [
+        "leather_wrapped_grip",
+        "crossguard"
+      ],
+      "zone_id": "handling_wear",
+      "zone_type": "wear_overlay"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "skipped_reasons": [
+    {
+      "reason": "real_bake_map_generation_not_implemented",
+      "tool": "surface_runtime"
+    }
+  ],
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.08,
+    "warnings": []
+  },
+  "wear_masks": [
+    {
+      "bound_edge_target": "blade.left_edge",
+      "bound_node_id": "edge_wear_anchors",
+      "mask_id": "left_blade_edge_micro_scratches",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "blade.right_edge",
+      "bound_node_id": "edge_wear_anchors",
+      "mask_id": "right_blade_edge_micro_scratches",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "blade.fuller_edges",
+      "bound_node_id": "central_fuller",
+      "mask_id": "fuller_shadow_grime",
+      "mask_type": "concave_grime"
+    },
+    {
+      "bound_edge_target": "guard.end_caps",
+      "bound_node_id": "crossguard",
+      "mask_id": "guard_cap_edge_wear",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "grip.wrap_ridges",
+      "bound_node_id": "handling_wear_anchors",
+      "mask_id": "grip_wrap_hand_polish",
+      "mask_type": "handle_touch_wear"
+    },
+    {
+      "bound_edge_target": "pommel.outer_bevel",
+      "bound_node_id": "round_pommel",
+      "mask_id": "pommel_bevel_contact_scuff",
+      "mask_type": "convex_edge_wear"
+    }
+  ]
+}

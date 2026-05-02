@@ -1,0 +1,115 @@
+{
+  "asset_id": "quality_engine_sci_fi_crate",
+  "forbidden_failure_modes": [
+    "chrome consumer finish",
+    "flat unbroken cube",
+    "material zones without semantic purpose",
+    "random greebles",
+    "random primitive stack",
+    "style mismatch between parts",
+    "toy-like proportions",
+    "unbounded procedural noise",
+    "weak thumbnail read"
+  ],
+  "materials": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "feature-linked material: reinforced box shell"
+    ]
+  },
+  "motifs": {
+    "allowed": [
+      "sci-fi",
+      "industrial",
+      "rugged",
+      "field-repaired",
+      "reinforced corners",
+      "panel seams",
+      "labels"
+    ],
+    "forbidden": [
+      "flat unbroken cube",
+      "random greebles",
+      "chrome consumer finish",
+      "toy-like proportions"
+    ],
+    "placement_rules": [
+      "place motifs on panels, corners, latches, and decals"
+    ]
+  },
+  "object_family": "container",
+  "platform": {
+    "target": "mobile_realtime",
+    "texture_policy": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 1500,
+    "triangle_budget_warning": 2500
+  },
+  "proportion_policy": {
+    "exaggeration_allowed_when_style_requires": true,
+    "functional_scale_required": true,
+    "scale_anchors": [
+      "body volume",
+      "lid/seam scale",
+      "handle and foot clearance"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.art_direction.v1",
+  "silhouette": {
+    "forbidden_shapes": [
+      "flat unbroken cube",
+      "random greebles",
+      "chrome consumer finish",
+      "toy-like proportions"
+    ],
+    "required_distinctive_features": [
+      "reinforced box shell",
+      "corner guards",
+      "recessed panels",
+      "front latch",
+      "side handles"
+    ],
+    "target_strength": "high",
+    "thumbnail_size_px": 128
+  },
+  "style_intent": {
+    "audience": "mobile_realtime",
+    "genre": "sci-fi",
+    "mood": [
+      "sci-fi",
+      "industrial",
+      "rugged",
+      "field-repaired",
+      "hard-surface"
+    ],
+    "quality_bar": "phase14c_universal_quality_warning",
+    "substyle": "used modular sci-fi cargo crate with functional construction logic"
+  },
+  "surface_story": {
+    "decals": [
+      "warning labels",
+      "serial marks",
+      "orientation arrows"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "visual_hierarchy": {
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "primary_read": "container identity through reinforced box shell",
+    "secondary_read": "functional parts and silhouette accents remain readable",
+    "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+  }
+}

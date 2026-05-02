@@ -1,0 +1,37 @@
+module examples.geometry_wave1.reinforced_cargo_lid
+
+asset geometry_wave1_reinforced_cargo_lid: hard_surface_prop {
+  intent {
+    role = "reinforced cargo crate lid"
+    style = ["cargo", "reinforced", "wave1_geometry"]
+    parts = [body, lid, latch_plate, strap_band, handle_l, handle_r]
+    materials = [painted_steel, dark_rubber, warning_paint]
+    scale = 0.95m
+  }
+
+  features {
+    density = hero
+    allow = [raised_ridge, panel_seam, layer_plate, bolt_grid]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 111
+      symmetry = x
+      detail_density = hero
+      edge_complexity = high
+      panelization = high
+      ridge_density = hero
+      greeble_density = medium
+      surface_layer_count = 2
+      detail_zones = [lid, strap_band]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

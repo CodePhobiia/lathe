@@ -1,0 +1,41 @@
+module examples.geometry_wave7.wide_heavy_power_core
+
+asset geometry_wave7_wide_heavy_power_core: hard_surface_prop {
+  intent {
+    role = "wide heavy power core with outriggers, guard cowls, and dorsal spines"
+    style = ["industrial", "brutalist", "wide"]
+    parts = [body, reactor_panel, side_socket_l, side_socket_r, dorsal_spine, outrigger_base]
+    materials = [painted_steel, bare_metal, rubber]
+    scale = 1.3m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, rubber]
+    material_layers = [painted_steel, bare_metal, rubber]
+    wear_story = field_used
+    story_decals = [service_number, edge_rub]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 701
+      symmetry = x
+      detail_density = hero
+      style_pack = industrial_hero
+      silhouette_profile = wide_heavy
+      silhouette_motifs = [outrigger, guard_cowl, spine, tower]
+      silhouette_intensity = hero
+      detail_zones = [body, reactor_panel, outrigger_base]
+      zone_body_density = hero
+      zone_reactor_panel_motifs = [panel_seam, bolt_grid, socket_point]
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

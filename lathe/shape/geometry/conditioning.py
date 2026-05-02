@@ -321,6 +321,30 @@ def collect_shape_conditioning(asset: dict[str, Any], source_root: Path) -> dict
     }
 
 
+def merge_quality_generation_conditioning(
+    conditioning: dict[str, Any], quality_generation: dict[str, Any] | None
+) -> dict[str, Any]:
+    """Merge pre-shape quality planning into shape-stage conditioning metadata."""
+    out = dict(conditioning or {})
+    generation = quality_generation if isinstance(quality_generation, dict) else {}
+    if not generation:
+        out.setdefault("quality_plan_consumed", False)
+        return out
+    adapters = generation.get("generation_adapters")
+    quality_plan = generation.get("quality_plan")
+    art_direction = generation.get("art_direction_ir") or (
+        quality_plan.get("art_direction_ir") if isinstance(quality_plan, dict) else {}
+    )
+    out["quality_plan_consumed"] = isinstance(quality_plan, dict) and bool(quality_plan)
+    out["quality_generation_source_stage"] = generation.get("source_stage")
+    out["quality_conditioning"] = dict(adapters) if isinstance(adapters, dict) else {}
+    if isinstance(quality_plan, dict):
+        out["quality_plan"] = quality_plan
+    if isinstance(art_direction, dict):
+        out["art_direction_ir"] = art_direction
+    return out
+
+
 def _conditioned_part_colors(
     parts: list[str], conditioning: dict[str, Any]
 ) -> dict[str, tuple[int, int, int]]:

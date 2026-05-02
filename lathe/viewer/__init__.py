@@ -9,6 +9,7 @@ The ``<model-viewer>`` web component is vendored via CDN; see
 from __future__ import annotations
 
 import http.server
+import json
 import socketserver
 from pathlib import Path
 from typing import Any
@@ -17,12 +18,43 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 def _find_glb(build_dir: Path) -> Path | None:
+    build_dir = Path(build_dir).resolve()
     stages_pkg = build_dir / "stages" / "package"
     if stages_pkg.is_dir():
+        manifest_candidate = _find_manifest_glb(build_dir, stages_pkg)
+        if manifest_candidate is not None:
+            return manifest_candidate
         for candidate in sorted(stages_pkg.glob("*.glb")):
             return candidate
     for candidate in sorted(build_dir.rglob("*.glb")):
         return candidate
+    return None
+
+
+def _find_manifest_glb(build_dir: Path, package_dir: Path) -> Path | None:
+    manifest_path = package_dir / "package_manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    outputs = payload.get("outputs")
+    if not isinstance(outputs, list):
+        return None
+    for entry in outputs:
+        if not isinstance(entry, dict) or entry.get("format") != "glb":
+            continue
+        uri = entry.get("uri")
+        if not isinstance(uri, str) or not uri:
+            continue
+        candidate = (build_dir / uri).resolve()
+        try:
+            candidate.relative_to(build_dir)
+        except ValueError:
+            continue
+        if candidate.is_file():
+            return candidate
     return None
 
 

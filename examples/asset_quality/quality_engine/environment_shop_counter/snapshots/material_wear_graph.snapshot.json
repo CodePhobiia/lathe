@@ -1,0 +1,5 @@
+{
+  "schema_version": "lathe.asset_quality.snapshot.v1",
+  "sha256": "ed1a81d03dc14ff18251ff641532f0f4bbcc4fc08caec2ef1eca18facdad97e5",
+  "snapshot_of": "material_wear_graph.json"
+}

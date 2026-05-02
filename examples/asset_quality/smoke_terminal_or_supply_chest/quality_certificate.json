@@ -1,0 +1,27 @@
+{
+  "asset_id": "smoke_terminal_or_supply_chest",
+  "budget": {
+    "runtime_proxy_triangle_count": 1040,
+    "strict_within_budget": true,
+    "triangle_budget_strict": 1400,
+    "triangle_budget_warning": 2200,
+    "warning_within_budget": true
+  },
+  "certification_profile": "phase14_warning",
+  "claims": {
+    "certified_for_phase14_quality_upgrade": true,
+    "certified_for_production_game_use": false,
+    "external_renderer_verified": false,
+    "real_high_low_bake_verified": false,
+    "strict_mode_certified": false
+  },
+  "evidence": {
+    "construction_graph": "construction_graph.json",
+    "design_brief": "design_brief.json",
+    "family_grammar_coverage": "family_grammar_coverage.json",
+    "material_wear_graph": "material_wear_graph.json",
+    "preview_evidence": "preview_evidence.json"
+  },
+  "schema_version": "lathe.asset_quality.certificate.v1",
+  "status": "warning_pass_strict_fail"
+}

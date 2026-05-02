@@ -1,0 +1,270 @@
+module studio.props.weapons.astral_sentinel
+import std.families.hero_sword
+
+material starforged_blade_steel {
+  basecolor = [178, 206, 218]
+  metallic = 1.0
+  roughness = 0.28
+  roughness_range = [0.18, 0.42]
+  emissive = [0, 0, 0]
+  surface_profile = brushed_metal
+  wear = 0.20
+  normal_intensity = 0.18
+}
+
+material midnight_leather_grip {
+  basecolor = [28, 24, 38]
+  metallic = 0.0
+  roughness = 0.74
+  roughness_range = [0.58, 0.88]
+  emissive = [0, 0, 0]
+  surface_profile = leather_wrap
+  wear = 0.24
+  normal_intensity = 0.18
+}
+
+material moon_gold_guard {
+  basecolor = [188, 146, 72]
+  metallic = 1.0
+  roughness = 0.36
+  roughness_range = [0.24, 0.52]
+  emissive = [0, 0, 0]
+  surface_profile = aged_metal
+  wear = 0.18
+  normal_intensity = 0.12
+}
+
+material aether_crystal_core {
+  basecolor = [88, 214, 236]
+  metallic = 0.0
+  roughness = 0.18
+  roughness_range = [0.10, 0.26]
+  emissive = [36, 112, 146]
+  surface_profile = polished_crystal
+  wear = 0.04
+  normal_intensity = 0.10
+}
+
+pattern blade_star_channel {
+  family = linear_repeat
+  spacing_cm = 18.0
+  emphasis = long_centerline_readability
+}
+
+pattern moon_guard_trim {
+  family = radial_repeat
+  spacing_cm = 7.5
+  emphasis = focal_guard_readability
+}
+
+pattern midnight_wrap_ridges {
+  family = linear_repeat
+  spacing_cm = 2.1
+  emphasis = grip_readability
+}
+
+palette astral_sentinel_palette {
+  materials = [starforged_blade_steel, midnight_leather_grip, moon_gold_guard, aether_crystal_core]
+}
+
+surface_program astral_sentinel_surface {
+  workflow = pbr_metal_rough
+  maps = [basecolor, normal, orm, ao, curvature, id]
+  bakes = [ao, curvature, id]
+  decals = [thin_blade_edge_wear, crescent_guard_wear, grip_hand_polish]
+  patterns = [blade_star_channel, moon_guard_trim, midnight_wrap_ridges]
+  zones.blade = starforged_blade_steel
+  zones.fuller = aether_crystal_core
+  zones.guard = moon_gold_guard
+  zones.grip = midnight_leather_grip
+  zones.pommel = moon_gold_guard
+}
+
+profile astral_weapon_prop_base {
+  defaults {
+    build.optimize.lods = 4
+    package.formats = [usd, glb]
+    package.manifest = true
+    package.include_trace = true
+  }
+
+  ensure units(cm)
+  ensure manifold
+  ensure watertight
+  ensure material_slots(max: 4)
+  ensure uv_range(set: base, range: 0..1)
+  ensure lightmap_uvs
+  ensure collision_proxy
+}
+
+contract astral_hero_weapon_prop uses astral_weapon_prop_base {
+  defaults {
+    build.interfaces.clearance = 1cm
+  }
+
+  ensure pivots(policy: studio_standard)
+  ensure names(policy: studio_standard)
+  ensure texel_density(target: 512px_per_m, tolerance: 0.10)
+  ensure runtime_budget(draw_calls: 3, texture_memory: 16mb)
+
+  prefer silhouette_readability weight 0.38
+  prefer part_coherence weight 0.22
+}
+
+critic astral_sword_prop_critic(a: asset) = weighted {
+  prompt_match 0.24
+  silhouette_readability 0.24
+  topology_quality 0.16
+  material_quality 0.16
+  runtime_efficiency 0.08
+  part_coherence 0.12
+}
+
+asset astral_sentinel_sword: hard_surface_prop from hero_sword_family uses astral_hero_weapon_prop {
+  intent {
+    role = "hero astral sentinel longsword with a bright crystal fuller and crescent guard"
+    style = ["fantasy", "astral", "sentinel", "premium", "game_ready", "thumbnail_readable"]
+    parts = [
+      long_tapered_blade,
+      glowing_crystal_fuller,
+      sharp_tip,
+      crescent_crossguard,
+      midnight_wrapped_grip,
+      moonstone_pommel,
+    ]
+    materials = [starforged_blade_steel, midnight_leather_grip, moon_gold_guard, aether_crystal_core]
+    negatives = ["gun", "axe", "sci_fi_rifle", "toy_like", "organic_vines", "random_stripes"]
+    scale = 1.32m
+    interactions = [equip, swing, inspect, display_on_wall]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [blade_fuller_break, guard_socket, grip_wrap_seam, pommel_join]
+    edge_classes = [sharp_blade_edge, guard_bevel, grip_ridge, pommel_bevel, crystal_inlay_edge]
+    integration_rules = [boolean_union, preserve_blade_symmetry, preserve_crossguard_width]
+  }
+
+  features {
+    density = hero
+    allow = [edge_break, trim_band, support_bracket, fastener_strip]
+  }
+
+  surface {
+    program = astral_sentinel_surface
+    patterns = [blade_star_channel, moon_guard_trim, midnight_wrap_ridges]
+    palette = astral_sentinel_palette
+    material_zones = [starforged_blade_steel, midnight_leather_grip, moon_gold_guard, aether_crystal_core]
+    materials = [starforged_blade_steel, midnight_leather_grip, moon_gold_guard, aether_crystal_core]
+    decals = [thin_blade_edge_wear, crescent_guard_wear, grip_hand_polish]
+    bake = [normal, ao, curvature, id]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 5
+      seed = 619
+      symmetry = x
+      preserve = [silhouette, part_graph, symmetry, proportions]
+    }
+
+    topology {
+      retopo = auto
+      target_quads = 9200
+      ngons = forbid
+      preserve = [hard_edges, part_borders]
+    }
+
+    uv {
+      sets = [base, lightmap]
+      unwrap = auto
+      padding = 8px
+      texel_density = 512px_per_m
+    }
+
+    surface {
+      workflow = pbr_metal_rough
+      maps = [basecolor, normal, orm]
+      resolution = 2048px
+      bakes = [ao, curvature, id]
+      decals = [thin_blade_edge_wear, crescent_guard_wear, grip_hand_polish]
+      id_map = true
+    }
+
+    rig {
+      type = none
+      joints = []
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [socket(id: hand_grip_socket, socket_type: attach)]
+      pivots = [pivot(id: grip_center, pivot_type: hand_hold)]
+      clearance = 1cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 4
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 4
+      atlas = true
+      draw_calls = 2
+      texture_budget = 16mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    score = astral_sword_prop_critic
+    threshold = 0.76
+
+    repair {
+      mode = auto_until_pass
+      max_rounds = 4
+      allow = [
+        reselect_candidate,
+        enforce_symmetry,
+        seal_mesh,
+        retopo_auto,
+        reduce_tris,
+        repack_uvs,
+        rebake_maps,
+        reauthor_surface_layer,
+        normalize_pivots,
+        create_collision_proxy,
+        generate_lods,
+      ]
+      deny = [rebuild_shape]
+    }
+  }
+
+  package {
+    formats = [usd, glb]
+    previews = [turntable, wireframe, material_ids, uv_layout, collision, lod_sheet]
+    embed_textures = false
+  }
+
+  publish {
+    registry = "props/weapons/astral_sentinel_sword"
+    version = "0.1.0"
+    tags = ["weapon", "interactable", "static", "astral"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}
+
+test astral_sentinel_sword_language_surface {
+  asset = astral_sentinel_sword
+  assert from == hero_sword_family
+  assert intent.scale == 1.32m
+  assert build.shape.mode == generate
+  assert validate.threshold == 0.76
+}

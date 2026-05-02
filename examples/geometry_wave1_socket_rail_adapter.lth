@@ -1,0 +1,36 @@
+module examples.geometry_wave1.socket_rail_adapter
+
+asset geometry_wave1_socket_rail_adapter: hard_surface_prop {
+  intent {
+    role = "socket rail adapter"
+    style = ["utility", "modular_connector", "wave1_geometry"]
+    parts = [body, rail_l, rail_r, socket_plate, latch_plate]
+    materials = [painted_steel, dark_rubber, bare_metal]
+    scale = 0.6m
+  }
+
+  features {
+    density = high
+    allow = [socket_point, raised_ridge, bolt_grid, corner_guard]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 115
+      symmetry = x
+      detail_density = high
+      edge_complexity = high
+      ridge_density = high
+      greeble_density = medium
+      modular_attachment_points = 8
+      detail_zones = [body, socket_plate]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

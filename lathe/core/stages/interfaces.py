@@ -9,6 +9,7 @@ from __future__ import annotations
 import warnings
 from typing import Any
 
+from lathe.interface_connections import resolve_interface_connections
 from lathe.interface_entries import coerce_interface_entry
 
 from ..common import dump_json
@@ -265,11 +266,23 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
             }
         )
 
+    connection_bundle = resolve_interface_connections(
+        sockets=sockets,
+        pivots=pivots,
+        anchors=anchors,
+        raw_connections=cfg.get("connections") or [],
+        clearance=cfg.get("clearance"),
+        snap_grid=cfg.get("snap_grid"),
+        auto_connect=bool(cfg.get("auto_connect")),
+    )
+
     bundle = {
         "backend_id": "lathe.interfaces.socket_stub_v1",
         "sockets": sockets,
         "pivots": pivots,
         "anchors": anchors,
+        "connections": connection_bundle["connections"],
+        "connection_slots": connection_bundle["connection_slots"],
         "clearance": cfg.get("clearance"),
         "snap_grid": cfg.get("snap_grid"),
     }

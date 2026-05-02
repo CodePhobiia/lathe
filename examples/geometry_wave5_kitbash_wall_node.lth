@@ -1,0 +1,47 @@
+module examples.geometry_wave5.kitbash_wall_node
+
+asset geometry_wave5_kitbash_wall_node: hard_surface_prop {
+  intent {
+    role = "kitbash wall node with interchangeable armor, sensors, power cells, and signal masts"
+    style = ["brutalist", "industrial", "modular"]
+    parts = [body, armor_grid, sensor_bank, power_bus, signal_mast_l, signal_mast_r, service_panel]
+    materials = [painted_steel, dark_bare_metal, warning_paint]
+    scale = 1.35m
+  }
+
+  surface {
+    materials = [painted_steel, dark_bare_metal, warning_paint]
+    material_layers = [painted_steel, dark_bare_metal, warning_paint]
+    wear_story = battle_worn
+    wear_level = high
+    story_decals = [unit_17, scrape_cluster, door_number]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 504
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [brutalist, industrial, modular]
+      lod_levels = 4
+      module_categories = [shield_plate, sensor_pod, power_cell, antenna]
+      module_count = 4
+      module_sockets = [armor_lug, data_socket, mast_socket]
+      detail_motifs = [panel_seam, trim_strip, bolt_grid, socket_point, outset_panel]
+      attachment_motifs = [rail, strap, vent_stack, guard_bar]
+      detail_zones = [body, armor_grid, sensor_bank, power_bus, service_panel]
+      zone_armor_grid_module_categories = [armor, shield_plate]
+      zone_armor_grid_module_count = 4
+      zone_sensor_bank_module_categories = [sensor, antenna]
+      zone_power_bus_module_categories = [battery, power_cell]
+      zone_service_panel_module_categories = [sensor_pod, shield]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

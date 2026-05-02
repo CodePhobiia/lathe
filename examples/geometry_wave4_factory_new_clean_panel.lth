@@ -1,0 +1,42 @@
+module examples.geometry_wave4.factory_new_clean_panel
+
+asset geometry_wave4_factory_new_clean_panel: hard_surface_prop {
+  intent {
+    role = "factory new clean sci-fi panel showing low-wear material-map controls"
+    style = ["factory_new", "minimal", "modular"]
+    parts = [body, clean_panel, trim_l, trim_r, socket_plate, indicator_strip]
+    materials = [painted_steel, brushed_aluminum, screen_glass]
+    scale = 1.0m
+  }
+
+  surface {
+    materials = [painted_steel, brushed_aluminum, screen_glass]
+    material_layers = [painted_steel, brushed_aluminum, screen_glass]
+    wear_story = factory_new
+    wear_level = none
+    story_decals = [calibration_stripe, serial_plate]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 403
+      symmetry = x
+      detail_density = medium
+      style_modifiers = [clean, modular]
+      edge_treatment = soft
+      detail_motifs = [panel_seam, trim_strip, socket_point]
+      attachment_motifs = [rail, vent_stack]
+      attachment_count = 2
+      detail_zones = [body, clean_panel, socket_plate]
+      zone_clean_panel_motifs = [panel_seam, inset_panel]
+      zone_socket_plate_motifs = [socket_point, bolt_grid]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

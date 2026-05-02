@@ -29,7 +29,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.kit_library import (
     KIT_LIBRARY_VERSION,
     REQUIRED_CATEGORIES,
@@ -48,7 +47,6 @@ from lathe.asset_quality.kit_library import (
     lookup_kit_part,
 )
 from lathe.core.stages.validate import _PIPELINE
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _KIT_LIBRARY_BASE = _REPO_ROOT / "std" / "kits" / "hardsurface"
@@ -125,6 +123,31 @@ def _example_part() -> KitPart:
             license="internal",
         ),
     )
+
+
+def _valid_part_payload(name: str, category: str) -> dict[str, Any]:
+    return {
+        "name": name,
+        "category": category,
+        "kind": "procedural",
+        "procedural_recipe": {"primitive": "stub"},
+        "material_zones": ["bare_metal_fastener"],
+        "sockets": [],
+        "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": True,
+        },
+        "scale_range": {"min": 0.8, "max": 1.2},
+        "allowed_families": ["*"],
+        "lod_behavior": {"strategy": "drop_at_lod2", "retained_for_collision": False},
+        "bake_group": "trim_metal",
+        "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal",
+        },
+    }
 
 
 def test_kit_part_is_frozen() -> None:
@@ -332,6 +355,31 @@ def test_load_kit_library_skips_when_category_missing(tmp_path: Path) -> None:
     assert categories_skipped == {f"category_{name}" for name in REQUIRED_CATEGORIES}
     for record in library.skipped:
         assert record.reason == "category_directory_missing"
+
+
+def test_load_kit_library_skips_duplicate_part_names(tmp_path: Path) -> None:
+    fasteners = tmp_path / "fasteners"
+    rails = tmp_path / "rails"
+    fasteners.mkdir()
+    rails.mkdir()
+    (fasteners / "first.json").write_text(
+        json.dumps(_valid_part_payload("shared_name", "fasteners")),
+        encoding="utf-8",
+    )
+    (rails / "second.json").write_text(
+        json.dumps(_valid_part_payload("shared_name", "rails")),
+        encoding="utf-8",
+    )
+
+    library = load_kit_library(tmp_path)
+
+    assert [part.name for part in library.parts].count("shared_name") == 1
+    duplicate_reasons = [
+        record.reason
+        for record in library.skipped
+        if record.reason.startswith("kit_part_duplicate_name:")
+    ]
+    assert duplicate_reasons == ["kit_part_duplicate_name:shared_name"]
 
 
 # ---------------------------------------------------------------------------
@@ -551,13 +599,14 @@ def test_real_fixtures_validate_against_schema() -> None:
     for part in library.parts:
         as_dict = part.to_dict()
         assert as_dict["provenance"]["license"] == "internal"
+        assert as_dict["preview_thumbnail"].startswith("kit://hardsurface/")
 
 
 def test_real_fixtures_validate_against_jsonschema_dependency() -> None:
     """Defensive: also verify against ``jsonschema`` so a future schema
     drift in either side is detected. Uses the project's pinned
     ``jsonschema`` dependency."""
-    import jsonschema  # noqa: PLC0415 - local import keeps test independence
+    import jsonschema
 
     schema_path = _REPO_ROOT / "schema" / "kit_part.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -567,3 +616,29 @@ def test_real_fixtures_validate_against_jsonschema_dependency() -> None:
         for fixture_path in sorted(category_dir.glob("*.json")):
             payload = json.loads(fixture_path.read_text(encoding="utf-8"))
             jsonschema.validate(instance=payload, schema=schema)
+
+
+def test_kit_part_schema_requires_procedural_recipe_for_procedural() -> None:
+    import jsonschema
+
+    schema_path = _REPO_ROOT / "schema" / "kit_part.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    payload = _valid_part_payload("missing_recipe", "fasteners")
+    payload.pop("procedural_recipe")
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(instance=payload, schema=schema)
+
+
+def test_kit_part_schema_accepts_mesh_stub_uri_for_mesh_stub() -> None:
+    import jsonschema
+
+    schema_path = _REPO_ROOT / "schema" / "kit_part.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    payload = _valid_part_payload("mesh_stub_handle", "handles")
+    payload["kind"] = "mesh_stub"
+    payload.pop("procedural_recipe")
+    payload["mesh_stub_uri"] = "handles/mesh_stub_handle.glb"
+    payload["preview_thumbnail"] = "previews/mesh_stub_handle.png"
+
+    jsonschema.validate(instance=payload, schema=schema)

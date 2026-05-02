@@ -1,0 +1,37 @@
+module examples.geometry_wave1.socketed_service_cabinet
+
+asset geometry_wave1_socketed_service_cabinet: hard_surface_prop {
+  intent {
+    role = "socketed service cabinet"
+    style = ["utility", "maintenance", "wave1_geometry"]
+    parts = [body, door_l, door_r, handle_l, handle_r, vent_panel, socket_plate, foot_l, foot_r]
+    materials = [painted_steel, black_rubber, warning_paint]
+    scale = 1.6m
+  }
+
+  features {
+    density = hero
+    allow = [socket_point, panel_seam, groove_channel, bolt_grid, corner_guard]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 121
+      symmetry = x
+      detail_density = high
+      edge_complexity = high
+      panelization = high
+      groove_density = medium
+      greeble_density = high
+      modular_attachment_points = 8
+      detail_zones = [body, door_l, door_r, socket_plate]
+    }
+    rig { type = rigid_mechanical joints = [door_l, door_r] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

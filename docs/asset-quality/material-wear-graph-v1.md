@@ -26,6 +26,49 @@
 
 ---
 
+## Phase 8 Audit Patch Notes
+
+The audit patch keeps the seven top-level validate-report keys stable,
+but tightens the nested evidence:
+
+- `lathe/surface_runtime.py` now publishes additive
+  `material_wear_graph_hooks` metadata on the surface bundle and mirrors
+  it into `surface_manifest.material_wear_graph_hooks`. The hooks carry
+  `surface.material_graph`, `resolved_material_graph`, and explicit
+  booleans showing that mask textures are not generated and surface maps
+  are not driven by the Material/Wear Graph yet.
+- `skipped_reasons` now records
+  `mask_texture_generation_not_implemented` and
+  `surface_map_driving_not_implemented` whenever wear masks exist but
+  the surface bundle has no implemented hook evidence for those steps.
+- Edge bindings are resolved only against real construction-edge tokens
+  or grammar-lowered ShapeIR `target` values. Non-empty strings no
+  longer count as resolved edge evidence.
+- `graph_summary.bound_to_construction_nodes`,
+  `bound_to_edge_targets`, and `bound_to_both` count resolved bindings.
+  Declared-but-unresolved bindings are visible through
+  `declared_node_bindings`, `declared_edge_bindings`,
+  `binding_validation.orphan_node_bindings`, and
+  `binding_validation.orphan_edge_bindings`.
+- The industrial crate default graph now binds wear to the lid seam,
+  handles, foot rails, warning decal, and all eight corner guards,
+  using grammar-lowered targets such as `body.top_band`,
+  `body.left_face`, `body.right_face`, and `body.corners`.
+- A resolved `surface.material_graph` is consumed only when its resolved
+  values already contain Material/Wear Graph v1-shaped `materials`,
+  `underlayers`, or `wear_masks`. Legacy metadata-only graphs such as
+  `{base, layers, outputs}` are retained as authoring metadata and
+  recorded with
+  `resolved_material_graph_not_lowerable_to_material_wear_graph_v1`.
+- Uniform-noise scoring counts surface material-zone diversity only
+  when the surface bundle also carries map/control-pack evidence. This
+  prevents metadata-only zones from producing a false clean score.
+- `WearMask`, `MaterialZone`, and `MaterialWearGraph` now validate
+  required strings, enum membership, numeric bounds, and defensively
+  freeze copied parameter mappings in `__post_init__`.
+
+---
+
 ## 1. Overview
 
 Phase 8 makes material/wear maps semantic instead of uniform procedural
@@ -36,7 +79,7 @@ noise. The Material/Wear Graph IR records two kinds of authoring intent:
   roughness, metalness, and an optional binding to one of the asset's
   intent parts.
 - **Wear masks** — semantic damage / contact / decal authorings (e.g.
-  `convex_edge_wear` along `body_shell.outer_edges`, `lower_contact_scuff`
+  `convex_edge_wear` along `body.outer_edges`, `lower_contact_scuff`
   on each foot node), each carrying an intensity in `[0.0, 1.0]` and a
   binding to either a construction-graph node id, a structural edge
   target, or both.
@@ -71,7 +114,9 @@ attention.
   textures. Phase 8 is **evidence + diagnostic only**. The real bake
   producer is reserved for Phase 14 golden examples and any future
   surface-stage migration.
-- Touch the surface stage (`lathe/surface_runtime.py` is unchanged).
+- Generate real mask textures or drive surface maps. The surface stage
+  only carries additive `material_wear_graph_hooks` metadata until a
+  future producer implements those steps.
 - Touch `.lth` source syntax. The Phase 8 contract is internal-only;
   Phase 13 will add the public surface-program syntax that lets
   authors override the per-family defaults.
@@ -106,8 +151,9 @@ attention.
 
 - Generate any texture, drive Blender, or trigger a bake.
 - Replace the surface stage's existing `material_zones` slot. Phase 8
-  reads it as evidence; the surface stage continues to publish it
-  unchanged.
+  reads it as evidence only when map/control-pack output proves the
+  zones drove real surface data; metadata-only zones do not suppress
+  uniform-noise warnings.
 - Add a new metric to `quality_diagnostics.metrics`. The 6-metric set
   is the carry-forward contract from Phase 7.
 
@@ -202,7 +248,7 @@ Membership is exact and pinned by tests.
         "mask_type": "convex_edge_wear",
         "intensity": 0.28,
         "bound_node_id": null,
-        "bound_edge_target": "body_shell.outer_edges",
+        "bound_edge_target": "body.outer_edges",
         "parameters": {}
       }
     ]
@@ -210,31 +256,46 @@ Membership is exact and pinned by tests.
   "graph_summary": {
     "material_zone_count": 1,
     "underlayer_count": 1,
-    "wear_mask_count": 7,
+    "wear_mask_count": 15,
     "wear_masks_by_type": {
-      "convex_edge_wear": 1,
+      "convex_edge_wear": 9,
       "concave_grime": 1,
       "lower_contact_scuff": 2,
       "handle_touch_wear": 2,
       "decal_wear": 1
     },
-    "bound_to_construction_nodes": 5,
-    "bound_to_edge_targets": 2,
-    "bound_to_both": 0
+    "bound_to_construction_nodes": 14,
+    "bound_to_edge_targets": 15,
+    "bound_to_both": 14,
+    "declared_node_bindings": 14,
+    "declared_edge_bindings": 15,
+    "resolved_bindings": 15
   },
   "binding_validation": {
     "all_node_bindings_resolved": true,
+    "all_edge_bindings_resolved": true,
     "orphan_node_bindings": [],
-    "construction_graph_node_count": 25
+    "orphan_edge_bindings": [],
+    "construction_graph_node_count": 25,
+    "edge_target_count": 8
   },
   "uniform_noise": {
     "is_uniform_noise": false,
-    "uniform_noise_score": 0.171429,
-    "zone_diversity": 0.666667,
+    "uniform_noise_score": 0.0,
+    "zone_diversity": 1.0,
     "wear_binding_ratio": 1.0,
     "warnings": []
   },
-  "skipped_reasons": []
+  "skipped_reasons": [
+    {
+      "tool": "surface_runtime",
+      "reason": "mask_texture_generation_not_implemented"
+    },
+    {
+      "tool": "surface_runtime",
+      "reason": "surface_map_driving_not_implemented"
+    }
+  ]
 }
 ```
 
@@ -253,11 +314,11 @@ binding pattern that the per-family default graph follows:
 
 | Mask type | Default binding pattern | Industrial crate intensity | Use it for |
 |---|---|---:|---|
-| `convex_edge_wear` | `bound_edge_target = "body_shell.outer_edges"` | 0.28 | Paint chips and metal exposure on raised hard edges. |
-| `concave_grime` | `bound_edge_target = "body_shell.recesses"` | 0.22 | Dirt and grease pooling in inset crevices. |
+| `convex_edge_wear` | `bound_edge_target = "body.outer_edges"` and per-corner guards on `recipe.corner_guard_*` / `body.corners` | 0.28 body, 0.24 guards | Paint chips and metal exposure on raised hard edges. |
+| `concave_grime` | `bound_node_id = "recipe.lid_seam"`, `bound_edge_target = "body.top_band"` | 0.22 | Dirt and grease pooling in inset crevices. |
 | `lower_contact_scuff` | `bound_node_id = "recipe.foot_rail_front"` / `"recipe.foot_rail_back"` (one mask per foot rail) | 0.35 | Scuffs and abrasions where the asset meets the ground plane. |
-| `handle_touch_wear` | `bound_node_id = "recipe.handle_*"` (one mask per handle) | 0.18 | Polish-wear from repeated touch on grip surfaces. |
-| `decal_wear` | `bound_node_id = "recipe.warning_decal_zone"` | 0.20 | Faded paint, lifted-edge effects on label / decal zones. |
+| `handle_touch_wear` | `bound_node_id = "recipe.handle_*"` plus `body.left_face` / `body.right_face` | 0.18 | Polish-wear from repeated touch on grip surfaces. |
+| `decal_wear` | `bound_node_id = "recipe.warning_decal_zone"`, `bound_edge_target = "body.front_face"` | 0.20 | Faded paint, lifted-edge effects on label / decal zones. |
 
 A wear mask may set both `bound_node_id` and `bound_edge_target` if the
 authoring intent applies to both (e.g. a decal wear mask anchored to a
@@ -291,7 +352,7 @@ painted-steel example from spec Section 12.3:
 |---|---|
 | Materials | 1 × `painted_steel_body` (color `#4f5668`, roughness 0.62, metalness 0.0, bound to part `body`) |
 | Underlayers | 1 × `dark_bare_metal` (color `#2a2a2a`, roughness 0.5, metalness 1.0, bound to part `body`) |
-| Wear masks | 7 — one each for `convex_edge_wear`, `concave_grime`, `decal_wear`, plus two each for `lower_contact_scuff` (per foot) and `handle_touch_wear` (per handle) |
+| Wear masks | 15: body convex edge wear, lid-seam concave grime, warning decal wear, two foot scuffs, two handle touches, and eight corner-guard edge-wear masks |
 
 Mirrored masks (foot scuffs, handle touches) follow Phase 6's grammar
 lowering naming convention: foot scuffs bind to
@@ -299,6 +360,13 @@ lowering naming convention: foot scuffs bind to
 two `solid.rail` ops along the bottom of the body), and handle
 touches bind to `recipe.handle_l` / `recipe.handle_r`. That keeps
 the binding one-to-one with the synthesized graph nodes.
+
+The audit patch also binds lid seam wear to `recipe.lid_seam`, handle
+wear to `body.left_face` / `body.right_face`, foot scuffs to
+`body.bottom_front` / `body.bottom_back`, the warning decal to
+`body.front_face`, and all eight corner guards to
+`recipe.corner_guard_0..7` plus the grammar-lowered `body.corners`
+target.
 
 Other families fall back to a `generic` empty graph (no materials, no
 underlayers, no wear masks) and fire the uniform-noise warning by
@@ -320,19 +388,18 @@ For every wear mask:
    ["synthesized_graph_nodes"]`. If the id is absent from both,
    `binding_validation.orphan_node_bindings` records the mask id and
    `all_node_bindings_resolved` flips to `false`.
-2. `bound_edge_target` is a free-form structural anchor (e.g.
-   `body_shell.outer_edges`); Phase 8 does not validate it because the
-   structural-edge taxonomy is reserved for Phase 6+ extensions.
-3. A mask with `bound_node_id == None` and `bound_edge_target != None`
-   counts toward `bound_to_edge_targets`; both non-null counts toward
-   `bound_to_both`. The per-family default graphs are validated at
-   module import time by `_verify_default_graph_contracts`, which
-   asserts every mask's `mask_type` is a member of `WEAR_MASK_TYPES`
-   and every zone's `zone_type` is a member of `ZONE_TYPES`. The check
-   does not currently reject masks where both binding fields are
-   `None`; user-constructed graphs are not validated until Phase 13's
-   public surface-program syntax adds `__post_init__` guards on
-   `WearMask` and `MaterialZone` (per Phase 8's review carry-forward).
+2. If `bound_edge_target` is non-null, resolve it against construction
+   edge tokens or grammar-lowered ShapeIR `target` values such as
+   `body.outer_edges`, `body.top_band`, or `body.corners`. If the
+   target is absent, `binding_validation.orphan_edge_bindings` records
+   the mask id and `all_edge_bindings_resolved` flips to `false`.
+3. A mask with `bound_node_id == None` and a resolved
+   `bound_edge_target` counts toward `bound_to_edge_targets`; both
+   resolved counts toward `bound_to_both`. The per-family default
+   graphs are validated at module import time by
+   `_verify_default_graph_contracts`, and the dataclass constructors
+   reject unknown types, out-of-bounds numeric fields, empty ids, and
+   masks with neither binding.
 
 ### 7.2 Resolved-vs-orphan accounting
 
@@ -340,13 +407,13 @@ For every wear mask:
 
 - `bound_to_construction_nodes` — masks with a non-null `bound_node_id`
   whose id resolves against the live + synthesized graph.
-- `bound_to_edge_targets` — masks with a non-null `bound_edge_target`.
-- `bound_to_both` — masks with both fields non-null AND the node
-  resolves.
+- `bound_to_edge_targets` — masks with a resolved `bound_edge_target`.
+- `bound_to_both` — masks where both the node and edge bindings
+  resolve.
 
 The uniform-noise score's `wear_binding_ratio` consumes the count of
 masks with **at least one resolved binding** (node-bound resolved OR
-edge-target present).
+edge-target resolved).
 
 ---
 
@@ -357,7 +424,8 @@ binding ratio, clamped to `[0.0, 1.0]`:
 
 ```
 existing_surface_zone_count = len(runtime["surface"]["bundle"]["material_zones"])
-                              if present else 0
+                              only when map/control-pack evidence is present,
+                              otherwise 0
 
 zone_diversity_input        = max(graph.materials.count, existing_surface_zone_count)
 zone_diversity              = min(1.0, zone_diversity_input / 3.0)
@@ -385,18 +453,18 @@ Phase 8 is informational only.
 | Generic / empty graph | 0.0 | 0.0 | 1.000 | yes |
 | Uniform fixture (1 zone, no bindings) | 0.333 | 0.0 | 0.867 | yes |
 | Industrial crate, surface_zone_count=1 (synthetic test fixture) | 0.333 | 1.000 | **0.267** | no |
-| Industrial crate, live build (surface stage publishes 3 material zones) | 1.000 | 1.000 | **0.000** | no |
+| Industrial crate, live build (3 map-backed material zones) | 1.000 | 1.000 | **0.000** | no |
 | Clean fixture (3+ zones, all masks bound) | 1.000 | 1.000 | 0.000 | no |
 
 The `industrial_crate` baseline lands at 0.000 in the live pipeline
-because the surface stage publishes 3 material zones for painted
+because the surface stage publishes 3 map-backed material zones for painted
 steel + dark bare metal + a third pass — `zone_diversity` is computed
 as `min(1.0, max(graph.materials.count, surface_zone_count) / 3.0)`,
 so the live surface output saturates the score even with a single
-recipe-graph material. The unit test
+recipe-graph material. Metadata-only surface zones do not count. The unit test
 `test_industrial_crate_baseline_score_lands_at_documented_value`
 deliberately uses `surface_zone_count=1` to exercise the mid-tier
-formula path; both scenarios resolve all 7 wear-mask bindings and
+formula path; both scenarios resolve all wear-mask bindings and
 neither fires the uniform-noise warning. Phase 14 golden examples
 can demonstrate that hand-authored multi-zone stories keep the live
 score at 0.000 and the layer remains warning-free.
@@ -411,6 +479,22 @@ than 4, `skipped_reasons` records:
 ```json
 {"tool": "bake_runtime", "reason": "incomplete_bake_maps"}
 ```
+
+When wear masks exist but the surface bundle does not report implemented
+mask texture generation or material/wear-driven surface maps,
+`skipped_reasons` records:
+
+```json
+[
+  {"tool": "surface_runtime", "reason": "mask_texture_generation_not_implemented"},
+  {"tool": "surface_runtime", "reason": "surface_map_driving_not_implemented"}
+]
+```
+
+When an authored `surface.material_graph` resolves to legacy metadata
+instead of Material/Wear Graph v1-shaped `materials`, `underlayers`, or
+`wear_masks`, `skipped_reasons` records
+`resolved_material_graph_not_lowerable_to_material_wear_graph_v1`.
 
 Phase 8 does not block on incomplete bake evidence — it surfaces the
 gap so a downstream tool (or a reviewer) can decide whether to
@@ -465,6 +549,9 @@ noise is surfaced on the dedicated `material_wear_graph` key instead.
 ```bash
 # Per-mask-type and per-zone-type unit tests + scoring
 python -m pytest tests/unit/test_asset_quality_material_wear_graph.py -v
+
+# Surface bundle hook metadata
+python -m pytest tests/unit/test_surface_runtime.py -q
 
 # Phase 1-7 regressions still green
 python -m pytest tests/unit/test_asset_quality_diagnostics.py \

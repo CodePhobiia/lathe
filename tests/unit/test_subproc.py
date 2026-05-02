@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import pytest
 from lathe.subproc import run_sandboxed
+
+
+PYTHON = str(Path(sys.executable).resolve())
 
 
 def test_run_sandboxed_calls_on_spawn_hook() -> None:
     seen: list[int] = []
 
     result = run_sandboxed(
-        [sys.executable, "-c", "print('ok')"],
+        [PYTHON, "-c", "print('ok')"],
         timeout_s=5,
         on_spawn=seen.append,
     )
@@ -28,7 +32,7 @@ def test_run_sandboxed_on_spawn_failure_is_hard_error() -> None:
 
     with pytest.raises(RuntimeError, match="hook failed"):
         run_sandboxed(
-            [sys.executable, "-c", "import time; time.sleep(10)"],
+            [PYTHON, "-c", "import time; time.sleep(10)"],
             timeout_s=5,
             on_spawn=fail_on_spawn,
         )
@@ -39,7 +43,7 @@ def test_run_sandboxed_rejects_preexec_on_windows(monkeypatch: pytest.MonkeyPatc
 
     with pytest.raises(ValueError, match="preexec_fn"):
         run_sandboxed(
-            [sys.executable, "-c", "print('nope')"],
+            [PYTHON, "-c", "print('nope')"],
             timeout_s=5,
             preexec_fn=lambda: None,
         )

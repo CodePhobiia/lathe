@@ -1,0 +1,83 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "detail_hierarchy": {
+    "high_frequency_detail": "wear masks and decals only",
+    "medium_forms": [
+      "frames",
+      "recessed panels",
+      "corner guards",
+      "foot rails"
+    ],
+    "primary_forms": [
+      "body shell"
+    ],
+    "status": "proxy"
+  },
+  "ops": [
+    {
+      "node_id": "body_shell",
+      "op": "solid.rounded_box",
+      "target": "body.core"
+    },
+    {
+      "node_id": "front_frame",
+      "op": "solid.panel",
+      "target": "body.front_face"
+    },
+    {
+      "node_id": "rear_frame",
+      "op": "solid.panel",
+      "target": "body.rear_face"
+    },
+    {
+      "node_id": "corner_guard_set",
+      "op": "solid.repeat",
+      "target": "body.corners"
+    },
+    {
+      "node_id": "left_recessed_panel",
+      "op": "cut.inset_panel",
+      "target": "body.left_face"
+    },
+    {
+      "node_id": "right_recessed_panel",
+      "op": "cut.inset_panel",
+      "target": "body.right_face"
+    },
+    {
+      "node_id": "lid_seam",
+      "op": "cut.panel_line",
+      "target": "body.top_band"
+    },
+    {
+      "node_id": "front_latch",
+      "op": "solid.panel",
+      "target": "body.front_face"
+    },
+    {
+      "node_id": "side_handle_l",
+      "op": "solid.panel",
+      "target": "body.left_face"
+    },
+    {
+      "node_id": "side_handle_r",
+      "op": "solid.panel",
+      "target": "body.right_face"
+    },
+    {
+      "node_id": "foot_rail_front",
+      "op": "solid.rail",
+      "target": "body.bottom_front"
+    },
+    {
+      "node_id": "foot_rail_back",
+      "op": "solid.rail",
+      "target": "body.bottom_back"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.shape_ir_v2.v1",
+  "v1_adapter": {
+    "lowerable_ops": 12,
+    "status": "proxy_lowerable"
+  }
+}

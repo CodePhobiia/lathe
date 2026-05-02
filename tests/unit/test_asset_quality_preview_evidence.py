@@ -11,8 +11,11 @@ Covers per task #9 of ``docs/asset-quality/improvement-tasklist.md``:
 - The full preview set (``turntable``, ``wireframe``,
   ``material_ids``, ``uv_layout``, ``collision``, ``lod_sheet``)
   lands one entry per category in fixed emission order.
+- ``*_present`` summary flags do not claim package-rendered files
+  exist during validate; ``*_declared`` carries package intent.
 - ``distinct_final_from_material_ids`` is True iff both previews
-  are requested and their paths differ.
+  are requested, their names/modes are semantically distinct, and
+  their expected paths differ.
 - A package config requesting ``material_ids`` without
   ``turntable`` fires the documented warning and keeps the flag
   False.
@@ -45,7 +48,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.preview_evidence import (
     PREVIEW_EVIDENCE_VERSION,
     BakeMapEntry,
@@ -54,7 +56,6 @@ from lathe.asset_quality.preview_evidence import (
     evaluate_preview_evidence,
 )
 from lathe.validators.composition import FunctionValidator, ValidatorPipeline
-
 
 _PAYLOAD_KEYS: frozenset[str] = frozenset(
     {
@@ -263,9 +264,12 @@ def test_full_preview_set_categorizes_correctly() -> None:
     assert previews["lod_sheet"][0]["mode"] == "lod_sheet"
 
     assert payload["preview_summary"]["total_preview_count"] == 6
-    assert payload["preview_summary"]["final_beauty_present"] is True
-    assert payload["preview_summary"]["material_ids_present"] is True
-    assert payload["preview_summary"]["wireframe_present"] is True
+    assert payload["preview_summary"]["final_beauty_present"] is False
+    assert payload["preview_summary"]["material_ids_present"] is False
+    assert payload["preview_summary"]["wireframe_present"] is False
+    assert payload["preview_summary"]["final_beauty_declared"] is True
+    assert payload["preview_summary"]["material_ids_declared"] is True
+    assert payload["preview_summary"]["wireframe_declared"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -293,7 +297,9 @@ def test_only_material_ids_warns_about_missing_final_beauty() -> None:
     payload = evaluate_preview_evidence(asset, _empty_runtime())
 
     assert payload["preview_summary"]["final_beauty_present"] is False
-    assert payload["preview_summary"]["material_ids_present"] is True
+    assert payload["preview_summary"]["material_ids_present"] is False
+    assert payload["preview_summary"]["final_beauty_declared"] is False
+    assert payload["preview_summary"]["material_ids_declared"] is True
     assert payload["preview_summary"]["distinct_final_from_material_ids"] is False
     assert any(
         "material_ids" in warning and "turntable" in warning
@@ -308,8 +314,10 @@ def test_only_turntable_does_not_set_distinct_flag() -> None:
     }
     payload = evaluate_preview_evidence(asset, _empty_runtime())
 
-    assert payload["preview_summary"]["final_beauty_present"] is True
+    assert payload["preview_summary"]["final_beauty_present"] is False
     assert payload["preview_summary"]["material_ids_present"] is False
+    assert payload["preview_summary"]["final_beauty_declared"] is True
+    assert payload["preview_summary"]["material_ids_declared"] is False
     assert payload["preview_summary"]["distinct_final_from_material_ids"] is False
     assert payload["warnings"] == []
 
@@ -446,6 +454,23 @@ def test_bake_outputs_short_form_string_uri_is_tolerated() -> None:
     assert by_role["normal_map"]["uri"] == "stages/surface/maps/normal.png"
 
 
+def test_bake_outputs_map_local_uri_is_lifted_to_asset_root() -> None:
+    asset = _full_preview_asset()
+    runtime = {
+        "surface": {
+            "bundle": {
+                "maps": ["normal"],
+                "bake_outputs": {"normal": "maps\\normal.png"},
+            }
+        }
+    }
+    payload = evaluate_preview_evidence(asset, runtime)
+    by_role = {entry["role"]: entry for entry in payload["previews"]["bake_maps"]}
+
+    assert by_role["normal_map"]["uri"] == "stages/surface/maps/normal.png"
+    assert "stages/surface/maps/normal.png" in payload["report_links"]
+
+
 # ---------------------------------------------------------------------------
 # Comparison sheet
 # ---------------------------------------------------------------------------
@@ -460,6 +485,8 @@ def test_comparison_sheet_skipped_by_default() -> None:
     }
 
     assert payload["preview_summary"]["comparison_sheet_present"] is False
+    assert payload["preview_summary"]["comparison_sheet_requested"] is False
+    assert payload["preview_summary"]["comparison_sheet_renderer_available"] is False
     assert skipped_reasons["comparison_sheet"] == "comparison_sheet_not_requested"
     assert payload["previews"]["comparison_sheet"] == []
 
@@ -477,6 +504,8 @@ def test_comparison_sheet_renderer_unavailable_when_requested() -> None:
         == "comparison_sheet_renderer_unavailable"
     )
     assert payload["preview_summary"]["comparison_sheet_present"] is False
+    assert payload["preview_summary"]["comparison_sheet_requested"] is True
+    assert payload["preview_summary"]["comparison_sheet_renderer_available"] is False
     assert payload["previews"]["comparison_sheet"] == []
 
 
@@ -592,7 +621,8 @@ def test_top_level_asset_package_shape_is_tolerated() -> None:
         "package": {"previews": ["turntable"]},
     }
     payload = evaluate_preview_evidence(asset, _empty_runtime())
-    assert payload["preview_summary"]["final_beauty_present"] is True
+    assert payload["preview_summary"]["final_beauty_present"] is False
+    assert payload["preview_summary"]["final_beauty_declared"] is True
 
 
 def test_non_dict_inputs_do_not_crash() -> None:

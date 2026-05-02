@@ -1,0 +1,131 @@
+{
+  "asset_id": "quality_engine_environment_shop_counter",
+  "edges": [
+    {
+      "edge_type": "attached_to",
+      "source_id": "usable_countertop",
+      "target_id": "counter_base"
+    },
+    {
+      "edge_type": "inset_into",
+      "source_id": "front_display_panel",
+      "target_id": "counter_base"
+    },
+    {
+      "edge_type": "attached_to",
+      "source_id": "raised_shop_sign",
+      "target_id": "usable_countertop"
+    },
+    {
+      "edge_type": "wraps_around",
+      "source_id": "front_trim_band",
+      "target_id": "counter_base"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "countertop_contact_wear",
+      "target_id": "usable_countertop"
+    }
+  ],
+  "family": "environment_shop_counter",
+  "nodes": [
+    {
+      "bounds": {
+        "depth": 0.62,
+        "height": 0.08,
+        "width": 1.2
+      },
+      "category": "countertop",
+      "material_zone_ref": "warm_wood_counter",
+      "node_id": "usable_countertop",
+      "semantic_role": "customer interaction and item placement surface"
+    },
+    {
+      "bounds": {
+        "depth": 0.5,
+        "height": 0.72,
+        "width": 1.05
+      },
+      "category": "support",
+      "material_zone_ref": "painted_base",
+      "node_id": "counter_base",
+      "semantic_role": "structural counter base"
+    },
+    {
+      "bounds": {
+        "depth": 0.02,
+        "height": 0.28,
+        "width": 0.68
+      },
+      "category": "display",
+      "material_zone_ref": "display_glass",
+      "node_id": "front_display_panel",
+      "semantic_role": "customer-facing goods display"
+    },
+    {
+      "bounds": {
+        "depth": 0.05,
+        "height": 0.16,
+        "width": 0.55
+      },
+      "category": "sign",
+      "material_zone_ref": "signage_accent",
+      "node_id": "raised_shop_sign",
+      "semantic_role": "shop identity read"
+    },
+    {
+      "bounds": {
+        "depth": 0.02,
+        "height": 0.06,
+        "width": 1.05
+      },
+      "category": "trim",
+      "material_zone_ref": "painted_trim",
+      "node_id": "front_trim_band",
+      "semantic_role": "front decorative trim"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "warm_wood_counter",
+      "node_id": "material_warm_wood",
+      "semantic_role": "wood counter material zone"
+    },
+    {
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "display_glass",
+      "node_id": "material_display_glass",
+      "semantic_role": "display glass material zone"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "countertop_contact_wear",
+      "node_id": "countertop_contact_wear",
+      "semantic_role": "countertop rub and use wear"
+    },
+    {
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "front_edge_scuff_anchor",
+      "node_id": "front_edge_scuff_anchor",
+      "semantic_role": "customer-facing edge scuff anchor"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 5,
+    "major_silhouette_nodes": [
+      "usable_countertop",
+      "counter_base",
+      "front_display_panel",
+      "raised_shop_sign"
+    ],
+    "node_count": 9,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 2800,
+    "unclassified_major_primitives": 0
+  }
+}

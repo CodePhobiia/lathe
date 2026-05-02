@@ -57,6 +57,14 @@
           "type": "integer",
           "minimum": 0
         },
+        "nested_source_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nested_assembly_files": {
+          "type": "integer",
+          "minimum": 0
+        },
         "object_instances": {
           "type": "integer",
           "minimum": 0
@@ -70,6 +78,30 @@
           "minimum": 0
         },
         "planner_errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parent_builds_requested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parent_builds_succeeded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parent_builds_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nested_builds_requested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nested_builds_succeeded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nested_builds_failed": {
           "type": "integer",
           "minimum": 0
         },
@@ -369,6 +401,198 @@
         },
         "instancing": {
           "$ref": "#/$defs/instancing"
+        },
+        "check": {
+          "$ref": "#/$defs/status_payload"
+        },
+        "plan": {
+          "$ref": "#/$defs/status_payload"
+        },
+        "nested_assets": {
+          "$ref": "#/$defs/nested_asset_manifest"
+        },
+        "build": {
+          "$ref": "#/$defs/build_payload"
+        }
+      }
+    },
+    "nested_asset_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "parent_asset_name",
+        "parent_family",
+        "parent_kind",
+        "summary",
+        "assets"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.nested_asset_sources.v1"
+        },
+        "parent_asset_name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "parent_family": {
+          "type": "string"
+        },
+        "parent_kind": {
+          "type": "string"
+        },
+        "summary": {
+          "$ref": "#/$defs/json_object"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nested_asset_source"
+          }
+        },
+        "build_graph": {
+          "$ref": "#/$defs/json_object"
+        },
+        "assembly": {
+          "$ref": "#/$defs/nested_assembly_ref"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "nested_assembly_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "schema_version",
+        "summary",
+        "aggregate_package",
+        "consumable"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "schema_version": {
+          "const": "lathe.nested_asset_assembly.v1"
+        },
+        "summary": {
+          "$ref": "#/$defs/json_object"
+        },
+        "aggregate_package": {
+          "$ref": "#/$defs/json_object"
+        },
+        "consumable": {
+          "$ref": "#/$defs/json_object"
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/json_object"
+          }
+        }
+      }
+    },
+    "nested_asset_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_name",
+        "asset_kind",
+        "family",
+        "instance_id",
+        "slot_id",
+        "template",
+        "source_path",
+        "check",
+        "plan"
+      ],
+      "properties": {
+        "asset_name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "asset_kind": {
+          "enum": [
+            "hard_surface_prop",
+            "env_module",
+            "mechanical_assembly"
+          ]
+        },
+        "family": {
+          "type": "string"
+        },
+        "blueprint_id": {
+          "type": "string"
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "slot_id": {
+          "type": "string"
+        },
+        "slot_kind": {
+          "type": "string"
+        },
+        "socket": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "mount": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        },
+        "archetype": {
+          "type": "string"
+        },
+        "source_filename": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "source_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "metadata_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "shape_controls": {
+          "$ref": "#/$defs/json_object"
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snake_id"
+          }
+        },
+        "materials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snake_id"
+          }
+        },
+        "style_tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snake_id"
+          }
+        },
+        "surface_inheritance": {
+          "$ref": "#/$defs/json_object"
+        },
+        "placement": {
+          "$ref": "#/$defs/json_object"
+        },
+        "dependency": {
+          "$ref": "#/$defs/json_object"
+        },
+        "package": {
+          "$ref": "#/$defs/json_object"
         },
         "check": {
           "$ref": "#/$defs/status_payload"

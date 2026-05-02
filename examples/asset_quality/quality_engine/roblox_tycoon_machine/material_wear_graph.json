@@ -1,0 +1,97 @@
+{
+  "asset_id": "quality_engine_roblox_tycoon_machine",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 5,
+    "underlayer_count": 1,
+    "wear_mask_count": 5
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "dropper_body",
+        "front_service_panel"
+      ],
+      "zone_id": "bright_plastic_body",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "output_conveyor"
+      ],
+      "zone_id": "rubber_conveyor",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "dropper_port"
+      ],
+      "zone_id": "metal_output_port",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "upgrade_button"
+      ],
+      "zone_id": "red_button_accent",
+      "zone_type": "accent_material"
+    },
+    {
+      "bound_nodes": [
+        "status_display",
+        "output_arrow_decal"
+      ],
+      "zone_id": "glow_status_accent",
+      "zone_type": "accent_material"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "skipped_reasons": [
+    {
+      "reason": "real_bake_map_generation_not_implemented",
+      "tool": "surface_runtime"
+    }
+  ],
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.05,
+    "warnings": []
+  },
+  "wear_masks": [
+    {
+      "bound_edge_target": "button.top_contact",
+      "bound_node_id": "button_touch_wear",
+      "mask_id": "button_press_polish",
+      "mask_type": "handle_touch_wear"
+    },
+    {
+      "bound_edge_target": "conveyor.center_path",
+      "bound_node_id": "conveyor_scuff_anchor",
+      "mask_id": "conveyor_item_scuffs",
+      "mask_type": "contact_dirt"
+    },
+    {
+      "bound_edge_target": "dropper_port.inner_lip",
+      "bound_node_id": "dropper_port",
+      "mask_id": "dropper_output_grime",
+      "mask_type": "concave_grime"
+    },
+    {
+      "bound_edge_target": "service_panel.edges",
+      "bound_node_id": "front_service_panel",
+      "mask_id": "service_panel_edge_wear",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "arrow_decal.edges",
+      "bound_node_id": "output_arrow_decal",
+      "mask_id": "arrow_decal_breakup",
+      "mask_type": "decal_breakup"
+    }
+  ]
+}

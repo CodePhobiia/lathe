@@ -416,15 +416,17 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
                 values["references"] = entry["values"]
             elif kind == "experimental_kit":
                 values["kit"] = entry["values"]
+            elif kind == "experimental_unknown":
+                values.setdefault("_unknown_subblocks", []).append(entry["name"])
+                values[entry["name"]] = entry["values"]
         return {"node_type": "experimental", "values": values}
 
-    def experimental_art_direction_block(self, *fields: Any) -> dict[str, Any]:
+    def experimental_art_direction_block(self, *assignments: Any) -> dict[str, Any]:
         """Phase 13 ``experimental.art_direction`` block."""
-        out: dict[str, Any] = {}
-        for field in fields:
-            if isinstance(field, tuple) and len(field) == 2:
-                out[field[0]] = field[1]
-        return {"node_type": "experimental_art_direction", "values": out}
+        return {
+            "node_type": "experimental_art_direction",
+            "values": self._assignments(assignments, "experimental.art_direction"),
+        }
 
     def experimental_art_direction_style_tags(self, value: Any) -> tuple[str, Any]:
         return ("style_tags", list(value) if isinstance(value, list) else value)
@@ -438,15 +440,30 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
     def experimental_art_direction_detail_density(self, value: Any) -> tuple[str, Any]:
         return ("detail_density", py_ast.literal_eval(value) if isinstance(value, str) else value)
 
-    def experimental_references_block(self, value: Any) -> dict[str, Any]:
+    def experimental_references_block(self, *assignments: Any) -> dict[str, Any]:
         """Phase 13 ``experimental.references`` block."""
-        path = py_ast.literal_eval(value) if isinstance(value, str) else value
-        return {"node_type": "experimental_references", "values": {"use": path}}
+        return {
+            "node_type": "experimental_references",
+            "values": self._assignments(assignments, "experimental.references"),
+        }
 
-    def experimental_kit_block(self, value: Any) -> dict[str, Any]:
+    def experimental_kit_block(self, *assignments: Any) -> dict[str, Any]:
         """Phase 13 ``experimental.kit`` block."""
-        items = list(value) if isinstance(value, list) else value
-        return {"node_type": "experimental_kit", "values": {"use": items}}
+        return {
+            "node_type": "experimental_kit",
+            "values": self._assignments(assignments, "experimental.kit"),
+        }
+
+    def experimental_unknown_subblock(
+        self, name: Any, *assignments: Any
+    ) -> dict[str, Any]:
+        """Phase 13 unknown experimental sub-block for checker diagnostics."""
+        block_name = str(name)
+        return {
+            "node_type": "experimental_unknown",
+            "name": block_name,
+            "values": self._assignments(assignments, f"experimental.{block_name}"),
+        }
 
     def ensure_rule(self, expr: Any) -> dict[str, Any]:
         """Ensure rule.

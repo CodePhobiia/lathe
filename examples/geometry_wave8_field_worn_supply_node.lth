@@ -1,0 +1,39 @@
+module examples.geometry_wave8.field_worn_supply_node
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave8_field_worn_supply_node: hard_surface_prop {
+  intent {
+    role = "field worn supply node using military decal library and worn panel trim"
+    style = ["field_used", "battle_worn", "modular"]
+    parts = [body, supply_panel, shield_plate_l, shield_plate_r, cable_bank, leg_mount]
+    materials = [chipped_paint, bare_metal, grime]
+    scale = 1.1m
+  }
+
+  surface {
+    materials = [chipped_paint, bare_metal, grime]
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 803
+      symmetry = x
+      style_pack = battle_worn_field
+      silhouette_profile = reinforced_field
+      silhouette_motifs = [outrigger, guard_cowl, spine]
+      module_categories = [shield_plate, power_cell, leg]
+      module_count = 3
+      detail_zones = [body, supply_panel, cable_bank, leg_mount]
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

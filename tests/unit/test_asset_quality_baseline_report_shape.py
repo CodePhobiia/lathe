@@ -20,9 +20,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
+from lathe.core.stages.validate import _report_section_with_diagnostics
 from lathe.validators.visual_quality import evaluate_visual_quality
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -79,7 +78,6 @@ _VISUAL_QUALITY_METRICS_BASELINE_KEYS: frozenset[str] = frozenset(
         "surface_material_zone_coherence",
         "surface_emissive_coherence",
         "surface_highlow_realness",
-        "surface_authoring_quality",
     }
 )
 
@@ -281,3 +279,25 @@ def test_visual_quality_metrics_field_is_a_dict_of_floats() -> None:
         assert isinstance(
             value, int | float
         ), f"visual_quality.metrics[{key!r}] should be numeric, got {type(value).__name__}"
+
+
+def test_validate_report_sections_restore_nested_diagnostics() -> None:
+    entry = {
+        "evidence": {
+            "version": "preview_evidence_v1",
+            "warnings": ["x"],
+        },
+        "diagnostics": [
+            {
+                "code": "L9999",
+                "severity": "warning",
+                "message": "nested diagnostic",
+            }
+        ],
+    }
+
+    section = _report_section_with_diagnostics(entry)
+
+    assert section["version"] == "preview_evidence_v1"
+    assert section["warnings"] == ["x"]
+    assert section["diagnostics"] == entry["diagnostics"]

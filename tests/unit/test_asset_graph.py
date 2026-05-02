@@ -70,6 +70,13 @@ class InferFamilyTests(unittest.TestCase):
         asset = _asset(role="unknown", parts=["widget"])
         self.assertEqual(infer_asset_family(asset), "hard_surface_prop_generic")
 
+    def test_sword_family_heuristic_via_role(self) -> None:
+        asset = _asset(
+            role="hero medieval sword",
+            parts=["long_tapered_blade", "crossguard", "leather_wrapped_grip", "round_pommel"],
+        )
+        self.assertEqual(infer_asset_family(asset), "hero_sword")
+
 
 class InferBlueprintIDTests(unittest.TestCase):
     def test_explicit_blueprint_id_used_directly(self) -> None:
@@ -84,6 +91,10 @@ class InferBlueprintIDTests(unittest.TestCase):
             infer_blueprint_id(asset),
             "lathe.blueprint.hard_surface_crate_v1",
         )
+
+    def test_sword_blueprint_id_matches_family(self) -> None:
+        asset = _asset(role="sword", parts=["long_tapered_blade", "crossguard"])
+        self.assertEqual(infer_blueprint_id(asset), "lathe.blueprint.hero_sword_v1")
 
 
 class BuildAssetGraphTests(unittest.TestCase):
@@ -146,6 +157,29 @@ class BuildAssetGraphTests(unittest.TestCase):
         self.assertEqual(by_name["rotor_fr"].symmetry_mate, "rotor_fl")
         # body has no mate
         self.assertIsNone(by_name["body"].symmetry_mate)
+
+    def test_sword_parts_receive_weapon_tags_and_edges(self) -> None:
+        asset = _asset(
+            role="sword",
+            parts=[
+                "long_tapered_blade",
+                "central_fuller",
+                "sharp_tip",
+                "crossguard",
+                "leather_wrapped_grip",
+                "round_pommel",
+            ],
+        )
+        graph = build_asset_graph(asset)
+        by_name = {part.name: part for part in graph.parts}
+
+        self.assertIn("blade", by_name["long_tapered_blade"].tags)
+        self.assertIn("fuller", by_name["central_fuller"].tags)
+        self.assertIn("guard", by_name["crossguard"].tags)
+        self.assertIn("grip", by_name["leather_wrapped_grip"].tags)
+        pairs = {(edge["from"], edge["to"]) for edge in graph.part_graph}
+        self.assertIn(("crossguard", "long_tapered_blade"), pairs)
+        self.assertIn(("crossguard", "leather_wrapped_grip"), pairs)
 
     def test_missing_name_raises_key_error(self) -> None:
         # build_asset_graph reads asset["name"] unconditionally; a bare

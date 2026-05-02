@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 
 import numpy as np
 
 from .assembly_kernel import AssemblyBlueprint, BlueprintComponent
 from .asset_graph import AssetGraph
 from .fidelity import FidelityProfile
+from .geometry_detail import geometry_detail_controls_from_authoring
 
 
 @dataclass
@@ -115,6 +116,165 @@ def generate_candidate_params(
         if path in _SEARCH_DIMENSIONS:
             setattr(params, _SEARCH_DIMENSIONS[path][0], _FROZEN_DEFAULTS[path](fidelity))
     return params
+
+
+def apply_quality_adapters_to_candidate_params(
+    params: CandidateParams, adapters: dict[str, object] | None
+) -> CandidateParams:
+    """Return candidate params steered by pre-shape quality-plan adapters.
+
+    The adapter uses generic art-direction dimensions only. It does not know
+    about crates, swords, or any specific family; it simply turns desired
+    silhouette/detail/material hierarchy into existing search-space knobs.
+    """
+    safe = adapters if isinstance(adapters, dict) else {}
+
+    def factor(key: str, default: float = 1.0) -> float:
+        try:
+            return float(safe.get(key, default) or default)
+        except (TypeError, ValueError):
+            return default
+
+    runtime_budget = factor("runtime_budget_multiplier", 1.0)
+    return replace(
+        params,
+        feature_density=_bounded(
+            params.feature_density * factor("feature_density_multiplier") * runtime_budget,
+            0.45,
+            2.5,
+        ),
+        panel_depth=_bounded(params.panel_depth * factor("panel_depth_multiplier"), 0.45, 2.0),
+        edge_weight=_bounded(params.edge_weight * factor("edge_weight_multiplier"), 0.45, 2.0),
+        silhouette_bias=_bounded(
+            params.silhouette_bias * factor("silhouette_bias_multiplier"),
+            0.65,
+            1.8,
+        ),
+        trim_scale=_bounded(params.trim_scale * factor("trim_scale_multiplier"), 0.55, 1.8),
+    )
+
+
+def apply_style_modifiers_to_candidate_params(
+    params: CandidateParams, asset_graph: AssetGraph
+) -> CandidateParams:
+    """Return candidate params steered by authored style language."""
+    controls = geometry_detail_controls_from_authoring(asset_graph.authoring)
+    styles = set(controls.style_modifiers)
+    silhouette_profile = str(controls.silhouette_profile or "")
+    silhouette_motifs = set(controls.silhouette_motifs)
+    if not styles and not silhouette_profile and not silhouette_motifs:
+        return params
+    silhouette_intensity = max(0.25, float(controls.silhouette_intensity or 1.0))
+
+    width = params.width_scale
+    height = params.height_scale
+    depth = params.depth_scale
+    feature_density = params.feature_density
+    panel_depth = params.panel_depth
+    edge_weight = params.edge_weight
+    support_spread = params.support_spread
+    attachment_spread = params.attachment_spread
+    trim_scale = params.trim_scale
+    silhouette_bias = params.silhouette_bias
+    rotor_guard_scale = params.rotor_guard_scale
+
+    if styles & {"brutalist", "industrial"}:
+        width *= 1.08
+        depth *= 1.10
+        height *= 0.96
+        feature_density *= 1.14
+        panel_depth *= 1.12
+        edge_weight *= 1.16
+        trim_scale *= 1.08
+        silhouette_bias *= 1.08
+    if styles & {"elegant", "luxury"}:
+        width *= 0.94
+        height *= 1.12
+        depth *= 0.96
+        feature_density *= 1.06
+        panel_depth *= 0.88
+        edge_weight *= 0.92
+        trim_scale *= 0.88
+        silhouette_bias *= 0.96
+    if "modular" in styles:
+        support_spread *= 1.08
+        attachment_spread *= 1.14
+        feature_density *= 1.08
+        panel_depth *= 1.06
+    if "organic" in styles:
+        width *= 0.97
+        height *= 1.06
+        depth *= 1.04
+        edge_weight *= 0.86
+        trim_scale *= 0.90
+        silhouette_bias *= 0.92
+    if "prototype" in styles:
+        depth *= 1.08
+        feature_density *= 1.16
+        attachment_spread *= 1.10
+        rotor_guard_scale *= 1.10
+    if styles & {"battle_worn", "salvaged", "field_used"}:
+        width *= 1.03
+        depth *= 1.04
+        feature_density *= 1.10
+        edge_weight *= 1.06
+        trim_scale *= 1.04
+    if silhouette_profile in {"wide_heavy", "reinforced_field", "tripod"}:
+        width *= 1.0 + 0.10 * silhouette_intensity
+        depth *= 1.0 + 0.05 * silhouette_intensity
+        height *= max(0.82, 1.0 - 0.035 * silhouette_intensity)
+        support_spread *= 1.0 + 0.10 * silhouette_intensity
+        silhouette_bias *= 1.0 + 0.08 * silhouette_intensity
+    if silhouette_profile in {"sleek_winged", "winged"}:
+        width *= 1.0 + 0.12 * silhouette_intensity
+        depth *= 1.0 + 0.07 * silhouette_intensity
+        height *= max(0.80, 1.0 - 0.04 * silhouette_intensity)
+        attachment_spread *= 1.0 + 0.12 * silhouette_intensity
+        silhouette_bias *= 1.0 + 0.06 * silhouette_intensity
+    if silhouette_profile in {"ornate_spire", "tower", "tall", "spined"}:
+        height *= 1.0 + 0.12 * silhouette_intensity
+        width *= max(0.76, 1.0 - 0.035 * silhouette_intensity)
+        depth *= max(0.78, 1.0 - 0.025 * silhouette_intensity)
+        feature_density *= 1.0 + 0.05 * silhouette_intensity
+    if silhouette_profile == "blade_like":
+        depth *= 1.0 + 0.14 * silhouette_intensity
+        width *= max(0.74, 1.0 - 0.04 * silhouette_intensity)
+        edge_weight *= 1.0 + 0.08 * silhouette_intensity
+    if silhouette_profile == "compact":
+        width *= max(0.78, 1.0 - 0.06 * silhouette_intensity)
+        depth *= max(0.78, 1.0 - 0.06 * silhouette_intensity)
+        height *= max(0.84, 1.0 - 0.04 * silhouette_intensity)
+        feature_density *= 1.0 + 0.08 * silhouette_intensity
+    if silhouette_motifs & {"wing", "fin", "fins", "stabilizer"}:
+        width *= 1.0 + 0.07 * silhouette_intensity
+        attachment_spread *= 1.0 + 0.08 * silhouette_intensity
+    if silhouette_motifs & {"tower", "spire", "mast", "antenna", "sensor_mast"}:
+        height *= 1.0 + 0.08 * silhouette_intensity
+    if silhouette_motifs & {"outrigger", "outriggers", "support"}:
+        width *= 1.0 + 0.05 * silhouette_intensity
+        support_spread *= 1.0 + 0.08 * silhouette_intensity
+    if silhouette_motifs & {"blade", "blades", "tool_head"}:
+        depth *= 1.0 + 0.08 * silhouette_intensity
+        edge_weight *= 1.0 + 0.05 * silhouette_intensity
+
+    return replace(
+        params,
+        width_scale=_bounded(width, 0.70, 1.55),
+        height_scale=_bounded(height, 0.70, 1.55),
+        depth_scale=_bounded(depth, 0.70, 1.55),
+        feature_density=_bounded(feature_density, 0.45, 2.75),
+        panel_depth=_bounded(panel_depth, 0.45, 2.20),
+        edge_weight=_bounded(edge_weight, 0.45, 2.20),
+        support_spread=_bounded(support_spread, 0.65, 1.55),
+        attachment_spread=_bounded(attachment_spread, 0.65, 1.55),
+        trim_scale=_bounded(trim_scale, 0.50, 1.90),
+        silhouette_bias=_bounded(silhouette_bias, 0.65, 1.95),
+        rotor_guard_scale=_bounded(rotor_guard_scale, 0.65, 1.75),
+    )
+
+
+def _bounded(value: float, low: float, high: float) -> float:
+    return max(low, min(high, float(value)))
 
 
 def objective_weights(asset_graph: AssetGraph) -> dict[str, float]:

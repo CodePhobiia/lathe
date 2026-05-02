@@ -462,6 +462,15 @@ def _asset_materialization_summary(payload: Mapping[str, Any] | None) -> dict[st
         return {
             "requested": False,
             "manifest_path": None,
+            "source_files": 0,
+            "nested_source_files": 0,
+            "nested_assembly_files": 0,
+            "parent_builds_requested": 0,
+            "parent_builds_succeeded": 0,
+            "parent_builds_failed": 0,
+            "nested_builds_requested": 0,
+            "nested_builds_succeeded": 0,
+            "nested_builds_failed": 0,
             "builds_requested": 0,
             "builds_succeeded": 0,
             "builds_failed": 0,
@@ -471,6 +480,15 @@ def _asset_materialization_summary(payload: Mapping[str, Any] | None) -> dict[st
     return {
         "requested": True,
         "manifest_path": _SCENE_MATERIALIZATION_MANIFEST_PATH,
+        "source_files": int(summary.get("source_files", 0) or 0),
+        "nested_source_files": int(summary.get("nested_source_files", 0) or 0),
+        "nested_assembly_files": int(summary.get("nested_assembly_files", 0) or 0),
+        "parent_builds_requested": int(summary.get("parent_builds_requested", 0) or 0),
+        "parent_builds_succeeded": int(summary.get("parent_builds_succeeded", 0) or 0),
+        "parent_builds_failed": int(summary.get("parent_builds_failed", 0) or 0),
+        "nested_builds_requested": int(summary.get("nested_builds_requested", 0) or 0),
+        "nested_builds_succeeded": int(summary.get("nested_builds_succeeded", 0) or 0),
+        "nested_builds_failed": int(summary.get("nested_builds_failed", 0) or 0),
         "builds_requested": int(summary.get("builds_requested", 0) or 0),
         "builds_succeeded": int(summary.get("builds_succeeded", 0) or 0),
         "builds_failed": int(summary.get("builds_failed", 0) or 0),
@@ -557,6 +575,11 @@ def _scene_build_report(
             "asset_builds_requested": materialization_summary["builds_requested"],
             "asset_builds_succeeded": materialization_summary["builds_succeeded"],
             "asset_builds_failed": materialization_summary["builds_failed"],
+            "nested_source_files": materialization_summary["nested_source_files"],
+            "nested_assembly_files": materialization_summary["nested_assembly_files"],
+            "nested_asset_builds_requested": materialization_summary["nested_builds_requested"],
+            "nested_asset_builds_succeeded": materialization_summary["nested_builds_succeeded"],
+            "nested_asset_builds_failed": materialization_summary["nested_builds_failed"],
         },
         "quality": {
             "status": quality_report.get("status"),
@@ -612,6 +635,66 @@ def _build_manifest_entries(
             entry["object_id"] = object_ids[0]
         entries.append(entry)
     return entries
+
+
+def _nested_assembly_source_entries(asset_materialization: Mapping[str, Any] | None) -> list[dict[str, Any]]:
+    if not isinstance(asset_materialization, Mapping):
+        return []
+    manifest = asset_materialization.get("manifest")
+    if not isinstance(manifest, Mapping):
+        return []
+    entries: list[dict[str, Any]] = []
+    for source in manifest.get("asset_sources", []) or []:
+        if not isinstance(source, Mapping):
+            continue
+        nested_assets = source.get("nested_assets")
+        if not isinstance(nested_assets, Mapping):
+            continue
+        assembly = nested_assets.get("assembly")
+        if not isinstance(assembly, Mapping) or not isinstance(assembly.get("path"), str):
+            continue
+        entries.append(
+            {
+                "kind": "lathe_source",
+                "path": f"{_SCENE_MATERIALIZATION_ROOT}/{assembly['path']}",
+                "description": f"Nested asset assembly manifest for {source.get('asset_name', 'generated asset')}.",
+            }
+        )
+    return entries
+
+
+def _nested_assembly_export_payloads(
+    asset_materialization: Mapping[str, Any] | None,
+    package_dir: Path,
+) -> list[dict[str, Any]]:
+    if not isinstance(asset_materialization, Mapping):
+        return []
+    manifest = asset_materialization.get("manifest")
+    if not isinstance(manifest, Mapping):
+        return []
+    payloads: list[dict[str, Any]] = []
+    for source in manifest.get("asset_sources", []) or []:
+        if not isinstance(source, Mapping):
+            continue
+        nested_assets = source.get("nested_assets")
+        if not isinstance(nested_assets, Mapping):
+            continue
+        assembly_ref = nested_assets.get("assembly")
+        if not isinstance(assembly_ref, Mapping) or not isinstance(assembly_ref.get("path"), str):
+            continue
+        assembly_path = _safe_package_path(package_dir, f"{_SCENE_MATERIALIZATION_ROOT}/{assembly_ref['path']}")
+        try:
+            assembly = json.loads(assembly_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, UnicodeError):
+            continue
+        if not isinstance(assembly, dict):
+            continue
+        assembly["scene_object_ids"] = list(source.get("object_ids") or [])
+        assembly["scene_object_id"] = assembly["scene_object_ids"][0] if assembly["scene_object_ids"] else ""
+        assembly["materialization_root"] = _SCENE_MATERIALIZATION_ROOT
+        assembly["package_path"] = f"{_SCENE_MATERIALIZATION_ROOT}/{assembly_ref['path']}"
+        payloads.append(assembly)
+    return payloads
 
 
 def _render_manifest_entries(render_report: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -827,6 +910,11 @@ def _wonder_report(
             "asset_builds_requested": materialization_summary["builds_requested"],
             "asset_builds_succeeded": materialization_summary["builds_succeeded"],
             "asset_builds_failed": materialization_summary["builds_failed"],
+            "nested_source_files": materialization_summary["nested_source_files"],
+            "nested_assembly_files": materialization_summary["nested_assembly_files"],
+            "nested_asset_builds_requested": materialization_summary["nested_builds_requested"],
+            "nested_asset_builds_succeeded": materialization_summary["nested_builds_succeeded"],
+            "nested_asset_builds_failed": materialization_summary["nested_builds_failed"],
         },
         "quality": {
             "status": quality_report.get("status"),
@@ -1168,6 +1256,7 @@ def build_scene_preview(
             package_dir,
             mode=build_mode,
             export_tasks=_export_tasks_from_plan(scene_plan),
+            nested_assemblies=_nested_assembly_export_payloads(asset_materialization, package_dir),
         )
     except SceneArtifactError as exc:
         _raise_build_error("Scene render/export artifacts could not be built.", exc.diagnostics)
@@ -1281,6 +1370,7 @@ def build_scene_preview(
                 "description": "Generated Lathe asset sources and build outputs from scene materialization.",
             }
         )
+        package_manifest["source"].extend(_nested_assembly_source_entries(asset_materialization))
     package_manifest["graph"] = {
         "scene_graph": _SCENE_GRAPH_PATH,
         "scene_graph_normalized": _SCENE_GRAPH_NORMALIZED_PATH,
@@ -1355,6 +1445,11 @@ def build_scene_preview(
             "asset_builds_requested": materialization_summary["builds_requested"],
             "asset_builds_succeeded": materialization_summary["builds_succeeded"],
             "asset_builds_failed": materialization_summary["builds_failed"],
+            "nested_source_files": materialization_summary["nested_source_files"],
+            "nested_assembly_files": materialization_summary["nested_assembly_files"],
+            "nested_asset_builds_requested": materialization_summary["nested_builds_requested"],
+            "nested_asset_builds_succeeded": materialization_summary["nested_builds_succeeded"],
+            "nested_asset_builds_failed": materialization_summary["nested_builds_failed"],
         },
         "quality": {
             "status": quality_report.get("status"),

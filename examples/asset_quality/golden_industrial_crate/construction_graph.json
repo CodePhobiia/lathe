@@ -1,0 +1,288 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "edges": [
+    {
+      "attributes": {
+        "placement": "surrounds body shell"
+      },
+      "edge_type": "wraps_around",
+      "source_id": "front_frame",
+      "target_id": "body_shell"
+    },
+    {
+      "attributes": {
+        "placement": "eight exposed box corners"
+      },
+      "edge_type": "wraps_around",
+      "source_id": "corner_guard_set",
+      "target_id": "body_shell"
+    },
+    {
+      "attributes": {
+        "placement": "front lid break"
+      },
+      "edge_type": "cuts",
+      "source_id": "lid_seam",
+      "target_id": "body_shell"
+    },
+    {
+      "attributes": {
+        "placement": "front face"
+      },
+      "edge_type": "attached_to",
+      "source_id": "front_latch",
+      "target_id": "lid_seam"
+    },
+    {
+      "attributes": {
+        "placement": "lower contact"
+      },
+      "edge_type": "supports",
+      "source_id": "foot_rail_front",
+      "target_id": "body_shell"
+    },
+    {
+      "attributes": {
+        "placement": "convex exposed edges"
+      },
+      "edge_type": "wears_on",
+      "source_id": "wear_edge_anchors",
+      "target_id": "corner_guard_set"
+    }
+  ],
+  "family": "industrial_crate",
+  "nodes": [
+    {
+      "annotations": {
+        "bevel": "wide guarded bevels",
+        "silhouette": "primary contributor"
+      },
+      "bounds": {
+        "depth": 0.62,
+        "height": 0.72,
+        "width": 1.18
+      },
+      "category": "shell",
+      "material_zone_ref": "painted_steel_body",
+      "node_id": "body_shell",
+      "parent_id": null,
+      "semantic_role": "beveled outer crate shell"
+    },
+    {
+      "annotations": {
+        "bevel": "raised frame bevel"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.58,
+        "width": 1.12
+      },
+      "category": "frame",
+      "material_zone_ref": "painted_steel_body",
+      "node_id": "front_frame",
+      "parent_id": "body_shell",
+      "semantic_role": "front reinforced frame"
+    },
+    {
+      "annotations": {
+        "bevel": "raised frame bevel"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.58,
+        "width": 1.12
+      },
+      "category": "frame",
+      "material_zone_ref": "painted_steel_body",
+      "node_id": "rear_frame",
+      "parent_id": "body_shell",
+      "semantic_role": "rear reinforced frame"
+    },
+    {
+      "annotations": {
+        "instances": 8,
+        "socket": "corner-protection"
+      },
+      "bounds": {
+        "depth": 0.09,
+        "height": 0.14,
+        "width": 0.09
+      },
+      "category": "corner_guard",
+      "material_zone_ref": "exposed_edge_metal",
+      "node_id": "corner_guard_set",
+      "parent_id": "body_shell",
+      "semantic_role": "repeated reinforced corner protectors"
+    },
+    {
+      "annotations": {
+        "inset": "side recessed panel"
+      },
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.38,
+        "width": 0.48
+      },
+      "category": "panel",
+      "material_zone_ref": "painted_steel_body",
+      "node_id": "left_recessed_panel",
+      "parent_id": "body_shell",
+      "semantic_role": "left recessed side panel"
+    },
+    {
+      "annotations": {
+        "inset": "side recessed panel"
+      },
+      "bounds": {
+        "depth": 0.01,
+        "height": 0.38,
+        "width": 0.48
+      },
+      "category": "panel",
+      "material_zone_ref": "painted_steel_body",
+      "node_id": "right_recessed_panel",
+      "parent_id": "body_shell",
+      "semantic_role": "right recessed side panel"
+    },
+    {
+      "annotations": {
+        "panel_line": "continuous top-front access seam"
+      },
+      "bounds": {
+        "depth": 0.02,
+        "height": 0.03,
+        "width": 1.04
+      },
+      "category": "seam",
+      "material_zone_ref": "dark_bare_metal",
+      "node_id": "lid_seam",
+      "parent_id": "body_shell",
+      "semantic_role": "lid seam and access break"
+    },
+    {
+      "annotations": {
+        "scale": "human hand operable",
+        "socket": "front seam"
+      },
+      "bounds": {
+        "depth": 0.05,
+        "height": 0.12,
+        "width": 0.18
+      },
+      "category": "latch",
+      "material_zone_ref": "exposed_edge_metal",
+      "node_id": "front_latch",
+      "parent_id": "lid_seam",
+      "semantic_role": "front latch affordance"
+    },
+    {
+      "annotations": {
+        "scale": "recessed carry handle"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.16,
+        "width": 0.28
+      },
+      "category": "handle",
+      "material_zone_ref": "dark_rubber_grip",
+      "node_id": "side_handle_l",
+      "parent_id": "left_recessed_panel",
+      "semantic_role": "left handling affordance"
+    },
+    {
+      "annotations": {
+        "scale": "recessed carry handle"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.16,
+        "width": 0.28
+      },
+      "category": "handle",
+      "material_zone_ref": "dark_rubber_grip",
+      "node_id": "side_handle_r",
+      "parent_id": "right_recessed_panel",
+      "semantic_role": "right handling affordance"
+    },
+    {
+      "annotations": {
+        "placement": "front lower contact edge"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.08,
+        "width": 1.08
+      },
+      "category": "feet",
+      "material_zone_ref": "dark_rubber_feet",
+      "node_id": "foot_rail_front",
+      "parent_id": "body_shell",
+      "semantic_role": "front foot rail"
+    },
+    {
+      "annotations": {
+        "placement": "rear lower contact edge"
+      },
+      "bounds": {
+        "depth": 0.04,
+        "height": 0.08,
+        "width": 1.08
+      },
+      "category": "feet",
+      "material_zone_ref": "dark_rubber_feet",
+      "node_id": "foot_rail_back",
+      "parent_id": "body_shell",
+      "semantic_role": "rear foot rail"
+    },
+    {
+      "annotations": {
+        "material": "dominant painted metal"
+      },
+      "bounds": {},
+      "category": "material_zone",
+      "material_zone_ref": "painted_steel_body",
+      "node_id": "material_painted_steel",
+      "parent_id": "body_shell",
+      "semantic_role": "base material zone"
+    },
+    {
+      "annotations": {
+        "mask": "convex edges and corners"
+      },
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "dark_bare_metal",
+      "node_id": "wear_edge_anchors",
+      "parent_id": "corner_guard_set",
+      "semantic_role": "edge wear mask anchors"
+    },
+    {
+      "annotations": {
+        "mask": "feet and handle contact grime"
+      },
+      "bounds": {},
+      "category": "wear_anchor",
+      "material_zone_ref": "contact_grime",
+      "node_id": "wear_contact_anchors",
+      "parent_id": "body_shell",
+      "semantic_role": "handling and floor-contact wear anchors"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "attachments_on_meaningful_hosts": true,
+    "edge_count": 6,
+    "major_silhouette_nodes": [
+      "body_shell",
+      "corner_guard_set",
+      "front_frame",
+      "foot_rail_front",
+      "foot_rail_back"
+    ],
+    "node_count": 15,
+    "repeated_elements_semantic": true,
+    "runtime_proxy_triangle_count": 1380,
+    "unclassified_major_primitives": 0
+  }
+}

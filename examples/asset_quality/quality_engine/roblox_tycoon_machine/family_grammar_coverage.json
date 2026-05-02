@@ -1,0 +1,49 @@
+{
+  "asset_id": "quality_engine_roblox_tycoon_machine",
+  "coverage": 1.0,
+  "family_id": "roblox_tycoon_machine_family",
+  "missing_required_rules": [],
+  "required_rules": [
+    "machine_body",
+    "dropper_output",
+    "conveyor",
+    "button_affordance",
+    "status_display",
+    "service_panel",
+    "material_zones",
+    "wear_anchors"
+  ],
+  "rules_used": {
+    "button_affordance": [
+      "upgrade_button"
+    ],
+    "conveyor": [
+      "output_conveyor"
+    ],
+    "dropper_output": [
+      "dropper_port"
+    ],
+    "machine_body": [
+      "dropper_body"
+    ],
+    "material_zones": [
+      "bright_plastic_body",
+      "rubber_conveyor"
+    ],
+    "service_panel": [
+      "front_service_panel"
+    ],
+    "status_display": [
+      "status_display"
+    ],
+    "wear_anchors": [
+      "button_touch_wear",
+      "conveyor_scuff_anchor"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "status": {
+    "strict": "covered_by_proxy_quality_engine_fixture",
+    "warning": "pass"
+  }
+}

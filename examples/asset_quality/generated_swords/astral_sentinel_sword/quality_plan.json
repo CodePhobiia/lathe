@@ -1,0 +1,382 @@
+{
+  "art_direction_ir": {
+    "asset_id": "quality_engine_astral_sentinel_sword",
+    "family": "fantasy_weapon",
+    "family_metadata_summary": {
+      "coverage": 1.0,
+      "missing_required_count": 0,
+      "required_rule_count": 7
+    },
+    "forbidden_failure_modes": [
+      "material zones without semantic purpose",
+      "muddy material zones",
+      "random primitive stack",
+      "sci-fi rifle language",
+      "style mismatch between parts",
+      "unbounded procedural noise",
+      "unbounded stripe repetition",
+      "weak thumbnail read"
+    ],
+    "forbidden_visual_failure_modes": [
+      "material zones without semantic purpose",
+      "muddy material zones",
+      "random primitive stack",
+      "sci-fi rifle language",
+      "style mismatch between parts",
+      "unbounded procedural noise",
+      "unbounded stripe repetition",
+      "weak thumbnail read"
+    ],
+    "materials": {
+      "contrast_policy": "primary/secondary/accent/readability",
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay",
+        "edge or focal trim material"
+      ]
+    },
+    "motifs": {
+      "allowed": [
+        "fantasy",
+        "astral",
+        "sentinel",
+        "crystal",
+        "edge line",
+        "centerline",
+        "guard transition"
+      ],
+      "forbidden": [
+        "random primitive stack",
+        "unbounded stripe repetition",
+        "muddy material zones",
+        "sci-fi rifle language"
+      ],
+      "placement_rules": [
+        "place motifs on centerlines, guards, grips, and terminations"
+      ]
+    },
+    "object_family": "weapon",
+    "platform": {
+      "target": "realtime_fantasy_action_rpg",
+      "texture_policy": "deterministic_pbr_proxy",
+      "triangle_budget_strict": 7000,
+      "triangle_budget_warning": 9000
+    },
+    "proportion_policy": {
+      "exaggeration_allowed_when_style_requires": true,
+      "functional_scale_required": true,
+      "scale_anchors": [
+        "handle scale",
+        "blade or striking surface length",
+        "guard/affordance width"
+      ]
+    },
+    "reference_summary": {
+      "has_reference_board": false,
+      "material_count": 0,
+      "negative_count": 0,
+      "silhouette_count": 0
+    },
+    "schema_version": "lathe.asset_quality.art_direction_ir.v1",
+    "silhouette": {
+      "forbidden_shapes": [
+        "random primitive stack",
+        "unbounded stripe repetition",
+        "muddy material zones",
+        "sci-fi rifle language"
+      ],
+      "required_distinctive_features": [
+        "long starforged blade",
+        "bright crystal fuller",
+        "crescent crossguard",
+        "midnight wrapped grip",
+        "moonstone pommel"
+      ],
+      "target_strength": "high",
+      "thumbnail_size_px": 128
+    },
+    "style_intent": {
+      "audience": "realtime_fantasy_action_rpg",
+      "genre": "fantasy",
+      "mood": [
+        "fantasy",
+        "astral",
+        "sentinel",
+        "crystal",
+        "premium"
+      ],
+      "quality_bar": "phase14c_universal_quality_warning",
+      "substyle": "astral sentinel fantasy sword with crystal fuller and crescent guard"
+    },
+    "surface_story": {
+      "decals": [
+        "only when decal improves function or theme read"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ],
+      "wear_logic": [
+        "edge chips near striking surfaces",
+        "hand polish on grip",
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ]
+    },
+    "visual_hierarchy": {
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "primary_read": "weapon identity through long starforged blade",
+      "secondary_read": "functional parts and silhouette accents remain readable",
+      "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+    }
+  },
+  "asset_id": "quality_engine_astral_sentinel_sword",
+  "certification_targets": {
+    "dimensions": [
+      "silhouette_strength",
+      "proportion_intent",
+      "material_contrast",
+      "detail_hierarchy",
+      "motif_coherence",
+      "surface_storytelling",
+      "functional_readability",
+      "style_consistency",
+      "procedural_noise_penalty"
+    ],
+    "required_dimensions": [
+      "silhouette_strength",
+      "proportion_intent",
+      "material_contrast",
+      "detail_hierarchy",
+      "motif_coherence",
+      "surface_storytelling",
+      "functional_readability",
+      "style_consistency",
+      "procedural_noise_penalty"
+    ],
+    "strict_min_score": 90,
+    "strict_minimum": 0.9,
+    "warning_min_score": 75,
+    "warning_minimum": 0.75
+  },
+  "detail_density_zones": {
+    "primary": [
+      "starforged_blade"
+    ],
+    "secondary": [
+      "crescent_crossguard"
+    ],
+    "tertiary": [
+      "aether_crystal_fuller",
+      "guard_crystal_socket",
+      "edge_wear_anchors",
+      "hand_polish_anchors"
+    ]
+  },
+  "detail_requirements": {
+    "density_zones": {
+      "primary": [
+        "starforged_blade"
+      ],
+      "secondary": [
+        "crescent_crossguard"
+      ],
+      "tertiary": [
+        "aether_crystal_fuller",
+        "guard_crystal_socket",
+        "edge_wear_anchors",
+        "hand_polish_anchors"
+      ]
+    },
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "tertiary_detail_budget": "bounded"
+  },
+  "family": "fantasy_weapon",
+  "likely_failure_modes": [
+    "material zones without semantic purpose",
+    "muddy material zones",
+    "random primitive stack",
+    "sci-fi rifle language",
+    "style mismatch between parts",
+    "unbounded procedural noise",
+    "unbounded stripe repetition",
+    "weak thumbnail read"
+  ],
+  "material_requirements": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "edge or focal trim material"
+    ]
+  },
+  "material_separation_requirements": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "edge or focal trim material"
+    ]
+  },
+  "metrics": {
+    "detail_hierarchy": 1.0,
+    "functional_readability": 0.77,
+    "material_contrast": 0.945,
+    "motif_coherence": 0.78,
+    "procedural_noise_penalty": 0.11,
+    "proportion_intent": 0.89,
+    "silhouette_strength": 1.0,
+    "style_consistency": 1.0,
+    "surface_storytelling": 0.9
+  },
+  "motif_language": {
+    "allowed": [
+      "fantasy",
+      "astral",
+      "sentinel",
+      "crystal",
+      "edge line",
+      "centerline",
+      "guard transition"
+    ],
+    "forbidden": [
+      "random primitive stack",
+      "unbounded stripe repetition",
+      "muddy material zones",
+      "sci-fi rifle language"
+    ],
+    "placement_rules": [
+      "place motifs on centerlines, guards, grips, and terminations"
+    ]
+  },
+  "motif_requirements": {
+    "allowed": [
+      "fantasy",
+      "astral",
+      "sentinel",
+      "crystal",
+      "edge line",
+      "centerline",
+      "guard transition"
+    ],
+    "forbidden": [
+      "random primitive stack",
+      "unbounded stripe repetition",
+      "muddy material zones",
+      "sci-fi rifle language"
+    ],
+    "placement_rules": [
+      "place motifs on centerlines, guards, grips, and terminations"
+    ]
+  },
+  "object_family": "weapon",
+  "platform": {
+    "target": "realtime_fantasy_action_rpg",
+    "texture_policy": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 7000,
+    "triangle_budget_warning": 9000
+  },
+  "primary_secondary_tertiary": {
+    "primary": [
+      "starforged_blade"
+    ],
+    "secondary": [
+      "crescent_crossguard"
+    ],
+    "tertiary": [
+      "aether_crystal_fuller",
+      "guard_crystal_socket",
+      "edge_wear_anchors",
+      "hand_polish_anchors"
+    ]
+  },
+  "proportion_requirements": {
+    "exaggeration_allowed_when_style_requires": true,
+    "functional_scale_required": true,
+    "scale_anchors": [
+      "handle scale",
+      "blade or striking surface length",
+      "guard/affordance width"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.quality_plan.v1",
+  "semantic_critique": {
+    "asset_id": "quality_engine_astral_sentinel_sword",
+    "issue_count": 0,
+    "issues": [],
+    "repairs": [],
+    "schema_version": "lathe.asset_quality.semantic_critique.v1",
+    "source_quality_plan": "quality_plan.json",
+    "summary": {
+      "highest_priority_issue": null,
+      "status": "pass"
+    }
+  },
+  "silhouette_requirements": [
+    "long starforged blade",
+    "bright crystal fuller",
+    "crescent crossguard",
+    "midnight wrapped grip",
+    "moonstone pommel",
+    "blade",
+    "fuller",
+    "guard",
+    "grip"
+  ],
+  "source_art_direction": "art_direction.json",
+  "source_family_metadata": "family_grammar_coverage.json",
+  "style_pack": {
+    "present": false
+  },
+  "surface_story": {
+    "decals": [
+      "only when decal improves function or theme read"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "edge chips near striking surfaces",
+      "hand polish on grip",
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "surface_story_requirements": {
+    "decals": [
+      "only when decal improves function or theme read"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "edge chips near striking surfaces",
+      "hand polish on grip",
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "visual_hierarchy": {
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "primary_read": "weapon identity through long starforged blade",
+    "secondary_read": "functional parts and silhouette accents remain readable",
+    "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+  }
+}

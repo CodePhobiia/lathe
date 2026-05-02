@@ -1,0 +1,118 @@
+{
+  "art_direction": {
+    "evidence": {
+      "construction_graph": "construction_graph.json",
+      "material_wear_graph": "material_wear_graph.json",
+      "preview_evidence": "preview_evidence.json",
+      "silhouette_plan": "silhouette_plan.json"
+    },
+    "gates": {
+      "blockers": [],
+      "strict_pass": true,
+      "warning_pass": true
+    },
+    "schema_version": "lathe.asset_quality.hero_art_direction.v1",
+    "score_thresholds": {
+      "dimensions": {
+        "focal_point_readability": 10,
+        "material_separation": 10,
+        "ornament_intentionality": 10,
+        "procedural_noise_penalty": 10,
+        "proportion_quality": 10,
+        "silhouette_strength": 10,
+        "thumbnail_readability": 10
+      },
+      "strict": 90,
+      "warning": 75
+    },
+    "scores": {
+      "focal_point_readability": 9,
+      "material_separation": 10,
+      "ornament_intentionality": 9,
+      "procedural_noise_penalty": 9,
+      "proportion_quality": 9,
+      "silhouette_strength": 9,
+      "thumbnail_readability": 9,
+      "total": 91
+    }
+  },
+  "asset_id": "hero_sword",
+  "budget": {
+    "runtime_proxy_triangle_count": 6452,
+    "strict_within_budget": true,
+    "triangle_budget_strict": 7000,
+    "triangle_budget_warning": 9000,
+    "warning_within_budget": true
+  },
+  "certification_profile": "phase14c_warning",
+  "claims": {
+    "certified_for_phase14_quality_upgrade": true,
+    "certified_for_production_game_use": false,
+    "external_renderer_verified": false,
+    "real_high_low_bake_verified": false,
+    "strict_mode_certified": false
+  },
+  "diagnostics": [],
+  "evidence": {
+    "construction_graph": "construction_graph.json",
+    "design_brief": "design_brief.json",
+    "family_grammar_coverage": "family_grammar_coverage.json",
+    "high_low_relation": "high_low_relation.json",
+    "material_wear_graph": "material_wear_graph.json",
+    "preview_comparison_sheet": "previews/comparison_sheet.png",
+    "preview_evidence": "preview_evidence.json",
+    "preview_final_beauty": "previews/final_beauty.png",
+    "preview_material_ids": "previews/material_ids.png",
+    "preview_wireframe": "previews/wireframe.png",
+    "quality_certificate": "quality_certificate.json",
+    "quality_report": "quality_report.md",
+    "shape_ir_v2": "shape_ir_v2.json",
+    "silhouette_plan": "silhouette_plan.json"
+  },
+  "example_type": "hero",
+  "gates": {
+    "critical_missing_artifact": false,
+    "strict_blockers": [
+      "real_bake_not_executed"
+    ],
+    "strict_pass": false,
+    "warning_pass": true
+  },
+  "generated_at": "2026-04-30T00:00:00Z",
+  "notes": [
+    "Phase 14 warning certification proves deterministic quality-pipeline evidence, not final DCC/game-engine production readiness.",
+    "Hero examples validate art-direction evidence and proxy visuals; they do not claim final game-production certification.",
+    "High/low evidence is proxy or deferred; real DCC baking remains outside this lane."
+  ],
+  "schema_version": "lathe.asset_quality.certificate.v1",
+  "score_thresholds": {
+    "categories": {
+      "construction_graph": 15,
+      "design_brief": 10,
+      "determinism": 5,
+      "family_grammar": 15,
+      "high_low_relation": 10,
+      "material_wear_graph": 15,
+      "platform_budget": 5,
+      "preview_evidence": 10,
+      "shape_detail_hierarchy": 10,
+      "traceability": 5
+    },
+    "strict": 90,
+    "warning": 70
+  },
+  "scores": {
+    "construction_graph": 15,
+    "design_brief": 10,
+    "determinism": 5,
+    "family_grammar": 15,
+    "high_low_relation": 6,
+    "material_wear_graph": 15,
+    "platform_budget": 5,
+    "preview_evidence": 10,
+    "shape_detail_hierarchy": 9,
+    "total": 95,
+    "traceability": 5
+  },
+  "status": "warning_pass_strict_fail"
+}

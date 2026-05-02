@@ -1,0 +1,37 @@
+module examples.geometry_wave1.layered_sci_fi_column
+
+asset geometry_wave1_layered_sci_fi_column: env_module {
+  intent {
+    role = "layered sci fi wall column"
+    style = ["modular", "sci_fi", "wave1_geometry"]
+    parts = [body, frame_panel, vent_panel, access_panel, socket_plate]
+    materials = [painted_steel, smoked_glass, black_rubber]
+    scale = 2.4m
+  }
+
+  features {
+    density = high
+    allow = [layer_plate, groove_channel, raised_ridge, socket_point]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 112
+      symmetry = x
+      detail_density = high
+      panelization = medium
+      groove_density = medium
+      ridge_density = high
+      surface_layer_count = 4
+      modular_attachment_points = 4
+      detail_zones = [body, access_panel]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

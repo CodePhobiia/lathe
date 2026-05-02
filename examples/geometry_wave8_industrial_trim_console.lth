@@ -1,0 +1,37 @@
+module examples.geometry_wave8.industrial_trim_console
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave8_industrial_trim_console: hard_surface_prop {
+  intent {
+    role = "industrial trim console using decal library and metal strip trim sheet"
+    style = ["industrial", "service", "trimmed"]
+    parts = [body, console_panel, screen_panel, side_socket_l, side_socket_r, service_label]
+    materials = [painted_steel, bare_metal, signal_glass]
+    scale = 1.0m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, signal_glass]
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 801
+      symmetry = x
+      style_pack = industrial_hero
+      silhouette_profile = wide_heavy
+      silhouette_motifs = [guard_cowl, outrigger, spine]
+      detail_zones = [body, console_panel, service_label]
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

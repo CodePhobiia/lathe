@@ -1,0 +1,37 @@
+module examples.geometry_wave1.grooved_airlock_door
+
+asset geometry_wave1_grooved_airlock_door: env_module {
+  intent {
+    role = "grooved mechanical airlock door"
+    style = ["sci_fi", "industrial", "wave1_geometry"]
+    parts = [body, door_leaf, hinge_top, hinge_bottom, handle, lock_plate, threshold_plate]
+    materials = [painted_steel, seal_rubber, smoked_glass]
+    scale = 2.2m
+  }
+
+  features {
+    density = hero
+    allow = [groove_channel, panel_seam, raised_ridge, corner_guard, edge_break]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 102
+      symmetry = x
+      detail_density = high
+      edge_complexity = high
+      edge_treatment = chamfered
+      panelization = high
+      groove_density = hero
+      ridge_density = medium
+      detail_zones = [body, door_leaf]
+    }
+    rig { type = rigid_mechanical joints = [door_leaf] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

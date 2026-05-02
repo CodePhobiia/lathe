@@ -1,0 +1,68 @@
+{
+  "asset_id": "smoke_mechanical_door",
+  "edges": [
+    {
+      "edge_type": "attached_to",
+      "source_id": "door_leaf",
+      "target_id": "outer_frame"
+    },
+    {
+      "edge_type": "aligned_with",
+      "source_id": "threshold",
+      "target_id": "outer_frame"
+    },
+    {
+      "edge_type": "wears_on",
+      "source_id": "threshold_wear_anchor",
+      "target_id": "threshold"
+    }
+  ],
+  "family": "mechanical_door",
+  "nodes": [
+    {
+      "category": "shell",
+      "node_id": "door_leaf",
+      "semantic_role": "main planar door leaf"
+    },
+    {
+      "category": "frame",
+      "node_id": "outer_frame",
+      "semantic_role": "surrounding access frame"
+    },
+    {
+      "category": "panel",
+      "node_id": "inset_service_panel",
+      "semantic_role": "inset maintenance panel"
+    },
+    {
+      "category": "seam",
+      "node_id": "center_panel_seam",
+      "semantic_role": "panel break seam"
+    },
+    {
+      "category": "handle",
+      "node_id": "lock_handle",
+      "semantic_role": "lock and handle affordance"
+    },
+    {
+      "category": "base_contact",
+      "node_id": "threshold",
+      "semantic_role": "lower threshold contact"
+    },
+    {
+      "category": "material_zone",
+      "node_id": "painted_door_zone",
+      "semantic_role": "painted metal material zone"
+    },
+    {
+      "category": "wear_anchor",
+      "node_id": "threshold_wear_anchor",
+      "semantic_role": "threshold and handle wear anchor"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.construction_graph.v1",
+  "summary": {
+    "runtime_proxy_triangle_count": 860,
+    "unclassified_major_primitives": 0
+  }
+}

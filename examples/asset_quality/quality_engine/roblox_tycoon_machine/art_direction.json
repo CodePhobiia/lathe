@@ -1,0 +1,117 @@
+{
+  "asset_id": "quality_engine_roblox_tycoon_machine",
+  "forbidden_failure_modes": [
+    "material zones without semantic purpose",
+    "overdense microdetail",
+    "photoreal grime",
+    "random primitive stack",
+    "style mismatch between parts",
+    "tiny unreadable controls",
+    "unbounded procedural noise",
+    "unclear interaction affordance",
+    "weak thumbnail read"
+  ],
+  "materials": {
+    "contrast_policy": "primary/secondary/accent/readability",
+    "required_separation": "high",
+    "zones": [
+      "primary material",
+      "secondary support material",
+      "accent/focal material",
+      "wear overlay",
+      "signal or emissive material"
+    ]
+  },
+  "motifs": {
+    "allowed": [
+      "roblox",
+      "tycoon",
+      "bright",
+      "playful",
+      "signal strips",
+      "ports",
+      "service panels"
+    ],
+    "forbidden": [
+      "unclear interaction affordance",
+      "tiny unreadable controls",
+      "photoreal grime",
+      "overdense microdetail"
+    ],
+    "placement_rules": [
+      "place motifs around input/output affordances and service access"
+    ]
+  },
+  "object_family": "machine",
+  "platform": {
+    "target": "roblox_runtime_proxy",
+    "texture_policy": "deterministic_pbr_proxy",
+    "triangle_budget_strict": 3500,
+    "triangle_budget_warning": 5000
+  },
+  "proportion_policy": {
+    "exaggeration_allowed_when_style_requires": true,
+    "functional_scale_required": true,
+    "scale_anchors": [
+      "input/output affordance",
+      "service panel scale",
+      "button/readout scale"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.art_direction.v1",
+  "silhouette": {
+    "forbidden_shapes": [
+      "unclear interaction affordance",
+      "tiny unreadable controls",
+      "photoreal grime",
+      "overdense microdetail"
+    ],
+    "required_distinctive_features": [
+      "readable dropper body",
+      "conveyor output",
+      "large upgrade button",
+      "status display",
+      "service panel"
+    ],
+    "target_strength": "high",
+    "thumbnail_size_px": 128
+  },
+  "style_intent": {
+    "audience": "roblox_runtime_proxy",
+    "genre": "roblox",
+    "mood": [
+      "roblox",
+      "tycoon",
+      "bright",
+      "playful",
+      "runtime-safe"
+    ],
+    "quality_bar": "phase14c_universal_quality_warning",
+    "substyle": "bright Roblox tycoon machine with clear interactive affordances"
+  },
+  "surface_story": {
+    "decals": [
+      "status labels",
+      "direction arrows",
+      "interaction icons"
+    ],
+    "grime_logic": [
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "wear_logic": [
+      "button touch wear",
+      "output port grime",
+      "convex edge wear",
+      "contact polish",
+      "recess grime"
+    ]
+  },
+  "visual_hierarchy": {
+    "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "primary_read": "machine identity through readable dropper body",
+    "secondary_read": "functional parts and silhouette accents remain readable",
+    "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function"
+  }
+}

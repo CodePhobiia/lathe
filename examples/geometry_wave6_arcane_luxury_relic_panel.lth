@@ -1,0 +1,37 @@
+module examples.geometry_wave6.arcane_luxury_relic_panel
+
+asset geometry_wave6_arcane_luxury_relic_panel: env_module {
+  intent {
+    role = "arcane luxury relic wall panel with ornate raised ridges and etched sockets"
+    style = ["luxury", "ancient", "organic"]
+    parts = [wall_body, central_inset, brass_ridge_l, brass_ridge_r, rune_socket, glass_eye]
+    materials = [worn_brass, dark_wood, inset_glass]
+    scale = 1.2m
+  }
+
+  surface {
+    materials = [worn_brass, dark_wood, inset_glass]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 604
+      symmetry = x
+      style_pack = arcane_luxury
+      style_intensity = high
+      detail_zones = [wall_body, central_inset, rune_socket, glass_eye]
+      zone_central_inset_motifs = [raised_ridge, ornament, radial_detail_array]
+      zone_central_inset_radial_detail_repeats = 10
+      zone_rune_socket_module_categories = [sensor_pod, blade, antenna]
+      zone_rune_socket_module_count = 2
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

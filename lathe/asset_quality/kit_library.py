@@ -113,6 +113,8 @@ record with one of the fixed reason tokens:
 - ``kit_part_schema_violation:<detail>`` — a candidate JSON file
   parses but fails schema validation. ``<detail>`` carries the first
   failing field so future authors can debug from evidence alone.
+- ``kit_part_duplicate_name:<name>`` — two valid kit-part files use
+  the same globally unique part name; the later file is skipped.
 
 Skipped reasons are deduplicated and sorted by ``(category, reason)``
 for determinism.
@@ -140,11 +142,9 @@ top-level key, on top of the 25 that Phases 0 through 11 publish).
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
 
 KIT_LIBRARY_VERSION = "kit_library_v1"
 
@@ -175,6 +175,7 @@ _REASON_CATEGORY_DIRECTORY_MISSING = "category_directory_missing"
 _REASON_KIT_PART_UNREADABLE = "kit_part_unreadable"
 _REASON_KIT_PART_MALFORMED = "kit_part_malformed"
 _REASON_SCHEMA_VIOLATION_PREFIX = "kit_part_schema_violation"
+_REASON_DUPLICATE_NAME_PREFIX = "kit_part_duplicate_name"
 
 
 def _repo_root() -> Path:
@@ -280,6 +281,7 @@ class KitPart:
     lod_behavior: LODBehavior
     bake_group: str
     provenance: Provenance
+    preview_thumbnail: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -300,6 +302,8 @@ class KitPart:
             "lod_behavior": self.lod_behavior.to_dict(),
             "bake_group": self.bake_group,
             "provenance": self.provenance.to_dict(),
+            "preview_thumbnail": self.preview_thumbnail
+            or _default_preview_thumbnail(self.category, self.name),
         }
 
 
@@ -361,7 +365,12 @@ def _validate_part_payload(payload: Any) -> tuple[KitPart | None, str | None]:
         "bake_group",
         "provenance",
     )
-    allowed_top_level = (*required_top_level, "procedural_recipe", "mesh_stub_uri")
+    allowed_top_level = (
+        *required_top_level,
+        "procedural_recipe",
+        "mesh_stub_uri",
+        "preview_thumbnail",
+    )
     for field in required_top_level:
         if field not in payload:
             return None, f"missing_field_{field}"
@@ -504,6 +513,13 @@ def _validate_part_payload(payload: Any) -> tuple[KitPart | None, str | None]:
     if license_value not in _ALLOWED_LICENSES:
         return None, "invalid_field_provenance_license"
     provenance = Provenance(source=source, version=version, license=license_value)
+    preview_thumbnail_raw = payload.get("preview_thumbnail")
+    if preview_thumbnail_raw is None:
+        preview_thumbnail = _default_preview_thumbnail(category, name)
+    elif isinstance(preview_thumbnail_raw, str) and preview_thumbnail_raw:
+        preview_thumbnail = preview_thumbnail_raw
+    else:
+        return None, "invalid_field_preview_thumbnail"
 
     return (
         KitPart(
@@ -520,9 +536,14 @@ def _validate_part_payload(payload: Any) -> tuple[KitPart | None, str | None]:
             lod_behavior=lod_behavior,
             bake_group=bake_group,
             provenance=provenance,
+            preview_thumbnail=preview_thumbnail,
         ),
         None,
     )
+
+
+def _default_preview_thumbnail(category: str, name: str) -> str:
+    return f"kit://hardsurface/{category}/{name}/preview_thumbnail"
 
 
 # ---------------------------------------------------------------------------
@@ -576,6 +597,7 @@ def load_kit_library(base_path: Path | None = None) -> KitLibrary:
         - Unreadable JSON file -> ``("kit_part_<filename>", "kit_part_unreadable")``.
         - Invalid JSON -> ``("kit_part_<filename>", "kit_part_malformed")``.
         - Schema violation -> ``("kit_part_<filename>", "kit_part_schema_violation:<detail>")``.
+        - Duplicate name -> ``("kit_part_<filename>", "kit_part_duplicate_name:<name>")``.
     """
     root = _resolve_base_path(base_path)
     base_path_str = str(root)
@@ -594,6 +616,7 @@ def load_kit_library(base_path: Path | None = None) -> KitLibrary:
 
     parts: list[KitPart] = []
     skipped: list[SkippedReason] = []
+    seen_part_names: set[str] = set()
 
     for category in REQUIRED_CATEGORIES:
         category_dir = root / category
@@ -607,7 +630,7 @@ def load_kit_library(base_path: Path | None = None) -> KitLibrary:
             continue
 
         try:
-            entries = sorted(os.listdir(category_dir))
+            entries = sorted(entry.name for entry in category_dir.iterdir())
         except OSError:
             skipped.append(
                 SkippedReason(
@@ -646,6 +669,15 @@ def load_kit_library(base_path: Path | None = None) -> KitLibrary:
                 )
                 continue
             if part is not None:
+                if part.name in seen_part_names:
+                    skipped.append(
+                        SkippedReason(
+                            category=file_token,
+                            reason=f"{_REASON_DUPLICATE_NAME_PREFIX}:{part.name}",
+                        )
+                    )
+                    continue
+                seen_part_names.add(part.name)
                 parts.append(part)
 
     parts.sort(key=lambda candidate: (candidate.category, candidate.name))

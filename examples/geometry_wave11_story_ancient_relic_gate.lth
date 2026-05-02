@@ -1,0 +1,56 @@
+module examples.geometry_wave11.story_ancient_relic_gate
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave11_story_ancient_relic_gate: env_module {
+  intent {
+    role = "ancient relic gate with rune placements and asymmetric patina story"
+    style = ["arcane", "ancient", "ornate"]
+    parts = [wall_body, central_inset, rune_socket, brass_trim, glass_eye, spire_cap]
+    materials = [ancient_stone, aged_brass, signal_glass]
+    scale = 2.4m
+  }
+
+  surface {
+    materials = [ancient_stone, aged_brass, signal_glass]
+    zones.wall_body = ancient_stone
+    zones.central_inset = ancient_stone
+    zones.rune_socket = aged_brass
+    zones.brass_trim = aged_brass
+    zones.glass_eye = signal_glass
+    zones.spire_cap = aged_brass
+    wear_story = ancient
+    wear_level = high
+    story_decals = [etched_runes, patina_marks, edge_rub, red_bar]
+    story_targets = [central_inset, rune_socket, brass_trim]
+    story_density = hero
+    story_asymmetry = hero_asymmetric
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1104
+      symmetry = x
+      style_pack = arcane_luxury
+      silhouette_profile = ornate_spire
+      detail_density = hero
+      detail_zones = [wall_body, central_inset, rune_socket, brass_trim]
+      zone_rune_socket_motifs = [socket_point, radial_detail_array, ornament]
+      zone_rune_socket_radial_detail_repeats = 8
+      lod_levels = 3
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

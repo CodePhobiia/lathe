@@ -1,0 +1,36 @@
+module examples.geometry_wave1.socketed_wall_panel
+
+asset geometry_wave1_socketed_wall_panel: env_module {
+  intent {
+    role = "socketed sci fi wall panel"
+    style = ["modular", "sci_fi", "wave1_geometry"]
+    parts = [body, screen_panel, frame_panel, vent_panel, mount_socket_l, mount_socket_r]
+    materials = [painted_steel, smoked_glass, rubber_trim]
+    scale = 2.0m
+  }
+
+  features {
+    density = high
+    allow = [socket_point, groove_channel, panel_seam, layer_plate]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 104
+      symmetry = x
+      detail_density = high
+      panelization = high
+      groove_density = medium
+      surface_layer_count = 2
+      modular_attachment_points = 8
+      detail_zones = [body, mount_socket_l, mount_socket_r]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

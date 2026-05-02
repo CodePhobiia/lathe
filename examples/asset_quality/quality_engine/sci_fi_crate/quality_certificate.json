@@ -1,0 +1,190 @@
+{
+  "asset_id": "quality_engine_sci_fi_crate",
+  "budget": {
+    "runtime_proxy_triangle_count": 1400,
+    "strict_within_budget": true,
+    "triangle_budget_strict": 1500,
+    "triangle_budget_warning": 2500,
+    "warning_within_budget": true
+  },
+  "certification_profile": "phase14c_warning",
+  "claims": {
+    "certified_for_phase14_quality_upgrade": true,
+    "certified_for_production_game_use": false,
+    "external_renderer_verified": false,
+    "real_high_low_bake_verified": false,
+    "strict_mode_certified": false
+  },
+  "diagnostics": [],
+  "evidence": {
+    "art_direction": "art_direction.json",
+    "construction_graph": "construction_graph.json",
+    "design_brief": "design_brief.json",
+    "family_grammar_coverage": "family_grammar_coverage.json",
+    "high_low_relation": "high_low_relation.json",
+    "material_wear_graph": "material_wear_graph.json",
+    "preview_comparison_sheet": "previews/comparison_sheet.png",
+    "preview_evidence": "preview_evidence.json",
+    "preview_final_beauty": "previews/final_beauty.png",
+    "preview_material_ids": "previews/material_ids.png",
+    "preview_wireframe": "previews/wireframe.png",
+    "quality_certificate": "quality_certificate.json",
+    "quality_plan": "quality_plan.json",
+    "quality_report": "quality_report.md",
+    "semantic_critique.example": "semantic_critique.example.json"
+  },
+  "example_type": "quality_engine",
+  "gates": {
+    "critical_missing_artifact": false,
+    "strict_blockers": [
+      "real_bake_not_executed"
+    ],
+    "strict_pass": false,
+    "warning_pass": true
+  },
+  "generated_at": "2026-04-30T00:00:00Z",
+  "notes": [
+    "Phase 14 warning certification proves deterministic quality-pipeline evidence, not final DCC/game-engine production readiness.",
+    "Quality-engine examples validate universal art-direction planning across families; they do not claim final game-production certification.",
+    "High/low evidence is proxy or deferred; real DCC baking remains outside this lane."
+  ],
+  "schema_version": "lathe.asset_quality.certificate.v1",
+  "score_thresholds": {
+    "categories": {
+      "construction_graph": 15,
+      "design_brief": 10,
+      "determinism": 5,
+      "family_grammar": 15,
+      "high_low_relation": 10,
+      "material_wear_graph": 15,
+      "platform_budget": 5,
+      "preview_evidence": 10,
+      "shape_detail_hierarchy": 10,
+      "traceability": 5
+    },
+    "strict": 90,
+    "warning": 70
+  },
+  "scores": {
+    "construction_graph": 14,
+    "design_brief": 10,
+    "determinism": 5,
+    "family_grammar": 15,
+    "high_low_relation": 6,
+    "material_wear_graph": 15,
+    "platform_budget": 5,
+    "preview_evidence": 10,
+    "shape_detail_hierarchy": 7,
+    "total": 92,
+    "traceability": 5
+  },
+  "status": "warning_pass_strict_fail",
+  "universal_quality": {
+    "dimensions": {
+      "detail_hierarchy": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 1.0,
+        "repair_suggestions": [],
+        "score": 10
+      },
+      "functional_readability": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 0.77,
+        "repair_suggestions": [],
+        "score": 8
+      },
+      "material_contrast": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 0.945,
+        "repair_suggestions": [],
+        "score": 9
+      },
+      "motif_coherence": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 0.78,
+        "repair_suggestions": [],
+        "score": 8
+      },
+      "procedural_noise_penalty": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 0.11,
+        "repair_suggestions": [],
+        "score": 9
+      },
+      "proportion_intent": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 0.785,
+        "repair_suggestions": [],
+        "score": 8
+      },
+      "silhouette_strength": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 1.0,
+        "repair_suggestions": [],
+        "score": 10
+      },
+      "style_consistency": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 1.0,
+        "repair_suggestions": [],
+        "score": 10
+      },
+      "surface_storytelling": {
+        "diagnostics": [],
+        "max_score": 10,
+        "metric": 0.92,
+        "repair_suggestions": [],
+        "score": 9
+      }
+    },
+    "evidence": {
+      "art_direction": "art_direction.json",
+      "construction_graph": "construction_graph.json",
+      "material_wear_graph": "material_wear_graph.json",
+      "preview_evidence": "preview_evidence.json",
+      "quality_plan": "quality_plan.json",
+      "semantic_critique": "semantic_critique.example.json"
+    },
+    "gates": {
+      "blockers": [],
+      "strict_pass": true,
+      "warning_pass": true
+    },
+    "schema_version": "lathe.asset_quality.universal_quality.v1",
+    "score_thresholds": {
+      "dimensions": {
+        "detail_hierarchy": 10,
+        "functional_readability": 10,
+        "material_contrast": 10,
+        "motif_coherence": 10,
+        "procedural_noise_penalty": 10,
+        "proportion_intent": 10,
+        "silhouette_strength": 10,
+        "style_consistency": 10,
+        "surface_storytelling": 10
+      },
+      "strict": 90,
+      "warning": 75
+    },
+    "scores": {
+      "detail_hierarchy": 10,
+      "functional_readability": 8,
+      "material_contrast": 9,
+      "motif_coherence": 8,
+      "procedural_noise_penalty": 9,
+      "proportion_intent": 8,
+      "silhouette_strength": 10,
+      "style_consistency": 10,
+      "surface_storytelling": 9,
+      "total": 90
+    }
+  }
+}

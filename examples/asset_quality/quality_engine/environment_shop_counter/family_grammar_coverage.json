@@ -1,0 +1,45 @@
+{
+  "asset_id": "quality_engine_environment_shop_counter",
+  "coverage": 1.0,
+  "family_id": "environment_shop_counter_family",
+  "missing_required_rules": [],
+  "required_rules": [
+    "countertop",
+    "base_support",
+    "front_display",
+    "shop_sign",
+    "trim_bands",
+    "material_zones",
+    "wear_anchors"
+  ],
+  "rules_used": {
+    "base_support": [
+      "counter_base"
+    ],
+    "countertop": [
+      "usable_countertop"
+    ],
+    "front_display": [
+      "front_display_panel"
+    ],
+    "material_zones": [
+      "warm_wood_counter",
+      "painted_trim"
+    ],
+    "shop_sign": [
+      "raised_shop_sign"
+    ],
+    "trim_bands": [
+      "front_trim_band"
+    ],
+    "wear_anchors": [
+      "countertop_contact_wear",
+      "front_edge_scuff_anchor"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "status": {
+    "strict": "covered_by_proxy_quality_engine_fixture",
+    "warning": "pass"
+  }
+}

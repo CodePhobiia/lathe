@@ -24,7 +24,12 @@ from pathlib import Path
 from typing import Any
 
 from .asset_quality.kit_library import KitLibrary, load_kit_library
-from .asset_quality.reference_board import load_reference_board
+from .asset_quality.quality_planner import build_generation_quality_context
+from .asset_quality.reference_board import (
+    load_reference_board,
+    make_reference_board_error,
+    reference_board_fingerprint,
+)
 from .cache_paths import CACHE_MANIFEST_FILENAME, lathe_cache_dir
 from .capabilities import deterministic_backend_reports, probe_topology_backend  # noqa: F401
 from .checker import check_program
@@ -213,8 +218,12 @@ def _safe_load_reference_board(
             override = _Path(experimental_path)
             return load_reference_board(override.name, base_path=override.parent)
         return load_reference_board(asset_name)
-    except Exception:  # pragma: no cover - defensive guard
-        return None
+    except Exception as exc:  # pragma: no cover - defensive guard
+        return make_reference_board_error(
+            asset_name,
+            message=f"Reference board loader failed unexpectedly: {exc}",
+            path=experimental_path,
+        )
 
 
 def _safe_load_kit_library() -> KitLibrary | None:
@@ -270,6 +279,7 @@ class BuildExecutor:
             "optimize": {},
             "validate": {},
             "package": {},
+            "_quality_generation": {},
         }
         self.critics = {critic["name"]: critic for critic in program.get("critics", [])}
         self.stage_dirs = {stage: self.out_dir / "stages" / stage for stage in STAGE_ORDER}
@@ -291,8 +301,68 @@ class BuildExecutor:
             "shape_providers": _shape_provider_registry_fingerprint(),
             "asset_quality": {
                 "strict_highlow": _strict_highlow_cache_flag(),
+                "reference_board": self._reference_board_cache_fingerprint(),
             },
         }
+
+    def _reference_board_cache_fingerprint(self) -> dict[str, Any]:
+        experimental_refs = self.asset.get("experimental", {}).get("references", {})
+        experimental_refs_path = (
+            experimental_refs.get("_resolved_path") if isinstance(experimental_refs, dict) else None
+        )
+        if experimental_refs_path and isinstance(experimental_refs_path, str):
+            override = Path(experimental_refs_path)
+            return {
+                "source": "experimental.references.use",
+                **reference_board_fingerprint(override.name, base_path=override.parent),
+            }
+        experimental_refs_use = experimental_refs.get("use") if isinstance(experimental_refs, dict) else None
+        if isinstance(experimental_refs_use, str) and experimental_refs_use:
+            return {
+                "source": "experimental.references.use",
+                "status": "invalid_path",
+                "use": experimental_refs_use,
+                "files": {},
+            }
+        return {
+            "source": "default_convention",
+            **reference_board_fingerprint(self.asset_name),
+        }
+
+    def _publish_reference_board_context(self) -> None:
+        """Publish reference-board context before generation and validation."""
+        experimental_refs = self.asset.get("experimental", {}).get("references", {})
+        experimental_refs_path = (
+            experimental_refs.get("_resolved_path") if isinstance(experimental_refs, dict) else None
+        )
+        experimental_refs_use = experimental_refs.get("use") if isinstance(experimental_refs, dict) else None
+        if experimental_refs_path and isinstance(experimental_refs_path, str):
+            self.runtime["_reference_board"] = _safe_load_reference_board(
+                self.asset_name, experimental_path=experimental_refs_path
+            )
+            self.runtime["_reference_board_user_provided_via_experimental"] = True
+        elif isinstance(experimental_refs_use, str) and experimental_refs_use:
+            self.runtime["_reference_board"] = make_reference_board_error(
+                self.asset_name,
+                reason="reference_invalid_path",
+                message=(
+                    "experimental.references.use did not resolve to a contained "
+                    f"reference directory: {experimental_refs_use}"
+                ),
+                path=experimental_refs_use,
+            )
+            self.runtime["_reference_board_user_provided_via_experimental"] = True
+        else:
+            self.runtime["_reference_board"] = _safe_load_reference_board(self.asset_name)
+            self.runtime["_reference_board_user_provided_via_experimental"] = False
+
+    def _publish_pre_shape_quality_context(self) -> None:
+        """Build Phase 14C art-direction quality context before shape generation."""
+        self._publish_reference_board_context()
+        quality_generation = build_generation_quality_context(self.asset, self.runtime)
+        self.runtime["_quality_generation"] = quality_generation
+        if self.out_dir.exists():
+            dump_json(self.out_dir / "quality_generation_context.json", quality_generation)
 
     def build(self) -> dict[str, Any]:
         """Build.
@@ -314,6 +384,7 @@ class BuildExecutor:
         dump_json(self.out_dir / "plan.json", self.plan)
         dump_json(self.out_dir / "materialized_asset.json", self.asset)
 
+        self._publish_pre_shape_quality_context()
         shape_bundle = stage_shape.run(self)
         topology_bundle = stage_topology.run(self, shape_bundle)
         uv_bundle = stage_uv.run(self, topology_bundle)
@@ -331,16 +402,7 @@ class BuildExecutor:
         # validator can build the additive ``reference_board`` payload and
         # the design-brief layer can merge reference negatives.
         # Phase 13: honor the optional experimental override path.
-        experimental_refs = self.asset.get("experimental", {}).get("references", {})
-        experimental_refs_path = experimental_refs.get("_resolved_path") if isinstance(experimental_refs, dict) else None
-        if experimental_refs_path and isinstance(experimental_refs_path, str):
-            self.runtime["_reference_board"] = _safe_load_reference_board(
-                self.asset_name, experimental_path=experimental_refs_path
-            )
-            self.runtime["_reference_board_user_provided_via_experimental"] = True
-        else:
-            self.runtime["_reference_board"] = _safe_load_reference_board(self.asset_name)
-            self.runtime["_reference_board_user_provided_via_experimental"] = False
+        self._publish_reference_board_context()
         # Phase 12: publish the standard hard-surface kit library so the
         # validator can build the additive ``kit_library`` payload.
         self.runtime["_kit_library"] = _safe_load_kit_library()
@@ -426,6 +488,7 @@ class BuildExecutor:
             The result.
         """
         self._prepare_uncached_build()
+        self._publish_pre_shape_quality_context()
         shape_bundle = stage_shape.run(self)
         topology_bundle = stage_topology.run(self, shape_bundle)
         uv_bundle = stage_uv.run(self, topology_bundle)

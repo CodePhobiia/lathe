@@ -1,0 +1,45 @@
+{
+  "asset_id": "quality_engine_fantasy_weapon",
+  "coverage": 1.0,
+  "family_id": "fantasy_weapon_family",
+  "missing_required_rules": [],
+  "required_rules": [
+    "blade",
+    "guard",
+    "grip",
+    "focal_accent",
+    "pommel",
+    "material_zones",
+    "wear_anchors"
+  ],
+  "rules_used": {
+    "blade": [
+      "moonlit_blade"
+    ],
+    "focal_accent": [
+      "crystal_guard_core"
+    ],
+    "grip": [
+      "wrapped_grip"
+    ],
+    "guard": [
+      "silver_crossguard"
+    ],
+    "material_zones": [
+      "material_frost_steel",
+      "material_crystal_accent"
+    ],
+    "pommel": [
+      "crescent_pommel"
+    ],
+    "wear_anchors": [
+      "edge_wear_anchors",
+      "handling_wear_anchors"
+    ]
+  },
+  "schema_version": "lathe.asset_quality.family_grammar_coverage.v1",
+  "status": {
+    "strict": "covered_by_proxy_quality_engine_fixture",
+    "warning": "pass"
+  }
+}

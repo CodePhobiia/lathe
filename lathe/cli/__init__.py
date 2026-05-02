@@ -548,6 +548,7 @@ def _build_parser() -> argparse.ArgumentParser:
     _run_register("publish_cmd", sub)
     _run_register("snapshot_cmd", sub)
     _run_register("telemetry_cmd", sub)
+    _run_register("asset_quality_cmd", sub)
     _run_register("scene_cmd", sub)
     _run_register("wonder_cmd", sub)
 
@@ -595,6 +596,7 @@ _DISPATCH: dict[str, str] = {
     "snapshot": "snapshot_cmd:run_snapshot",
     "publish": "publish_cmd:run_publish",
     "telemetry": "telemetry_cmd:run_telemetry",
+    "asset-quality": "asset_quality_cmd:run_asset_quality",
     "scene": "scene_cmd:run_scene",
     "wonder": "wonder_cmd:run_wonder",
     "render-eval": "build_cmd:run_render_eval",
@@ -675,7 +677,8 @@ def main() -> None:
     except OSError as exc:
         if debug_traceback:
             raise
-        target = str(getattr(exc, "filename", None) or exc)
+        output_path = getattr(args, "out", None) if getattr(args, "cmd", None) == "build" else None
+        target = str(output_path or getattr(exc, "filename", None) or exc)
         _emit_error(
             "lathe.cli.io_error",
             str(exc),

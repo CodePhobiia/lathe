@@ -30,6 +30,7 @@ def integration_config_for_family(family: str, fidelity: FidelityProfile) -> dic
         "service_cabinet",
         "control_pedestal",
         "supply_container",
+        "hero_sword",
     }
     pitch = 2.1 if fidelity.tier == "hero" else 2.35 if fidelity.tier == "game" else 2.6
     blur_sigma = 0.42 if fidelity.tier == "hero" else 0.28 if fidelity.tier == "game" else 0.16

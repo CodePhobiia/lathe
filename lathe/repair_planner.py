@@ -271,6 +271,70 @@ def plan_shape_repairs(asset_graph: AssetGraph, shape_ir: ShapeIR) -> list[Seman
     return repairs
 
 
+def semantic_critique_to_repair_actions(critique: dict[str, Any] | None) -> list[SemanticRepairAction]:
+    """Translate quality-plan semantic critique suggestions into concrete repair actions.
+
+    This bridges Phase 14C's language-level critique into the existing repair
+    vocabulary used by candidate reselection, surface reauthoring, and shape
+    repairs. It remains family-agnostic: mapping is based on quality dimensions
+    and repair hints, not object names.
+    """
+    safe = critique if isinstance(critique, dict) else {}
+    suggestions = safe.get("suggestions", [])
+    if not isinstance(suggestions, list):
+        return []
+    repairs: list[SemanticRepairAction] = []
+    seen: set[tuple[str, str]] = set()
+    for suggestion in suggestions:
+        if not isinstance(suggestion, dict):
+            continue
+        action = _semantic_suggestion_action(suggestion)
+        if not action:
+            continue
+        target = str(suggestion.get("target") or suggestion.get("dimension") or "asset")
+        key = (action, target)
+        if key in seen:
+            continue
+        seen.add(key)
+        repairs.append(
+            _repair(
+                action=action,
+                target=target,
+                reason=str(
+                    suggestion.get("repair_hint")
+                    or suggestion.get("message")
+                    or f"semantic critique requested {action}"
+                ),
+                details={
+                    "source": "semantic_critique",
+                    "dimension": suggestion.get("dimension"),
+                    "severity": suggestion.get("severity"),
+                    "repair_hint": suggestion.get("repair_hint"),
+                },
+            )
+        )
+    return repairs
+
+
+def _semantic_suggestion_action(suggestion: dict[str, Any]) -> str | None:
+    dimension = str(suggestion.get("dimension") or "").lower()
+    hint = str(suggestion.get("repair_hint") or suggestion.get("message") or "").lower()
+    text = f"{dimension} {hint}"
+    if "material" in text or "surface" in text or "contrast" in text or "reauthor" in text:
+        return "reauthor_surface_layer"
+    if "reselect" in text:
+        return "reselect_candidate"
+    if "silhouette" in text or "primary read" in text or "refit" in text:
+        return "reselect_candidate"
+    if "detail" in text or "secondary" in text or "feature" in text or "hierarchy" in text:
+        return "add_secondary_features"
+    if "proportion" in text or "scale" in text or "readability" in text:
+        return "regenerate_with_patch"
+    if "motif" in text or "coherence" in text or "story" in text:
+        return "increase_structural_richness"
+    return None
+
+
 class _ShapeRepairApplier:
     def __init__(self, asset_graph: AssetGraph, shape_ir: ShapeIR) -> None:
         self.asset_graph = asset_graph

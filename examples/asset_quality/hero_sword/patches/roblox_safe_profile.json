@@ -1,0 +1,35 @@
+{
+  "asset_id": "hero_sword",
+  "notes": [
+    "Request a Roblox-safe fixture profile while recording that no mesh was regenerated."
+  ],
+  "operations": [
+    {
+      "operation": "set_platform_profile",
+      "preserve": [
+        "construction_identity",
+        "overall_silhouette",
+        "blade.length",
+        "guard.width"
+      ],
+      "profile": {
+        "mesh_regeneration_required": true,
+        "platform_constraints": [
+          "roblox_static_mesh_safe",
+          "single_material_atlas_preferred",
+          "collision_proxy_required"
+        ],
+        "target": "roblox_runtime_proxy",
+        "triangle_budget_strict": 5000,
+        "triangle_budget_warning": 7000
+      },
+      "profile_name": "roblox_safe_proxy",
+      "target": "design_brief.platform_profile"
+    }
+  ],
+  "preserve": [
+    "construction_identity",
+    "overall_silhouette"
+  ],
+  "schema_version": "lathe.asset_quality.semantic_patch.v1"
+}

@@ -99,7 +99,7 @@ def _cfg_build_path(out_dir: Path, runtime_config: dict[str, Any] | None, key: s
 
 
 def _rel(root: Path, path: Path) -> str:
-    return str(path.relative_to(root)).replace("/", "\\")
+    return path.relative_to(root).as_posix()
 
 
 def _sha256(path: Path) -> str:

@@ -1,0 +1,45 @@
+{
+  "asset_id": "hero_sword",
+  "notes": [
+    "Add battle damage only to blade-edge wear anchors, not to the grip or guard."
+  ],
+  "operations": [
+    {
+      "mask": {
+        "bound_edge_target": "blade.left_edge",
+        "bound_node_id": "edge_wear_anchors",
+        "intensity": 0.32,
+        "mask_id": "blade_left_edge_battle_nicks",
+        "mask_type": "convex_edge_wear"
+      },
+      "operation": "add_wear",
+      "preserve": [
+        "construction_identity",
+        "overall_silhouette"
+      ],
+      "target": "material_wear_graph.wear_masks"
+    },
+    {
+      "mask": {
+        "bound_edge_target": "blade.right_edge",
+        "bound_node_id": "edge_wear_anchors",
+        "intensity": 0.28,
+        "mask_id": "blade_right_edge_battle_nicks",
+        "mask_type": "convex_edge_wear"
+      },
+      "operation": "add_wear",
+      "preserve": [
+        "construction_identity",
+        "overall_silhouette"
+      ],
+      "target": "material_wear_graph.wear_masks"
+    }
+  ],
+  "preserve": [
+    "construction_identity",
+    "overall_silhouette",
+    "blade.length",
+    "guard.width"
+  ],
+  "schema_version": "lathe.asset_quality.semantic_patch.v1"
+}

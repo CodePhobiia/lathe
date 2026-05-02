@@ -5,10 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import trimesh
-from lathe.core.stages.optimize import _resolve_lod_ratios
+from lathe.core.mesh import RuntimeMesh
+from lathe.core.stages.optimize import _resolve_lod_ratios, run as run_optimize_stage
 from lathe.stages import lod as lod_mod
 
 
@@ -113,3 +115,73 @@ def test_runtime_config_override_changes_resolved_ratios() -> None:
     assert defaults == [1.0, 0.5, 0.25, 0.1]
     asset_override = _resolve_lod_ratios({"lod_ratios": [1.0, 0.3]}, {})
     assert asset_override == [1.0, 0.3]
+
+
+def test_shape_lod_levels_expand_default_optimize_ladder() -> None:
+    """Shape authoring can request actual LOD generation without duplicate optimize config."""
+    ratios = _resolve_lod_ratios({"lods": 1}, {}, {"lod_levels": 4})
+    assert ratios == [1.0, 0.5, 0.25, 0.1]
+    hero_ratios = _resolve_lod_ratios({"lods": 1}, {}, {"lod_levels": "hero"})
+    assert hero_ratios == [1.0, 0.5, 0.25, 0.1, 0.05]
+
+
+def test_shape_lod_ratios_override_default_optimize_ladder() -> None:
+    ratios = _resolve_lod_ratios({"lods": 1}, {}, {"lod_ratios": [1.0, 0.7, 0.35]})
+    assert ratios == [1.0, 0.7, 0.35]
+
+
+def test_shape_highlow_mode_publishes_lod_pair_relation(tmp_path: Path, sphere: trimesh.Trimesh) -> None:
+    stage_dirs = {"optimize": tmp_path / "stages" / "optimize", "surface": tmp_path / "stages" / "surface"}
+    for stage_dir in stage_dirs.values():
+        stage_dir.mkdir(parents=True)
+    surface_bundle = {
+        "highlow_relation": {
+            "high_mesh_uri": "stages\\shape\\candidate_0.glb",
+            "low_mesh_uri": "stages\\topology\\topology.glb",
+            "high_triangle_count": len(sphere.faces),
+            "low_triangle_count": len(sphere.faces),
+            "bake_groups": ["body"],
+        }
+    }
+    (stage_dirs["surface"] / "bundle.json").write_text(json.dumps(surface_bundle), encoding="utf-8")
+
+    fake_executor = SimpleNamespace(
+        out_dir=tmp_path,
+        stage_dirs=stage_dirs,
+        runtime_config={},
+        asset={
+            "build": {
+                "shape": {
+                    "lod_levels": 4,
+                    "highlow_mode": "lod_pair",
+                    "highlow_low_lod": 3,
+                    "highlow_bake_cage_offset_cm": 2.0,
+                },
+                "optimize": {"lods": 1},
+            }
+        },
+        runtime={
+            "uv": {
+                "runtime_mesh": RuntimeMesh(
+                    mesh=sphere,
+                    face_parts=["body"] * len(sphere.faces),
+                    part_colors={"body": (120, 120, 120)},
+                    units="cm",
+                )
+            },
+            "surface": {"bundle": surface_bundle},
+        },
+    )
+
+    bundle = run_optimize_stage(fake_executor, {})
+    relation = bundle["highlow_relation"]
+    assert relation["source"] == "optimize_lod_highlow_v1"
+    assert relation["high_mesh_uri"] == "stages\\shape\\candidate_0.glb"
+    assert relation["low_mesh_uri"].endswith("lod_3.glb")
+    assert relation["low_lod_level"] == 3
+    assert relation["low_triangle_count"] < relation["high_triangle_count"]
+    assert relation["distinction_ratio"] > 0.5
+    assert relation["bake_cage_offset_cm"] == 2.0
+    assert fake_executor.runtime["surface"]["bundle"]["highlow_relation"]["low_mesh_uri"].endswith("lod_3.glb")
+    updated_surface = json.loads((stage_dirs["surface"] / "bundle.json").read_text(encoding="utf-8"))
+    assert updated_surface["highlow_relation"]["source"] == "optimize_lod_highlow_v1"

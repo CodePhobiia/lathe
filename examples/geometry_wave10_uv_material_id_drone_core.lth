@@ -1,0 +1,61 @@
+module examples.geometry_wave10.uv_material_id_drone_core
+import std.surface_programs.v12_surface_authoring
+
+asset geometry_wave10_uv_material_id_drone_core: hard_surface_prop {
+  intent {
+    role = "sleek drone core with material grouped uv islands and id colors"
+    style = ["sleek", "prototype", "modular"]
+    parts = [body, sensor_face, wing_socket_l, wing_socket_r, power_spine, antenna_deck]
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    scale = 0.9m
+  }
+
+  surface {
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    zones.body = ceramic_composite
+    zones.sensor_face = signal_glass
+    zones.wing_socket_l = brushed_aluminum
+    zones.wing_socket_r = brushed_aluminum
+    zones.power_spine = brushed_aluminum
+    zones.antenna_deck = brushed_aluminum
+    decal_libraries = [industrial_console_decals]
+    trim_sheets = [console_trim_sheet]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 1002
+      symmetry = x
+      style_pack = sleek_sci_fi
+      silhouette_profile = sleek_winged
+      silhouette_motifs = [wing, spine, sensor_mast]
+      detail_density = high
+      detail_zones = [body, sensor_face, antenna_deck]
+      zone_sensor_face_module_categories = [sensor_pod, antenna]
+      zone_sensor_face_module_count = 3
+      lod_levels = 4
+      highlow_mode = lod_pair
+      highlow_low_lod = 3
+    }
+    uv {
+      sets = [base, lightmap]
+      resolution = 1024px
+      chart_grouping = material
+      material_id_strategy = per_material_zone
+      texture_set_strategy = modular_variant_sets
+      island_naming = semantic
+    }
+    surface {
+      resolution = 1024px
+      maps = [basecolor, normal, orm, emissive]
+      id_map = true
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] game_asset_manifest = true }
+}

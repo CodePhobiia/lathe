@@ -5,6 +5,22 @@
   "description": "Internal JSON schema for a single Phase 12 hard-surface kit-part data file. NOT a public .lth syntax. Used by lathe.asset_quality.kit_library.load_kit_library to validate per-part metadata files under std/kits/hardsurface/<category>/.",
   "type": "object",
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "kind": { "const": "procedural" } },
+        "required": ["kind"]
+      },
+      "then": { "required": ["procedural_recipe"] }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "mesh_stub" } },
+        "required": ["kind"]
+      },
+      "then": { "required": ["mesh_stub_uri"] }
+    }
+  ],
   "required": [
     "name",
     "category",
@@ -41,6 +57,11 @@
     "mesh_stub_uri": {
       "type": "string",
       "description": "Relative path to a mesh-stub file under std/kits/hardsurface/ (only required when kind == 'mesh_stub'). NO real meshes ship in Phase 12."
+    },
+    "preview_thumbnail": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional thumbnail URI for authoring previews. When omitted, the loader emits a deterministic kit://hardsurface/<category>/<name>/preview_thumbnail fallback in metadata."
     },
     "material_zones": {
       "type": "array",

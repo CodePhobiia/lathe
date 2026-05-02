@@ -1,0 +1,37 @@
+module examples.geometry_wave7.sleek_winged_drone_keel
+
+asset geometry_wave7_sleek_winged_drone_keel: hard_surface_prop {
+  intent {
+    role = "sleek winged drone keel with side fins, sensor mast, and dorsal spine"
+    style = ["sleek", "prototype", "winged"]
+    parts = [body, sensor_face, wing_socket_l, wing_socket_r, dorsal_spine, mast_socket]
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+    scale = 0.9m
+  }
+
+  surface {
+    materials = [ceramic_composite, brushed_aluminum, signal_glass]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 702
+      symmetry = x
+      style_pack = sleek_sci_fi
+      silhouette_profile = sleek_winged
+      silhouette_motifs = [wing, spine, sensor_mast, handle]
+      silhouette_intensity = hero
+      detail_zones = [body, sensor_face, mast_socket]
+      zone_sensor_face_module_categories = [sensor_pod, antenna]
+      zone_sensor_face_module_count = 3
+      lod_levels = 4
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

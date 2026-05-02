@@ -82,6 +82,31 @@ class ServeHandlerTests(unittest.TestCase):
             cls = build_handler_class(build_dir)
             self.assertEqual(Path(cls.glb_path), glb.resolve())
 
+    def test_handler_prefers_manifest_primary_glb_over_collision_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            build_dir = Path(tmp)
+            pkg = build_dir / "stages" / "package"
+            pkg.mkdir(parents=True)
+            collision = pkg / "collision_hull.glb"
+            primary = pkg / "industrial_crate.glb"
+            collision.write_bytes(b"collision")
+            primary.write_bytes(b"primary")
+            (pkg / "package_manifest.json").write_text(
+                """
+{
+  "outputs": [
+    {"format": "collision_hull", "uri": "stages/package/collision_hull.glb"},
+    {"format": "glb", "uri": "stages/package/industrial_crate.glb"}
+  ]
+}
+""".strip(),
+                encoding="utf-8",
+            )
+
+            cls = build_handler_class(build_dir)
+
+            self.assertEqual(Path(cls.glb_path), primary.resolve())
+
 
 class InspectViewModeTests(unittest.TestCase):
     def test_view_with_trimesh_present_calls_scene_show(self) -> None:

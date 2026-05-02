@@ -1,0 +1,112 @@
+{
+  "asset_id": "golden_industrial_crate",
+  "binding_validation": {
+    "all_edge_bindings_resolved": true,
+    "all_node_bindings_resolved": true,
+    "orphan_edge_bindings": [],
+    "orphan_node_bindings": []
+  },
+  "graph_summary": {
+    "material_zone_count": 5,
+    "underlayer_count": 1,
+    "wear_mask_count": 6
+  },
+  "material_zones": [
+    {
+      "bound_nodes": [
+        "body_shell",
+        "front_frame",
+        "rear_frame"
+      ],
+      "zone_id": "painted_steel_body",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "side_handle_l",
+        "side_handle_r",
+        "foot_rail_front",
+        "foot_rail_back"
+      ],
+      "zone_id": "dark_rubber_grip_and_feet",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "corner_guard_set",
+        "front_latch"
+      ],
+      "zone_id": "exposed_edge_metal",
+      "zone_type": "base_material"
+    },
+    {
+      "bound_nodes": [
+        "front_frame"
+      ],
+      "zone_id": "warning_decal_accent",
+      "zone_type": "decal"
+    },
+    {
+      "bound_nodes": [
+        "foot_rail_front",
+        "foot_rail_back"
+      ],
+      "zone_id": "contact_grime",
+      "zone_type": "wear_overlay"
+    }
+  ],
+  "schema_version": "lathe.asset_quality.material_wear_graph.v1",
+  "skipped_reasons": [
+    {
+      "reason": "mask_texture_generation_not_implemented",
+      "tool": "surface_runtime"
+    },
+    {
+      "reason": "surface_map_driving_not_implemented",
+      "tool": "surface_runtime"
+    }
+  ],
+  "uniform_noise": {
+    "is_uniform_noise": false,
+    "uniform_noise_score": 0.0,
+    "warnings": []
+  },
+  "wear_masks": [
+    {
+      "bound_edge_target": "body.outer_edges",
+      "bound_node_id": "wear_edge_anchors",
+      "mask_id": "edge_chip_convex_guards",
+      "mask_type": "convex_edge_wear"
+    },
+    {
+      "bound_edge_target": "body.top_band",
+      "bound_node_id": "lid_seam",
+      "mask_id": "lid_seam_concave_grime",
+      "mask_type": "concave_grime"
+    },
+    {
+      "bound_edge_target": "body.bottom_front",
+      "bound_node_id": "foot_rail_front",
+      "mask_id": "front_foot_contact_scuff",
+      "mask_type": "lower_contact_scuff"
+    },
+    {
+      "bound_edge_target": "body.bottom_back",
+      "bound_node_id": "foot_rail_back",
+      "mask_id": "rear_foot_contact_scuff",
+      "mask_type": "lower_contact_scuff"
+    },
+    {
+      "bound_edge_target": "body.left_face",
+      "bound_node_id": "side_handle_l",
+      "mask_id": "left_handle_touch_wear",
+      "mask_type": "handle_touch_wear"
+    },
+    {
+      "bound_edge_target": "body.front_face",
+      "bound_node_id": "front_frame",
+      "mask_id": "warning_decal_wear",
+      "mask_type": "decal_wear"
+    }
+  ]
+}

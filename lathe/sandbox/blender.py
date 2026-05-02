@@ -252,6 +252,13 @@ def run_blender_sandboxed(
         :class:`BlenderSandboxResult`.
     """
     argv = [str(item) for item in command]
+    if argv:
+        # The core sandbox intentionally rejects argv[0] symlinks so it executes
+        # an explicitly selected binary, not a mutable link. Blender launchers
+        # and test stand-ins (for example uv's .venv/bin/python3) are commonly
+        # symlinks, so the adapter canonicalizes only the executable before
+        # handing the command to the stricter subprocess layer.
+        argv[0] = str(Path(argv[0]).resolve())
     cwd_path = Path(cwd) if cwd is not None else None
     log_root = Path(log_dir) if log_dir is not None else (cwd_path or Path.cwd())
     stdout_log = log_root / f"{log_prefix}.stdout.log"

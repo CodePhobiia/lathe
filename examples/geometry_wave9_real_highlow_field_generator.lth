@@ -1,0 +1,43 @@
+module examples.geometry_wave9.real_highlow_field_generator
+
+asset geometry_wave9_real_highlow_field_generator: hard_surface_prop {
+  intent {
+    role = "field generator with dense hero geometry and runtime low LOD pair"
+    style = ["battle_worn", "industrial", "field_used"]
+    parts = [body, generator_core, shield_plate_l, shield_plate_r, cable_bank, leg_mount]
+    materials = [chipped_paint, bare_metal, grime]
+    scale = 1.1m
+  }
+
+  surface {
+    materials = [chipped_paint, bare_metal, grime]
+    material_layers = [chipped_paint, bare_metal, grime]
+    wear_story = battle_worn
+    story_decals = [scrape_cluster, operator_label]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 902
+      symmetry = x
+      style_pack = battle_worn_field
+      silhouette_profile = reinforced_field
+      silhouette_motifs = [outrigger, guard_cowl, spine]
+      detail_density = hero
+      module_categories = [shield_plate, power_cell, leg]
+      module_count = 3
+      lod_levels = 4
+      highlow_mode = lod_pair
+      highlow_low_lod = 3
+      highlow_bake_cage_offset_cm = 2.0
+      detail_zones = [body, generator_core, cable_bank, leg_mount]
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

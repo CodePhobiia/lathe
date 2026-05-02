@@ -1,0 +1,47 @@
+module examples.geometry_wave5.swappable_weapon_tool
+
+asset geometry_wave5_swappable_weapon_tool: hard_surface_prop {
+  intent {
+    role = "swappable sci-fi tool with barrel, blade, shield plate, and battery modules"
+    style = ["prototype", "field_used", "modular"]
+    parts = [body, grip, tool_head, barrel_socket, blade_socket, battery_slot, guard]
+    materials = [painted_steel, bare_metal, black_rubber]
+    scale = 0.85m
+  }
+
+  surface {
+    materials = [painted_steel, bare_metal, black_rubber]
+    material_layers = [painted_steel, bare_metal, black_rubber]
+    wear_story = field_used
+    wear_level = medium
+    story_decals = [maintenance_label, heat_warning]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 2
+      seed = 502
+      symmetry = x
+      detail_density = hero
+      style_modifiers = [prototype, modular, field_used]
+      lod_levels = 4
+      module_categories = [barrel, blade, shield_plate, power_cell]
+      module_count = 3
+      module_sockets = [barrel_socket, blade_socket, battery_rail]
+      edge_treatment = chamfered
+      detail_motifs = [groove_channel, raised_ridge, socket_point, bolt_grid]
+      attachment_motifs = [handle_bar, guard_bar, cable]
+      detail_zones = [body, tool_head, barrel_socket, blade_socket, battery_slot]
+      zone_barrel_socket_module_categories = [barrel, sensor_pod]
+      zone_blade_socket_module_categories = [blade, shield]
+      zone_battery_slot_module_categories = [battery, rail]
+      zone_tool_head_module_count = 3
+    }
+    rig { type = none joints = [] }
+    interfaces {}
+  }
+
+  validate { threshold = 0.80 }
+  package { formats = [glb] }
+}

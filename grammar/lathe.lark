@@ -25,6 +25,10 @@ import_decl: "import" qident
      | trim_sheet_decl
      | palette_decl
      | style_pack_decl
+     | faction_pack_decl
+     | biome_kit_decl
+     | architecture_grammar_decl
+     | object_grammar_decl
      | reference_set_decl
      | reconstruct_policy_decl
      | adapt_policy_decl
@@ -42,6 +46,7 @@ import_decl: "import" qident
      | test_decl
      | benchmark_decl
      | space_decl
+     | world_decl
      | scene_decl
      | asset_decl
      | variant_decl
@@ -112,6 +117,10 @@ mask_program_decl: "mask_program" IDENT use_clause? "{" assign_stmt* "}"
 trim_sheet_decl: "trim_sheet" IDENT use_clause? "{" assign_stmt* "}"
 palette_decl: "palette" IDENT use_clause? "{" assign_stmt* "}"
 style_pack_decl: "style_pack" IDENT "{" assign_stmt* "}"
+faction_pack_decl: "faction_pack" IDENT use_clause? "{" assign_stmt* "}"
+biome_kit_decl: "biome_kit" IDENT use_clause? "{" assign_stmt* "}"
+architecture_grammar_decl: "architecture_grammar" IDENT use_clause? "{" assign_stmt* "}"
+object_grammar_decl: "object_grammar" IDENT use_clause? "{" assign_stmt* "}"
 reference_set_decl: "reference_set" IDENT use_clause? "{" assign_stmt* "}"
 reconstruct_policy_decl: "reconstruct_policy" IDENT use_clause? "{" assign_stmt* "}"
 adapt_policy_decl: "adapt_policy" IDENT use_clause? "{" assign_stmt* "}"
@@ -130,10 +139,537 @@ test_decl: "test" IDENT "{" assign_stmt* assert_stmt* "}"
 benchmark_decl: "benchmark" IDENT "{" assign_stmt* assert_stmt* "}"
 space_decl: "space" IDENT "{" space_stmt* "}"
 
+world_decl: "world" IDENT "{" scene_item* "}"
 scene_decl: "scene" IDENT "{" scene_item* "}"
 ?scene_item: style_scene_block
+           | style_pack_scene_block
+           | faction_pack_scene_block
+           | biome_kit_scene_block
+           | architecture_grammar_scene_block
+           | object_grammar_scene_block
            | region_scene_block
+           | group_scene_block
+           | collection_scene_block
+           | placement_zone_scene_block
+           | module_scene_block
+           | kit_scene_block
+           | variant_family_scene_block
+           | generator_scene_block
+           | biome_scene_block
+           | scatter_scene_block
+           | environment_scene_block
            | object_scene_block
+           | instance_scene_block
+           | terrain_scene_block
+           | road_scene_block
+           | bridge_scene_block
+           | building_scene_block
+           | building_envelope_scene_block
+           | floor_stack_scene_block
+           | facade_grid_scene_block
+           | facade_bay_scene_block
+           | roof_profile_scene_block
+           | vertical_core_scene_block
+           | entrance_plan_scene_block
+           | site_compound_scene_block
+           | building_lot_scene_block
+           | courtyard_plan_scene_block
+           | pedestrian_path_scene_block
+           | service_alley_scene_block
+           | parking_zone_scene_block
+           | loading_zone_scene_block
+           | exterior_utility_scene_block
+           | building_complex_scene_block
+           | harbor_complex_scene_block
+           | dockyard_scene_block
+           | vehicle_yard_scene_block
+           | hangar_complex_scene_block
+           | factory_complex_scene_block
+           | production_line_scene_block
+           | industrial_district_scene_block
+           | transport_corridor_scene_block
+           | supply_network_scene_block
+           | resource_region_scene_block
+           | settlement_scene_block
+           | civilization_scene_block
+           | culture_system_scene_block
+           | law_code_scene_block
+           | policy_rule_scene_block
+           | economy_model_scene_block
+           | trade_policy_scene_block
+           | diplomacy_state_scene_block
+           | social_graph_scene_block
+           | social_relation_scene_block
+           | population_group_scene_block
+           | labor_system_scene_block
+           | ritual_calendar_scene_block
+           | festival_scene_block
+           | belief_system_scene_block
+           | cultural_marker_scene_block
+           | civic_institution_scene_block
+           | quest_scene_block
+           | objective_scene_block
+           | mission_scene_block
+           | objective_chain_scene_block
+           | success_condition_scene_block
+           | failure_condition_scene_block
+           | reward_table_scene_block
+           | loot_table_scene_block
+           | inventory_slot_scene_block
+           | crafting_station_scene_block
+           | recipe_scene_block
+           | shop_scene_block
+           | vendor_scene_block
+           | currency_scene_block
+           | reputation_rule_scene_block
+           | unlock_rule_scene_block
+           | progression_track_scene_block
+           | gameplay_rule_scene_block
+           | interactable_scene_block
+           | encounter_scene_block
+           | director_scene_block
+           | encounter_director_scene_block
+           | director_intent_scene_block
+           | pacing_curve_scene_block
+           | threat_budget_scene_block
+           | spawn_wave_scene_block
+           | spawn_budget_scene_block
+           | combat_phase_scene_block
+           | stealth_phase_scene_block
+           | escalation_rule_scene_block
+           | adaptive_difficulty_scene_block
+           | encounter_beat_scene_block
+           | director_signal_scene_block
+           | threat_zone_scene_block
+           | reinforcement_route_scene_block
+           | simulation_layer_scene_block
+           | heat_field_scene_block
+           | noise_field_scene_block
+           | visibility_field_scene_block
+           | resource_flow_scene_block
+           | faction_pressure_scene_block
+           | territory_influence_scene_block
+           | alarm_grid_scene_block
+           | patrol_density_scene_block
+           | hazard_field_scene_block
+           | sensor_grid_scene_block
+           | cover_map_scene_block
+           | flow_gate_scene_block
+           | world_metric_scene_block
+           | simulation_probe_scene_block
+           | traversal_gate_scene_block
+           | resource_economy_scene_block
+           | control_zone_scene_block
+           | npc_scene_block
+           | agent_scene_block
+           | crowd_scene_block
+           | schedule_scene_block
+           | patrol_route_scene_block
+           | dialogue_tree_scene_block
+           | inventory_loadout_scene_block
+           | spawn_ecology_scene_block
+           | biome_system_scene_block
+           | habitat_zone_scene_block
+           | species_population_scene_block
+           | food_web_scene_block
+           | predator_prey_link_scene_block
+           | migration_route_scene_block
+           | nesting_site_scene_block
+           | resource_patch_scene_block
+           | resource_regeneration_scene_block
+           | growth_cycle_scene_block
+           | weather_ecology_link_scene_block
+           | ecological_pressure_scene_block
+           | land_use_plan_scene_block
+           | farm_plot_scene_block
+           | hunting_ground_scene_block
+           | fishing_ground_scene_block
+           | grazing_range_scene_block
+           | extraction_site_scene_block
+           | pollution_source_scene_block
+           | conservation_zone_scene_block
+           | restoration_project_scene_block
+           | scarcity_loop_scene_block
+           | settlement_pressure_scene_block
+           | resource_claim_scene_block
+           | harvest_cycle_scene_block
+           | carrying_capacity_rule_scene_block
+           | biome_impact_scene_block
+           | supply_chain_scene_block
+           | logistics_hub_scene_block
+           | storage_depot_scene_block
+           | stockpile_scene_block
+           | input_buffer_scene_block
+           | output_buffer_scene_block
+           | processing_stage_scene_block
+           | refinery_stage_scene_block
+           | workshop_stage_scene_block
+           | assembly_stage_scene_block
+           | market_node_scene_block
+           | demand_sink_scene_block
+           | supply_route_scene_block
+           | transport_leg_scene_block
+           | bottleneck_scene_block
+           | throughput_rule_scene_block
+           | failure_mode_scene_block
+           | production_strategy_scene_block
+           | production_priority_scene_block
+           | quota_rule_scene_block
+           | allocation_rule_scene_block
+           | rationing_policy_scene_block
+           | strategic_reserve_scene_block
+           | trade_embargo_scene_block
+           | sabotage_target_scene_block
+           | maintenance_plan_scene_block
+           | repair_schedule_scene_block
+           | mobilization_order_scene_block
+           | production_mode_scene_block
+           | wartime_production_scene_block
+           | peacetime_production_scene_block
+           | procurement_contract_scene_block
+           | readiness_level_scene_block
+           | conflict_system_scene_block
+           | strategic_objective_scene_block
+           | war_plan_scene_block
+           | battlefront_scene_block
+           | escalation_ladder_scene_block
+           | treaty_scene_block
+           | ceasefire_scene_block
+           | alliance_scene_block
+           | rival_claim_scene_block
+           | diplomatic_demand_scene_block
+           | negotiation_channel_scene_block
+           | sanction_scene_block
+           | espionage_cell_scene_block
+           | covert_operation_scene_block
+           | disaster_response_scene_block
+           | emergency_order_scene_block
+           | faction_ai_scene_block
+           | doctrine_model_scene_block
+           | goal_stack_scene_block
+           | threat_model_scene_block
+           | perception_feed_scene_block
+           | decision_rule_scene_block
+           | policy_selector_scene_block
+           | action_option_scene_block
+           | response_plan_scene_block
+           | escalation_choice_scene_block
+           | deescalation_choice_scene_block
+           | resource_strategy_scene_block
+           | logistics_priority_scene_block
+           | diplomatic_posture_scene_block
+           | contingency_plan_scene_block
+           | adaptive_order_scene_block
+           | operational_plan_scene_block
+           | order_queue_scene_block
+           | world_order_scene_block
+           | patrol_order_scene_block
+           | convoy_order_scene_block
+           | construction_order_scene_block
+           | repair_order_scene_block
+           | relief_order_scene_block
+           | mission_order_scene_block
+           | scheduled_action_scene_block
+           | task_assignment_scene_block
+           | crew_roster_scene_block
+           | convoy_route_scene_block
+           | construction_queue_scene_block
+           | repair_crew_scene_block
+           | relief_team_scene_block
+           | settlement_evolution_scene_block
+           | growth_phase_scene_block
+           | expansion_zone_scene_block
+           | construction_stage_scene_block
+           | upgrade_plan_scene_block
+           | district_upgrade_scene_block
+           | building_upgrade_scene_block
+           | infrastructure_upgrade_scene_block
+           | material_delivery_scene_block
+           | staffing_plan_scene_block
+           | occupancy_plan_scene_block
+           | worksite_scene_block
+           | build_permit_scene_block
+           | damage_repair_plan_scene_block
+           | demolition_plan_scene_block
+           | renovation_project_scene_block
+           | city_plan_scene_block
+           | zoning_rule_scene_block
+           | zoning_district_scene_block
+           | parcel_grid_scene_block
+           | land_parcel_scene_block
+           | parcel_subdivision_scene_block
+           | block_plan_scene_block
+           | street_hierarchy_scene_block
+           | transit_node_scene_block
+           | civic_service_plan_scene_block
+           | service_coverage_scene_block
+           | utility_corridor_scene_block
+           | district_site_plan_scene_block
+           | street_crossing_scene_block
+           | perimeter_plan_scene_block
+           | security_gate_scene_block
+           | landscape_zone_scene_block
+           | traffic_flow_scene_block
+           | service_flow_scene_block
+           | access_sequence_scene_block
+           | public_entry_scene_block
+           | service_entry_scene_block
+           | threshold_transition_scene_block
+           | entry_lobby_scene_block
+           | access_checkpoint_scene_block
+           | loading_path_scene_block
+           | wayfinding_node_scene_block
+           | circulation_core_scene_block
+           | stair_run_scene_block
+           | elevator_bank_scene_block
+           | egress_route_scene_block
+           | emergency_exit_scene_block
+           | corridor_spine_scene_block
+           | floor_transition_scene_block
+           | public_circulation_scene_block
+           | service_circulation_scene_block
+           | stair_detail_scene_block
+           | tread_pattern_scene_block
+           | landing_platform_scene_block
+           | handrail_run_scene_block
+           | corridor_shell_scene_block
+           | door_rhythm_scene_block
+           | ceiling_service_grid_scene_block
+           | egress_surface_plan_scene_block
+           | room_route_binding_scene_block
+           | power_grid_scene_block
+           | substation_scene_block
+           | transformer_bank_scene_block
+           | power_line_scene_block
+           | water_network_scene_block
+           | pump_station_scene_block
+           | water_tower_scene_block
+           | sewer_network_scene_block
+           | treatment_plant_scene_block
+           | data_network_scene_block
+           | data_hub_scene_block
+           | fiber_line_scene_block
+           | transit_line_scene_block
+           | transit_station_scene_block
+           | service_connection_scene_block
+           | maintenance_access_scene_block
+           | building_service_plan_scene_block
+           | service_core_scene_block
+           | utility_room_scene_block
+           | mechanical_room_scene_block
+           | electrical_panel_scene_block
+           | meter_bank_scene_block
+           | plumbing_stack_scene_block
+           | hvac_system_scene_block
+           | ventilation_duct_scene_block
+           | elevator_core_scene_block
+           | service_elevator_scene_block
+           | service_shaft_scene_block
+           | fire_suppression_scene_block
+           | sprinkler_zone_scene_block
+           | waste_chute_scene_block
+           | loading_dock_scene_block
+           | room_program_scene_block
+           | bathroom_scene_block
+           | kitchen_scene_block
+           | lab_room_scene_block
+           | med_bay_scene_block
+           | workshop_room_scene_block
+           | control_room_scene_block
+           | storage_room_scene_block
+           | office_room_scene_block
+           | bedroom_scene_block
+           | fixture_cluster_scene_block
+           | appliance_bank_scene_block
+           | workstation_cluster_scene_block
+           | cabinet_wall_scene_block
+           | counter_run_scene_block
+           | sanitary_fixture_scene_block
+           | lab_bench_scene_block
+           | medical_bed_scene_block
+           | tool_rack_scene_block
+           | room_adjacency_scene_block
+           | room_connection_scene_block
+           | door_opening_scene_block
+           | corridor_link_scene_block
+           | wall_run_scene_block
+           | room_socket_scene_block
+           | fixture_socket_scene_block
+           | socket_binding_scene_block
+           | fixture_placement_scene_block
+           | furniture_placement_scene_block
+           | service_placement_scene_block
+           | wall_attachment_scene_block
+           | anchor_rule_scene_block
+           | placement_constraint_scene_block
+           | auto_layout_scene_block
+           | room_layout_plan_scene_block
+           | fixture_layout_scene_block
+           | furniture_layout_scene_block
+           | service_layout_scene_block
+           | wall_fixture_layout_scene_block
+           | layout_solver_scene_block
+           | room_bounds_scene_block
+           | wall_side_rule_scene_block
+           | socket_priority_scene_block
+           | clearance_zone_scene_block
+           | layout_slot_scene_block
+           | footprint_packer_scene_block
+           | placement_footprint_scene_block
+           | occupancy_grid_scene_block
+           | fit_profile_scene_block
+           | collision_rule_scene_block
+           | service_reach_scene_block
+           | room_packing_solver_scene_block
+           | packing_slot_scene_block
+           | packed_transform_scene_block
+           | clearance_reservation_scene_block
+           | service_anchor_map_scene_block
+           | room_content_plan_scene_block
+           | content_family_binding_scene_block
+           | furniture_asset_scene_block
+           | fixture_asset_scene_block
+           | packed_child_asset_scene_block
+           | content_surface_plan_scene_block
+           | content_material_zone_scene_block
+           | content_finish_preset_scene_block
+           | content_wear_profile_scene_block
+           | content_marking_set_scene_block
+           | room_pack_preset_scene_block
+           | footprint_size_preset_scene_block
+           | packing_policy_preset_scene_block
+           | clearance_preset_scene_block
+           | service_reach_preset_scene_block
+           | role_item_set_scene_block
+           | public_space_plan_scene_block
+           | growth_boundary_scene_block
+           | district_dependency_scene_block
+           | development_pressure_scene_block
+           | climate_zone_scene_block
+           | climate_risk_map_scene_block
+           | flood_risk_scene_block
+           | fire_risk_scene_block
+           | heat_risk_scene_block
+           | resource_constraint_scene_block
+           | protected_land_scene_block
+           | green_infrastructure_scene_block
+           | stormwater_system_scene_block
+           | cooling_corridor_scene_block
+           | evacuation_route_scene_block
+           | emergency_shelter_scene_block
+           | resilience_plan_scene_block
+           | climate_adaptation_scene_block
+           | transit_oriented_growth_scene_block
+           | risk_mitigation_scene_block
+           | faction_behavior_scene_block
+           | behavior_graph_scene_block
+           | event_scene_block
+           | event_emitter_scene_block
+           | trigger_volume_scene_block
+           | timer_scene_block
+           | state_machine_scene_block
+           | state_transition_scene_block
+           | conditional_spawn_scene_block
+           | alert_network_scene_block
+           | scene_state_scene_block
+           | scene_mutation_scene_block
+           | timeline_scene_block
+           | sequencer_scene_block
+           | animation_clip_scene_block
+           | action_scene_block
+           | action_pose_scene_block
+           | motion_path_scene_block
+           | moving_part_scene_block
+           | door_action_scene_block
+           | gate_action_scene_block
+           | machine_cycle_scene_block
+           | vfx_emitter_scene_block
+           | sound_cue_scene_block
+           | physics_body_scene_block
+           | physics_joint_scene_block
+           | hinge_joint_scene_block
+           | physics_constraint_scene_block
+           | breakable_part_scene_block
+           | damage_state_scene_block
+           | debris_field_scene_block
+           | rope_scene_block
+           | cable_scene_block
+           | cloth_flag_scene_block
+           | force_field_scene_block
+           | destruction_event_scene_block
+           | surface_layer_scene_block
+           | material_zone_scene_block
+           | decal_scene_block
+           | wear_pattern_scene_block
+           | damage_surface_scene_block
+           | surface_transition_scene_block
+           | weather_system_scene_block
+           | atmosphere_scene_block
+           | wind_zone_scene_block
+           | liquid_body_scene_block
+           | puddle_field_scene_block
+           | fire_source_scene_block
+           | smoke_emitter_scene_block
+           | mist_volume_scene_block
+           | wetness_zone_scene_block
+           | heat_haze_scene_block
+           | time_of_day_scene_block
+           | environment_effect_scene_block
+           | shot_scene_block
+           | shot_sequence_scene_block
+           | camera_rail_scene_block
+           | look_at_target_scene_block
+           | focal_zone_scene_block
+           | cutscene_beat_scene_block
+           | orbit_camera_scene_block
+           | inspection_camera_scene_block
+           | focus_pull_scene_block
+           | camera_volume_scene_block
+           | presentation_rig_scene_block
+           | composition_guide_scene_block
+           | ambient_bed_scene_block
+           | sound_zone_scene_block
+           | reverb_space_scene_block
+           | acoustic_occluder_scene_block
+           | sound_propagation_scene_block
+           | music_state_scene_block
+           | music_transition_scene_block
+           | stinger_scene_block
+           | foley_emitter_scene_block
+           | audio_bus_scene_block
+           | listener_zone_scene_block
+           | acoustic_material_scene_block
+           | interaction_prompt_scene_block
+           | interaction_zone_scene_block
+           | affordance_scene_block
+           | usable_scene_block
+           | pickup_scene_block
+           | inspect_point_scene_block
+           | terminal_scene_block
+           | control_panel_scene_block
+           | switch_scene_block
+           | lever_scene_block
+           | button_scene_block
+           | door_lock_scene_block
+           | quest_marker_scene_block
+           | signage_scene_block
+           | map_marker_scene_block
+           | diegetic_hud_scene_block
+           | ui_anchor_scene_block
+           | interior_scene_block
+           | city_block_scene_block
+           | district_scene_block
+           | room_cluster_scene_block
+           | street_grid_scene_block
+           | floorplan_scene_block
+           | road_intersection_scene_block
+           | infrastructure_scene_block
+           | service_network_scene_block
+           | access_scene_block
+           | route_scene_block
+           | array_scene_block
+           | socket_scene_block
+           | attach_scene_block
            | relationship_scene_block
            | camera_scene_block
            | camera_intent_scene_block
@@ -144,11 +680,553 @@ scene_decl: "scene" IDENT "{" scene_item* "}"
            | export_scene_block
            | assign_stmt
 style_scene_block: "style" IDENT "{" assign_stmt* "}"
+style_pack_scene_block: "style_pack" IDENT "{" assign_stmt* "}"
+faction_pack_scene_block: "faction_pack" IDENT "{" assign_stmt* "}"
+biome_kit_scene_block: "biome_kit" IDENT "{" assign_stmt* "}"
+architecture_grammar_scene_block: "architecture_grammar" IDENT "{" assign_stmt* "}"
+object_grammar_scene_block: "object_grammar" IDENT "{" assign_stmt* "}"
 scene_type_clause: ":" IDENT
 scene_role_clause: ":" IDENT
 scene_from_clause: "from" qident
 region_scene_block: "region" IDENT scene_type_clause? "{" assign_stmt* "}"
+group_scene_block: "group" IDENT "{" assign_stmt* "}"
+collection_scene_block: "collection" IDENT "{" assign_stmt* "}"
+placement_zone_scene_block: "placement_zone" IDENT scene_type_clause? "{" assign_stmt* "}"
+module_scene_block: "module" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+kit_scene_block: "kit" IDENT scene_role_clause? scene_from_clause? "{" kit_scene_item* "}"
+?kit_scene_item: part_scene_block
+               | socket_scene_block
+               | attach_scene_block
+               | assign_stmt
+variant_family_scene_block: "variant_family" IDENT "{" variant_family_scene_item* "}"
+?variant_family_scene_item: option_scene_block
+                          | socket_scene_block
+                          | attach_scene_block
+                          | constraint_scene_block
+                          | assign_stmt
+option_scene_block: "option" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+generator_scene_block: "generator" IDENT scene_role_clause? scene_from_clause? "{" generator_scene_item* "}"
+?generator_scene_item: socket_scene_block
+                     | attach_scene_block
+                     | constraint_scene_block
+                     | assign_stmt
+biome_scene_block: "biome" IDENT "{" variant_family_scene_item* "}"
+scatter_scene_block: "scatter" IDENT scene_role_clause? scene_from_clause? "{" generator_scene_item* "}"
+environment_scene_block: "environment" IDENT scene_role_clause? scene_from_clause? "{" generator_scene_item* "}"
+constraint_scene_block: "constraint" IDENT scene_type_clause? "{" assign_stmt* "}"
+part_scene_block: "part" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
 object_scene_block: "object" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+instance_scene_block: "instance" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+terrain_scene_block: "terrain" IDENT scene_from_clause? "{" object_scene_item* "}"
+road_scene_block: "road" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+bridge_scene_block: "bridge" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+building_scene_block: "building" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+building_envelope_scene_block: "building_envelope" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+floor_stack_scene_block: "floor_stack" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+facade_grid_scene_block: "facade_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+facade_bay_scene_block: "facade_bay" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+roof_profile_scene_block: "roof_profile" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+vertical_core_scene_block: "vertical_core" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+entrance_plan_scene_block: "entrance_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+site_compound_scene_block: "site_compound" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+building_lot_scene_block: "building_lot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+courtyard_plan_scene_block: "courtyard_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+pedestrian_path_scene_block: "pedestrian_path" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_alley_scene_block: "service_alley" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+parking_zone_scene_block: "parking_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+loading_zone_scene_block: "loading_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+exterior_utility_scene_block: "exterior_utility" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+building_complex_scene_block: "building_complex" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+harbor_complex_scene_block: "harbor_complex" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+dockyard_scene_block: "dockyard" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+vehicle_yard_scene_block: "vehicle_yard" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+hangar_complex_scene_block: "hangar_complex" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+factory_complex_scene_block: "factory_complex" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+production_line_scene_block: "production_line" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+industrial_district_scene_block: "industrial_district" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transport_corridor_scene_block: "transport_corridor" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+supply_network_scene_block: "supply_network" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_region_scene_block: "resource_region" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+settlement_scene_block: "settlement" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+civilization_scene_block: "civilization" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+culture_system_scene_block: "culture_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+law_code_scene_block: "law_code" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+policy_rule_scene_block: "policy_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+economy_model_scene_block: "economy_model" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+trade_policy_scene_block: "trade_policy" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+diplomacy_state_scene_block: "diplomacy_state" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+social_graph_scene_block: "social_graph" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+social_relation_scene_block: "social_relation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+population_group_scene_block: "population_group" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+labor_system_scene_block: "labor_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ritual_calendar_scene_block: "ritual_calendar" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+festival_scene_block: "festival" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+belief_system_scene_block: "belief_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cultural_marker_scene_block: "cultural_marker" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+civic_institution_scene_block: "civic_institution" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+quest_scene_block: "quest" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+objective_scene_block: "objective" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+mission_scene_block: "mission" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+objective_chain_scene_block: "objective_chain" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+success_condition_scene_block: "success_condition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+failure_condition_scene_block: "failure_condition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+reward_table_scene_block: "reward_table" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+loot_table_scene_block: "loot_table" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+inventory_slot_scene_block: "inventory_slot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+crafting_station_scene_block: "crafting_station" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+recipe_scene_block: "recipe" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+shop_scene_block: "shop" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+vendor_scene_block: "vendor" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+currency_scene_block: "currency" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+reputation_rule_scene_block: "reputation_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+unlock_rule_scene_block: "unlock_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+progression_track_scene_block: "progression_track" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+gameplay_rule_scene_block: "gameplay_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+interactable_scene_block: "interactable" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+encounter_scene_block: "encounter" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+director_scene_block: "director" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+encounter_director_scene_block: "encounter_director" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+director_intent_scene_block: "director_intent" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+pacing_curve_scene_block: "pacing_curve" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+threat_budget_scene_block: "threat_budget" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+spawn_wave_scene_block: "spawn_wave" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+spawn_budget_scene_block: "spawn_budget" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+combat_phase_scene_block: "combat_phase" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+stealth_phase_scene_block: "stealth_phase" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+escalation_rule_scene_block: "escalation_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+adaptive_difficulty_scene_block: "adaptive_difficulty" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+encounter_beat_scene_block: "encounter_beat" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+director_signal_scene_block: "director_signal" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+threat_zone_scene_block: "threat_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+reinforcement_route_scene_block: "reinforcement_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+simulation_layer_scene_block: "simulation_layer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+heat_field_scene_block: "heat_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+noise_field_scene_block: "noise_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+visibility_field_scene_block: "visibility_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_flow_scene_block: "resource_flow" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+faction_pressure_scene_block: "faction_pressure" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+territory_influence_scene_block: "territory_influence" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+alarm_grid_scene_block: "alarm_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+patrol_density_scene_block: "patrol_density" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+hazard_field_scene_block: "hazard_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sensor_grid_scene_block: "sensor_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cover_map_scene_block: "cover_map" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+flow_gate_scene_block: "flow_gate" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+world_metric_scene_block: "world_metric" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+simulation_probe_scene_block: "simulation_probe" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+traversal_gate_scene_block: "traversal_gate" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_economy_scene_block: "resource_economy" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+control_zone_scene_block: "control_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+npc_scene_block: "npc" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+agent_scene_block: "agent" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+crowd_scene_block: "crowd" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+schedule_scene_block: "schedule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+patrol_route_scene_block: "patrol_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+dialogue_tree_scene_block: "dialogue_tree" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+inventory_loadout_scene_block: "inventory_loadout" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+spawn_ecology_scene_block: "spawn_ecology" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+biome_system_scene_block: "biome_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+habitat_zone_scene_block: "habitat_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+species_population_scene_block: "species_population" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+food_web_scene_block: "food_web" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+predator_prey_link_scene_block: "predator_prey_link" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+migration_route_scene_block: "migration_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+nesting_site_scene_block: "nesting_site" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_patch_scene_block: "resource_patch" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_regeneration_scene_block: "resource_regeneration" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+growth_cycle_scene_block: "growth_cycle" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+weather_ecology_link_scene_block: "weather_ecology_link" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ecological_pressure_scene_block: "ecological_pressure" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+land_use_plan_scene_block: "land_use_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+farm_plot_scene_block: "farm_plot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+hunting_ground_scene_block: "hunting_ground" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fishing_ground_scene_block: "fishing_ground" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+grazing_range_scene_block: "grazing_range" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+extraction_site_scene_block: "extraction_site" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+pollution_source_scene_block: "pollution_source" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+conservation_zone_scene_block: "conservation_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+restoration_project_scene_block: "restoration_project" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+scarcity_loop_scene_block: "scarcity_loop" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+settlement_pressure_scene_block: "settlement_pressure" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_claim_scene_block: "resource_claim" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+harvest_cycle_scene_block: "harvest_cycle" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+carrying_capacity_rule_scene_block: "carrying_capacity_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+biome_impact_scene_block: "biome_impact" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+supply_chain_scene_block: "supply_chain" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+logistics_hub_scene_block: "logistics_hub" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+storage_depot_scene_block: "storage_depot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+stockpile_scene_block: "stockpile" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+input_buffer_scene_block: "input_buffer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+output_buffer_scene_block: "output_buffer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+processing_stage_scene_block: "processing_stage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+refinery_stage_scene_block: "refinery_stage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+workshop_stage_scene_block: "workshop_stage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+assembly_stage_scene_block: "assembly_stage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+market_node_scene_block: "market_node" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+demand_sink_scene_block: "demand_sink" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+supply_route_scene_block: "supply_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transport_leg_scene_block: "transport_leg" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+bottleneck_scene_block: "bottleneck" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+throughput_rule_scene_block: "throughput_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+failure_mode_scene_block: "failure_mode" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+production_strategy_scene_block: "production_strategy" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+production_priority_scene_block: "production_priority" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+quota_rule_scene_block: "quota_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+allocation_rule_scene_block: "allocation_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+rationing_policy_scene_block: "rationing_policy" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+strategic_reserve_scene_block: "strategic_reserve" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+trade_embargo_scene_block: "trade_embargo" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sabotage_target_scene_block: "sabotage_target" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+maintenance_plan_scene_block: "maintenance_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+repair_schedule_scene_block: "repair_schedule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+mobilization_order_scene_block: "mobilization_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+production_mode_scene_block: "production_mode" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wartime_production_scene_block: "wartime_production" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+peacetime_production_scene_block: "peacetime_production" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+procurement_contract_scene_block: "procurement_contract" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+readiness_level_scene_block: "readiness_level" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+conflict_system_scene_block: "conflict_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+strategic_objective_scene_block: "strategic_objective" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+war_plan_scene_block: "war_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+battlefront_scene_block: "battlefront" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+escalation_ladder_scene_block: "escalation_ladder" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+treaty_scene_block: "treaty" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ceasefire_scene_block: "ceasefire" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+alliance_scene_block: "alliance" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+rival_claim_scene_block: "rival_claim" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+diplomatic_demand_scene_block: "diplomatic_demand" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+negotiation_channel_scene_block: "negotiation_channel" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sanction_scene_block: "sanction" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+espionage_cell_scene_block: "espionage_cell" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+covert_operation_scene_block: "covert_operation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+disaster_response_scene_block: "disaster_response" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+emergency_order_scene_block: "emergency_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+faction_ai_scene_block: "faction_ai" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+doctrine_model_scene_block: "doctrine_model" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+goal_stack_scene_block: "goal_stack" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+threat_model_scene_block: "threat_model" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+perception_feed_scene_block: "perception_feed" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+decision_rule_scene_block: "decision_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+policy_selector_scene_block: "policy_selector" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+action_option_scene_block: "action_option" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+response_plan_scene_block: "response_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+escalation_choice_scene_block: "escalation_choice" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+deescalation_choice_scene_block: "deescalation_choice" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_strategy_scene_block: "resource_strategy" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+logistics_priority_scene_block: "logistics_priority" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+diplomatic_posture_scene_block: "diplomatic_posture" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+contingency_plan_scene_block: "contingency_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+adaptive_order_scene_block: "adaptive_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+operational_plan_scene_block: "operational_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+order_queue_scene_block: "order_queue" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+world_order_scene_block: "world_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+patrol_order_scene_block: "patrol_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+convoy_order_scene_block: "convoy_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+construction_order_scene_block: "construction_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+repair_order_scene_block: "repair_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+relief_order_scene_block: "relief_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+mission_order_scene_block: "mission_order" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+scheduled_action_scene_block: "scheduled_action" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+task_assignment_scene_block: "task_assignment" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+crew_roster_scene_block: "crew_roster" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+convoy_route_scene_block: "convoy_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+construction_queue_scene_block: "construction_queue" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+repair_crew_scene_block: "repair_crew" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+relief_team_scene_block: "relief_team" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+settlement_evolution_scene_block: "settlement_evolution" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+growth_phase_scene_block: "growth_phase" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+expansion_zone_scene_block: "expansion_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+construction_stage_scene_block: "construction_stage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+upgrade_plan_scene_block: "upgrade_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+district_upgrade_scene_block: "district_upgrade" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+building_upgrade_scene_block: "building_upgrade" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+infrastructure_upgrade_scene_block: "infrastructure_upgrade" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+material_delivery_scene_block: "material_delivery" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+staffing_plan_scene_block: "staffing_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+occupancy_plan_scene_block: "occupancy_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+worksite_scene_block: "worksite" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+build_permit_scene_block: "build_permit" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+damage_repair_plan_scene_block: "damage_repair_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+demolition_plan_scene_block: "demolition_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+renovation_project_scene_block: "renovation_project" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+city_plan_scene_block: "city_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+zoning_rule_scene_block: "zoning_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+zoning_district_scene_block: "zoning_district" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+parcel_grid_scene_block: "parcel_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+land_parcel_scene_block: "land_parcel" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+parcel_subdivision_scene_block: "parcel_subdivision" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+block_plan_scene_block: "block_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+street_hierarchy_scene_block: "street_hierarchy" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transit_node_scene_block: "transit_node" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+civic_service_plan_scene_block: "civic_service_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_coverage_scene_block: "service_coverage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+utility_corridor_scene_block: "utility_corridor" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+district_site_plan_scene_block: "district_site_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+street_crossing_scene_block: "street_crossing" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+perimeter_plan_scene_block: "perimeter_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+security_gate_scene_block: "security_gate" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+landscape_zone_scene_block: "landscape_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+traffic_flow_scene_block: "traffic_flow" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_flow_scene_block: "service_flow" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+access_sequence_scene_block: "access_sequence" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+public_entry_scene_block: "public_entry" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_entry_scene_block: "service_entry" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+threshold_transition_scene_block: "threshold_transition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+entry_lobby_scene_block: "entry_lobby" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+access_checkpoint_scene_block: "access_checkpoint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+loading_path_scene_block: "loading_path" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wayfinding_node_scene_block: "wayfinding_node" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+circulation_core_scene_block: "circulation_core" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+stair_run_scene_block: "stair_run" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+elevator_bank_scene_block: "elevator_bank" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+egress_route_scene_block: "egress_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+emergency_exit_scene_block: "emergency_exit" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+corridor_spine_scene_block: "corridor_spine" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+floor_transition_scene_block: "floor_transition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+public_circulation_scene_block: "public_circulation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_circulation_scene_block: "service_circulation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+stair_detail_scene_block: "stair_detail" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+tread_pattern_scene_block: "tread_pattern" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+landing_platform_scene_block: "landing_platform" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+handrail_run_scene_block: "handrail_run" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+corridor_shell_scene_block: "corridor_shell" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+door_rhythm_scene_block: "door_rhythm" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ceiling_service_grid_scene_block: "ceiling_service_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+egress_surface_plan_scene_block: "egress_surface_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_route_binding_scene_block: "room_route_binding" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+power_grid_scene_block: "power_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+substation_scene_block: "substation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transformer_bank_scene_block: "transformer_bank" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+power_line_scene_block: "power_line" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+water_network_scene_block: "water_network" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+pump_station_scene_block: "pump_station" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+water_tower_scene_block: "water_tower" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sewer_network_scene_block: "sewer_network" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+treatment_plant_scene_block: "treatment_plant" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+data_network_scene_block: "data_network" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+data_hub_scene_block: "data_hub" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fiber_line_scene_block: "fiber_line" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transit_line_scene_block: "transit_line" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transit_station_scene_block: "transit_station" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_connection_scene_block: "service_connection" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+maintenance_access_scene_block: "maintenance_access" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+building_service_plan_scene_block: "building_service_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_core_scene_block: "service_core" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+utility_room_scene_block: "utility_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+mechanical_room_scene_block: "mechanical_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+electrical_panel_scene_block: "electrical_panel" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+meter_bank_scene_block: "meter_bank" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+plumbing_stack_scene_block: "plumbing_stack" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+hvac_system_scene_block: "hvac_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ventilation_duct_scene_block: "ventilation_duct" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+elevator_core_scene_block: "elevator_core" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_elevator_scene_block: "service_elevator" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_shaft_scene_block: "service_shaft" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fire_suppression_scene_block: "fire_suppression" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sprinkler_zone_scene_block: "sprinkler_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+waste_chute_scene_block: "waste_chute" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+loading_dock_scene_block: "loading_dock" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_program_scene_block: "room_program" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+bathroom_scene_block: "bathroom" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+kitchen_scene_block: "kitchen" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+lab_room_scene_block: "lab_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+med_bay_scene_block: "med_bay" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+workshop_room_scene_block: "workshop_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+control_room_scene_block: "control_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+storage_room_scene_block: "storage_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+office_room_scene_block: "office_room" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+bedroom_scene_block: "bedroom" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fixture_cluster_scene_block: "fixture_cluster" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+appliance_bank_scene_block: "appliance_bank" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+workstation_cluster_scene_block: "workstation_cluster" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cabinet_wall_scene_block: "cabinet_wall" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+counter_run_scene_block: "counter_run" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sanitary_fixture_scene_block: "sanitary_fixture" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+lab_bench_scene_block: "lab_bench" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+medical_bed_scene_block: "medical_bed" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+tool_rack_scene_block: "tool_rack" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_adjacency_scene_block: "room_adjacency" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_connection_scene_block: "room_connection" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+door_opening_scene_block: "door_opening" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+corridor_link_scene_block: "corridor_link" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wall_run_scene_block: "wall_run" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_socket_scene_block: "room_socket" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fixture_socket_scene_block: "fixture_socket" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+socket_binding_scene_block: "socket_binding" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fixture_placement_scene_block: "fixture_placement" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+furniture_placement_scene_block: "furniture_placement" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_placement_scene_block: "service_placement" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wall_attachment_scene_block: "wall_attachment" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+anchor_rule_scene_block: "anchor_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+placement_constraint_scene_block: "placement_constraint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+auto_layout_scene_block: "auto_layout" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_layout_plan_scene_block: "room_layout_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fixture_layout_scene_block: "fixture_layout" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+furniture_layout_scene_block: "furniture_layout" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_layout_scene_block: "service_layout" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wall_fixture_layout_scene_block: "wall_fixture_layout" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+layout_solver_scene_block: "layout_solver" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_bounds_scene_block: "room_bounds" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wall_side_rule_scene_block: "wall_side_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+socket_priority_scene_block: "socket_priority" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+clearance_zone_scene_block: "clearance_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+layout_slot_scene_block: "layout_slot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+footprint_packer_scene_block: "footprint_packer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+placement_footprint_scene_block: "placement_footprint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+occupancy_grid_scene_block: "occupancy_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fit_profile_scene_block: "fit_profile" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+collision_rule_scene_block: "collision_rule" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_reach_scene_block: "service_reach" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_packing_solver_scene_block: "room_packing_solver" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+packing_slot_scene_block: "packing_slot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+packed_transform_scene_block: "packed_transform" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+clearance_reservation_scene_block: "clearance_reservation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_anchor_map_scene_block: "service_anchor_map" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_content_plan_scene_block: "room_content_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+content_family_binding_scene_block: "content_family_binding" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+furniture_asset_scene_block: "furniture_asset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fixture_asset_scene_block: "fixture_asset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+packed_child_asset_scene_block: "packed_child_asset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+content_surface_plan_scene_block: "content_surface_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+content_material_zone_scene_block: "content_material_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+content_finish_preset_scene_block: "content_finish_preset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+content_wear_profile_scene_block: "content_wear_profile" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+content_marking_set_scene_block: "content_marking_set" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_pack_preset_scene_block: "room_pack_preset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+footprint_size_preset_scene_block: "footprint_size_preset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+packing_policy_preset_scene_block: "packing_policy_preset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+clearance_preset_scene_block: "clearance_preset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_reach_preset_scene_block: "service_reach_preset" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+role_item_set_scene_block: "role_item_set" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+public_space_plan_scene_block: "public_space_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+growth_boundary_scene_block: "growth_boundary" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+district_dependency_scene_block: "district_dependency" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+development_pressure_scene_block: "development_pressure" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+climate_zone_scene_block: "climate_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+climate_risk_map_scene_block: "climate_risk_map" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+flood_risk_scene_block: "flood_risk" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fire_risk_scene_block: "fire_risk" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+heat_risk_scene_block: "heat_risk" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resource_constraint_scene_block: "resource_constraint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+protected_land_scene_block: "protected_land" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+green_infrastructure_scene_block: "green_infrastructure" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+stormwater_system_scene_block: "stormwater_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cooling_corridor_scene_block: "cooling_corridor" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+evacuation_route_scene_block: "evacuation_route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+emergency_shelter_scene_block: "emergency_shelter" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+resilience_plan_scene_block: "resilience_plan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+climate_adaptation_scene_block: "climate_adaptation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+transit_oriented_growth_scene_block: "transit_oriented_growth" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+risk_mitigation_scene_block: "risk_mitigation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+faction_behavior_scene_block: "faction_behavior" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+behavior_graph_scene_block: "behavior_graph" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+event_scene_block: "event" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+event_emitter_scene_block: "event_emitter" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+trigger_volume_scene_block: "trigger_volume" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+timer_scene_block: "timer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+state_machine_scene_block: "state_machine" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+state_transition_scene_block: "state_transition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+conditional_spawn_scene_block: "conditional_spawn" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+alert_network_scene_block: "alert_network" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+scene_state_scene_block: "scene_state" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+scene_mutation_scene_block: "scene_mutation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+timeline_scene_block: "timeline" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sequencer_scene_block: "sequencer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+animation_clip_scene_block: "animation_clip" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+action_scene_block: "action" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+action_pose_scene_block: "action_pose" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+motion_path_scene_block: "motion_path" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+moving_part_scene_block: "moving_part" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+door_action_scene_block: "door_action" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+gate_action_scene_block: "gate_action" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+machine_cycle_scene_block: "machine_cycle" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+vfx_emitter_scene_block: "vfx_emitter" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sound_cue_scene_block: "sound_cue" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+physics_body_scene_block: "physics_body" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+physics_joint_scene_block: "physics_joint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+hinge_joint_scene_block: "hinge_joint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+physics_constraint_scene_block: "physics_constraint" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+breakable_part_scene_block: "breakable_part" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+damage_state_scene_block: "damage_state" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+debris_field_scene_block: "debris_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+rope_scene_block: "rope" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cable_scene_block: "cable" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cloth_flag_scene_block: "cloth_flag" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+force_field_scene_block: "force_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+destruction_event_scene_block: "destruction_event" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+surface_layer_scene_block: "surface_layer" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+material_zone_scene_block: "material_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+decal_scene_block: "decal" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wear_pattern_scene_block: "wear_pattern" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+damage_surface_scene_block: "damage_surface" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+surface_transition_scene_block: "surface_transition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+weather_system_scene_block: "weather_system" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+atmosphere_scene_block: "atmosphere" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wind_zone_scene_block: "wind_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+liquid_body_scene_block: "liquid_body" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+puddle_field_scene_block: "puddle_field" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+fire_source_scene_block: "fire_source" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+smoke_emitter_scene_block: "smoke_emitter" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+mist_volume_scene_block: "mist_volume" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+wetness_zone_scene_block: "wetness_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+heat_haze_scene_block: "heat_haze" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+time_of_day_scene_block: "time_of_day" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+environment_effect_scene_block: "environment_effect" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+shot_scene_block: "shot" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+shot_sequence_scene_block: "shot_sequence" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+camera_rail_scene_block: "camera_rail" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+look_at_target_scene_block: "look_at_target" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+focal_zone_scene_block: "focal_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+cutscene_beat_scene_block: "cutscene_beat" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+orbit_camera_scene_block: "orbit_camera" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+inspection_camera_scene_block: "inspection_camera" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+focus_pull_scene_block: "focus_pull" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+camera_volume_scene_block: "camera_volume" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+presentation_rig_scene_block: "presentation_rig" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+composition_guide_scene_block: "composition_guide" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ambient_bed_scene_block: "ambient_bed" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sound_zone_scene_block: "sound_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+reverb_space_scene_block: "reverb_space" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+acoustic_occluder_scene_block: "acoustic_occluder" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+sound_propagation_scene_block: "sound_propagation" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+music_state_scene_block: "music_state" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+music_transition_scene_block: "music_transition" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+stinger_scene_block: "stinger" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+foley_emitter_scene_block: "foley_emitter" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+audio_bus_scene_block: "audio_bus" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+listener_zone_scene_block: "listener_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+acoustic_material_scene_block: "acoustic_material" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+interaction_prompt_scene_block: "interaction_prompt" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+interaction_zone_scene_block: "interaction_zone" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+affordance_scene_block: "affordance" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+usable_scene_block: "usable" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+pickup_scene_block: "pickup" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+inspect_point_scene_block: "inspect_point" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+terminal_scene_block: "terminal" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+control_panel_scene_block: "control_panel" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+switch_scene_block: "switch" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+lever_scene_block: "lever" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+button_scene_block: "button" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+door_lock_scene_block: "door_lock" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+quest_marker_scene_block: "quest_marker" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+signage_scene_block: "signage" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+map_marker_scene_block: "map_marker" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+diegetic_hud_scene_block: "diegetic_hud" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+ui_anchor_scene_block: "ui_anchor" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+interior_scene_block: "interior" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+city_block_scene_block: "city_block" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+district_scene_block: "district" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+room_cluster_scene_block: "room_cluster" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+street_grid_scene_block: "street_grid" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+floorplan_scene_block: "floorplan" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+road_intersection_scene_block: "road_intersection" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+infrastructure_scene_block: "infrastructure" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+service_network_scene_block: "service_network" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+access_scene_block: "access" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+route_scene_block: "route" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+array_scene_block: "array" IDENT scene_role_clause? scene_from_clause? "{" object_scene_item* "}"
+socket_scene_block: "socket" IDENT scene_type_clause? "{" assign_stmt* "}"
+attach_scene_block: "attach" IDENT scene_type_clause? "{" assign_stmt* "}"
 ?object_scene_item: gameplay_scene_block
                   | assign_stmt
 gameplay_scene_block: "gameplay" "{" assign_stmt* "}"
@@ -168,18 +1246,11 @@ asset_decl: "asset" IDENT ":" kind from_clause? use_clause? "{" refs_block? inte
 // All new sub-blocks live INSIDE this wrapper. Without this wrapper, none of
 // the experimental constructs parse. The stable public surface is unchanged.
 experimental_block: "experimental" "{" experimental_entry* "}"
-?experimental_entry: experimental_art_direction_block | experimental_references_block | experimental_kit_block
-experimental_art_direction_block: "art_direction" "{" experimental_art_direction_field* "}"
-?experimental_art_direction_field: experimental_art_direction_style_tags
-                                 | experimental_art_direction_wear
-                                 | experimental_art_direction_material_age
-                                 | experimental_art_direction_detail_density
-experimental_art_direction_style_tags: "style_tags" "=" list
-experimental_art_direction_wear: "wear" "=" STRING
-experimental_art_direction_material_age: "material_age" "=" STRING
-experimental_art_direction_detail_density: "detail_density" "=" STRING
-experimental_references_block: "references" "{" "use" "=" STRING "}"
-experimental_kit_block: "kit" "{" "use" "=" list "}"
+?experimental_entry: experimental_art_direction_block | experimental_references_block | experimental_kit_block | experimental_unknown_subblock
+experimental_art_direction_block: "art_direction" "{" assign_stmt* "}"
+experimental_references_block: "references" "{" assign_stmt* "}"
+experimental_kit_block: "kit" "{" assign_stmt* "}"
+experimental_unknown_subblock: IDENT "{" assign_stmt* "}"
 variant_decl: "variant" IDENT "on" qident "{" patch_stmt+ "}"
 
 kind: KIND
