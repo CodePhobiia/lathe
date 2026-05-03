@@ -53,6 +53,14 @@ def _missing_extruded_profile_height_error(primitive: ShapePrimitive) -> Contrac
     )
 
 
+def _missing_torus_dimensions_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: torus ShapePrimitive requires major_radius "
+        f"and minor_radius, got major_radius={primitive.major_radius!r}, "
+        f"minor_radius={primitive.minor_radius!r} (part={primitive.part!r})"
+    )
+
+
 def _unsupported_primitive_type_error(primitive_type: str) -> ValueError:
     return ValueError(f"Unsupported primitive type '{primitive_type}'")
 
@@ -131,7 +139,34 @@ def _primitive_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np
         # cylinder is a safe outer envelope that matches the
         # revolved_profile fallback strategy.
         return _cylinder_surface_point(point, _extruded_profile_bounding_cylinder(primitive))
+    if primitive.primitive_type == "torus":
+        # Match the revolved_profile fallback strategy: use a bounding
+        # cylinder (outer radius major+minor, height 2*minor) to pull
+        # vertices toward the ring silhouette without oscillation. The
+        # exact swept-circle snap would need per-tube parameterization;
+        # the cylinder envelope is a safe under-approximation.
+        return _cylinder_surface_point(point, _torus_bounding_cylinder(primitive))
     raise _unsupported_primitive_type_error(primitive.primitive_type)
+
+
+def _torus_bounding_cylinder(primitive: ShapePrimitive) -> ShapePrimitive:
+    """Coerce a torus primitive into its bounding cylinder for snap fallbacks."""
+    if primitive.major_radius is None or primitive.minor_radius is None:
+        raise _missing_torus_dimensions_error(primitive)
+    major = float(primitive.major_radius)
+    minor = float(primitive.minor_radius)
+    return ShapePrimitive(
+        primitive_type="cylinder",
+        part=primitive.part,
+        center=primitive.center,
+        radius=major + minor,
+        height=2.0 * minor,
+        axis=primitive.axis,
+        component=primitive.component,
+        region=primitive.region,
+        blend_mode=primitive.blend_mode,
+        rounding=primitive.rounding,
+    )
 
 
 def _revolved_profile_bounding_cylinder(primitive: ShapePrimitive) -> ShapePrimitive:
@@ -299,6 +334,8 @@ def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         return _revolved_profile_mesh(primitive)
     if primitive.primitive_type == "extruded_profile":
         return _extruded_profile_mesh(primitive)
+    if primitive.primitive_type == "torus":
+        return _torus_mesh(primitive)
     raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
@@ -380,6 +417,37 @@ def _extruded_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     elif primitive.axis == "y":
         mesh.apply_transform(trimesh.transformations.rotation_matrix(-np.pi / 2.0, [1.0, 0.0, 0.0]))
 
+    matrix = np.eye(4)
+    matrix[:3, 3] = np.asarray(primitive.center, dtype=np.float64)
+    mesh.apply_transform(matrix)
+    mesh.fix_normals()
+    return mesh
+
+
+def _torus_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Build a watertight torus trimesh aligned to ``primitive.axis``.
+
+    ``trimesh.creation.torus`` emits the ring around the Z-axis at the
+    origin; we rotate it to the requested axis (x/y/z) and translate to
+    the primitive's center, mirroring ``_translated_cylinder``.
+    """
+    if primitive.major_radius is None or primitive.minor_radius is None:
+        raise _missing_torus_dimensions_error(primitive)
+    major = float(primitive.major_radius)
+    minor = float(primitive.minor_radius)
+    mesh = trimesh.creation.torus(
+        major_radius=major,
+        minor_radius=minor,
+        major_sections=48,
+        minor_sections=24,
+    )
+    # trimesh torus is z-axis aligned by construction. Rotate to the
+    # requested axis the same way ``_translated_cylinder`` does so the
+    # ring axis matches ``primitive.axis``.
+    if primitive.axis == "y":
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2.0, [1.0, 0.0, 0.0]))
+    elif primitive.axis == "x":
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2.0, [0.0, 1.0, 0.0]))
     matrix = np.eye(4)
     matrix[:3, 3] = np.asarray(primitive.center, dtype=np.float64)
     mesh.apply_transform(matrix)
@@ -488,6 +556,21 @@ def _primitive_bounds(primitive: ShapePrimitive, margin: float) -> tuple[np.ndar
             half = np.asarray([half_u, half_v, half_axial], dtype=np.float64)
         else:
             half = np.asarray([half_u, half_axial, half_v], dtype=np.float64)
+    elif primitive.primitive_type == "torus":
+        if primitive.major_radius is None or primitive.minor_radius is None:
+            raise _missing_torus_dimensions_error(primitive)
+        major = float(primitive.major_radius)
+        minor = float(primitive.minor_radius)
+        # Outer ring radius is major+minor; tube thickness along the
+        # ring axis is 2*minor. Same axis-remap layout as cylinder.
+        radius = major + minor + margin
+        half_height = minor + margin
+        if primitive.axis == "x":
+            half = np.asarray([half_height, radius, radius], dtype=np.float64)
+        elif primitive.axis == "z":
+            half = np.asarray([radius, radius, half_height], dtype=np.float64)
+        else:
+            half = np.asarray([radius, half_height, radius], dtype=np.float64)
     else:
         raise _unsupported_primitive_type_error(primitive.primitive_type)
     return center - half, center + half

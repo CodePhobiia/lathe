@@ -150,6 +150,11 @@ def _fuse_via_manifold_kernel(shape_ir: ShapeIR) -> tuple[trimesh.Trimesh, list[
                     "extruded_profile",
                     profile_polygon=list(primitive.profile_polygon or []),
                     extrude_height=float(primitive.extrude_height or 0.0),
+            elif primitive.primitive_type == "torus":
+                handle = kernel.build_primitive(
+                    "torus",
+                    major_radius=float(primitive.major_radius or 0.0),
+                    minor_radius=float(primitive.minor_radius or 0.0),
                     axis=primitive.axis,
                     center=tuple(primitive.center),
                 )

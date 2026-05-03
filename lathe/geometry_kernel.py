@@ -104,6 +104,24 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             half = np.array([half_u, half_v, half_h], dtype=np.float64)
         else:
             half = np.array([half_u, half_h, half_v], dtype=np.float64)
+    elif primitive.primitive_type == "torus":
+        # Bounding cylinder of the ring (outer radius major+minor, height
+        # 2*minor). SDF voxelization uses this envelope; the manifold/
+        # exact paths produce the accurate ring mesh.
+        if primitive.major_radius is None or primitive.minor_radius is None:
+            raise _UnsupportedPrimitiveTypeError(
+                f"torus primitive missing major_radius/minor_radius (part={primitive.part!r})"
+            )
+        major = float(primitive.major_radius)
+        minor = float(primitive.minor_radius)
+        radius = major + minor + rounding
+        half_h = minor + rounding
+        if primitive.axis == "x":
+            half = np.array([half_h, radius, radius], dtype=np.float64)
+        elif primitive.axis == "z":
+            half = np.array([radius, radius, half_h], dtype=np.float64)
+        else:
+            half = np.array([radius, half_h, radius], dtype=np.float64)
     else:
         raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
     center = np.array(primitive.center, dtype=np.float64)
@@ -204,6 +222,27 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             rounding=primitive.rounding,
         )
         return _box_sdf(points, proxy, rounding)
+    if primitive.primitive_type == "torus":
+        # Same fallback strategy as revolved_profile: substitute the
+        # bounding cylinder. Voxelization is rarely the active path; the
+        # manifold/exact paths produce the accurate ring geometry.
+        if primitive.major_radius is None or primitive.minor_radius is None:
+            raise _UnsupportedPrimitiveTypeError(
+                f"torus primitive missing major_radius/minor_radius (part={primitive.part!r})"
+            )
+        major = float(primitive.major_radius)
+        minor = float(primitive.minor_radius)
+        proxy = ShapePrimitive(
+            primitive_type="cylinder",
+            part=primitive.part,
+            center=primitive.center,
+            radius=major + minor,
+            height=2.0 * minor,
+            axis=primitive.axis,
+            blend_mode=primitive.blend_mode,
+            rounding=primitive.rounding,
+        )
+        return _cylinder_sdf(points, proxy, rounding)
     raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
 
 

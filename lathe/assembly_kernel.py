@@ -4855,6 +4855,21 @@ def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[floa
             half = [half_u, half_v, half_h]
         else:
             half = [half_u, half_h, half_v]
+    elif primitive.primitive_type == "torus":
+        # Bounding cylinder of the ring: outer radius major+minor,
+        # height 2*minor along the ring axis.
+        if primitive.major_radius is None or primitive.minor_radius is None:
+            raise _missing_non_box_dimensions_error(primitive)
+        major = float(primitive.major_radius)
+        minor = float(primitive.minor_radius)
+        radius = major + minor
+        height = 2.0 * minor
+        if primitive.axis == "x":
+            half = [height / 2.0, radius, radius]
+        elif primitive.axis == "z":
+            half = [radius, radius, height / 2.0]
+        else:
+            half = [radius, height / 2.0, radius]
     else:
         if primitive.radius is None or primitive.height is None:
             raise _missing_non_box_dimensions_error(primitive)

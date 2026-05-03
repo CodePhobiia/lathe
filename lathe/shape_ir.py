@@ -35,6 +35,13 @@ class ShapePrimitive:
       that the box+cylinder vocabulary cannot express: picatinny rails,
       magazine bodies, trigger groups, charging-handle slots, plate
       stocks, etc.
+    - ``"torus"``: ring solid centered on ``center`` with ring axis
+      ``axis``, defined by ``major_radius`` (distance from the ring
+      center to the center of the tube) and ``minor_radius`` (tube
+      radius). Closes the gap between cylinders and full revolved
+      profiles for ring-shaped features such as trigger guards, sling
+      loops, scope rings, and cap collars where authoring an entire
+      profile polyline would be overkill.
     """
 
     primitive_type: str
@@ -59,6 +66,12 @@ class ShapePrimitive:
     # ``extrude_height`` is the linear sweep distance along ``axis`` for
     # ``primitive_type="extruded_profile"``. None for other types.
     extrude_height: float | None = None
+    # ``major_radius`` / ``minor_radius`` are used by
+    # ``primitive_type="torus"``: ``major_radius`` is the distance from
+    # the ring center to the center of the tube, ``minor_radius`` is the
+    # tube radius. None for non-torus primitives.
+    major_radius: float | None = None
+    minor_radius: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.

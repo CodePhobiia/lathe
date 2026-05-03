@@ -71,6 +71,9 @@ class _ExtrudedProfilePolygonRequiredError(ValueError):
 class _ExtrudedProfileHeightRequiredError(ValueError):
     def __init__(self) -> None:
         super().__init__("extruded_profile requires `extrude_height` (> 0)")
+class _TorusDimensionsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("torus requires `major_radius` and `minor_radius`")
 
 
 class _UnsupportedPrimitiveKindError(ValueError):
@@ -175,7 +178,9 @@ class ManifoldKernel:
         + optional center), `revolved_profile` (profile_points +
         optional axis + optional center + optional segments),
         `extruded_profile` (profile_polygon + extrude_height +
-        optional axis + optional center).
+        optional axis + optional center), `torus` (major_radius +
+        minor_radius + optional axis + optional center + optional
+        segments).
         """
         if kind == "extruded_profile":
             profile_polygon = params.get("profile_polygon")
@@ -193,6 +198,30 @@ class ManifoldKernel:
             # z=0, so recenter the prism on z=0 before rotating to the
             # requested axis.
             manifold = manifold.translate([0.0, 0.0, -float(extrude_height) / 2.0])
+            if axis == "x":
+                manifold = manifold.rotate([0.0, 90.0, 0.0])
+            elif axis == "y":
+                manifold = manifold.rotate([90.0, 0.0, 0.0])
+            manifold = manifold.translate(list(map(float, center)))
+            return ManifoldMesh(manifold)
+
+        if kind == "torus":
+            major_radius = params.get("major_radius")
+            minor_radius = params.get("minor_radius")
+            if major_radius is None or minor_radius is None:
+                raise _TorusDimensionsRequiredError
+            axis = params.get("axis", "y")
+            center = params.get("center", (0.0, 0.0, 0.0))
+            segments = int(params.get("segments", 48))
+            # manifold3d has no native torus, so we revolve a CrossSection
+            # circle of `minor_radius` translated by `(major_radius, 0)` in
+            # the (X, Y) cross-section plane. Revolve sweeps around the
+            # CrossSection's Y-axis and emits a manifold along the result's
+            # Z-axis, so we get a torus whose ring axis is Z by default.
+            circle = _m3d.CrossSection.circle(float(minor_radius), circular_segments=segments)
+            circle = circle.translate((float(major_radius), 0.0))
+            manifold = circle.revolve(circular_segments=segments)
+            # Rotate to the user's chosen axis, matching the cylinder case.
             if axis == "x":
                 manifold = manifold.rotate([0.0, 90.0, 0.0])
             elif axis == "y":
