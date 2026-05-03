@@ -729,25 +729,65 @@ def _magazine_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
 
 
 def _sight_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
+    """Emit a scope/optic as: rail mount + revolved scope body + adjustment turret.
+
+    The scope body uses ``primitive_type="revolved_profile"`` so the
+    objective-bell → tube → ocular-bell silhouette is real geometry rather
+    than a stack of axis-aligned boxes. The mount stays a box because it
+    bolts onto a flat picatinny-style rail.
+    """
     width, height, depth = component.extents
     cx, cy, cz = component.center
-    return [
+    optic_cy = cy + height * 0.60
+    # Scope geometry derived from the component's (height, depth) envelope.
+    tube_radius = max(min(height * 0.24, width * 0.30), 0.04)
+    objective_radius = max(tube_radius * 1.45, 0.05)
+    ocular_radius = max(tube_radius * 1.30, 0.045)
+    half_length = max(depth * 0.42, 0.10)
+    # Profile points are (axial, radial) along the local axis (axial = z here
+    # because we revolve around z so the scope tube runs muzzle-to-shooter).
+    profile_points = [
+        (-half_length, objective_radius * 0.68),         # objective rim (front)
+        (-half_length * 0.82, objective_radius),          # objective bell apex
+        (-half_length * 0.62, objective_radius * 0.92),   # bell shoulder
+        (-half_length * 0.40, tube_radius),               # bell -> tube
+        (-half_length * 0.10, tube_radius),               # tube
+        (0.0, tube_radius * 1.18),                        # turret hub bulge
+        (half_length * 0.18, tube_radius),                # tube
+        (half_length * 0.55, tube_radius),                # tube
+        (half_length * 0.72, ocular_radius * 0.95),       # ocular flare
+        (half_length * 0.92, ocular_radius),              # ocular cap
+        (half_length, ocular_radius * 0.78),              # rear cap chamfer
+    ]
+    primitives: list[ShapePrimitive] = [
         _box(component.part, component, tags=[*list(component.tags), "sight_mount"]),
-        _box(
-            component.part,
-            component,
-            center=(cx, cy + height * 0.60, cz),
-            extents=(width * 0.72, height * 0.58, depth * 0.58),
-            tags=[*list(component.tags), "optic_body"],
+        ShapePrimitive(
+            primitive_type="revolved_profile",
+            part=component.part,
+            center=(cx, optic_cy, cz),
+            axis="z",
+            tags=[*list(component.tags), "scope_tube"],
+            component=component.component_type,
+            region=component.name,
+            blend_mode="union",
+            profile_points=profile_points,
         ),
-        _box(
-            component.part,
-            component,
-            center=(cx, cy + height * 0.60, cz + depth * 0.36),
-            extents=(width * 0.46, height * 0.42, max(depth * 0.12, 0.06)),
-            tags=[*list(component.tags), "front_lens"],
+        # Elevation/windage turret hub on top of the tube.
+        ShapePrimitive(
+            primitive_type="cylinder",
+            part=component.part,
+            center=(cx, optic_cy + tube_radius * 1.05, cz),
+            radius=max(tube_radius * 0.70, 0.04),
+            height=max(tube_radius * 1.10, 0.05),
+            axis="y",
+            tags=[*list(component.tags), "elevation_turret"],
+            component=component.component_type,
+            region=component.name,
+            blend_mode="union",
+            rounding=0.005,
         ),
     ]
+    return primitives
 
 
 def _trigger_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
@@ -4789,6 +4829,17 @@ def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[floa
         if primitive.extents is None:
             raise _missing_box_extents_error(primitive)
         half = [value / 2.0 for value in primitive.extents]
+    elif primitive.primitive_type == "revolved_profile":
+        # Bounding-cylinder approximation around the swept profile.
+        from .exact_solids import _revolved_profile_extents
+
+        radius, height = _revolved_profile_extents(primitive)
+        if primitive.axis == "x":
+            half = [height / 2.0, radius, radius]
+        elif primitive.axis == "z":
+            half = [radius, radius, height / 2.0]
+        else:
+            half = [radius, height / 2.0, radius]
     else:
         if primitive.radius is None or primitive.height is None:
             raise _missing_non_box_dimensions_error(primitive)
@@ -4893,6 +4944,9 @@ def _shape_assessment(
     geometry_detail_primitives = [
         primitive for primitive in feature_primitives if "surface_detail" in primitive.tags
     ]
+    mesh_grammar_primitives = [
+        primitive for primitive in feature_primitives if "mesh_grammar" in primitive.tags
+    ]
     surface_detail_feature_count = len(geometry_detail_primitives)
     geometry_detail_feature_types = sorted(
         {primitive.component or "feature" for primitive in geometry_detail_primitives}
@@ -4995,6 +5049,15 @@ def _shape_assessment(
     for primitive in geometry_detail_primitives:
         key = primitive.component or "feature"
         geometry_detail_operator_counts[key] = geometry_detail_operator_counts.get(key, 0) + 1
+    mesh_grammar_operator_counts: dict[str, int] = {}
+    for primitive in mesh_grammar_primitives:
+        op_tags = [tag.removeprefix("mesh_op_") for tag in primitive.tags if tag.startswith("mesh_op_")]
+        if op_tags:
+            for op_tag in op_tags:
+                mesh_grammar_operator_counts[op_tag] = mesh_grammar_operator_counts.get(op_tag, 0) + 1
+        for modifier_tag in ("bevel", "chamfer"):
+            if modifier_tag in primitive.tags:
+                mesh_grammar_operator_counts[modifier_tag] = mesh_grammar_operator_counts.get(modifier_tag, 0) + 1
     attachment_region_count = sum(
         1
         for region in regions
@@ -5078,6 +5141,18 @@ def _shape_assessment(
             assessment["geometry_detail_silhouette_profiles"] = geometry_detail_silhouette_profiles
         if geometry_detail_silhouette_motifs:
             assessment["geometry_detail_silhouette_motifs"] = geometry_detail_silhouette_motifs
+    if mesh_grammar_primitives:
+        assessment["mesh_grammar_operator_counts"] = dict(sorted(mesh_grammar_operator_counts.items()))
+        assessment["mesh_grammar_generated_primitive_count"] = sum(
+            1
+            for primitive in mesh_grammar_primitives
+            if primitive.component in {"mesh_extrude", "mesh_sweep", "mesh_loft"}
+        )
+        assessment["mesh_grammar_modified_primitive_count"] = sum(
+            1
+            for primitive in mesh_grammar_primitives
+            if any(tag in primitive.tags for tag in {"bevel", "chamfer"})
+        )
     return assessment
 
 
@@ -5198,6 +5273,12 @@ def _build_shape_ir(
         signature["nested_assets"] = nested_assets
     if geometry_detail_controls.explicit_fields:
         signature["geometry_detail_controls"] = geometry_detail_controls.to_dict()
+    if assessment.get("mesh_grammar_operator_counts"):
+        signature["mesh_grammar"] = {
+            "operator_counts": dict(assessment["mesh_grammar_operator_counts"]),
+            "generated_primitive_count": int(assessment.get("mesh_grammar_generated_primitive_count", 0) or 0),
+            "modified_primitive_count": int(assessment.get("mesh_grammar_modified_primitive_count", 0) or 0),
+        }
     return ShapeIR(
         asset_name=asset_graph.name,
         family=asset_graph.family,

@@ -62,6 +62,24 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             half = np.array([radius, radius, half_h], dtype=np.float64)
         else:
             half = np.array([radius, half_h, radius], dtype=np.float64)
+    elif primitive.primitive_type == "revolved_profile":
+        # Bounding cylinder of the swept profile; SDF path uses this as
+        # an outer envelope, which is fine for voxelization since the
+        # exact-solid path produces the actual mesh.
+        points = primitive.profile_points or []
+        if not points:
+            raise _UnsupportedPrimitiveTypeError(
+                f"revolved_profile primitive missing profile_points (part={primitive.part!r})"
+            )
+        radius = max(abs(float(r)) for _, r in points) + rounding
+        axials = [float(a) for a, _ in points]
+        half_h = (max(axials) - min(axials)) / 2.0 + rounding
+        if primitive.axis == "x":
+            half = np.array([half_h, radius, radius], dtype=np.float64)
+        elif primitive.axis == "z":
+            half = np.array([radius, radius, half_h], dtype=np.float64)
+        else:
+            half = np.array([radius, half_h, radius], dtype=np.float64)
     else:
         raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
     center = np.array(primitive.center, dtype=np.float64)
@@ -109,6 +127,25 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
         return _box_sdf(points, primitive, rounding)
     if primitive.primitive_type == "cylinder":
         return _cylinder_sdf(points, primitive, rounding)
+    if primitive.primitive_type == "revolved_profile":
+        # SDF path uses the bounding cylinder as a coarse approximation.
+        # The voxelization fallback is only invoked when the exact-solid
+        # path is unavailable; the manifold/exact paths produce the
+        # accurate revolved mesh.
+        from .exact_solids import _revolved_profile_extents
+
+        radius, height = _revolved_profile_extents(primitive)
+        proxy = ShapePrimitive(
+            primitive_type="cylinder",
+            part=primitive.part,
+            center=primitive.center,
+            radius=float(radius),
+            height=float(height),
+            axis=primitive.axis,
+            blend_mode=primitive.blend_mode,
+            rounding=primitive.rounding,
+        )
+        return _cylinder_sdf(points, proxy, rounding)
     raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
 
 

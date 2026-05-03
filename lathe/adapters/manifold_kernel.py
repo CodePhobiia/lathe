@@ -58,6 +58,11 @@ class _SphereRadiusRequiredError(ValueError):
         super().__init__("sphere requires `radius`")
 
 
+class _RevolvedProfilePointsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("revolved_profile requires `profile_points` (>= 1 point)")
+
+
 class _UnsupportedPrimitiveKindError(ValueError):
     def __init__(self, kind: str) -> None:
         super().__init__(f"Unsupported primitive kind: {kind!r}")
@@ -157,8 +162,37 @@ class ManifoldKernel:
 
         Supported kinds: `box` (extents + optional center), `cylinder`
         (radius + height + axis + optional center), `sphere` (radius
-        + optional center).
+        + optional center), `revolved_profile` (profile_points +
+        optional axis + optional center + optional segments).
         """
+        if kind == "revolved_profile":
+            profile_points = params.get("profile_points")
+            if not profile_points:
+                raise _RevolvedProfilePointsRequiredError
+            axis = params.get("axis", "y")
+            center = params.get("center", (0.0, 0.0, 0.0))
+            segments = int(params.get("segments", 48))
+            # CrossSection contour: (radial, axial). Close back to the axis
+            # at both ends so the revolved manifold is watertight even when
+            # the author hands us an open profile.
+            axials = [float(a) for a, _ in profile_points]
+            first_axial = axials[0]
+            last_axial = axials[-1]
+            contour: list[tuple[float, float]] = [(0.0, first_axial)]
+            for axial, radial in profile_points:
+                contour.append((max(0.0, float(radial)), float(axial)))
+            contour.append((0.0, last_axial))
+            cross_section = _m3d.CrossSection([contour])
+            manifold = cross_section.revolve(circular_segments=segments)
+            # CrossSection.revolve emits the manifold around the
+            # 3D Z-axis. Rotate to the user's chosen axis.
+            if axis == "x":
+                manifold = manifold.rotate([0.0, 90.0, 0.0])
+            elif axis == "y":
+                manifold = manifold.rotate([90.0, 0.0, 0.0])
+            manifold = manifold.translate(list(map(float, center)))
+            return ManifoldMesh(manifold)
+
         if kind == "box":
             extents = params.get("extents")
             if extents is None:

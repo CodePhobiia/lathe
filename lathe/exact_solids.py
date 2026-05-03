@@ -29,6 +29,14 @@ def _missing_cylinder_dimensions_error(primitive: ShapePrimitive) -> ContractVio
     )
 
 
+def _missing_revolved_profile_points_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: revolved_profile ShapePrimitive requires "
+        f"profile_points (>= 1 point), got {primitive.profile_points!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
 def _unsupported_primitive_type_error(primitive_type: str) -> ValueError:
     return ValueError(f"Unsupported primitive type '{primitive_type}'")
 
@@ -92,7 +100,42 @@ def _primitive_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np
         return _box_surface_point(point, primitive)
     if primitive.primitive_type == "cylinder":
         return _cylinder_surface_point(point, primitive)
+    if primitive.primitive_type == "revolved_profile":
+        # Use the bounding cylinder for surface-snap projection. Snapping
+        # to the exact swept surface would require sampling the profile
+        # polyline; the bounding cylinder is a safe under-approximation
+        # that pulls vertices roughly toward the silhouette without
+        # introducing oscillation. Hero exactification can be added in a
+        # follow-up.
+        return _cylinder_surface_point(point, _revolved_profile_bounding_cylinder(primitive))
     raise _unsupported_primitive_type_error(primitive.primitive_type)
+
+
+def _revolved_profile_bounding_cylinder(primitive: ShapePrimitive) -> ShapePrimitive:
+    """Coerce a revolved_profile primitive into a bounding cylinder for snap fallbacks."""
+    radius, height = _revolved_profile_extents(primitive)
+    return ShapePrimitive(
+        primitive_type="cylinder",
+        part=primitive.part,
+        center=primitive.center,
+        radius=radius,
+        height=height,
+        axis=primitive.axis,
+        component=primitive.component,
+        region=primitive.region,
+        blend_mode=primitive.blend_mode,
+        rounding=primitive.rounding,
+    )
+
+
+def _revolved_profile_extents(primitive: ShapePrimitive) -> tuple[float, float]:
+    """Return (max_radius, axial_height) of a revolved_profile primitive."""
+    points = primitive.profile_points or []
+    if not points:
+        raise _missing_revolved_profile_points_error(primitive)
+    axials = [float(a) for a, _ in points]
+    radials = [abs(float(r)) for _, r in points]
+    return max(radials), max(axials) - min(axials)
 
 
 def _translated_box(
@@ -118,10 +161,69 @@ def _translated_cylinder(
     return mesh
 
 
+def _rounded_box_mesh(
+    extents: tuple[float, float, float],
+    center: tuple[float, float, float],
+    *,
+    radius: float,
+    segments: int,
+) -> trimesh.Trimesh:
+    half = np.asarray(extents, dtype=np.float64) / 2.0
+    radius = min(max(float(radius), 0.0), float(np.min(half)) * 0.92)
+    if radius <= NUMERIC_EPSILON:
+        return _translated_box(extents, center)
+
+    steps = max(1, min(6, int(segments)))
+    points: list[tuple[float, float, float]] = []
+    core = np.maximum(half - radius, NUMERIC_EPSILON)
+    for sx in (-1.0, 1.0):
+        for sy in (-1.0, 1.0):
+            for sz in (-1.0, 1.0):
+                base = np.asarray([sx * core[0], sy * core[1], sz * core[2]], dtype=np.float64)
+                for theta_i in range(steps + 1):
+                    theta = (np.pi / 2.0) * theta_i / steps
+                    for phi_i in range(steps + 1):
+                        phi = (np.pi / 2.0) * phi_i / steps
+                        direction = np.asarray(
+                            [
+                                sx * np.cos(theta) * np.cos(phi),
+                                sy * np.sin(theta) * np.cos(phi),
+                                sz * np.sin(phi),
+                            ],
+                            dtype=np.float64,
+                        )
+                        point = base + radius * direction
+                        points.append((float(point[0]), float(point[1]), float(point[2])))
+    cloud = trimesh.Trimesh(vertices=np.asarray(points, dtype=np.float64), faces=None, process=False)
+    mesh = cloud.convex_hull
+    mesh.apply_translation(np.asarray(center, dtype=np.float64))
+    mesh.remove_unreferenced_vertices()
+    mesh.fix_normals()
+    return mesh
+
+
+def _rounding_segments(primitive: ShapePrimitive) -> int:
+    for tag in primitive.tags:
+        text = str(tag)
+        if text.startswith("bevel_segments_") or text.startswith("chamfer_segments_"):
+            try:
+                return int(text.rsplit("_", 1)[-1])
+            except ValueError:
+                return 3
+    return 3
+
+
 def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     if primitive.primitive_type == "box":
         if primitive.extents is None:
             raise _missing_box_extents_error(primitive)
+        if float(primitive.rounding or 0.0) > NUMERIC_EPSILON:
+            return _rounded_box_mesh(
+                primitive.extents,
+                primitive.center,
+                radius=float(primitive.rounding or 0.0),
+                segments=_rounding_segments(primitive),
+            )
         return _translated_box(primitive.extents, primitive.center)
     if primitive.primitive_type == "cylinder":
         if primitive.radius is None or primitive.height is None:
@@ -129,7 +231,55 @@ def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         return _translated_cylinder(
             float(primitive.radius), float(primitive.height), primitive.center, primitive.axis
         )
+    if primitive.primitive_type == "revolved_profile":
+        return _revolved_profile_mesh(primitive)
     raise _unsupported_primitive_type_error(primitive.primitive_type)
+
+
+def _revolved_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Build a solid-of-revolution trimesh from a 2D (axial, radial) profile.
+
+    The profile is revolved 360° around ``primitive.axis`` through
+    ``primitive.center``. The polyline is automatically closed back to the
+    axis (radial=0) at both ends so the result is watertight even when the
+    author specified an open profile.
+    """
+    points = primitive.profile_points or []
+    if not points:
+        raise _missing_revolved_profile_points_error(primitive)
+    sections = max(16, min(96, _rounding_segments(primitive) * 16))
+
+    # Build a closed profile in (radial, axial) form because trimesh's
+    # ``revolve`` revolves the 2D Y-axis into the 3D Z-axis (matching
+    # manifold3d's convention). Snap the first/last points back to the
+    # axis (radial=0) to guarantee watertightness.
+    profile: list[tuple[float, float]] = []
+    first_axial = float(points[0][0])
+    last_axial = float(points[-1][0])
+    profile.append((0.0, first_axial))
+    for axial, radial in points:
+        profile.append((max(0.0, float(radial)), float(axial)))
+    profile.append((0.0, last_axial))
+
+    linestring = np.asarray(profile, dtype=np.float64)
+    mesh = trimesh.creation.revolve(linestring, sections=sections)
+
+    # trimesh.creation.revolve emits the result aligned to 3D Z. Rotate to
+    # the requested axis, then translate to the primitive's center.
+    if primitive.axis == "x":
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2.0, [0.0, 1.0, 0.0]))
+    elif primitive.axis == "y":
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(-np.pi / 2.0, [1.0, 0.0, 0.0]))
+    matrix = np.eye(4)
+    matrix[:3, 3] = np.asarray(primitive.center, dtype=np.float64)
+    mesh.apply_transform(matrix)
+    mesh.fix_normals()
+    return mesh
+
+
+def primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Compile one ShapePrimitive into its visible mesh surface."""
+    return _primitive_mesh(primitive)
 
 
 def compile_explicit_surface_mesh(
@@ -197,6 +347,16 @@ def _primitive_bounds(primitive: ShapePrimitive, margin: float) -> tuple[np.ndar
             raise _missing_cylinder_dimensions_error(primitive)
         radius = float(primitive.radius) + margin
         half_height = float(primitive.height) / 2.0 + margin
+        if primitive.axis == "x":
+            half = np.asarray([half_height, radius, radius], dtype=np.float64)
+        elif primitive.axis == "z":
+            half = np.asarray([radius, radius, half_height], dtype=np.float64)
+        else:
+            half = np.asarray([radius, half_height, radius], dtype=np.float64)
+    elif primitive.primitive_type == "revolved_profile":
+        radius, height = _revolved_profile_extents(primitive)
+        radius = radius + margin
+        half_height = height / 2.0 + margin
         if primitive.axis == "x":
             half = np.asarray([half_height, radius, radius], dtype=np.float64)
         elif primitive.axis == "z":

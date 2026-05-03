@@ -138,6 +138,13 @@ def _fuse_via_manifold_kernel(shape_ir: ShapeIR) -> tuple[trimesh.Trimesh, list[
                     axis=primitive.axis,
                     center=tuple(primitive.center),
                 )
+            elif primitive.primitive_type == "revolved_profile":
+                handle = kernel.build_primitive(
+                    "revolved_profile",
+                    profile_points=list(primitive.profile_points or []),
+                    axis=primitive.axis,
+                    center=tuple(primitive.center),
+                )
             else:
                 return None
         except Exception:

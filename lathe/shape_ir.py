@@ -13,7 +13,20 @@ from typing import Any
 
 @dataclass
 class ShapePrimitive:
-    """ShapePrimitive."""
+    """ShapePrimitive.
+
+    Currently supported ``primitive_type`` values:
+
+    - ``"box"``: axis-aligned cuboid; uses ``extents`` (full, not half).
+    - ``"cylinder"``: round cylinder along ``axis``; uses ``radius`` + ``height``.
+    - ``"revolved_profile"``: solid of revolution around ``axis`` through
+      ``center``, defined by ``profile_points`` as a list of
+      ``(axial, radial)`` 2D points (cm). The profile is revolved 360° to
+      produce a watertight, radially-symmetric mesh — the deterministic
+      vocabulary needed for hard-surface assets like rifle barrels,
+      scope tubes, magazine bodies, and stocks-of-revolution that the
+      box+cylinder vocabulary cannot express.
+    """
 
     primitive_type: str
     part: str
@@ -27,6 +40,9 @@ class ShapePrimitive:
     region: str | None = None
     blend_mode: str = "union"
     rounding: float = 0.0
+    # ``profile_points`` is a list of (axial, radial) 2D points used by
+    # ``primitive_type="revolved_profile"``. None for box/cylinder.
+    profile_points: list[tuple[float, float]] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.
