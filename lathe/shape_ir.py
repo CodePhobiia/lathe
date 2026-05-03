@@ -52,6 +52,13 @@ class ShapePrimitive:
       so authors can round one face/edge/corner without touching the
       others — receivers with rounded backs / sharp fronts, stocks with
       chamfered buttplates, magazine wells with eased entry corners.
+    - ``"swept_profile"``: a 2D ``cross_section`` polygon swept along a
+      3D ``sweep_path`` polyline through ``center``. The cross-section's
+      local Y aligns with the path tangent at each frame; the local X/Z
+      span the perpendicular plane. This is the most general curved
+      vocabulary in the kit — covers ergonomic stocks, curved barrel
+      shrouds, hose-like trim, sling cables, and contoured rail covers
+      that a single straight-axis revolve cannot express.
     """
 
     primitive_type: str
@@ -91,6 +98,12 @@ class ShapePrimitive:
     # ``corner_segments`` controls the per-corner sphere tessellation for
     # ``primitive_type="subdivision_box"``. Higher = smoother corners.
     corner_segments: int = 4
+    # ``cross_section`` is a closed CCW 2D polygon (local x, z) used by
+    # ``primitive_type="swept_profile"``. None for other types.
+    cross_section: list[tuple[float, float]] | None = None
+    # ``sweep_path`` is a 3D polyline of frame origins used by
+    # ``primitive_type="swept_profile"``. None for other types.
+    sweep_path: list[tuple[float, float, float]] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.

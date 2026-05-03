@@ -82,6 +82,12 @@ class _SubdivisionBoxExtentsRequiredError(ValueError):
 class _SubdivisionBoxCornerRadiiRequiredError(ValueError):
     def __init__(self) -> None:
         super().__init__("subdivision_box requires `corner_radii` (8-tuple)")
+class _SweptProfileInputRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__(
+            "swept_profile requires `cross_section` (>= 3 points) and "
+            "`sweep_path` (>= 2 points)"
+        )
 
 
 class _UnsupportedPrimitiveKindError(ValueError):
@@ -189,7 +195,8 @@ class ManifoldKernel:
         optional axis + optional center), `torus` (major_radius +
         minor_radius + optional axis + optional center + optional
         segments), `subdivision_box` (extents + corner_radii 8-tuple +
-        optional center + optional segments).
+        optional center + optional segments), `swept_profile`
+        (cross_section + sweep_path + optional center).
         """
         if kind == "extruded_profile":
             profile_polygon = params.get("profile_polygon")
@@ -276,6 +283,34 @@ class ManifoldKernel:
             manifold = manifold.translate(list(map(float, center)))
             return ManifoldMesh(manifold)
 
+        if kind == "swept_profile":
+            cross_section = params.get("cross_section")
+            sweep_path = params.get("sweep_path")
+            if (
+                not cross_section
+                or len(cross_section) < 3
+                or not sweep_path
+                or len(sweep_path) < 2
+            ):
+                raise _SweptProfileInputRequiredError
+            center = params.get("center", (0.0, 0.0, 0.0))
+            # manifold3d has no native sweep operation. Build the mesh
+            # via trimesh.creation.sweep_polygon, then import it into
+            # manifold via Mesh(vert_properties, tri_verts).
+            from trimesh.path.polygons import Polygon
+
+            polygon = Polygon([(float(u), float(v)) for u, v in cross_section])
+            path_arr = np.asarray(
+                [[float(x), float(y), float(z)] for x, y, z in sweep_path], dtype=np.float64
+            )
+            tm = trimesh.creation.sweep_polygon(polygon, path=path_arr, cap=True, connect=True)
+            verts = np.ascontiguousarray(np.asarray(tm.vertices, dtype=np.float32))
+            faces = np.ascontiguousarray(np.asarray(tm.faces, dtype=np.uint32))
+            mesh = _m3d.Mesh(vert_properties=verts, tri_verts=faces)
+            mesh.merge()
+            manifold = _m3d.Manifold(mesh)
+            manifold = manifold.translate(list(map(float, center)))
+            return ManifoldMesh(manifold)
 
         if kind == "revolved_profile":
             profile_points = params.get("profile_points")

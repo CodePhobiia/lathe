@@ -45,6 +45,16 @@ def _missing_extruded_profile_polygon_error(primitive: ShapePrimitive) -> Contra
     )
 
 
+def _missing_swept_profile_inputs_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: swept_profile ShapePrimitive requires "
+        f"cross_section (>= 3 points) and sweep_path (>= 2 points), got "
+        f"cross_section={primitive.cross_section!r}, "
+        f"sweep_path={primitive.sweep_path!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
 def _missing_extruded_profile_height_error(primitive: ShapePrimitive) -> ContractViolation:
     return ContractViolation(
         "invariant violation: extruded_profile ShapePrimitive requires "
@@ -167,6 +177,13 @@ def _primitive_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np
         # box is a safe approximation that pulls vertices toward the
         # silhouette without overshooting.
         return _box_surface_point(point, _subdivision_box_envelope(primitive))
+    if primitive.primitive_type == "swept_profile":
+        # Snap toward the bounding sphere of the swept tube — the path
+        # is 3D and curved, so a true closest-point query would need
+        # per-segment cross-section evaluation. The sphere is a coarse
+        # under-approximation that pulls vertices toward the silhouette
+        # without oscillating. Exactification is left for a follow-up.
+        return _swept_profile_bounding_sphere_point(point, primitive)
     raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
@@ -299,6 +316,51 @@ def _subdivision_box_corner_radii(
     half = np.asarray(primitive.extents, dtype=np.float64) / 2.0
     cap = float(np.min(half)) * 0.92
     return tuple(min(max(float(r), 0.0), cap) for r in radii)  # type: ignore[return-value]
+def _swept_profile_circumradius(primitive: ShapePrimitive) -> float:
+    """Return the cross-section circumradius (max distance from local origin)."""
+    cross_section = primitive.cross_section or []
+    if not cross_section:
+        return 0.0
+    return max(float(np.hypot(float(u), float(v))) for u, v in cross_section)
+
+
+def _swept_profile_extents(
+    primitive: ShapePrimitive,
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """Return (path_min, path_max, circumradius) of a swept_profile primitive.
+
+    ``path_min`` and ``path_max`` are the AABB corners of the sweep path's
+    frame origins (before the primitive's ``center`` translation). The
+    circumradius is the max in-plane reach of the cross-section away from
+    its local origin.
+    """
+    cross_section = primitive.cross_section or []
+    sweep_path = primitive.sweep_path or []
+    if len(cross_section) < 3 or len(sweep_path) < 2:
+        raise _missing_swept_profile_inputs_error(primitive)
+    path = np.asarray([[float(x), float(y), float(z)] for x, y, z in sweep_path], dtype=np.float64)
+    return (
+        path.min(axis=0),
+        path.max(axis=0),
+        _swept_profile_circumradius(primitive),
+    )
+
+
+def _swept_profile_bounding_sphere_point(
+    point: np.ndarray, primitive: ShapePrimitive
+) -> np.ndarray:
+    """Project a point onto the bounding sphere of a swept_profile primitive."""
+    path_min, path_max, circumradius = _swept_profile_extents(primitive)
+    center = np.asarray(primitive.center, dtype=np.float64) + 0.5 * (path_min + path_max)
+    half = 0.5 * (path_max - path_min)
+    radius = float(np.linalg.norm(half)) + max(circumradius, NUMERIC_EPSILON)
+    direction = point - center
+    norm = float(np.linalg.norm(direction))
+    if norm <= NUMERIC_EPSILON:
+        # Degenerate: point sits at the sphere center; pick an arbitrary
+        # outward direction to avoid NaNs from the zero-vector normalization.
+        return center + np.asarray([radius, 0.0, 0.0], dtype=np.float64)
+    return center + direction * (radius / norm)
 
 
 def _translated_box(
@@ -402,6 +464,8 @@ def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         return _torus_mesh(primitive)
     if primitive.primitive_type == "subdivision_box":
         return _subdivision_box_mesh(primitive)
+    if primitive.primitive_type == "swept_profile":
+        return _swept_profile_mesh(primitive)
     raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
@@ -596,6 +660,39 @@ def _torus_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     return mesh
 
 
+def _swept_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Build a swept-cross-section trimesh from a 2D polygon and a 3D path.
+
+    The cross-section polygon (CCW, in the local x/z plane) is swept along
+    the 3D ``sweep_path`` polyline using ``trimesh.creation.sweep_polygon``.
+    The result is a watertight tube whose silhouette follows the path while
+    the cross-section remains constant. The mesh is then translated by
+    ``primitive.center``. ``primitive.axis`` is intentionally ignored: the
+    sweep path itself provides full 3D orientation.
+    """
+    cross_section = primitive.cross_section or []
+    sweep_path = primitive.sweep_path or []
+    if len(cross_section) < 3 or len(sweep_path) < 2:
+        raise _missing_swept_profile_inputs_error(primitive)
+
+    # ``trimesh.creation.sweep_polygon`` accepts a shapely Polygon. The
+    # Polygon class is re-exported from ``trimesh.path.polygons`` so we
+    # don't need a direct shapely import.
+    from trimesh.path.polygons import Polygon
+
+    polygon = Polygon([(float(u), float(v)) for u, v in cross_section])
+    path = np.asarray(
+        [[float(x), float(y), float(z)] for x, y, z in sweep_path], dtype=np.float64
+    )
+    mesh = trimesh.creation.sweep_polygon(polygon, path=path, cap=True, connect=True)
+
+    matrix = np.eye(4)
+    matrix[:3, 3] = np.asarray(primitive.center, dtype=np.float64)
+    mesh.apply_transform(matrix)
+    mesh.fix_normals()
+    return mesh
+
+
 def primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     """Compile one ShapePrimitive into its visible mesh surface."""
     return _primitive_mesh(primitive)
@@ -718,6 +815,15 @@ def _primitive_bounds(primitive: ShapePrimitive, margin: float) -> tuple[np.ndar
         if primitive.extents is None:
             raise _missing_subdivision_box_extents_error(primitive)
         half = np.asarray(primitive.extents, dtype=np.float64) / 2.0 + margin
+    elif primitive.primitive_type == "swept_profile":
+        # AABB of the path expanded by the cross-section circumradius.
+        # The path origin offset means the primitive's ``center`` already
+        # acts as the global anchor — re-derive the axis-aligned envelope
+        # from the path itself, ignoring the precomputed ``center``.
+        path_min, path_max, circumradius = _swept_profile_extents(primitive)
+        reach = circumradius + margin
+        center = np.asarray(primitive.center, dtype=np.float64) + 0.5 * (path_min + path_max)
+        half = 0.5 * (path_max - path_min) + reach
     else:
         raise _unsupported_primitive_type_error(primitive.primitive_type)
     return center - half, center + half

@@ -169,6 +169,13 @@ def _fuse_via_manifold_kernel(shape_ir: ShapeIR) -> tuple[trimesh.Trimesh, list[
                     center=tuple(primitive.center),
                     segments=int(primitive.corner_segments),
                 )
+            elif primitive.primitive_type == "swept_profile":
+                handle = kernel.build_primitive(
+                    "swept_profile",
+                    cross_section=list(primitive.cross_section or []),
+                    sweep_path=list(primitive.sweep_path or []),
+                    center=tuple(primitive.center),
+                )
             else:
                 return None
         except Exception:

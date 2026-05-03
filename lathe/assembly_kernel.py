@@ -4876,6 +4876,19 @@ def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[floa
             half = [radius, radius, height / 2.0]
         else:
             half = [radius, height / 2.0, radius]
+    elif primitive.primitive_type == "swept_profile":
+        # AABB of the sweep path expanded by the cross-section
+        # circumradius. The path is anchored to ``primitive.center``;
+        # bounds are recomputed from the path itself rather than treating
+        # ``center`` as the AABB center.
+        from .exact_solids import _swept_profile_extents
+
+        path_min, path_max, circumradius = _swept_profile_extents(primitive)
+        path_center = [float(0.5 * (path_max[idx] + path_min[idx])) for idx in range(3)]
+        half = [float(0.5 * (path_max[idx] - path_min[idx]) + circumradius) for idx in range(3)]
+        bounds_min = [primitive.center[idx] + path_center[idx] - half[idx] for idx in range(3)]
+        bounds_max = [primitive.center[idx] + path_center[idx] + half[idx] for idx in range(3)]
+        return bounds_min, bounds_max
     else:
         if primitive.radius is None or primitive.height is None:
             raise _missing_non_box_dimensions_error(primitive)

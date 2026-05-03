@@ -128,6 +128,19 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
         if primitive.extents is None:
             raise _MissingBoxExtentsError(primitive.part)
         half = np.array(primitive.extents, dtype=np.float64) / 2.0 + rounding
+    elif primitive.primitive_type == "swept_profile":
+        # AABB of the path origins expanded by the cross-section
+        # circumradius. The SDF voxelization path is rarely hit for
+        # swept_profile — manifold/exact handles it — but the box gives
+        # a safe outer envelope when this path is taken.
+        from .exact_solids import _swept_profile_extents
+
+        path_min, path_max, circumradius = _swept_profile_extents(primitive)
+        reach = circumradius + rounding
+        path_center = 0.5 * (path_min + path_max)
+        half = 0.5 * (path_max - path_min) + reach
+        center = np.array(primitive.center, dtype=np.float64) + path_center
+        return center - half, center + half
     else:
         raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
     center = np.array(primitive.center, dtype=np.float64)
@@ -219,14 +232,6 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             extents = (bbox_u, bbox_v, bbox_h)
         else:
             extents = (bbox_u, bbox_h, bbox_v)
-    if primitive.primitive_type == "subdivision_box":
-        # SDF path approximates per-corner radii by the maximum corner
-        # radius applied uniformly via the existing rounded-box SDF
-        # (``_box_sdf`` already supports a uniform ``rounding`` knob).
-        # This is only hit when the exact/manifold paths are unavailable;
-        # those produce the true per-corner geometry.
-        radii = primitive.corner_radii or ()
-        max_radius = max((float(r) for r in radii), default=0.0)
         proxy = ShapePrimitive(
             primitive_type="box",
             part=primitive.part,
@@ -259,10 +264,7 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
         return _cylinder_sdf(points, proxy, rounding)
     if primitive.primitive_type == "subdivision_box":
         # SDF path approximates per-corner radii by the maximum corner
-        # radius applied uniformly via the existing rounded-box SDF
-        # (``_box_sdf`` already supports a uniform ``rounding`` knob).
-        # This is only hit when the exact/manifold paths are unavailable;
-        # those produce the true per-corner geometry.
+        # radius applied uniformly via the existing rounded-box SDF.
         radii = primitive.corner_radii or ()
         max_radius = max((float(r) for r in radii), default=0.0)
         proxy = ShapePrimitive(
@@ -274,6 +276,26 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             rounding=primitive.rounding,
         )
         return _box_sdf(points, proxy, rounding + max_radius)
+    if primitive.primitive_type == "swept_profile":
+        # SDF path is rarely hit for swept_profile — manifold/exact paths
+        # produce the accurate swept mesh. Use the AABB of the path
+        # expanded by the cross-section circumradius as a coarse box SDF
+        # proxy so voxelization still produces a non-empty volume.
+        from .exact_solids import _swept_profile_extents
+
+        path_min, path_max, circumradius = _swept_profile_extents(primitive)
+        reach = max(circumradius, 0.0)
+        path_center = 0.5 * (path_min + path_max)
+        full_extents = (path_max - path_min) + 2.0 * reach
+        proxy = ShapePrimitive(
+            primitive_type="box",
+            part=primitive.part,
+            center=tuple(np.asarray(primitive.center, dtype=np.float64) + path_center),
+            extents=tuple(float(v) for v in full_extents),
+            blend_mode=primitive.blend_mode,
+            rounding=primitive.rounding,
+        )
+        return _box_sdf(points, proxy, rounding)
     raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
 
 
