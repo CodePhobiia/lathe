@@ -63,6 +63,16 @@ class _RevolvedProfilePointsRequiredError(ValueError):
         super().__init__("revolved_profile requires `profile_points` (>= 1 point)")
 
 
+class _ExtrudedProfilePolygonRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("extruded_profile requires `profile_polygon` (>= 3 CCW points)")
+
+
+class _ExtrudedProfileHeightRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("extruded_profile requires `extrude_height` (> 0)")
+
+
 class _UnsupportedPrimitiveKindError(ValueError):
     def __init__(self, kind: str) -> None:
         super().__init__(f"Unsupported primitive kind: {kind!r}")
@@ -163,8 +173,33 @@ class ManifoldKernel:
         Supported kinds: `box` (extents + optional center), `cylinder`
         (radius + height + axis + optional center), `sphere` (radius
         + optional center), `revolved_profile` (profile_points +
-        optional axis + optional center + optional segments).
+        optional axis + optional center + optional segments),
+        `extruded_profile` (profile_polygon + extrude_height +
+        optional axis + optional center).
         """
+        if kind == "extruded_profile":
+            profile_polygon = params.get("profile_polygon")
+            if profile_polygon is None or len(tuple(profile_polygon)) < 3:  # noqa: PLR2004
+                raise _ExtrudedProfilePolygonRequiredError
+            extrude_height = params.get("extrude_height")
+            if extrude_height is None or float(extrude_height) <= 0.0:
+                raise _ExtrudedProfileHeightRequiredError
+            axis = params.get("axis", "z")
+            center = params.get("center", (0.0, 0.0, 0.0))
+            contour = [(float(u), float(v)) for u, v in profile_polygon]
+            cross_section = _m3d.CrossSection([contour])
+            manifold = cross_section.extrude(float(extrude_height))
+            # ``CrossSection.extrude`` extrudes along +Z starting at
+            # z=0, so recenter the prism on z=0 before rotating to the
+            # requested axis.
+            manifold = manifold.translate([0.0, 0.0, -float(extrude_height) / 2.0])
+            if axis == "x":
+                manifold = manifold.rotate([0.0, 90.0, 0.0])
+            elif axis == "y":
+                manifold = manifold.rotate([90.0, 0.0, 0.0])
+            manifold = manifold.translate(list(map(float, center)))
+            return ManifoldMesh(manifold)
+
         if kind == "revolved_profile":
             profile_points = params.get("profile_points")
             if not profile_points:

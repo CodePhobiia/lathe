@@ -37,6 +37,22 @@ def _missing_revolved_profile_points_error(primitive: ShapePrimitive) -> Contrac
     )
 
 
+def _missing_extruded_profile_polygon_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: extruded_profile ShapePrimitive requires "
+        f"profile_polygon (>= 3 CCW points), got {primitive.profile_polygon!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
+def _missing_extruded_profile_height_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: extruded_profile ShapePrimitive requires "
+        f"extrude_height (> 0), got {primitive.extrude_height!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
 def _unsupported_primitive_type_error(primitive_type: str) -> ValueError:
     return ValueError(f"Unsupported primitive type '{primitive_type}'")
 
@@ -108,6 +124,13 @@ def _primitive_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np
         # introducing oscillation. Hero exactification can be added in a
         # follow-up.
         return _cylinder_surface_point(point, _revolved_profile_bounding_cylinder(primitive))
+    if primitive.primitive_type == "extruded_profile":
+        # Use the bounding cylinder around the polygon's circumradius for
+        # surface-snap projection. Snapping to the exact prismatic faces
+        # would require per-edge plane projection; the circumscribing
+        # cylinder is a safe outer envelope that matches the
+        # revolved_profile fallback strategy.
+        return _cylinder_surface_point(point, _extruded_profile_bounding_cylinder(primitive))
     raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
@@ -136,6 +159,47 @@ def _revolved_profile_extents(primitive: ShapePrimitive) -> tuple[float, float]:
     axials = [float(a) for a, _ in points]
     radials = [abs(float(r)) for _, r in points]
     return max(radials), max(axials) - min(axials)
+
+
+def _extruded_profile_polygon_bbox(
+    primitive: ShapePrimitive,
+) -> tuple[float, float, float, float]:
+    """Return (umin, umax, vmin, vmax) of the cross-section polygon."""
+    polygon = primitive.profile_polygon or []
+    if len(polygon) < 3:  # noqa: PLR2004
+        raise _missing_extruded_profile_polygon_error(primitive)
+    us = [float(u) for u, _ in polygon]
+    vs = [float(v) for _, v in polygon]
+    return min(us), max(us), min(vs), max(vs)
+
+
+def _extruded_profile_circumradius(primitive: ShapePrimitive) -> float:
+    """Return the largest distance from the polygon centroid to any vertex."""
+    polygon = primitive.profile_polygon or []
+    if len(polygon) < 3:  # noqa: PLR2004
+        raise _missing_extruded_profile_polygon_error(primitive)
+    cu = sum(float(u) for u, _ in polygon) / len(polygon)
+    cv = sum(float(v) for _, v in polygon) / len(polygon)
+    return max(((float(u) - cu) ** 2 + (float(v) - cv) ** 2) ** 0.5 for u, v in polygon)
+
+
+def _extruded_profile_bounding_cylinder(primitive: ShapePrimitive) -> ShapePrimitive:
+    """Coerce an extruded_profile primitive into a bounding cylinder for snap fallbacks."""
+    if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
+        raise _missing_extruded_profile_height_error(primitive)
+    radius = _extruded_profile_circumradius(primitive)
+    return ShapePrimitive(
+        primitive_type="cylinder",
+        part=primitive.part,
+        center=primitive.center,
+        radius=float(radius),
+        height=float(primitive.extrude_height),
+        axis=primitive.axis,
+        component=primitive.component,
+        region=primitive.region,
+        blend_mode=primitive.blend_mode,
+        rounding=primitive.rounding,
+    )
 
 
 def _translated_box(
@@ -233,6 +297,8 @@ def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         )
     if primitive.primitive_type == "revolved_profile":
         return _revolved_profile_mesh(primitive)
+    if primitive.primitive_type == "extruded_profile":
+        return _extruded_profile_mesh(primitive)
     raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
@@ -270,6 +336,50 @@ def _revolved_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2.0, [0.0, 1.0, 0.0]))
     elif primitive.axis == "y":
         mesh.apply_transform(trimesh.transformations.rotation_matrix(-np.pi / 2.0, [1.0, 0.0, 0.0]))
+    matrix = np.eye(4)
+    matrix[:3, 3] = np.asarray(primitive.center, dtype=np.float64)
+    mesh.apply_transform(matrix)
+    mesh.fix_normals()
+    return mesh
+
+
+def _extruded_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Build a prismatic trimesh by linearly extruding a 2D polygon.
+
+    The polygon (``profile_polygon``, CCW (u, v) points in the
+    cross-section plane) is swept ``extrude_height`` along
+    ``primitive.axis`` through ``primitive.center``. The polygon is
+    triangulated by shapely and capped at both ends so the result is
+    watertight.
+    """
+    polygon = primitive.profile_polygon or []
+    if len(polygon) < 3:  # noqa: PLR2004
+        raise _missing_extruded_profile_polygon_error(primitive)
+    if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
+        raise _missing_extruded_profile_height_error(primitive)
+
+    from shapely.geometry import Polygon  # local import: shapely is optional outside this path
+
+    coords = [(float(u), float(v)) for u, v in polygon]
+    shape_polygon = Polygon(coords)
+    if not shape_polygon.is_valid:
+        # Triangulation requires a simple, non-self-intersecting polygon;
+        # ``buffer(0)`` is shapely's idiomatic repair for near-degenerate
+        # CCW input that the user supplied with redundant vertices.
+        shape_polygon = shape_polygon.buffer(0)
+    height = float(primitive.extrude_height)
+    mesh = trimesh.creation.extrude_polygon(shape_polygon, height)
+
+    # ``extrude_polygon`` extrudes along +Z starting at z=0; recenter to
+    # z=0 so the primitive's ``center`` translates the geometric center.
+    mesh.apply_translation(np.asarray([0.0, 0.0, -height / 2.0], dtype=np.float64))
+
+    # Rotate so the extrusion axis matches ``primitive.axis``.
+    if primitive.axis == "x":
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2.0, [0.0, 1.0, 0.0]))
+    elif primitive.axis == "y":
+        mesh.apply_transform(trimesh.transformations.rotation_matrix(-np.pi / 2.0, [1.0, 0.0, 0.0]))
+
     matrix = np.eye(4)
     matrix[:3, 3] = np.asarray(primitive.center, dtype=np.float64)
     mesh.apply_transform(matrix)
@@ -363,6 +473,21 @@ def _primitive_bounds(primitive: ShapePrimitive, margin: float) -> tuple[np.ndar
             half = np.asarray([radius, radius, half_height], dtype=np.float64)
         else:
             half = np.asarray([radius, half_height, radius], dtype=np.float64)
+    elif primitive.primitive_type == "extruded_profile":
+        # AABB derived from the polygon's 2D bbox (in the cross-section
+        # plane) plus the extrude_height along ``axis``.
+        umin, umax, vmin, vmax = _extruded_profile_polygon_bbox(primitive)
+        if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
+            raise _missing_extruded_profile_height_error(primitive)
+        half_axial = float(primitive.extrude_height) / 2.0 + margin
+        half_u = (umax - umin) / 2.0 + margin
+        half_v = (vmax - vmin) / 2.0 + margin
+        if primitive.axis == "x":
+            half = np.asarray([half_axial, half_u, half_v], dtype=np.float64)
+        elif primitive.axis == "z":
+            half = np.asarray([half_u, half_v, half_axial], dtype=np.float64)
+        else:
+            half = np.asarray([half_u, half_axial, half_v], dtype=np.float64)
     else:
         raise _unsupported_primitive_type_error(primitive.primitive_type)
     return center - half, center + half

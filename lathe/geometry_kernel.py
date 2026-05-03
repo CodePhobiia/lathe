@@ -80,6 +80,30 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             half = np.array([radius, radius, half_h], dtype=np.float64)
         else:
             half = np.array([radius, half_h, radius], dtype=np.float64)
+    elif primitive.primitive_type == "extruded_profile":
+        # AABB of the polygon's 2D bbox extruded along ``axis``. The
+        # voxelization fallback is rarely invoked; manifold/exact paths
+        # produce the accurate prismatic mesh.
+        polygon = primitive.profile_polygon or []
+        if len(polygon) < 3:  # noqa: PLR2004
+            raise _UnsupportedPrimitiveTypeError(
+                f"extruded_profile primitive missing profile_polygon (part={primitive.part!r})"
+            )
+        if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
+            raise _UnsupportedPrimitiveTypeError(
+                f"extruded_profile primitive missing extrude_height (part={primitive.part!r})"
+            )
+        us = [float(u) for u, _ in polygon]
+        vs = [float(v) for _, v in polygon]
+        half_u = (max(us) - min(us)) / 2.0 + rounding
+        half_v = (max(vs) - min(vs)) / 2.0 + rounding
+        half_h = float(primitive.extrude_height) / 2.0 + rounding
+        if primitive.axis == "x":
+            half = np.array([half_h, half_u, half_v], dtype=np.float64)
+        elif primitive.axis == "z":
+            half = np.array([half_u, half_v, half_h], dtype=np.float64)
+        else:
+            half = np.array([half_u, half_h, half_v], dtype=np.float64)
     else:
         raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
     center = np.array(primitive.center, dtype=np.float64)
@@ -146,6 +170,40 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             rounding=primitive.rounding,
         )
         return _cylinder_sdf(points, proxy, rounding)
+    if primitive.primitive_type == "extruded_profile":
+        # SDF path uses the polygon's 2D bbox extruded along ``axis`` as a
+        # coarse outer envelope. The voxelization fallback is rarely
+        # invoked; manifold/exact paths produce the accurate prismatic
+        # mesh (per-edge plane SDF would be the hero refinement).
+        polygon = primitive.profile_polygon or []
+        if len(polygon) < 3:  # noqa: PLR2004
+            raise _UnsupportedPrimitiveTypeError(
+                f"extruded_profile primitive missing profile_polygon (part={primitive.part!r})"
+            )
+        if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
+            raise _UnsupportedPrimitiveTypeError(
+                f"extruded_profile primitive missing extrude_height (part={primitive.part!r})"
+            )
+        us = [float(u) for u, _ in polygon]
+        vs = [float(v) for _, v in polygon]
+        bbox_u = max(us) - min(us)
+        bbox_v = max(vs) - min(vs)
+        bbox_h = float(primitive.extrude_height)
+        if primitive.axis == "x":
+            extents = (bbox_h, bbox_u, bbox_v)
+        elif primitive.axis == "z":
+            extents = (bbox_u, bbox_v, bbox_h)
+        else:
+            extents = (bbox_u, bbox_h, bbox_v)
+        proxy = ShapePrimitive(
+            primitive_type="box",
+            part=primitive.part,
+            center=primitive.center,
+            extents=extents,
+            blend_mode=primitive.blend_mode,
+            rounding=primitive.rounding,
+        )
+        return _box_sdf(points, proxy, rounding)
     raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
 
 

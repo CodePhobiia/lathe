@@ -26,6 +26,15 @@ class ShapePrimitive:
       vocabulary needed for hard-surface assets like rifle barrels,
       scope tubes, magazine bodies, and stocks-of-revolution that the
       box+cylinder vocabulary cannot express.
+    - ``"extruded_profile"``: linear extrusion of a 2D polygon along
+      ``axis`` through ``center``, defined by ``profile_polygon`` as a
+      CCW list of ``(u, v)`` 2D points in the cross-section plane
+      perpendicular to ``axis``, swept ``extrude_height`` along ``axis``.
+      Produces watertight prismatic geometry — the deterministic
+      vocabulary for hard-surface features with a constant cross-section
+      that the box+cylinder vocabulary cannot express: picatinny rails,
+      magazine bodies, trigger groups, charging-handle slots, plate
+      stocks, etc.
     """
 
     primitive_type: str
@@ -43,6 +52,13 @@ class ShapePrimitive:
     # ``profile_points`` is a list of (axial, radial) 2D points used by
     # ``primitive_type="revolved_profile"``. None for box/cylinder.
     profile_points: list[tuple[float, float]] | None = None
+    # ``profile_polygon`` is a CCW list of (u, v) 2D points in the
+    # cross-section plane perpendicular to ``axis``, used by
+    # ``primitive_type="extruded_profile"``. None for other types.
+    profile_polygon: list[tuple[float, float]] | None = None
+    # ``extrude_height`` is the linear sweep distance along ``axis`` for
+    # ``primitive_type="extruded_profile"``. None for other types.
+    extrude_height: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.

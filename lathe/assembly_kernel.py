@@ -4840,6 +4840,21 @@ def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[floa
             half = [radius, radius, height / 2.0]
         else:
             half = [radius, height / 2.0, radius]
+    elif primitive.primitive_type == "extruded_profile":
+        # Bounding-box approximation: polygon's 2D bbox swept by
+        # ``extrude_height`` along ``axis``.
+        from .exact_solids import _extruded_profile_polygon_bbox
+
+        umin, umax, vmin, vmax = _extruded_profile_polygon_bbox(primitive)
+        half_u = (umax - umin) / 2.0
+        half_v = (vmax - vmin) / 2.0
+        half_h = float(primitive.extrude_height or 0.0) / 2.0
+        if primitive.axis == "x":
+            half = [half_h, half_u, half_v]
+        elif primitive.axis == "z":
+            half = [half_u, half_v, half_h]
+        else:
+            half = [half_u, half_h, half_v]
     else:
         if primitive.radius is None or primitive.height is None:
             raise _missing_non_box_dimensions_error(primitive)
