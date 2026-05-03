@@ -122,6 +122,12 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             half = np.array([radius, radius, half_h], dtype=np.float64)
         else:
             half = np.array([radius, half_h, radius], dtype=np.float64)
+    elif primitive.primitive_type == "subdivision_box":
+        # Per-corner radii are clamped within ``extents``; the cuboid
+        # AABB is unchanged regardless of corner_radii values.
+        if primitive.extents is None:
+            raise _MissingBoxExtentsError(primitive.part)
+        half = np.array(primitive.extents, dtype=np.float64) / 2.0 + rounding
     else:
         raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
     center = np.array(primitive.center, dtype=np.float64)
@@ -213,6 +219,14 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             extents = (bbox_u, bbox_v, bbox_h)
         else:
             extents = (bbox_u, bbox_h, bbox_v)
+    if primitive.primitive_type == "subdivision_box":
+        # SDF path approximates per-corner radii by the maximum corner
+        # radius applied uniformly via the existing rounded-box SDF
+        # (``_box_sdf`` already supports a uniform ``rounding`` knob).
+        # This is only hit when the exact/manifold paths are unavailable;
+        # those produce the true per-corner geometry.
+        radii = primitive.corner_radii or ()
+        max_radius = max((float(r) for r in radii), default=0.0)
         proxy = ShapePrimitive(
             primitive_type="box",
             part=primitive.part,
@@ -243,6 +257,23 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             rounding=primitive.rounding,
         )
         return _cylinder_sdf(points, proxy, rounding)
+    if primitive.primitive_type == "subdivision_box":
+        # SDF path approximates per-corner radii by the maximum corner
+        # radius applied uniformly via the existing rounded-box SDF
+        # (``_box_sdf`` already supports a uniform ``rounding`` knob).
+        # This is only hit when the exact/manifold paths are unavailable;
+        # those produce the true per-corner geometry.
+        radii = primitive.corner_radii or ()
+        max_radius = max((float(r) for r in radii), default=0.0)
+        proxy = ShapePrimitive(
+            primitive_type="box",
+            part=primitive.part,
+            center=primitive.center,
+            extents=primitive.extents,
+            blend_mode=primitive.blend_mode,
+            rounding=primitive.rounding,
+        )
+        return _box_sdf(points, proxy, rounding + max_radius)
     raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
 
 

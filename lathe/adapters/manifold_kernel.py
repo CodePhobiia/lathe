@@ -74,6 +74,14 @@ class _ExtrudedProfileHeightRequiredError(ValueError):
 class _TorusDimensionsRequiredError(ValueError):
     def __init__(self) -> None:
         super().__init__("torus requires `major_radius` and `minor_radius`")
+class _SubdivisionBoxExtentsRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("subdivision_box requires `extents` (3-tuple)")
+
+
+class _SubdivisionBoxCornerRadiiRequiredError(ValueError):
+    def __init__(self) -> None:
+        super().__init__("subdivision_box requires `corner_radii` (8-tuple)")
 
 
 class _UnsupportedPrimitiveKindError(ValueError):
@@ -180,7 +188,8 @@ class ManifoldKernel:
         `extruded_profile` (profile_polygon + extrude_height +
         optional axis + optional center), `torus` (major_radius +
         minor_radius + optional axis + optional center + optional
-        segments).
+        segments), `subdivision_box` (extents + corner_radii 8-tuple +
+        optional center + optional segments).
         """
         if kind == "extruded_profile":
             profile_polygon = params.get("profile_polygon")
@@ -228,6 +237,45 @@ class ManifoldKernel:
                 manifold = manifold.rotate([90.0, 0.0, 0.0])
             manifold = manifold.translate(list(map(float, center)))
             return ManifoldMesh(manifold)
+
+        if kind == "subdivision_box":
+            extents = params.get("extents")
+            if extents is None:
+                raise _SubdivisionBoxExtentsRequiredError
+            corner_radii = params.get("corner_radii")
+            if corner_radii is None or len(tuple(corner_radii)) != 8:  # noqa: PLR2004
+                raise _SubdivisionBoxCornerRadiiRequiredError
+            center = params.get("center", (0.0, 0.0, 0.0))
+            segments = max(4, int(params.get("segments", 16)))
+            half = [float(extents[0]) / 2.0, float(extents[1]) / 2.0, float(extents[2]) / 2.0]
+            cap = min(half) * 0.92
+            radii = [min(max(float(r), 0.0), cap) for r in corner_radii]
+            # Order: (-x-y-z, +x-y-z, -x+y-z, +x+y-z, -x-y+z, +x-y+z, -x+y+z, +x+y+z).
+            corner_signs = [
+                (-1.0, -1.0, -1.0),
+                (+1.0, -1.0, -1.0),
+                (-1.0, +1.0, -1.0),
+                (+1.0, +1.0, -1.0),
+                (-1.0, -1.0, +1.0),
+                (+1.0, -1.0, +1.0),
+                (-1.0, +1.0, +1.0),
+                (+1.0, +1.0, +1.0),
+            ]
+            sphere_handles: list[Any] = []
+            min_radius = 1e-4
+            for (sx, sy, sz), radius in zip(corner_signs, radii, strict=True):
+                effective_radius = max(radius, min_radius)
+                core_x = max(half[0] - effective_radius, 1e-6)
+                core_y = max(half[1] - effective_radius, 1e-6)
+                core_z = max(half[2] - effective_radius, 1e-6)
+                offset = [sx * core_x, sy * core_y, sz * core_z]
+                sphere = _m3d.Manifold.sphere(effective_radius, circular_segments=segments)
+                sphere = sphere.translate(offset)
+                sphere_handles.append(sphere)
+            manifold = _m3d.Manifold.batch_hull(sphere_handles)
+            manifold = manifold.translate(list(map(float, center)))
+            return ManifoldMesh(manifold)
+
 
         if kind == "revolved_profile":
             profile_points = params.get("profile_points")

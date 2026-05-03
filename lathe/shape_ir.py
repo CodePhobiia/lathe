@@ -42,6 +42,16 @@ class ShapePrimitive:
       profiles for ring-shaped features such as trigger guards, sling
       loops, scope rings, and cap collars where authoring an entire
       profile polyline would be overkill.
+    - ``"subdivision_box"``: axis-aligned cuboid with **per-corner**
+      controllable rounding radii. Generalizes the uniform ``rounding``
+      knob on ``"box"`` so each of the 8 corners gets its own radius
+      (zero ⇒ sharp). Uses ``extents`` and ``center`` like a box, plus
+      ``corner_radii`` (8-tuple) and ``corner_segments`` for mesh
+      density. Order of corners follows
+      ``(-x-y-z, +x-y-z, -x+y-z, +x+y-z, -x-y+z, +x-y+z, -x+y+z, +x+y+z)``
+      so authors can round one face/edge/corner without touching the
+      others — receivers with rounded backs / sharp fronts, stocks with
+      chamfered buttplates, magazine wells with eased entry corners.
     """
 
     primitive_type: str
@@ -72,6 +82,15 @@ class ShapePrimitive:
     # tube radius. None for non-torus primitives.
     major_radius: float | None = None
     minor_radius: float | None = None
+    # ``corner_radii`` is an 8-tuple of per-corner rounding radii used by
+    # ``primitive_type="subdivision_box"``. Order matches the cube's
+    # vertex enumeration:
+    # (-x-y-z, +x-y-z, -x+y-z, +x+y-z, -x-y+z, +x-y+z, -x+y+z, +x+y+z).
+    # ``None`` for non-subdivision primitives.
+    corner_radii: tuple[float, float, float, float, float, float, float, float] | None = None
+    # ``corner_segments`` controls the per-corner sphere tessellation for
+    # ``primitive_type="subdivision_box"``. Higher = smoother corners.
+    corner_segments: int = 4
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.

@@ -53,6 +53,21 @@ def _missing_extruded_profile_height_error(primitive: ShapePrimitive) -> Contrac
     )
 
 
+def _missing_subdivision_box_extents_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: subdivision_box ShapePrimitive requires "
+        f"extents, got None (part={primitive.part!r})"
+    )
+
+
+def _missing_subdivision_box_corner_radii_error(primitive: ShapePrimitive) -> ContractViolation:
+    return ContractViolation(
+        "invariant violation: subdivision_box ShapePrimitive requires "
+        f"corner_radii as an 8-tuple, got {primitive.corner_radii!r} "
+        f"(part={primitive.part!r})"
+    )
+
+
 def _missing_torus_dimensions_error(primitive: ShapePrimitive) -> ContractViolation:
     return ContractViolation(
         "invariant violation: torus ShapePrimitive requires major_radius "
@@ -146,6 +161,12 @@ def _primitive_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np
         # exact swept-circle snap would need per-tube parameterization;
         # the cylinder envelope is a safe under-approximation.
         return _cylinder_surface_point(point, _torus_bounding_cylinder(primitive))
+    if primitive.primitive_type == "subdivision_box":
+        # Snap against the un-rounded cuboid envelope — the exact
+        # per-corner sphere surfaces are within the box bounds, so the
+        # box is a safe approximation that pulls vertices toward the
+        # silhouette without overshooting.
+        return _box_surface_point(point, _subdivision_box_envelope(primitive))
     raise _unsupported_primitive_type_error(primitive.primitive_type)
 
 
@@ -233,8 +254,51 @@ def _extruded_profile_bounding_cylinder(primitive: ShapePrimitive) -> ShapePrimi
         component=primitive.component,
         region=primitive.region,
         blend_mode=primitive.blend_mode,
+        rounding=0.0,
+    )
+
+
+def _subdivision_box_envelope(primitive: ShapePrimitive) -> ShapePrimitive:
+    """Return the un-rounded cuboid envelope of a subdivision_box.
+
+    Used by surface-snap and bounds queries: the per-corner rounded
+    surfaces are strictly inside the cuboid AABB (radii are clamped to
+    fit within ``extents``), so the box envelope is a safe outer bound.
+    """
+    if primitive.extents is None:
+        raise _missing_subdivision_box_extents_error(primitive)
+    return ShapePrimitive(
+        primitive_type="box",
+        part=primitive.part,
+        center=primitive.center,
+        extents=primitive.extents,
+        axis=primitive.axis,
+        component=primitive.component,
+        region=primitive.region,
+        blend_mode=primitive.blend_mode,
         rounding=primitive.rounding,
     )
+
+
+def _subdivision_box_corner_radii(
+    primitive: ShapePrimitive,
+) -> tuple[float, float, float, float, float, float, float, float]:
+    """Validate and clamp the 8-tuple of per-corner rounding radii.
+
+    Each radius is clamped into ``[0, 0.92 * min_half_extent]`` so the
+    rounded corners cannot overlap each other or pop outside the
+    cuboid envelope. The clamp matches ``_rounded_box_mesh``'s uniform
+    radius safety margin, which keeps the convex-hull construction
+    well-conditioned.
+    """
+    if primitive.extents is None:
+        raise _missing_subdivision_box_extents_error(primitive)
+    radii = primitive.corner_radii
+    if radii is None or len(tuple(radii)) != 8:  # noqa: PLR2004
+        raise _missing_subdivision_box_corner_radii_error(primitive)
+    half = np.asarray(primitive.extents, dtype=np.float64) / 2.0
+    cap = float(np.min(half)) * 0.92
+    return tuple(min(max(float(r), 0.0), cap) for r in radii)  # type: ignore[return-value]
 
 
 def _translated_box(
@@ -336,7 +400,84 @@ def _primitive_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         return _extruded_profile_mesh(primitive)
     if primitive.primitive_type == "torus":
         return _torus_mesh(primitive)
+    if primitive.primitive_type == "subdivision_box":
+        return _subdivision_box_mesh(primitive)
     raise _unsupported_primitive_type_error(primitive.primitive_type)
+
+
+def _subdivision_box_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Build a cuboid with per-corner rounding radii via convex hull.
+
+    Each of the 8 corners is sampled with its own quarter-sphere fan
+    (zero radius ⇒ a single sharp corner point), then the convex hull
+    is taken. This generalizes ``_rounded_box_mesh`` from a single
+    radius to an independent radius per corner, which lets a
+    receiver have rounded back / sharp front, a stock have a
+    chamfered buttplate without softening the grip flats, etc.
+
+    Delegations:
+
+    - all radii zero  ⇒ ``_translated_box`` (identical sharp cuboid).
+    - all radii equal ⇒ ``_rounded_box_mesh`` (matches the existing
+      uniform-rounding code path exactly).
+    """
+    if primitive.extents is None:
+        raise _missing_subdivision_box_extents_error(primitive)
+
+    radii = _subdivision_box_corner_radii(primitive)
+    half = np.asarray(primitive.extents, dtype=np.float64) / 2.0
+    segments = max(1, int(primitive.corner_segments))
+
+    if all(r <= NUMERIC_EPSILON for r in radii):
+        return _translated_box(primitive.extents, primitive.center)
+    if all(abs(r - radii[0]) <= NUMERIC_EPSILON for r in radii):
+        return _rounded_box_mesh(
+            primitive.extents,
+            primitive.center,
+            radius=float(radii[0]),
+            segments=segments,
+        )
+
+    # Order: (-x-y-z, +x-y-z, -x+y-z, +x+y-z, -x-y+z, +x-y+z, -x+y+z, +x+y+z).
+    corner_signs = [
+        (-1.0, -1.0, -1.0),
+        (+1.0, -1.0, -1.0),
+        (-1.0, +1.0, -1.0),
+        (+1.0, +1.0, -1.0),
+        (-1.0, -1.0, +1.0),
+        (+1.0, -1.0, +1.0),
+        (-1.0, +1.0, +1.0),
+        (+1.0, +1.0, +1.0),
+    ]
+    points: list[tuple[float, float, float]] = []
+    for (sx, sy, sz), radius in zip(corner_signs, radii, strict=True):
+        if radius <= NUMERIC_EPSILON:
+            corner = np.asarray([sx * half[0], sy * half[1], sz * half[2]], dtype=np.float64)
+            points.append((float(corner[0]), float(corner[1]), float(corner[2])))
+            continue
+        core = np.maximum(half - radius, NUMERIC_EPSILON)
+        base = np.asarray([sx * core[0], sy * core[1], sz * core[2]], dtype=np.float64)
+        for theta_i in range(segments + 1):
+            theta = (np.pi / 2.0) * theta_i / segments
+            for phi_i in range(segments + 1):
+                phi = (np.pi / 2.0) * phi_i / segments
+                direction = np.asarray(
+                    [
+                        sx * np.cos(theta) * np.cos(phi),
+                        sy * np.sin(theta) * np.cos(phi),
+                        sz * np.sin(phi),
+                    ],
+                    dtype=np.float64,
+                )
+                point = base + radius * direction
+                points.append((float(point[0]), float(point[1]), float(point[2])))
+
+    cloud = trimesh.Trimesh(vertices=np.asarray(points, dtype=np.float64), faces=None, process=False)
+    mesh = cloud.convex_hull
+    mesh.apply_translation(np.asarray(primitive.center, dtype=np.float64))
+    mesh.remove_unreferenced_vertices()
+    mesh.fix_normals()
+    return mesh
 
 
 def _revolved_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
@@ -571,6 +712,12 @@ def _primitive_bounds(primitive: ShapePrimitive, margin: float) -> tuple[np.ndar
             half = np.asarray([radius, radius, half_height], dtype=np.float64)
         else:
             half = np.asarray([radius, half_height, radius], dtype=np.float64)
+    elif primitive.primitive_type == "subdivision_box":
+        # Per-corner radii are clamped to fit within ``extents``, so the
+        # box envelope is unchanged regardless of corner_radii values.
+        if primitive.extents is None:
+            raise _missing_subdivision_box_extents_error(primitive)
+        half = np.asarray(primitive.extents, dtype=np.float64) / 2.0 + margin
     else:
         raise _unsupported_primitive_type_error(primitive.primitive_type)
     return center - half, center + half

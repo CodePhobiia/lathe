@@ -4829,6 +4829,12 @@ def _primitive_bounds(primitive: ShapePrimitive) -> tuple[list[float], list[floa
         if primitive.extents is None:
             raise _missing_box_extents_error(primitive)
         half = [value / 2.0 for value in primitive.extents]
+    elif primitive.primitive_type == "subdivision_box":
+        # Per-corner radii are clamped within ``extents``; the bounding
+        # box is identical to the un-rounded cuboid AABB.
+        if primitive.extents is None:
+            raise _missing_box_extents_error(primitive)
+        half = [value / 2.0 for value in primitive.extents]
     elif primitive.primitive_type == "revolved_profile":
         # Bounding-cylinder approximation around the swept profile.
         from .exact_solids import _revolved_profile_extents
