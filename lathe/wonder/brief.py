@@ -127,13 +127,19 @@ def _unique_prefixed_id(prefix: str, value: object, used: set[str], *, suffix: i
         used.add(candidate)
         return candidate
     base = f"{value}_{suffix or 1}"
-    counter = 2
-    while True:
+    # Bound the de-dup loop so a pathological input (e.g. ``used`` already
+    # containing every plausible suffix) cannot spin forever. 4096 is far
+    # above the largest realistic part-name collision count and keeps the
+    # loop O(constant).
+    for counter in range(2, 4096):
         candidate = _prefixed_id(prefix, f"{base}_{counter}")
         if candidate not in used:
             used.add(candidate)
             return candidate
-        counter += 1
+    raise RuntimeError(
+        f"could not allocate unique prefixed id for {value!r}; "
+        "more than 4094 collisions"
+    )
 
 
 def _short_tag(value: object) -> str:

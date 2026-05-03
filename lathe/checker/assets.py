@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..errors import CheckerError
 from ..resolver import ResolutionError
 from .cross_stage import check_backend_resolution
 from .interfaces import check_interfaces
@@ -43,7 +44,12 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
         checker: checker argument.
         asset: asset argument.
     """
-    asset_name = asset["name"]
+    try:
+        asset_name = asset["name"]
+    except KeyError as exc:
+        raise CheckerError(
+            f"materialized asset is missing required 'name' field: {asset!r}"
+        ) from exc
     intent = asset.get("intent", {})
     build = asset.get("build", {})
     validate = asset.get("validate", {})

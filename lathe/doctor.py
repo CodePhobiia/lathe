@@ -7,8 +7,8 @@ Collects capability probes into the human-readable report the
 from __future__ import annotations
 
 import json
+import os
 import sys
-import tempfile
 from importlib.metadata import entry_points
 from typing import Any
 
@@ -32,7 +32,15 @@ _EDITABLE_DEV_REMEDIATION = (
     r"Install Lathe in editable mode for local development: "
     r".\.venv\Scripts\python.exe -m pip install -e ."
 )
-_BASE_REQUIRED_PACKAGES = ("lark", "jsonschema", "numpy", "Pillow", "trimesh")
+_BASE_REQUIRED_PACKAGES = (
+    "lark",
+    "jsonschema",
+    "numpy",
+    "Pillow",
+    "trimesh",
+    "scipy",
+    "networkx",
+)
 
 
 def _package_reports() -> dict[str, dict[str, Any]]:
@@ -42,6 +50,8 @@ def _package_reports() -> dict[str, dict[str, Any]]:
         "numpy": package_report("numpy"),
         "Pillow": package_report("PIL", "Pillow"),
         "trimesh": package_report("trimesh"),
+        "scipy": package_report("scipy"),
+        "networkx": package_report("networkx"),
         "pytest": package_report("pytest"),
         "xatlas": package_report("xatlas"),
         "torch": package_report("torch"),
@@ -74,7 +84,10 @@ def _required_packages_available(packages: dict[str, dict[str, Any]]) -> bool:
 
 
 def _base_dependencies_missing(packages: dict[str, dict[str, Any]]) -> bool:
-    return any(not packages[name]["available"] for name in ("lark", "trimesh", "numpy", "Pillow"))
+    return any(
+        not packages[name]["available"]
+        for name in ("lark", "trimesh", "numpy", "Pillow", "scipy", "networkx")
+    )
 
 
 def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
@@ -88,7 +101,8 @@ def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             "id": "python_version",
             "ok": sys.version_info >= (3, 11),
             "severity": "error",
-            "message": "Lathe requires Python 3.11 or newer.",
+            "ok_message": f"Python {sys.version_info.major}.{sys.version_info.minor} satisfies the >=3.11 requirement.",
+            "fail_message": "Lathe requires Python 3.11 or newer.",
             "remediation": (
                 "Create a Python 3.11+ virtual environment and rerun Lathe from that interpreter."
             ),
@@ -97,7 +111,8 @@ def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             "id": "virtualenv_active",
             "ok": venv_active,
             "severity": "warning",
-            "message": "No active virtual environment was detected.",
+            "ok_message": "An active virtual environment was detected.",
+            "fail_message": "No active virtual environment was detected.",
             "remediation": (
                 r"Create and activate one: py -3.11 -m venv .venv; "
                 r".\.venv\Scripts\Activate.ps1"
@@ -107,7 +122,8 @@ def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             "id": "pip_available",
             "ok": bool(commands.get("pip")),
             "severity": "error",
-            "message": "pip was not found on PATH.",
+            "ok_message": "pip is on PATH.",
+            "fail_message": "pip was not found on PATH.",
             "remediation": (
                 "Use the Python interpreter that owns this checkout and run "
                 "`python -m ensurepip --upgrade` if needed."
@@ -117,7 +133,8 @@ def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             "id": "git_available",
             "ok": bool(commands.get("git")),
             "severity": "warning",
-            "message": "git was not found on PATH.",
+            "ok_message": "git is on PATH.",
+            "fail_message": "git was not found on PATH.",
             "remediation": (
                 "Install Git and reopen the shell so repo metadata, plugins, and source installs "
                 "work predictably."
@@ -127,28 +144,32 @@ def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
             "id": "base_dependencies",
             "ok": _required_packages_available(packages),
             "severity": "error",
-            "message": "One or more required Python packages are missing.",
+            "ok_message": "All required base Python packages are importable.",
+            "fail_message": "One or more required Python packages are missing.",
             "remediation": _BASE_DEPS_REMEDIATION,
         },
         {
             "id": "editable_install",
             "ok": bool(report["lathe"]["editable_install"]["editable"]),
             "severity": "warning",
-            "message": "Lathe is importable but not installed in editable/source mode.",
+            "ok_message": "Lathe is installed in editable/source mode.",
+            "fail_message": "Lathe is importable but not installed in editable/source mode.",
             "remediation": _EDITABLE_REMEDIATION,
         },
         {
             "id": "dev_dependencies",
             "ok": bool(packages["pytest"]["available"]),
             "severity": "warning",
-            "message": "Developer test tooling is missing.",
+            "ok_message": "Developer test tooling is available.",
+            "fail_message": "Developer test tooling is missing.",
             "remediation": _DEV_DEPS_REMEDIATION,
         },
         {
             "id": "cwd_writable",
             "ok": bool(_cwd_writable()),
             "severity": "warning",
-            "message": "The current working directory does not appear writable.",
+            "ok_message": "The current working directory is writable.",
+            "fail_message": "The current working directory does not appear writable.",
             "remediation": (
                 "Run Lathe from a writable checkout, or choose writable --out and cache directories."
             ),
@@ -157,13 +178,15 @@ def _setup_checks(report: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _cwd_writable() -> bool:
+    # SEC: probe writability by attempting to create a file under cwd, not by
+    # writing into ``dir="."`` (which is symlink-bait if cwd contains a
+    # hostile pre-existing path). ``os.access`` is good enough for the doctor
+    # check — if it lies, the actual ``lathe build --out`` invocation will
+    # still surface the OSError.
     try:
-        with tempfile.NamedTemporaryFile(prefix=".lathe_doctor_", dir=".", delete=True) as tmp:
-            tmp.write(b"")
+        return os.access(".", os.W_OK)
     except OSError:
         return False
-    else:
-        return True
 
 
 def _append_unique(steps: list[str], step: str) -> None:
@@ -304,8 +327,10 @@ def format_doctor_report(report: dict[str, Any]) -> str:
 
     lines.extend(["", "Setup checks:"])
     for check in report.get("setup_checks", []):
-        status = "ok" if check.get("ok") else str(check.get("severity", "warning"))
-        lines.append(f"- {check.get('id')}: {status} ({check.get('message')})")
+        ok = check.get("ok")
+        status = "ok" if ok else str(check.get("severity", "warning"))
+        message = check.get("ok_message" if ok else "fail_message", check.get("message", ""))
+        lines.append(f"- {check.get('id')}: {status} ({message})")
 
     blender = report["blender"]
     xatlas = report["xatlas"]

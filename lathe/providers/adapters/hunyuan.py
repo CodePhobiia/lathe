@@ -270,10 +270,8 @@ def _normalize_hunyuan_result(
     provider_config: _HunyuanProviderConfig,
     candidate_index: int,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    if (
-        provider_config.out_type == "glb"
-        and len(raw) >= _GLB_MAGIC_SIZE
-        and raw[:_GLB_MAGIC_SIZE] != _GLB_MAGIC
+    if provider_config.out_type == "glb" and (
+        len(raw) < _GLB_MAGIC_SIZE or raw[:_GLB_MAGIC_SIZE] != _GLB_MAGIC
     ):
         raise ShapeProviderExecutionError(
             PROVIDER_ID,

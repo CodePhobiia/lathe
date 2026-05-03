@@ -1287,7 +1287,11 @@ def _report_claims_trace_to_evidence(bundle: dict[str, Any]) -> bool:
 
 def _read_json(path: Path) -> dict[str, Any]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ValueError(f"could not read {path}: {exc}") from exc
+    try:
+        payload = json.loads(text)
     except json.JSONDecodeError as exc:
         raise ValueError(str(exc)) from exc
     if not isinstance(payload, dict):

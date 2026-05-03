@@ -204,7 +204,10 @@ def build_preview_evidence(
 def _asset_id(path: Path) -> str:
     brief_path = path / "design_brief.json"
     if brief_path.exists():
-        payload = json.loads(brief_path.read_text(encoding="utf-8"))
+        try:
+            payload = json.loads(brief_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            return path.name
         if isinstance(payload, dict) and isinstance(payload.get("asset_id"), str):
             return payload["asset_id"]
     return path.name

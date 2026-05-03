@@ -416,6 +416,8 @@ class _ShapeRepairApplier:
     def _source_region_for_missing_part(self) -> ShapeRegion | None:
         if not self.regions:
             return None
+        if not self.asset_graph.parts:
+            return self.regions[0]
         source_part_name = self.asset_graph.parts[0].name
         return next(
             (region for region in self.regions if region.part == source_part_name),

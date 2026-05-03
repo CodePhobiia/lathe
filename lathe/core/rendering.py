@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 
+from ..imaging import open_guarded
 from .mesh import RuntimeMesh
 
 IMAGE_SIZE = 1024
@@ -133,7 +134,8 @@ def render_lod_sheet(runtime_mesh: RuntimeMesh, lod_count: int, path: Path) -> N
     for idx in range(grid):
         tmp_path = path.parent / f"._lod_{idx}.png"
         render_mesh_preview(runtime_mesh, tmp_path, mode="shaded")
-        img = Image.open(tmp_path).resize((cell, cell))
+        with open_guarded(tmp_path) as opened:
+            img = opened.resize((cell, cell))
         x = (idx % 2) * cell
         y = (idx // 2) * cell
         sheet.paste(img, (x, y))

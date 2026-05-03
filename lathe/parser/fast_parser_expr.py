@@ -178,7 +178,11 @@ class _FastParserExprMixin:
         args = []
         self.ts.pop("(")
         while not self.ts.peek(")"):
-            if self.ts.kind() == "ident" and self.ts.tokens[self.ts.index + 1][1] == ":":
+            next_idx = self.ts.index + 1
+            next_kind = (
+                self.ts.tokens[next_idx][1] if next_idx < len(self.ts.tokens) else None
+            )
+            if self.ts.kind() == "ident" and next_kind == ":":
                 arg_name = self.ts.pop_ident()
                 self.ts.pop(":")
                 args.append({"name": arg_name, "value": self._expr()})

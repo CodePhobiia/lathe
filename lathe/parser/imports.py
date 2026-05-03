@@ -115,7 +115,11 @@ def _parse_file_recursive(
     if resolved in stack:
         cycle = " -> ".join(str(item) for item in [*stack, resolved])
         raise LatheParseError(f"Import cycle detected: {cycle}")
-    if len(stack) > _MAX_IMPORT_DEPTH:
+    # ``stack`` describes the ancestor chain *above* this entry; the new
+    # depth, including this file, is ``len(stack) + 1``. The previous
+    # check used ``> _MAX_IMPORT_DEPTH`` and so allowed one extra level.
+    depth = len(stack) + 1
+    if depth > _MAX_IMPORT_DEPTH:
         raise LatheParseError(f"Import depth exceeded {_MAX_IMPORT_DEPTH} files")
     if resolved in cache:
         return deepcopy(cache[resolved])
@@ -130,7 +134,10 @@ def _parse_file_recursive(
         raise
     except OSError as exc:
         raise LatheParseError(f"Could not stat source file '{resolved}': {exc}") from exc
-    source_text = resolved.read_text(encoding="utf-8")
+    try:
+        source_text = resolved.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise LatheParseError(f"Could not read source file '{resolved}': {exc}") from exc
     # SEC-8 pre-parse scan. Warnings by default; env/CLI flag promotes to errors.
     _scan_prompt_injection(source_text, path=str(resolved))
     raw = parse_text(source_text)

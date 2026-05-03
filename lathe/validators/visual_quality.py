@@ -13,6 +13,7 @@ import numpy as np
 from PIL import Image
 
 from ..errors import LatheError
+from ..imaging import open_guarded
 from ..render_eval import evaluate_render_views
 from ..repair_planner import suggest_repairs_for_metric
 
@@ -90,11 +91,19 @@ def _load_image(runtime: dict[str, Any], name: str) -> np.ndarray | None:
     if path is None:
         return None
     try:
-        with Image.open(path) as image:
+        with open_guarded(path) as image:
             return np.asarray(image.convert("RGB" if image.mode != "L" else "L"))
-    except (OSError, ValueError, TypeError, Image.UnidentifiedImageError):
+    except (
+        OSError,
+        ValueError,
+        TypeError,
+        Image.UnidentifiedImageError,
+        Image.DecompressionBombError,
+    ):
         # PIL raises UnidentifiedImageError for unknown formats, OSError for
-        # truncated files, ValueError for invalid mode conversions.
+        # truncated files, ValueError for invalid mode conversions, and
+        # DecompressionBombError when a hostile/malformed asset declares
+        # dimensions above PIL.Image.MAX_IMAGE_PIXELS.
         return None
 
 

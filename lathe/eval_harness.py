@@ -75,7 +75,14 @@ def _load_legacy_snapshot(workspace: Path, benchmark: dict[str, Any]) -> dict[st
         (build_dir / "stages" / "surface" / "bundle.json").read_text(encoding="utf-8")
     )
     selected_id = shape_bundle["selected_candidate_id"]
-    selected = next(item for item in shape_bundle["candidates"] if item["candidate_id"] == selected_id)
+    selected = next(
+        (item for item in shape_bundle["candidates"] if item["candidate_id"] == selected_id),
+        None,
+    )
+    if selected is None:
+        raise BuildError(
+            f"shape bundle has no candidate matching selected_candidate_id={selected_id!r}"
+        )
     topology_mesh_path = build_dir / topology_bundle.get("mesh_uri", "stages/topology/topology.glb")
     topology_runtime = None
     if topology_mesh_path.exists():

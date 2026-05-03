@@ -686,7 +686,11 @@ def test_phase_10_loop_evidence_blocks_are_truthful() -> None:
         "requested_provider": "mock_http_vision_provider",
         "resolved_provider": "deterministic_stub",
         "external_provider_configured": False,
-        "safe_config_keys": ["enabled", "model", "provider"],
+        # Wave 5 / M10: ``_safe_config_keys`` now matches credential tokens
+        # against whole segments (split on _, -, .), so legitimate keys like
+        # ``endpoint`` are no longer dropped. Only ``api_key`` is filtered
+        # here because ``key`` is a credential segment.
+        "safe_config_keys": ["enabled", "endpoint", "model", "provider"],
         "sensitive_values_redacted": True,
     }
     assert payload["before_after_metrics"]["available"] is False
@@ -745,9 +749,14 @@ def test_redacted_runtime_config_is_used_when_present() -> None:
     # The redacted runtime config never lands in the report directly;
     # the only provider id surfaced in the payload is the resolved
     # name (here ``deterministic_stub`` after the unavailable
-    # fallback). Ensure no raw endpoint or api key string leaks.
+    # fallback). After Wave 5 / M10, ``endpoint`` is no longer treated as
+    # a secret token (it's a *key* shape, not a credential). The value
+    # ``[REDACTED]`` is what callers should put in the config when they
+    # don't want raw endpoint URLs serialized. Verify that the
+    # credential-token key (``api_key``) does not appear and that the
+    # ``[REDACTED]`` placeholder value never lands in the payload.
     assert "api_key" not in payload_text
-    assert "endpoint" not in payload_text
+    assert "[REDACTED]" not in payload_text
     assert payload["provider"]["name"] == "deterministic_stub"
 
 

@@ -8,6 +8,8 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
+from .imaging import open_guarded
+
 CODEX_IMAGEGEN_BACKEND_ID = "lathe.surface.codex_imagegen_v1"
 DETERMINISTIC_PBR_BACKEND_ID = "lathe.surface.deterministic_pbr_v1"
 
@@ -221,7 +223,7 @@ def consume_codex_imagegen_outputs(
         if not path.exists():
             missing.append({"zone": zone["part"], "map": "basecolor", "expected_output": _rel(out_dir, path)})
             continue
-        with Image.open(path) as image:
+        with open_guarded(path) as image:
             generated = np.asarray(image.convert("RGB").resize(basecolor.size), dtype=np.float64)
         mask = _color_mask(id_source, tuple(int(value) for value in zone["basecolor"]))
         if np.any(mask):

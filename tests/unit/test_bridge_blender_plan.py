@@ -104,13 +104,18 @@ class BridgePlanConstructionTests(unittest.TestCase):
         self.assertFalse(plan["tool_plane"]["unsafe_arbitrary_blender_python_exposed"])
 
     def test_inspect_completed_build_malformed_raises(self) -> None:
+        from lathe.errors import BuildError
+
         with tempfile.TemporaryDirectory() as tmp:
             build_dir = Path(tmp)
             stage_dir = build_dir / "stages" / "execution"
             stage_dir.mkdir(parents=True)
             (stage_dir / "bundle.json").write_text("{not valid json", encoding="utf-8")
-            with self.assertRaises(json.JSONDecodeError):
+            # The bridge surfaces a typed BuildError now; the underlying
+            # JSONDecodeError is chained as ``__cause__``.
+            with self.assertRaises(BuildError) as ctx:
                 bp.inspect_completed_build(build_dir)
+            self.assertIsInstance(ctx.exception.__cause__, json.JSONDecodeError)
 
 
 class BridgeDoctorTests(unittest.TestCase):

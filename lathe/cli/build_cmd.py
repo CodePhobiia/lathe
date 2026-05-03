@@ -125,8 +125,6 @@ def _emit_report(report: dict, out_dir: Path, fmt: str, *, deterministic: bool =
         "Use one of: terminal, html, json.",
         exit_code=2,
     )
-    # Unused but keeps linters happy about unused import
-    _ = render_html_report
 
 
 def _resolve_strict_flag(args) -> bool | None:
@@ -260,6 +258,7 @@ def run_render_eval(args) -> None:
         args: args argument.
     """
     from ..executor import BuildError, build_asset
+    from ..io_json import load_json_dict
     from ..parser import parse_file
 
     program = parse_file(Path(args.file))
@@ -276,9 +275,11 @@ def run_render_eval(args) -> None:
             runtime_config=runtime_config,
             execution_profile_override=args.execution_profile,
         )
-        # JSON ingress: controlled payload from the execution stage bundle
-        # just emitted by build_asset above; safe without schema validation.
-        bundle = json.loads((out_dir / "stages" / "execution" / "bundle.json").read_text(encoding="utf-8"))
+        bundle = load_json_dict(
+            out_dir / "stages" / "execution" / "bundle.json",
+            error_cls=BuildError,
+            label="execution stage bundle",
+        )
         _dump(
             {
                 "asset": args.name,

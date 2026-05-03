@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from .errors import LatheError
+from .paths import PathGuardError, safe_resolve
 
 # ---------------------------------------------------------------------------
 # Exceptions and warning categories
@@ -977,9 +978,28 @@ def resolve_ref(
         raise TypeError("resolve_ref expects a RefNode — call parse_ref(token) first")
 
     root = Path(repo_root) if repo_root is not None else Path.cwd()
-    target_path = (root / node.target).resolve() if not Path(node.target).is_absolute() else Path(node.target)
+    # SEC: refs name a target relative to ``root`` and must stay within it.
+    # ``parse_ref`` already rejects absolute targets, but ``resolve_ref``
+    # accepts arbitrary :class:`RefNode` instances so we re-enforce the
+    # constraint and route through :func:`safe_resolve` to catch symlink
+    # traversal even on hand-built nodes.
+    target_kind: str
+    target_path: Path
+    if Path(node.target).is_absolute():
+        target_kind = "missing"
+        target_path = Path(node.target)
+    else:
+        try:
+            target_path = safe_resolve(root, node.target)
+        except PathGuardError:
+            # Surface a path-rejection as a structured "missing" target so
+            # callers handle it via the existing stale-ref path rather than
+            # a hard exception.
+            target_kind = "missing"
+            target_path = (root / node.target).resolve(strict=False)
+        else:
+            target_kind = _classify_target(target_path)
 
-    target_kind = _classify_target(target_path)
     base: dict[str, Any] = {
         "ok": False,
         "ref": format_ref(node),

@@ -253,7 +253,7 @@ def _open_pinned_response(
     headers: dict[str, str],
     timeout_s: float,
     context: ssl.SSLContext | None,
-) -> http.client.HTTPResponse:
+) -> tuple[http.client.HTTPResponse, http.client.HTTPConnection]:
     connection: http.client.HTTPConnection
     if parsed.scheme.lower() == "https":
         if context is None:
@@ -267,8 +267,16 @@ def _open_pinned_response(
         )
     else:
         connection = _PinnedHTTPConnection(hostname, port, endpoints=endpoints, timeout=timeout_s)
-    connection.request(method, _request_target(parsed), body=data, headers=headers)
-    return connection.getresponse()
+    try:
+        connection.request(method, _request_target(parsed), body=data, headers=headers)
+        response = connection.getresponse()
+    except BaseException:
+        # Cover any failure between connection creation and the response
+        # handing back to safe_urlopen — otherwise the underlying socket is
+        # leaked.
+        connection.close()
+        raise
+    return response, connection
 
 
 @ingress_boundary(_NETWORK_PROVIDER_BOUNDARY)
@@ -357,7 +365,7 @@ def safe_urlopen(
     merged_headers = dict(headers or {})
     context = _make_tls_context() if scheme == "https" else None
 
-    resp = _open_pinned_response(
+    resp, connection = _open_pinned_response(
         parsed=parsed,
         hostname=hostname,
         port=port,
@@ -408,7 +416,10 @@ def safe_urlopen(
             body_prefix=_safe_body_prefix(body),
         )
     finally:
+        # Close the response then the underlying pinned connection — without
+        # the connection close, the socket leaks per call.
         resp.close()
+        connection.close()
 
 
 def _stream_with_cap(resp, *, max_bytes: int) -> bytes:

@@ -100,6 +100,12 @@ _MAX_PUBLISH_ARTIFACT_BYTES = 512 * 1024 * 1024
 _RAW_ED25519_PRIVATE_KEY_BYTES = 32
 _SAFE_OBJECT_SEGMENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._=-]*$")
 _SAFE_BUCKET_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,62}$")
+# Git remote and branch names that can never be parsed as command-line options.
+# Names must start with an alnum/letter (so the leading character is never `-`)
+# and contain only safe characters. We further insert ``--`` before user-derived
+# positionals when invoking git so option-style remotes/branches are inert.
+_SAFE_GIT_REMOTE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_./@:-]{0,254}$")
+_SAFE_GIT_BRANCH_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_./-]{0,254}$")
 _SIGNATURE_VERIFY_ERRORS: tuple[type[BaseException], ...] = (
     (_InvalidSignature,) if _InvalidSignature is not None else ()
 )
@@ -202,6 +208,37 @@ def _s3_endpoint_host(target_config: dict[str, Any]) -> tuple[str | None, str]:
     if region and region != "us-east-1":
         return None, f"s3.{region}.amazonaws.com"
     return None, "s3.amazonaws.com"
+
+
+_LATHE_ALLOW_EXTERNAL_PUBLISH_ENV = "LATHE_ALLOW_EXTERNAL_PUBLISH"
+
+
+def _resolve_publish_repo_dir(repo_dir_cfg: Any) -> Path:
+    """Resolve the publish target's ``repo_dir`` with containment checks.
+
+    Default-deny absolute paths and any path that traverses a symlink. The
+    ``LATHE_ALLOW_EXTERNAL_PUBLISH=1`` env knob opts in to absolute paths
+    for operators who run the publish driver outside cwd, but symlinks are
+    still rejected so a hostile target cannot redirect writes.
+    """
+    raw = str(repo_dir_cfg)
+    candidate = Path(raw)
+    allow_external = os.environ.get(_LATHE_ALLOW_EXTERNAL_PUBLISH_ENV) == "1"
+    if candidate.is_absolute():
+        if not allow_external:
+            raise PathGuardError(
+                f"GitLFSDriver target_config['repo_dir'] {raw!r} is absolute; set "
+                f"{_LATHE_ALLOW_EXTERNAL_PUBLISH_ENV}=1 to opt in"
+            )
+        resolved = Path(os.path.realpath(candidate))
+        # Reject if realpath introduced a symlink redirection.
+        if str(resolved) != str(candidate):
+            raise PathGuardError(
+                f"GitLFSDriver target_config['repo_dir'] {raw!r} traverses a symlink"
+            )
+        return resolved
+    repo_root = Path.cwd()
+    return safe_resolve(repo_root, raw)
 
 
 def _target_subdir(root: Path, asset: Any, version: Any) -> Path:
@@ -373,14 +410,31 @@ def build_manifest(
         if not uri:
             raise PublishManifestError("publish package manifest output is missing a uri")
         abs_path = _resolve_build_artifact(build_dir, uri)
-        sha = entry.get("sha256") or _sha256_of(abs_path)
-        size = entry.get("size_bytes") or abs_path.stat().st_size
+        # SEC: Always recompute hash + size from disk; never trust caller-
+        # supplied values. If the manifest declares either field, it is only
+        # used for verification — a mismatch fails the publish hard so a
+        # tampered package_manifest.json cannot get an ed25519-signed
+        # manifest attesting to the wrong bytes.
+        actual_sha = _sha256_of(abs_path)
+        declared_sha = entry.get("sha256")
+        if declared_sha and str(declared_sha) != actual_sha:
+            raise PublishManifestError(
+                f"sha256 mismatch for publish artifact {uri!r}: "
+                f"manifest declared {declared_sha!r} but disk has {actual_sha!r}"
+            )
+        actual_size = abs_path.stat().st_size
+        declared_size = entry.get("size_bytes")
+        if declared_size is not None and int(declared_size) != int(actual_size):
+            raise PublishManifestError(
+                f"size mismatch for publish artifact {uri!r}: "
+                f"manifest declared {declared_size!r} but disk has {actual_size!r}"
+            )
         package_formats.append(
             {
                 "format": str(entry.get("format", "")),
                 "uri": str(uri),
-                "sha256": str(sha),
-                "size_bytes": int(size),
+                "sha256": actual_sha,
+                "size_bytes": int(actual_size),
             }
         )
 
@@ -814,14 +868,32 @@ class GitLFSDriver:
         ``target_config`` keys: ``repo_dir`` (required), ``branch`` (optional,
         default ``main``), ``remote`` (optional, default ``origin``), ``asset``,
         ``version``, ``signing_key``, ``timeout_s``.
+
+        SEC: ``remote`` and ``branch`` are validated against
+        :data:`_SAFE_GIT_REMOTE_RE` and :data:`_SAFE_GIT_BRANCH_RE` and every
+        git argv inserts ``--`` before positionals so values starting with
+        ``-`` cannot be reparsed as options (e.g. ``--upload-pack=...``).
+        ``repo_dir`` defaults to a relative path resolved under the current
+        working directory via :func:`safe_resolve`; an absolute path is only
+        accepted when ``LATHE_ALLOW_EXTERNAL_PUBLISH=1`` is set in the
+        environment.
         """
         repo_dir_cfg = target_config.get("repo_dir")
         if not repo_dir_cfg:
             message = "GitLFSDriver requires target_config['repo_dir']"
             raise ValueError(message)
-        repo_dir = Path(repo_dir_cfg).resolve()
+
+        repo_dir = _resolve_publish_repo_dir(repo_dir_cfg)
         branch = str(target_config.get("branch") or "main")
         remote = str(target_config.get("remote") or "origin")
+        if not _SAFE_GIT_REMOTE_RE.fullmatch(remote):
+            raise ValueError(
+                f"GitLFSDriver rejects unsafe git remote name {remote!r}"
+            )
+        if not _SAFE_GIT_BRANCH_RE.fullmatch(branch):
+            raise ValueError(
+                f"GitLFSDriver rejects unsafe git branch name {branch!r}"
+            )
         asset = target_config.get("asset") or Path(build_dir).name
         version = str(target_config.get("version") or "0.1.0")
         timeout_s = float(target_config.get("timeout_s") or 60.0)
@@ -866,11 +938,15 @@ class GitLFSDriver:
             )
 
         rel_dir = _safe_object_key(asset, version)
+        # SEC: insert ``--`` before user-derived positionals so option-style
+        # remote/branch values cannot be re-parsed by git (e.g.
+        # ``--upload-pack=cmd``). Even with shell=False the underlying
+        # binary still parses option flags from positionals.
         commands = [
-            [git_exe, "lfs", "track", f"{rel_dir}/*"],
-            [git_exe, "add", ".gitattributes", rel_dir],
+            [git_exe, "lfs", "track", "--", f"{rel_dir}/*"],
+            [git_exe, "add", "--", ".gitattributes", rel_dir],
             [git_exe, "commit", "-m", f"publish: {asset} {version}"],
-            [git_exe, "push", remote, branch],
+            [git_exe, "push", "--", remote, branch],
         ]
         step_reports: list[dict[str, Any]] = []
         for argv in commands:

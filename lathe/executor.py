@@ -99,6 +99,7 @@ STAGE_ORDER = [
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
 BUILD_CACHE_VERSION = "v13_rc1"
+DEFAULT_BUILD_TIMEOUT_S = 300.0
 log = logging.getLogger(__name__)
 
 
@@ -384,16 +385,55 @@ class BuildExecutor:
         dump_json(self.out_dir / "plan.json", self.plan)
         dump_json(self.out_dir / "materialized_asset.json", self.asset)
 
+        # Wall-clock budget for the build. Default 5 min for the conservative
+        # path; override via runtime_config.execution.timeout_s. The marquee
+        # courier_drone build was previously hanging silently past 15 min;
+        # this turns "silent hang" into a structured BuildError with
+        # ``stage_timeout`` diagnostics so the user knows which stage stalled.
+        execution_cfg = self.runtime_config.get("execution") or {}
+        timeout_s = float(execution_cfg.get("timeout_s") or DEFAULT_BUILD_TIMEOUT_S)
+        build_start = time.monotonic()
+
+        def _check_budget(stage_name: str) -> None:
+            elapsed = time.monotonic() - build_start
+            if elapsed > timeout_s:
+                raise BuildError(
+                    f"build wall-clock budget exceeded after {elapsed:.0f}s "
+                    f"(limit={timeout_s:.0f}s, last stage={stage_name})",
+                    diagnostics=[
+                        {
+                            "code": "stage_timeout",
+                            "severity": "error",
+                            "message": (
+                                f"Stage '{stage_name}' completed but the cumulative "
+                                f"build wall-clock exceeded the configured budget of "
+                                f"{timeout_s:.0f}s. Override via "
+                                "runtime_config.execution.timeout_s."
+                            ),
+                            "phase": stage_name,
+                        }
+                    ],
+                )
+
         self._publish_pre_shape_quality_context()
         shape_bundle = stage_shape.run(self)
+        _check_budget("shape")
         topology_bundle = stage_topology.run(self, shape_bundle)
+        _check_budget("topology")
         uv_bundle = stage_uv.run(self, topology_bundle)
+        _check_budget("uv")
         surface_bundle = stage_surface.run(self, uv_bundle)
+        _check_budget("surface")
         rig_bundle = stage_rig.run(self, surface_bundle)
+        _check_budget("rig")
         interfaces_bundle = stage_interfaces.run(self, rig_bundle)
+        _check_budget("interfaces")
         physics_bundle = stage_physics.run(self, interfaces_bundle)
+        _check_budget("physics")
         optimize_bundle = stage_optimize.run(self, physics_bundle)
+        _check_budget("optimize")
         stage_execution.run(self, optimize_bundle)
+        _check_budget("execution")
         # Phase 10: publish a redacted snapshot of the runtime config so the
         # vision-critique validator can read the optional ``vision_critique``
         # provider block without ever seeing raw api keys / endpoints.
@@ -427,6 +467,11 @@ class BuildExecutor:
             raise BuildError("Validation failed", diagnostics=validate_bundle["diagnostics"])
         package_bundle = stage_package.run(self, optimize_bundle, validate_bundle)
 
+        if "kind" not in self.asset:
+            raise BuildError(
+                f"materialized asset {self.asset_name!r} is missing required "
+                "'kind' field; resolver/normalizer mismatch"
+            )
         report = {
             "asset": self.asset_name,
             "kind": self.asset["kind"],
@@ -589,11 +634,34 @@ class BuildExecutor:
                 return None
             if manifest.get("cache_key") not in (None, self.cache_key):
                 return None
+        # Stage into a sibling temp dir, then atomically rename onto out_dir.
+        # Mirrors _persist_build_cache so a mid-copy failure cannot destroy
+        # the user's existing out_dir.
+        staging_dir: Path | None = None
+        displaced_dir: Path | None = None
         try:
-            if self.out_dir.exists():
-                shutil.rmtree(self.out_dir)
             self.out_dir.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.cache_dir, self.out_dir)
+            staging_dir = Path(
+                tempfile.mkdtemp(
+                    prefix=f".restore.{self.cache_key}.",
+                    suffix=".tmp",
+                    dir=self.out_dir.parent,
+                )
+            )
+            shutil.rmtree(staging_dir)
+            shutil.copytree(self.cache_dir, staging_dir)
+            if self.out_dir.exists():
+                displaced_dir = Path(
+                    tempfile.mkdtemp(
+                        prefix=f".displaced.{self.cache_key}.",
+                        suffix=".tmp",
+                        dir=self.out_dir.parent,
+                    )
+                )
+                shutil.rmtree(displaced_dir)
+                self.out_dir.rename(displaced_dir)
+            staging_dir.rename(self.out_dir)
+            staging_dir = None
             report_path = self.out_dir / "build_report.json"
             if report_path.exists():
                 # JSON ingress — internal controlled payload from our own cached build_report.json (copytree'd from a prior build out_dir); safe without schema validation.
@@ -601,7 +669,19 @@ class BuildExecutor:
                 report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
                 return report
         except (OSError, shutil.Error):
+            if displaced_dir is not None and displaced_dir.exists() and not self.out_dir.exists():
+                # Restore the original out_dir from the displaced sibling.
+                try:
+                    displaced_dir.rename(self.out_dir)
+                    displaced_dir = None
+                except OSError:
+                    pass
             return None
+        finally:
+            if staging_dir is not None:
+                shutil.rmtree(staging_dir, ignore_errors=True)
+            if displaced_dir is not None:
+                shutil.rmtree(displaced_dir, ignore_errors=True)
         return None
 
     def _persist_build_cache(self) -> None:

@@ -64,7 +64,7 @@ def _characteristic_scale_cm(asset: dict[str, Any]) -> float:
 
 
 def _make_color(name: str) -> tuple[int, int, int]:
-    digest = np.frombuffer(np.frombuffer(name.encode("utf-8"), dtype=np.uint8).tobytes(), dtype=np.uint8)
+    digest = np.frombuffer(name.encode("utf-8"), dtype=np.uint8)
     total = int(digest.sum()) if len(digest) else 0
     return (80 + total % 140, 80 + (total * 3) % 140, 80 + (total * 7) % 140)
 

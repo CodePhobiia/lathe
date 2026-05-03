@@ -10,6 +10,8 @@ from typing import Any
 
 
 def _ratio_signature(extents: list[float]) -> list[float]:
+    if not extents:
+        return []
     largest = max(1e-06, *extents)
     return [float(value) / largest for value in extents]
 
@@ -67,10 +69,11 @@ def compare_scaffold_signature(
     xs = [point[0] for point in centers]
     ys = [point[1] for point in centers]
     zs = [point[2] for point in centers]
+    extents_largest = max(1e-06, *actual_extents) if actual_extents else 1e-06
     actual_spread = [
-        (max(xs) - min(xs)) / max(1e-06, *actual_extents) if xs else 0.0,
-        (max(ys) - min(ys)) / max(1e-06, *actual_extents) if ys else 0.0,
-        (max(zs) - min(zs)) / max(1e-06, *actual_extents) if zs else 0.0,
+        (max(xs) - min(xs)) / extents_largest if xs else 0.0,
+        (max(ys) - min(ys)) / extents_largest if ys else 0.0,
+        (max(zs) - min(zs)) / extents_largest if zs else 0.0,
     ]
     spread_diff = sum(
         abs(left - right) for left, right in zip(region_spread, actual_spread, strict=False)

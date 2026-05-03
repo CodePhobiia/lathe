@@ -448,6 +448,7 @@ class GitLFSDriverTests(_BuildDirMixin, unittest.TestCase):
         with (
             mock.patch("lathe.publish.run_sandboxed", return_value=sandbox_result) as fake_run,
             mock.patch("shutil.which", return_value="/usr/bin/git"),
+            mock.patch.dict(os.environ, {"LATHE_ALLOW_EXTERNAL_PUBLISH": "1"}),
         ):
             driver = GitLFSDriver()
             result = driver.publish(
@@ -479,6 +480,7 @@ class GitLFSDriverTests(_BuildDirMixin, unittest.TestCase):
         with (
             mock.patch("lathe.publish.run_sandboxed", side_effect=[ok, ok, ok, ok, push_failed]),
             mock.patch("shutil.which", return_value="/usr/bin/git"),
+            mock.patch.dict(os.environ, {"LATHE_ALLOW_EXTERNAL_PUBLISH": "1"}),
         ):
             driver = GitLFSDriver()
             with self.assertRaises(GitLFSPublishError) as ctx:

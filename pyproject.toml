@@ -30,6 +30,8 @@ dependencies = [
   "numpy>=1.26",
   "Pillow>=10.0",
   "trimesh>=4.0",
+  "scipy>=1.16",
+  "networkx>=3.2",
 ]
 
 [project.urls]
@@ -78,9 +80,7 @@ geometry = [
   "scikit-image>=0.25",
   "manifold3d>=2.5",
 ]
-export = [
-  "scipy>=1.16",
-]
+export = []  # scipy moved into core dependencies; alias kept for bootstrap scripts.
 publish = [
   "cryptography>=43",
   "boto3>=1.34",

@@ -360,6 +360,16 @@ def _runtime_from_shape_ir(
     if fused_mesh_ir is None and geometry_kernel_id == "lathe.geometry.manifold_v1":
         manifold_fused = _fuse_via_manifold_kernel(shape_ir)
         if manifold_fused is not None:
+            # Preserve the original fuse_shape_ir failure under ``attempted``
+            # so the trace still records *why* the primary path declined to
+            # produce a mesh. Without this, the manifold report overwrites
+            # the failure context, violating CLAUDE.md's mandated
+            # attempted-vs-actual provider tracking contract.
+            attempted_report = (
+                integration_report
+                if isinstance(integration_report, dict)
+                else {"mode": "fuse_shape_ir", "ok": False}
+            )
             combined, face_parts = manifold_fused
             integration_report = {
                 "mode": "manifold_csg",
@@ -368,6 +378,7 @@ def _runtime_from_shape_ir(
                 "body_count": len(combined.split(only_watertight=False)) if len(combined.faces) > 0 else 0,
                 "watertight": bool(combined.is_watertight),
                 "primitive_count": len(list(shape_ir.primitives)),
+                "attempted": attempted_report,
             }
             return {
                 "mesh": combined,

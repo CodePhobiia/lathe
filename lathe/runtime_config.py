@@ -236,23 +236,25 @@ def load_runtime_config(path: str | Path | None = None) -> dict[str, Any]:
     config = deepcopy(DEFAULT_RUNTIME_CONFIG)
     if path is not None:
         config_path = Path(path)
+        # SEC: read once with a hard byte cap to remove the TOCTOU between
+        # ``stat().st_size`` and ``read_text``. Reading one extra byte lets
+        # us detect a file that grew past the cap mid-read.
         try:
-            stat_result = config_path.stat()
+            with config_path.open("rb") as fp:
+                raw_bytes = fp.read(_MAX_CONFIG_BYTES + 1)
         except FileNotFoundError as exc:
             raise RuntimeConfigError(f"runtime_config file not found: {config_path}") from exc
         except OSError as exc:
             raise RuntimeConfigError(
-                f"runtime_config file could not be stat'd ({config_path}): {exc}"
+                f"runtime_config file could not be read ({config_path}): {exc}"
             ) from exc
-        if stat_result.st_size > _MAX_CONFIG_BYTES:
+        if len(raw_bytes) > _MAX_CONFIG_BYTES:
             raise RuntimeConfigError(
                 f"runtime_config file exceeds 256 KiB "
-                f"({stat_result.st_size} bytes > {_MAX_CONFIG_BYTES}): {config_path}"
+                f"(>{_MAX_CONFIG_BYTES} bytes): {config_path}"
             )
         try:
-            text = config_path.read_text(encoding="utf-8")
-        except FileNotFoundError as exc:
-            raise RuntimeConfigError(f"runtime_config file not found: {config_path}") from exc
+            text = raw_bytes.decode("utf-8")
         except UnicodeDecodeError as exc:
             raise RuntimeConfigError(
                 f"runtime_config file is not valid UTF-8 ({config_path}): {exc}"

@@ -67,6 +67,8 @@ dependencies so package provenance starts from named package specifiers.
 | `numpy` | PyPI package metadata / lockfile | Composite SPDX license expression published by NumPy. |
 | `Pillow` | PyPI package metadata / lockfile | `MIT-CMU` license expression. |
 | `trimesh` | PyPI package metadata / lockfile | MIT classifier and package license file. |
+| `scipy` | PyPI package metadata / lockfile | BSD-3-Clause license expression. |
+| `networkx` | PyPI package metadata / lockfile | BSD-3-Clause license expression. |
 
 Optional extras and transitive dependencies are reviewed through the release
 SBOM and dependency scan outputs described in [Release provenance](provenance.md)

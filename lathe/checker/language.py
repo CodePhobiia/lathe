@@ -130,7 +130,24 @@ def check_critics(checker: Any) -> None:
         if isinstance(body, dict) and body.get("type") == "weighted":
             total = 0.0
             for item in body.get("items", []):
-                weight = float(item.get("weight", 0.0))
+                raw_weight = item.get("weight", 0.0)
+                try:
+                    weight = float(raw_weight)
+                except (TypeError, ValueError):
+                    checker.diagnostics.append(
+                        diag(
+                            "L3203",
+                            "non_numeric_critic_weight",
+                            "error",
+                            "typecheck",
+                            (
+                                f"Critic '{critic['name']}' has a non-numeric weight "
+                                f"{raw_weight!r}"
+                            ),
+                            path=f"critic.{critic['name']}",
+                        )
+                    )
+                    continue
                 total += weight
                 if weight < 0:
                     checker.diagnostics.append(

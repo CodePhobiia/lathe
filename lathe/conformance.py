@@ -22,6 +22,8 @@ _STRUCTURAL_RICHNESS_THRESHOLD = 0.58
 
 
 def _ratio_signature(extents: list[float]) -> list[float]:
+    if not extents:
+        return []
     largest = max(1e-6, *extents)
     return [float(value) / largest for value in extents]
 

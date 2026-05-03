@@ -21,6 +21,7 @@ from trimesh.visual.texture import TextureVisuals
 from ...engine_manifests import ADAPTERS as _ENGINE_ADAPTERS
 from ...engine_manifests import manifest_filename as _engine_manifest_filename
 from ...errors import BuildError
+from ...imaging import open_guarded
 from ...nested_assets import nested_asset_manifest_for_signature
 from ...paths import PathGuardError, safe_resolve
 from ...security import redact_secrets
@@ -113,7 +114,7 @@ def _copy_surface_textures(executor: Any, stage_dir: Path) -> dict[str, Path]:
 
 
 def _open_texture(path: Path, mode: str) -> Image.Image:
-    with Image.open(path) as image:
+    with open_guarded(path) as image:
         return image.convert(mode)
 
 

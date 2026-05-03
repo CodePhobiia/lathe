@@ -118,6 +118,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -154,7 +155,7 @@ _PUBLIC_SURFACE_TOKENS: frozenset[str] = frozenset(
 _SHAPE_CONTRACT_ID = "lathe.shape.intent_mesh_handoff_v1"
 
 _SECRET_CONFIG_KEY_TOKENS: frozenset[str] = frozenset(
-    {"key", "token", "secret", "password", "credential", "endpoint", "url"}
+    {"key", "token", "secret", "password", "credential"}
 )
 
 _DEBUG_MATERIAL_THRESHOLD = 0.50
@@ -940,10 +941,18 @@ def _summary(
 
 
 def _safe_config_keys(config: dict[str, Any]) -> list[str]:
+    """Return config keys with anything that looks like a credential redacted.
+
+    The secret tokens are matched against *whole segments* of the key (split
+    on ``_``, ``-``, ``.``) instead of substrings so legitimate fields like
+    ``endpoint_url``, ``keypoints``, ``tokens_per_second``, or
+    ``service_url`` are not silently dropped. Only credential-like names —
+    e.g. ``api_key``, ``auth_token``, ``db_password`` — are filtered.
+    """
     keys: list[str] = []
     for key in sorted(config):
-        lowered = key.lower()
-        if any(token in lowered for token in _SECRET_CONFIG_KEY_TOKENS):
+        segments = {segment for segment in re.split(r"[_\-.]", key.lower()) if segment}
+        if segments & _SECRET_CONFIG_KEY_TOKENS:
             continue
         keys.append(str(key))
     return keys

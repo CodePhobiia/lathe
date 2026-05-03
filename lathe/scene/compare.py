@@ -62,6 +62,8 @@ def compare_renders(
     """Compare two deterministic local PNG render files."""
     try:
         from PIL import Image
+
+        from lathe.imaging import open_guarded
     except ImportError as exc:  # pragma: no cover - normal test/runtime environment includes Pillow.
         return None, [
             _diagnostic(
@@ -75,9 +77,9 @@ def compare_renders(
     before_path = Path(before)
     after_path = Path(after)
     try:
-        with Image.open(before_path) as image:
+        with open_guarded(before_path) as image:
             before_image = image.convert("RGBA")
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, Image.DecompressionBombError) as exc:
         return None, [
             _diagnostic(
                 "RC1001",
@@ -88,9 +90,9 @@ def compare_renders(
             )
         ]
     try:
-        with Image.open(after_path) as image:
+        with open_guarded(after_path) as image:
             after_image = image.convert("RGBA")
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, Image.DecompressionBombError) as exc:
         return None, [
             _diagnostic(
                 "RC1002",

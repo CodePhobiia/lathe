@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from ..capabilities import probe_blender
+from ..errors import BuildError
 from ..inspection.evidence import build_inspection_policy_ir
 
 BRIDGE_BACKEND_ID = "lathe.bridge.blender_execution_v1"
@@ -174,7 +175,22 @@ def build_bridge_doctor(runtime_config: dict[str, Any] | None = None) -> dict[st
 
 def _read_execution_bundle(build_dir: Path) -> dict[str, Any]:
     # JSON ingress — internal controlled payload from our own execution stage bundle emitted by build_asset; safe without schema validation.
-    return json.loads((build_dir / "stages" / "execution" / "bundle.json").read_text(encoding="utf-8"))
+    bundle_path = build_dir / "stages" / "execution" / "bundle.json"
+    try:
+        text = bundle_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise BuildError(
+            f"could not read execution bundle at {bundle_path}: {exc}"
+        ) from exc
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise BuildError(
+            f"execution bundle at {bundle_path} is not valid JSON: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise BuildError(f"execution bundle at {bundle_path} is not a JSON object")
+    return payload
 
 
 def inspect_completed_build(build_dir: Path) -> dict[str, Any]:

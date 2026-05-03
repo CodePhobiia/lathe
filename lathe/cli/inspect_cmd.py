@@ -128,14 +128,28 @@ def run_explain(args) -> None:
     Args:
         args: args argument.
     """
+    from ..errors import BuildError
+    from ..io_json import load_json_dict
+
     build_dir = Path(args.build_dir).resolve()
-    # JSON ingress: controlled payloads from prior-run build artifacts emitted
-    # by this package; safe without schema validation.
-    report = json.loads((build_dir / "build_report.json").read_text(encoding="utf-8"))
-    shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-    validate_report = json.loads(
-        (build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
-    )
+    try:
+        report = load_json_dict(build_dir / "build_report.json", label="build_report.json")
+        shape_bundle = load_json_dict(
+            build_dir / "stages" / "shape" / "bundle.json",
+            label="shape stage bundle",
+        )
+        validate_report = load_json_dict(
+            build_dir / "stages" / "validate" / "report.json",
+            label="validate stage report",
+        )
+    except BuildError as exc:
+        _emit_error(
+            "lathe.cli.inspect.bundle_unreadable",
+            str(exc),
+            "Re-run the build to regenerate the artifact, or check filesystem permissions.",
+            exit_code=1,
+        )
+        return
     selected_id = shape_bundle.get("selected_candidate_id")
     selected = next(
         (item for item in shape_bundle.get("candidates", []) if item.get("candidate_id") == selected_id),
@@ -168,13 +182,27 @@ def run_explain_fit(args) -> None:
     Args:
         args: args argument.
     """
+    from ..errors import BuildError
+    from ..io_json import load_json_dict
+
     build_dir = Path(args.build_dir).resolve()
-    # JSON ingress: controlled payloads from prior-run shape and validate
-    # artifacts emitted by this package; safe without schema validation.
-    shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
-    validate_report = json.loads(
-        (build_dir / "stages" / "validate" / "report.json").read_text(encoding="utf-8")
-    )
+    try:
+        shape_bundle = load_json_dict(
+            build_dir / "stages" / "shape" / "bundle.json",
+            label="shape stage bundle",
+        )
+        validate_report = load_json_dict(
+            build_dir / "stages" / "validate" / "report.json",
+            label="validate stage report",
+        )
+    except BuildError as exc:
+        _emit_error(
+            "lathe.cli.inspect.bundle_unreadable",
+            str(exc),
+            "Re-run the build to regenerate the artifact, or check filesystem permissions.",
+            exit_code=1,
+        )
+        return
     _dump(
         {
             "reference_ir": shape_bundle.get("reference_ir", {}),

@@ -19,6 +19,7 @@ import numpy as np
 import trimesh
 from PIL import Image
 
+from ...imaging import open_guarded
 from ..errors import ShapeProviderExecutionError, ShapeProviderUnavailable
 from ..mesh_ops import _mesh_quality_score, _runtime_from_mesh
 
@@ -434,7 +435,10 @@ def _resized_images(
         return []
     resized_images: list[np.ndarray] = []
     for path in image_paths:
-        image = Image.open(path).convert("RGB").resize((target_w, target_h), Image.Resampling.BILINEAR)
+        with open_guarded(path) as opened:
+            image = opened.convert("RGB").resize(
+                (target_w, target_h), Image.Resampling.BILINEAR
+            )
         resized_images.append(np.asarray(image, dtype=np.uint8))
     return resized_images
 

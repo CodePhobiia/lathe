@@ -7,13 +7,13 @@ provider mux under the ``lathe.shape.intent_mesh_handoff_v1`` contract.
 from __future__ import annotations
 
 import hashlib
-import warnings
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from PIL import Image, UnidentifiedImageError
 
+from ...imaging import bomb_guarded
 from ...mesh_ingest import DEFAULT_MAX_BYTES, ShapeMeshLoadError
 from ...paths import PathGuardError, safe_resolve
 from ...security import InputClass, TrustLevel, boundary_policy, ingress_boundary
@@ -169,15 +169,13 @@ def _dominant_palette(rgb_pixels: np.ndarray, count: int = 3) -> list[list[int]]
 
 def _analyze_image_ref(path: Path) -> dict[str, Any]:
     try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", Image.DecompressionBombWarning)
-            with Image.open(path) as opened:
-                if (int(opened.width) * int(opened.height)) > _MAX_IMAGE_REF_PIXELS:
-                    raise _ImageRefRejected(
-                        "image_dimensions_too_large",
-                        "image dimensions exceed the configured limit",
-                    )
-                image = opened.convert("RGBA")
+        with bomb_guarded(), Image.open(path) as opened:
+            if (int(opened.width) * int(opened.height)) > _MAX_IMAGE_REF_PIXELS:
+                raise _ImageRefRejected(
+                    "image_dimensions_too_large",
+                    "image dimensions exceed the configured limit",
+                )
+            image = opened.convert("RGBA")
     except _ImageRefRejected:
         raise
     except (UnidentifiedImageError, OSError, ValueError) as exc:

@@ -10,6 +10,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+from .errors import NormalizationError
 from .defaults import (
     ASSET_DEFAULTS,
     ASSET_REPAIR_POLICY_DEFAULTS,
@@ -123,6 +124,10 @@ def _ordered(mapping: dict[str, Any], keys: list[str]) -> dict[str, Any]:
 
 
 def _normalize_rule(rule: dict[str, Any]) -> dict[str, Any]:
+    if "kind" not in rule or "expr" not in rule:
+        raise NormalizationError(
+            f"rule node is missing required fields ('kind'/'expr'): {rule!r}"
+        )
     out = {"kind": rule["kind"], "expr": deepcopy(rule["expr"])}
     if "weight" in rule:
         out["weight"] = rule["weight"]
@@ -180,11 +185,20 @@ def _normalize_space_common(space: dict[str, Any], *, with_name: bool) -> dict[s
     for item in out.get("vary", []):
         if not isinstance(item, dict):
             continue
+        if "path" not in item or "domain" not in item:
+            raise NormalizationError(
+                f"space.vary entry missing required fields ('path'/'domain'): {item!r}"
+            )
         vary.append({"path": item["path"], "domain": deepcopy(item["domain"])})
     objectives: list[dict[str, Any]] = []
     for item in out.get("objectives", []):
         if not isinstance(item, dict):
             continue
+        if "direction" not in item or "metric" not in item:
+            raise NormalizationError(
+                f"space.objectives entry missing required fields "
+                f"('direction'/'metric'): {item!r}"
+            )
         objective = {"direction": item["direction"], "metric": deepcopy(item["metric"])}
         if "weight" in item:
             objective["weight"] = float(item["weight"])
@@ -204,6 +218,8 @@ def _normalize_space_decl(decl: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_assert(assertion: dict[str, Any]) -> dict[str, Any]:
+    if "expr" not in assertion:
+        raise NormalizationError(f"assert node is missing required 'expr' field: {assertion!r}")
     return {"node_type": "assert", "expr": deepcopy(assertion["expr"])}
 
 

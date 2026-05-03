@@ -101,6 +101,8 @@ class LatheDoctorTests(unittest.TestCase):
                 "trimesh": {"available": True},
                 "numpy": {"available": True},
                 "Pillow": {"available": True},
+                "scipy": {"available": True},
+                "networkx": {"available": True},
                 "pytest": {"available": True},
             },
             "setup_checks": [
