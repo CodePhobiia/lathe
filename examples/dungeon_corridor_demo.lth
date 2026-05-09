@@ -1,0 +1,63 @@
+// Phase 3 fourth slice — minimum-viable WFC modular assembly.
+//
+// Proves Lathe ships FIVE domains across one kernel: hard-surface
+// props (chests, drones), vegetation (oak_tree_demo), terrain
+// (rocky_hill_demo), organic creatures via SDFs (alien_blob_demo),
+// and now MODULAR COMPOSITION. Three new mesh_program ops shipped:
+//
+//   * wfc_module(name, primitive, weight?)
+//     -> declares a named module wrapping any existing primitive
+//     binding (solid_panel, solid_cylinder, vegetation_trunk, ... —
+//     the WFC kernel does not care which paradigm built it).
+//   * wfc_rule(a, b, direction, probability?)
+//     -> declares an allowable adjacency between two named modules
+//     in a given direction. The "x|y|z" shorthand allows the rule in
+//     both signs of that axis.
+//   * wfc_modular(canvas_size, cell_size, modules, adjacency, seed)
+//     -> runs the existing lathe.wfc solver (Maxim Gumin's WFC) on
+//     the canvas, then emits one ShapePrimitive per cell as a
+//     translated copy of the chosen module's primitive.
+//
+// This is the v1 existence proof — single primitive per module,
+// fixed cubic cells, no rotation handling. Full WFC entropy weighting
+// is Phase 4 work.
+module demo.dungeon
+
+asset dungeon_corridor : hard_surface_prop {
+  intent {
+    role = "modular dungeon corridor"
+    asset_class = "hero"
+    style = ["dungeon", "modular"]
+    materials = ["stone_grey", "moss"]
+    scale = 30m
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 42
+
+      mesh_program {
+        let floor = solid_panel(extents: [3m, 30cm, 3m])
+        let wall = solid_panel(extents: [3m, 3m, 30cm])
+        let pillar = solid_cylinder(radius: 30cm, height: 3m, axis: "y")
+
+        let mod_floor = wfc_module(name: "floor", primitive: floor, weight: 0.7)
+        let mod_wall = wfc_module(name: "wall", primitive: wall, weight: 0.2)
+        let mod_pillar = wfc_module(name: "pillar", primitive: pillar, weight: 0.1)
+
+        let rule_ff_x = wfc_rule(a: "floor", b: "floor", direction: "x")
+        let rule_ff_z = wfc_rule(a: "floor", b: "floor", direction: "z")
+
+        wfc_modular(
+          canvas_size: [10, 1, 10],
+          cell_size: 3m,
+          modules: [mod_floor, mod_wall, mod_pillar],
+          adjacency: [rule_ff_x, rule_ff_z],
+          seed: 42,
+        )
+      }
+    }
+  }
+}

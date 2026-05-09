@@ -735,6 +735,8 @@ GAMEPLAY_TAG_CATALOG: frozenset[str] = frozenset(
         "cover",
         "waypoint",
         "vfx_anchor",
+        "mechanical",
+        "airlock",
     }
 )
 
@@ -836,6 +838,536 @@ def _collect_engine_manifests(runtime: dict[str, Any]) -> dict[str, Any]:
         if isinstance(fmt, str) and fmt in {"json", "yaml"}:
             clean["format"] = fmt
         out[name] = clean
+    return out
+
+
+def _dict_payload(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _record_list(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [dict(item) for item in value if isinstance(item, dict)]
+
+
+def _selected_shape_candidate(shape_bundle: dict[str, Any]) -> dict[str, Any]:
+    selected_id = str(shape_bundle.get("selected_candidate_id") or "")
+    candidates = shape_bundle.get("candidates") or []
+    if not isinstance(candidates, list):
+        return {}
+    for candidate in candidates:
+        if isinstance(candidate, dict) and str(candidate.get("candidate_id") or "") == selected_id:
+            return dict(candidate)
+    return {}
+
+
+def _kernel_manifest_key(manifest: dict[str, Any]) -> tuple[str, str, str, int, int]:
+    return (
+        str(manifest.get("program_kind") or ""),
+        str(manifest.get("route") or ""),
+        str(manifest.get("backend") or ""),
+        int(manifest.get("operand_count", 0) or 0),
+        int(manifest.get("operation_count", 0) or 0),
+    )
+
+
+def _kernel_manifest_from_payload(value: Any) -> dict[str, Any]:
+    payload = _dict_payload(value)
+    if payload.get("schema") == "lathe.geometry.kernel_program_manifest.v1":
+        return payload
+    direct = _dict_payload(payload.get("kernel_program_manifest"))
+    if direct.get("schema") == "lathe.geometry.kernel_program_manifest.v1":
+        return direct
+    for key in ("details", "kernel_program", "kernel_program_details"):
+        nested = _dict_payload(payload.get(key))
+        direct = _dict_payload(nested.get("kernel_program_manifest"))
+        if direct.get("schema") == "lathe.geometry.kernel_program_manifest.v1":
+            return direct
+    return {}
+
+
+def _shape_ir_kernel_manifests(shape_bundle: dict[str, Any]) -> list[dict[str, Any]]:
+    selected_shape_ir = shape_bundle.get("selected_shape_ir")
+    shape_irs = [selected_shape_ir] if isinstance(selected_shape_ir, dict) else (
+        shape_bundle.get("shape_ir") or shape_bundle.get("shape_irs") or []
+    )
+    if isinstance(shape_irs, dict):
+        shape_irs = [shape_irs]
+    if not isinstance(shape_irs, list):
+        return []
+    manifests: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, int, int]] = set()
+    for shape_ir in shape_irs:
+        if not isinstance(shape_ir, dict):
+            continue
+        primitives = shape_ir.get("primitives")
+        if not isinstance(primitives, list):
+            continue
+        for primitive in primitives:
+            if not isinstance(primitive, dict):
+                continue
+            semantic_metadata = _dict_payload(primitive.get("semantic_metadata"))
+            v2_metadata = _dict_payload(semantic_metadata.get("shape_ir_v2"))
+            for modifier_source in (primitive, semantic_metadata, v2_metadata):
+                for modifier_name in (
+                    "v2_hull_modifier",
+                    "v2_minkowski_modifier",
+                    "v2_transform_modifier",
+                    "v2_copy_to_points_modifier",
+                    "v2_surface_scatter_modifier",
+                    "v2_distribution_modifier",
+                    "v2_mirror_modifier",
+                    "v2_repeat_modifier",
+                    "v2_fastener_grid_modifier",
+                    "v2_vent_slats_modifier",
+                    "v2_corner_guard_set_modifier",
+                    "v2_trim_band_modifier",
+                    "v2_panel_frame_modifier",
+                    "v2_socket_modifier",
+                    "v2_bracket_modifier",
+                    "v2_mount_plate_modifier",
+                    "v2_cut_panel_line_modifier",
+                    "v2_countersunk_hole_modifier",
+                    "v2_rounded_slot_modifier",
+                    "v2_weld_seam_modifier",
+                    "v2_boolean_modifier",
+                    "v2_sop_boolean_modifier",
+                    "v2_inset_modifier",
+                    "v2_extrude_modifier",
+                    "v2_shell_modifier",
+                    "v2_sweep_modifier",
+                    "v2_polyextrude_modifier",
+                    "v2_loft_modifier",
+                    "v2_carve_modifier",
+                    "v2_polywire_modifier",
+                    "v2_helical_sweep_modifier",
+                    "v2_deform_modifier",
+                    "v2_subdivision_modifier",
+                    "v2_remesh_modifier",
+                    "v2_polybevel_modifier",
+                    "v2_mark_hard_edge_modifier",
+                    "v2_weighted_normals_modifier",
+                    "v2_scratch_mask_modifier",
+                    "v2_dent_mask_modifier",
+                    "v2_chip_edges_modifier",
+                    "v2_grime_mask_modifier",
+                    "v2_prism_modifier",
+                    "v2_rail_modifier",
+                    "v2_structural_beam_modifier",
+                    "v2_ladder_frame_modifier",
+                    "v2_truss_frame_modifier",
+                    "v2_panel_modifier",
+                    "v2_perforated_panel_modifier",
+                    "v2_ribbed_panel_modifier",
+                    "v2_louver_panel_modifier",
+                    "v2_terrain_patch_modifier",
+                    "v2_branching_tree_modifier",
+                    "v2_sdf_metaball_cluster_modifier",
+                    "v2_wfc_modular_assembly_modifier",
+                    "v2_cga_facade_modifier",
+                    "v2_tube_modifier",
+                    "v2_gear_modifier",
+                    "v2_capsule_modifier",
+                    "v2_flange_modifier",
+                    "v2_hinge_modifier",
+                    "v2_handle_modifier",
+                    "v2_spring_modifier",
+                    "v2_curved_tube_modifier",
+                    "v2_threaded_cylinder_modifier",
+                    "v2_curve_profile_modifier",
+                    "v2_curve_sweep_modifier",
+                    "v2_curve_loft_modifier",
+                ):
+                    manifest = _kernel_manifest_from_payload(modifier_source.get(modifier_name))
+                    if not manifest:
+                        continue
+                    key = _kernel_manifest_key(manifest)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    manifests.append(manifest)
+    return manifests
+
+
+def _compact_kernel_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    required = manifest.get("required_capabilities")
+    diagnostics = manifest.get("diagnostics")
+    clean: dict[str, Any] = {
+        "programKind": str(manifest.get("program_kind") or ""),
+        "route": str(manifest.get("route") or ""),
+        "backend": str(manifest.get("backend") or ""),
+        "operandCount": int(manifest.get("operand_count", 0) or 0),
+        "operationCount": int(manifest.get("operation_count", 0) or 0),
+        "semanticOperationRecordCount": int(
+            manifest.get("semantic_operation_record_count", 0) or 0
+        ),
+        "requiredCapabilities": [
+            str(item)
+            for item in (required if isinstance(required, list) else [])
+            if str(item)
+        ],
+    }
+    if isinstance(diagnostics, list):
+        clean["diagnosticCount"] = len([item for item in diagnostics if isinstance(item, dict)])
+    return clean
+
+
+def _compact_operation_record(record: dict[str, Any]) -> dict[str, Any] | None:
+    operation = record.get("operation") or record.get("repair_action")
+    if not operation:
+        return None
+    out: dict[str, Any] = {"operation": str(operation)}
+    for key_src, key_dst in (
+        ("operation_id", "operationId"),
+        ("operand_id", "operandId"),
+        ("part", "part"),
+        ("primitive_type", "primitiveType"),
+        ("blend_mode", "blendMode"),
+        ("source", "source"),
+    ):
+        value = record.get(key_src)
+        if value not in (None, "", [], {}):
+            out[key_dst] = str(value)
+    operand_index = record.get("operand_index")
+    if isinstance(operand_index, int):
+        out["operandIndex"] = operand_index
+    semantic_count = record.get("semantic_equivalent_operation_count")
+    if isinstance(semantic_count, int):
+        out["semanticEquivalentOperationCount"] = semantic_count
+    surface_scatter = _dict_payload(record.get("surface_scatter"))
+    if surface_scatter:
+        target = surface_scatter.get("target")
+        if target not in (None, "", [], {}):
+            out["target"] = str(target)
+        mesh_face_index = surface_scatter.get("mesh_face_index")
+        if isinstance(mesh_face_index, int):
+            out["meshFaceIndex"] = mesh_face_index
+        sample_index = surface_scatter.get("sample_index")
+        if isinstance(sample_index, int):
+            out["sampleIndex"] = sample_index
+        emitted_count = surface_scatter.get("emitted_count")
+        if isinstance(emitted_count, int):
+            out["instanceCount"] = emitted_count
+    point_scatter = _dict_payload(record.get("point_scatter"))
+    if point_scatter:
+        points = point_scatter.get("points")
+        if points not in (None, "", [], {}):
+            out["pointSet"] = str(points)
+        point_index = point_scatter.get("point_index")
+        if isinstance(point_index, int):
+            out["pointIndex"] = point_index
+        point_count = point_scatter.get("point_count")
+        if isinstance(point_count, int):
+            out["instanceCount"] = point_count
+    return out
+
+
+def _dedupe_selector_operation_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for record in records:
+        compact = _compact_operation_record(record)
+        if compact is None:
+            continue
+        key = (
+            str(compact.get("operationId") or ""),
+            str(compact.get("operation") or ""),
+            str(compact.get("operandId") or ""),
+            str(compact.get("source") or ""),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(compact)
+    return out
+
+
+def _operation_counts(records: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for record in records:
+        operation = str(record.get("operation") or "")
+        if not operation:
+            continue
+        counts[operation] = counts.get(operation, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _first_record_list(*values: Any) -> list[dict[str, Any]]:
+    for value in values:
+        records = _record_list(value)
+        if records:
+            return records
+    return []
+
+
+def _compact_kernel_detail_record(
+    record: dict[str, Any],
+    *,
+    kind_key: str,
+    count_key: str,
+) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "operation": str(record.get("operation") or record.get("semantic_operation") or ""),
+    }
+    kind = record.get(kind_key)
+    if kind not in (None, "", [], {}):
+        out["kind"] = str(kind)
+    source_part = record.get("source_part")
+    if source_part not in (None, "", [], {}):
+        out["sourcePart"] = str(source_part)
+    method = record.get("method")
+    if method not in (None, "", [], {}):
+        out["method"] = str(method)
+    if count_key in record:
+        out["count"] = int(record.get(count_key) or 0)
+    return out
+
+
+def _compact_kernel_detail_records(
+    records: list[dict[str, Any]],
+    *,
+    kind_key: str,
+    count_key: str,
+) -> list[dict[str, Any]]:
+    return [
+        _compact_kernel_detail_record(record, kind_key=kind_key, count_key=count_key)
+        for record in records
+        if isinstance(record, dict)
+    ]
+
+
+def _collect_construction_provenance(runtime: dict[str, Any]) -> dict[str, Any]:
+    """Return a compact selector-safe construction provenance block."""
+    shape_bundle = _dict_payload((runtime.get("shape") or {}).get("bundle"))
+    topology_bundle = _dict_payload((runtime.get("topology") or {}).get("bundle"))
+    uv_bundle = _dict_payload((runtime.get("uv") or {}).get("bundle"))
+    surface_bundle = _dict_payload((runtime.get("surface") or {}).get("bundle"))
+    selected_candidate = _selected_shape_candidate(shape_bundle)
+    shape_integration = _dict_payload(selected_candidate.get("integration_report"))
+    exact_report = _dict_payload(shape_integration.get("exact_report"))
+    mesh_ir_metadata = _dict_payload(_dict_payload(selected_candidate.get("mesh_ir")).get("metadata"))
+
+    manifests: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, int, int]] = set()
+    for manifest in [
+        _kernel_manifest_from_payload(shape_integration),
+        _kernel_manifest_from_payload(exact_report),
+        *_shape_ir_kernel_manifests(shape_bundle),
+    ]:
+        if not manifest:
+            continue
+        key = _kernel_manifest_key(manifest)
+        if key in seen:
+            continue
+        seen.add(key)
+        manifests.append(manifest)
+
+    operation_records = _record_list(shape_integration.get("operation_records"))
+    operation_records.extend(_record_list(shape_integration.get("kernel_program_semantic_operation_records")))
+    for manifest in manifests:
+        operation_records.extend(_record_list(manifest.get("semantic_operation_records")))
+    compact_records = _dedupe_selector_operation_records(operation_records)
+    kernel_feature_details = _first_record_list(
+        surface_bundle.get("kernel_feature_details"),
+        uv_bundle.get("kernel_feature_details"),
+        topology_bundle.get("kernel_feature_details"),
+        mesh_ir_metadata.get("kernel_feature_details"),
+    )
+    kernel_edge_treatments = _first_record_list(
+        surface_bundle.get("kernel_edge_treatments"),
+        uv_bundle.get("kernel_edge_treatments"),
+        topology_bundle.get("kernel_edge_treatments"),
+        mesh_ir_metadata.get("kernel_edge_treatments"),
+    )
+    kernel_pattern_instances = _first_record_list(
+        surface_bundle.get("kernel_pattern_instances"),
+        uv_bundle.get("kernel_pattern_instances"),
+        topology_bundle.get("kernel_pattern_instances"),
+        mesh_ir_metadata.get("kernel_pattern_instances"),
+    )
+    kernel_deforms = _first_record_list(
+        surface_bundle.get("kernel_deforms"),
+        uv_bundle.get("kernel_deforms"),
+        topology_bundle.get("kernel_deforms"),
+        mesh_ir_metadata.get("kernel_deforms"),
+    )
+    kernel_profile_paths = _first_record_list(
+        surface_bundle.get("kernel_profile_paths"),
+        uv_bundle.get("kernel_profile_paths"),
+        topology_bundle.get("kernel_profile_paths"),
+        mesh_ir_metadata.get("kernel_profile_paths"),
+    )
+    kernel_edge_controls = _first_record_list(
+        surface_bundle.get("kernel_edge_controls"),
+        uv_bundle.get("kernel_edge_controls"),
+        topology_bundle.get("kernel_edge_controls"),
+        mesh_ir_metadata.get("kernel_edge_controls"),
+    )
+    kernel_component_assemblies = _first_record_list(
+        surface_bundle.get("kernel_component_assemblies"),
+        uv_bundle.get("kernel_component_assemblies"),
+        topology_bundle.get("kernel_component_assemblies"),
+        mesh_ir_metadata.get("kernel_component_assemblies"),
+    )
+    kernel_sdf_fields = _first_record_list(
+        surface_bundle.get("kernel_sdf_fields"),
+        uv_bundle.get("kernel_sdf_fields"),
+        topology_bundle.get("kernel_sdf_fields"),
+        mesh_ir_metadata.get("kernel_sdf_fields"),
+    )
+    kernel_terrain_fields = _first_record_list(
+        surface_bundle.get("kernel_terrain_fields"),
+        uv_bundle.get("kernel_terrain_fields"),
+        topology_bundle.get("kernel_terrain_fields"),
+        mesh_ir_metadata.get("kernel_terrain_fields"),
+    )
+    kernel_scatters = _first_record_list(
+        surface_bundle.get("kernel_scatters"),
+        uv_bundle.get("kernel_scatters"),
+        topology_bundle.get("kernel_scatters"),
+        mesh_ir_metadata.get("kernel_scatters"),
+    )
+    kernel_surface_damage = _first_record_list(
+        surface_bundle.get("kernel_surface_damage"),
+        uv_bundle.get("kernel_surface_damage"),
+        topology_bundle.get("kernel_surface_damage"),
+        mesh_ir_metadata.get("kernel_surface_damage"),
+    )
+
+    selected_id = str(shape_bundle.get("selected_candidate_id") or "")
+    if not any(
+        (
+            selected_id,
+            shape_integration,
+            manifests,
+            compact_records,
+            kernel_feature_details,
+            kernel_edge_treatments,
+            kernel_pattern_instances,
+            kernel_deforms,
+            kernel_profile_paths,
+            kernel_edge_controls,
+            kernel_component_assemblies,
+            kernel_sdf_fields,
+            kernel_terrain_fields,
+            kernel_scatters,
+            kernel_surface_damage,
+        )
+    ):
+        return {}
+
+    fallback_reason = (
+        shape_integration.get("boolean_fallback_reason")
+        or shape_integration.get("kernel_program_failure_reason")
+        or shape_integration.get("reason")
+    )
+    out: dict[str, Any] = {
+        "schema": "lathe.selector.construction_provenance.v1",
+        "selectedCandidateId": selected_id,
+        "shapeMode": str(shape_integration.get("mode") or ""),
+        "geometryKernel": str(
+            shape_integration.get("geometry_kernel")
+            or shape_integration.get("boolean_kernel")
+            or shape_integration.get("kernel_program_kernel")
+            or ""
+        ),
+        "kernelProgramSucceeded": bool(shape_integration.get("kernel_program_succeeded", False)),
+        "kernelProgramPrimary": bool(shape_integration.get("kernel_program_primary", False)),
+        "kernelProgramBooleanFallbackCount": int(
+            shape_integration.get("kernel_program_boolean_fallback_count", 0) or 0
+        ),
+        "kernelProgramManifestCount": len(manifests),
+        "kernelProgramManifests": [_compact_kernel_manifest(manifest) for manifest in manifests],
+        "operationRecordCount": len(compact_records),
+        "operationCounts": _operation_counts(compact_records),
+        "operationRecords": compact_records,
+        "kernelFeatureDetailCount": len(kernel_feature_details),
+        "kernelFeatureDetails": _compact_kernel_detail_records(
+            kernel_feature_details,
+            kind_key="feature_kind",
+            count_key="feature_count",
+        ),
+        "kernelEdgeTreatmentCount": len(kernel_edge_treatments),
+        "kernelEdgeTreatments": _compact_kernel_detail_records(
+            kernel_edge_treatments,
+            kind_key="treatment_kind",
+            count_key="treatment_count",
+        ),
+        "kernelPatternInstanceCount": len(kernel_pattern_instances),
+        "kernelPatternInstances": _compact_kernel_detail_records(
+            kernel_pattern_instances,
+            kind_key="pattern_kind",
+            count_key="instance_count",
+        ),
+        "kernelDeformCount": len(kernel_deforms),
+        "kernelDeforms": _compact_kernel_detail_records(
+            kernel_deforms,
+            kind_key="operation",
+            count_key="result_face_count",
+        ),
+        "kernelProfilePathCount": len(kernel_profile_paths),
+        "kernelProfilePaths": _compact_kernel_detail_records(
+            kernel_profile_paths,
+            kind_key="profile_kind",
+            count_key="result_face_count",
+        ),
+        "kernelEdgeControlCount": len(kernel_edge_controls),
+        "kernelEdgeControls": _compact_kernel_detail_records(
+            kernel_edge_controls,
+            kind_key="edge_control_kind",
+            count_key="result_face_count",
+        ),
+        "kernelComponentAssemblyCount": len(kernel_component_assemblies),
+        "kernelComponentAssemblies": _compact_kernel_detail_records(
+            kernel_component_assemblies,
+            kind_key="assembly_kind",
+            count_key="result_face_count",
+        ),
+        "kernelSdfFieldCount": len(kernel_sdf_fields),
+        "kernelSdfFields": _compact_kernel_detail_records(
+            kernel_sdf_fields,
+            kind_key="field_kind",
+            count_key="result_face_count",
+        ),
+        "kernelTerrainFieldCount": len(kernel_terrain_fields),
+        "kernelTerrainFields": _compact_kernel_detail_records(
+            kernel_terrain_fields,
+            kind_key="terrain_kind",
+            count_key="result_face_count",
+        ),
+        "kernelScatterCount": len(kernel_scatters),
+        "kernelScatters": _compact_kernel_detail_records(
+            kernel_scatters,
+            kind_key="scatter_kind",
+            count_key="instance_count",
+        ),
+        "kernelSurfaceDamageCount": len(kernel_surface_damage),
+        "kernelSurfaceDamage": _compact_kernel_detail_records(
+            kernel_surface_damage,
+            kind_key="damage_kind",
+            count_key="damage_count",
+        ),
+    }
+    kernel_operations = _record_list(shape_integration.get("kernel_program_operations"))
+    exact_boolean_records = [
+        record
+        for record in kernel_operations
+        if isinstance(record.get("kernel_exact_boolean"), dict)
+    ]
+    decomposition_records = [
+        record
+        for record in kernel_operations
+        if isinstance(record.get("kernel_boolean_decomposition"), dict)
+    ]
+    if exact_boolean_records:
+        out["kernelProgramExactBooleanCount"] = len(exact_boolean_records)
+        out["kernelProgramExactBooleanRecords"] = exact_boolean_records
+    if decomposition_records:
+        out["kernelProgramBooleanDecompositionCount"] = len(decomposition_records)
+        out["kernelProgramBooleanDecompositionRecords"] = decomposition_records
+    if fallback_reason:
+        out["fallbackReason"] = str(fallback_reason)
     return out
 
 
@@ -968,6 +1500,9 @@ def build_selector_manifest(
     engine_manifests = _collect_engine_manifests(runtime or {})
     if engine_manifests:
         manifest["engineManifests"] = engine_manifests
+    construction_provenance = _collect_construction_provenance(runtime or {})
+    if construction_provenance:
+        manifest["constructionProvenance"] = construction_provenance
     return manifest
 
 

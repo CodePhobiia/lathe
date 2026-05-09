@@ -282,6 +282,139 @@ class RefreshShapeIRTests(unittest.TestCase):
         )
 
 
+class ChestBevelAndBandTests(unittest.TestCase):
+    """Tests for chest-specific brass band and edge-class bevel wiring."""
+
+    def test_brass_band_emits_three_torus_primitives(self) -> None:
+        from lathe.assembly_kernel import _chest_brass_band_primitives
+
+        body = BlueprintComponent(
+            name="chest_body",
+            component_type="shell",
+            part="body",
+            center=(0.0, 50.0, 0.0),
+            extents=(80.0, 60.0, 50.0),
+            tags=["body", "shell"],
+        )
+        blueprint = AssemblyBlueprint(
+            blueprint_id="lathe.blueprint.hard_surface_chest_v2",
+            family="brassbound_chest",
+            components=[body],
+        )
+        primitives, regions = _chest_brass_band_primitives(blueprint)
+
+        self.assertEqual(len(primitives), 3)
+        self.assertEqual(len(regions), 3)
+        for primitive in primitives:
+            self.assertEqual(primitive.primitive_type, "torus")
+            self.assertEqual(primitive.component, "band")
+            self.assertIn("brass_band", primitive.tags)
+            self.assertIn("aged_brass_trim", primitive.tags)
+            self.assertIsNotNone(primitive.major_radius)
+            self.assertIsNotNone(primitive.minor_radius)
+
+    def test_brass_band_returns_empty_without_body(self) -> None:
+        from lathe.assembly_kernel import _chest_brass_band_primitives
+
+        blueprint = AssemblyBlueprint(
+            blueprint_id="lathe.blueprint.hard_surface_chest_v2",
+            family="brassbound_chest",
+            components=[],
+        )
+        primitives, regions = _chest_brass_band_primitives(blueprint)
+        self.assertEqual(primitives, [])
+        self.assertEqual(regions, [])
+
+    def test_edge_class_bevel_tags_hero_components_with_hero_bevel(self) -> None:
+        from lathe.assembly_kernel import _apply_chest_edge_class_bevels
+        from lathe.shape_ir import ShapePrimitive
+
+        primitives = [
+            ShapePrimitive(
+                primitive_type="subdivision_box",
+                part="body",
+                center=(0, 0, 0),
+                extents=(80, 60, 50),
+                component="shell",
+                tags=["body", "shell"],
+            ),
+            ShapePrimitive(
+                primitive_type="extruded_profile",
+                part="lock_plate",
+                center=(0, 0, 0),
+                extrude_height=2.0,
+                profile_polygon=[(0, 0), (1, 0), (1, 1), (0, 1)],
+                component="lock_plate",
+                tags=["lock_plate"],
+            ),
+            ShapePrimitive(
+                primitive_type="subdivision_box",
+                part="foot_l",
+                center=(0, 0, 0),
+                extents=(8, 12, 8),
+                component="foot",
+                tags=["foot"],
+            ),
+        ]
+        tagged = _apply_chest_edge_class_bevels(
+            primitives,
+            edge_classes=["hero_bevel", "support_bevel", "trim_edge"],
+            seam_classes=["panel_seam", "lid_break", "clasp_cut"],
+        )
+        self.assertEqual(tagged, 3)
+
+        shell, lock, foot = primitives
+        self.assertIsNotNone(shell.v2_polybevel_modifier)
+        self.assertEqual(shell.v2_polybevel_modifier["width_cm"], 0.30)
+        self.assertIn("lid_break", shell.v2_polybevel_modifier["target_seam_groups"])
+        self.assertIn("panel_seam", shell.v2_polybevel_modifier["target_seam_groups"])
+
+        self.assertIsNotNone(lock.v2_polybevel_modifier)
+        self.assertEqual(lock.v2_polybevel_modifier["width_cm"], 0.05)
+        self.assertEqual(lock.v2_polybevel_modifier["target_seam_groups"], ["clasp_cut"])
+
+        self.assertIsNotNone(foot.v2_polybevel_modifier)
+        self.assertEqual(foot.v2_polybevel_modifier["width_cm"], 0.15)
+        self.assertEqual(foot.v2_polybevel_modifier["target_seam_groups"], ["panel_seam"])
+
+    def test_edge_class_bevel_no_op_when_no_edge_classes(self) -> None:
+        from lathe.assembly_kernel import _apply_chest_edge_class_bevels
+        from lathe.shape_ir import ShapePrimitive
+
+        primitive = ShapePrimitive(
+            primitive_type="subdivision_box",
+            part="body",
+            center=(0, 0, 0),
+            extents=(10, 10, 10),
+            component="shell",
+        )
+        tagged = _apply_chest_edge_class_bevels(
+            [primitive], edge_classes=[], seam_classes=[]
+        )
+        self.assertEqual(tagged, 0)
+        self.assertIsNone(primitive.v2_polybevel_modifier)
+
+    def test_edge_class_bevel_does_not_clobber_existing_modifier(self) -> None:
+        from lathe.assembly_kernel import _apply_chest_edge_class_bevels
+        from lathe.shape_ir import ShapePrimitive
+
+        primitive = ShapePrimitive(
+            primitive_type="subdivision_box",
+            part="body",
+            center=(0, 0, 0),
+            extents=(10, 10, 10),
+            component="shell",
+            v2_polybevel_modifier={"width_cm": 1.0, "segments": 1, "target_seam_groups": ["custom"]},
+        )
+        tagged = _apply_chest_edge_class_bevels(
+            [primitive],
+            edge_classes=["hero_bevel"],
+            seam_classes=["lid_break", "panel_seam"],
+        )
+        self.assertEqual(tagged, 0)
+        self.assertEqual(primitive.v2_polybevel_modifier["width_cm"], 1.0)
+
+
 class GeometryHelperTests(unittest.TestCase):
     def test_mirrored_x_flips_x_only(self) -> None:
         self.assertEqual(mirrored((1.0, 2.0, 3.0), axis="x"), (-1.0, 2.0, 3.0))

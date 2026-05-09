@@ -405,12 +405,12 @@ def infer_asset_family(asset: dict[str, Any]) -> str:
         "antenna",
     } & tokens:
         return "procedural_vehicle"
-    if {"machine", "machinery", "factory", "conveyor", "gear", "piston", "hydraulic", "crane", "industrial", "assembler"} & tokens:
-        return "procedural_machine"
     if kind == "env_module" and {"wall", "screen", "vent", "mount"} & tokens:
         return "sci_fi_wall_panel"
     if "crate" in tokens:
         return "industrial_crate"
+    if {"machine", "machinery", "factory", "conveyor", "gear", "piston", "hydraulic", "crane", "industrial", "assembler"} & tokens:
+        return "procedural_machine"
     if {
         "weapon",
         "rifle",
@@ -1479,6 +1479,45 @@ class AssetGraph:
         return payload
 
 
+def _meshing_strategy_for_asset(asset: dict[str, Any]) -> str:
+    """Resolve the per-asset meshing strategy.
+
+    Reads the family ``geometry`` block (after resolution) and the
+    asset's own ``geometry`` overlay. Recognized declarations:
+
+    - ``meshing_strategy = "exact" | "sdf" | "auto"`` - explicit opt-in.
+    - ``mode = "exact_hard_surface"`` - legacy V1.0 spelling, treated
+      as ``meshing_strategy = "exact"`` so the existing ten std
+      families that already declare it light up automatically.
+
+    Anything else returns ``"auto"``, which preserves the legacy
+    eight-family hero gate inside ``integration_config_for_family``.
+    """
+    asset_geometry = asset.get("geometry", {}) if isinstance(asset.get("geometry"), dict) else {}
+    resolved_family = asset.get("assembly", {}).get("resolved_family", {}) or {}
+    family_geometry = resolved_family.get("geometry", {}) if isinstance(resolved_family, dict) else {}
+
+    explicit = (
+        asset_geometry.get("meshing_strategy")
+        or family_geometry.get("meshing_strategy")
+    )
+    if isinstance(explicit, str) and explicit.strip():
+        candidate = explicit.strip().lower()
+        if candidate in {"auto", "exact", "sdf"}:
+            return candidate
+
+    # Legacy V1.0 spelling: a family geometry block that declares
+    # ``mode = exact_hard_surface`` is treated as opt-in to the
+    # exact-solid path. ``asset["geometry"]["mode"]`` is preferred
+    # because it picks up asset-level overrides made via ``geometry {
+    # mode = ... }`` on a single ``.lth`` source.
+    legacy_mode = asset_geometry.get("mode") or family_geometry.get("mode")
+    if isinstance(legacy_mode, str) and legacy_mode.strip().lower() == "exact_hard_surface":
+        return "exact"
+
+    return "auto"
+
+
 def _scale_cm(asset: dict[str, Any]) -> float:
     intent = asset.get("intent", {})
     scale = intent.get("scale")
@@ -1866,7 +1905,10 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
             "components": resolved_components,
             "traits": asset.get("assembly", {}).get("resolved_traits", []),
             "mechanisms": asset.get("assembly", {}).get("resolved_mechanisms", []),
+            "source_geometry": asset.get("geometry", {}),
             "source_surface": asset.get("surface", {}),
+            "asset_class": asset.get("intent", {}).get("asset_class", ""),
+            "style_target": asset.get("intent", {}).get("style_target", ""),
             "surface_program": asset.get("surface", {}).get("program", ""),
             "surface_patterns": asset.get("surface", {}).get("patterns", []),
             "build_surface": asset.get("build", {}).get("surface", {}),
@@ -1891,35 +1933,8 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
             "ingest": asset.get("ingest", {}),
             "assembly_rules": asset.get("assembly_rules", {}),
             "shape_mode": asset.get("build", {}).get("shape", {}).get("mode", "generate"),
+            "meshing_strategy": _meshing_strategy_for_asset(asset),
             "objectives": objectives,
-            "self_reliant_target": family
-            in {
-                "brassbound_chest",
-                "industrial_crate",
-                "mechanical_door",
-                "console_terminal",
-                "service_cabinet",
-                "control_pedestal",
-                "supply_container",
-                "sci_fi_wall_panel",
-                "courier_drone",
-                "hero_sword",
-                "procedural_building",
-                "procedural_vehicle",
-                "procedural_weapon",
-                "procedural_boat",
-                "procedural_machine",
-                "procedural_furniture",
-                "procedural_foliage",
-                "procedural_infrastructure",
-                "procedural_access",
-                "procedural_urban_prop",
-                "procedural_setpiece",
-                "procedural_road",
-                "procedural_bridge",
-                "procedural_terrain",
-                "procedural_city_block",
-                "procedural_interior",
-            },
+            "self_reliant_target": True,
         },
     )

@@ -21,8 +21,51 @@ _FRAGMENTATION_RELIEF_PART_COVERAGE = 0.95
 _FRAGMENTATION_RELIEF_ADJACENCY = 0.90
 
 
+def _resolve_part_bboxes(topology_bundle: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return per-part bbox records, preferring the multi-part manifest.
+
+    The topology stage emits two parallel views of the part decomposition:
+    ``part_groups`` (recomputed from face_parts each stage; can be
+    invalidated by length-mismatch fallbacks downstream) and ``parts``
+    (the multi-part scene manifest; survives all stages intact). Each
+    part entry in the manifest now carries ``bounds_min``/``bounds_max``
+    so the validator can recover bbox-based metrics even if part_groups
+    has collapsed in the runtime dict.
+
+    Resolution order:
+    1. ``parts`` entries that carry both bounds — most authoritative.
+    2. ``part_groups`` entries — legacy path; what the validator used to
+       read directly. Acceptable when manifest is absent or unbounded.
+
+    Returned records always have ``name``, ``bounds_min``, ``bounds_max``
+    and a best-effort ``face_count``/``vertex_count`` so existing callers
+    that read those fields continue to work.
+    """
+    manifest = topology_bundle.get("parts")
+    if isinstance(manifest, list) and manifest:
+        bounded = [
+            entry
+            for entry in manifest
+            if isinstance(entry, dict)
+            and entry.get("bounds_min") is not None
+            and entry.get("bounds_max") is not None
+        ]
+        if bounded:
+            return [
+                {
+                    "name": entry.get("name", ""),
+                    "bounds_min": list(entry["bounds_min"]),
+                    "bounds_max": list(entry["bounds_max"]),
+                    "face_count": int(entry.get("face_count", 0) or 0),
+                    "vertex_count": int(entry.get("vertex_count", 0) or 0),
+                }
+                for entry in bounded
+            ]
+    return list(topology_bundle.get("part_groups", []) or [])
+
+
 def _symmetry_score(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
-    groups = {group["name"]: group for group in runtime["topology"]["bundle"].get("part_groups", [])}
+    groups = {group["name"]: group for group in _resolve_part_bboxes(runtime["topology"]["bundle"])}
     pairs: list[tuple[str, str]] = []
     part_names = [str(item) for item in asset.get("intent", {}).get("parts", [])]
     for name in part_names:
@@ -162,7 +205,7 @@ def _structural_richness(asset: dict[str, Any], runtime: dict[str, Any], metrics
     )
     region_support = min(
         1.0,
-        len(runtime["topology"]["bundle"].get("part_groups", []))
+        len(_resolve_part_bboxes(runtime["topology"]["bundle"]))
         / max(1, len(asset.get("intent", {}).get("parts", []))),
     )
     fragmentation_score = 1.0 - metrics["fragmentation_penalty"]
@@ -210,7 +253,7 @@ def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) ->
     shape_assessment = scaffold_report.get("shape_assessment", {})
     semantic_requirements = asset_graph.get("semantic_requirements", {})
     expected_parts = set(asset.get("intent", {}).get("parts", []))
-    part_groups = runtime["topology"]["bundle"].get("part_groups", [])
+    part_groups = _resolve_part_bboxes(runtime["topology"]["bundle"])
     actual_parts = {group["name"] for group in part_groups}
     part_coverage = len(expected_parts & actual_parts) / max(1, len(expected_parts))
     silhouette_fidelity = compare_scaffold_signature(

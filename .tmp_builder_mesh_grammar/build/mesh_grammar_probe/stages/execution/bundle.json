@@ -1,0 +1,18 @@
+{
+  "schema": "lathe.blender_execution_bundle.v1",
+  "requested": false,
+  "requested_engine": "",
+  "requested_profile": "",
+  "status": "not_requested",
+  "backend_id": "",
+  "execution_ir": {},
+  "blender_execution_ir": {},
+  "bake_plan_ir": {},
+  "render_eval_ir": {},
+  "blend_artifact_ir": {},
+  "library_asset_ir": {},
+  "bridge_plan_ir": {},
+  "inspection_policy_ir": {},
+  "validation_evidence_ir": {},
+  "diagnostics": []
+}

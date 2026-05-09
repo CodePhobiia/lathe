@@ -25,10 +25,20 @@ import_decl: "import" qident
      | trim_sheet_decl
      | palette_decl
      | style_pack_decl
+     | style_bridge_decl
      | faction_pack_decl
      | biome_kit_decl
      | architecture_grammar_decl
      | object_grammar_decl
+     | vegetation_species_decl
+     | vegetation_kit_decl
+     | wind_program_decl
+     | volume_program_decl
+     | wfc_tileset_decl
+     | wfc_adjacency_decl
+     | terrain_program_decl
+     | subdivision_finishing_decl
+     | f_rep_program_decl
      | reference_set_decl
      | reconstruct_policy_decl
      | adapt_policy_decl
@@ -41,6 +51,7 @@ import_decl: "import" qident
      | library_binding_decl
      | material_graph_decl
      | inspection_policy_decl
+     | asset_class_profile_decl
      | repair_policy_decl
      | fixture_decl
      | test_decl
@@ -99,14 +110,45 @@ trait_decl: "trait" IDENT use_clause? "{" trait_item* "}"
            | rule_stmt
            | assign_stmt
 
-mechanism_decl: "mechanism" IDENT use_clause? "{" mechanism_item* "}"
+mechanism_decl: "mechanism" IDENT version_clause? use_clause? "{" mechanism_item* "}"
 ?mechanism_item: params_block
                | geometry_block
                | assembly_block
+               | ports_block
+               | parameters_block
+               | body_block
                | assign_stmt
 
-library_decl: "library" IDENT use_clause? "{" assign_stmt* "}"
-kit_decl: "kit" IDENT use_clause? "{" assign_stmt* "}"
+library_decl: "library" IDENT version_clause? use_clause? "{" library_item* "}"
+?library_item: ports_block
+             | parameters_block
+             | body_block
+             | assign_stmt
+kit_decl: "kit" IDENT version_clause? use_clause? "{" kit_item* "}"
+?kit_item: ports_block
+         | parameters_block
+         | body_block
+         | assign_stmt
+
+version_clause: "version" STRING
+
+ports_block: "ports" "{" port_decl* "}"
+port_decl: port_dir IDENT ":" IDENT port_decl_options?
+port_dir: "in"  -> port_in
+        | "out" -> port_out
+port_decl_options: "{" assign_stmt* "}"
+
+parameters_block: "parameters" "{" parameter_decl* "}"
+parameter_decl: IDENT ":" IDENT parameter_decl_options?
+parameter_decl_options: "{" assign_stmt* "}"
+
+body_block: "body" "{" body_item* "}"
+?body_item: kit_use_stmt
+          | rule_stmt
+          | assign_stmt
+kit_use_stmt: "use" "kit" qident version_constraint_clause? kit_use_bindings?
+version_constraint_clause: "version" STRING
+kit_use_bindings: "{" assign_stmt* "}"
 pattern_decl: "pattern" IDENT use_clause? "{" assign_stmt* "}"
 material_decl: "material" IDENT use_clause? "{" assign_stmt* "}"
 surface_program_decl: "surface_program" IDENT use_clause? "{" assign_stmt* "}"
@@ -117,10 +159,28 @@ mask_program_decl: "mask_program" IDENT use_clause? "{" assign_stmt* "}"
 trim_sheet_decl: "trim_sheet" IDENT use_clause? "{" assign_stmt* "}"
 palette_decl: "palette" IDENT use_clause? "{" assign_stmt* "}"
 style_pack_decl: "style_pack" IDENT "{" assign_stmt* "}"
+style_bridge_decl: "style_bridge" IDENT "{" assign_stmt* "}"
 faction_pack_decl: "faction_pack" IDENT use_clause? "{" assign_stmt* "}"
 biome_kit_decl: "biome_kit" IDENT use_clause? "{" assign_stmt* "}"
 architecture_grammar_decl: "architecture_grammar" IDENT use_clause? "{" assign_stmt* "}"
 object_grammar_decl: "object_grammar" IDENT use_clause? "{" assign_stmt* "}"
+vegetation_species_decl: "vegetation_species" IDENT version_clause? use_clause? "{" assign_stmt* "}"
+vegetation_kit_decl: "vegetation_kit" IDENT version_clause? use_clause? "{" assign_stmt* "}"
+wind_program_decl: "wind_program" IDENT use_clause? "{" assign_stmt* "}"
+volume_program_decl: "volume_program" IDENT use_clause? "{" assign_stmt* "}"
+wfc_tileset_decl: "wfc_tileset" IDENT version_clause? use_clause? "{" assign_stmt* "}"
+wfc_adjacency_decl: "wfc_adjacency" IDENT use_clause? "{" assign_stmt* "}"
+terrain_program_decl: "terrain_program" IDENT use_clause? "{" assign_stmt* "}"
+// Roadmap §7.6: F-Rep / SDF authoring program. Body bindings compose
+// IQ-style SDF primitives, booleans, and modifiers into an evaluable
+// expression tree consumed by :mod:`lathe.f_rep`.
+f_rep_program_decl: "f_rep_program" IDENT use_clause? "{" assign_stmt* "}"
+// V1.3.2 (roadmap §7.5): top-level subdivision finishing pass declaration.
+// Sibling assigns describe the cage/scheme/levels/creases payload that the
+// :class:`SubdivisionFinishingSpec` resolver in :mod:`lathe.subdivision`
+// consumes; assets reference the decl through
+// ``build.topology.subdivision_finishing = "<name>"``.
+subdivision_finishing_decl: "subdivision_finishing" IDENT use_clause? "{" assign_stmt* "}"
 reference_set_decl: "reference_set" IDENT use_clause? "{" assign_stmt* "}"
 reconstruct_policy_decl: "reconstruct_policy" IDENT use_clause? "{" assign_stmt* "}"
 adapt_policy_decl: "adapt_policy" IDENT use_clause? "{" assign_stmt* "}"
@@ -133,6 +193,7 @@ bake_profile_decl: "bake_profile" IDENT use_clause? "{" assign_stmt* "}"
 library_binding_decl: "library_binding" IDENT use_clause? "{" assign_stmt* "}"
 material_graph_decl: "material_graph" IDENT use_clause? "{" assign_stmt* "}"
 inspection_policy_decl: "inspection_policy" IDENT use_clause? "{" assign_stmt* "}"
+asset_class_profile_decl: "asset_class_profile" IDENT use_clause? "{" assign_stmt* "}"
 repair_policy_decl: "repair_policy" IDENT "{" assign_stmt* "}"
 fixture_decl: "fixture" IDENT "{" assign_stmt* "}"
 test_decl: "test" IDENT "{" assign_stmt* assert_stmt* "}"
@@ -678,7 +739,9 @@ scene_decl: "scene" IDENT "{" scene_item* "}"
            | curiosity_anchor_scene_block
            | hidden_state_scene_block
            | export_scene_block
+           | wfc_inline_block
            | assign_stmt
+wfc_inline_block: "wfc" IDENT? "{" assign_stmt* "}"
 style_scene_block: "style" IDENT "{" assign_stmt* "}"
 style_pack_scene_block: "style_pack" IDENT "{" assign_stmt* "}"
 faction_pack_scene_block: "faction_pack" IDENT "{" assign_stmt* "}"
@@ -1271,6 +1334,10 @@ transfer_block: "transfer" "{" assign_stmt* "}"
 reuse_block: "reuse" "{" assign_stmt* "}"
 constraints_block: "constraints" "{" assign_stmt* "}"
 ingest_block: "ingest" "{" assign_stmt* "}"
+// V1.1 form: `assembly_rules { repeat_modules = [...]; inserts = [...]; ... }`
+// CGA-style form (additive, V1.3.1+): a `productions = [ "Lot --> ..." ]`
+// list of CGA production strings, parsed by `lathe/cga/`. Optional sibling
+// keys: `root = Lot`, `seed = 0`, `recursion_budget = 32`.
 assembly_rules_block: "assembly_rules" "{" assign_stmt* "}"
 space_inline_block: "space" "{" space_stmt* "}"
 search_inline_block: "search" "{" space_stmt* "}"
@@ -1278,7 +1345,36 @@ repair_policy_inline_block: "repair_policy" "{" assign_stmt* "}"
 execution_block: "execution" "{" assign_stmt* "}"
 
 build_block: "build" "{" shape_block? topology_block? uv_block? build_surface_block? rig_block? interfaces_block? physics_block? optimize_block? "}"
-shape_block: "shape" "{" assign_stmt* "}"
+// V1.4 §5.1: ``shape{}`` may host an optional ``mesh_program{}`` block that
+// declares an ordered procedural script (``let`` bindings + side-effecting
+// op calls) lowered to ``ShapePrimitive`` records before the shape stage
+// runs. The block sits alongside (not instead of) the existing assignment
+// fields like ``mode = generate``, ``candidates = N``, etc.
+shape_block: "shape" "{" assign_stmt* mesh_program_block? assign_stmt* "}"
+// Ordered statement-style sub-block. Statements run top-to-bottom and may
+// reference identifiers introduced by earlier ``let`` statements.
+mesh_program_block: "mesh_program" "{" mesh_stmt* "}"
+?mesh_stmt: mesh_let_stmt | mesh_call_stmt
+mesh_let_stmt: "let" IDENT "=" mesh_expr
+mesh_call_stmt: mesh_expr
+// A ``mesh_expr`` is either a bare call (``box(...)``), an identifier
+// reference, or a chained method call (``ident.translate((..))``). Mesh
+// calls accept normal expression arguments plus nested mesh expressions
+// so fluent cutters such as ``body.subtract(other: box(...).translate(...))``
+// remain a single executable construction chain.
+mesh_expr: mesh_atom mesh_method_suffix*                -> mesh_chain_expr
+mesh_chained_arg: mesh_atom mesh_method_suffix+          -> mesh_chain_expr
+mesh_method_suffix: "." IDENT "(" [mesh_args] ")"
+?mesh_atom: IDENT "(" [mesh_args] ")"                   -> mesh_call_expr
+          | IDENT                                  -> mesh_ident_expr
+mesh_args: mesh_arg ("," mesh_arg)*
+?mesh_arg: IDENT ":" mesh_arg_value                 -> named_arg
+         | mesh_arg_value                           -> positional_arg
+?mesh_arg_value: SIGNED_AXIS                        -> signed_axis_lit
+               | mesh_list
+               | mesh_chained_arg
+               | expr
+mesh_list: "[" [mesh_arg_value ("," mesh_arg_value)* ","?] "]"
 topology_block: "topology" "{" assign_stmt* "}"
 uv_block: "uv" "{" assign_stmt* "}"
 build_surface_block: "surface" "{" assign_stmt* "}"
@@ -1373,6 +1469,7 @@ number: NUMBER
 
 IDENT: /[a-z][a-z0-9_]*/
 STRING: /"(?:\\.|[^"\\])*"/
+SIGNED_AXIS.2: /[+-][xyz]\b/
 UNIT_LITERAL.2: /-?(?:\d+\.\d+|\d+)(?:mm|cm|m|deg|rad|g|kg|ms|s|kb|mb|gb|px|px_per_m|px_per_cm)\b/
 NUMBER: /-?(?:\d+\.\d+|\d+)/
 

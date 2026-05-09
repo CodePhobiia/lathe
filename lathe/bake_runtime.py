@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 import trimesh
 from PIL import Image, ImageDraw
+from scipy.spatial import cKDTree
 
 
 def _uv_image_size(resolution: Any) -> int:
@@ -42,6 +43,33 @@ def _hash_seed(label: str) -> float:
 def _coord_grid(size: int) -> tuple[np.ndarray, np.ndarray]:
     yy, xx = np.indices((size, size), dtype=np.float64)
     return xx / max(1, size - 1), yy / max(1, size - 1)
+
+
+def _renormalize_tangent_normal_array(normal: np.ndarray) -> np.ndarray:
+    out = np.asarray(normal, dtype=np.float64).copy()
+    if out.ndim != 3 or out.shape[-1] < 3:
+        return out
+    nx = (out[..., 0] / 255.0) * 2.0 - 1.0
+    ny = (out[..., 1] / 255.0) * 2.0 - 1.0
+    radial = nx * nx + ny * ny
+    radial_limit = 0.95
+    scale = np.ones_like(radial, dtype=np.float64)
+    saturated = radial > radial_limit
+    scale[saturated] = np.sqrt(radial_limit / np.maximum(radial[saturated], 1e-8))
+    nx = nx * scale
+    ny = ny * scale
+    radial = np.clip(nx * nx + ny * ny, 0.0, radial_limit)
+    nz = np.sqrt(np.clip(1.0 - radial, 0.0, 1.0))
+    out[..., 0] = np.clip((nx * 0.5 + 0.5) * 255.0, 0.0, 255.0)
+    out[..., 1] = np.clip((ny * 0.5 + 0.5) * 255.0, 0.0, 255.0)
+    out[..., 2] = np.clip((nz * 0.5 + 0.5) * 255.0, 0.0, 255.0)
+    return np.clip(out, 0.0, 255.0)
+
+
+def renormalize_tangent_normal_map(image: Image.Image) -> Image.Image:
+    normal = np.asarray(image.convert("RGB"), dtype=np.float64)
+    normal = _renormalize_tangent_normal_array(normal)
+    return Image.fromarray(normal.astype(np.uint8), mode="RGB")
 
 
 def _noise_field(size: int, seed: float) -> np.ndarray:
@@ -230,6 +258,60 @@ def _wear_layer_intensity(zone: dict[str, Any], kind: str) -> float:
     return 0.0
 
 
+def _hint_token(value: Any) -> str:
+    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _zone_material_hint_tokens(zone: dict[str, Any]) -> set[str]:
+    tokens = {_hint_token(item) for item in zone.get("material_hints", []) or [] if _hint_token(item)}
+    for record in zone.get("topology_material_zones", []) or []:
+        if not isinstance(record, dict):
+            continue
+        for key in (
+            "material_hint",
+            "damage_kind",
+            "feature_kind",
+            "treatment_kind",
+            "semantic_role",
+        ):
+            token = _hint_token(record.get(key))
+            if token:
+                tokens.add(token)
+    return tokens
+
+
+def _zone_kernel_wear_bias(zone: dict[str, Any]) -> dict[str, float]:
+    tokens = _zone_material_hint_tokens(zone)
+    bias = {
+        "edge_wear": 0.0,
+        "micro_scratches": 0.0,
+        "dirt_grime": 0.0,
+        "paint_chips": 0.0,
+        "dents": 0.0,
+    }
+    if tokens & {"bevel", "chamfer", "edge_treatment"}:
+        bias["edge_wear"] = max(bias["edge_wear"], 0.22)
+    if tokens & {"trim_band", "panel_frame", "vent_slats", "ribs", "ribbed_panel", "visible_feature_detail"}:
+        bias["edge_wear"] = max(bias["edge_wear"], 0.16)
+        bias["micro_scratches"] = max(bias["micro_scratches"], 0.08)
+    if tokens & {"gear", "threaded_cylinder", "thread", "spring", "curved_tube", "curve_sweep"}:
+        bias["edge_wear"] = max(bias["edge_wear"], 0.20)
+        bias["micro_scratches"] = max(bias["micro_scratches"], 0.12)
+    if tokens & {"wear_scratch", "scratch", "scratch_mask", "micro_scratch", "micro_scratches"}:
+        bias["micro_scratches"] = max(bias["micro_scratches"], 0.58)
+    if tokens & {"wear_grime", "grime", "grime_mask", "dirt", "dirt_grime"}:
+        bias["dirt_grime"] = max(bias["dirt_grime"], 0.54)
+    if tokens & {"wear_edge_chip", "edge_chip", "wear_chip", "chip", "paint_chip", "paint_chips"}:
+        bias["paint_chips"] = max(bias["paint_chips"], 0.50)
+        bias["edge_wear"] = max(bias["edge_wear"], 0.34)
+    if tokens & {"wear_dent", "dent", "dent_mask", "dents"}:
+        bias["dents"] = max(bias["dents"], 0.46)
+        bias["edge_wear"] = max(bias["edge_wear"], 0.24)
+        bias["micro_scratches"] = max(bias["micro_scratches"], 0.16)
+        bias["paint_chips"] = max(bias["paint_chips"], 0.18)
+    return bias
+
+
 def _surface_material_masks(
     zone: dict[str, Any],
     *,
@@ -279,11 +361,17 @@ def _surface_wear_masks(
     x, y = _coord_grid(size)
     noise = _noise_field(size, seed + 0.391)
     wear = float(zone.get("wear", 0.0))
-    edge_intensity = max(wear, _wear_layer_intensity(zone, "edge_wear"))
-    scratch_intensity = max(wear * 0.52, _wear_layer_intensity(zone, "micro_scratches"))
-    grime_intensity = _wear_layer_intensity(zone, "dirt_grime")
-    chip_intensity = _wear_layer_intensity(zone, "paint_chips")
+    kernel_bias = _zone_kernel_wear_bias(zone)
+    edge_intensity = max(wear, _wear_layer_intensity(zone, "edge_wear"), kernel_bias["edge_wear"])
+    scratch_intensity = max(
+        wear * 0.52,
+        _wear_layer_intensity(zone, "micro_scratches"),
+        kernel_bias["micro_scratches"],
+    )
+    grime_intensity = max(_wear_layer_intensity(zone, "dirt_grime"), kernel_bias["dirt_grime"])
+    chip_intensity = max(_wear_layer_intensity(zone, "paint_chips"), kernel_bias["paint_chips"])
     patina_intensity = _wear_layer_intensity(zone, "patina")
+    dent_intensity = kernel_bias["dents"]
 
     scratch_wave = np.sin((x * (96.0 + seed * 21.0) + y * (8.0 + seed * 3.0)) * np.pi * 2.0)
     scratch_mask = np.clip((np.abs(scratch_wave) - 0.90) * 9.0, 0.0, 1.0) * scratch_intensity
@@ -291,6 +379,9 @@ def _surface_wear_masks(
     grime_mask = np.clip((0.78 - ao) * 1.25 + (noise - 0.55) * 0.42, 0.0, 1.0) * grime_intensity
     chip_mask = np.clip((noise - 0.61) * 2.0 + edge_mask * 0.90, 0.0, 1.0) * chip_intensity
     patina_mask = np.clip((noise - 0.47) * 1.2 + (1.0 - curvature) * 0.25, 0.0, 1.0) * patina_intensity
+    dent_wave = np.sin((x * (9.0 + seed * 3.0) - y * (11.0 + seed * 2.0) + seed * 4.0) * np.pi * 2.0)
+    dent_mask = np.clip((0.82 - np.abs(dent_wave)) * 1.45 + (0.58 - curvature) * 0.34, 0.0, 1.0)
+    dent_mask *= dent_intensity
 
     return {
         "edge_wear": edge_mask,
@@ -298,6 +389,7 @@ def _surface_wear_masks(
         "dirt_grime": grime_mask,
         "paint_chips": chip_mask,
         "patina": patina_mask,
+        "dents": dent_mask,
     }
 
 
@@ -368,10 +460,7 @@ def pad_low_coverage_atlas_maps(
     y_detail = np.sin((y * (88.0 + seed * 11.0) + x * 9.0) * np.pi * 2.0) * 78.0 + (pattern - 0.5) * 62.0
     normal_arr[..., 0][background] = np.clip(128.0 + x_detail[background], 0.0, 255.0)
     normal_arr[..., 1][background] = np.clip(128.0 + y_detail[background], 0.0, 255.0)
-    nx = (normal_arr[..., 0] / 255.0) * 2.0 - 1.0
-    ny = (normal_arr[..., 1] / 255.0) * 2.0 - 1.0
-    nz = np.sqrt(np.clip(1.0 - np.clip(nx * nx + ny * ny, 0.0, 0.95), 0.0, 1.0))
-    normal_arr[..., 2] = np.clip((nz * 0.5 + 0.5) * 255.0, 0.0, 255.0)
+    normal_arr = _renormalize_tangent_normal_array(normal_arr)
 
     rough = np.asarray(roughness.convert("L"), dtype=np.float64)
     roughness_min, roughness_max = zone.get(
@@ -480,6 +569,7 @@ def bake_basecolor_map(
             [42.0, 39.0, 35.0], dtype=np.float64
         )
         values -= wear_masks["dirt_grime"][..., None] * np.asarray([82.0, 72.0, 58.0], dtype=np.float64)
+        values -= wear_masks["dents"][..., None] * np.asarray([46.0, 40.0, 34.0], dtype=np.float64)
         values += wear_masks["edge_wear"][..., None] * np.asarray([38.0, 34.0, 30.0], dtype=np.float64)
         values = values * (1.0 - wear_masks["patina"][..., None] * 0.54) + np.asarray(
             [72.0, 128.0, 106.0], dtype=np.float64
@@ -493,12 +583,295 @@ def bake_normal_map(mesh: trimesh.Trimesh, size: int) -> Image.Image:
     draw = ImageDraw.Draw(image, "RGB")
     polygons = _face_uv_polygons(mesh, size)
     normals = np.asarray(mesh.face_normals, dtype=np.float64)
+    tangents, bitangents, frame_normals = _low_face_tangent_frames(mesh)
     for face_index, polygon in enumerate(polygons):
+        if len(tangents) == len(polygons):
+            rgb = _normal_to_tangent_rgb(
+                normals[face_index],
+                tangents[face_index],
+                bitangents[face_index],
+                frame_normals[face_index],
+            )
+        else:
+            # No UV tangent basis is available; keep the fallback honest as
+            # neutral tangent-space instead of baking world-space normals.
+            rgb = (128, 128, 255)
+        draw.polygon(polygon, fill=rgb)
+    return image
+
+
+def _face_curvature_values(mesh: trimesh.Trimesh) -> np.ndarray:
+    adjacency = mesh.face_adjacency
+    normals = np.asarray(mesh.face_normals, dtype=np.float64)
+    curvature = np.zeros(len(mesh.faces), dtype=np.float64)
+    if len(adjacency) > 0:
+        for left, right in adjacency:
+            dot = float(np.clip(np.dot(normals[left], normals[right]), -1.0, 1.0))
+            angle = np.arccos(dot)
+            curvature[left] = max(curvature[left], angle)
+            curvature[right] = max(curvature[right], angle)
+    return curvature
+
+
+def _nearest_high_faces(
+    low_mesh: trimesh.Trimesh,
+    high_mesh: trimesh.Trimesh,
+    *,
+    bake_cage_offset_cm: float = 0.0,
+) -> np.ndarray:
+    if len(low_mesh.faces) == 0 or len(high_mesh.faces) == 0:
+        return np.zeros(len(low_mesh.faces), dtype=np.int64)
+    high_centroids = np.asarray(high_mesh.triangles_center, dtype=np.float64)
+    low_centroids = np.asarray(low_mesh.triangles_center, dtype=np.float64)
+    offset = max(0.0, float(bake_cage_offset_cm or 0.0))
+    if offset > 0.0:
+        low_normals = np.asarray(low_mesh.face_normals, dtype=np.float64)
+        if len(low_normals) == len(low_centroids):
+            low_centroids = low_centroids + low_normals * offset
+    _, indices = cKDTree(high_centroids).query(low_centroids)
+    return np.asarray(indices, dtype=np.int64)
+
+
+def _ray_projected_high_faces(
+    low_mesh: trimesh.Trimesh,
+    high_mesh: trimesh.Trimesh,
+    *,
+    bake_cage_offset_cm: float = 0.0,
+    max_ray_distance_cm: float | None = None,
+    bidirectional: bool = False,
+    projection_stats: dict[str, Any] | None = None,
+) -> np.ndarray:
+    def record_stats(
+        *,
+        ray_backend_available: bool,
+        ray_hit_count: int,
+        fallback_count: int,
+        rejected_distance_count: int = 0,
+    ) -> None:
+        if projection_stats is None:
+            return
+        projection_stats.update(
+            {
+                "source": "ray_cage_high_to_low_projection_v1",
+                "face_count": len(low_mesh.faces),
+                "ray_backend_available": ray_backend_available,
+                "ray_hit_count": ray_hit_count,
+                "fallback_count": fallback_count,
+                "rejected_distance_count": rejected_distance_count,
+                "bake_cage_offset_cm": max(0.0, float(bake_cage_offset_cm or 0.0)),
+                "max_ray_distance_cm": None
+                if max_ray_distance_cm is None
+                else max(0.0, float(max_ray_distance_cm)),
+                "bidirectional": bool(bidirectional),
+            }
+        )
+
+    if len(low_mesh.faces) == 0 or len(high_mesh.faces) == 0:
+        record_stats(ray_backend_available=False, ray_hit_count=0, fallback_count=len(low_mesh.faces))
+        return np.zeros(len(low_mesh.faces), dtype=np.int64)
+    low_centroids = np.asarray(low_mesh.triangles_center, dtype=np.float64)
+    low_normals = np.asarray(low_mesh.face_normals, dtype=np.float64)
+    if len(low_centroids) != len(low_normals):
+        record_stats(ray_backend_available=False, ray_hit_count=0, fallback_count=len(low_mesh.faces))
+        return _nearest_high_faces(
+            low_mesh,
+            high_mesh,
+            bake_cage_offset_cm=bake_cage_offset_cm,
+        )
+    offset = max(0.0, float(bake_cage_offset_cm or 0.0))
+    origins = low_centroids + low_normals * offset
+    directions = -low_normals
+    ray_source_indices = np.arange(len(low_mesh.faces), dtype=np.int64)
+    if bidirectional:
+        origins = np.vstack([origins, low_centroids - low_normals * offset])
+        directions = np.vstack([directions, low_normals])
+        ray_source_indices = np.concatenate([ray_source_indices, ray_source_indices])
+    ray_faces = np.full(len(low_mesh.faces), -1, dtype=np.int64)
+    max_distance = None if max_ray_distance_cm is None else max(0.0, float(max_ray_distance_cm))
+    try:
+        locations, ray_indices, triangle_indices = high_mesh.ray.intersects_location(
+            origins,
+            directions,
+            multiple_hits=False,
+        )
+    except (ImportError, ModuleNotFoundError, ValueError, RuntimeError, AttributeError, IndexError):
+        record_stats(ray_backend_available=False, ray_hit_count=0, fallback_count=len(low_mesh.faces))
+        return _nearest_high_faces(
+            low_mesh,
+            high_mesh,
+            bake_cage_offset_cm=bake_cage_offset_cm,
+        )
+    rejected_distance_count = 0
+    if len(ray_indices) > 0:
+        origin_points = origins[np.asarray(ray_indices, dtype=np.int64)]
+        hit_distances = np.linalg.norm(np.asarray(locations, dtype=np.float64) - origin_points, axis=1)
+        best_distance = np.full(len(low_mesh.faces), np.inf, dtype=np.float64)
+        for ray_index, triangle_index, distance in zip(ray_indices, triangle_indices, hit_distances, strict=False):
+            low_face_index = int(ray_source_indices[int(ray_index)])
+            distance = float(distance)
+            if max_distance is not None and distance > max_distance:
+                rejected_distance_count += 1
+                continue
+            if distance < best_distance[low_face_index]:
+                best_distance[low_face_index] = distance
+                ray_faces[low_face_index] = int(triangle_index)
+    missing = ray_faces < 0
+    if np.any(missing):
+        nearest = _nearest_high_faces(
+            low_mesh,
+            high_mesh,
+            bake_cage_offset_cm=bake_cage_offset_cm,
+        )
+        ray_faces[missing] = nearest[missing]
+    record_stats(
+        ray_backend_available=True,
+        ray_hit_count=int(np.count_nonzero(~missing)),
+        fallback_count=int(np.count_nonzero(missing)),
+        rejected_distance_count=rejected_distance_count,
+    )
+    return ray_faces
+
+
+def _low_face_tangent_frames(mesh: trimesh.Trimesh) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    uv = getattr(mesh.visual, "uv", None)
+    if uv is None or len(mesh.faces) == 0:
+        empty = np.zeros((0, 3), dtype=np.float64)
+        return empty, empty, empty
+    vertices = np.asarray(mesh.vertices, dtype=np.float64)
+    faces = np.asarray(mesh.faces, dtype=np.int64)
+    normals = np.asarray(mesh.face_normals, dtype=np.float64)
+    tangents = np.zeros((len(faces), 3), dtype=np.float64)
+    bitangents = np.zeros((len(faces), 3), dtype=np.float64)
+    frame_normals = np.zeros((len(faces), 3), dtype=np.float64)
+    for face_index, face in enumerate(faces):
+        p0, p1, p2 = vertices[face]
+        uv0, uv1, uv2 = np.asarray(uv[face], dtype=np.float64)
+        dp1 = p1 - p0
+        dp2 = p2 - p0
+        duv1 = uv1 - uv0
+        duv2 = uv2 - uv0
         normal = normals[face_index]
-        rgb = tuple(
-            int(max(0, min(255, (value * 0.5 + 0.5) * 255.0))) for value in (normal[0], normal[1], normal[2])
+        normal = normal / max(1e-8, float(np.linalg.norm(normal)))
+        determinant = float(duv1[0] * duv2[1] - duv2[0] * duv1[1])
+        if abs(determinant) > 1e-8:
+            inv = 1.0 / determinant
+            tangent = (dp1 * duv2[1] - dp2 * duv1[1]) * inv
+            bitangent = (-dp1 * duv2[0] + dp2 * duv1[0]) * inv
+        else:
+            tangent = dp1 if float(np.linalg.norm(dp1)) > 1e-8 else dp2
+            tangent = tangent - normal * float(np.dot(normal, tangent))
+            bitangent = np.cross(normal, tangent)
+        tangent = tangent - normal * float(np.dot(normal, tangent))
+        tangent = tangent / max(1e-8, float(np.linalg.norm(tangent)))
+        bitangent_hint = bitangent - normal * float(np.dot(normal, bitangent))
+        bitangent_hint = bitangent_hint / max(1e-8, float(np.linalg.norm(bitangent_hint)))
+        bitangent = np.cross(normal, tangent)
+        bitangent = bitangent / max(1e-8, float(np.linalg.norm(bitangent)))
+        if float(np.dot(bitangent, bitangent_hint)) < 0.0:
+            bitangent = -bitangent
+        tangents[face_index] = tangent
+        bitangents[face_index] = bitangent
+        frame_normals[face_index] = normal
+    return tangents, bitangents, frame_normals
+
+
+def _normal_to_tangent_rgb(
+    normal: np.ndarray,
+    tangent: np.ndarray,
+    bitangent: np.ndarray,
+    frame_normal: np.ndarray,
+) -> tuple[int, int, int]:
+    world = np.asarray(normal, dtype=np.float64)
+    world = world / max(1e-8, float(np.linalg.norm(world)))
+    tangent_space = np.asarray(
+        [
+            float(np.dot(world, tangent)),
+            float(np.dot(world, bitangent)),
+            float(np.dot(world, frame_normal)),
+        ],
+        dtype=np.float64,
+    )
+    tangent_space = tangent_space / max(1e-8, float(np.linalg.norm(tangent_space)))
+    return tuple(
+        int(round(max(0, min(255, (value * 0.5 + 0.5) * 255.0))))
+        for value in tangent_space
+    )
+
+
+def bake_highlow_normal_transfer_map(
+    low_mesh: trimesh.Trimesh,
+    high_mesh: trimesh.Trimesh,
+    size: int,
+    *,
+    bake_cage_offset_cm: float = 0.0,
+    max_ray_distance_cm: float | None = None,
+    bidirectional: bool = False,
+    transfer_stats: dict[str, Any] | None = None,
+    transfer_channel: str = "normal",
+) -> Image.Image:
+    image = Image.new("RGB", (size, size), (128, 128, 255))
+    draw = ImageDraw.Draw(image, "RGB")
+    polygons = _face_uv_polygons(low_mesh, size)
+    if not polygons or len(high_mesh.faces) == 0:
+        return bake_normal_map(low_mesh, size)
+    tangents, bitangents, frame_normals = _low_face_tangent_frames(low_mesh)
+    if len(tangents) != len(polygons):
+        return bake_normal_map(low_mesh, size)
+    normals = np.asarray(high_mesh.face_normals, dtype=np.float64)
+    projection_stats: dict[str, Any] = {}
+    high_face_for_low_face = _ray_projected_high_faces(
+        low_mesh,
+        high_mesh,
+        bake_cage_offset_cm=bake_cage_offset_cm,
+        max_ray_distance_cm=max_ray_distance_cm,
+        bidirectional=bidirectional,
+        projection_stats=projection_stats,
+    )
+    if transfer_stats is not None:
+        transfer_stats[transfer_channel] = projection_stats
+    for face_index, polygon in enumerate(polygons):
+        normal = normals[int(high_face_for_low_face[face_index])]
+        rgb = _normal_to_tangent_rgb(
+            normal,
+            tangents[face_index],
+            bitangents[face_index],
+            frame_normals[face_index],
         )
         draw.polygon(polygon, fill=rgb)
+    return image
+
+
+def bake_highlow_curvature_transfer_map(
+    low_mesh: trimesh.Trimesh,
+    high_mesh: trimesh.Trimesh,
+    size: int,
+    *,
+    bake_cage_offset_cm: float = 0.0,
+    max_ray_distance_cm: float | None = None,
+    bidirectional: bool = False,
+    transfer_stats: dict[str, Any] | None = None,
+    transfer_channel: str = "curvature",
+) -> Image.Image:
+    image = Image.new("L", (size, size), 128)
+    draw = ImageDraw.Draw(image, "L")
+    polygons = _face_uv_polygons(low_mesh, size)
+    if not polygons or len(high_mesh.faces) == 0:
+        return bake_curvature_map(low_mesh, size)
+    high_curvature = _face_curvature_values(high_mesh)
+    projection_stats: dict[str, Any] = {}
+    high_face_for_low_face = _ray_projected_high_faces(
+        low_mesh,
+        high_mesh,
+        bake_cage_offset_cm=bake_cage_offset_cm,
+        max_ray_distance_cm=max_ray_distance_cm,
+        bidirectional=bidirectional,
+        projection_stats=projection_stats,
+    )
+    if transfer_stats is not None:
+        transfer_stats[transfer_channel] = projection_stats
+    for face_index, polygon in enumerate(polygons):
+        value = int(max(0, min(255, 64 + high_curvature[int(high_face_for_low_face[face_index])] / np.pi * 191)))
+        draw.polygon(polygon, fill=value)
     return image
 
 
@@ -522,6 +895,8 @@ def enhance_normal_map(
             str(zone.get("surface_profile", "neutral_panel")), id_source.shape[0], seed
         )
         intensity = float(zone.get("normal_intensity", 0.05))
+        wear = float(zone.get("wear", 0.0))
+        detail_gain = 1.3 + min(2.0, intensity * 4.4 + wear * 1.25)
         wear_masks = _surface_wear_masks(
             zone,
             size=id_source.shape[0],
@@ -536,20 +911,22 @@ def enhance_normal_map(
             curvature=curvature,
             ao=np.ones_like(curvature),
         )
-        x_detail = (pattern - 0.5) * (44.0 * intensity)
-        y_detail = ((curvature - 0.5) + (pattern - 0.5) * 0.65) * (40.0 * intensity)
-        x_detail += (wear_masks["micro_scratches"] - wear_masks["dirt_grime"] * 0.28) * (28.0 + intensity * 82.0)
+        x_detail = (pattern - 0.5) * (82.0 * intensity + 16.0) * detail_gain
+        y_detail = (
+            (curvature - 0.5) + (pattern - 0.5) * 0.65
+        ) * (76.0 * intensity + 12.0) * detail_gain
+        x_detail += (
+            wear_masks["micro_scratches"] - wear_masks["dirt_grime"] * 0.28
+        ) * (50.0 + intensity * 168.0) * detail_gain
         y_detail += (
-            wear_masks["paint_chips"] * 24.0
-            - wear_masks["patina"] * 12.0
-            + (layer_mask + accent_mask) * 18.0
-        )
+            wear_masks["paint_chips"] * 36.0
+            - wear_masks["dents"] * 58.0
+            - wear_masks["patina"] * 18.0
+            + (layer_mask + accent_mask) * 30.0
+        ) * detail_gain
         out[..., 0][mask] = np.clip(source[..., 0][mask] + x_detail[mask], 0.0, 255.0)
         out[..., 1][mask] = np.clip(source[..., 1][mask] + y_detail[mask], 0.0, 255.0)
-    nx = (out[..., 0] / 255.0) * 2.0 - 1.0
-    ny = (out[..., 1] / 255.0) * 2.0 - 1.0
-    nz = np.sqrt(np.clip(1.0 - np.clip(nx * nx + ny * ny, 0.0, 0.95), 0.0, 1.0))
-    out[..., 2] = np.clip((nz * 0.5 + 0.5) * 255.0, 0.0, 255.0)
+    out = _renormalize_tangent_normal_array(out)
     return Image.fromarray(out.astype(np.uint8), mode="RGB")
 
 
@@ -557,15 +934,7 @@ def bake_curvature_map(mesh: trimesh.Trimesh, size: int) -> Image.Image:
     image = Image.new("L", (size, size), 128)
     draw = ImageDraw.Draw(image, "L")
     polygons = _face_uv_polygons(mesh, size)
-    adjacency = mesh.face_adjacency
-    normals = np.asarray(mesh.face_normals, dtype=np.float64)
-    curvature = np.zeros(len(mesh.faces), dtype=np.float64)
-    if len(adjacency) > 0:
-        for left, right in adjacency:
-            dot = float(np.clip(np.dot(normals[left], normals[right]), -1.0, 1.0))
-            angle = np.arccos(dot)
-            curvature[left] = max(curvature[left], angle)
-            curvature[right] = max(curvature[right], angle)
+    curvature = _face_curvature_values(mesh)
     for face_index, polygon in enumerate(polygons):
         value = int(max(0, min(255, 64 + curvature[face_index] / np.pi * 191)))
         draw.polygon(polygon, fill=value)
@@ -630,6 +999,7 @@ def bake_roughness_map(
             + wear_masks["dirt_grime"] * 0.24
             + wear_masks["paint_chips"] * 0.16
             + wear_masks["patina"] * 0.18
+            + wear_masks["dents"] * 0.12
             + layer_mask * 0.08
             - accent_mask * 0.06,
             0.02,
@@ -793,6 +1163,23 @@ def apply_decal_overlays(
                 width=max(1, width // 140),
             )
 
+    def draw_dent_cluster(name: str) -> None:
+        seed = _hash_seed(f"dent:{name}")
+        ax, ay = anchor_for(name, 0.36 + seed * 0.32, 0.34 + (1.0 - seed) * 0.28)
+        cx = int(width * ax)
+        cy = int(height * ay)
+        for index in range(4):
+            radius = max(6, int(width * (0.018 + ((seed + index * 0.071) % 0.022))))
+            x = cx + int((index - 1.5) * radius * 1.35)
+            y = cy + int(np.sin(seed * 5.0 + index) * radius * 0.65)
+            base_draw.ellipse(
+                [x - radius, y - radius, x + radius, y + radius],
+                fill=(62, 58, 54),
+                outline=(150, 142, 128),
+                width=max(1, width // 190),
+            )
+            rough_draw.ellipse([x - radius, y - radius, x + radius, y + radius], fill=204)
+
     def draw_edge_rub() -> None:
         inset = max(4, width // 48)
         for step in range(3):
@@ -946,6 +1333,11 @@ def apply_decal_overlays(
             draw_label_block(0.10, 0.82, 0.90, 0.86, (56, 62, 70), 144)
         if "scrape" in name or "scratch" in name:
             draw_scrape_cluster(name)
+        if "dent" in name:
+            draw_dent_cluster(name)
+        if "chip" in name:
+            draw_mottled_patches(name, (188, 180, 156), 96)
+            draw_edge_rub()
         if "rubbed" in name or "handled" in name or "edge" in name:
             draw_edge_rub()
         if "rune" in name or "etched" in name:
@@ -962,7 +1354,7 @@ def apply_decal_overlays(
             draw_mottled_patches(name, (70, 118, 68), 172)
         if "leaf" in name:
             draw_mottled_patches(name, (128, 82, 34), 184)
-        if "mud" in name or "silt" in name:
+        if "mud" in name or "silt" in name or "grime" in name:
             draw_mottled_patches(name, (78, 58, 38), 218)
         if "foam" in name or "shoreline" in name or "waterline" in name:
             draw_wavy_band(name, (218, 232, 224), 142)

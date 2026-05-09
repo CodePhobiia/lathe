@@ -1,0 +1,1349 @@
+{
+  "backend_id": "lathe.surface.hero_pbr_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": true,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "surface_program": "",
+  "patterns": [
+    "utility",
+    "industrial",
+    "shipping",
+    "reinforced_corners",
+    "panel_seams",
+    "labels",
+    "toy_like",
+    "random_faceting"
+  ],
+  "repair_mode": "",
+  "material_slots": 1,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 2048,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "edge_wear",
+      "edge_wear",
+      "edge_wear",
+      "edge_wear"
+    ],
+    "material_slots": 1,
+    "decals": [
+      "service_number",
+      "hazard_stripe",
+      "edge_rub",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "warning_labels",
+      "serial_marks",
+      "orientation_arrows"
+    ],
+    "hero_surface": true,
+    "program": "",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "utility",
+      "industrial",
+      "shipping",
+      "reinforced_corners",
+      "panel_seams",
+      "labels",
+      "toy_like",
+      "random_faceting"
+    ],
+    "palette": "",
+    "source_material_zones": [],
+    "source_bake": [],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "edge_wear",
+      "painted_steel",
+      "bare_metal",
+      "rubber"
+    ],
+    "surface_story": {
+      "wear_story": "field_used",
+      "wear_level": 0.54,
+      "story_decals": [
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": true,
+      "surface_maps_driven_by_material_wear_graph": true,
+      "skipped_reasons": []
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "container",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "utility",
+          "industrial",
+          "shipping",
+          "reinforced corners",
+          "panel seams",
+          "labels",
+          "toy_like",
+          "random_faceting"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "warning labels",
+          "serial marks",
+          "orientation arrows",
+          "recesses",
+          "lower contact points"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "utility",
+        "industrial",
+        "shipping",
+        "reinforced corners",
+        "panel seams",
+        "labels",
+        "toy_like",
+        "random_faceting"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "warning labels",
+        "serial marks",
+        "orientation arrows",
+        "recesses",
+        "lower contact points"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": false,
+      "chart_grouping": "part",
+      "material_id_strategy": "none",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base"
+      ],
+      "chart_count": 4,
+      "material_id_count": 0,
+      "part_to_chart": {
+        "body": "uvc_01_body",
+        "front_panel": "uvc_02_front_panel",
+        "pipe_rail": "uvc_03_pipe_rail",
+        "side_fin": "uvc_04_side_fin"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_02_front_panel",
+        "group": "front_panel",
+        "grouping": "part",
+        "island_name": "semantic_front_panel",
+        "parts": [
+          "front_panel"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_03_pipe_rail",
+        "group": "pipe_rail",
+        "grouping": "part",
+        "island_name": "semantic_pipe_rail",
+        "parts": [
+          "pipe_rail"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_04_side_fin",
+        "group": "side_fin",
+        "grouping": "part",
+        "island_name": "semantic_side_fin",
+        "parts": [
+          "side_fin"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "none",
+      "texture_set_strategy": "",
+      "count": 0,
+      "ids": [],
+      "per_part": {
+        "body": "",
+        "front_panel": "",
+        "pipe_rail": "",
+        "side_fin": ""
+      }
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 11,
+      "placements": [
+        {
+          "decal": "service_number",
+          "target_part": "front_panel",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.700258,
+            0.217682
+          ],
+          "scale": 0.39012,
+          "rotation_deg": -3,
+          "layer": "story",
+          "mask_id": "story_01_service_number"
+        },
+        {
+          "decal": "hazard_stripe",
+          "target_part": "pipe_rail",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.558713,
+            0.354346
+          ],
+          "scale": 0.282748,
+          "rotation_deg": 7,
+          "layer": "story",
+          "mask_id": "story_02_hazard_stripe"
+        },
+        {
+          "decal": "edge_rub",
+          "target_part": "front_panel",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.188366,
+            0.711923
+          ],
+          "scale": 0.25442,
+          "rotation_deg": 4,
+          "layer": "story",
+          "mask_id": "story_03_edge_rub"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "side_fin",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.203504,
+            0.697306
+          ],
+          "scale": 0.366543,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_04_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.301553,
+            0.602638
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_05_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "side_fin",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.717452,
+            0.201081
+          ],
+          "scale": 0.343588,
+          "rotation_deg": 8,
+          "layer": "surface",
+          "mask_id": "story_06_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.594613,
+            0.319684
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_07_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "pipe_rail",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.68913,
+            0.228426
+          ],
+          "scale": 0.396287,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_08_recess_grime"
+        },
+        {
+          "decal": "warning_labels",
+          "target_part": "front_panel",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.690128,
+            0.227462
+          ],
+          "scale": 0.235376,
+          "rotation_deg": -10,
+          "layer": "surface",
+          "mask_id": "story_09_warning_labels"
+        },
+        {
+          "decal": "serial_marks",
+          "target_part": "side_fin",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.369722,
+            0.53682
+          ],
+          "scale": 0.361021,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_10_serial_marks"
+        },
+        {
+          "decal": "orientation_arrows",
+          "target_part": "pipe_rail",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.719438,
+            0.199163
+          ],
+          "scale": 0.356328,
+          "rotation_deg": 12,
+          "layer": "surface",
+          "mask_id": "story_11_orientation_arrows"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": true,
+    "surface_maps_driven_by_material_wear_graph": true,
+    "skipped_reasons": []
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "edge_wear",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.638752,
+      "roughness_range": [
+        0.45408,
+        0.718016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.2728,
+      "normal_intensity": 0.14776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "front_panel",
+      "material": "edge_wear",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.638752,
+      "roughness_range": [
+        0.45408,
+        0.718016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.2728,
+      "normal_intensity": 0.14776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "pipe_rail",
+      "material": "edge_wear",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.638752,
+      "roughness_range": [
+        0.45408,
+        0.718016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.2728,
+      "normal_intensity": 0.14776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "side_fin",
+      "material": "edge_wear",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.638752,
+      "roughness_range": [
+        0.45408,
+        0.718016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.2728,
+      "normal_intensity": 0.14776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": false,
+    "chart_grouping": "part",
+    "material_id_strategy": "none",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base"
+    ],
+    "chart_count": 4,
+    "material_id_count": 0,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "front_panel": "uvc_02_front_panel",
+      "pipe_rail": "uvc_03_pipe_rail",
+      "side_fin": "uvc_04_side_fin"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_front_panel",
+      "group": "front_panel",
+      "grouping": "part",
+      "island_name": "semantic_front_panel",
+      "parts": [
+        "front_panel"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_pipe_rail",
+      "group": "pipe_rail",
+      "grouping": "part",
+      "island_name": "semantic_pipe_rail",
+      "parts": [
+        "pipe_rail"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_side_fin",
+      "group": "side_fin",
+      "grouping": "part",
+      "island_name": "semantic_side_fin",
+      "parts": [
+        "side_fin"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "none",
+    "texture_set_strategy": "",
+    "count": 0,
+    "ids": [],
+    "per_part": {
+      "body": "",
+      "front_panel": "",
+      "pipe_rail": "",
+      "side_fin": ""
+    }
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 11,
+    "placements": [
+      {
+        "decal": "service_number",
+        "target_part": "front_panel",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.700258,
+          0.217682
+        ],
+        "scale": 0.39012,
+        "rotation_deg": -3,
+        "layer": "story",
+        "mask_id": "story_01_service_number"
+      },
+      {
+        "decal": "hazard_stripe",
+        "target_part": "pipe_rail",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.558713,
+          0.354346
+        ],
+        "scale": 0.282748,
+        "rotation_deg": 7,
+        "layer": "story",
+        "mask_id": "story_02_hazard_stripe"
+      },
+      {
+        "decal": "edge_rub",
+        "target_part": "front_panel",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.188366,
+          0.711923
+        ],
+        "scale": 0.25442,
+        "rotation_deg": 4,
+        "layer": "story",
+        "mask_id": "story_03_edge_rub"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "side_fin",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.203504,
+          0.697306
+        ],
+        "scale": 0.366543,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_04_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.301553,
+          0.602638
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_05_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "side_fin",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.717452,
+          0.201081
+        ],
+        "scale": 0.343588,
+        "rotation_deg": 8,
+        "layer": "surface",
+        "mask_id": "story_06_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "body",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.594613,
+          0.319684
+        ],
+        "scale": 0.390097,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_07_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "pipe_rail",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.68913,
+          0.228426
+        ],
+        "scale": 0.396287,
+        "rotation_deg": 11,
+        "layer": "surface",
+        "mask_id": "story_08_recess_grime"
+      },
+      {
+        "decal": "warning_labels",
+        "target_part": "front_panel",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.690128,
+          0.227462
+        ],
+        "scale": 0.235376,
+        "rotation_deg": -10,
+        "layer": "surface",
+        "mask_id": "story_09_warning_labels"
+      },
+      {
+        "decal": "serial_marks",
+        "target_part": "side_fin",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.369722,
+          0.53682
+        ],
+        "scale": 0.361021,
+        "rotation_deg": -8,
+        "layer": "surface",
+        "mask_id": "story_10_serial_marks"
+      },
+      {
+        "decal": "orientation_arrows",
+        "target_part": "pipe_rail",
+        "material": "edge_wear",
+        "material_id": "",
+        "anchor_uv": [
+          0.719438,
+          0.199163
+        ],
+        "scale": 0.356328,
+        "rotation_deg": 12,
+        "layer": "surface",
+        "mask_id": "story_11_orientation_arrows"
+      }
+    ]
+  },
+  "outputs": {
+    "basecolor": {
+      "name": "basecolor",
+      "uri": "maps\\basecolor.png",
+      "size_bytes": 1117649
+    },
+    "normal": {
+      "name": "normal",
+      "uri": "maps\\normal.png",
+      "size_bytes": 412121
+    },
+    "roughness": {
+      "name": "roughness",
+      "uri": "maps\\roughness.png",
+      "size_bytes": 381373
+    },
+    "ao": {
+      "name": "ao",
+      "uri": "maps\\ao.png",
+      "size_bytes": 16993
+    },
+    "curvature": {
+      "name": "curvature",
+      "uri": "maps\\curvature.png",
+      "size_bytes": 17165
+    },
+    "id": {
+      "name": "id",
+      "uri": "maps\\id.png",
+      "size_bytes": 26772
+    },
+    "orm": {
+      "name": "orm",
+      "uri": "maps\\orm.png",
+      "size_bytes": 495729
+    },
+    "emissive": {
+      "name": "emissive",
+      "uri": "maps\\emissive.png",
+      "size_bytes": 12287
+    },
+    "wear_mask": {
+      "name": "wear_mask",
+      "uri": "maps\\wear_mask.png",
+      "size_bytes": 1078891
+    },
+    "material_layer_mask": {
+      "name": "material_layer_mask",
+      "uri": "maps\\material_layer_mask.png",
+      "size_bytes": 71985
+    }
+  },
+  "surface_control_pack": {
+    "manifest_uri": "surface_control_pack\\manifest.json",
+    "images": {
+      "uv_layout": "surface_control_pack\\uv_layout.png",
+      "padded_island_mask": "surface_control_pack\\padded_island_mask.png",
+      "material_zone_mask": "surface_control_pack\\material_zone_mask.png",
+      "ao": "surface_control_pack\\ao.png",
+      "curvature": "surface_control_pack\\curvature.png",
+      "normal_reference": "surface_control_pack\\normal_reference.png",
+      "preview": "surface_control_pack\\preview.png",
+      "wear_mask": "surface_control_pack\\wear_mask.png",
+      "material_layer_mask": "surface_control_pack\\material_layer_mask.png"
+    },
+    "required_maps": [
+      "basecolor",
+      "normal",
+      "orm"
+    ]
+  },
+  "codex_imagegen_requests": {},
+  "codex_imagegen_outputs": {},
+  "atlas_assembly_ir": {
+    "schema": "lathe.atlas_assembly_ir.v1",
+    "mode": "zone_first",
+    "control_pack": "surface_control_pack\\manifest.json",
+    "compose": {
+      "maps": [
+        "basecolor",
+        "normal",
+        "orm"
+      ],
+      "padding": {
+        "type": "unit",
+        "value": 8,
+        "unit": "px"
+      },
+      "mip_safe": true
+    },
+    "outputs": {
+      "basecolor": "maps\\basecolor.png",
+      "normal": "maps\\normal.png",
+      "roughness": "maps\\roughness.png",
+      "ao": "maps\\ao.png",
+      "curvature": "maps\\curvature.png",
+      "id": "maps\\id.png",
+      "orm": "maps\\orm.png",
+      "emissive": "maps\\emissive.png",
+      "wear_mask": "maps\\wear_mask.png",
+      "material_layer_mask": "maps\\material_layer_mask.png"
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": false,
+      "chart_grouping": "part",
+      "material_id_strategy": "none",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base"
+      ],
+      "chart_count": 4,
+      "material_id_count": 0,
+      "part_to_chart": {
+        "body": "uvc_01_body",
+        "front_panel": "uvc_02_front_panel",
+        "pipe_rail": "uvc_03_pipe_rail",
+        "side_fin": "uvc_04_side_fin"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_02_front_panel",
+        "group": "front_panel",
+        "grouping": "part",
+        "island_name": "semantic_front_panel",
+        "parts": [
+          "front_panel"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_03_pipe_rail",
+        "group": "pipe_rail",
+        "grouping": "part",
+        "island_name": "semantic_pipe_rail",
+        "parts": [
+          "pipe_rail"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_04_side_fin",
+        "group": "side_fin",
+        "grouping": "part",
+        "island_name": "semantic_side_fin",
+        "parts": [
+          "side_fin"
+        ],
+        "material": "edge_wear",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "none",
+      "texture_set_strategy": "",
+      "count": 0,
+      "ids": [],
+      "per_part": {
+        "body": "",
+        "front_panel": "",
+        "pipe_rail": "",
+        "side_fin": ""
+      }
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 11,
+      "placements": [
+        {
+          "decal": "service_number",
+          "target_part": "front_panel",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.700258,
+            0.217682
+          ],
+          "scale": 0.39012,
+          "rotation_deg": -3,
+          "layer": "story",
+          "mask_id": "story_01_service_number"
+        },
+        {
+          "decal": "hazard_stripe",
+          "target_part": "pipe_rail",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.558713,
+            0.354346
+          ],
+          "scale": 0.282748,
+          "rotation_deg": 7,
+          "layer": "story",
+          "mask_id": "story_02_hazard_stripe"
+        },
+        {
+          "decal": "edge_rub",
+          "target_part": "front_panel",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.188366,
+            0.711923
+          ],
+          "scale": 0.25442,
+          "rotation_deg": 4,
+          "layer": "story",
+          "mask_id": "story_03_edge_rub"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "side_fin",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.203504,
+            0.697306
+          ],
+          "scale": 0.366543,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_04_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.301553,
+            0.602638
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_05_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "side_fin",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.717452,
+            0.201081
+          ],
+          "scale": 0.343588,
+          "rotation_deg": 8,
+          "layer": "surface",
+          "mask_id": "story_06_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.594613,
+            0.319684
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_07_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "pipe_rail",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.68913,
+            0.228426
+          ],
+          "scale": 0.396287,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_08_recess_grime"
+        },
+        {
+          "decal": "warning_labels",
+          "target_part": "front_panel",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.690128,
+            0.227462
+          ],
+          "scale": 0.235376,
+          "rotation_deg": -10,
+          "layer": "surface",
+          "mask_id": "story_09_warning_labels"
+        },
+        {
+          "decal": "serial_marks",
+          "target_part": "side_fin",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.369722,
+            0.53682
+          ],
+          "scale": 0.361021,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_10_serial_marks"
+        },
+        {
+          "decal": "orientation_arrows",
+          "target_part": "pipe_rail",
+          "material": "edge_wear",
+          "material_id": "",
+          "anchor_uv": [
+            0.719438,
+            0.199163
+          ],
+          "scale": 0.356328,
+          "rotation_deg": 12,
+          "layer": "surface",
+          "mask_id": "story_11_orientation_arrows"
+        }
+      ]
+    }
+  },
+  "surface_validation_ir": {
+    "schema": "lathe.surface_validation_ir.v1",
+    "backend": "auto",
+    "evidence_metrics": [
+      "surface_authoring_quality",
+      "material_zone_coherence",
+      "seam_continuity",
+      "padding_safety",
+      "normal_richness",
+      "roughness_variation",
+      "texture_entropy",
+      "decal_coherence",
+      "trim_coherence",
+      "mip_safety",
+      "bake_alignment_quality",
+      "surface_render_plausibility"
+    ],
+    "required_maps": [
+      "basecolor",
+      "normal",
+      "orm"
+    ]
+  },
+  "surface_repair_ir": {
+    "schema": "lathe.surface_repair_ir.v1",
+    "preferred_scope": "zone_local",
+    "allowed_repairs": [
+      "reauthor_zone_basecolor",
+      "reauthor_zone_wear_mask",
+      "reauthor_zone_decal_mask",
+      "rederive_zone_roughness",
+      "rederive_zone_normal_detail",
+      "reassemble_atlas",
+      "increase_padding",
+      "repair_seam_bleed",
+      "repair_zone_coherence",
+      "fallback_zone_deterministic"
+    ],
+    "codex_imagegen_available": false
+  },
+  "highlow_relation": {
+    "high_mesh_uri": "stages/shape/candidate_00.glb",
+    "low_mesh_uri": "stages/topology/topology.glb",
+    "bake_cage_offset_cm": 1.25,
+    "source": "hero_surface_runtime_v1",
+    "high_triangle_count": 22722,
+    "low_triangle_count": 22722,
+    "distinction_ratio": 0.0,
+    "bake_groups": null,
+    "authoritative": true
+  },
+  "bake_outputs": {
+    "normal": "maps\\normal.png",
+    "ao": "maps\\ao.png",
+    "curvature": "maps\\curvature.png",
+    "id": "maps\\id.png"
+  },
+  "decal_masks": [
+    "service_number",
+    "hazard_stripe",
+    "edge_rub",
+    "trim_wear",
+    "edge_highlight",
+    "convex_edge_wear",
+    "contact_polish",
+    "recess_grime",
+    "warning_labels",
+    "serial_marks",
+    "orientation_arrows"
+  ]
+}

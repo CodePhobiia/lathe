@@ -290,6 +290,38 @@ def _build_parser() -> argparse.ArgumentParser:
             "cache-cleared builds produce byte-identical JSON reports."
         ),
     )
+    p_build.add_argument(
+        "--candidates",
+        type=int,
+        default=None,
+        help=(
+            "Override build.shape.candidates for this run (transient). "
+            "Forces a smaller candidate-search width than the asset declares; "
+            "trades quality for cold-build wall-clock. Use '--candidates 1' "
+            "for a fast verification cycle."
+        ),
+    )
+    p_build.add_argument(
+        "--no-search",
+        action="store_true",
+        help=(
+            "Zero out space.select.best_of for this run (transient). Combined "
+            "with --candidates 1, collapses the shape candidate sweep to a "
+            "single pick — fastest cold path."
+        ),
+    )
+    p_build.add_argument(
+        "--repair-rounds",
+        type=int,
+        default=None,
+        help=(
+            "Override validate.repair.max_rounds for this run (transient). "
+            "Each repair round can re-run UV / surface / validate via "
+            "_run_downstream_after_topology, so capping rounds keeps "
+            "iteration loops bounded. Production builds should leave this "
+            "unset so the asset declaration is authoritative."
+        ),
+    )
 
     p_probe_blender = sub.add_parser(
         "probe-blender",
@@ -546,6 +578,7 @@ def _build_parser() -> argparse.ArgumentParser:
     _run_register("cache_cmd", sub)
     _run_register("diff_cmd", sub)
     _run_register("publish_cmd", sub)
+    _run_register("quick_cmd", sub)
     _run_register("snapshot_cmd", sub)
     _run_register("telemetry_cmd", sub)
     _run_register("asset_quality_cmd", sub)
@@ -590,6 +623,7 @@ _DISPATCH: dict[str, str] = {
     "surface-validate": "surface_cmd:run_surface",
     "surface-repair": "surface_cmd:run_surface",
     "build": "build_cmd:run_build",
+    "quick": "quick_cmd:run_quick",
     "cache": "cache_cmd:run_cache",
     "diff": "diff_cmd:run_diff",
     "ref": "ref_cmd:run_ref",

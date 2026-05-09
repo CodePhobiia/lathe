@@ -1,0 +1,75 @@
+{
+  "backend_id": "lathe.optimize.deterministic_lod_v1",
+  "lods": [
+    {
+      "name": "lod0",
+      "mesh_uri": "stages/optimize/lod_0.glb",
+      "triangle_count": 22722,
+      "vertex_count": 68166,
+      "decimation": "source",
+      "distance_min": 0.0,
+      "distance_max": 10.0,
+      "screen_coverage": 1.0
+    }
+  ],
+  "lod_manifest_path": "stages/optimize/lod_manifest.json",
+  "collision": {
+    "hull_uri": "stages/optimize/collision_hull.glb",
+    "parts_uri": "stages/optimize/collision_parts.glb",
+    "manifest_path": "stages/optimize/collision_manifest.json",
+    "hull_tris": 72,
+    "parts_count": 1
+  },
+  "draw_calls": 1,
+  "texture_memory_bytes": 0,
+  "mesh_compression": false,
+  "atlas": false,
+  "authored_lod_controls": {
+    "shape_lod_levels": null,
+    "shape_lod_ratios": [],
+    "resolved_ratios": [
+      1.0
+    ]
+  },
+  "authored_highlow_controls": {
+    "highlow_mode": "",
+    "highlow_low_lod": null,
+    "highlow_bake_cage_offset_cm": null
+  },
+  "diagnostics": [],
+  "budget_report": {
+    "schemaVersion": 1,
+    "texture_memory": {
+      "budget_bytes": 134217728,
+      "estimated_bytes": 10485760,
+      "per_material": [
+        {
+          "name": "edge_wear",
+          "bytes": 10485760
+        }
+      ],
+      "status": "pass"
+    },
+    "materials": {
+      "budget": 16,
+      "count": 1,
+      "status": "pass",
+      "materials": [
+        "edge_wear"
+      ]
+    },
+    "draw_calls": {
+      "budget": 64,
+      "estimated": 1,
+      "status": "pass",
+      "breakdown": [
+        {
+          "lod": 0,
+          "count": 1
+        }
+      ]
+    },
+    "overall_status": "pass"
+  },
+  "budget_report_path": "stages/optimize/budget_report.json"
+}

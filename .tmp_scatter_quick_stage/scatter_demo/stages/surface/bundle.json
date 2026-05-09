@@ -1,0 +1,816 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 1,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 4096,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "default_body"
+    ],
+    "material_slots": 1,
+    "decals": [
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "surface",
+      "material",
+      "trim_sheet",
+      "functional_accents",
+      "toy_like",
+      "random_faceting",
+      "unlabeled_material",
+      "place_motifs_where_they_clarify_function_or_silh"
+    ],
+    "hero_surface": false,
+    "program": "",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "surface",
+      "material",
+      "trim_sheet",
+      "functional_accents",
+      "toy_like",
+      "random_faceting",
+      "unlabeled_material",
+      "place_motifs_where_they_clarify_function_or_silh"
+    ],
+    "palette": "",
+    "source_material_zones": [],
+    "source_bake": [],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [],
+    "surface_story": {
+      "wear_story": "",
+      "wear_level": "",
+      "story_decals": []
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "prop",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "surface",
+          "material",
+          "trim_sheet",
+          "functional accents",
+          "toy_like",
+          "random_faceting",
+          "unlabeled_material",
+          "place motifs where they clarify function or silhouette"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "surface",
+        "material",
+        "trim_sheet",
+        "functional accents",
+        "toy_like",
+        "random_faceting",
+        "unlabeled_material",
+        "place motifs where they clarify function or silhouette"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": false,
+      "chart_grouping": "part",
+      "material_id_strategy": "none",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base"
+      ],
+      "chart_count": 1,
+      "material_id_count": 0,
+      "part_to_chart": {
+        "body": "uvc_01_body"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "default_body",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "none",
+      "texture_set_strategy": "",
+      "count": 0,
+      "ids": [],
+      "per_part": {
+        "body": ""
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 16,
+      "placements": [
+        {
+          "decal": "trim_wear",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.210596,
+            0.690459
+          ],
+          "scale": 0.264181,
+          "rotation_deg": -1,
+          "layer": "surface",
+          "mask_id": "story_01_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.407879,
+            0.499979
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_02_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.506345,
+            0.404909
+          ],
+          "scale": 0.308592,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_03_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.60903,
+            0.305764
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_04_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.641464,
+            0.274449
+          ],
+          "scale": 0.397446,
+          "rotation_deg": -6,
+          "layer": "surface",
+          "mask_id": "story_05_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.467861,
+            0.442065
+          ],
+          "scale": 0.267054,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_06_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.258366,
+            0.644336
+          ],
+          "scale": 0.377693,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_07_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.481323,
+            0.429067
+          ],
+          "scale": 0.263845,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_08_lower_contact_points"
+        },
+        {
+          "decal": "surface",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.685076,
+            0.23234
+          ],
+          "scale": 0.24636,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_09_surface"
+        },
+        {
+          "decal": "material",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.377987,
+            0.52884
+          ],
+          "scale": 0.385857,
+          "rotation_deg": 10,
+          "layer": "surface",
+          "mask_id": "story_10_material"
+        },
+        {
+          "decal": "trim_sheet",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.191192,
+            0.709194
+          ],
+          "scale": 0.377472,
+          "rotation_deg": 13,
+          "layer": "surface",
+          "mask_id": "story_11_trim_sheet"
+        },
+        {
+          "decal": "functional_accents",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.643137,
+            0.272833
+          ],
+          "scale": 0.382685,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_12_functional_accents"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.551858,
+            0.360965
+          ],
+          "scale": 0.220097,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_13_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.431209,
+            0.477453
+          ],
+          "scale": 0.224379,
+          "rotation_deg": 10,
+          "layer": "surface",
+          "mask_id": "story_14_random_faceting"
+        },
+        {
+          "decal": "unlabeled_material",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.591864,
+            0.322338
+          ],
+          "scale": 0.239683,
+          "rotation_deg": -1,
+          "layer": "surface",
+          "mask_id": "story_15_unlabeled_material"
+        },
+        {
+          "decal": "place_motifs_where_they_clarify_function_or_silh",
+          "target_part": "body",
+          "material": "default_body",
+          "material_id": "",
+          "anchor_uv": [
+            0.289248,
+            0.614519
+          ],
+          "scale": 0.315342,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_16_place_motifs_where_they_clarify_function_or_silh"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "default_body",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.58,
+      "roughness_range": [
+        0.48,
+        0.68
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.1,
+      "normal_intensity": 0.07,
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": false,
+    "chart_grouping": "part",
+    "material_id_strategy": "none",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base"
+    ],
+    "chart_count": 1,
+    "material_id_count": 0,
+    "part_to_chart": {
+      "body": "uvc_01_body"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "default_body",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "none",
+    "texture_set_strategy": "",
+    "count": 0,
+    "ids": [],
+    "per_part": {
+      "body": ""
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 16,
+    "placements": [
+      {
+        "decal": "trim_wear",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.210596,
+          0.690459
+        ],
+        "scale": 0.264181,
+        "rotation_deg": -1,
+        "layer": "surface",
+        "mask_id": "story_01_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.407879,
+          0.499979
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_02_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.506345,
+          0.404909
+        ],
+        "scale": 0.308592,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_03_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.60903,
+          0.305764
+        ],
+        "scale": 0.390097,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_04_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.641464,
+          0.274449
+        ],
+        "scale": 0.397446,
+        "rotation_deg": -6,
+        "layer": "surface",
+        "mask_id": "story_05_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.467861,
+          0.442065
+        ],
+        "scale": 0.267054,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_06_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.258366,
+          0.644336
+        ],
+        "scale": 0.377693,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_07_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.481323,
+          0.429067
+        ],
+        "scale": 0.263845,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_08_lower_contact_points"
+      },
+      {
+        "decal": "surface",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.685076,
+          0.23234
+        ],
+        "scale": 0.24636,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_09_surface"
+      },
+      {
+        "decal": "material",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.377987,
+          0.52884
+        ],
+        "scale": 0.385857,
+        "rotation_deg": 10,
+        "layer": "surface",
+        "mask_id": "story_10_material"
+      },
+      {
+        "decal": "trim_sheet",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.191192,
+          0.709194
+        ],
+        "scale": 0.377472,
+        "rotation_deg": 13,
+        "layer": "surface",
+        "mask_id": "story_11_trim_sheet"
+      },
+      {
+        "decal": "functional_accents",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.643137,
+          0.272833
+        ],
+        "scale": 0.382685,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_12_functional_accents"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.551858,
+          0.360965
+        ],
+        "scale": 0.220097,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_13_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.431209,
+          0.477453
+        ],
+        "scale": 0.224379,
+        "rotation_deg": 10,
+        "layer": "surface",
+        "mask_id": "story_14_random_faceting"
+      },
+      {
+        "decal": "unlabeled_material",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.591864,
+          0.322338
+        ],
+        "scale": 0.239683,
+        "rotation_deg": -1,
+        "layer": "surface",
+        "mask_id": "story_15_unlabeled_material"
+      },
+      {
+        "decal": "place_motifs_where_they_clarify_function_or_silh",
+        "target_part": "body",
+        "material": "default_body",
+        "material_id": "",
+        "anchor_uv": [
+          0.289248,
+          0.614519
+        ],
+        "scale": 0.315342,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_16_place_motifs_where_they_clarify_function_or_silh"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

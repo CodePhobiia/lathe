@@ -1,0 +1,1240 @@
+{
+  "node_type": "asset",
+  "name": "brassbound_chest",
+  "kind": "hard_surface_prop",
+  "from": "brassbound_chest_family",
+  "uses": [
+    "shipping_prop"
+  ],
+  "refs": {
+    "images": [],
+    "meshes": [],
+    "assets": [],
+    "materials": [],
+    "notes": [],
+    "reference_sets": [],
+    "resolved_reference_sets": []
+  },
+  "intent": {
+    "role": "ornate brassbound loot chest",
+    "asset_class": "hero",
+    "style_target": "stylized_pbr_aaa",
+    "style": [
+      "adventure",
+      "stylized",
+      "wood_and_brass"
+    ],
+    "parts": [
+      "body",
+      "lid_panel",
+      "front_hatch",
+      "lock_plate",
+      "handle_l",
+      "handle_r",
+      "foot_l",
+      "foot_r"
+    ],
+    "materials": [
+      "oak_planks",
+      "brass_bands",
+      "red_velvet_lining"
+    ],
+    "negatives": [
+      "modern",
+      "plastic",
+      "sci_fi"
+    ],
+    "scale": {
+      "type": "unit",
+      "value": 0.8,
+      "unit": "m"
+    },
+    "interactions": [
+      "open_lid",
+      "collect_loot",
+      "place_in_world"
+    ],
+    "resolved_asset_class_profile": {
+      "name": "hero",
+      "body": {
+        "poly_budget": {
+          "tris_max": 80000,
+          "quads_target": 20000
+        },
+        "texture_budget": {
+          "basecolor": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "normal": {
+            "type": "unit",
+            "value": 4096,
+            "unit": "px"
+          },
+          "orm": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "emissive": {
+            "type": "unit",
+            "value": 1024,
+            "unit": "px"
+          }
+        },
+        "lod_count": 3,
+        "validator_threshold": 0.88
+      }
+    },
+    "notes": [],
+    "style_stack": {
+      "material_model": "pbr_stylized",
+      "shading_model": "lambert_ambient",
+      "texture_authoring": "procedural_designer",
+      "outline_mode": "none",
+      "lighting_strategy": "dynamic_global_illumination",
+      "detail_layer_compose": "multi_band_pbr",
+      "animation_rate": "fluid",
+      "construction_grammar": "free_form"
+    },
+    "style_bridges": []
+  },
+  "geometry": {
+    "mode": "exact_hard_surface",
+    "seam_classes": [
+      "panel_seam",
+      "lid_break",
+      "clasp_cut"
+    ],
+    "edge_classes": [
+      "hero_bevel",
+      "support_bevel",
+      "trim_edge"
+    ],
+    "integration_rules": [
+      "boolean_union",
+      "preserve_lid_break"
+    ]
+  },
+  "features": {
+    "allow": [
+      "inset_panel",
+      "frame_lip",
+      "trim_band",
+      "clasp_set",
+      "recessed_handle",
+      "support_bracket",
+      "edge_break"
+    ],
+    "density": "hero"
+  },
+  "surface": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "bakes": [
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "decals": [
+      "crest",
+      "trim_wear"
+    ],
+    "patterns": [
+      "plank_spacing_hero",
+      "rivet_row_hero"
+    ],
+    "zones": {
+      "body": "oak_body",
+      "lid": "oak_body",
+      "panel": "oak_body",
+      "lock": "aged_brass_trim",
+      "handle": "aged_brass_trim",
+      "foot": "aged_brass_trim",
+      "hinge": "aged_brass_trim",
+      "clasp": "aged_brass_trim",
+      "liner": "velvet_interior"
+    },
+    "program": "chest_wood_brass_hero",
+    "palette": "fantasy_brassbound",
+    "materials": [
+      "oak_body",
+      "aged_brass_trim",
+      "velvet_interior"
+    ],
+    "material_zones": [
+      "oak_body",
+      "aged_brass_trim",
+      "velvet_interior"
+    ],
+    "bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "resolved_palette": {
+      "node_type": "palette",
+      "name": "fantasy_brassbound",
+      "uses": [],
+      "values": {
+        "materials": [
+          "oak_body",
+          "aged_brass_trim",
+          "velvet_interior"
+        ]
+      }
+    },
+    "resolved_materials": {
+      "oak_body": {
+        "node_type": "material",
+        "name": "oak_body",
+        "uses": [],
+        "values": {
+          "basecolor": [
+            125,
+            82,
+            48
+          ],
+          "metallic": 0.0,
+          "roughness": 0.68,
+          "roughness_range": [
+            0.56,
+            0.82
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "surface_profile": "wood_grain",
+          "wear": 0.18,
+          "normal_intensity": 0.12
+        }
+      },
+      "aged_brass_trim": {
+        "node_type": "material",
+        "name": "aged_brass_trim",
+        "uses": [],
+        "values": {
+          "basecolor": [
+            191,
+            150,
+            72
+          ],
+          "metallic": 1.0,
+          "roughness": 0.36,
+          "roughness_range": [
+            0.22,
+            0.52
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "surface_profile": "worn_brass",
+          "wear": 0.26,
+          "normal_intensity": 0.1
+        }
+      },
+      "velvet_interior": {
+        "node_type": "material",
+        "name": "velvet_interior",
+        "uses": [],
+        "values": {
+          "basecolor": [
+            132,
+            28,
+            32
+          ],
+          "metallic": 0.0,
+          "roughness": 0.82,
+          "roughness_range": [
+            0.74,
+            0.92
+          ],
+          "emissive": [
+            0,
+            0,
+            0
+          ],
+          "surface_profile": "fabric_lining",
+          "wear": 0.05,
+          "normal_intensity": 0.05
+        }
+      },
+      "oak_planks": {
+        "node_type": "material",
+        "name": "oak_planks",
+        "uses": [],
+        "values": {}
+      },
+      "brass_bands": {
+        "node_type": "material",
+        "name": "brass_bands",
+        "uses": [],
+        "values": {}
+      },
+      "red_velvet_lining": {
+        "node_type": "material",
+        "name": "red_velvet_lining",
+        "uses": [],
+        "values": {}
+      }
+    },
+    "resolved_patterns": [
+      {
+        "node_type": "pattern",
+        "name": "plank_spacing_hero",
+        "uses": [],
+        "values": {
+          "family": "linear_repeat",
+          "spacing_cm": 6.5,
+          "emphasis": "silhouette"
+        }
+      },
+      {
+        "node_type": "pattern",
+        "name": "rivet_row_hero",
+        "uses": [],
+        "values": {
+          "family": "fastener_repeat",
+          "spacing_cm": 5.0,
+          "emphasis": "hardware"
+        }
+      }
+    ],
+    "resolved_surface_program": {
+      "node_type": "surface_program",
+      "name": "chest_wood_brass_hero",
+      "uses": [],
+      "values": {
+        "workflow": "pbr_metal_rough",
+        "maps": [
+          "basecolor",
+          "normal",
+          "orm",
+          "ao",
+          "curvature",
+          "id"
+        ],
+        "bakes": [
+          "ao",
+          "curvature",
+          "id"
+        ],
+        "decals": [
+          "crest",
+          "trim_wear"
+        ],
+        "patterns": [
+          "plank_spacing_hero",
+          "rivet_row_hero"
+        ],
+        "zones": {
+          "body": "oak_body",
+          "lid": "oak_body",
+          "panel": "oak_body",
+          "lock": "aged_brass_trim",
+          "handle": "aged_brass_trim",
+          "foot": "aged_brass_trim",
+          "hinge": "aged_brass_trim",
+          "clasp": "aged_brass_trim",
+          "liner": "velvet_interior"
+        }
+      }
+    },
+    "resolved_surface_policy": {},
+    "resolved_surface_backend": {},
+    "resolved_decal_libraries": [],
+    "resolved_mask_programs": [],
+    "resolved_trim_sheets": [],
+    "resolved_material_graph": {},
+    "material_graph": "",
+    "backend": "",
+    "policy": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "authoring": {}
+  },
+  "assembly": {
+    "components": [
+      "chest_body",
+      "chest_lid",
+      "brass_latch_set",
+      "front_clasp",
+      "side_handle_l",
+      "side_handle_r",
+      "support_foot_l",
+      "support_foot_r",
+      "chest_interior_liner"
+    ],
+    "mechanisms": [
+      "lid_hinge_mechanism"
+    ],
+    "family": "brassbound_chest_family",
+    "resolved_family": {
+      "node_type": "family",
+      "name": "brassbound_chest_family",
+      "kind": "hard_surface_prop",
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "mode": "exact_hard_surface",
+        "seam_classes": [
+          "panel_seam",
+          "lid_break",
+          "clasp_cut"
+        ],
+        "edge_classes": [
+          "hero_bevel",
+          "support_bevel",
+          "trim_edge"
+        ],
+        "integration_rules": [
+          "boolean_union",
+          "preserve_lid_break"
+        ]
+      },
+      "features": {
+        "allow": [
+          "inset_panel",
+          "frame_lip",
+          "trim_band",
+          "clasp_set",
+          "recessed_handle",
+          "support_bracket",
+          "edge_break"
+        ],
+        "density": "hero"
+      },
+      "surface": {
+        "program": "chest_wood_brass_hero",
+        "patterns": [
+          "plank_spacing_hero",
+          "rivet_row_hero"
+        ],
+        "palette": "fantasy_brassbound",
+        "materials": [
+          "oak_body",
+          "aged_brass_trim",
+          "velvet_interior"
+        ],
+        "material_zones": [
+          "oak_body",
+          "aged_brass_trim",
+          "velvet_interior"
+        ],
+        "decals": [
+          "crest",
+          "trim_wear"
+        ],
+        "bake": [
+          "normal",
+          "ao",
+          "curvature",
+          "id"
+        ]
+      },
+      "assembly": {
+        "components": [
+          "chest_body",
+          "chest_lid",
+          "brass_latch_set",
+          "front_clasp",
+          "side_handle_l",
+          "side_handle_r",
+          "support_foot_l",
+          "support_foot_r",
+          "chest_interior_liner"
+        ],
+        "mechanisms": [
+          "lid_hinge_mechanism"
+        ]
+      },
+      "space": {
+        "node_type": "search_inline",
+        "values": {
+          "use": "chest_hero_search"
+        },
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "hero_hardsurface_repair"
+      },
+      "rules": [],
+      "values": {
+        "runtime_family": "brassbound_chest",
+        "blueprint_id": "lathe.blueprint.hard_surface_chest_v2"
+      }
+    },
+    "resolved_components": [
+      {
+        "node_type": "component",
+        "name": "chest_body",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "shell"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "body",
+          "tags": [
+            "body",
+            "shell"
+          ],
+          "material_zone": "oak_body"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "chest_lid",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "lid"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "lid_panel",
+          "tags": [
+            "lid",
+            "panel"
+          ],
+          "articulation": "hinge",
+          "material_zone": "oak_body"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "brass_latch_set",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "lock_plate"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "lock_plate",
+          "tags": [
+            "lock",
+            "latch",
+            "plate"
+          ],
+          "material_zone": "aged_brass_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "front_clasp",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "latch"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "front_clasp",
+          "tags": [
+            "clasp",
+            "lock",
+            "front"
+          ],
+          "material_zone": "aged_brass_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "side_handle_l",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "handle"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "handle_l",
+          "tags": [
+            "handle",
+            "left"
+          ],
+          "interface_role": "grip",
+          "material_zone": "aged_brass_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "side_handle_r",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "handle"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "handle_r",
+          "tags": [
+            "handle",
+            "right"
+          ],
+          "interface_role": "grip",
+          "material_zone": "aged_brass_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "support_foot_l",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "foot"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "foot_l",
+          "tags": [
+            "foot",
+            "left"
+          ],
+          "interface_role": "support",
+          "material_zone": "aged_brass_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "support_foot_r",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "foot"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "foot_r",
+          "tags": [
+            "foot",
+            "right"
+          ],
+          "interface_role": "support",
+          "material_zone": "aged_brass_trim"
+        }
+      },
+      {
+        "node_type": "component",
+        "name": "chest_interior_liner",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {
+          "component_type": "panel"
+        },
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "part": "interior_liner",
+          "tags": [
+            "liner",
+            "interior"
+          ],
+          "material_zone": "velvet_interior"
+        }
+      }
+    ],
+    "resolved_mechanisms": [
+      {
+        "node_type": "mechanism",
+        "name": "lid_hinge_mechanism",
+        "kind": null,
+        "uses": [],
+        "defaults": {},
+        "params": {},
+        "geometry": {},
+        "features": {},
+        "surface": {},
+        "assembly": {},
+        "space": {},
+        "repair_policy": {},
+        "rules": [],
+        "values": {
+          "type": "hinge",
+          "axis": "x"
+        }
+      }
+    ],
+    "resolved_traits": [],
+    "traits": []
+  },
+  "fit": {
+    "resolved_fit_profile": {},
+    "resolved_reconstruct_policy": {}
+  },
+  "transfer": {
+    "resolved_adapt_policy": {},
+    "resolved_transfer_rules": []
+  },
+  "reuse": {},
+  "constraints": {
+    "resolved_assembly_policy": {}
+  },
+  "ingest": {},
+  "assembly_rules": {},
+  "execution": {
+    "resolved_execution_profile": {},
+    "resolved_inspection_policy": {},
+    "resolved_library_bindings": [],
+    "profile": "",
+    "engine": "",
+    "mode": "",
+    "deterministic": null,
+    "preserve_blend": "",
+    "geometry_backend": "",
+    "uv_backend": "",
+    "bake_backend": "",
+    "surface_backend": "",
+    "render_backend": "",
+    "package_backend": "",
+    "library_backend": "",
+    "library_bindings": [],
+    "inspection_policy": ""
+  },
+  "space": {
+    "use": "chest_hero_search",
+    "values": {},
+    "vary": [
+      {
+        "path": "feature_density",
+        "domain": {
+          "type": "range",
+          "from": 0.95,
+          "to": 1.28
+        }
+      },
+      {
+        "path": "panel_depth",
+        "domain": {
+          "type": "range",
+          "from": 0.9,
+          "to": 1.24
+        }
+      },
+      {
+        "path": "edge_weight",
+        "domain": {
+          "type": "range",
+          "from": 0.92,
+          "to": 1.22
+        }
+      }
+    ],
+    "freeze": [
+      "silhouette_bias"
+    ],
+    "objectives": [
+      {
+        "direction": "maximize",
+        "metric": "silhouette_readability",
+        "weight": 0.25
+      },
+      {
+        "direction": "maximize",
+        "metric": "geometry_integration_quality",
+        "weight": 0.3
+      },
+      {
+        "direction": "maximize",
+        "metric": "visual_surface_quality",
+        "weight": 0.2
+      },
+      {
+        "direction": "minimize",
+        "metric": "primitive_likeness_penalty",
+        "weight": 0.25
+      }
+    ],
+    "select": {
+      "best_of": 10
+    },
+    "resolved_name": "chest_hero_search"
+  },
+  "repair_policy": {
+    "use": "hero_hardsurface_repair",
+    "mode": "auto_until_pass",
+    "max_rounds": 4,
+    "allow": [
+      "reselect_candidate",
+      "enforce_symmetry",
+      "seal_mesh",
+      "retopo_auto",
+      "reduce_tris",
+      "repack_uvs",
+      "rebake_maps",
+      "reauthor_surface_layer",
+      "normalize_pivots",
+      "create_collision_proxy",
+      "generate_lods"
+    ],
+    "deny": [
+      "rebuild_shape"
+    ],
+    "resolved_name": "hero_hardsurface_repair"
+  },
+  "build": {
+    "optimize": {
+      "lods": 4,
+      "atlas": true,
+      "draw_calls": 2,
+      "texture_budget": {
+        "type": "unit",
+        "value": 16,
+        "unit": "mb"
+      },
+      "mesh_compression": true,
+      "backend": "auto",
+      "strip_hidden_faces": false,
+      "instance_candidates": false
+    },
+    "interfaces": {
+      "clearance": {
+        "type": "unit",
+        "value": 2,
+        "unit": "cm"
+      },
+      "sockets": [
+        {
+          "type": "call",
+          "name": "socket",
+          "args": [
+            {
+              "name": "id",
+              "value": "loot_anchor"
+            },
+            {
+              "name": "socket_type",
+              "value": "attach"
+            }
+          ]
+        }
+      ],
+      "pivots": [
+        {
+          "type": "call",
+          "name": "pivot",
+          "args": [
+            {
+              "name": "id",
+              "value": "floor_contact"
+            },
+            {
+              "name": "pivot_type",
+              "value": "contact"
+            }
+          ]
+        }
+      ],
+      "backend": "auto",
+      "anchors": [],
+      "connections": [],
+      "auto_connect": false
+    },
+    "shape": {
+      "mode": "generate",
+      "candidates": 1,
+      "seed": 19,
+      "symmetry": "x",
+      "preserve": [
+        "silhouette",
+        "part_graph",
+        "symmetry",
+        "proportions"
+      ],
+      "backend": "auto"
+    },
+    "topology": {
+      "retopo": "auto",
+      "target_quads": 12000,
+      "ngons": "forbid",
+      "preserve": [
+        "hard_edges",
+        "part_borders"
+      ],
+      "tris_max": 80000,
+      "backend": "auto"
+    },
+    "uv": {
+      "sets": [
+        "base",
+        "lightmap"
+      ],
+      "unwrap": "auto",
+      "padding": {
+        "type": "unit",
+        "value": 8,
+        "unit": "px"
+      },
+      "texel_density": {
+        "type": "unit",
+        "value": 512,
+        "unit": "px_per_m"
+      },
+      "backend": "auto",
+      "tile_mode": "zero_to_one",
+      "pack_rotate": true,
+      "udims": []
+    },
+    "surface": {
+      "workflow": "pbr_metal_rough",
+      "maps": [
+        "basecolor",
+        "normal",
+        "orm"
+      ],
+      "resolution": {
+        "type": "unit",
+        "value": 2048,
+        "unit": "px"
+      },
+      "bakes": [
+        "ao",
+        "curvature",
+        "id"
+      ],
+      "decals": [
+        "crest",
+        "trim_wear"
+      ],
+      "id_map": true,
+      "resolved_bake_profile": {},
+      "resolved_render_fixture": {},
+      "texture_budget": {
+        "basecolor": {
+          "type": "unit",
+          "value": 2048,
+          "unit": "px"
+        },
+        "normal": {
+          "type": "unit",
+          "value": 4096,
+          "unit": "px"
+        },
+        "orm": {
+          "type": "unit",
+          "value": 2048,
+          "unit": "px"
+        },
+        "emissive": {
+          "type": "unit",
+          "value": 1024,
+          "unit": "px"
+        }
+      },
+      "backend": "auto",
+      "bake_profile": "",
+      "render_fixture": ""
+    },
+    "rig": {
+      "type": "rigid_mechanical",
+      "joints": [
+        "front_hatch"
+      ],
+      "pivot_policy": "studio_standard",
+      "joint_limits": "auto",
+      "backend": "auto"
+    },
+    "physics": {
+      "collision": "convex_decomp",
+      "max_hulls": 6,
+      "mass": "auto",
+      "center_of_mass": "auto",
+      "backend": "auto"
+    }
+  },
+  "validate": {
+    "rules": [
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "units",
+          "args": [
+            {
+              "name": null,
+              "value": "cm"
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "manifold",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "watertight",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "material_slots",
+          "args": [
+            {
+              "name": "max",
+              "value": 4
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "uv_range",
+          "args": [
+            {
+              "name": "set",
+              "value": "base"
+            },
+            {
+              "name": "range",
+              "value": {
+                "type": "range",
+                "from": 0,
+                "to": 1
+              }
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "lightmap_uvs",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": "collision_proxy",
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "pivots",
+          "args": [
+            {
+              "name": "policy",
+              "value": "studio_standard"
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "names",
+          "args": [
+            {
+              "name": "policy",
+              "value": "studio_standard"
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "texel_density",
+          "args": [
+            {
+              "name": "target",
+              "value": {
+                "type": "unit",
+                "value": 512,
+                "unit": "px_per_m"
+              }
+            },
+            {
+              "name": "tolerance",
+              "value": 0.1
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "ensure",
+        "expr": {
+          "type": "call",
+          "name": "runtime_budget",
+          "args": [
+            {
+              "name": "draw_calls",
+              "value": 3
+            },
+            {
+              "name": "texture_memory",
+              "value": {
+                "type": "unit",
+                "value": 32,
+                "unit": "mb"
+              }
+            }
+          ]
+        },
+        "node_type": "rule"
+      },
+      {
+        "kind": "prefer",
+        "expr": "silhouette_readability",
+        "weight": 0.3,
+        "node_type": "rule"
+      },
+      {
+        "kind": "prefer",
+        "expr": "part_coherence",
+        "weight": 0.2,
+        "node_type": "rule"
+      }
+    ],
+    "repair": {
+      "mode": "auto_until_pass",
+      "max_rounds": 4,
+      "allow": [
+        "reselect_candidate",
+        "enforce_symmetry",
+        "seal_mesh",
+        "retopo_auto",
+        "reduce_tris",
+        "repack_uvs",
+        "rebake_maps",
+        "normalize_pivots",
+        "create_collision_proxy",
+        "generate_lods",
+        "reauthor_surface_layer"
+      ],
+      "deny": [
+        "rebuild_shape"
+      ]
+    },
+    "score": "hero_prop",
+    "threshold": 0.84
+  },
+  "package": {
+    "formats": [
+      "usd",
+      "glb"
+    ],
+    "manifest": true,
+    "include_trace": true,
+    "previews": [
+      "turntable",
+      "wireframe",
+      "material_ids",
+      "uv_layout",
+      "collision",
+      "lod_sheet"
+    ],
+    "embed_textures": false,
+    "backend": "auto",
+    "naming": "auto"
+  },
+  "publish": {
+    "registry": "props/containers/brassbound_chest",
+    "version": "0.1.0",
+    "tags": [
+      "chest",
+      "loot",
+      "container",
+      "fantasy"
+    ],
+    "visibility": "studio",
+    "approval": "required",
+    "channel": "dev"
+  },
+  "experimental": {}
+}

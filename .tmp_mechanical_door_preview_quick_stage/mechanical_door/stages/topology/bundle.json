@@ -1,0 +1,881 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 53624,
+    "triangle_count": 28038,
+    "watertight": false,
+    "volume": 0.0,
+    "bounds_min": [
+      -271.048004,
+      -204.866669,
+      -61.351677
+    ],
+    "bounds_max": [
+      271.048004,
+      722.987793,
+      80.619247
+    ],
+    "extents": [
+      542.096008,
+      927.854462,
+      141.970924
+    ],
+    "body_count": 12339
+  },
+  "normals": {
+    "mode": "face",
+    "count": 28038
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 6707,
+      "vertex_count": 12284,
+      "bounds_min": [
+        -122.925491,
+        -190.182663,
+        -34.956203
+      ],
+      "bounds_max": [
+        123.274475,
+        190.182663,
+        59.039124
+      ]
+    },
+    {
+      "name": "door_leaf",
+      "face_count": 5961,
+      "vertex_count": 11357,
+      "bounds_min": [
+        -95.810158,
+        -138.160843,
+        -10.130047
+      ],
+      "bounds_max": [
+        76.857109,
+        138.160843,
+        46.175499
+      ]
+    },
+    {
+      "name": "handle",
+      "face_count": 2529,
+      "vertex_count": 4445,
+      "bounds_min": [
+        -94.063927,
+        -138.160843,
+        -61.351677
+      ],
+      "bounds_max": [
+        123.274475,
+        237.133972,
+        80.619247
+      ]
+    },
+    {
+      "name": "hinge_bottom",
+      "face_count": 2995,
+      "vertex_count": 6411,
+      "bounds_min": [
+        -265.516266,
+        -202.224686,
+        -32.624405
+      ],
+      "bounds_max": [
+        -21.030554,
+        133.395462,
+        65.371246
+      ]
+    },
+    {
+      "name": "hinge_top",
+      "face_count": 3068,
+      "vertex_count": 6363,
+      "bounds_min": [
+        -123.274475,
+        -133.395462,
+        -61.351677
+      ],
+      "bounds_max": [
+        94.063927,
+        722.987793,
+        80.619247
+      ]
+    },
+    {
+      "name": "lock_plate",
+      "face_count": 2050,
+      "vertex_count": 4018,
+      "bounds_min": [
+        -37.661514,
+        -204.866669,
+        -32.88501
+      ],
+      "bounds_max": [
+        262.853271,
+        722.987793,
+        55.873062
+      ]
+    },
+    {
+      "name": "threshold_plate",
+      "face_count": 4728,
+      "vertex_count": 8746,
+      "bounds_min": [
+        -271.048004,
+        -202.224686,
+        -39.453308
+      ],
+      "bounds_max": [
+        271.048004,
+        127.6847,
+        80.619247
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "face_count": 6707,
+      "vertex_count": 12284,
+      "tags": [
+        "body",
+        "frame",
+        "shell"
+      ],
+      "parent_blueprint_component": "door_frame_shell",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -122.925491,
+        -190.182663,
+        -34.956203
+      ],
+      "bounds_max": [
+        123.274475,
+        190.182663,
+        59.039124
+      ]
+    },
+    {
+      "name": "door_leaf",
+      "face_count": 5961,
+      "vertex_count": 11357,
+      "tags": [
+        "door",
+        "leaf",
+        "left",
+        "panel"
+      ],
+      "parent_blueprint_component": "door_leaf_panel",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -95.810158,
+        -138.160843,
+        -10.130047
+      ],
+      "bounds_max": [
+        76.857109,
+        138.160843,
+        46.175499
+      ]
+    },
+    {
+      "name": "handle",
+      "face_count": 2529,
+      "vertex_count": 4445,
+      "tags": [
+        "handle"
+      ],
+      "parent_blueprint_component": "door_handle_main",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -94.063927,
+        -138.160843,
+        -61.351677
+      ],
+      "bounds_max": [
+        123.274475,
+        237.133972,
+        80.619247
+      ]
+    },
+    {
+      "name": "hinge_bottom",
+      "face_count": 2995,
+      "vertex_count": 6411,
+      "tags": [
+        "bottom",
+        "hinge"
+      ],
+      "parent_blueprint_component": "door_hinge_bottom",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -265.516266,
+        -202.224686,
+        -32.624405
+      ],
+      "bounds_max": [
+        -21.030554,
+        133.395462,
+        65.371246
+      ]
+    },
+    {
+      "name": "hinge_top",
+      "face_count": 3068,
+      "vertex_count": 6363,
+      "tags": [
+        "hinge",
+        "top"
+      ],
+      "parent_blueprint_component": "door_hinge_top",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -123.274475,
+        -133.395462,
+        -61.351677
+      ],
+      "bounds_max": [
+        94.063927,
+        722.987793,
+        80.619247
+      ]
+    },
+    {
+      "name": "lock_plate",
+      "face_count": 2050,
+      "vertex_count": 4018,
+      "tags": [
+        "lock",
+        "lock_plate",
+        "plate"
+      ],
+      "parent_blueprint_component": "door_lock_plate",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -37.661514,
+        -204.866669,
+        -32.88501
+      ],
+      "bounds_max": [
+        262.853271,
+        722.987793,
+        55.873062
+      ]
+    },
+    {
+      "name": "threshold_plate",
+      "face_count": 4728,
+      "vertex_count": 8746,
+      "tags": [
+        "hold",
+        "panel",
+        "plate",
+        "threshold"
+      ],
+      "parent_blueprint_component": "threshold_trim_plate",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -271.048004,
+        -202.224686,
+        -39.453308
+      ],
+      "bounds_max": [
+        271.048004,
+        127.6847,
+        80.619247
+      ]
+    }
+  ],
+  "part_count": 7,
+  "multi_part_scene_source": "blender_output_glb",
+  "hard_edge_groups": [
+    {
+      "name": "door_frame",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "door_leaf_region",
+      "part": "door_leaf",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "hinge_top_region",
+      "part": "hinge_top",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "hinge_bottom_region",
+      "part": "hinge_bottom",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "door_handle_region",
+      "part": "handle",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "door_lock_region",
+      "part": "lock_plate",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "threshold_region",
+      "part": "threshold_plate",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [
+    "door_frame",
+    "door_leaf_region"
+  ],
+  "bake_groups": [
+    {
+      "name": "door_frame",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "door_leaf_region",
+      "part": "door_leaf",
+      "material_boundary": false
+    },
+    {
+      "name": "hinge_top_region",
+      "part": "hinge_top",
+      "material_boundary": false
+    },
+    {
+      "name": "hinge_bottom_region",
+      "part": "hinge_bottom",
+      "material_boundary": false
+    },
+    {
+      "name": "door_handle_region",
+      "part": "handle",
+      "material_boundary": false
+    },
+    {
+      "name": "door_lock_region",
+      "part": "lock_plate",
+      "material_boundary": true
+    },
+    {
+      "name": "threshold_region",
+      "part": "threshold_plate",
+      "material_boundary": true
+    }
+  ],
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 611,
+    "region_count": 7,
+    "primitive_diversity": 0.055646,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 597,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "corner_guard",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "groove_channel",
+      "hinge_set",
+      "inset_panel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "radial_detail_array",
+      "recessed_handle",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "feature_density": 42.642857,
+    "edge_treatment_count": 64,
+    "panel_feature_count": 111,
+    "support_feature_count": 87,
+    "attachment_region_count": 6,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 543,
+    "geometry_detail_feature_count": 543,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "radial_detail_array",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 21,
+      "attachment_rail": 28,
+      "attachment_vent_stack": 35,
+      "bolt_cap": 28,
+      "bolt_washer": 28,
+      "corner_guard": 28,
+      "edge_break": 28,
+      "groove_channel": 28,
+      "layer_plate": 21,
+      "linear_detail_array": 28,
+      "module_antenna": 28,
+      "module_power_cell": 28,
+      "module_shield_plate": 14,
+      "panel_seam": 42,
+      "radial_detail_array": 42,
+      "silhouette_guard_cowl": 6,
+      "silhouette_outrigger": 8,
+      "silhouette_spine": 6,
+      "silhouette_tower": 12,
+      "socket_collar": 28,
+      "socket_recess": 28,
+      "trim_strip": 28
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ],
+    "primitive_selector_applied_count": 0,
+    "primitive_selector_by_component": {},
+    "primitive_selector_by_target": {},
+    "geometry_detail_zones_applied": [
+      {
+        "zone": "global",
+        "target": "door_frame",
+        "part": "body",
+        "component": "frame",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 89
+      },
+      {
+        "zone": "global",
+        "target": "door_leaf_region",
+        "part": "door_leaf",
+        "component": "door",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 89
+      },
+      {
+        "zone": "global",
+        "target": "hinge_top_region",
+        "part": "hinge_top",
+        "component": "hinge",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "hinge_bottom_region",
+        "part": "hinge_bottom",
+        "component": "hinge",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "door_handle_region",
+        "part": "handle",
+        "component": "handle",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "door_lock_region",
+        "part": "lock_plate",
+        "component": "lock_plate",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "threshold_region",
+        "part": "threshold_plate",
+        "component": "socket_plate",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      }
+    ]
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "success_multi_part_recovered",
+    "fallback_reason": null,
+    "error": null,
+    "actual_adapter": "blender_subprocess_multi_part_recovered",
+    "execution": {
+      "mode": "blender_subprocess_multi_part_recovered",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 10000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "50:12 | INFO: Extracting primitive: hinge_bottom\n07:50:12 | INFO: Primitives created: 1\n07:50:12 | INFO: Extracting primitive: hinge_top\n07:50:12 | INFO: Primitives created: 1\n07:50:12 | INFO: Extracting primitive: lock_plate\n07:50:12 | INFO: Primitives created: 1\n07:50:12 | INFO: Extracting primitive: threshold_plate\n07:50:12 | INFO: Primitives created: 1\n07:50:12 | INFO: Finished glTF 2.0 export in 0.08122682571411133 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 53624,
+        "triangle_count": 28038,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -271.048004,
+          -204.866669,
+          -61.351677
+        ],
+        "bounds_max": [
+          271.048004,
+          722.987793,
+          80.619247
+        ],
+        "extents": [
+          542.096008,
+          927.854462,
+          141.970924
+        ],
+        "body_count": 12339
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": true
+      },
+      "multi_part_override": {
+        "source": "blender_output_glb",
+        "part_count": 7,
+        "face_count": 28038,
+        "note": "Watertight fallback was discarded in favour of preserving Blender's 18-part scene; downstream stages operate on the multi-part topology."
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": false,
+    "reason": "skipped_for_multi_part_preservation",
+    "skipped_because": "blender_subprocess_multi_part_recovered"
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "blender_subprocess_multi_part_recovered"
+  },
+  "_part_groups_emitted": [
+    "body",
+    "door_leaf",
+    "handle",
+    "hinge_bottom",
+    "hinge_top",
+    "lock_plate",
+    "threshold_plate"
+  ]
+}

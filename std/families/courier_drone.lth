@@ -17,6 +17,7 @@ family courier_drone_family {
   blueprint_id = lathe.blueprint.mechanical_quad_drone_v1
 
   geometry {
+    mode = exact_hard_surface
     seam_classes = [cargo_break, pod_split, service_panel]
     edge_classes = [hero_bevel, pod_bevel, support_bevel]
     integration_rules = [boolean_union, preserve_rotor_mounts]

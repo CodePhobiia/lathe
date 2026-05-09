@@ -1,0 +1,58 @@
+// Phase 3 third slice — minimum-viable SDF / organic primitive.
+//
+// Proves Lathe ships FOUR domains across one kernel: hard-surface
+// props (chests, drones), vegetation (oak_tree_demo), terrain
+// (rocky_hill_demo), and now organic creatures via implicit
+// surfaces. Five new mesh_program ops shipped:
+//
+//   * sdf_sphere(radius)
+//   * sdf_capsule(half_height, radius)
+//   * sdf_box(extents)
+//     -> SDF primitives that live as ``lathe.f_rep`` SDFExprs in
+//     scope. They are NOT ``ShapePrimitive`` records yet — they are
+//     implicit surfaces evaluated at sample points.
+//   * sdf_smooth_union(targets, k)
+//     -> IQ-style polynomial smooth-min blend of N SDF references.
+//     ``k`` is the blend radius; larger ``k`` produces a more
+//     organic / membrane-y silhouette.
+//   * sdf_extract(target, resolution, bounds_min, bounds_max)
+//     -> marching cubes against the SDF inside the bounds box,
+//     emits a single ``ShapePrimitive(primitive_type="sdf_mesh")``
+//     consumed by the existing exact-solid mesh path.
+//
+// This is the v1 existence proof for organic / blob primitives that
+// the box+cylinder vocabulary cannot express. No bespoke creature
+// kernel — the existing F-Rep kernel at lathe/f_rep/ does the work.
+module demo.creatures
+
+asset alien_blob : hard_surface_prop {
+  intent {
+    role = "alien creature"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 1729
+
+      mesh_program {
+        let body = sdf_capsule(half_height: 50cm, radius: 30cm)
+        let arm_a = sdf_capsule(half_height: 40cm, radius: 10cm).translate([50cm, 0cm, 0cm])
+        let arm_b = sdf_capsule(half_height: 40cm, radius: 10cm).translate([-50cm, 0cm, 0cm])
+        let head = sdf_sphere(radius: 20cm).translate([0cm, 60cm, 0cm])
+        let blended = sdf_smooth_union(
+          targets: [body, arm_a, arm_b, head],
+          k: 15cm,
+        )
+        sdf_extract(
+          target: blended,
+          resolution: 96,
+          bounds_min: [-1.2m, -1.2m, -1.2m],
+          bounds_max: [1.2m, 1.2m, 1.2m],
+        )
+      }
+    }
+  }
+}

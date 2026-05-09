@@ -89,10 +89,28 @@ class GeometryKernel(Protocol):
         """Availability + capability metadata. Must not raise."""
 
     def build_primitive(self, kind: str, **params: Any) -> Any:
-        """Construct a primitive handle (``box``, ``cylinder``, ``sphere``)."""
+        """Construct a stable ShapeIR primitive handle.
+
+        Built-in kernels support the core solid vocabulary
+        (``box``, ``cylinder``, ``sphere``, ``capsule``, ``revolved_profile``,
+        ``extruded_profile``, ``rounded_slot``, ``socket``, ``countersunk_hole``, ``countersunk_hole_set``,
+        ``panel``, ``panel_frame``, ``panel_line_cut``, ``inset_cut``, ``perforated_panel``, ``fastener_grid``, ``weld_seam``, ``dent_mask_set``, ``edge_chip_set``, ``surface_patch_set``, ``hinge``, ``handle``, ``corner_guard_set``, ``structural_beam``, ``rail``, ``ribbed_panel``, ``louver_panel``, ``vent_slats``, ``ladder_frame``, ``truss_frame``, ``support_bracket``, ``trim_band``, ``torus``, ``tube``,
+        ``gear``, ``flange``, ``subdivision_box``, ``swept_profile``, ``helical_sweep``,
+        semantic ``spring``, ``threaded_cylinder``, ``curved_tube``, ``lofted_solid``, closed ``sdf_mesh``,
+        semantic mesh-backed imports such as ``sdf_metaball_cluster``, ``terrain_mesh``, ``kernel_primitive_mesh``, ``instance_mesh``, ``component_assembly_mesh``, ``profile_mesh``, ``construction_feature_mesh``, ``edge_control_mesh``, ``polybevel_mesh``, ``hull_mesh``,
+        ``minkowski_mesh``, ``subdivision_mesh``, ``remesh_mesh``, ``deform_mesh``,
+        ``boolean_mesh``, and ``component_assembly``) plus
+        ``heightfield`` / semantic ``terrain_patch`` via an explicitly marked solid import shell.
+        """
+
+    def from_trimesh(self, mesh: trimesh.Trimesh) -> Any:
+        """Import an authored/exact mesh into this kernel's native handle."""
 
     def union(self, a: Any, b: Any) -> Any:
         """Boolean union."""
+
+    def batch_union(self, meshes: Iterable[Any]) -> Any:
+        """Boolean/additive union of many handles in one backend operation."""
 
     def difference(self, a: Any, b: Any) -> Any:
         r"""Boolean difference (``a \\ b``)."""
@@ -102,6 +120,9 @@ class GeometryKernel(Protocol):
 
     def hull(self, meshes: Iterable[Any]) -> Any:
         """Convex hull of the supplied handles."""
+
+    def transform(self, handle: Any, matrix: list[list[float]]) -> Any:
+        """Apply a 4x4 row-major transform matrix to a handle."""
 
     def to_trimesh(self, handle: Any) -> trimesh.Trimesh:
         """Convert an opaque handle into a :class:`trimesh.Trimesh`."""

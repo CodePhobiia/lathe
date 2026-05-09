@@ -1,0 +1,139 @@
+module builder.showcase
+
+scene builder_mode_showcase {
+  version = 1
+  prompt = "Builder Mode civic district with district planning, site compounds, building envelopes, circulation, rooms, and content surfaces."
+
+  style scene_style {
+    mood = [readable, civic, industrial]
+    palette = ["oxidized steel", "signal yellow", "wet concrete", "service blue"]
+    materials = ["painted steel", "glass", "concrete", "rubber", "ceramic"]
+    forms = ["district blocks", "compound lots", "facade bays", "egress routes", "packed interior fixtures"]
+  }
+
+  region civic_region: city_block {
+    name = "Builder Mode Civic Region"
+    purpose = "A compact scene that forces Builder Mode constructs to arrange, generate, surface, and connect world pieces."
+    bounds.center = [0.0, 0.0, 4.0]
+    bounds.size = [96.0, 72.0, 24.0]
+    semantic_tags = [builder_mode, civic_district, compound_site, generated_scene]
+  }
+
+  district_site_plan civic_district {
+    region = civic_region
+    compound_count = 3
+    site_compounds = [tower_campus, service_yard, transit_plaza]
+    blocks = [north_block, south_block, market_block]
+    crossings = [main_crossing, service_crossing]
+    security_gates = [north_gate, service_gate]
+    landscape_zones = [rain_garden, shade_plaza]
+    traffic_routes = [avenue_loop, delivery_lane]
+    service_routes = [utility_spine, waste_route]
+    transform.position = [0.0, 0.0, 0.5]
+    transform.scale = [1.35, 1.0, 1.0]
+  }
+
+  site_compound tower_campus {
+    region = civic_region
+    site_buildings = [admin_tower, lab_wing, garage]
+    courtyards = [front_plaza, service_court]
+    pedestrian_paths = [main_walk, courtyard_loop]
+    service_alleys = [rear_service]
+    parking_zones = [visitor_parking]
+    loading_zones = [dock_lane]
+    utilities = [power, water, data]
+    parking_bays = 10
+    transform.position = [-18.0, -6.0, 0.6]
+    transform.scale = [1.1, 1.0, 1.0]
+  }
+
+  building_envelope admin_tower {
+    region = civic_region
+    building_type = civic_tower
+    floors = 6
+    bays = 5
+    roof_style = service_roof
+    facade_style = deep_grid
+    floor_roles = [lobby, offices, labs, command, mechanical, roof]
+    entries = [public_entry, service_entry]
+    width = 18
+    depth = 14
+    height = 24
+    transform.position = [-18.0, -6.0, 2.0]
+  }
+
+  access_sequence arrival_chain {
+    region = civic_region
+    public_entries = [front_doors, plaza_gate]
+    service_entries = [dock_access]
+    thresholds = [weather_strip, security_threshold]
+    lobby_zones = [reception_lobby]
+    checkpoints = [bag_check]
+    loading_paths = [dock_route]
+    wayfinding_nodes = [plaza_sign, lobby_map]
+    transform.position = [-18.0, -17.0, 0.7]
+  }
+
+  circulation_core tower_core {
+    region = civic_region
+    floors = [ground, mezzanine, two, three, four, roof]
+    stair_runs = [public_stair, fire_stair]
+    elevator_banks = [public_lifts, service_lift]
+    egress_routes = [north_egress, south_egress]
+    emergency_exits = [exit_a, exit_b]
+    corridor_spines = [main_corridor, service_corridor]
+    public_routes = [lobby_to_lifts, lifts_to_gallery]
+    service_routes = [dock_to_core]
+    room_route_targets = [lobby, office_suite, lab, mechanical_room]
+    transform.position = [-8.0, -6.0, 1.4]
+  }
+
+  stair_detail public_stair_detail {
+    region = civic_region
+    stair_route = public_stair
+    tread_count = 18
+    landing_count = 3
+    handrail_count = 4
+    egress_markings = [yellow_edge, exit_arrow]
+    transform.position = [-5.0, -2.0, 1.2]
+  }
+
+  corridor_shell public_corridor_shell {
+    region = civic_region
+    corridor = main_corridor
+    room_route_targets = [office_suite, lab, conference, storage]
+    door_bay_count = 8
+    ceiling_grid_count = 4
+    wall_count = 2
+    transform.position = [-6.0, -9.0, 1.1]
+  }
+
+  room_pack_preset lab_room_pack {
+    region = civic_region
+    room_role = lab
+    items = [lab_bench, sink, storage_cabinet, workstation]
+    clearance_zones = [bench_clearance, sink_clearance]
+    service_points = [water, power, data]
+    transform.position = [4.0, 4.0, 0.8]
+  }
+
+  content_surface_plan sink_surface {
+    region = civic_region
+    packed_item = sink
+    zones = [basin, faucet, splash_wall, service_panel]
+    layers = [ceramic_glaze, brushed_metal, sealant]
+    wear = [water_spots, edge_scuffs]
+    markings = [drain_ring, hot_cold_labels]
+    transform.position = [6.0, 4.0, 0.9]
+  }
+
+  export glb {
+    format = glb
+    path = "exports/builder_mode_showcase.glb"
+  }
+
+  export scene_graph {
+    format = json
+    path = "exports/builder_mode_showcase.scene_graph.json"
+  }
+}

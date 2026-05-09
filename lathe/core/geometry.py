@@ -362,6 +362,58 @@ def load_runtime_mesh_from_scene(path: Path, source_runtime: RuntimeMesh) -> Run
     return None
 
 
+def load_runtime_scene_from_glb(
+    path: Path, source_runtime: RuntimeMesh
+) -> tuple[trimesh.Scene, list[str], list[int]] | None:
+    """Load a multi-part scene from a Blender topology GLB.
+
+    Returns ``(scene, ordered_part_names, ordered_face_counts)`` where:
+
+    * ``scene`` is a fresh ``trimesh.Scene`` with one geometry per part
+      (keys preserved from the GLB).
+    * ``ordered_part_names`` lists part names in scene insertion order.
+    * ``ordered_face_counts`` is the parallel face count per part.
+
+    Returns ``None`` if the file is missing/malformed or contains no
+    Trimesh geometry. Part names that don't appear in
+    ``source_runtime.part_colors`` are still preserved (Blender may emit
+    additional parts, e.g. from instance scatter), unlike the legacy
+    ``load_runtime_mesh_from_scene`` which collapses unknowns.
+    """
+    try:
+        loaded = trimesh.load(path, force="scene")
+    except (OSError, ValueError, KeyError, AttributeError, TypeError):
+        return None
+    if isinstance(loaded, trimesh.Trimesh):
+        single_name = next(iter(source_runtime.part_colors), "mesh")
+        scene = trimesh.Scene()
+        scene.add_geometry(loaded.copy(), geom_name=single_name, node_name=single_name)
+        return scene, [single_name], [int(len(loaded.faces))]
+    if not isinstance(loaded, trimesh.Scene):
+        return None
+    new_scene = trimesh.Scene()
+    names: list[str] = []
+    face_counts: list[int] = []
+    seen: set[str] = set()
+    for name, geom in loaded.geometry.items():
+        if not isinstance(geom, trimesh.Trimesh) or len(geom.faces) == 0:
+            continue
+        part_name = str(name)
+        # Defensive: deduplicate within the same scene.
+        suffix = 0
+        unique_name = part_name
+        while unique_name in seen:
+            suffix += 1
+            unique_name = f"{part_name}__{suffix}"
+        seen.add(unique_name)
+        new_scene.add_geometry(geom.copy(), geom_name=unique_name, node_name=unique_name)
+        names.append(unique_name)
+        face_counts.append(int(len(geom.faces)))
+    if not names:
+        return None
+    return new_scene, names, face_counts
+
+
 def body_count(mesh: trimesh.Trimesh) -> int:
     """Body count.
 

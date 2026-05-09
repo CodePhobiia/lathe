@@ -1,0 +1,953 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 1,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 4096,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "ceramic_composite"
+    ],
+    "material_slots": 1,
+    "decals": [
+      "calibration_id",
+      "thin_color_bar",
+      "glyph_cluster",
+      "biolume_stripe",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "stateful",
+      "destructible",
+      "interactive",
+      "landmark_silhouette",
+      "ground_wear",
+      "material_strata",
+      "toy_like",
+      "random_faceting"
+    ],
+    "hero_surface": false,
+    "program": "",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "stateful",
+      "destructible",
+      "interactive",
+      "landmark_silhouette",
+      "ground_wear",
+      "material_strata",
+      "toy_like",
+      "random_faceting"
+    ],
+    "palette": "",
+    "source_material_zones": [],
+    "source_bake": [],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "ceramic_composite",
+      "signal_glass",
+      "emissive_panel"
+    ],
+    "surface_story": {
+      "wear_story": "otherworldly",
+      "wear_level": "light",
+      "story_decals": [
+        "calibration_id",
+        "thin_color_bar",
+        "glyph_cluster",
+        "biolume_stripe"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "environment_piece",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "stateful",
+          "destructible",
+          "interactive",
+          "landmark silhouette",
+          "ground wear",
+          "material strata",
+          "toy_like",
+          "random_faceting"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "stateful",
+        "destructible",
+        "interactive",
+        "landmark silhouette",
+        "ground wear",
+        "material strata",
+        "toy_like",
+        "random_faceting"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": false,
+      "chart_grouping": "part",
+      "material_id_strategy": "none",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base"
+      ],
+      "chart_count": 1,
+      "material_id_count": 0,
+      "part_to_chart": {
+        "body": "uvc_01_body"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "ceramic_composite",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "none",
+      "texture_set_strategy": "",
+      "count": 0,
+      "ids": [],
+      "per_part": {
+        "body": ""
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 20,
+      "placements": [
+        {
+          "decal": "calibration_id",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.183567,
+            0.716556
+          ],
+          "scale": 0.266694,
+          "rotation_deg": 12,
+          "layer": "story",
+          "mask_id": "story_01_calibration_id"
+        },
+        {
+          "decal": "thin_color_bar",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.634527,
+            0.281146
+          ],
+          "scale": 0.32475,
+          "rotation_deg": 7,
+          "layer": "story",
+          "mask_id": "story_02_thin_color_bar"
+        },
+        {
+          "decal": "glyph_cluster",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.461147,
+            0.448548
+          ],
+          "scale": 0.246683,
+          "rotation_deg": -13,
+          "layer": "surface",
+          "mask_id": "story_03_glyph_cluster"
+        },
+        {
+          "decal": "biolume_stripe",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.265905,
+            0.637057
+          ],
+          "scale": 0.252252,
+          "rotation_deg": -10,
+          "layer": "surface",
+          "mask_id": "story_04_biolume_stripe"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.250387,
+            0.65204
+          ],
+          "scale": 0.264181,
+          "rotation_deg": -1,
+          "layer": "surface",
+          "mask_id": "story_05_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.720076,
+            0.198548
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_06_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.617015,
+            0.298054
+          ],
+          "scale": 0.308592,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_07_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.616523,
+            0.298529
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_08_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.568355,
+            0.345037
+          ],
+          "scale": 0.397446,
+          "rotation_deg": -6,
+          "layer": "surface",
+          "mask_id": "story_09_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.523532,
+            0.388314
+          ],
+          "scale": 0.267054,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_10_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.27526,
+            0.628025
+          ],
+          "scale": 0.377693,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_11_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.285222,
+            0.618406
+          ],
+          "scale": 0.263845,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_12_lower_contact_points"
+        },
+        {
+          "decal": "stateful",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.422493,
+            0.485869
+          ],
+          "scale": 0.278168,
+          "rotation_deg": 2,
+          "layer": "surface",
+          "mask_id": "story_13_stateful"
+        },
+        {
+          "decal": "destructible",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.34275,
+            0.562862
+          ],
+          "scale": 0.349441,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_14_destructible"
+        },
+        {
+          "decal": "interactive",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.336737,
+            0.568667
+          ],
+          "scale": 0.285653,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_15_interactive"
+        },
+        {
+          "decal": "landmark_silhouette",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.723387,
+            0.195351
+          ],
+          "scale": 0.353503,
+          "rotation_deg": -5,
+          "layer": "surface",
+          "mask_id": "story_16_landmark_silhouette"
+        },
+        {
+          "decal": "ground_wear",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.230946,
+            0.670811
+          ],
+          "scale": 0.222955,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_17_ground_wear"
+        },
+        {
+          "decal": "material_strata",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.712218,
+            0.206134
+          ],
+          "scale": 0.364741,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_18_material_strata"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.60877,
+            0.306015
+          ],
+          "scale": 0.220097,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_19_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "body",
+          "material": "ceramic_composite",
+          "material_id": "",
+          "anchor_uv": [
+            0.587112,
+            0.326926
+          ],
+          "scale": 0.224379,
+          "rotation_deg": 10,
+          "layer": "surface",
+          "mask_id": "story_20_random_faceting"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "ceramic_composite",
+      "basecolor": [
+        118,
+        118,
+        118
+      ],
+      "metallic": 0.0,
+      "roughness": 0.61808,
+      "roughness_range": [
+        0.4632,
+        0.70464
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "neutral_panel",
+      "wear": 0.212,
+      "normal_intensity": 0.1204,
+      "procedural_layers": [
+        "ceramic_composite",
+        "signal_glass",
+        "emissive_panel"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "otherworldly",
+      "story_marks": [
+        "calibration_id",
+        "thin_color_bar",
+        "glyph_cluster",
+        "biolume_stripe"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.35
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.287
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": false,
+    "chart_grouping": "part",
+    "material_id_strategy": "none",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base"
+    ],
+    "chart_count": 1,
+    "material_id_count": 0,
+    "part_to_chart": {
+      "body": "uvc_01_body"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "ceramic_composite",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "none",
+    "texture_set_strategy": "",
+    "count": 0,
+    "ids": [],
+    "per_part": {
+      "body": ""
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 20,
+    "placements": [
+      {
+        "decal": "calibration_id",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.183567,
+          0.716556
+        ],
+        "scale": 0.266694,
+        "rotation_deg": 12,
+        "layer": "story",
+        "mask_id": "story_01_calibration_id"
+      },
+      {
+        "decal": "thin_color_bar",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.634527,
+          0.281146
+        ],
+        "scale": 0.32475,
+        "rotation_deg": 7,
+        "layer": "story",
+        "mask_id": "story_02_thin_color_bar"
+      },
+      {
+        "decal": "glyph_cluster",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.461147,
+          0.448548
+        ],
+        "scale": 0.246683,
+        "rotation_deg": -13,
+        "layer": "surface",
+        "mask_id": "story_03_glyph_cluster"
+      },
+      {
+        "decal": "biolume_stripe",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.265905,
+          0.637057
+        ],
+        "scale": 0.252252,
+        "rotation_deg": -10,
+        "layer": "surface",
+        "mask_id": "story_04_biolume_stripe"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.250387,
+          0.65204
+        ],
+        "scale": 0.264181,
+        "rotation_deg": -1,
+        "layer": "surface",
+        "mask_id": "story_05_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.720076,
+          0.198548
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_06_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.617015,
+          0.298054
+        ],
+        "scale": 0.308592,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_07_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.616523,
+          0.298529
+        ],
+        "scale": 0.390097,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_08_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.568355,
+          0.345037
+        ],
+        "scale": 0.397446,
+        "rotation_deg": -6,
+        "layer": "surface",
+        "mask_id": "story_09_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.523532,
+          0.388314
+        ],
+        "scale": 0.267054,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_10_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.27526,
+          0.628025
+        ],
+        "scale": 0.377693,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_11_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.285222,
+          0.618406
+        ],
+        "scale": 0.263845,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_12_lower_contact_points"
+      },
+      {
+        "decal": "stateful",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.422493,
+          0.485869
+        ],
+        "scale": 0.278168,
+        "rotation_deg": 2,
+        "layer": "surface",
+        "mask_id": "story_13_stateful"
+      },
+      {
+        "decal": "destructible",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.34275,
+          0.562862
+        ],
+        "scale": 0.349441,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_14_destructible"
+      },
+      {
+        "decal": "interactive",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.336737,
+          0.568667
+        ],
+        "scale": 0.285653,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_15_interactive"
+      },
+      {
+        "decal": "landmark_silhouette",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.723387,
+          0.195351
+        ],
+        "scale": 0.353503,
+        "rotation_deg": -5,
+        "layer": "surface",
+        "mask_id": "story_16_landmark_silhouette"
+      },
+      {
+        "decal": "ground_wear",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.230946,
+          0.670811
+        ],
+        "scale": 0.222955,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_17_ground_wear"
+      },
+      {
+        "decal": "material_strata",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.712218,
+          0.206134
+        ],
+        "scale": 0.364741,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_18_material_strata"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.60877,
+          0.306015
+        ],
+        "scale": 0.220097,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_19_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "body",
+        "material": "ceramic_composite",
+        "material_id": "",
+        "anchor_uv": [
+          0.587112,
+          0.326926
+        ],
+        "scale": 0.224379,
+        "rotation_deg": 10,
+        "layer": "surface",
+        "mask_id": "story_20_random_faceting"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

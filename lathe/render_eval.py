@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
+import math
 from typing import Any
 
 import numpy as np
@@ -96,7 +97,7 @@ def _evaluate_mask(mask: np.ndarray) -> dict[str, float]:
     perimeter = float(_perimeter(mask))
     components = _component_count(mask)
     complexity = min(1.0, (perimeter / max(1.0, area)) * 18.0)
-    primitive_penalty = max(0.0, min(1.0, (bbox_area / max(1.0, area) - 1.0) / 2.0))
+    primitive_penalty = max(0.0, min(1.0, 1.0 - (4.0 * math.pi * area / (perimeter**2 + 1e-9))))
     artifact_penalty = max(0.0, min(1.0, (components - 1) / 6.0))
     clutter = min(1.0, components / 6.0)
     return {
@@ -194,6 +195,44 @@ def _rasterize_rectangles(
     return arr > 0, arr
 
 
+def _part_disjoint_count(part_groups: list[dict[str, Any]], tolerance: float = 1e-3) -> int:
+    """Count part groups whose AABB does not overlap or touch any other.
+
+    Once topology merges 18 chest parts into a single trimesh, the
+    silhouette mask is always a single connected component for any
+    well-formed asset, which collapses ``render_assembly_artifact_penalty``
+    to 0.0 even when individual parts are spatially detached "floaters".
+    Reading the part-group AABBs directly recovers a meaningful
+    inter-part assembly signal: a part that does not touch any other
+    part in 3D is a real assembly artifact regardless of view.
+    """
+    if not part_groups or len(part_groups) < 2:
+        return 0
+    boxes: list[tuple[np.ndarray, np.ndarray]] = []
+    for group in part_groups:
+        bmin = group.get("bounds_min")
+        bmax = group.get("bounds_max")
+        if not isinstance(bmin, list) or not isinstance(bmax, list):
+            continue
+        if len(bmin) != 3 or len(bmax) != 3:
+            continue
+        boxes.append((np.asarray(bmin, dtype=np.float64), np.asarray(bmax, dtype=np.float64)))
+    if len(boxes) < 2:
+        return 0
+    disjoint = 0
+    for i, (mi, ma) in enumerate(boxes):
+        touches_any = False
+        for j, (mj, mb) in enumerate(boxes):
+            if i == j:
+                continue
+            if np.all(ma + tolerance >= mj) and np.all(mb + tolerance >= mi):
+                touches_any = True
+                break
+        if not touches_any:
+            disjoint += 1
+    return disjoint
+
+
 def evaluate_render_views(topology_runtime: dict[str, Any], views: list[str] | None = None) -> dict[str, Any]:
     bundle = topology_runtime.get("bundle", topology_runtime)
     runtime_mesh = topology_runtime.get("runtime_mesh")
@@ -208,6 +247,8 @@ def evaluate_render_views(topology_runtime: dict[str, Any], views: list[str] | N
                 "render_assembly_artifact_penalty": 1.0,
                 "render_component_clutter": 1.0,
                 "render_shading_variance": 0.0,
+                "part_disjoint_count": 0,
+                "part_group_count": 0,
             },
         }
 
@@ -233,15 +274,26 @@ def evaluate_render_views(topology_runtime: dict[str, Any], views: list[str] | N
         clutter_scores.append(metrics["clutter"])
         shading_scores.append(shading_variance)
 
+    silhouette_artifact = sum(artifact_penalties) / max(1, len(artifact_penalties))
+    part_group_count = len(part_groups)
+    disjoint_count = _part_disjoint_count(part_groups)
+    if part_group_count >= 2:
+        disjoint_penalty = min(1.0, disjoint_count / max(1.0, part_group_count / 2.0))
+    else:
+        disjoint_penalty = 0.0
+    combined_artifact = max(silhouette_artifact, disjoint_penalty)
+
     return {
         "views": view_metrics,
         "metrics": {
             "render_silhouette_complexity": round(sum(complexity_scores) / max(1, len(complexity_scores)), 6),
             "render_primitive_penalty": round(sum(primitive_penalties) / max(1, len(primitive_penalties)), 6),
-            "render_assembly_artifact_penalty": round(
-                sum(artifact_penalties) / max(1, len(artifact_penalties)), 6
-            ),
+            "render_assembly_artifact_penalty": round(combined_artifact, 6),
+            "render_silhouette_artifact_penalty": round(silhouette_artifact, 6),
+            "render_part_disjoint_penalty": round(disjoint_penalty, 6),
             "render_component_clutter": round(sum(clutter_scores) / max(1, len(clutter_scores)), 6),
             "render_shading_variance": round(sum(shading_scores) / max(1, len(shading_scores)), 6),
+            "part_disjoint_count": disjoint_count,
+            "part_group_count": part_group_count,
         },
     }

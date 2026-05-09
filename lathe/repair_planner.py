@@ -34,6 +34,16 @@ METRIC_REPAIR_SUGGESTIONS = {
     ],
     "support_plausibility": ["refine_support_layout", "rebalance_support_feet"],
     "feature_coherence": ["add_secondary_features", "improve_attachment_integration"],
+    "random_triangulation_penalty": ["restore_edge_treatment", "increase_structural_richness"],
+    "debug_material_preview_penalty": ["reauthor_surface_layer"],
+    "highlow_fake_detail_penalty": ["restore_edge_treatment", "add_secondary_features"],
+    "attachment_seating_quality": ["improve_attachment_integration", "restore_hinge_alignment"],
+    "primary_secondary_tertiary_balance": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+        "increase_panel_depth",
+    ],
+    "family_grammar_coverage": ["add_missing_required_part", "add_secondary_features"],
 }
 
 

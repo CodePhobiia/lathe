@@ -9,8 +9,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..asset_class_profiles import is_known_asset_class
 from ..errors import CheckerError
 from ..resolver import ResolutionError
+from ..style_presets import (
+    AXIS_VALUES,
+    REFUSAL_RULES,
+    STYLE_AXES,
+    STYLE_PRESETS,
+    bridge_covers,
+    style_bridges,
+)
 from .cross_stage import check_backend_resolution
 from .interfaces import check_interfaces
 from .surface import check_surface_v12_refs
@@ -66,6 +75,27 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
                 path="intent.role",
             )
         )
+
+    asset_class = intent.get("asset_class")
+    if isinstance(asset_class, str) and asset_class.strip():
+        candidate = asset_class.strip()
+        if not is_known_asset_class(candidate, checker.resolver.asset_class_profile_map):
+            checker.diagnostics.append(
+                diag(
+                    "L5240",
+                    "unknown_asset_class_reference",
+                    "error",
+                    "resolve",
+                    (
+                        f"Asset '{asset_name}' references unknown asset_class "
+                        f"'{candidate}' (expected a built-in name "
+                        "[generic, aaa_hero, hero, mid_ground, background, "
+                        "mobile, web, roblox] or a declared asset_class_profile)"
+                    ),
+                    asset=asset_name,
+                    path="intent.asset_class",
+                )
+            )
 
     if "scale" in intent and "dimensions" in intent:
         checker.diagnostics.append(
@@ -383,6 +413,7 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
                     path="transfer.rules",
                 )
             )
+    _emit_hda_kit_diagnostics(checker, asset)
     shape = build.get("shape", {})
     refs = asset.get("refs", {})
     mode = shape.get("mode")
@@ -510,4 +541,143 @@ def check_materialized_asset(checker: Any, asset: dict[str, Any]) -> None:
             )
 
     check_interfaces(checker, asset)
+    _check_style_stack(checker, asset)
+
+
+def _check_style_stack(checker: Any, asset: dict[str, Any]) -> None:
+    """Enforce roadmap §6.8 style-stack refusal rules.
+
+    Walks :data:`lathe.style_presets.REFUSAL_RULES` and emits a diagnostic
+    when both incompatible axis values are present on the asset's
+    ``intent.style_stack`` and no author-declared ``style_bridge`` covers
+    the pair. Severity ``warn`` produces a warning; ``error`` rejects.
+    Also flags unknown preset names and out-of-vocabulary axis values.
+    """
+    asset_name = asset.get("name", "<unknown>")
+    intent = asset.get("intent") if isinstance(asset, dict) else None
+    if not isinstance(intent, dict):
+        return
+    stack = intent.get("style_stack")
+    if not isinstance(stack, dict):
+        return
+
+    target = intent.get("style_target")
+    if isinstance(target, str) and target.strip() and target.strip() not in STYLE_PRESETS:
+        checker.diagnostics.append(
+            diag(
+                "L6800",
+                "unknown_style_preset",
+                "error",
+                "typecheck",
+                f"Asset '{asset_name}' references unknown style preset "
+                f"'{target}' — known presets: {sorted(STYLE_PRESETS.keys())}",
+                asset=asset_name,
+                path="intent.style_target",
+            )
+        )
+
+    for axis in STYLE_AXES:
+        value = stack.get(axis)
+        if value is None:
+            continue
+        allowed = AXIS_VALUES.get(axis)
+        if allowed is not None and str(value) not in allowed:
+            checker.diagnostics.append(
+                diag(
+                    "L6801",
+                    "unknown_style_axis_value",
+                    "error",
+                    "typecheck",
+                    f"Asset '{asset_name}' style_stack.{axis} has unknown "
+                    f"value '{value}' — allowed: {sorted(allowed)}",
+                    asset=asset_name,
+                    path=f"intent.style_stack.{axis}",
+                )
+            )
+
+    bridges = style_bridges(asset)
+    # Roadmap §6.8: program-level ``style_bridge`` decls also sanction pairs.
+    program_bridge_map = getattr(checker.resolver, "style_bridge_map", {}) or {}
+    for decl in program_bridge_map.values():
+        values = decl.get("values") if isinstance(decl, dict) else None
+        if not isinstance(values, dict):
+            continue
+        bridges.append(
+            {
+                "name": decl.get("name", ""),
+                "bridges": list(values.get("bridges", []) or []),
+                "technique": values.get("technique", ""),
+                "description": values.get("description", ""),
+            }
+        )
+    for axis_a, value_a, axis_b, value_b, severity, code, message in REFUSAL_RULES:
+        if str(stack.get(axis_a)) != value_a:
+            continue
+        if str(stack.get(axis_b)) != value_b:
+            continue
+        if bridge_covers(bridges, axis_a, value_a, axis_b, value_b):
+            continue
+        checker.diagnostics.append(
+            diag(
+                code,
+                "incompatible_style_stack",
+                severity,
+                "typecheck",
+                f"Asset '{asset_name}' style_stack {axis_a}={value_a} + "
+                f"{axis_b}={value_b}: {message}",
+                asset=asset_name,
+                path=f"intent.style_stack.{axis_a}",
+            )
+        )
     check_backend_resolution(checker, asset)
+
+
+_HDA_DIAG_SEVERITY = "error"
+_HDA_DIAG_NAMES = {
+    "K6501": "kit_version_constraint_violation",
+    "K6502": "kit_unwired_input_port",
+    "K6503": "kit_parameter_out_of_range",
+    "K6504": "kit_parameter_invalid_enum",
+    "K6505": "kit_unknown_parameter_type",
+}
+
+
+def _emit_hda_kit_diagnostics(checker: Any, asset: dict[str, Any]) -> None:
+    """Surface kit-use diagnostics gathered by the resolver.
+
+    Phase 2 §6.5 turns kits into HDA-class declarations with explicit input
+    ports, parameter UI specs, and version pins. The resolver is the
+    authoritative wirer (it sees the asset's bindings and the kit's
+    declared interface) and emits machine-readable diagnostic dicts on
+    ``asset.assembly.resolved_kit_use.diagnostics``. We translate those
+    here so they show up in the standard ``check`` output.
+    """
+    assembly = asset.get("assembly", {}) or {}
+    use_record = assembly.get("resolved_kit_use", {}) or {}
+    diagnostics = use_record.get("diagnostics", []) or []
+    if not diagnostics:
+        return
+    asset_name = asset.get("name", "")
+    for entry in diagnostics:
+        if not isinstance(entry, dict):
+            continue
+        code = str(entry.get("code", ""))
+        name = _HDA_DIAG_NAMES.get(code, "kit_use_violation")
+        path = "assembly.resolved_kit_use"
+        if code == "K6502" and entry.get("port"):
+            path = f"assembly.kit_bindings.{entry['port']}"
+        elif code in {"K6503", "K6504", "K6505"} and entry.get("parameter"):
+            path = f"assembly.kit_bindings.{entry['parameter']}"
+        elif code == "K6501":
+            path = "assembly.kit_version"
+        checker.diagnostics.append(
+            diag(
+                code,
+                name,
+                _HDA_DIAG_SEVERITY,
+                "resolve",
+                str(entry.get("message", "")),
+                asset=asset_name,
+                path=path,
+            )
+        )

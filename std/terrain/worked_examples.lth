@@ -1,0 +1,57 @@
+// doc:
+//   purpose: V0.1 §7.2 worked-example terrain_program declarations.
+//            Two recognisable forms — an erosion-carved canyon and a
+//            terraced plateau — that bind the procedural pipeline in
+//            lathe.std.terrain to the Lathe authoring surface.
+//   exports: terrain_program eroded_canyon, terraced_terrain
+//   depends_on: none
+//   used_by: example .lth sources that opt into procedural terrain.
+//   stability: stable
+//   layer: V0.1 / Phase 3 §7.2
+module std.terrain.worked_examples
+
+terrain_program eroded_canyon {
+  // Initial surface: 6-octave fractional Brownian motion at moderate
+  // base frequency. Vertical scale 12m carries enough relief that a
+  // hydraulic carve produces visible canyon channels.
+  resolution = [192, 192]
+  bounds_xy = [-48.0, -48.0, 48.0, 48.0]
+  vertical_scale = 12.0
+  initial = fbm
+  initial_amplitude = 1.5
+  initial_octaves = 6
+  initial_base_frequency = 2.5
+
+  // Erosion stack: 30 hydraulic iterations carry sediment downhill
+  // into channels, then 5 thermal iterations slip the cliff
+  // shoulders back to a 0.55-radian (≈31°) angle of repose.
+  hydraulic_iterations = 30
+  thermal_iterations = 5
+  thermal_angle_of_repose_rad = 0.55
+  weathering_passes = 1
+
+  // Biome layering: snow above 78% relative altitude, rock on slope
+  // > 0.40 anywhere, forest/grass/sand at descending altitude bands.
+  apply_biomes = true
+  seed = 1337
+}
+
+terrain_program terraced_terrain {
+  // Sinusoidal stair-steps that thermal erosion smooths into visible
+  // step terraces. Use angle_of_repose 0.30 so each step's rim
+  // crumbles slightly, breaking the geometric repetition without
+  // dissolving the terrace pattern entirely.
+  resolution = [160, 160]
+  bounds_xy = [-40.0, -40.0, 40.0, 40.0]
+  vertical_scale = 6.0
+  initial = sinusoidal_terrace
+  initial_amplitude = 1.0
+
+  hydraulic_iterations = 0
+  thermal_iterations = 8
+  thermal_angle_of_repose_rad = 0.30
+  weathering_passes = 1
+
+  apply_biomes = true
+  seed = 7
+}

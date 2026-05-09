@@ -1,0 +1,656 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 103535,
+    "triangle_count": 34733,
+    "watertight": false,
+    "volume": 0.0,
+    "bounds_min": [
+      -40.273109,
+      -22.632313,
+      -34.350727
+    ],
+    "bounds_max": [
+      40.273109,
+      22.357685,
+      34.350727
+    ],
+    "extents": [
+      80.546219,
+      44.989998,
+      68.701454
+    ],
+    "body_count": 34394
+  },
+  "normals": {
+    "mode": "face",
+    "count": 34733
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 21301,
+      "vertex_count": 63307,
+      "bounds_min": [
+        -34.350727,
+        -21.471127,
+        -34.350727
+      ],
+      "bounds_max": [
+        34.350727,
+        10.123918,
+        34.350727
+      ]
+    },
+    {
+      "name": "foot_l",
+      "face_count": 2137,
+      "vertex_count": 6399,
+      "bounds_min": [
+        -33.015396,
+        -22.632313,
+        0.0
+      ],
+      "bounds_max": [
+        -0.0,
+        -17.883253,
+        21.269268
+      ]
+    },
+    {
+      "name": "foot_r",
+      "face_count": 2139,
+      "vertex_count": 6407,
+      "bounds_min": [
+        -0.0,
+        -22.632313,
+        0.0
+      ],
+      "bounds_max": [
+        34.100784,
+        -17.883253,
+        20.905792
+      ]
+    },
+    {
+      "name": "front_hatch",
+      "face_count": 1105,
+      "vertex_count": 3283,
+      "bounds_min": [
+        -24.490702,
+        -4.885364,
+        15.170909
+      ],
+      "bounds_max": [
+        24.666454,
+        3.785286,
+        25.278625
+      ]
+    },
+    {
+      "name": "handle_l",
+      "face_count": 2476,
+      "vertex_count": 7424,
+      "bounds_min": [
+        -40.273109,
+        -7.070681,
+        -17.574432
+      ],
+      "bounds_max": [
+        -26.16608,
+        10.492071,
+        19.092899
+      ]
+    },
+    {
+      "name": "handle_r",
+      "face_count": 2443,
+      "vertex_count": 7319,
+      "bounds_min": [
+        26.818415,
+        -7.888621,
+        -16.869595
+      ],
+      "bounds_max": [
+        40.273109,
+        10.096962,
+        17.260286
+      ]
+    },
+    {
+      "name": "lid_panel",
+      "face_count": 1004,
+      "vertex_count": 3012,
+      "bounds_min": [
+        -30.879366,
+        1.245524,
+        -26.071136
+      ],
+      "bounds_max": [
+        30.842335,
+        22.357685,
+        26.128216
+      ]
+    },
+    {
+      "name": "lock_plate",
+      "face_count": 2128,
+      "vertex_count": 6384,
+      "bounds_min": [
+        -21.723684,
+        -2.94094,
+        19.962395
+      ],
+      "bounds_max": [
+        20.404243,
+        5.301509,
+        26.647144
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "face_count": 21301,
+      "vertex_count": 63307,
+      "tags": [
+        "body",
+        "shell"
+      ],
+      "parent_blueprint_component": "chest_body",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -34.350727,
+        -21.471127,
+        -34.350727
+      ],
+      "bounds_max": [
+        34.350727,
+        10.123918,
+        34.350727
+      ]
+    },
+    {
+      "name": "foot_l",
+      "face_count": 2137,
+      "vertex_count": 6399,
+      "tags": [
+        "foot",
+        "left"
+      ],
+      "parent_blueprint_component": "support_foot_l",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -33.015396,
+        -22.632313,
+        0.0
+      ],
+      "bounds_max": [
+        -0.0,
+        -17.883253,
+        21.269268
+      ]
+    },
+    {
+      "name": "foot_r",
+      "face_count": 2139,
+      "vertex_count": 6407,
+      "tags": [
+        "foot",
+        "right"
+      ],
+      "parent_blueprint_component": "support_foot_r",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -0.0,
+        -22.632313,
+        0.0
+      ],
+      "bounds_max": [
+        34.100784,
+        -17.883253,
+        20.905792
+      ]
+    },
+    {
+      "name": "front_hatch",
+      "face_count": 1105,
+      "vertex_count": 3283,
+      "tags": [
+        "hatch"
+      ],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -24.490702,
+        -4.885364,
+        15.170909
+      ],
+      "bounds_max": [
+        24.666454,
+        3.785286,
+        25.278625
+      ]
+    },
+    {
+      "name": "handle_l",
+      "face_count": 2476,
+      "vertex_count": 7424,
+      "tags": [
+        "handle",
+        "left"
+      ],
+      "parent_blueprint_component": "side_handle_l",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -40.273109,
+        -7.070681,
+        -17.574432
+      ],
+      "bounds_max": [
+        -26.16608,
+        10.492071,
+        19.092899
+      ]
+    },
+    {
+      "name": "handle_r",
+      "face_count": 2443,
+      "vertex_count": 7319,
+      "tags": [
+        "handle",
+        "right"
+      ],
+      "parent_blueprint_component": "side_handle_r",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        26.818415,
+        -7.888621,
+        -16.869595
+      ],
+      "bounds_max": [
+        40.273109,
+        10.096962,
+        17.260286
+      ]
+    },
+    {
+      "name": "lid_panel",
+      "face_count": 1004,
+      "vertex_count": 3012,
+      "tags": [
+        "lid",
+        "panel"
+      ],
+      "parent_blueprint_component": "chest_lid",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -30.879366,
+        1.245524,
+        -26.071136
+      ],
+      "bounds_max": [
+        30.842335,
+        22.357685,
+        26.128216
+      ]
+    },
+    {
+      "name": "lock_plate",
+      "face_count": 2128,
+      "vertex_count": 6384,
+      "tags": [
+        "latch",
+        "lock",
+        "lock_plate",
+        "plate"
+      ],
+      "parent_blueprint_component": "brass_latch_set",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -21.723684,
+        -2.94094,
+        19.962395
+      ],
+      "bounds_max": [
+        20.404243,
+        5.301509,
+        26.647144
+      ]
+    }
+  ],
+  "part_count": 8,
+  "multi_part_scene_source": "blender_output_glb",
+  "hard_edge_groups": [
+    {
+      "name": "body_shell",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_frame_front",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_frame_rear",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "lid_region",
+      "part": "lid_panel",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "front_hatch_region",
+      "part": "front_hatch",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "lock_region",
+      "part": "lock_plate",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "handle_left_region",
+      "part": "handle_l",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "handle_right_region",
+      "part": "handle_r",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "foot_left_region",
+      "part": "foot_l",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "foot_right_region",
+      "part": "foot_r",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "brass_band_0",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "brass_band_1",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "brass_band_2",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "lid_panel_repair_region",
+      "part": "lid_panel",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [
+    "body_frame_front",
+    "body_frame_rear",
+    "lid_region",
+    "front_hatch_region"
+  ],
+  "bake_groups": [
+    {
+      "name": "body_shell",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_frame_front",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_frame_rear",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "lid_region",
+      "part": "lid_panel",
+      "material_boundary": false
+    },
+    {
+      "name": "front_hatch_region",
+      "part": "front_hatch",
+      "material_boundary": false
+    },
+    {
+      "name": "lock_region",
+      "part": "lock_plate",
+      "material_boundary": true
+    },
+    {
+      "name": "handle_left_region",
+      "part": "handle_l",
+      "material_boundary": false
+    },
+    {
+      "name": "handle_right_region",
+      "part": "handle_r",
+      "material_boundary": false
+    },
+    {
+      "name": "foot_left_region",
+      "part": "foot_l",
+      "material_boundary": false
+    },
+    {
+      "name": "foot_right_region",
+      "part": "foot_r",
+      "material_boundary": false
+    },
+    {
+      "name": "brass_band_0",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "brass_band_1",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "brass_band_2",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "lid_panel_repair_region",
+      "part": "lid_panel",
+      "material_boundary": false
+    }
+  ],
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 191,
+    "region_count": 14,
+    "primitive_diversity": 0.104712,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 161,
+    "feature_types": [
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "inset_panel",
+      "recessed_handle",
+      "rib",
+      "support_bracket",
+      "trim_band"
+    ],
+    "feature_density": 10.0625,
+    "edge_treatment_count": 28,
+    "panel_feature_count": 34,
+    "support_feature_count": 10,
+    "attachment_region_count": 6,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 48,
+    "geometry_detail_feature_count": 48,
+    "geometry_detail_feature_types": [
+      "bolt_cap",
+      "bolt_washer"
+    ],
+    "geometry_detail_operator_counts": {
+      "bolt_cap": 24,
+      "bolt_washer": 24
+    },
+    "primitive_selector_applied_count": 18,
+    "primitive_selector_by_component": {
+      "door": 1,
+      "foot": 2,
+      "frame": 8,
+      "handle": 2,
+      "lid": 1,
+      "lock_plate": 4
+    },
+    "primitive_selector_by_target": {
+      "extruded_profile": 12,
+      "revolved_profile": 4,
+      "swept_profile": 2
+    }
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "success_multi_part_recovered",
+    "fallback_reason": null,
+    "error": null,
+    "actual_adapter": "blender_subprocess_multi_part_recovered",
+    "execution": {
+      "mode": "blender_subprocess_multi_part_recovered",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 12000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "ated: 1\n10:24:55 | INFO: Extracting primitive: handle_l\n10:24:55 | INFO: Primitives created: 1\n10:24:55 | INFO: Extracting primitive: handle_r\n10:24:55 | INFO: Primitives created: 1\n10:24:55 | INFO: Extracting primitive: lid_panel\n10:24:55 | INFO: Primitives created: 1\n10:24:55 | INFO: Extracting primitive: lock_plate\n10:24:55 | INFO: Primitives created: 1\n10:24:55 | INFO: Finished glTF 2.0 export in 0.10200190544128418 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 103535,
+        "triangle_count": 34733,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -40.273109,
+          -22.632313,
+          -34.350727
+        ],
+        "bounds_max": [
+          40.273109,
+          22.357685,
+          34.350727
+        ],
+        "extents": [
+          80.546219,
+          44.989998,
+          68.701454
+        ],
+        "body_count": 34394
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": true
+      },
+      "multi_part_override": {
+        "source": "blender_output_glb",
+        "part_count": 8,
+        "face_count": 34733,
+        "note": "Watertight fallback was discarded in favour of preserving Blender's 18-part scene; downstream stages operate on the multi-part topology."
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": false,
+    "reason": "skipped_for_multi_part_preservation",
+    "skipped_because": "blender_subprocess_multi_part_recovered"
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "blender_subprocess_multi_part_recovered"
+  },
+  "_part_groups_emitted": [
+    "body",
+    "foot_l",
+    "foot_r",
+    "front_hatch",
+    "handle_l",
+    "handle_r",
+    "lid_panel",
+    "lock_plate"
+  ]
+}

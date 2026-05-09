@@ -1,0 +1,53 @@
+module studio.creatures.alien_blob
+
+// Worked example for roadmap §7.6 F-Rep / SDF authoring.
+//
+// Compiles via `lathe.f_rep.compile_program` into an SDFExpr tree, then
+// extracts a triangle mesh via marching cubes at 128 cells per axis.
+// The smooth_union with k > 0 produces an organic blend impossible
+// with hard CSG — see Inigo Quilez "Distance Functions" reference.
+
+f_rep_program alien_blob {
+  body = capsule(half_height: 0.5, radius: 0.3)
+  limb_a = translate(capsule(half_height: 0.4, radius: 0.1), offset: [0.5, 0.0, 0.0])
+  limb_b = translate(capsule(half_height: 0.4, radius: 0.1), offset: [-0.5, 0.0, 0.0])
+  head = translate(sphere(radius: 0.2), offset: [0.0, 0.0, 0.6])
+  body_with_arm_a = smooth_union(body, limb_a, k: 0.15)
+  body_with_arms = smooth_union(body_with_arm_a, limb_b, k: 0.15)
+  output = smooth_union(body_with_arms, head, k: 0.1)
+}
+
+profile blobby_creature {
+  defaults {
+    build.optimize.lods = 2
+    package.formats = [glb]
+    package.manifest = true
+  }
+
+  ensure manifold
+  ensure watertight
+}
+
+asset alien_blob_creature : creature {
+  intent {
+    role = "alien blob creature"
+    asset_class = "hero"
+    style = ["organic", "alien", "f_rep"]
+    materials = ["alien_skin"]
+    scale = 2m
+  }
+
+  geometry {
+    f_rep_program = "alien_blob"
+    f_rep_extraction = "marching_cubes"
+    f_rep_resolution = 128
+    f_rep_bounds_min = [-1.2, -1.2, -1.2]
+    f_rep_bounds_max = [1.2, 1.2, 1.2]
+  }
+
+  build {
+    shape {
+      backend = "lathe.shape.f_rep_v1"
+    }
+  }
+}

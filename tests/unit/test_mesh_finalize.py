@@ -60,10 +60,13 @@ class FinalizeMeshIRTests(unittest.TestCase):
         self.assertIsInstance(mesh_ir, MeshIR)
         self.assertEqual(mesh_ir.asset_name, "demo")
         self.assertEqual(mesh_ir.family, "industrial_crate")
+        # MeshIR is the authoritative topology handoff, so hard-edge intent
+        # is recorded as metadata instead of splitting welded vertices.
         self.assertEqual(len(mesh_ir.vertices), len(mesh.vertices))
         self.assertEqual(len(mesh_ir.faces), len(mesh.faces))
         self.assertEqual(len(mesh_ir.face_parts), len(mesh.faces))
         self.assertTrue(all(p == "body" for p in mesh_ir.face_parts))
+        self.assertTrue(mesh_ir.to_trimesh().is_watertight)
 
     def test_mismatched_face_parts_length_falls_back_to_region_part(self) -> None:
         # face_parts length != face count → finalize substitutes the first
@@ -163,6 +166,58 @@ class FinalizeMeshIRTests(unittest.TestCase):
 
         self.assertEqual(len(mesh_ir.faces), len(mesh.faces))
         self.assertEqual(len(mesh_ir.face_parts), len(mesh.faces))
+        # Icosphere vertices are preserved; render-only split normals are
+        # represented by metadata, not MeshIR topology edits.
+        self.assertEqual(len(mesh_ir.vertices), len(mesh.vertices))
+
+    def test_hard_edge_metadata_preserves_watertight_cube(self) -> None:
+        # A unit cube under a sharp region keeps welded topology in MeshIR.
+        # Hard-edge consumers use hard_edge_classes rather than topology
+        # mutation at the shape handoff.
+        mesh = _unit_box_mesh()
+        shape_ir = _shape_ir([_region(component="hull")])
+        face_parts = ["body"] * len(mesh.faces)
+        mesh_ir = finalize_mesh_ir(mesh, shape_ir, face_parts)
+        self.assertEqual(len(mesh_ir.faces), len(mesh.faces))
+        self.assertEqual(len(mesh_ir.vertices), len(mesh.vertices))
+        self.assertTrue(mesh_ir.to_trimesh().is_watertight)
+        self.assertEqual(mesh_ir.hard_edge_classes[0]["name"], "r_body")
+        self.assertTrue(mesh_ir.hard_edge_classes[0]["sharp"])
+
+    def test_soft_only_region_stays_smooth(self) -> None:
+        # When the only region is a vent/grille (soft), finalize should
+        # leave vertices unsplit even though the cube has 90 deg edges.
+        mesh = _unit_box_mesh()
+        shape_ir = _shape_ir([_region(part="grille", component="grille")])
+        face_parts = ["grille"] * len(mesh.faces)
+        mesh_ir = finalize_mesh_ir(mesh, shape_ir, face_parts)
+        self.assertEqual(len(mesh_ir.vertices), len(mesh.vertices))
+
+    def test_cross_part_seam_records_hard_edge_metadata_without_topology_split(self) -> None:
+        # Faces on a cube split between a sharp body and a soft vent keep
+        # welded vertices at the MeshIR handoff. The hard/soft distinction
+        # remains available in hard_edge_classes for later shading/export.
+        mesh = _unit_box_mesh()
+        regions = [
+            _region(name="r_body", part="body", component="hull"),
+            _region(name="r_vent", part="vent", component="vent"),
+        ]
+        shape_ir = _shape_ir(regions)
+        # Half the faces in each part — guarantees cross-part edges.
+        n = len(mesh.faces)
+        face_parts = ["body"] * (n // 2) + ["vent"] * (n - n // 2)
+        mesh_ir = finalize_mesh_ir(mesh, shape_ir, face_parts)
+        self.assertEqual(len(mesh_ir.vertices), len(mesh.vertices))
+        sharp_by_name = {entry["name"]: entry["sharp"] for entry in mesh_ir.hard_edge_classes}
+        self.assertTrue(sharp_by_name["r_body"])
+        self.assertFalse(sharp_by_name["r_vent"])
+
+    def test_no_regions_no_splits(self) -> None:
+        # Without any regions there are no sharp parts; finalize must
+        # leave vertices unchanged.
+        mesh = _unit_box_mesh()
+        shape_ir = _shape_ir([])
+        mesh_ir = finalize_mesh_ir(mesh, shape_ir, ["mesh"] * len(mesh.faces))
         self.assertEqual(len(mesh_ir.vertices), len(mesh.vertices))
 
 

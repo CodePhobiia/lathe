@@ -1,0 +1,87 @@
+// doc:
+//   purpose: V0.1 §6.3 typed PBR material primitives library. Five
+//            built-in materials with PBR-validated parameters: metal_steel,
+//            dielectric_painted_plastic, wood_oak, fabric_felt,
+//            rubber_extruded.
+//   exports: material metal_steel, material dielectric_painted_plastic,
+//            material wood_oak, material fabric_felt, material rubber_extruded
+//   depends_on: none
+//   used_by: any surface_program or layer_stack that wants a typed,
+//            PBR-validated starting point.
+//   stability: stable
+//   layer: V0.1
+module std.materials.pbr_primitives
+
+// Steel: pure metal, mid-grey base, modest roughness, F0 ~ 0.7.
+material metal_steel {
+  basecolor = [148, 152, 156]
+  metallic = 1.0
+  roughness = 0.30
+  roughness_range = [0.15, 0.40]
+  emissive = [0, 0, 0]
+  surface_profile = brushed_metal
+  wear = 0.18
+  normal_intensity = 0.10
+  pbr_class = metal
+  f0_target = 0.70
+}
+
+// Painted plastic dielectric: F0 = 0.04, modest roughness, hue 30-200 L*.
+material dielectric_painted_plastic {
+  basecolor = [104, 124, 156]
+  metallic = 0.0
+  roughness = 0.45
+  roughness_range = [0.30, 0.60]
+  emissive = [0, 0, 0]
+  surface_profile = painted_panel
+  wear = 0.10
+  normal_intensity = 0.08
+  pbr_class = dielectric
+  f0_target = 0.04
+}
+
+// Oak wood: dielectric with grain pattern, warm base, rough.
+material wood_oak {
+  basecolor = [125, 82, 48]
+  metallic = 0.0
+  roughness = 0.65
+  roughness_range = [0.50, 0.80]
+  emissive = [0, 0, 0]
+  surface_profile = wood_grain
+  wear = 0.18
+  normal_intensity = 0.12
+  pbr_class = dielectric
+  f0_target = 0.04
+  pattern = wood_grain
+}
+
+// Felt fabric: very rough, fuzzy normal (high normal_intensity),
+// optional subsurface scattering on platforms that support it.
+material fabric_felt {
+  basecolor = [126, 102, 88]
+  metallic = 0.0
+  roughness = 0.90
+  roughness_range = [0.85, 0.95]
+  emissive = [0, 0, 0]
+  surface_profile = fabric_lining
+  wear = 0.06
+  normal_intensity = 0.18
+  pbr_class = dielectric
+  f0_target = 0.04
+  fuzz = 0.40
+  subsurface = optional
+}
+
+// Extruded rubber: dielectric, dark gray/black, mid-rough.
+material rubber_extruded {
+  basecolor = [36, 38, 40]
+  metallic = 0.0
+  roughness = 0.70
+  roughness_range = [0.60, 0.80]
+  emissive = [0, 0, 0]
+  surface_profile = carbon_rubber
+  wear = 0.10
+  normal_intensity = 0.14
+  pbr_class = dielectric
+  f0_target = 0.04
+}

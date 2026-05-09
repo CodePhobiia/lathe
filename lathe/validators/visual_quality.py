@@ -25,6 +25,36 @@ _COPLANAR_ANGLE_MAX = 0.05
 _STAIR_STEP_ANGLE_MAX = 0.42
 _SHARP_BOUNDARY_ANGLE_MIN = 0.48
 
+# Phase 0 §4.2: hero/aaa_hero diagnostic blocking gate.
+#
+# Promotes per-metric advisory diagnostics to certification blockers when
+# the asset opts in via ``intent.asset_class = "hero" | "aaa_hero"``.
+# Legacy assets without an ``asset_class`` (the entire historical
+# generic-family build path, including the brassbound_chest baseline)
+# retain their existing behavior — the gate is a no-op for them.
+_HERO_ASSET_CLASSES: frozenset[str] = frozenset({"hero", "aaa_hero"})
+_HERO_QUALITY_DIAGNOSTICS_THRESHOLD = 0.55
+# Direction: "penalty" → block when metric > threshold (higher = worse);
+# "quality" → block when metric < threshold (higher = better).
+_HERO_BLOCKING_DIAGNOSTICS: tuple[tuple[str, str], ...] = (
+    ("random_triangulation_penalty", "penalty"),
+    ("highlow_fake_detail_penalty", "penalty"),
+    ("geometry_dihedral_continuity", "quality"),
+    ("geometry_stair_step_penalty", "penalty"),
+    ("geometry_tiny_face_penalty", "penalty"),
+    ("boolean_scar_penalty", "penalty"),
+    ("bevel_continuity", "quality"),
+    # Roadmap §5.9 mesh-only validators (renderer-dependent ones gate
+    # only when their renderer outputs are available — they always
+    # report ``status='renderer_unavailable'`` otherwise, which the
+    # gate treats as non-blocking).
+    ("box_stack_detector", "quality"),
+    ("edge_density_variance", "quality"),
+    ("curvature_distribution", "quality"),
+    ("topology_class_compliance", "quality"),
+    ("texel_density_consistency", "quality"),
+)
+
 
 class SurfaceEvidenceInvariantError(LatheError):
     """Raised when surface evidence reaches metric computation without inputs."""
@@ -45,9 +75,11 @@ def _as_list(value: Any) -> list[Any]:
 def _support_plausibility(
     asset: dict[str, Any], runtime: dict[str, Any], shape_assessment: dict[str, Any]
 ) -> float:
+    from .semantic_quality import _resolve_part_bboxes
+
     supports = [
         group
-        for group in runtime["topology"]["bundle"].get("part_groups", [])
+        for group in _resolve_part_bboxes(runtime["topology"]["bundle"])
         if any(token in group["name"].lower() for token in ("foot", "leg", "stand", "bracket"))
     ]
     if not supports:
@@ -563,6 +595,192 @@ def _visual_metric_details(
     return details
 
 
+def _hero_asset_class(asset: dict[str, Any]) -> str | None:
+    """Return ``"hero"``/``"aaa_hero"`` if the asset opts into the hero gate.
+
+    Reads ``asset["intent"]["asset_class"]`` (case-insensitive). Anything
+    else — including missing field, ``"generic"``, or unrecognized value —
+    returns ``None`` so the legacy build path is undisturbed.
+    """
+    intent = asset.get("intent") if isinstance(asset.get("intent"), dict) else {}
+    raw = intent.get("asset_class")
+    if not isinstance(raw, str):
+        return None
+    candidate = raw.strip().lower()
+    return candidate if candidate in _HERO_ASSET_CLASSES else None
+
+
+def _style_random_triangulation_relief(asset: dict[str, Any]) -> float:
+    """Roadmap §6.8: cel-shaded assets get reduced triangulation penalty.
+
+    When ``intent.style_stack.shading_model == "ramp_outline"`` or the
+    material model is ``npr_cel``, the geometry's shading is artist-edited
+    via inverted-hull outlines and ramp shaders, so micro-triangle stair
+    artifacts that would otherwise read as "random triangulation" are
+    intentionally invisible. Apply a 0.5 multiplier so genuine errors
+    still surface but the band-B/B-2 cel-shaded look isn't penalized.
+    """
+    intent = asset.get("intent") if isinstance(asset, dict) else None
+    if not isinstance(intent, dict):
+        return 1.0
+    stack = intent.get("style_stack") or {}
+    if not isinstance(stack, dict):
+        return 1.0
+    shading = str(stack.get("shading_model", ""))
+    material = str(stack.get("material_model", ""))
+    if shading == "ramp_outline" or material == "npr_cel":
+        return 0.5
+    if shading == "brushstroke_composite" or material == "npr_painterly":
+        return 0.4
+    if shading == "flat_shaded" or material == "npr_toy":
+        return 0.6
+    return 1.0
+
+
+def _random_triangulation_penalty_from_metrics(metrics: dict[str, float]) -> float:
+    """Mirror of ``asset_quality.diagnostics._random_triangulation_penalty``.
+
+    Recomputed locally so the visual_quality blocking gate does not depend
+    on validator ordering — ``quality_diagnostics`` runs *after*
+    ``visual_quality`` in the pipeline, so its metrics are not yet in the
+    runtime when we need them here. The formula mirrors
+    ``lathe/asset_quality/diagnostics.py``: 0.45·tiny + 0.30·stair +
+    0.25·boolean_scar.
+    """
+    tiny = float(metrics.get("geometry_tiny_face_penalty", 0.0))
+    stair = float(metrics.get("geometry_stair_step_penalty", 0.0))
+    boolean_scar = float(metrics.get("boolean_scar_penalty", 0.0))
+    return round(min(1.0, 0.45 * tiny + 0.30 * stair + 0.25 * boolean_scar), 6)
+
+
+def _highlow_fake_detail_penalty_from_runtime(
+    asset: dict[str, Any], runtime: dict[str, Any], metrics: dict[str, float]
+) -> float:
+    """Best-effort highlow fake-detail penalty from data already at hand.
+
+    Prefers the Phase 7 strengthened ``realness_score`` so this metric
+    reports the same value as ``quality_diagnostics`` instead of
+    saturating at 0.0 the moment ``surface_highlow_realness`` hits its
+    1.0 cap. ``runtime["highlow_relation"]`` is the canonical source,
+    but when the visual_quality validator runs before the Phase 7
+    ``highlow_relation`` validator in the pipeline, only the
+    optimize-stage relation (``distinction_ratio`` / ``projection_trust``
+    but no ``realness_score``) is available — in that case we invoke
+    the Phase 7 evaluator inline so both bundles agree. Falls back to
+    the surface-evidence-derived ``surface_highlow_realness`` metric
+    when no high/low relation is declared. Returns 0.0 when no high/low
+    relation is declared.
+    """
+    highlow_evidence = runtime.get("highlow_relation")
+    if isinstance(highlow_evidence, dict) and "realness_score" in highlow_evidence:
+        if highlow_evidence.get("required") is False:
+            return 0.0
+        realness_score = float(highlow_evidence.get("realness_score") or 0.0)
+        penalty = 1.0 - max(0.0, min(1.0, realness_score))
+        return round(max(0.0, min(1.0, penalty)), 6)
+    surface_bundle = runtime.get("surface", {}).get("bundle", {})
+    highlow = surface_bundle.get("highlow_relation") if isinstance(surface_bundle, dict) else None
+    if not isinstance(highlow, dict) or not highlow:
+        return 0.0
+    try:
+        from ..asset_quality.highlow_relation import evaluate_highlow_relation
+
+        evidence = evaluate_highlow_relation(asset, runtime)
+        if isinstance(evidence, dict) and "realness_score" in evidence:
+            if evidence.get("required") is False:
+                return 0.0
+            realness_score = float(evidence.get("realness_score") or 0.0)
+            penalty = 1.0 - max(0.0, min(1.0, realness_score))
+            return round(max(0.0, min(1.0, penalty)), 6)
+    except Exception:
+        pass
+    realness = float(metrics.get("surface_highlow_realness", 0.0))
+    return round(max(0.0, min(1.0, 1.0 - realness)), 6)
+
+
+def _hero_diagnostic_gate(
+    asset: dict[str, Any],
+    runtime: dict[str, Any],
+    metrics: dict[str, float],
+    diagnostics: list[dict[str, Any]],
+) -> None:
+    """Promote per-metric advisories to blockers when hero/aaa_hero opt-in.
+
+    Mutates ``metrics`` to record ``random_triangulation_penalty`` and
+    ``highlow_fake_detail_penalty`` under the visual_quality report (so
+    users see the values that triggered or escaped the gate), then
+    appends a blocking diagnostic for each metric that exceeds the
+    quality_diagnostics_threshold under its direction-specific rule.
+
+    For legacy generic-family assets (``asset_class`` missing or unknown)
+    this is a no-op — diagnostics are unchanged and metrics are still
+    enriched so dashboards see the same numbers.
+    """
+    style_relief = _style_random_triangulation_relief(asset)
+    base_random_triangulation = _random_triangulation_penalty_from_metrics(metrics)
+    metrics["random_triangulation_penalty"] = round(
+        base_random_triangulation * style_relief, 6
+    )
+    metrics["style_triangulation_relief"] = style_relief
+    metrics["highlow_fake_detail_penalty"] = _highlow_fake_detail_penalty_from_runtime(
+        asset, runtime, metrics
+    )
+
+    # Roadmap §5.9: pull the render-class validator scores into the
+    # visual_quality metrics namespace so the hero blocking gate can
+    # see them. This is invoked inline rather than read from
+    # ``runtime["quality_diagnostics"]`` because that bundle is
+    # populated *after* visual_quality in the pipeline.
+    from .render_class import evaluate_render_class_validators
+
+    render_class = evaluate_render_class_validators(asset, runtime)
+    for child_name, child_score in render_class.get("metrics", {}).items():
+        metrics[child_name] = round(float(child_score), 6)
+
+    asset_class = _hero_asset_class(asset)
+    if asset_class is None:
+        return
+
+    threshold = _HERO_QUALITY_DIAGNOSTICS_THRESHOLD
+    for metric_name, direction in _HERO_BLOCKING_DIAGNOSTICS:
+        actual = float(metrics.get(metric_name, 0.0))
+        if direction == "penalty":
+            failed = actual > threshold
+            comparison = ">"
+            bound_label = "maximum"
+        else:
+            failed = actual < threshold
+            comparison = "<"
+            bound_label = "minimum"
+        if not failed:
+            continue
+        diagnostics.append(
+            {
+                "code": f"L64{len(diagnostics) + 1:02d}",
+                "name": f"hero_quality_diagnostic_{metric_name}_failed",
+                "severity": "error",
+                "phase": "validate",
+                "asset": asset["name"],
+                "stage": "validate",
+                "path": f"validate.visual.quality_diagnostics.{metric_name}",
+                "message": (
+                    f"Hero asset_class={asset_class!r} blocked: {metric_name} "
+                    f"{actual:.3f} {comparison} {threshold:.3f} "
+                    f"(quality_diagnostics_threshold)"
+                ),
+                "details": {
+                    "metric": metric_name,
+                    "actual": actual,
+                    bound_label: threshold,
+                    "direction": direction,
+                    "asset_class": asset_class,
+                    "quality_diagnostics_threshold": threshold,
+                },
+                "suggested_repairs": [],
+            }
+        )
+
+
 def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> dict[str, Any]:
     """Evaluate visual quality.
 
@@ -767,6 +985,8 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
                 }
             )
 
+    _hero_diagnostic_gate(asset, runtime, metrics, diagnostics)
+
     return {
         "family": asset_graph.get("family"),
         "blueprint_id": scaffold_report.get("blueprint_id"),
@@ -774,4 +994,9 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
         "thresholds": thresholds,
         "diagnostics": diagnostics,
         "render_report": render_report,
+        "hero_diagnostic_gate": {
+            "asset_class": _hero_asset_class(asset),
+            "quality_diagnostics_threshold": _HERO_QUALITY_DIAGNOSTICS_THRESHOLD,
+            "monitored_metrics": [name for name, _ in _HERO_BLOCKING_DIAGNOSTICS],
+        },
     }

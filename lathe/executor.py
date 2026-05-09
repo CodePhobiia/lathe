@@ -99,6 +99,8 @@ STAGE_ORDER = [
 
 BUILD_CACHE_ROOT = lathe_cache_dir() / "builds"
 BUILD_CACHE_VERSION = "v13_rc1"
+QUICK_CACHE_SUBDIR = "quick_builds"
+QUICK_CACHE_GLB_FILENAME = "preview.cached.glb"
 DEFAULT_BUILD_TIMEOUT_S = 300.0
 log = logging.getLogger(__name__)
 
@@ -111,6 +113,8 @@ __all__ = [
     "_run_reference_topology_cleanup",
     "build_asset",
     "build_surface_stage",
+    "clear_quick_cache",
+    "quick_build_asset",
     "repair_surface_stage",
     "validate_surface_stage",
 ]
@@ -135,6 +139,24 @@ def _stable_probe_fingerprint(probe: dict[str, Any]) -> dict[str, Any]:
 def _build_cache_root() -> Path:
     """Resolve the build-cache root at use time so env overrides stay live."""
     return lathe_cache_dir() / "builds"
+
+
+def _quick_cache_root() -> Path:
+    """Resolve the quick-preview cache root at use time so env overrides stay live."""
+    return lathe_cache_dir() / QUICK_CACHE_SUBDIR
+
+
+def clear_quick_cache() -> int:
+    """Remove every cached ``lathe quick`` entry. Returns the count removed."""
+    root = _quick_cache_root()
+    if not root.exists():
+        return 0
+    removed = 0
+    for child in root.iterdir():
+        if child.is_dir():
+            shutil.rmtree(child, ignore_errors=True)
+            removed += 1
+    return removed
 
 
 def _deterministic_backend_fingerprint(runtime_config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -227,6 +249,30 @@ def _safe_load_reference_board(
         )
 
 
+def _apply_shape_overrides_to_asset(asset: dict[str, Any], overrides: dict[str, Any]) -> None:
+    """Apply transient shape-stage overrides to a materialized asset in place.
+
+    Used by ``lathe quick`` velocity flags (``--candidates``, ``--no-search``)
+    to force a smaller candidate-search width than the asset declares. The
+    materialized asset is per-run state — mutating it here does not persist
+    back to the source ``.lth``.
+
+    Recognized override keys:
+      - ``candidates`` (int): forces ``build.shape.candidates``.
+      - ``no_search`` (bool): zeroes ``space.select.best_of`` so the floor in
+        :func:`compile_scaffold_candidates` collapses to ``candidates_count``.
+    """
+    candidates = overrides.get("candidates")
+    if candidates is not None:
+        build = asset.setdefault("build", {})
+        shape = build.setdefault("shape", {})
+        shape["candidates"] = int(candidates)
+    if overrides.get("no_search"):
+        space = asset.setdefault("space", {})
+        select = space.setdefault("select", {})
+        select["best_of"] = 0
+
+
 def _safe_load_kit_library() -> KitLibrary | None:
     """Load the Phase 12 kit library without crashing the build.
 
@@ -252,6 +298,7 @@ class BuildExecutor:
         out_dir: str | Path,
         runtime_config: dict[str, Any] | None = None,
         execution_profile_override: str | None = None,
+        shape_overrides: dict[str, Any] | None = None,
     ) -> None:
         self.program = program
         self.asset_name = asset_name
@@ -262,6 +309,9 @@ class BuildExecutor:
         self.asset = self.resolver.materialize_asset(
             asset_name, execution_profile_override=execution_profile_override
         )
+        self.shape_overrides = dict(shape_overrides or {})
+        if self.shape_overrides:
+            _apply_shape_overrides_to_asset(self.asset, self.shape_overrides)
         self.plan = build_plan(program, asset_name, execution_profile_override=execution_profile_override)
         self.backend_stack = self.plan["backend_stack"]
         self.selected_backends = self.plan["selected_backends"]
@@ -290,10 +340,26 @@ class BuildExecutor:
                 "program": self.normalized_program,
                 "asset": self.asset_name,
                 "runtime_config": self.runtime_config,
+                "shape_overrides": self.shape_overrides,
                 "build_environment": self._build_cache_environment_fingerprint(),
             }
         )
         self.cache_dir = _build_cache_root() / self.cache_key
+        # Quick-preview cache lives in a separate namespace so the abbreviated
+        # quick stage set (shape -> topology -> uv -> surface(skip_bakes))
+        # cannot collide with full-build cache restores.
+        self.quick_cache_key = hash_obj(
+            {
+                "cache_version": BUILD_CACHE_VERSION,
+                "namespace": "quick_preview_v1",
+                "program": self.normalized_program,
+                "asset": self.asset_name,
+                "runtime_config": self.runtime_config,
+                "shape_overrides": self.shape_overrides,
+                "build_environment": self._build_cache_environment_fingerprint(),
+            }
+        )
+        self.quick_cache_dir = _quick_cache_root() / self.quick_cache_key
 
     def _build_cache_environment_fingerprint(self) -> dict[str, Any]:
         return {
@@ -453,10 +519,36 @@ class BuildExecutor:
             if repair_cfg.get("autonomous", True):
                 from .repair_loop import run_repair_loop
 
+                # Precedence: ``repair.max_rounds_override`` in runtime_config
+                # (invocation-time override, opt-in via CLI / runtime config)
+                # wins over ``asset.validate.repair.max_rounds``, which wins
+                # over the runtime_config default. The asset value stays
+                # authoritative for production; the override surface lets
+                # iteration runs cap the repair loop without editing sources.
+                asset_repair_cfg = (
+                    (self.asset.get("validate", {}) or {}).get("repair", {}) or {}
+                )
+                asset_max_rounds = asset_repair_cfg.get("max_rounds")
+                override_max_rounds = repair_cfg.get("max_rounds_override")
+                if override_max_rounds is not None:
+                    try:
+                        effective_max_rounds = int(override_max_rounds)
+                    except (TypeError, ValueError):
+                        effective_max_rounds = (
+                            int(asset_max_rounds) if asset_max_rounds is not None
+                            else int(repair_cfg.get("max_rounds", 3))
+                        )
+                elif asset_max_rounds is not None:
+                    try:
+                        effective_max_rounds = int(asset_max_rounds)
+                    except (TypeError, ValueError):
+                        effective_max_rounds = int(repair_cfg.get("max_rounds", 3))
+                else:
+                    effective_max_rounds = int(repair_cfg.get("max_rounds", 3))
                 validate_bundle, repair_rounds = run_repair_loop(
                     self,
                     validate_bundle,
-                    max_rounds=int(repair_cfg.get("max_rounds", 3)),
+                    max_rounds=effective_max_rounds,
                     min_improvement=float(repair_cfg.get("min_improvement", 0.01)),
                     budget_seconds=float(repair_cfg.get("budget_seconds", 180.0)),
                 )
@@ -549,6 +641,219 @@ class BuildExecutor:
                 "uv": relpath(self.out_dir, self.stage_dirs["uv"] / "bundle.json"),
                 "surface": relpath(self.out_dir, self.stage_dirs["surface"] / "bundle.json"),
             },
+        }
+
+    def quick_build(self, *, glb_path: Path, use_cache: bool = True) -> dict[str, Any]:
+        """Run the minimal preview pipeline: shape -> topology -> uv -> surface (no bakes) -> GLB.
+
+        Skips execution, rig, interfaces, physics, optimize, validate, package,
+        and repair. Targets <60s wall-clock on hero assets vs. ~25 min for the
+        full ``build`` pipeline. Used by ``lathe quick``.
+
+        Returns a small report dict with asset, out_dir, glb path, and per-stage
+        wall-clock timings. When ``use_cache`` is true, attempts to restore the
+        previously-cached out_dir + GLB before running any stages — this turns
+        warm iteration loops on unchanged sources into <5s file copies.
+        """
+        from .core.io import export_runtime_scene_glb
+
+        glb_path = Path(glb_path)
+        if use_cache:
+            cached = self._restore_quick_cache(glb_path)
+            if cached is not None:
+                return cached
+
+        self._prepare_uncached_build()
+        self._publish_pre_shape_quality_context()
+        timings: dict[str, float] = {}
+
+        t0 = time.monotonic()
+        shape_bundle = stage_shape.run(self)
+        timings["shape"] = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        topology_bundle = stage_topology.run(self, shape_bundle)
+        timings["topology"] = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        uv_bundle = stage_uv.run(self, topology_bundle)
+        timings["uv"] = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        stage_surface.run(self, uv_bundle, skip_bakes=True)
+        timings["surface"] = time.monotonic() - t0
+
+        t0 = time.monotonic()
+        uv_runtime_mesh: RuntimeMesh = self.runtime["uv"]["runtime_mesh"]
+        glb_path.parent.mkdir(parents=True, exist_ok=True)
+        export_runtime_scene_glb(uv_runtime_mesh, glb_path)
+        timings["package"] = time.monotonic() - t0
+
+        face_parts = list(getattr(uv_runtime_mesh, "face_parts", []) or [])
+        part_count = len({p for p in face_parts if p}) or 1
+        report = {
+            "asset": self.asset_name,
+            "out_dir": str(self.out_dir),
+            "glb_path": str(glb_path),
+            "part_count": part_count,
+            "face_count": int(len(uv_runtime_mesh.mesh.faces)),
+            "vertex_count": int(len(uv_runtime_mesh.mesh.vertices)),
+            "stage_timings_s": {k: round(v, 3) for k, v in timings.items()},
+            "cache_hit": False,
+            "stage_bundles": {
+                "shape": relpath(self.out_dir, self.stage_dirs["shape"] / "bundle.json"),
+                "topology": relpath(self.out_dir, self.stage_dirs["topology"] / "bundle.json"),
+                "uv": relpath(self.out_dir, self.stage_dirs["uv"] / "bundle.json"),
+                "surface": relpath(self.out_dir, self.stage_dirs["surface"] / "bundle.json"),
+            },
+        }
+        if use_cache:
+            self._persist_quick_cache(glb_path, report)
+        return report
+
+    def _quick_cache_report_path(self) -> Path:
+        return self.quick_cache_dir / "quick_report.json"
+
+    def _quick_cache_glb_path(self) -> Path:
+        return self.quick_cache_dir / QUICK_CACHE_GLB_FILENAME
+
+    def _restore_quick_cache(self, glb_path: Path) -> dict[str, Any] | None:
+        """Restore a cached quick-preview build into ``out_dir`` + ``glb_path``.
+
+        Returns the cached report dict on success, or ``None`` if no usable
+        cache entry exists. Failure modes (missing files, json decode errors,
+        copy failures) are treated as cache misses — the caller falls back
+        to running the full pipeline.
+        """
+        if not self.quick_cache_dir.exists():
+            return None
+        report_path = self._quick_cache_report_path()
+        cached_glb = self._quick_cache_glb_path()
+        if not report_path.is_file() or not cached_glb.is_file():
+            return None
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        if not isinstance(report, dict):
+            return None
+        manifest_path = self.quick_cache_dir / CACHE_MANIFEST_FILENAME
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                return None
+            if not isinstance(manifest, dict):
+                return None
+            if manifest.get("cache_version") != BUILD_CACHE_VERSION:
+                return None
+            if manifest.get("cache_key") not in (None, self.quick_cache_key):
+                return None
+
+        # Restore the staged out_dir (stage bundles + normalized program +
+        # plan + materialized asset) atomically. Mirrors the full-build
+        # cache pattern in :meth:`_restore_cached_build`.
+        cached_stage_dir = self.quick_cache_dir / "stage"
+        staging_dir: Path | None = None
+        displaced_dir: Path | None = None
+        try:
+            self.out_dir.parent.mkdir(parents=True, exist_ok=True)
+            if cached_stage_dir.exists():
+                staging_dir = Path(
+                    tempfile.mkdtemp(
+                        prefix=f".restore.quick.{self.quick_cache_key}.",
+                        suffix=".tmp",
+                        dir=self.out_dir.parent,
+                    )
+                )
+                shutil.rmtree(staging_dir)
+                shutil.copytree(cached_stage_dir, staging_dir)
+                if self.out_dir.exists():
+                    displaced_dir = Path(
+                        tempfile.mkdtemp(
+                            prefix=f".displaced.quick.{self.quick_cache_key}.",
+                            suffix=".tmp",
+                            dir=self.out_dir.parent,
+                        )
+                    )
+                    shutil.rmtree(displaced_dir)
+                    self.out_dir.rename(displaced_dir)
+                staging_dir.rename(self.out_dir)
+                staging_dir = None
+
+            glb_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(cached_glb, glb_path)
+        except (OSError, shutil.Error):
+            if displaced_dir is not None and displaced_dir.exists() and not self.out_dir.exists():
+                try:
+                    displaced_dir.rename(self.out_dir)
+                    displaced_dir = None
+                except OSError:
+                    pass
+            return None
+        finally:
+            if staging_dir is not None:
+                shutil.rmtree(staging_dir, ignore_errors=True)
+            if displaced_dir is not None:
+                shutil.rmtree(displaced_dir, ignore_errors=True)
+
+        report["out_dir"] = str(self.out_dir)
+        report["glb_path"] = str(glb_path)
+        report["cache_hit"] = True
+        return report
+
+    def _persist_quick_cache(self, glb_path: Path, report: dict[str, Any]) -> None:
+        """Persist the just-built quick-preview artifacts into the cache.
+
+        Best-effort: caching IO failures are logged at debug level and never
+        abort the build. Mirrors :meth:`_persist_build_cache`.
+        """
+        staging_dir: Path | None = None
+        try:
+            self.quick_cache_dir.parent.mkdir(parents=True, exist_ok=True)
+            if self.quick_cache_dir.exists():
+                return
+            staging_dir = Path(
+                tempfile.mkdtemp(
+                    prefix=f".quick.{self.quick_cache_key}.",
+                    suffix=".tmp",
+                    dir=self.quick_cache_dir.parent,
+                )
+            )
+            shutil.rmtree(staging_dir)
+            staging_dir.mkdir(parents=True, exist_ok=True)
+            if self.out_dir.exists():
+                shutil.copytree(self.out_dir, staging_dir / "stage")
+            shutil.copyfile(glb_path, staging_dir / QUICK_CACHE_GLB_FILENAME)
+            cached_report = dict(report)
+            cached_report["cache_hit"] = False
+            dump_json(staging_dir / "quick_report.json", cached_report)
+            dump_json(staging_dir / CACHE_MANIFEST_FILENAME, self._quick_cache_manifest())
+            staging_dir.rename(self.quick_cache_dir)
+            staging_dir = None
+        except (OSError, shutil.Error) as exc:
+            log_debug(
+                log,
+                "lathe.executor.quick_cache_persist_failed",
+                "failed to persist quick-preview cache at {cache_dir}: {error}",
+                cache_dir=self.quick_cache_dir,
+                error=exc,
+            )
+        finally:
+            if staging_dir is not None:
+                shutil.rmtree(staging_dir, ignore_errors=True)
+
+    def _quick_cache_manifest(self) -> dict[str, Any]:
+        return {
+            "schema": "lathe.cache_manifest.v1",
+            "cache_version": BUILD_CACHE_VERSION,
+            "cache_key": self.quick_cache_key,
+            "namespace": "quick_preview_v1",
+            "asset": self.asset_name,
+            "kind": self.asset.get("kind"),
+            "backend_stack": self.backend_stack,
+            "source_fingerprint": hash_obj(self.normalized_program),
+            "created_time": time.time(),
         }
 
     def validate_surface_stage(self) -> dict[str, Any]:
@@ -825,6 +1130,7 @@ def build_asset(
     out_dir: str | Path,
     runtime_config: dict[str, Any] | None = None,
     execution_profile_override: str | None = None,
+    shape_overrides: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build asset.
 
@@ -834,6 +1140,7 @@ def build_asset(
         out_dir: out_dir argument.
         runtime_config: runtime_config argument.
         execution_profile_override: execution_profile_override argument.
+        shape_overrides: optional transient shape-stage overrides (e.g. {"candidates": 1}).
 
     Returns:
         The result.
@@ -844,6 +1151,7 @@ def build_asset(
         out_dir,
         runtime_config=runtime_config,
         execution_profile_override=execution_profile_override,
+        shape_overrides=shape_overrides,
     ).build()
 
 
@@ -865,6 +1173,38 @@ def build_surface_stage(
         The result.
     """
     return BuildExecutor(program, asset_name, out_dir, runtime_config=runtime_config).build_surface_stage()
+
+
+def quick_build_asset(
+    program: dict[str, Any],
+    asset_name: str,
+    out_dir: str | Path,
+    *,
+    glb_path: str | Path,
+    runtime_config: dict[str, Any] | None = None,
+    execution_profile_override: str | None = None,
+    use_cache: bool = True,
+    shape_overrides: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run the ``lathe quick`` preview pipeline (no bakes, no validation, no LODs).
+
+    When ``use_cache`` is true (default) the executor first attempts to
+    restore a previously-cached preview keyed on the normalized program +
+    asset name + runtime config + backend environment. Pass ``use_cache=False``
+    to bypass the cache (e.g. for testing or to force a fresh build).
+
+    ``shape_overrides`` carries velocity-flag overrides (``--candidates``,
+    ``--no-search``) that are folded into ``self.asset`` and the cache key
+    so runs with different overrides do not collide in the quick cache.
+    """
+    return BuildExecutor(
+        program,
+        asset_name,
+        out_dir,
+        runtime_config=runtime_config,
+        execution_profile_override=execution_profile_override,
+        shape_overrides=shape_overrides,
+    ).quick_build(glb_path=Path(glb_path), use_cache=use_cache)
 
 
 def validate_surface_stage(

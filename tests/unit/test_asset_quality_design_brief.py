@@ -3,8 +3,10 @@
 Covers per task #2.3 of ``docs/asset-quality/improvement-tasklist.md``:
 
 - ``DesignBrief`` dataclass creation and ``to_dict`` round-trip;
-- family inference for the four supported families
-  (industrial_crate, mechanical_door, service_cabinet, generic);
+- family inference for the supported families
+  (industrial_crate, mechanical_door, service_cabinet, weapon_prop,
+  vehicle_prop, furniture_prop, natural_form, environment_architecture,
+  lighting_prop, machine_console, portal_relic, tool_prop, generic);
 - inference signals (name vs role vs kind);
 - per-family default brief contents;
 - payload shape (``version`` / ``brief`` / ``family_inference``);
@@ -134,6 +136,108 @@ def test_service_cabinet_inferred_from_role_when_name_does_not_match() -> None:
     assert payload["brief"]["family"] == "service_cabinet"
 
 
+def test_weapon_prop_inferred_from_weapon_name() -> None:
+    payload = _evaluate({"name": "astral_sentinel_weapon"})
+
+    assert payload["family_inference"] == {
+        "matched_family": "weapon_prop",
+        "match_signal": "name",
+        "match_token": "weapon",
+    }
+    assert payload["brief"]["family"] == "weapon_prop"
+    assert payload["brief"]["shape_language"] == "linear_body_with_grip_guard_and_barrel_or_blade"
+
+
+def test_vehicle_prop_inferred_from_boat_role() -> None:
+    payload = _evaluate({"name": "asset_42", "intent": {"role": "cargo boat"}})
+
+    assert payload["family_inference"] == {
+        "matched_family": "vehicle_prop",
+        "match_signal": "role",
+        "match_token": "boat",
+    }
+    assert payload["brief"]["family"] == "vehicle_prop"
+
+
+def test_furniture_prop_inferred_from_table_name() -> None:
+    payload = _evaluate({"name": "market_table"})
+
+    assert payload["family_inference"] == {
+        "matched_family": "furniture_prop",
+        "match_signal": "name",
+        "match_token": "table",
+    }
+    assert payload["brief"]["family"] == "furniture_prop"
+
+
+def test_natural_form_inferred_from_terrain_role() -> None:
+    payload = _evaluate({"name": "asset_42", "intent": {"role": "terrain rock cluster"}})
+
+    assert payload["family_inference"] == {
+        "matched_family": "natural_form",
+        "match_signal": "role",
+        "match_token": "terrain",
+    }
+    assert payload["brief"]["family"] == "natural_form"
+
+
+def test_environment_architecture_inferred_from_building_name() -> None:
+    payload = _evaluate({"name": "market_building"})
+
+    assert payload["family_inference"] == {
+        "matched_family": "environment_architecture",
+        "match_signal": "name",
+        "match_token": "building",
+    }
+    assert payload["brief"]["family"] == "environment_architecture"
+
+
+def test_lighting_prop_inferred_from_lantern_name() -> None:
+    payload = _evaluate({"name": "dock_lantern"})
+
+    assert payload["family_inference"] == {
+        "matched_family": "lighting_prop",
+        "match_signal": "name",
+        "match_token": "lantern",
+    }
+    assert payload["brief"]["family"] == "lighting_prop"
+
+
+def test_machine_console_inferred_from_terminal_role() -> None:
+    payload = _evaluate({"name": "asset_42", "intent": {"role": "terminal console"}})
+
+    assert payload["family_inference"] == {
+        "matched_family": "machine_console",
+        "match_signal": "role",
+        "match_token": "console",
+    }
+    assert payload["brief"]["family"] == "machine_console"
+
+
+def test_portal_relic_inferred_from_shrine_name() -> None:
+    payload = _evaluate({"name": "ancient_shrine_portal"})
+
+    assert payload["family_inference"] == {
+        "matched_family": "portal_relic",
+        "match_signal": "name",
+        "match_token": "portal",
+    }
+    assert payload["brief"]["family"] == "portal_relic"
+
+
+def test_tool_prop_inferred_from_scanner_kind() -> None:
+    payload = _evaluate(
+        {"name": "asset_42", "intent": {"role": "utility"}, "kind": "hand_scanner"}
+    )
+
+    assert payload["family_inference"] == {
+        "matched_family": "tool_prop",
+        "match_signal": "kind",
+        "match_token": "scanner",
+    }
+    assert payload["brief"]["family"] == "tool_prop"
+
+
 def test_kind_field_used_when_name_and_role_do_not_match() -> None:
     payload = _evaluate(
         {"name": "asset_42", "intent": {"role": "utility"}, "kind": "storage_crate"}
@@ -195,6 +299,15 @@ def test_each_family_default_brief_has_all_twelve_fields() -> None:
         ({"name": "industrial_crate"}, "industrial_crate"),
         ({"name": "mechanical_door"}, "mechanical_door"),
         ({"name": "service_cabinet"}, "service_cabinet"),
+        ({"name": "hero_weapon"}, "weapon_prop"),
+        ({"name": "cargo_vehicle"}, "vehicle_prop"),
+        ({"name": "workbench"}, "furniture_prop"),
+        ({"name": "terrain_rock"}, "natural_form"),
+        ({"name": "tower_room"}, "environment_architecture"),
+        ({"name": "dock_lantern"}, "lighting_prop"),
+        ({"name": "power_generator"}, "machine_console"),
+        ({"name": "ancient_relic"}, "portal_relic"),
+        ({"name": "repair_tool"}, "tool_prop"),
         ({"name": "abstract_widget"}, "generic"),
     ]
     for asset, expected_family in cases:

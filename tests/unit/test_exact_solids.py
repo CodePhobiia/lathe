@@ -19,6 +19,7 @@ import unittest
 
 import numpy as np
 import trimesh
+from lathe import exact_solids
 from lathe.errors import ContractViolation
 from lathe.exact_solids import (
     _primitive_mesh,
@@ -171,7 +172,7 @@ class TranslatedPrimitiveTests(unittest.TestCase):
             _primitive_mesh(bad)
 
     def test_primitive_mesh_rejects_unknown_type(self) -> None:
-        weird = ShapePrimitive(primitive_type="torus", part="body", center=(0.0, 0.0, 0.0))
+        weird = ShapePrimitive(primitive_type="superellipsoid", part="body", center=(0.0, 0.0, 0.0))
         with self.assertRaises(ValueError):
             _primitive_mesh(weird)
 
@@ -212,6 +213,162 @@ class CompileExplicitSurfaceMeshTests(unittest.TestCase):
         # component_assembly preserves per-primitive face_parts (no union)
         self.assertEqual(len(face_parts), len(mesh.faces))
         self.assertEqual(report["mode"], "exact_component_assembly")
+
+    def test_large_same_part_boolean_count_falls_back_to_bounded_concatenate(self) -> None:
+        s = _empty_shape_ir()
+        count = exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS + 2
+        for index in range(count):
+            center = (float(index) * 3.0, 0.0, 0.0)
+            s.primitives.append(
+                ShapePrimitive(
+                    primitive_type="box",
+                    part="body",
+                    center=center,
+                    extents=(1.0, 1.0, 1.0),
+                )
+            )
+            s.regions.append(
+                ShapeRegion(
+                    name=f"r_{index}",
+                    part="body",
+                    component="detail",
+                    center=center,
+                    extents=(1.0, 1.0, 1.0),
+                )
+            )
+
+        mesh, face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
+
+        self.assertGreater(len(mesh.faces), 0)
+        self.assertEqual(len(face_parts), len(mesh.faces))
+        self.assertEqual(report["mode"], "exact_boolean_fallback_concatenate")
+        self.assertEqual(report["primitive_count"], count)
+        self.assertEqual(report["boolean_operation_count"], count - 1)
+        self.assertIn("bounded exact boolean limit", report["boolean_fallback_reason"])
+
+    def test_oversized_union_can_use_bounded_part_clusters(self) -> None:
+        s = _empty_shape_ir()
+        for index in range(4):
+            part = "left" if index < 2 else "right"
+            center = (float(index) * 3.0, 0.0, 0.0)
+            s.primitives.append(
+                ShapePrimitive(
+                    primitive_type="box",
+                    part=part,
+                    center=center,
+                    extents=(1.0, 1.0, 1.0),
+                )
+            )
+            s.regions.append(
+                ShapeRegion(
+                    name=f"r_{index}",
+                    part=part,
+                    component="detail",
+                    center=center,
+                    extents=(1.0, 1.0, 1.0),
+                )
+            )
+        original_global = exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS
+        original_cluster = exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS
+        try:
+            exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS = 2
+            exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS = 2
+            mesh, face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
+        finally:
+            exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS = original_global
+            exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS = original_cluster
+
+        self.assertGreater(len(mesh.faces), 0)
+        self.assertEqual(face_parts, [])
+        self.assertEqual(report["mode"], "exact_boolean_union_clustered")
+        self.assertNotIn("boolean_fallback_reason", report)
+
+    def test_oversized_cutters_use_bounded_manifold_kernel_when_available(self) -> None:
+        try:
+            from lathe.geometry.manifold_kernel import manifold_available
+        except ImportError:
+            self.skipTest("manifold geometry kernel unavailable")
+        if not manifold_available():
+            self.skipTest("manifold3d unavailable")
+
+        s = _empty_shape_ir()
+        for index in range(4):
+            part = "left" if index < 2 else "right"
+            center = (float(index) * 3.0, 0.0, 0.0)
+            s.primitives.append(
+                ShapePrimitive(
+                    primitive_type="box",
+                    part=part,
+                    center=center,
+                    extents=(1.0, 1.0, 1.0),
+                )
+            )
+        s.primitives.append(
+            ShapePrimitive(
+                primitive_type="box",
+                part="cutter",
+                center=(0.0, 0.0, 0.0),
+                extents=(0.5, 0.5, 0.5),
+                blend_mode="subtract",
+            )
+        )
+        original_global = exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS
+        try:
+            exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS = 2
+            mesh, face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
+        finally:
+            exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS = original_global
+
+        self.assertGreater(len(mesh.faces), 0)
+        self.assertTrue(mesh.is_watertight)
+        self.assertEqual(face_parts, [])
+        self.assertEqual(report["mode"], "exact_boolean_manifold_kernel")
+        self.assertEqual(report["boolean_kernel"], "lathe.geometry.manifold_v1")
+        self.assertEqual(report["bounded_boolean_route"], "manifold_kernel_full_csg")
+
+    def test_oversized_cutters_are_omitted_from_clustered_visible_fallback_when_manifold_fails(self) -> None:
+        s = _empty_shape_ir()
+        for index in range(4):
+            part = "left" if index < 2 else "right"
+            center = (float(index) * 3.0, 0.0, 0.0)
+            s.primitives.append(
+                ShapePrimitive(
+                    primitive_type="box",
+                    part=part,
+                    center=center,
+                    extents=(1.0, 1.0, 1.0),
+                )
+            )
+        s.primitives.append(
+            ShapePrimitive(
+                primitive_type="box",
+                part="cutter",
+                center=(0.0, 0.0, 0.0),
+                extents=(0.5, 0.5, 0.5),
+                blend_mode="subtract",
+            )
+        )
+        original_global = exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS
+        original_cluster = exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS
+        original_manifold_route = exact_solids._combine_with_manifold_kernel
+
+        def _fail_manifold_route(*_args, **_kwargs):
+            raise ValueError("forced manifold route failure")
+
+        try:
+            exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS = 2
+            exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS = 2
+            exact_solids._combine_with_manifold_kernel = _fail_manifold_route
+            mesh, face_parts, report = compile_explicit_surface_mesh(s, _game_fidelity())
+        finally:
+            exact_solids._MAX_EXPLICIT_BOOLEAN_OPERATIONS = original_global
+            exact_solids._MAX_CLUSTER_BOOLEAN_OPERATIONS = original_cluster
+            exact_solids._combine_with_manifold_kernel = original_manifold_route
+
+        self.assertGreater(len(mesh.faces), 0)
+        self.assertEqual(face_parts, [])
+        self.assertEqual(report["mode"], "exact_boolean_fallback_clustered_union_omit_cutters")
+        self.assertIn("omitted 1 subtract / 0 intersect cutter", report["boolean_fallback_reason"])
 
 
 class ExactifySurfaceMeshTests(unittest.TestCase):

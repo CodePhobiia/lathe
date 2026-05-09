@@ -26,6 +26,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..repair_planner import suggest_repairs_for_metric
+from ..validators.render_class import evaluate_render_class_validators
 from .highlow_relation import is_highlow_required
 
 
@@ -223,6 +225,30 @@ def _primary_secondary_tertiary_balance(
     )
 
 
+def _repair_route_for_metric(metric: str, metrics: dict[str, Any]) -> dict[str, Any]:
+    actions = suggest_repairs_for_metric(metric, metrics)
+    if not actions:
+        return {
+            "executor": "",
+            "target_ir": "",
+            "actions": [],
+            "status": "no_registered_repair_action",
+        }
+    if any(action in {"reauthor_surface_layer", "reselect_candidate", "regenerate_with_patch"} for action in actions):
+        return {
+            "executor": "lathe.repair_loop.run_repair_loop",
+            "target_ir": "stage_bundle",
+            "actions": actions,
+            "status": "registered",
+        }
+    return {
+        "executor": "lathe.repair_executor.execute_shape_repairs",
+        "target_ir": "shape_ir",
+        "actions": actions,
+        "status": "registered",
+    }
+
+
 def evaluate_quality_diagnostics(
     asset: dict[str, Any], runtime: dict[str, Any]
 ) -> dict[str, Any]:
@@ -301,23 +327,40 @@ def evaluate_quality_diagnostics(
         ),
     ]
 
-    findings: list[dict[str, str]] = []
+    findings: list[dict[str, Any]] = []
     warnings: list[str] = []
     recommendations: list[str] = []
+    repair_routes: list[dict[str, Any]] = []
     for metric, triggered, warning_text in warning_specs:
         if not triggered:
             continue
         recommendation = _RECOMMENDATIONS[metric]
+        repair_route = _repair_route_for_metric(metric, metrics)
         warnings.append(warning_text)
         recommendations.append(recommendation)
+        repair_routes.append({"metric": metric, **repair_route})
         findings.append(
             {
                 "metric": metric,
                 "severity": "warning",
                 "warning": warning_text,
                 "recommendation": recommendation,
+                "repair_route": repair_route,
+                "repair_actions": list(repair_route["actions"]),
             }
         )
+
+    render_class = evaluate_render_class_validators(asset, runtime)
+    for child_name, child_score in render_class.get("metrics", {}).items():
+        metrics[child_name] = round(float(child_score), 6)
+    for finding in render_class.get("findings", []):
+        findings.append(dict(finding))
+        warning_text = finding.get("warning")
+        recommendation_text = finding.get("recommendation")
+        if isinstance(warning_text, str) and warning_text:
+            warnings.append(warning_text)
+        if isinstance(recommendation_text, str) and recommendation_text:
+            recommendations.append(recommendation_text)
 
     return {
         "version": VERSION,
@@ -325,4 +368,6 @@ def evaluate_quality_diagnostics(
         "warnings": warnings,
         "recommendations": recommendations,
         "findings": findings,
+        "repair_routes": repair_routes,
+        "render_class_validators": render_class,
     }

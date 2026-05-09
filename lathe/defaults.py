@@ -44,6 +44,7 @@ PROGRAM_DEFAULTS = {
     "library_bindings": [],
     "material_graphs": [],
     "inspection_policies": [],
+    "asset_class_profiles": [],
     "repair_policies": [],
     "fixtures": [],
     "tests": [],

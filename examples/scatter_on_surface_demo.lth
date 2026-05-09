@@ -1,0 +1,58 @@
+// Phase 3 §7.x — scatter_on_surface / surface-projected instancing demo.
+//
+// Same productivity-multiplier shape as Phase 2 §6.x ``scatter(...)`` but
+// the points are sampled from the actual surface of another primitive,
+// so authors can declaratively say "rocks on terrain", "rivets on a
+// curved panel", "leaves on a branch", "decorations on dungeon walls".
+//
+// One declaration generalises across all 5 domains: hard-surface
+// rivets-on-curved-panels, vegetation leaves-on-branches, terrain
+// pebbles-on-undulations, SDF/creature bumps-on-skin, WFC trims-on-cell-faces.
+module demo.scatter_surface
+
+asset rocky_meadow : hard_surface_prop {
+  intent {
+    role = "rocky meadow"
+    asset_class = "hero"
+    style = ["natural", "outdoor"]
+    materials = ["rock_grey", "moss"]
+    scale = 20m
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 7
+
+      mesh_program {
+        // 20m x 20m rolling-hills terrain — the surface that pebbles
+        // will follow. terrain_biome modifies the heightfield in-place
+        // before scatter_on_surface samples the resulting mesh.
+        let ground = terrain_heightfield(
+          extents: [20m, 20m],
+          resolution: 32,
+          scale_z: 2m,
+          seed: 5,
+        )
+        terrain_biome(
+          target: ground,
+          biome: "rolling_hills",
+          roughness: 0.3,
+          peak_density: 0.1,
+        )
+
+        // ~200 pebbles distributed on the actual terrain surface.
+        // 20m * 20m = 400 m² * 0.5 / m² = 200 pebble copies.
+        let pebble = solid_cylinder(radius: 8cm, height: 5cm, axis: "y")
+        scatter_on_surface(
+          primitive: pebble,
+          target: ground,
+          density: 0.5,
+          seed: 7,
+          jitter: 5cm,
+        )
+      }
+    }
+  }
+}

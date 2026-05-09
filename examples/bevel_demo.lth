@@ -1,0 +1,52 @@
+// V1.4 §5.1 KEY DEMO — source-level boolean -> bevel(seam_group) chain.
+//
+// This is the .lth analog to ``examples/bevel_demo.py``. After the parser
+// landed the ``mesh_program {}`` ordered statement block, any author can
+// spell the canonical hard-surface idiom directly in source instead of
+// hand-crafting ``boolean_seam_groups`` and ``v2_polybevel_modifier``
+// records via Python.
+//
+// The mesh_program below builds the same baseline body+cutout that the
+// Python demo builds (a 10cm cube with an 8x8x4cm cutout offset 4cm up),
+// declares ``seam_group: "lip"`` so the post-boolean cutback pass sees
+// the A/B intersection edges, and queues a 1cm 4-segment polybevel via
+// ``fillet_edge``.
+//
+// Lower the program with ``lathe.mesh_program.lower_mesh_program`` to
+// get the deterministic ``ShapePrimitive`` list, then feed it through
+// ``lathe.exact_solids.compile_explicit_surface_mesh`` (or the standard
+// shape pipeline once the asset_graph wiring lands) to get the beveled
+// mesh.
+module demo.bevel
+
+asset bevel_demo : hard_surface_prop {
+  intent {
+    role = "bevel demo"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 42
+
+      mesh_program {
+        let body = box(extents: [10cm, 10cm, 10cm])
+        let cutout = box(extents: [8cm, 8cm, 4cm]).translate([0cm, 0cm, 4cm])
+        let result = boolean(
+          op: subtract,
+          a: body,
+          b: cutout,
+          seam_group: "lip",
+        )
+        fillet_edge(
+          target: result,
+          edge_class: "lip",
+          radius: 1cm,
+          segments: 4,
+        )
+      }
+    }
+  }
+}

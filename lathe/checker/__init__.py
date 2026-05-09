@@ -20,6 +20,7 @@ from .language import (
     check_tests_and_benchmarks,
     check_use_graphs,
 )
+from .surface import check_pbr_material_primitives
 from .utils import diag
 
 __all__ = ["Checker", "check_program", "diag"]
@@ -46,6 +47,7 @@ class Checker:
         check_assets_and_variants(self)
         check_tests_and_benchmarks(self)
         check_experimental_block(self)
+        check_pbr_material_primitives(self)
         return self.diagnostics
 
 

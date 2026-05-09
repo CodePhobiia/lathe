@@ -18,6 +18,7 @@ import pytest
 import trimesh
 from lathe.executor import build_asset
 from lathe.parser import parse_file
+from lathe.validators import geometry_integrity
 from lathe.validators.geometry_integrity import evaluate_geometry_integrity
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -194,6 +195,46 @@ class GeometryIntegrityTests(unittest.TestCase):
         l6201 = [d for d in report["diagnostics"] if d["code"] == "L6201"]
         self.assertEqual(len(l6201), 1)
         self.assertEqual(l6201[0]["severity"], "warning")
+
+    def test_large_overlap_self_intersection_scan_is_bounded(self) -> None:
+        vertices: list[list[float]] = []
+        faces: list[list[int]] = []
+        for idx in range(10):
+            offset = idx * 0.01
+            base = len(vertices)
+            vertices.extend(
+                [
+                    [offset, 0.0, 0.0],
+                    [1.0 + offset, 0.0, 0.0],
+                    [offset, 1.0, 0.0],
+                ]
+            )
+            faces.append([base, base + 1, base + 2])
+        mesh = trimesh.Trimesh(
+            vertices=np.asarray(vertices, dtype=np.float64),
+            faces=np.asarray(faces, dtype=np.int64),
+            process=False,
+        )
+        calls = {"count": 0}
+        original_budget = geometry_integrity._MAX_SELF_INTERSECTION_PAIRS
+        original_intersect = geometry_integrity._triangles_intersect
+
+        def _counting_intersect(_a: np.ndarray, _b: np.ndarray) -> bool:
+            calls["count"] += 1
+            return False
+
+        try:
+            geometry_integrity._MAX_SELF_INTERSECTION_PAIRS = 5
+            geometry_integrity._triangles_intersect = _counting_intersect
+            report = evaluate_geometry_integrity({"name": "overlap"}, _runtime_with_mesh(mesh))
+        finally:
+            geometry_integrity._MAX_SELF_INTERSECTION_PAIRS = original_budget
+            geometry_integrity._triangles_intersect = original_intersect
+
+        self.assertEqual(calls["count"], 5)
+        self.assertEqual(report["evidence"]["tested_pairs"], 5)
+        self.assertTrue(report["evidence"]["self_intersection_scan_limited"])
+        self.assertEqual(report["evidence"]["self_intersection_pair_budget"], 5)
 
 
 @pytest.mark.slow

@@ -1,0 +1,3107 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 526748,
+    "triangle_count": 175866,
+    "watertight": false,
+    "volume": 0.0,
+    "bounds_min": [
+      -201.934662,
+      -36.203583,
+      -149.629425
+    ],
+    "bounds_max": [
+      201.927124,
+      59.937912,
+      204.278137
+    ],
+    "extents": [
+      403.861786,
+      96.141495,
+      353.907562
+    ],
+    "body_count": 175367
+  },
+  "normals": {
+    "mode": "face",
+    "count": 175866
+  },
+  "part_groups": [
+    {
+      "name": "access",
+      "face_count": 4934,
+      "vertex_count": 14798,
+      "bounds_min": [
+        -0.245632,
+        -12.398942,
+        2.475506
+      ],
+      "bounds_max": [
+        59.204243,
+        33.555504,
+        83.366211
+      ]
+    },
+    {
+      "name": "body",
+      "face_count": 35972,
+      "vertex_count": 107882,
+      "bounds_min": [
+        -201.934662,
+        -20.477871,
+        -149.629425
+      ],
+      "bounds_max": [
+        201.927124,
+        59.937912,
+        204.278137
+      ]
+    },
+    {
+      "name": "cargo_door",
+      "face_count": 5159,
+      "vertex_count": 15447,
+      "bounds_min": [
+        -111.116928,
+        -16.172205,
+        -58.812469
+      ],
+      "bounds_max": [
+        111.116928,
+        -5.249541,
+        82.117088
+      ]
+    },
+    {
+      "name": "facade",
+      "face_count": 3125,
+      "vertex_count": 9371,
+      "bounds_min": [
+        -26.951332,
+        -14.352657,
+        -44.799702
+      ],
+      "bounds_max": [
+        105.738609,
+        47.220543,
+        32.969849
+      ]
+    },
+    {
+      "name": "foliage",
+      "face_count": 970,
+      "vertex_count": 2905,
+      "bounds_min": [
+        -27.689825,
+        2.136402,
+        -5.65019
+      ],
+      "bounds_max": [
+        10.288069,
+        47.220543,
+        23.795006
+      ]
+    },
+    {
+      "name": "infrastructure",
+      "face_count": 3293,
+      "vertex_count": 9879,
+      "bounds_min": [
+        -8.439344,
+        -2.347082,
+        -34.925812
+      ],
+      "bounds_max": [
+        77.481522,
+        7.300107,
+        36.848736
+      ]
+    },
+    {
+      "name": "interface",
+      "face_count": 6771,
+      "vertex_count": 20271,
+      "bounds_min": [
+        6.226829,
+        -0.783007,
+        -6.454934
+      ],
+      "bounds_max": [
+        28.891417,
+        14.085602,
+        34.163914
+      ]
+    },
+    {
+      "name": "interior",
+      "face_count": 4488,
+      "vertex_count": 13318,
+      "bounds_min": [
+        -8.621731,
+        -1.190638,
+        14.038276
+      ],
+      "bounds_max": [
+        8.210595,
+        10.67613,
+        68.064072
+      ]
+    },
+    {
+      "name": "landing_leg_l",
+      "face_count": 5957,
+      "vertex_count": 17769,
+      "bounds_min": [
+        36.717381,
+        -36.203583,
+        15.241632
+      ],
+      "bounds_max": [
+        47.142494,
+        -12.566244,
+        26.002991
+      ]
+    },
+    {
+      "name": "landing_leg_r",
+      "face_count": 6086,
+      "vertex_count": 18237,
+      "bounds_min": [
+        -47.142452,
+        -36.203583,
+        15.332263
+      ],
+      "bounds_max": [
+        -36.717339,
+        -12.566923,
+        26.002991
+      ]
+    },
+    {
+      "name": "lighting",
+      "face_count": 3958,
+      "vertex_count": 11860,
+      "bounds_min": [
+        -34.138081,
+        -1.222288,
+        -6.376872
+      ],
+      "bounds_max": [
+        -4.496886,
+        14.085602,
+        71.120544
+      ]
+    },
+    {
+      "name": "machine",
+      "face_count": 34761,
+      "vertex_count": 104080,
+      "bounds_min": [
+        -110.867546,
+        -12.662247,
+        -2.112767
+      ],
+      "bounds_max": [
+        107.38192,
+        33.360153,
+        125.821892
+      ]
+    },
+    {
+      "name": "rotor_fl",
+      "face_count": 8884,
+      "vertex_count": 26644,
+      "bounds_min": [
+        71.084236,
+        1.453928,
+        78.84256
+      ],
+      "bounds_max": [
+        93.410042,
+        25.360418,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_fr",
+      "face_count": 8747,
+      "vertex_count": 26212,
+      "bounds_min": [
+        -93.410042,
+        1.417516,
+        78.84256
+      ],
+      "bounds_max": [
+        -71.084236,
+        25.360306,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_rl",
+      "face_count": 9217,
+      "vertex_count": 27628,
+      "bounds_min": [
+        66.760941,
+        1.417516,
+        -101.168365
+      ],
+      "bounds_max": [
+        93.410042,
+        25.360418,
+        -45.350361
+      ]
+    },
+    {
+      "name": "rotor_rr",
+      "face_count": 7675,
+      "vertex_count": 23008,
+      "bounds_min": [
+        -93.410042,
+        1.426622,
+        -101.168365
+      ],
+      "bounds_max": [
+        -66.411629,
+        25.398346,
+        -44.618782
+      ]
+    },
+    {
+      "name": "scene_anchor",
+      "face_count": 10622,
+      "vertex_count": 31835,
+      "bounds_min": [
+        -27.214617,
+        -0.763352,
+        -9.073921
+      ],
+      "bounds_max": [
+        28.701801,
+        13.990462,
+        67.661583
+      ]
+    },
+    {
+      "name": "street_scene",
+      "face_count": 6992,
+      "vertex_count": 20976,
+      "bounds_min": [
+        -40.807308,
+        -12.409278,
+        -9.337162
+      ],
+      "bounds_max": [
+        7.441864,
+        33.360153,
+        82.117088
+      ]
+    },
+    {
+      "name": "vehicle",
+      "face_count": 8255,
+      "vertex_count": 24628,
+      "bounds_min": [
+        -15.957697,
+        -1.060122,
+        -6.376872
+      ],
+      "bounds_max": [
+        10.288069,
+        47.220543,
+        66.14727
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "access",
+      "face_count": 4934,
+      "vertex_count": 14798,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -0.245632,
+        -12.398942,
+        2.475506
+      ],
+      "bounds_max": [
+        59.204243,
+        33.555504,
+        83.366211
+      ]
+    },
+    {
+      "name": "body",
+      "face_count": 35972,
+      "vertex_count": 107882,
+      "tags": [
+        "body",
+        "shell"
+      ],
+      "parent_blueprint_component": "courier_body",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -201.934662,
+        -20.477871,
+        -149.629425
+      ],
+      "bounds_max": [
+        201.927124,
+        59.937912,
+        204.278137
+      ]
+    },
+    {
+      "name": "cargo_door",
+      "face_count": 5159,
+      "vertex_count": 15447,
+      "tags": [
+        "cargo",
+        "door"
+      ],
+      "parent_blueprint_component": "cargo_door_panel",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -111.116928,
+        -16.172205,
+        -58.812469
+      ],
+      "bounds_max": [
+        111.116928,
+        -5.249541,
+        82.117088
+      ]
+    },
+    {
+      "name": "facade",
+      "face_count": 3125,
+      "vertex_count": 9371,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -26.951332,
+        -14.352657,
+        -44.799702
+      ],
+      "bounds_max": [
+        105.738609,
+        47.220543,
+        32.969849
+      ]
+    },
+    {
+      "name": "foliage",
+      "face_count": 970,
+      "vertex_count": 2905,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -27.689825,
+        2.136402,
+        -5.65019
+      ],
+      "bounds_max": [
+        10.288069,
+        47.220543,
+        23.795006
+      ]
+    },
+    {
+      "name": "infrastructure",
+      "face_count": 3293,
+      "vertex_count": 9879,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -8.439344,
+        -2.347082,
+        -34.925812
+      ],
+      "bounds_max": [
+        77.481522,
+        7.300107,
+        36.848736
+      ]
+    },
+    {
+      "name": "interface",
+      "face_count": 6771,
+      "vertex_count": 20271,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        6.226829,
+        -0.783007,
+        -6.454934
+      ],
+      "bounds_max": [
+        28.891417,
+        14.085602,
+        34.163914
+      ]
+    },
+    {
+      "name": "interior",
+      "face_count": 4488,
+      "vertex_count": 13318,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -8.621731,
+        -1.190638,
+        14.038276
+      ],
+      "bounds_max": [
+        8.210595,
+        10.67613,
+        68.064072
+      ]
+    },
+    {
+      "name": "landing_leg_l",
+      "face_count": 5957,
+      "vertex_count": 17769,
+      "tags": [
+        "foot",
+        "left",
+        "leg"
+      ],
+      "parent_blueprint_component": "landing_leg_left",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        36.717381,
+        -36.203583,
+        15.241632
+      ],
+      "bounds_max": [
+        47.142494,
+        -12.566244,
+        26.002991
+      ]
+    },
+    {
+      "name": "landing_leg_r",
+      "face_count": 6086,
+      "vertex_count": 18237,
+      "tags": [
+        "foot",
+        "left",
+        "leg",
+        "right"
+      ],
+      "parent_blueprint_component": "landing_leg_right",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -47.142452,
+        -36.203583,
+        15.332263
+      ],
+      "bounds_max": [
+        -36.717339,
+        -12.566923,
+        26.002991
+      ]
+    },
+    {
+      "name": "lighting",
+      "face_count": 3958,
+      "vertex_count": 11860,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -34.138081,
+        -1.222288,
+        -6.376872
+      ],
+      "bounds_max": [
+        -4.496886,
+        14.085602,
+        71.120544
+      ]
+    },
+    {
+      "name": "machine",
+      "face_count": 34761,
+      "vertex_count": 104080,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -110.867546,
+        -12.662247,
+        -2.112767
+      ],
+      "bounds_max": [
+        107.38192,
+        33.360153,
+        125.821892
+      ]
+    },
+    {
+      "name": "rotor_fl",
+      "face_count": 8884,
+      "vertex_count": 26644,
+      "tags": [
+        "front",
+        "left",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_front_left",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        71.084236,
+        1.453928,
+        78.84256
+      ],
+      "bounds_max": [
+        93.410042,
+        25.360418,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_fr",
+      "face_count": 8747,
+      "vertex_count": 26212,
+      "tags": [
+        "front",
+        "right",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_front_right",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -93.410042,
+        1.417516,
+        78.84256
+      ],
+      "bounds_max": [
+        -71.084236,
+        25.360306,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_rl",
+      "face_count": 9217,
+      "vertex_count": 27628,
+      "tags": [
+        "left",
+        "rear",
+        "right",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_rear_left",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        66.760941,
+        1.417516,
+        -101.168365
+      ],
+      "bounds_max": [
+        93.410042,
+        25.360418,
+        -45.350361
+      ]
+    },
+    {
+      "name": "rotor_rr",
+      "face_count": 7675,
+      "vertex_count": 23008,
+      "tags": [
+        "rear",
+        "right",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_rear_right",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -93.410042,
+        1.426622,
+        -101.168365
+      ],
+      "bounds_max": [
+        -66.411629,
+        25.398346,
+        -44.618782
+      ]
+    },
+    {
+      "name": "scene_anchor",
+      "face_count": 10622,
+      "vertex_count": 31835,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -27.214617,
+        -0.763352,
+        -9.073921
+      ],
+      "bounds_max": [
+        28.701801,
+        13.990462,
+        67.661583
+      ]
+    },
+    {
+      "name": "street_scene",
+      "face_count": 6992,
+      "vertex_count": 20976,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -40.807308,
+        -12.409278,
+        -9.337162
+      ],
+      "bounds_max": [
+        7.441864,
+        33.360153,
+        82.117088
+      ]
+    },
+    {
+      "name": "vehicle",
+      "face_count": 8255,
+      "vertex_count": 24628,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -15.957697,
+        -1.060122,
+        -6.376872
+      ],
+      "bounds_max": [
+        10.288069,
+        47.220543,
+        66.14727
+      ]
+    }
+  ],
+  "part_count": 19,
+  "multi_part_scene_source": "blender_output_glb",
+  "hard_edge_groups": [
+    {
+      "name": "body_shell",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "canopy_bezel",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "cargo_door_region",
+      "part": "cargo_door",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "keel_spine",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_front_left",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_front_right",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_rear_left",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_rear_right",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_front_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_rear_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_left_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_right_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fl_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fl_pod",
+      "part": "rotor_fl",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fr_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fr_pod",
+      "part": "rotor_fr",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rl_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rl_pod",
+      "part": "rotor_rl",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rr_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rr_pod",
+      "part": "rotor_rr",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "leg_left_region",
+      "part": "landing_leg_l",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "leg_right_region",
+      "part": "landing_leg_r",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_shell_shell",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_street_crate",
+      "part": "street_scene",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_door",
+      "part": "facade",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_gate_panel",
+      "part": "scene_anchor",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_safety_gate",
+      "part": "scene_anchor",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_natural_rock",
+      "part": "foliage",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_pipe_run",
+      "part": "infrastructure",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_repair_policy_hardpoint",
+      "part": "interface",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_body_body",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_pod_rotor_pod",
+      "part": "vehicle",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_hinge_hinge",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_foot_foot",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_interface_role_sign_post",
+      "part": "scene_anchor",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_interface_role_street_bench",
+      "part": "street_scene",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_interface_role_access_ramp",
+      "part": "access",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_interface_role_guardrail",
+      "part": "access",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_interface_role_lamp",
+      "part": "lighting",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_interface_role_room_cell",
+      "part": "interior",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_machine_base",
+      "part": "machine",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_machine_column",
+      "part": "machine",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_hydraulic_piston",
+      "part": "machine",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_conveyor",
+      "part": "machine",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_gear",
+      "part": "machine",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_tank",
+      "part": "machine",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [
+    "canopy_bezel",
+    "cargo_door_region",
+    "authored_repair_policy_door"
+  ],
+  "bake_groups": [
+    {
+      "name": "body_shell",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "canopy_bezel",
+      "part": "body",
+      "material_boundary": true
+    },
+    {
+      "name": "cargo_door_region",
+      "part": "cargo_door",
+      "material_boundary": false
+    },
+    {
+      "name": "keel_spine",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_front_left",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_front_right",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_rear_left",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_rear_right",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_front_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_rear_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_left_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_right_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fl_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fl_pod",
+      "part": "rotor_fl",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fr_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fr_pod",
+      "part": "rotor_fr",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rl_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rl_pod",
+      "part": "rotor_rl",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rr_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rr_pod",
+      "part": "rotor_rr",
+      "material_boundary": false
+    },
+    {
+      "name": "leg_left_region",
+      "part": "landing_leg_l",
+      "material_boundary": false
+    },
+    {
+      "name": "leg_right_region",
+      "part": "landing_leg_r",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_shell_shell",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_street_crate",
+      "part": "street_scene",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_door",
+      "part": "facade",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_gate_panel",
+      "part": "scene_anchor",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_safety_gate",
+      "part": "scene_anchor",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_natural_rock",
+      "part": "foliage",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_pipe_run",
+      "part": "infrastructure",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_repair_policy_hardpoint",
+      "part": "interface",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_body_body",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_pod_rotor_pod",
+      "part": "vehicle",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_hinge_hinge",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_foot_foot",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_interface_role_sign_post",
+      "part": "scene_anchor",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_interface_role_street_bench",
+      "part": "street_scene",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_interface_role_access_ramp",
+      "part": "access",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_interface_role_guardrail",
+      "part": "access",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_interface_role_lamp",
+      "part": "lighting",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_interface_role_room_cell",
+      "part": "interior",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_machine_base",
+      "part": "machine",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_machine_column",
+      "part": "machine",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_hydraulic_piston",
+      "part": "machine",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_conveyor",
+      "part": "machine",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_gear",
+      "part": "machine",
+      "material_boundary": false
+    },
+    {
+      "name": "authored_rotor_spin_mechanism_tank",
+      "part": "machine",
+      "material_boundary": false
+    }
+  ],
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 3890,
+    "region_count": 46,
+    "primitive_diversity": 0.015167,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 3756,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "corner_guard",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "groove_channel",
+      "hinge_set",
+      "inset_panel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "rib",
+      "rotor_shroud",
+      "screen_bezel",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "support_bracket",
+      "trim_band",
+      "trim_strip"
+    ],
+    "feature_density": 234.75,
+    "edge_treatment_count": 456,
+    "panel_feature_count": 652,
+    "support_feature_count": 596,
+    "attachment_region_count": 16,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 3450,
+    "geometry_detail_feature_count": 3450,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 138,
+      "attachment_rail": 184,
+      "attachment_vent_stack": 230,
+      "bolt_cap": 184,
+      "bolt_washer": 184,
+      "corner_guard": 184,
+      "edge_break": 184,
+      "groove_channel": 184,
+      "layer_plate": 138,
+      "linear_detail_array": 184,
+      "module_antenna": 184,
+      "module_power_cell": 184,
+      "module_shield_plate": 92,
+      "panel_seam": 276,
+      "silhouette_guard_cowl": 69,
+      "silhouette_outrigger": 92,
+      "silhouette_spine": 69,
+      "silhouette_tower": 138,
+      "socket_collar": 184,
+      "socket_recess": 184,
+      "trim_strip": 184
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ],
+    "primitive_selector_applied_count": 0,
+    "primitive_selector_by_component": {},
+    "primitive_selector_by_target": {},
+    "geometry_detail_zones_applied": [
+      {
+        "zone": "global",
+        "target": "body_shell",
+        "part": "body",
+        "component": "shell",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "canopy_bezel",
+        "part": "body",
+        "component": "bezel",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "cargo_door_region",
+        "part": "cargo_door",
+        "component": "door",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "keel_spine",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "fairing_front_left",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "fairing_front_right",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "fairing_rear_left",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "fairing_rear_right",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "arm_front_bar",
+        "part": "body",
+        "component": "rotor_arm",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "arm_rear_bar",
+        "part": "body",
+        "component": "rotor_arm",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "arm_left_bar",
+        "part": "body",
+        "component": "rotor_arm",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "arm_right_bar",
+        "part": "body",
+        "component": "rotor_arm",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "rotor_fl_mount",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "rotor_fl_pod",
+        "part": "rotor_fl",
+        "component": "rotor_pod",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "rotor_fr_mount",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "rotor_fr_pod",
+        "part": "rotor_fr",
+        "component": "rotor_pod",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "rotor_rl_mount",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "rotor_rl_pod",
+        "part": "rotor_rl",
+        "component": "rotor_pod",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "rotor_rr_mount",
+        "part": "body",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "rotor_rr_pod",
+        "part": "rotor_rr",
+        "component": "rotor_pod",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "leg_left_region",
+        "part": "landing_leg_l",
+        "component": "stand",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "leg_right_region",
+        "part": "landing_leg_r",
+        "component": "stand",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "authored_shell_shell",
+        "part": "body",
+        "component": "shell",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_street_crate",
+        "part": "street_scene",
+        "component": "street_crate",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_door",
+        "part": "facade",
+        "component": "door",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_gate_panel",
+        "part": "scene_anchor",
+        "component": "gate_panel",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_safety_gate",
+        "part": "scene_anchor",
+        "component": "safety_gate",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_natural_rock",
+        "part": "foliage",
+        "component": "natural_rock",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_pipe_run",
+        "part": "infrastructure",
+        "component": "pipe_run",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_repair_policy_hardpoint",
+        "part": "interface",
+        "component": "hardpoint",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_body_body",
+        "part": "body",
+        "component": "body",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_pod_rotor_pod",
+        "part": "vehicle",
+        "component": "rotor_pod",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_hinge_hinge",
+        "part": "body",
+        "component": "hinge",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "authored_foot_foot",
+        "part": "body",
+        "component": "foot",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "authored_interface_role_sign_post",
+        "part": "scene_anchor",
+        "component": "sign_post",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_interface_role_street_bench",
+        "part": "street_scene",
+        "component": "street_bench",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_interface_role_access_ramp",
+        "part": "access",
+        "component": "access_ramp",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_interface_role_guardrail",
+        "part": "access",
+        "component": "guardrail",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_interface_role_lamp",
+        "part": "lighting",
+        "component": "lamp",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_interface_role_room_cell",
+        "part": "interior",
+        "component": "room_cell",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_spin_mechanism_machine_base",
+        "part": "machine",
+        "component": "machine_base",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_spin_mechanism_machine_column",
+        "part": "machine",
+        "component": "machine_column",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_spin_mechanism_hydraulic_piston",
+        "part": "machine",
+        "component": "hydraulic_piston",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_spin_mechanism_conveyor",
+        "part": "machine",
+        "component": "conveyor",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_spin_mechanism_gear",
+        "part": "machine",
+        "component": "gear",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "authored_rotor_spin_mechanism_tank",
+        "part": "machine",
+        "component": "tank",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      }
+    ]
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "success_multi_part_recovered",
+    "fallback_reason": null,
+    "error": null,
+    "actual_adapter": "blender_subprocess_multi_part_recovered",
+    "execution": {
+      "mode": "blender_subprocess_multi_part_recovered",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 18000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "d: 1\n06:37:13 | INFO: Extracting primitive: rotor_rr\n06:37:13 | INFO: Primitives created: 1\n06:37:13 | INFO: Extracting primitive: scene_anchor\n06:37:13 | INFO: Primitives created: 1\n06:37:13 | INFO: Extracting primitive: street_scene\n06:37:13 | INFO: Primitives created: 1\n06:37:13 | INFO: Extracting primitive: vehicle\n06:37:13 | INFO: Primitives created: 1\n06:37:14 | INFO: Finished glTF 2.0 export in 0.4199991226196289 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 526748,
+        "triangle_count": 175866,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -201.934662,
+          -36.203583,
+          -149.629425
+        ],
+        "bounds_max": [
+          201.927124,
+          59.937912,
+          204.278137
+        ],
+        "extents": [
+          403.861786,
+          96.141495,
+          353.907562
+        ],
+        "body_count": 175367
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": true
+      },
+      "multi_part_override": {
+        "source": "blender_output_glb",
+        "part_count": 19,
+        "face_count": 175866,
+        "note": "Watertight fallback was discarded in favour of preserving Blender's 18-part scene; downstream stages operate on the multi-part topology."
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": false,
+    "reason": "skipped_for_multi_part_preservation",
+    "skipped_because": "blender_subprocess_multi_part_recovered"
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "blender_subprocess_multi_part_recovered"
+  },
+  "_part_groups_emitted": [
+    "access",
+    "body",
+    "cargo_door",
+    "facade",
+    "foliage",
+    "infrastructure",
+    "interface",
+    "interior",
+    "landing_leg_l",
+    "landing_leg_r",
+    "lighting",
+    "machine",
+    "rotor_fl",
+    "rotor_fr",
+    "rotor_rl",
+    "rotor_rr",
+    "scene_anchor",
+    "street_scene",
+    "vehicle"
+  ]
+}

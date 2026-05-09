@@ -1,0 +1,709 @@
+{
+  "asset": "oak_tree",
+  "kind": "hard_surface_prop",
+  "resolved_uses": [],
+  "stages": [
+    "shape",
+    "topology",
+    "uv",
+    "surface",
+    "rig",
+    "interfaces",
+    "physics",
+    "optimize"
+  ],
+  "dag": {
+    "shape": [
+      "topology"
+    ],
+    "topology": [
+      "uv",
+      "rig",
+      "interfaces",
+      "physics",
+      "optimize"
+    ],
+    "uv": [
+      "surface",
+      "optimize"
+    ],
+    "surface": [
+      "optimize"
+    ],
+    "rig": [
+      "interfaces",
+      "physics",
+      "optimize"
+    ],
+    "interfaces": [
+      "physics",
+      "optimize"
+    ],
+    "physics": [
+      "optimize"
+    ],
+    "optimize": [
+      "validate",
+      "package",
+      "publish"
+    ]
+  },
+  "backend_stack": {
+    "id": "lathe.stack.hard_surface_game_asset_v1",
+    "name": "Hard-surface game asset v1",
+    "description": "Single probabilistic shape handoff followed by deterministic hard-surface cleanup, UVing, and packaging.",
+    "selection_reason": "Best first stack for hard-surface props because it isolates the AI-native step to shape generation and keeps productionization deterministic downstream."
+  },
+  "selected_backends": {
+    "shape": {
+      "id": "lathe.shape.intent_mesh_handoff_v1",
+      "version": "2.0.0",
+      "determinism_class": "seeded",
+      "toolchain": [
+        "reference_runtime",
+        "trimesh",
+        "Pillow"
+      ],
+      "runtime_executor": "lathe.runtime.shape.provider_mux_v2",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Reference-conditioned AI handoff boundary that turns Lathe intent and available refs into one or more mesh candidates for generate, reconstruct, adapt, or assemble modes.",
+        "inputs": {
+          "required": [
+            "kind",
+            "intent.role",
+            "build.shape.mode"
+          ],
+          "optional": [
+            "refs.images",
+            "refs.meshes",
+            "refs.assets",
+            "intent.parts",
+            "intent.materials",
+            "intent.negatives",
+            "build.shape.candidates",
+            "build.shape.seed",
+            "build.shape.symmetry",
+            "build.shape.preserve"
+          ],
+          "mode_requirements": {
+            "generate": [
+              "intent.role"
+            ],
+            "reconstruct": [
+              "one_of(refs.images, refs.meshes)"
+            ],
+            "adapt": [
+              "one_of(refs.meshes, refs.assets)"
+            ],
+            "assemble": [
+              "refs.assets"
+            ]
+          }
+        },
+        "outputs": {
+          "artifact": "shape_bundle",
+          "required_fields": [
+            "candidates[].mesh_uri",
+            "candidates[].units",
+            "candidates[].frame",
+            "candidates[].candidate_id",
+            "provenance.backend_id",
+            "provenance.backend_version"
+          ],
+          "optional_fields": [
+            "candidates[].part_labels",
+            "candidates[].coarse_material_slots",
+            "candidates[].preview_images",
+            "provenance.seed",
+            "provenance.external_job_id",
+            "provenance.consumed_refs",
+            "conditioning_report"
+          ],
+          "guarantees": [
+            "returns at least one mesh candidate",
+            "declares source units and frame for every candidate",
+            "retains mapping back to source refs and seed when available"
+          ]
+        }
+      }
+    },
+    "topology": {
+      "id": "lathe.topology.blender_hard_surface_v1",
+      "version": "1.0.0",
+      "determinism_class": "deterministic",
+      "toolchain": [
+        "reference_runtime",
+        "trimesh"
+      ],
+      "runtime_executor": "lathe.runtime.topology.cleanup_v1",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Headless Blender cleanup and hard-surface retopo pass for a single authoritative production mesh.",
+        "inputs": {
+          "required": [
+            "shape_bundle",
+            "build.topology.retopo",
+            "build.topology.ngons"
+          ],
+          "optional": [
+            "build.topology.target_quads",
+            "build.topology.target_tris",
+            "build.topology.preserve"
+          ]
+        },
+        "outputs": {
+          "artifact": "topology_bundle",
+          "required_fields": [
+            "mesh_uri",
+            "mesh_stats.vertex_count",
+            "mesh_stats.triangle_count",
+            "normals",
+            "part_groups",
+            "provenance.backend_id"
+          ],
+          "guarantees": [
+            "one authoritative post-cleanup mesh",
+            "part names preserved where possible",
+            "topology report available for downstream validation"
+          ]
+        }
+      }
+    },
+    "uv": {
+      "id": "lathe.uv.xatlas_v1",
+      "version": "1.0.0",
+      "determinism_class": "deterministic",
+      "toolchain": [
+        "xatlas",
+        "trimesh"
+      ],
+      "runtime_executor": "lathe.runtime.uv.xatlas_v1",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Atlas generation and unique UV unwrapping for game-ready texture and lightmap channels.",
+        "inputs": {
+          "required": [
+            "topology_bundle",
+            "build.uv.sets",
+            "build.uv.tile_mode",
+            "build.uv.padding"
+          ],
+          "optional": [
+            "build.uv.texel_density",
+            "build.uv.pack_rotate"
+          ]
+        },
+        "outputs": {
+          "artifact": "uv_bundle",
+          "required_fields": [
+            "mesh_uri",
+            "uv_sets[].name",
+            "uv_sets[].coverage",
+            "packing_report.chart_count",
+            "provenance.backend_id"
+          ],
+          "guarantees": [
+            "base UVs are uniquely unwrapped into 0..1 space",
+            "lightmap UV set is emitted when requested",
+            "packing report is available for diagnostics"
+          ]
+        }
+      }
+    },
+    "package": {
+      "id": "lathe.package.openusd_gltf_v1",
+      "version": "1.0.0",
+      "determinism_class": "deterministic",
+      "toolchain": [
+        "trimesh",
+        "Pillow",
+        "openusd_text"
+      ],
+      "runtime_executor": "lathe.runtime.package.bundle_v1",
+      "selected_via": "stack",
+      "contract": {
+        "summary": "Authoritative packaging pass that emits interchange USD plus runtime-oriented glTF/GLB/OBJ deliverables and manifests.",
+        "inputs": {
+          "required": [
+            "optimized_asset",
+            "package.formats",
+            "package.manifest",
+            "package.include_trace"
+          ],
+          "optional": [
+            "package.previews",
+            "package.embed_textures",
+            "publish.registry",
+            "publish.version"
+          ]
+        },
+        "outputs": {
+          "artifact": "package_bundle",
+          "required_fields": [
+            "outputs[].format",
+            "outputs[].uri",
+            "manifest_path",
+            "normalized_source_path",
+            "trace_path"
+          ],
+          "guarantees": [
+            "USD package root is written when usd is requested",
+            "GLB/glTF exports are generated with runtime delivery metadata",
+            "package manifest and trace manifest are always emitted when enabled"
+          ]
+        }
+      },
+      "format_routes": {
+        "usd": "openusd_text",
+        "glb": "trimesh_glb",
+        "gltf": "trimesh_gltf",
+        "obj": "trimesh_obj"
+      }
+    }
+  },
+  "v1_1_flow": {
+    "mode": "generate",
+    "reference_sets": [],
+    "resolved_reference_sets": [],
+    "fit_profile": "",
+    "resolved_fit_profile": "",
+    "reconstruct_policy": "",
+    "resolved_reconstruct_policy": "",
+    "adapt_policy": "",
+    "resolved_adapt_policy": "",
+    "transfer_rules": [],
+    "resolved_transfer_rules": [],
+    "assembly_policy": "",
+    "resolved_assembly_policy": "",
+    "kit": "",
+    "resolved_kit": ""
+  },
+  "v1_2_surface": {
+    "surface_program": "",
+    "surface_policy": "",
+    "resolved_surface_policy": "",
+    "authoring_backend": "",
+    "resolved_surface_backend": "",
+    "authoring_mode": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "resolved_decal_libraries": [],
+    "resolved_mask_programs": [],
+    "resolved_trim_sheets": []
+  },
+  "v1_3_execution": {
+    "profile": "",
+    "resolved_execution_profile": "",
+    "engine": "",
+    "mode": "",
+    "deterministic": null,
+    "preserve_blend": "",
+    "material_graph": "",
+    "resolved_material_graph": "",
+    "bake_profile": "",
+    "resolved_bake_profile": "",
+    "render_fixture": "",
+    "resolved_render_fixture": "",
+    "library_bindings": [],
+    "resolved_library_bindings": [],
+    "internal_backends": {
+      "geometry_backend": "",
+      "uv_backend": "",
+      "bake_backend": "",
+      "surface_backend": "",
+      "render_backend": "",
+      "package_backend": "",
+      "library_backend": ""
+    }
+  },
+  "v1_3_1_control": {
+    "bridge_backend": "lathe.bridge.blender_execution_v1",
+    "source_of_truth": "lathe_source",
+    "inspection_policy": "",
+    "resolved_inspection_policy": "",
+    "required_evidence": [],
+    "patch_source_allowed": false,
+    "unsafe_blender_python_allowed": false,
+    "default_recovery_branches": [
+      "reselect_candidate",
+      "repair_candidate",
+      "regenerate_candidate",
+      "patch_source"
+    ]
+  },
+  "effective_asset": {
+    "node_type": "asset",
+    "name": "oak_tree",
+    "kind": "hard_surface_prop",
+    "from": "",
+    "uses": [],
+    "refs": {
+      "images": [],
+      "meshes": [],
+      "assets": [],
+      "materials": [],
+      "notes": [],
+      "reference_sets": [],
+      "resolved_reference_sets": []
+    },
+    "intent": {
+      "role": "procedural oak tree",
+      "asset_class": "hero",
+      "resolved_asset_class_profile": {
+        "name": "hero",
+        "body": {
+          "poly_budget": {
+            "tris_max": 80000,
+            "quads_target": 20000
+          },
+          "texture_budget": {
+            "basecolor": {
+              "type": "unit",
+              "value": 2048,
+              "unit": "px"
+            },
+            "normal": {
+              "type": "unit",
+              "value": 4096,
+              "unit": "px"
+            },
+            "orm": {
+              "type": "unit",
+              "value": 2048,
+              "unit": "px"
+            },
+            "emissive": {
+              "type": "unit",
+              "value": 1024,
+              "unit": "px"
+            }
+          },
+          "lod_count": 3,
+          "validator_threshold": 0.88
+        }
+      },
+      "style": [],
+      "parts": [],
+      "materials": [],
+      "negatives": [],
+      "interactions": [],
+      "notes": [],
+      "style_stack": {
+        "material_model": "pbr_stylized",
+        "shading_model": "lambert_ambient",
+        "texture_authoring": "procedural_designer",
+        "outline_mode": "none",
+        "lighting_strategy": "dynamic_global_illumination",
+        "detail_layer_compose": "multi_band_pbr",
+        "animation_rate": "fluid",
+        "construction_grammar": "free_form"
+      },
+      "style_bridges": []
+    },
+    "geometry": {},
+    "features": {
+      "allow": []
+    },
+    "surface": {
+      "resolved_palette": {},
+      "resolved_materials": {},
+      "resolved_patterns": [],
+      "resolved_surface_program": {},
+      "resolved_surface_policy": {},
+      "resolved_surface_backend": {},
+      "resolved_decal_libraries": [],
+      "resolved_mask_programs": [],
+      "resolved_trim_sheets": [],
+      "resolved_material_graph": {},
+      "program": "",
+      "material_graph": "",
+      "patterns": [],
+      "palette": "",
+      "material_zones": [],
+      "materials": [],
+      "decals": [],
+      "bake": [],
+      "backend": "",
+      "policy": "",
+      "decal_libraries": [],
+      "mask_programs": [],
+      "trim_sheets": [],
+      "authoring": {}
+    },
+    "assembly": {
+      "resolved_family": {},
+      "resolved_components": [],
+      "resolved_mechanisms": [],
+      "resolved_traits": [],
+      "family": "",
+      "components": [],
+      "mechanisms": [],
+      "traits": []
+    },
+    "fit": {
+      "resolved_fit_profile": {},
+      "resolved_reconstruct_policy": {}
+    },
+    "transfer": {
+      "resolved_adapt_policy": {},
+      "resolved_transfer_rules": []
+    },
+    "reuse": {},
+    "constraints": {
+      "resolved_assembly_policy": {}
+    },
+    "ingest": {},
+    "assembly_rules": {},
+    "execution": {
+      "resolved_execution_profile": {},
+      "resolved_inspection_policy": {},
+      "resolved_library_bindings": [],
+      "profile": "",
+      "engine": "",
+      "mode": "",
+      "deterministic": null,
+      "preserve_blend": "",
+      "geometry_backend": "",
+      "uv_backend": "",
+      "bake_backend": "",
+      "surface_backend": "",
+      "render_backend": "",
+      "package_backend": "",
+      "library_backend": "",
+      "library_bindings": [],
+      "inspection_policy": ""
+    },
+    "space": {
+      "use": "",
+      "values": {},
+      "vary": [],
+      "freeze": [],
+      "objectives": [],
+      "select": {},
+      "resolved_name": ""
+    },
+    "repair_policy": {
+      "allow": [],
+      "deny": [],
+      "resolved_name": "",
+      "use": "",
+      "mode": "",
+      "max_rounds": null
+    },
+    "build": {
+      "shape": {
+        "mode": "generate",
+        "candidates": 1,
+        "seed": 42,
+        "mesh_program": {
+          "node_type": "mesh_program",
+          "statements": [
+            {
+              "node_type": "mesh_let",
+              "target": "trunk",
+              "expr": {
+                "type": "call",
+                "name": "vegetation_trunk",
+                "args": [
+                  {
+                    "name": "height",
+                    "value": {
+                      "type": "unit",
+                      "value": 4,
+                      "unit": "m"
+                    }
+                  },
+                  {
+                    "name": "base_radius",
+                    "value": {
+                      "type": "unit",
+                      "value": 25,
+                      "unit": "cm"
+                    }
+                  },
+                  {
+                    "name": "taper",
+                    "value": 0.4
+                  },
+                  {
+                    "name": "segments",
+                    "value": 6
+                  }
+                ]
+              }
+            },
+            {
+              "node_type": "mesh_call",
+              "expr": {
+                "type": "call",
+                "name": "vegetation_canopy",
+                "args": [
+                  {
+                    "name": "parent",
+                    "value": "trunk"
+                  },
+                  {
+                    "name": "branch_count",
+                    "value": 10
+                  },
+                  {
+                    "name": "leaf_density",
+                    "value": 60
+                  },
+                  {
+                    "name": "leaf_size",
+                    "value": {
+                      "type": "unit",
+                      "value": 6,
+                      "unit": "cm"
+                    }
+                  },
+                  {
+                    "name": "foliage_radius",
+                    "value": {
+                      "type": "unit",
+                      "value": 140,
+                      "unit": "cm"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "backend": "auto",
+        "symmetry": "none",
+        "preserve": []
+      },
+      "surface": {
+        "resolved_bake_profile": {},
+        "resolved_render_fixture": {},
+        "resolution": {
+          "type": "unit",
+          "value": 4096,
+          "unit": "px"
+        },
+        "texture_budget": {
+          "basecolor": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "normal": {
+            "type": "unit",
+            "value": 4096,
+            "unit": "px"
+          },
+          "orm": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "emissive": {
+            "type": "unit",
+            "value": 1024,
+            "unit": "px"
+          }
+        },
+        "backend": "auto",
+        "workflow": "pbr_metal_rough",
+        "maps": [
+          "basecolor",
+          "normal",
+          "orm"
+        ],
+        "bakes": [],
+        "bake_profile": "",
+        "render_fixture": "",
+        "decals": [],
+        "id_map": false
+      },
+      "topology": {
+        "target_quads": 20000,
+        "tris_max": 80000,
+        "backend": "auto",
+        "retopo": "auto",
+        "ngons": "avoid",
+        "preserve": []
+      },
+      "optimize": {
+        "lods": 3,
+        "backend": "auto",
+        "atlas": false,
+        "mesh_compression": false,
+        "strip_hidden_faces": false,
+        "instance_candidates": false
+      },
+      "uv": {
+        "backend": "auto",
+        "sets": [
+          "base"
+        ],
+        "unwrap": "auto",
+        "tile_mode": "zero_to_one",
+        "padding": {
+          "type": "unit",
+          "value": 8,
+          "unit": "px"
+        },
+        "pack_rotate": true,
+        "udims": []
+      },
+      "rig": {
+        "backend": "auto",
+        "type": "none",
+        "joints": [],
+        "pivot_policy": "auto",
+        "joint_limits": "auto"
+      },
+      "interfaces": {
+        "backend": "auto",
+        "sockets": [],
+        "pivots": [],
+        "anchors": [],
+        "connections": [],
+        "auto_connect": false
+      },
+      "physics": {
+        "backend": "auto",
+        "collision": "none",
+        "max_hulls": 10,
+        "mass": "auto",
+        "center_of_mass": "auto"
+      }
+    },
+    "validate": {
+      "rules": [],
+      "repair": {
+        "allow": [],
+        "deny": [],
+        "mode": "auto_until_pass",
+        "max_rounds": 3
+      },
+      "threshold": 0.88
+    },
+    "package": {
+      "backend": "auto",
+      "formats": [
+        "usd",
+        "glb"
+      ],
+      "manifest": true,
+      "previews": [],
+      "embed_textures": false,
+      "include_trace": true,
+      "naming": "auto"
+    },
+    "publish": {
+      "registry": "",
+      "version": "auto_patch",
+      "tags": [],
+      "visibility": "private",
+      "approval": "required",
+      "channel": "dev"
+    },
+    "experimental": {}
+  }
+}

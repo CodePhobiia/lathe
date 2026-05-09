@@ -18,6 +18,7 @@ from ..scaffold_compiler import compile_scaffold_candidates
 from ..shape_providers import maybe_run_shape_provider
 from ..stage_contracts import assert_supported_backend_contract_version, supported_backend_contract_versions
 from .geometry.conditioning import collect_shape_conditioning
+from .mesh_program_path import compile_mesh_program_candidate, mesh_program_ast_from_asset
 
 __all__ = ["collect_shape_conditioning", "run_shape_backend"]
 
@@ -74,15 +75,38 @@ def run_shape_backend(
             f"for auto-selection, not the literal string {provider!r}."
         )
     explicit_provider = provider != "auto"
-    scaffold_result = compile_scaffold_candidates(
-        asset_graph,
-        seed=seed,
-        candidates_count=candidates_count,
-        conditioning=conditioning,
-        mode=mode,
-        runtime_config=runtime_config,
-    )
-    if (
+    # Phase 1 §5.1d dispatch: an authored ``mesh_program {}`` block in
+    # source overrides the family-blueprint candidate-search path. The
+    # mesh_program AST is lowered to deterministic ShapePrimitives and
+    # fed straight to the exact-solid + post-boolean-polybevel chain so
+    # ``boolean(seam_group:) + fillet_edge(edge_class:)`` source flows
+    # produce real beveled meshes end-to-end. Falls through to the
+    # family path when no mesh_program is declared (legacy behavior).
+    mesh_program_ast = mesh_program_ast_from_asset(asset)
+    if mesh_program_ast is not None:
+        scaffold_result = compile_mesh_program_candidate(
+            asset_graph,
+            mesh_program_ast,
+            mode=mode,
+            conditioning=conditioning,
+            runtime_config=runtime_config,
+        )
+    else:
+        scaffold_result = compile_scaffold_candidates(
+            asset_graph,
+            seed=seed,
+            candidates_count=candidates_count,
+            conditioning=conditioning,
+            mode=mode,
+            runtime_config=runtime_config,
+        )
+    # `self_reliant_target` is true by default for every asset (Phase 0 §4.8:
+    # Lathe is a standalone procedural compiler). An explicit non-"auto"
+    # provider in the runtime config overrides this gate.
+    # Authored ``mesh_program{}`` always pins to native-only: the program is
+    # the authoritative geometry, so a learned proposal would just be
+    # discarded by conformance fit anyway.
+    if mesh_program_ast is not None or (
         asset_graph.authoring.get("self_reliant_target")
         and mode in {"generate", "assemble", "adapt"}
         and not explicit_provider
@@ -103,7 +127,7 @@ def run_shape_backend(
                     "details": {},
                 },
                 "config": {},
-                "fallback_reason": "V0.9 self-reliant compiler policy removes asset-generation AI from the critical path for this asset family.",
+                "fallback_reason": "V0.9 self-reliant compiler policy removes asset-generation AI from the critical path for this asset.",
             },
             "runtime_candidates": None,
         }

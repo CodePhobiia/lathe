@@ -1,0 +1,683 @@
+{
+  "backend_id": "lathe.uv.xatlas_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/uv/uv.glb",
+  "uv_sets": [
+    {
+      "name": "base",
+      "coverage": {
+        "u_min": 0.000244,
+        "u_max": 0.999756,
+        "v_min": 0.000244,
+        "v_max": 0.999756
+      },
+      "vertex_count": 103257
+    },
+    {
+      "name": "lightmap",
+      "coverage": {
+        "u_min": 0.05022,
+        "u_max": 0.94978,
+        "v_min": 0.05022,
+        "v_max": 0.94978
+      },
+      "vertex_count": 103257
+    }
+  ],
+  "packing_report": {
+    "chart_count": 4274,
+    "atlas_count": 2,
+    "per_part_chart_count": 8,
+    "semantic_chart_count": 8,
+    "semantic_grouping": "part",
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "pack_rotate": true,
+    "utilization": 0.7881128787994385,
+    "per_part_islands": [
+      {
+        "part": "body",
+        "importance_weight": 0.444444,
+        "raw_weight": 0.4,
+        "surface_area": 17736.273683,
+        "vertex_count": 63016,
+        "triangle_count": 21200,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 2068,
+        "tags": [
+          "body",
+          "shell"
+        ],
+        "parent_blueprint_component": "chest_body"
+      },
+      {
+        "part": "foot_l",
+        "importance_weight": 0.027778,
+        "raw_weight": 0.025,
+        "surface_area": 391.136997,
+        "vertex_count": 6399,
+        "triangle_count": 2137,
+        "uv_bounds": {
+          "u_min": 0.000732,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999268
+        },
+        "uv_island_chart_count": 227,
+        "tags": [
+          "foot",
+          "left"
+        ],
+        "parent_blueprint_component": "support_foot_l"
+      },
+      {
+        "part": "foot_r",
+        "importance_weight": 0.027778,
+        "raw_weight": 0.025,
+        "surface_area": 402.557909,
+        "vertex_count": 6407,
+        "triangle_count": 2139,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999268,
+          "v_min": 0.000732,
+          "v_max": 0.999268
+        },
+        "uv_island_chart_count": 225,
+        "tags": [
+          "foot",
+          "right"
+        ],
+        "parent_blueprint_component": "support_foot_r"
+      },
+      {
+        "part": "front_hatch",
+        "importance_weight": 0.111111,
+        "raw_weight": 0.1,
+        "surface_area": 1943.002915,
+        "vertex_count": 3281,
+        "triangle_count": 1103,
+        "uv_bounds": {
+          "u_min": 0.000732,
+          "u_max": 0.997803,
+          "v_min": 0.000244,
+          "v_max": 0.998779
+        },
+        "uv_island_chart_count": 257,
+        "tags": [
+          "hatch"
+        ]
+      },
+      {
+        "part": "handle_l",
+        "importance_weight": 0.055556,
+        "raw_weight": 0.05,
+        "surface_area": 1113.258689,
+        "vertex_count": 7424,
+        "triangle_count": 2476,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.976318
+        },
+        "uv_island_chart_count": 212,
+        "tags": [
+          "handle",
+          "left"
+        ],
+        "parent_blueprint_component": "side_handle_l"
+      },
+      {
+        "part": "handle_r",
+        "importance_weight": 0.055556,
+        "raw_weight": 0.05,
+        "surface_area": 1062.295902,
+        "vertex_count": 7334,
+        "triangle_count": 2448,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 208,
+        "tags": [
+          "handle",
+          "right"
+        ],
+        "parent_blueprint_component": "side_handle_r"
+      },
+      {
+        "part": "lid_panel",
+        "importance_weight": 0.222222,
+        "raw_weight": 0.2,
+        "surface_area": 10368.60839,
+        "vertex_count": 3012,
+        "triangle_count": 1004,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.996826
+        },
+        "uv_island_chart_count": 257,
+        "tags": [
+          "lid",
+          "panel"
+        ],
+        "parent_blueprint_component": "chest_lid"
+      },
+      {
+        "part": "lock_plate",
+        "importance_weight": 0.055556,
+        "raw_weight": 0.05,
+        "surface_area": 469.373063,
+        "vertex_count": 6384,
+        "triangle_count": 2128,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 820,
+        "tags": [
+          "latch",
+          "lock",
+          "lock_plate",
+          "plate"
+        ],
+        "parent_blueprint_component": "brass_latch_set"
+      }
+    ],
+    "part_source": "multi_part_scene",
+    "generated_source_uv_remap": {
+      "available": false,
+      "source": "input_mesh_visual_uv",
+      "preservation": "per_part_xatlas_v1"
+    }
+  },
+  "texel_density": {
+    "requested_px_per_m": 512.0,
+    "actual_px_per_m": 512.0
+  },
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 8,
+    "material_id_count": 3,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "foot_l": "uvc_02_foot_l",
+      "foot_r": "uvc_03_foot_r",
+      "front_hatch": "uvc_04_front_hatch",
+      "handle_l": "uvc_05_handle_l",
+      "handle_r": "uvc_06_handle_r",
+      "lid_panel": "uvc_07_lid_panel",
+      "lock_plate": "uvc_08_lock_plate"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "oak_body",
+      "material_id": "matid_03_oak_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_foot_l",
+      "group": "foot_l",
+      "grouping": "part",
+      "island_name": "semantic_foot_l",
+      "parts": [
+        "foot_l"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_foot_r",
+      "group": "foot_r",
+      "grouping": "part",
+      "island_name": "semantic_foot_r",
+      "parts": [
+        "foot_r"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_front_hatch",
+      "group": "front_hatch",
+      "grouping": "part",
+      "island_name": "semantic_front_hatch",
+      "parts": [
+        "front_hatch"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_handle_l",
+      "group": "handle_l",
+      "grouping": "part",
+      "island_name": "semantic_handle_l",
+      "parts": [
+        "handle_l"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_handle_r",
+      "group": "handle_r",
+      "grouping": "part",
+      "island_name": "semantic_handle_r",
+      "parts": [
+        "handle_r"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_lid_panel",
+      "group": "lid_panel",
+      "grouping": "part",
+      "island_name": "semantic_lid_panel",
+      "parts": [
+        "lid_panel"
+      ],
+      "material": "oak_body",
+      "material_id": "matid_03_oak_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_08_lock_plate",
+      "group": "lock_plate",
+      "grouping": "part",
+      "island_name": "semantic_lock_plate",
+      "parts": [
+        "lock_plate"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 3,
+    "ids": [
+      {
+        "material_id": "matid_01_aged_brass_trim",
+        "material": "aged_brass_trim",
+        "parts": [
+          "foot_l",
+          "foot_r",
+          "handle_l",
+          "handle_r",
+          "lock_plate"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_edge_dust",
+        "material": "edge_dust",
+        "parts": [
+          "front_hatch"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      },
+      {
+        "material_id": "matid_03_oak_body",
+        "material": "oak_body",
+        "parts": [
+          "body",
+          "lid_panel"
+        ],
+        "rgb": [
+          88,
+          178,
+          120
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_03_oak_body",
+      "foot_l": "matid_01_aged_brass_trim",
+      "foot_r": "matid_01_aged_brass_trim",
+      "front_hatch": "matid_02_edge_dust",
+      "handle_l": "matid_01_aged_brass_trim",
+      "handle_r": "matid_01_aged_brass_trim",
+      "lid_panel": "matid_03_oak_body",
+      "lock_plate": "matid_01_aged_brass_trim"
+    }
+  },
+  "seam_guides": [],
+  "bake_groups": [],
+  "material_boundaries": [],
+  "lightmap_ready": true,
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 191,
+    "region_count": 14,
+    "primitive_diversity": 0.104712,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 161,
+    "feature_types": [
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "inset_panel",
+      "recessed_handle",
+      "rib",
+      "support_bracket",
+      "trim_band"
+    ],
+    "feature_density": 10.0625,
+    "edge_treatment_count": 28,
+    "panel_feature_count": 34,
+    "support_feature_count": 10,
+    "attachment_region_count": 6,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 48,
+    "geometry_detail_feature_count": 48,
+    "geometry_detail_feature_types": [
+      "bolt_cap",
+      "bolt_washer"
+    ],
+    "geometry_detail_operator_counts": {
+      "bolt_cap": 24,
+      "bolt_washer": 24
+    },
+    "primitive_selector_applied_count": 18,
+    "primitive_selector_by_component": {
+      "door": 1,
+      "foot": 2,
+      "frame": 8,
+      "handle": 2,
+      "lid": 1,
+      "lock_plate": 4
+    },
+    "primitive_selector_by_target": {
+      "extruded_profile": 12,
+      "revolved_profile": 4,
+      "swept_profile": 2
+    }
+  },
+  "generated_uv_atlas_hints": {},
+  "adapter_report": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "xatlas",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "available": true,
+      "version": "0.0.11",
+      "code": "ok"
+    },
+    "status": "success",
+    "actual_adapter": "xatlas_per_part",
+    "execution": {
+      "mode": "xatlas_per_part",
+      "resolution": 2048,
+      "part_count": 8,
+      "part_source": "multi_part_scene",
+      "lightmap_strategy": "derived_inset",
+      "vertex_count": 103257,
+      "triangle_count": 34635,
+      "utilization": 0.7881128787994385,
+      "per_part_islands": [
+        {
+          "part": "body",
+          "importance_weight": 0.444444,
+          "raw_weight": 0.4,
+          "surface_area": 17736.273683,
+          "vertex_count": 63016,
+          "triangle_count": 21200,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 2068,
+          "tags": [
+            "body",
+            "shell"
+          ],
+          "parent_blueprint_component": "chest_body"
+        },
+        {
+          "part": "foot_l",
+          "importance_weight": 0.027778,
+          "raw_weight": 0.025,
+          "surface_area": 391.136997,
+          "vertex_count": 6399,
+          "triangle_count": 2137,
+          "uv_bounds": {
+            "u_min": 0.000732,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999268
+          },
+          "uv_island_chart_count": 227,
+          "tags": [
+            "foot",
+            "left"
+          ],
+          "parent_blueprint_component": "support_foot_l"
+        },
+        {
+          "part": "foot_r",
+          "importance_weight": 0.027778,
+          "raw_weight": 0.025,
+          "surface_area": 402.557909,
+          "vertex_count": 6407,
+          "triangle_count": 2139,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999268,
+            "v_min": 0.000732,
+            "v_max": 0.999268
+          },
+          "uv_island_chart_count": 225,
+          "tags": [
+            "foot",
+            "right"
+          ],
+          "parent_blueprint_component": "support_foot_r"
+        },
+        {
+          "part": "front_hatch",
+          "importance_weight": 0.111111,
+          "raw_weight": 0.1,
+          "surface_area": 1943.002915,
+          "vertex_count": 3281,
+          "triangle_count": 1103,
+          "uv_bounds": {
+            "u_min": 0.000732,
+            "u_max": 0.997803,
+            "v_min": 0.000244,
+            "v_max": 0.998779
+          },
+          "uv_island_chart_count": 257,
+          "tags": [
+            "hatch"
+          ]
+        },
+        {
+          "part": "handle_l",
+          "importance_weight": 0.055556,
+          "raw_weight": 0.05,
+          "surface_area": 1113.258689,
+          "vertex_count": 7424,
+          "triangle_count": 2476,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.976318
+          },
+          "uv_island_chart_count": 212,
+          "tags": [
+            "handle",
+            "left"
+          ],
+          "parent_blueprint_component": "side_handle_l"
+        },
+        {
+          "part": "handle_r",
+          "importance_weight": 0.055556,
+          "raw_weight": 0.05,
+          "surface_area": 1062.295902,
+          "vertex_count": 7334,
+          "triangle_count": 2448,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 208,
+          "tags": [
+            "handle",
+            "right"
+          ],
+          "parent_blueprint_component": "side_handle_r"
+        },
+        {
+          "part": "lid_panel",
+          "importance_weight": 0.222222,
+          "raw_weight": 0.2,
+          "surface_area": 10368.60839,
+          "vertex_count": 3012,
+          "triangle_count": 1004,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.996826
+          },
+          "uv_island_chart_count": 257,
+          "tags": [
+            "lid",
+            "panel"
+          ],
+          "parent_blueprint_component": "chest_lid"
+        },
+        {
+          "part": "lock_plate",
+          "importance_weight": 0.055556,
+          "raw_weight": 0.05,
+          "surface_area": 469.373063,
+          "vertex_count": 6384,
+          "triangle_count": 2128,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 820,
+          "tags": [
+            "latch",
+            "lock",
+            "lock_plate",
+            "plate"
+          ],
+          "parent_blueprint_component": "brass_latch_set"
+        }
+      ]
+    }
+  },
+  "style_routing": {
+    "texture_authoring": "procedural_designer",
+    "skip_unwrap": false,
+    "uv_layout_hint": "unique_udim"
+  },
+  "provenance": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "xatlas_per_part"
+  }
+}

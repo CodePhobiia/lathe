@@ -112,6 +112,59 @@ class IntegrationConfigTests(unittest.TestCase):
         second = integration_config_for_family("brassbound_chest", fidelity)
         self.assertEqual(first, second)
 
+    def test_meshing_strategy_exact_promotes_non_hero_family(self) -> None:
+        fidelity = _fidelity("hero")
+        cfg = integration_config_for_family(
+            "courier_drone", fidelity, meshing_strategy="exact"
+        )
+        # Strategy=exact lights up the explicit-mesh path even for a
+        # non-legacy family. ``hero_family`` stays False - the legacy
+        # contract identifies the original eight families only.
+        self.assertTrue(cfg["enabled"])
+        self.assertTrue(cfg["exact_finalize"])
+        self.assertEqual(cfg["exact_mode"], "explicit_mesh")
+        self.assertFalse(cfg["hero_family"])
+        self.assertEqual(cfg["meshing_strategy"], "exact")
+
+    def test_meshing_strategy_sdf_overrides_legacy_hero(self) -> None:
+        fidelity = _fidelity("hero")
+        cfg = integration_config_for_family(
+            "brassbound_chest", fidelity, meshing_strategy="sdf"
+        )
+        self.assertFalse(cfg["enabled"])
+        self.assertFalse(cfg["exact_finalize"])
+        self.assertEqual(cfg["exact_mode"], "sdf_voxel_fusion")
+        # ``hero_family`` is a legacy identity flag, not a meshing
+        # selector - it remains True.
+        self.assertTrue(cfg["hero_family"])
+
+    def test_meshing_strategy_exact_preserves_component_assembly_for_terminal(self) -> None:
+        fidelity = _fidelity("game")
+        cfg = integration_config_for_family(
+            "console_terminal", fidelity, meshing_strategy="exact"
+        )
+        # console_terminal historically uses the component_assembly
+        # exact mode rather than explicit_mesh; opt-in must not regress.
+        self.assertEqual(cfg["exact_mode"], "component_assembly")
+
+    def test_meshing_strategy_invalid_falls_back_to_auto(self) -> None:
+        fidelity = _fidelity("game")
+        cfg = integration_config_for_family(
+            "courier_drone", fidelity, meshing_strategy="bogus"
+        )
+        # Unknown strategy normalizes to auto; courier_drone (non-hero)
+        # then stays on the SDF path.
+        self.assertEqual(cfg["meshing_strategy"], "auto")
+        self.assertEqual(cfg["exact_mode"], "sdf_voxel_fusion")
+
+    def test_meshing_strategy_none_matches_auto(self) -> None:
+        fidelity = _fidelity("game")
+        none_cfg = integration_config_for_family("brassbound_chest", fidelity, meshing_strategy=None)
+        auto_cfg = integration_config_for_family(
+            "brassbound_chest", fidelity, meshing_strategy="auto"
+        )
+        self.assertEqual(none_cfg, auto_cfg)
+
 
 class PrimitiveRoundingTests(unittest.TestCase):
     def test_explicit_rounding_takes_precedence(self) -> None:

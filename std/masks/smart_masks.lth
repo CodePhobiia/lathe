@@ -1,0 +1,115 @@
+// doc:
+//   purpose: V0.1 §6.2 Smart Mask library -- seven mesh-aware procedural masks
+//            that ship with Lathe and can be referenced by surface_program
+//            layer_stack and designer_graph blocks.
+//   exports: mask_program cavity_mask, edge_wear_mask, top_dirt_mask,
+//            bottom_grime_mask, slope_mask, seam_mask, decal_zone_mask
+//   depends_on: none
+//   used_by: surface programs in std.surface_programs.* and example .lth
+//            sources that opt into procedural masks.
+//   stability: stable
+//   layer: V0.1
+module std.masks.smart_masks
+
+mask_program cavity_mask {
+  masks = [cavity]
+  source = derived_from_curvature
+  expression = 1.0_minus_smooth_curvature
+  preset = cavity
+  description = peaky_in_valleys
+}
+
+mask_program edge_wear_mask {
+  masks = [edge_wear]
+  source = derived_from_curvature_and_ao
+  expression = smooth_curvature_optionally_ao_gated
+  preset = edge_wear
+  ao_gate = true
+  description = peaky_on_convex_edges
+}
+
+mask_program top_dirt_mask {
+  masks = [top_dirt]
+  source = derived_from_world_normal
+  expression = smoothstep_dot_normal_world_up
+  preset = top_dirt
+  threshold_low = 0.5
+  threshold_high = 1.0
+  description = horizontal_facing_surfaces_collect_dirt
+}
+
+mask_program bottom_grime_mask {
+  masks = [bottom_grime]
+  source = derived_from_world_normal_inverted
+  expression = one_minus_top_dirt_mask
+  preset = bottom_grime
+  description = downward_facing_surfaces_collect_grime
+}
+
+mask_program slope_mask {
+  masks = [slope]
+  source = derived_from_world_normal
+  expression = smoothstep_min_max_dot_normal_world_up
+  preset = slope
+  threshold_low = 0.20
+  threshold_high = 0.80
+  description = parameterized_slope_band
+}
+
+mask_program seam_mask {
+  masks = [seam]
+  source = derived_from_boolean_seam_groups
+  expression = boolean_seam_group_attribute
+  preset = seam
+  attribute = boolean_seam_groups
+  description = highlights_csg_or_boolean_seams_for_trim_painting
+}
+
+mask_program decal_zone_mask {
+  masks = [decal_zone]
+  source = derived_from_decal_placement_metadata
+  expression = decal_placement_attribute
+  preset = decal_zone
+  attribute = decal_placement
+  description = constrains_decals_to_authored_zones
+}
+
+// §7.2 terrain masks — emitted by lathe.std.terrain.simulate_hydraulic_erosion
+// and friends; these registrations make the per-cell heightfield masks
+// addressable from surface_program layer_stack expressions the same way
+// curvature / world-normal masks already are.
+mask_program terrain_slope_mask {
+  masks = [terrain_slope]
+  source = derived_from_heightfield_gradient
+  expression = atan_gradient_normalised
+  preset = terrain_slope
+  attribute = slope_mask
+  description = normalised_slope_from_heightfield_grid
+}
+
+mask_program terrain_flow_mask {
+  masks = [terrain_flow]
+  source = derived_from_hydraulic_erosion
+  expression = water_flow_accumulation_normalised
+  preset = terrain_flow
+  attribute = flow_mask
+  description = drainage_channel_flow_from_tu_pham_solver
+}
+
+mask_program terrain_deposition_mask {
+  masks = [terrain_deposition]
+  source = derived_from_hydraulic_erosion
+  expression = sediment_deposition_normalised
+  preset = terrain_deposition
+  attribute = deposition_mask
+  description = sediment_settled_in_riverbeds_and_deltas
+}
+
+mask_program terrain_talus_mask {
+  masks = [terrain_talus]
+  source = derived_from_thermal_erosion
+  expression = absolute_height_delta_normalised
+  preset = terrain_talus
+  attribute = talus_mask
+  description = thermal_erosion_soil_movement_total
+}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -29,7 +30,13 @@ def connection_layout_from_authoring(
     if not normalized:
         return {"shape_controls": {}, "connections": [], "summary": _empty_summary()}
 
-    summary = _connection_summary(normalized, sockets=sockets or [], anchors=anchors or [])
+    endpoint_positions = _endpoint_positions_from_controls(controls)
+    summary = _connection_summary(
+        normalized,
+        sockets=sockets or [],
+        anchors=anchors or [],
+        endpoint_positions=endpoint_positions,
+    )
     derived: dict[str, Any] = {
         "connection_count": summary["connection_count"],
         "connection_route_count": summary["route_connection_count"],
@@ -56,21 +63,31 @@ def _connection_summary(
     *,
     sockets: Sequence[str],
     anchors: Sequence[str],
+    endpoint_positions: Mapping[str, Sequence[float]] | None = None,
 ) -> dict[str, Any]:
     relations: dict[str, int] = {}
     endpoint_refs: set[str] = set()
     external_refs: set[str] = set()
     endpoint_degrees: dict[str, int] = {}
+    positions: dict[str, list[float]] = {
+        str(endpoint): list(position)
+        for endpoint, position in (endpoint_positions or {}).items()
+        if str(endpoint)
+    }
     local_refs = {str(item) for item in [*sockets, *anchors] if item}
     for connection in connections:
         relation = str(connection.get("relation") or "attach").lower()
         relations[relation] = relations.get(relation, 0) + 1
+        metadata = connection.get("metadata") if isinstance(connection.get("metadata"), Mapping) else {}
         for endpoint_key in ("source", "target"):
             endpoint = str(connection.get(endpoint_key) or "")
             if not endpoint:
                 continue
             endpoint_refs.add(endpoint)
             endpoint_degrees[endpoint] = endpoint_degrees.get(endpoint, 0) + 1
+            metadata_position = _metadata_endpoint_position(metadata, endpoint_key)
+            if metadata_position is not None:
+                positions.setdefault(endpoint, metadata_position)
             if endpoint not in local_refs and ("." in endpoint or ":" in endpoint):
                 external_refs.add(endpoint)
 
@@ -89,7 +106,7 @@ def _connection_summary(
         "relations": dict(sorted(relations.items())),
         "external_refs": sorted(external_refs),
         "route_edges": _route_edges(connections),
-        "layout_points": _layout_points(endpoint_refs),
+        "layout_points": _layout_points(endpoint_refs, endpoint_positions=positions),
     }
 
 
@@ -123,7 +140,7 @@ def _route_edges(connections: Sequence[Mapping[str, Any]]) -> list[dict[str, str
     edges: list[dict[str, str]] = []
     for connection in connections:
         relation = str(connection.get("relation") or "attach").lower()
-        if relation not in ROUTE_RELATIONS and relation not in ATTACH_RELATIONS:
+        if relation not in ROUTE_RELATIONS and relation not in ATTACH_RELATIONS and relation not in SUPPORT_RELATIONS:
             continue
         source = str(connection.get("source") or "")
         target = str(connection.get("target") or "")
@@ -133,17 +150,66 @@ def _route_edges(connections: Sequence[Mapping[str, Any]]) -> list[dict[str, str
     return edges
 
 
-def _layout_points(endpoint_refs: set[str]) -> list[dict[str, Any]]:
+def _layout_points(
+    endpoint_refs: set[str],
+    *,
+    endpoint_positions: Mapping[str, Sequence[float]] | None = None,
+) -> list[dict[str, Any]]:
     ordered = sorted(endpoint_refs)
     count = max(1, len(ordered) - 1)
-    return [
-        {
-            "endpoint": endpoint,
-            "order": index,
-            "normalized_position": [0.0, 0.0, round(-0.5 + index / count, 6)],
-        }
-        for index, endpoint in enumerate(ordered)
-    ]
+    points: list[dict[str, Any]] = []
+    for index, endpoint in enumerate(ordered):
+        position = _vector3(endpoint_positions.get(endpoint)) if endpoint_positions else None
+        points.append(
+            {
+                "endpoint": endpoint,
+                "order": index,
+                "normalized_position": position or [0.0, 0.0, round(-0.5 + index / count, 6)],
+            }
+        )
+    return points
+
+
+def _endpoint_positions_from_controls(controls: Mapping[str, Any]) -> dict[str, list[float]]:
+    positions: dict[str, list[float]] = {}
+    mapping = controls.get("connection_endpoint_positions")
+    if isinstance(mapping, Mapping):
+        for endpoint, value in mapping.items():
+            position = _vector3(value)
+            if position is not None:
+                positions[str(endpoint)] = position
+    for key, value in controls.items():
+        if not isinstance(key, str) or not key.startswith("connection_endpoint_") or not key.endswith("_position"):
+            continue
+        endpoint = key.removeprefix("connection_endpoint_").removesuffix("_position")
+        position = _vector3(value)
+        if endpoint and position is not None:
+            positions[endpoint] = position
+    return positions
+
+
+def _metadata_endpoint_position(metadata: Mapping[str, Any], endpoint_key: str) -> list[float] | None:
+    if endpoint_key == "source":
+        keys = ("source_normalized_position", "from_normalized_position", "source_position", "from_position")
+    else:
+        keys = ("target_normalized_position", "to_normalized_position", "target_position", "to_position")
+    for key in keys:
+        position = _vector3(metadata.get(key))
+        if position is not None:
+            return position
+    return _vector3(metadata.get("normalized_position"))
+
+
+def _vector3(value: Any) -> list[float] | None:
+    if not isinstance(value, Sequence) or isinstance(value, str | bytes | bytearray) or len(value) < 3:
+        return None
+    try:
+        position = [round(float(value[index]), 6) for index in range(3)]
+    except (TypeError, ValueError):
+        return None
+    if not all(math.isfinite(item) for item in position):
+        return None
+    return position
 
 
 def _layout_mode(summary: Mapping[str, Any]) -> str:

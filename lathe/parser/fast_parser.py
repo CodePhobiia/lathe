@@ -7,11 +7,22 @@ AST JSON shape as the Lark path.
 
 from __future__ import annotations
 
+import ast as py_ast
 from typing import Any
 
 from .fast_parser_expr import _FastParserExprMixin
 from .grammar import LatheParseError, _dedupe_keep_first, _empty_program
 from .tokens import _TokenStream
+
+
+def _strip_string_literal(raw: str) -> str:
+    text = raw
+    if len(text) >= 2 and text[0] == '"' and text[-1] == '"':
+        try:
+            return py_ast.literal_eval(text)
+        except (SyntaxError, ValueError):
+            return text[1:-1]
+    return text
 
 
 class _FastParser(_FastParserExprMixin):
@@ -39,6 +50,16 @@ class _FastParser(_FastParserExprMixin):
         "library_binding",
         "material_graph",
         "inspection_policy",
+        "asset_class_profile",
+        "vegetation_species",
+        "vegetation_kit",
+        "wind_program",
+        "volume_program",
+        "wfc_tileset",
+        "wfc_adjacency",
+        "terrain_program",
+        "subdivision_finishing",
+        "f_rep_program",
     }
     STRUCTURED_DECLS = {"family", "component", "assembly", "trait", "mechanism"}
     SIMPLE_MAPPING_DECLS = {"repair_policy", "fixture"}
@@ -86,6 +107,16 @@ class _FastParser(_FastParserExprMixin):
         "library_binding": "library_bindings",
         "material_graph": "material_graphs",
         "inspection_policy": "inspection_policies",
+        "asset_class_profile": "asset_class_profiles",
+        "vegetation_species": "vegetation_species",
+        "vegetation_kit": "vegetation_kits",
+        "wind_program": "wind_programs",
+        "volume_program": "volume_programs",
+        "wfc_tileset": "wfc_tilesets",
+        "wfc_adjacency": "wfc_adjacencies",
+        "terrain_program": "terrain_programs",
+        "subdivision_finishing": "subdivision_finishings",
+        "f_rep_program": "f_rep_programs",
     }
     STRUCTURED_KEYS = {
         "family": "families",
@@ -119,6 +150,8 @@ class _FastParser(_FastParserExprMixin):
                 program[self.DECL_KEYS[keyword]].append(self._mapping_decl(keyword))
             elif keyword == "style_pack":
                 program["style_packs"].append(self._style_pack_decl())
+            elif keyword == "style_bridge":
+                program["style_bridges"].append(self._style_bridge_decl())
             elif keyword in {"faction_pack", "biome_kit", "architecture_grammar", "object_grammar"}:
                 program["style_packs"].append(self._style_system_decl(keyword))
             elif keyword in self.STRUCTURED_DECLS:
@@ -197,16 +230,182 @@ class _FastParser(_FastParserExprMixin):
             body = self._expr()
         return {"node_type": "critic", "name": name, "param": {"name": param, "type": "asset"}, "body": body}
 
+    _HDA_CAPABLE_DECLS = {"kit", "library", "mechanism"}
+
+    def _optional_version(self) -> str:
+        if not self.ts.peek("version"):
+            return ""
+        self.ts.pop("version")
+        if self.ts.kind() != "string":
+            raise LatheParseError("version expects a string literal")
+        raw = self.ts.pop()
+        return _strip_string_literal(raw)
+
+    def _ports_block(self) -> list[dict[str, Any]]:
+        ports: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            direction = self.ts.pop_ident()
+            if direction not in {"in", "out"}:
+                raise LatheParseError(
+                    f"port direction must be 'in' or 'out', got '{direction}'"
+                )
+            port_name = self.ts.pop_ident()
+            self.ts.pop(":")
+            port_type = self.ts.pop_ident()
+            options: dict[str, Any] = {}
+            if self.ts.peek("{"):
+                options = self._assign_block("port_options")
+            ports.append(
+                {
+                    "node_type": "port_decl",
+                    "direction": direction,
+                    "name": port_name,
+                    "port_type": port_type,
+                    "options": options,
+                }
+            )
+        self.ts.pop("}")
+        return ports
+
+    def _parameters_block(self) -> list[dict[str, Any]]:
+        parameters: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            param_name = self.ts.pop_ident()
+            self.ts.pop(":")
+            param_type = self.ts.pop_ident()
+            options: dict[str, Any] = {}
+            if self.ts.peek("{"):
+                options = self._assign_block("parameter_options")
+            parameters.append(
+                {
+                    "node_type": "parameter_decl",
+                    "name": param_name,
+                    "param_type": param_type,
+                    "options": options,
+                }
+            )
+        self.ts.pop("}")
+        return parameters
+
+    def _kit_use_stmt(self) -> dict[str, Any]:
+        self.ts.pop("kit")
+        kit_name = self._qident()
+        constraint = ""
+        if self.ts.peek("version"):
+            self.ts.pop("version")
+            if self.ts.kind() != "string":
+                raise LatheParseError("kit version expects a string literal")
+            raw = self.ts.pop()
+            constraint = _strip_string_literal(raw)
+        bindings: dict[str, Any] = {}
+        if self.ts.peek("{"):
+            bindings = self._assign_block("kit_use")
+        return {
+            "node_type": "kit_use_stmt",
+            "kit": kit_name,
+            "version_constraint": constraint,
+            "bindings": bindings,
+        }
+
+    def _body_block(self) -> dict[str, Any]:
+        kit_uses: list[dict[str, Any]] = []
+        rules: list[dict[str, Any]] = []
+        assigns: list[tuple[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            if self.ts.peek("use"):
+                self.ts.pop("use")
+                kit_uses.append(self._kit_use_stmt())
+            else:
+                item = self.ts.pop_ident()
+                if item in {"ensure", "prefer"}:
+                    rules.append(self._rule(item))
+                else:
+                    assigns.append((self._finish_path(item), self._assign_value()))
+        self.ts.pop("}")
+        return {
+            "node_type": "body",
+            "kit_uses": kit_uses,
+            "rules": rules,
+            "values": self._assignments(assigns, "body"),
+        }
+
+    _VERSIONED_MAPPING_DECLS = {"vegetation_species", "vegetation_kit"}
+
     def _mapping_decl(self, node_type: str) -> dict[str, Any]:
         name = self.ts.pop_ident()
+        version = ""
+        if node_type in self._HDA_CAPABLE_DECLS or node_type in self._VERSIONED_MAPPING_DECLS:
+            version = self._optional_version()
         uses = self._optional_uses()
+        if node_type in self._HDA_CAPABLE_DECLS:
+            ports, parameters, body, values = self._hda_body(node_type)
+            decl: dict[str, Any] = {
+                "node_type": node_type,
+                "name": name,
+                "uses": _dedupe_keep_first(uses),
+                "values": values,
+            }
+            if version or ports or parameters or body is not None:
+                decl["version"] = version
+                decl["ports"] = ports
+                decl["parameters"] = parameters
+                decl["body"] = body or {
+                    "node_type": "body",
+                    "kit_uses": [],
+                    "rules": [],
+                    "values": {},
+                }
+            return decl
         values = self._assign_block(node_type)
-        return {"node_type": node_type, "name": name, "uses": _dedupe_keep_first(uses), "values": values}
+        decl = {"node_type": node_type, "name": name, "uses": _dedupe_keep_first(uses), "values": values}
+        if version:
+            decl["version"] = version
+        return decl
+
+    def _hda_body(
+        self, node_type: str
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any] | None, dict[str, Any]]:
+        ports: list[dict[str, Any]] = []
+        parameters: list[dict[str, Any]] = []
+        body: dict[str, Any] | None = None
+        assigns: list[tuple[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            current = self.ts.peek()
+            next_tok = self.ts.peek_next()
+            if (
+                self.ts.kind() == "ident"
+                and current in {"ports", "parameters", "body"}
+                and next_tok == "{"
+            ):
+                if current == "ports":
+                    self.ts.pop("ports")
+                    ports = self._ports_block()
+                elif current == "parameters":
+                    self.ts.pop("parameters")
+                    parameters = self._parameters_block()
+                else:
+                    self.ts.pop("body")
+                    body = self._body_block()
+            else:
+                path = self._path()
+                assigns.append((path, self._assign_value()))
+        self.ts.pop("}")
+        return ports, parameters, body, self._assignments(assigns, node_type)
 
     def _style_pack_decl(self) -> dict[str, Any]:
         name = self.ts.pop_ident()
         values = self._assign_block("style_pack")
         return {"node_type": "style_pack", "name": name, "uses": [], "values": values}
+
+    def _style_bridge_decl(self) -> dict[str, Any]:
+        # Roadmap §6.8: sanctions a normally-incompatible style-stack pair.
+        name = self.ts.pop_ident()
+        values = self._assign_block("style_bridge")
+        return {"node_type": "style_bridge", "name": name, "uses": [], "values": values}
 
     def _style_system_decl(self, keyword: str) -> dict[str, Any]:
         name = self.ts.pop_ident()
@@ -226,6 +425,9 @@ class _FastParser(_FastParserExprMixin):
         if keyword == "family" and self.ts.peek(":"):
             self.ts.pop(":")
             decl_kind = self.ts.pop_ident()
+        version = ""
+        if keyword == "mechanism":
+            version = self._optional_version()
         uses = self._optional_uses()
         defaults: dict[str, Any] = {}
         params: dict[str, Any] = {}
@@ -237,6 +439,9 @@ class _FastParser(_FastParserExprMixin):
         repair_policy: dict[str, Any] = {}
         rules: list[dict[str, Any]] = []
         assigns: list[tuple[str, Any]] = []
+        ports: list[dict[str, Any]] = []
+        parameters: list[dict[str, Any]] = []
+        body: dict[str, Any] | None = None
         self.ts.pop("{")
         while not self.ts.peek("}"):
             item = self.ts.pop_ident()
@@ -260,10 +465,16 @@ class _FastParser(_FastParserExprMixin):
                 repair_policy = self._assign_block("repair_policy")
             elif item in {"ensure", "prefer"}:
                 rules.append(self._rule(item))
+            elif item == "ports" and keyword == "mechanism" and self.ts.peek("{"):
+                ports = self._ports_block()
+            elif item == "parameters" and keyword == "mechanism" and self.ts.peek("{"):
+                parameters = self._parameters_block()
+            elif item == "body" and keyword == "mechanism" and self.ts.peek("{"):
+                body = self._body_block()
             else:
                 assigns.append((self._finish_path(item), self._assign_value()))
         self.ts.pop("}")
-        return {
+        decl: dict[str, Any] = {
             "node_type": node_type,
             "name": name,
             "kind": decl_kind,
@@ -279,6 +490,19 @@ class _FastParser(_FastParserExprMixin):
             "rules": rules,
             "values": self._assignments(assigns, node_type),
         }
+        if keyword == "mechanism" and (
+            version or ports or parameters or body is not None
+        ):
+            decl["version"] = version
+            decl["ports"] = ports
+            decl["parameters"] = parameters
+            decl["body"] = body or {
+                "node_type": "body",
+                "kit_uses": [],
+                "rules": [],
+                "values": {},
+            }
+        return decl
 
     def _asset_decl(self) -> dict[str, Any]:
         name = self.ts.pop_ident()
@@ -409,9 +633,110 @@ class _FastParser(_FastParserExprMixin):
             block = self.ts.pop_ident()
             if block not in self.BUILD_BLOCKS:
                 raise LatheParseError(f"Unexpected build block '{block}'")
-            values[block] = self._assign_block(block)
+            if block == "shape":
+                values[block] = self._shape_block()
+            else:
+                values[block] = self._assign_block(block)
         self.ts.pop("}")
         return values
+
+    def _shape_block(self) -> dict[str, Any]:
+        """Parse ``shape { ... }``.
+
+        The shape block accepts the existing knob assignments (``mode``,
+        ``candidates``, ``seed``, ...) and an optional, ordered
+        ``mesh_program { ... }`` sub-block (V1.4 roadmap §5.1) that
+        carries a procedural mesh script. The procedural script is
+        captured as a structured AST under ``shape.mesh_program`` so
+        downstream lowering can convert it to ``ShapePrimitive`` records
+        before the shape stage runs. Knob assignments and the program
+        block may appear in any order.
+        """
+        assignments: list[tuple[str, Any]] = []
+        mesh_program: dict[str, Any] | None = None
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            ident = self.ts.pop_ident()
+            if ident == "mesh_program" and self.ts.peek("{"):
+                if mesh_program is not None:
+                    raise LatheParseError(
+                        "shape block declares more than one 'mesh_program {}' "
+                        "sub-block; merge the statements into a single block."
+                    )
+                mesh_program = self._mesh_program_block()
+            else:
+                assignments.append((self._finish_path(ident), self._assign_value()))
+        self.ts.pop("}")
+        values = self._assignments(assignments, "shape")
+        if mesh_program is not None:
+            if "mesh_program" in values:
+                raise LatheParseError(
+                    "shape block sets both 'mesh_program = ...' and a "
+                    "'mesh_program {}' sub-block; pick one form."
+                )
+            values["mesh_program"] = mesh_program
+        return values
+
+    def _mesh_program_block(self) -> dict[str, Any]:
+        """Parse the V1.4 ``mesh_program { ... }`` ordered statement block.
+
+        Statements are either ``let <ident> = <expr>`` bindings or bare
+        expression calls (``fillet_edge(...)``). Order matters: later
+        statements may reference identifiers introduced by earlier ones.
+        Each statement is recorded as a structured node (``mesh_let``
+        or ``mesh_call``) so the lowering layer can rebuild a
+        deterministic primitive list.
+        """
+        statements: list[dict[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            if self.ts.peek("let"):
+                self.ts.pop("let")
+                target = self.ts.pop_ident()
+                self.ts.pop("=")
+                expr = self._mesh_expr()
+                statements.append(
+                    {"node_type": "mesh_let", "target": target, "expr": expr}
+                )
+            else:
+                expr = self._mesh_expr()
+                statements.append({"node_type": "mesh_call", "expr": expr})
+        self.ts.pop("}")
+        return {"node_type": "mesh_program", "statements": statements}
+
+    def _mesh_expr(self) -> dict[str, Any]:
+        """Parse a mesh-program expression: call, identifier, or chain.
+
+        Builds a left-recursive chain so ``box(...).translate((...))``
+        captures the ``box`` call as the receiver and the ``translate``
+        call as a method invocation against it. The resulting AST keeps
+        receiver/method ordering explicit so the lowering layer can
+        replay the chain deterministically.
+        """
+        if self.ts.kind() != "ident":
+            raise LatheParseError(
+                f"Expected mesh_program expression, got '{self.ts.peek() or 'end of file'}'"
+            )
+        head = self.ts.pop_ident()
+        if self.ts.peek("("):
+            node: dict[str, Any] = self._call_after_name(head, mesh_args=True)
+        else:
+            node = {"type": "ident", "name": head}
+        while self.ts.peek("."):
+            self.ts.pop(".")
+            method = self.ts.pop_ident()
+            if not self.ts.peek("("):
+                raise LatheParseError(
+                    f"Expected '(' after '.{method}' in mesh_program expression"
+                )
+            method_call = self._call_after_name(method, mesh_args=True)
+            node = {
+                "type": "method_call",
+                "receiver": node,
+                "method": method,
+                "args": method_call["args"],
+            }
+        return node
 
     def _validate_block(self) -> dict[str, Any]:
         assignments: list[tuple[str, Any]] = []
@@ -521,6 +846,7 @@ class _FastParser(_FastParserExprMixin):
         curiosity_anchors: list[dict[str, Any]] = []
         hidden_state: list[dict[str, Any]] = []
         exports: list[dict[str, Any]] = []
+        wfc_blocks: list[dict[str, Any]] = []
         self.ts.pop("{")
         while not self.ts.peek("}"):
             item = self.ts.pop_ident()
@@ -1081,6 +1407,8 @@ class _FastParser(_FastParserExprMixin):
                 hidden_state.append(self._scene_named_assign_block("scene_hidden_state", item))
             elif item == "export":
                 exports.append(self._scene_named_assign_block("scene_export", "export"))
+            elif item == "wfc":
+                wfc_blocks.append(self._scene_wfc_block())
             else:
                 values.append((self._finish_path(item), self._assign_value()))
         self.ts.pop("}")
@@ -1110,7 +1438,15 @@ class _FastParser(_FastParserExprMixin):
             "curiosity_anchors": curiosity_anchors,
             "hidden_state": hidden_state,
             "exports": exports,
+            "wfc": wfc_blocks,
         }
+
+    def _scene_wfc_block(self) -> dict[str, Any]:
+        name = ""
+        if self.ts.kind() == "ident" and not self.ts.peek("{"):
+            name = self.ts.pop_ident()
+        values = self._assign_block("wfc")
+        return {"node_type": "scene_wfc", "name": name, "values": values}
 
     def _scene_named_assign_block(self, node_type: str, context: str) -> dict[str, Any]:
         name = self.ts.pop_ident()

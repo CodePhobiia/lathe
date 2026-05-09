@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "asset": "alien_grove",
+  "glb_path": "D:\\lathe_v0_1\\tmp_alien_grove.glb",
+  "part_count": 1,
+  "face_count": 588,
+  "vertex_count": 536,
+  "stage_timings_s": {
+    "shape": 354.907,
+    "topology": 2.741,
+    "uv": 0.567,
+    "surface": 0.002,
+    "package": 0.002
+  },
+  "wall_clock_s": 358.998,
+  "cache": {
+    "enabled": false,
+    "hit": false,
+    "cleared_entries": null
+  },
+  "render": {
+    "requested": false,
+    "ok": false,
+    "path": null
+  },
+  "stage_dir": "D:\\lathe_v0_1\\.tmp_alien_grove_quick_stage\\alien_grove",
+  "stage_bundles": {
+    "shape": "stages/shape/bundle.json",
+    "topology": "stages/topology/bundle.json",
+    "uv": "stages/uv/bundle.json",
+    "surface": "stages/surface/bundle.json"
+  }
+}
+
+real	6m1.214s
+user	0m0.000s
+sys	0m0.015s

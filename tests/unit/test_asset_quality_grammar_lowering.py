@@ -17,9 +17,9 @@ Covers per task #6 of ``docs/asset-quality/improvement-tasklist.md``:
   declared in the master prompt.
 - The validator never adds a top-level ``diagnostics`` key (informational
   contract — mirrors Phases 1 through 5).
-- ``lower_to_v1`` on the recipe produces exactly 3 v1 records (the body
-  ``solid.box`` plus two rail approximations) plus per-op
-  ``no_v1_equivalent`` diagnostics.
+- ``lower_to_v1`` on the recipe produces concrete v1 records for the
+  private SOP/solid geometry and leaves only material wear masks as
+  ``no_v1_equivalent``.
 - The recipe is deterministic across calls.
 - A generic family falls back to an empty program + zero synthesized
   nodes.
@@ -86,18 +86,18 @@ _EXPECTED_PAYLOAD_KEYS: frozenset[str] = frozenset(
 
 
 _EXPECTED_OP_NAMES: tuple[str, ...] = (
-    "solid.box",
-    "op.inset",
-    "op.cut_panel_line",
-    "op.corner_guard_set",
-    "op.mount_plate",
-    "op.socket",
-    "op.socket",
-    "solid.rail",
-    "solid.rail",
-    "op.trim_band",
-    "op.fastener_grid",
-    "op.repeat",
+    "sop.polybevel",
+    "sop.boolean",
+    "sop.polybevel",
+    "sop.copy_to_points",
+    "sop.polybevel",
+    "sop.polywire",
+    "sop.polywire",
+    "sop.polybevel",
+    "sop.polybevel",
+    "sop.copy_to_points",
+    "sop.copy_to_points",
+    "sop.polyextrude",
     "op.chip_edges",
 )
 
@@ -222,18 +222,216 @@ def test_synthesized_node_ids_mirror_requirement_origin() -> None:
 
 def test_unknown_family_returns_empty_program_and_zero_nodes() -> None:
     """Families not yet covered by a Phase 6 recipe (everything other
-    than ``industrial_crate``) must fall back to an empty
+    than the private recipe registry) must fall back to an empty
     :class:`ShapeProgram` with no synthesized nodes."""
-    runtime = {"design_brief": {"brief": {"family": "mechanical_door"}}}
-    asset = {"name": "mechanical_door", "intent": {"parts": []}}
+    runtime = {"design_brief": {"brief": {"family": "unknown_machine"}}}
+    asset = {"name": "unknown_machine", "intent": {"parts": []}}
 
     payload = evaluate_grammar_lowering(asset, runtime)
 
-    assert payload["family"] == "mechanical_door"
+    assert payload["family"] == "unknown_machine"
     assert payload["shape_program"]["ops"] == []
     assert payload["synthesized_graph_nodes"] == []
     assert payload["synthesized_node_count"] == 0
     assert payload["shape_program_summary"]["op_count"] == 0
+
+
+def test_mechanical_door_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "mechanical_door", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "mechanical_door"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "mechanical_door"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 10
+    assert op_names.count("sop.copy_to_points") == 5
+    assert "sop.polywire" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] == 23
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_service_cabinet_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "service_cabinet", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "service_cabinet"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "service_cabinet"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert op_names.count("sop.polywire") == 2
+    assert "sop.polyextrude" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] == 20
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_weapon_prop_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "weapon_prop", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "weapon_prop"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "weapon_prop"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.carve" in op_names
+    assert "sop.polywire" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_vehicle_prop_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "vehicle_prop", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "vehicle_prop"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "vehicle_prop"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.boolean" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_furniture_prop_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "furniture_prop", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "furniture_prop"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "furniture_prop"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.polywire" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_natural_form_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "natural_form", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "natural_form"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "natural_form"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.polyextrude" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_environment_architecture_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "environment_architecture", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "environment_architecture"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "environment_architecture"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.loft" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_lighting_prop_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "lighting_prop", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "lighting_prop"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "lighting_prop"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.polywire" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_machine_console_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "machine_console", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "machine_console"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "machine_console"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.boolean" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_portal_relic_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "portal_relic", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "portal_relic"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "portal_relic"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.polywire" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
+
+
+def test_tool_prop_recipe_emits_private_sop_geometry() -> None:
+    payload = evaluate_grammar_lowering(
+        {"name": "tool_prop", "intent": {"parts": []}},
+        {"design_brief": {"brief": {"family": "tool_prop"}}},
+    )
+
+    op_names = [item["op"] for item in payload["shape_program"]["ops"]]
+    assert payload["family"] == "tool_prop"
+    assert payload["synthesized_node_count"] == 10
+    assert payload["shape_program_summary"]["ops_by_family"]["sop_ops"] == 9
+    assert "sop.carve" in op_names
+    assert "sop.copy_to_points" in op_names
+    assert payload["v1_lowering"]["v1_record_count"] >= 10
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
+        "op.chip_edges"
+    }
 
 
 def test_generic_family_fallback_when_design_brief_missing() -> None:
@@ -304,57 +502,46 @@ def test_shape_program_summary_op_count_matches_program_op_count() -> None:
 
 def test_shape_program_summary_ops_by_family_breakdown() -> None:
     """Counts the 13 industrial_crate recipe ops by Phase 5 family.
-    Locks the canonical mapping (3 solids, 2 booleans, 4 repetitions,
-    3 integrations, 1 wear, 0 edge ops at Phase 6)."""
+    Locks the private authoring mapping: top-level recipe geometry now
+    routes through source-aware SOPs, with material wear still retained
+    as a wear op."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
 
     by_family = payload["shape_program_summary"]["ops_by_family"]
     assert by_family == {
-        "solid_ops": 3,
-        "boolean_ops": 2,
+        "solid_ops": 0,
+        "boolean_ops": 0,
         "edge_ops": 0,
-        "repetition_ops": 4,
-        "integration_ops": 3,
+        "sop_ops": 12,
+        "repetition_ops": 0,
+        "integration_ops": 0,
         "wear_ops": 1,
     }
     assert sum(by_family.values()) == 13
 
 
-def test_v1_lowering_yields_three_v1_records_for_body_and_rails() -> None:
-    """``solid.box`` and both ``solid.rail`` ops lower to v1 records.
-    The remaining semantic ops still emit ``no_v1_equivalent``."""
+def test_v1_lowering_yields_concrete_records_for_private_geometry() -> None:
+    """Private SOP/solid recipe geometry lowers to concrete v1 records.
+    Material wear masks remain semantic-only until the surface stage
+    consumes them."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
     v1 = payload["v1_lowering"]
 
-    assert v1["v1_record_count"] == 3
+    assert v1["v1_record_count"] == 23
     assert v1["unsupported_ops"] == []
 
     diagnostic_op_names = {item["op"] for item in v1["diagnostics"]}
     diagnostic_codes = {item["code"] for item in v1["diagnostics"]}
     assert diagnostic_codes == {"no_v1_equivalent"}
-    for expected_op in (
-        "op.inset",
-        "op.cut_panel_line",
-        "op.corner_guard_set",
-        "op.mount_plate",
-        "op.socket",
-        "op.trim_band",
-        "op.fastener_grid",
-        "op.repeat",
-        "op.chip_edges",
-    ):
-        assert expected_op in diagnostic_op_names, (
-            f"Expected v1-adapter diagnostic for op {expected_op!r}"
-        )
+    assert diagnostic_op_names == {"op.chip_edges"}
 
 
 def test_v1_lowering_diagnostics_count_matches_unsupported_op_count() -> None:
-    """Every recipe op except ``solid.box`` and two rails produces a
-    ``no_v1_equivalent`` diagnostic (10 of 13 ops)."""
+    """Only the material wear-mask op remains intentionally non-lowerable."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
     v1 = payload["v1_lowering"]
 
-    assert len(v1["diagnostics"]) == 10
+    assert len(v1["diagnostics"]) == 1
 
 
 def test_recipe_is_deterministic_across_invocations() -> None:
@@ -377,7 +564,7 @@ def test_evaluate_grammar_lowering_is_deterministic_across_invocations() -> None
 
 def test_every_recipe_op_is_a_member_of_all_ops() -> None:
     """Catches a typo'd op name in the recipe — ``ALL_OPS`` is the union
-    of Phase 5's six op-family frozensets."""
+    of Phase 5's op-family frozensets."""
     result = industrial_crate_recipe(brief={}, parts=(), graph_nodes=())
 
     for op in result.shape_program.ops:
@@ -386,21 +573,23 @@ def test_every_recipe_op_is_a_member_of_all_ops() -> None:
         )
 
 
-def test_lower_to_v1_on_recipe_produces_three_v1_records() -> None:
+def test_lower_to_v1_on_recipe_produces_private_geometry_records() -> None:
     """Direct ``lower_to_v1`` invocation on the recipe's program. Mirrors
     Phase 5's adapter contract end-to-end."""
     result = industrial_crate_recipe(brief={}, parts=(), graph_nodes=())
 
     adapter_result = lower_to_v1(result.shape_program)
 
-    assert len(adapter_result.v1_records) == 3
-    assert adapter_result.v1_records[0]["primitive_type"] == "box"
+    assert len(adapter_result.v1_records) == 23
+    assert adapter_result.v1_records[0]["primitive_type"] == "subdivision_box"
     assert adapter_result.v1_records[0]["part"] == "body"
-    assert [record["v2_op"] for record in adapter_result.v1_records] == [
-        "solid.box",
-        "solid.rail",
-        "solid.rail",
-    ]
+    assert adapter_result.v1_records[0]["v2_op"] == "sop.polybevel"
+    assert {record["primitive_type"] for record in adapter_result.v1_records} >= {
+        "subdivision_box",
+        "extruded_profile",
+        "swept_profile",
+        "revolved_profile",
+    }
     assert adapter_result.unsupported_ops == ()
 
 

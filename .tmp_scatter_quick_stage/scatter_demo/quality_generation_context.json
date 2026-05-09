@@ -1,0 +1,720 @@
+{
+  "schema_version": "lathe.asset_quality.generation_quality.v1",
+  "source_stage": "pre_shape",
+  "stage_order": {
+    "created_before": "shape",
+    "consumed_by": [
+      "shape",
+      "surface",
+      "repair"
+    ]
+  },
+  "design_brief": {
+    "version": "design_brief_v1",
+    "brief": {
+      "asset_name": "scatter_demo",
+      "family": "surface_material_sample",
+      "role": "procedural material, trim-sheet, or surface sample",
+      "style_tags": [
+        "surface",
+        "material",
+        "trim_sheet"
+      ],
+      "silhouette": "flat_sample_with_readable_channels_and_relief",
+      "bevel_language": "sample_tile_edges",
+      "shape_language": "sample_tile_material_zones_relief_lines_decals_wear_and_labels",
+      "detail_density": "hero",
+      "wear": "material_test_edge_wear",
+      "material_age": "configurable",
+      "greeble_style": "surface_only",
+      "negative_constraints": [
+        "toy_like",
+        "random_faceting",
+        "unlabeled_material"
+      ]
+    },
+    "family_inference": {
+      "matched_family": "surface_material_sample",
+      "match_signal": "kind",
+      "match_token": "surface"
+    },
+    "user_provided_via_experimental": {
+      "fields": []
+    }
+  },
+  "art_direction_ir": {
+    "schema_version": "lathe.asset_quality.art_direction_ir.v1",
+    "asset_id": "scatter_demo",
+    "family": "surface_material_sample",
+    "object_family": "prop",
+    "style_intent": {
+      "genre": "game",
+      "substyle": "surface material trim_sheet",
+      "mood": [
+        "surface",
+        "material",
+        "trim_sheet"
+      ],
+      "audience": "game_runtime_proxy",
+      "quality_bar": "warning_quality"
+    },
+    "visual_hierarchy": {
+      "primary_read": "prop identity at thumbnail distance",
+      "secondary_read": "functional parts and silhouette accents remain readable",
+      "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function",
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance"
+    },
+    "silhouette": {
+      "target_strength": "high",
+      "thumbnail_size_px": 128,
+      "required_distinctive_features": [],
+      "forbidden_shapes": [
+        "toy_like",
+        "random_faceting",
+        "unlabeled_material"
+      ]
+    },
+    "proportion_policy": {
+      "functional_scale_required": true,
+      "exaggeration_allowed_when_style_requires": true,
+      "scale_anchors": [
+        "primary volume",
+        "functional affordance",
+        "contact points"
+      ]
+    },
+    "materials": {
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay"
+      ],
+      "contrast_policy": "primary/secondary/accent/readability"
+    },
+    "motifs": {
+      "allowed": [
+        "surface",
+        "material",
+        "trim_sheet",
+        "functional accents"
+      ],
+      "forbidden": [
+        "toy_like",
+        "random_faceting",
+        "unlabeled_material"
+      ],
+      "placement_rules": [
+        "place motifs where they clarify function or silhouette"
+      ]
+    },
+    "surface_story": {
+      "wear_logic": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ],
+      "decals": [
+        "only when decal improves function or theme read"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "platform": {
+      "target": "game_runtime_proxy",
+      "triangle_budget_warning": null,
+      "triangle_budget_strict": null,
+      "texture_policy": "proxy_or_deferred"
+    },
+    "forbidden_failure_modes": [
+      "material zones without semantic purpose",
+      "random primitive stack",
+      "random_faceting",
+      "style mismatch between parts",
+      "toy_like",
+      "unbounded procedural noise",
+      "unlabeled_material",
+      "weak thumbnail read"
+    ],
+    "forbidden_visual_failure_modes": [
+      "material zones without semantic purpose",
+      "random primitive stack",
+      "random_faceting",
+      "style mismatch between parts",
+      "toy_like",
+      "unbounded procedural noise",
+      "unlabeled_material",
+      "weak thumbnail read"
+    ],
+    "reference_summary": {
+      "has_reference_board": false,
+      "silhouette_count": 0,
+      "material_count": 0,
+      "negative_count": 0
+    },
+    "family_metadata_summary": {
+      "coverage": null,
+      "required_rule_count": 0,
+      "missing_required_count": 0
+    }
+  },
+  "quality_plan": {
+    "schema_version": "lathe.asset_quality.quality_plan.v1",
+    "asset_id": "scatter_demo",
+    "family": "surface_material_sample",
+    "object_family": "prop",
+    "source_art_direction": "design_brief.json",
+    "source_family_metadata": "family_grammar_coverage.json",
+    "primary_secondary_tertiary": {
+      "primary": [
+        "primary_volume"
+      ],
+      "secondary": [
+        "functional_affordances"
+      ],
+      "tertiary": [
+        "motifs",
+        "wear",
+        "decals"
+      ]
+    },
+    "art_direction_ir": {
+      "schema_version": "lathe.asset_quality.art_direction_ir.v1",
+      "asset_id": "scatter_demo",
+      "family": "surface_material_sample",
+      "object_family": "prop",
+      "style_intent": {
+        "genre": "game",
+        "substyle": "surface material trim_sheet",
+        "mood": [
+          "surface",
+          "material",
+          "trim_sheet"
+        ],
+        "audience": "game_runtime_proxy",
+        "quality_bar": "warning_quality"
+      },
+      "visual_hierarchy": {
+        "primary_read": "prop identity at thumbnail distance",
+        "secondary_read": "functional parts and silhouette accents remain readable",
+        "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function",
+        "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance"
+      },
+      "silhouette": {
+        "target_strength": "high",
+        "thumbnail_size_px": 128,
+        "required_distinctive_features": [],
+        "forbidden_shapes": [
+          "toy_like",
+          "random_faceting",
+          "unlabeled_material"
+        ]
+      },
+      "proportion_policy": {
+        "functional_scale_required": true,
+        "exaggeration_allowed_when_style_requires": true,
+        "scale_anchors": [
+          "primary volume",
+          "functional affordance",
+          "contact points"
+        ]
+      },
+      "materials": {
+        "required_separation": "high",
+        "zones": [
+          "primary material",
+          "secondary support material",
+          "accent/focal material",
+          "wear overlay"
+        ],
+        "contrast_policy": "primary/secondary/accent/readability"
+      },
+      "motifs": {
+        "allowed": [
+          "surface",
+          "material",
+          "trim_sheet",
+          "functional accents"
+        ],
+        "forbidden": [
+          "toy_like",
+          "random_faceting",
+          "unlabeled_material"
+        ],
+        "placement_rules": [
+          "place motifs where they clarify function or silhouette"
+        ]
+      },
+      "surface_story": {
+        "wear_logic": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime"
+        ],
+        "decals": [
+          "only when decal improves function or theme read"
+        ],
+        "grime_logic": [
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ]
+      },
+      "platform": {
+        "target": "game_runtime_proxy",
+        "triangle_budget_warning": null,
+        "triangle_budget_strict": null,
+        "texture_policy": "proxy_or_deferred"
+      },
+      "forbidden_failure_modes": [
+        "material zones without semantic purpose",
+        "random primitive stack",
+        "random_faceting",
+        "style mismatch between parts",
+        "toy_like",
+        "unbounded procedural noise",
+        "unlabeled_material",
+        "weak thumbnail read"
+      ],
+      "forbidden_visual_failure_modes": [
+        "material zones without semantic purpose",
+        "random primitive stack",
+        "random_faceting",
+        "style mismatch between parts",
+        "toy_like",
+        "unbounded procedural noise",
+        "unlabeled_material",
+        "weak thumbnail read"
+      ],
+      "reference_summary": {
+        "has_reference_board": false,
+        "silhouette_count": 0,
+        "material_count": 0,
+        "negative_count": 0
+      },
+      "family_metadata_summary": {
+        "coverage": null,
+        "required_rule_count": 0,
+        "missing_required_count": 0
+      }
+    },
+    "style_pack": {
+      "present": false
+    },
+    "visual_hierarchy": {
+      "primary_read": "prop identity at thumbnail distance",
+      "secondary_read": "functional parts and silhouette accents remain readable",
+      "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function",
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance"
+    },
+    "silhouette_requirements": [],
+    "proportion_requirements": {
+      "functional_scale_required": true,
+      "exaggeration_allowed_when_style_requires": true,
+      "scale_anchors": [
+        "primary volume",
+        "functional affordance",
+        "contact points"
+      ]
+    },
+    "material_requirements": {
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay"
+      ],
+      "contrast_policy": "primary/secondary/accent/readability"
+    },
+    "material_separation_requirements": {
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay"
+      ],
+      "contrast_policy": "primary/secondary/accent/readability"
+    },
+    "detail_requirements": {
+      "density_zones": {
+        "primary": [
+          "primary_volume"
+        ],
+        "secondary": [
+          "functional_affordances"
+        ],
+        "tertiary": [
+          "motifs",
+          "wear",
+          "decals"
+        ]
+      },
+      "tertiary_detail_budget": "bounded",
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "density": "hero"
+    },
+    "detail_density_zones": {
+      "primary": [
+        "primary_volume"
+      ],
+      "secondary": [
+        "functional_affordances"
+      ],
+      "tertiary": [
+        "motifs",
+        "wear",
+        "decals"
+      ]
+    },
+    "motif_requirements": {
+      "allowed": [
+        "surface",
+        "material",
+        "trim_sheet",
+        "functional accents"
+      ],
+      "forbidden": [
+        "toy_like",
+        "random_faceting",
+        "unlabeled_material"
+      ],
+      "placement_rules": [
+        "place motifs where they clarify function or silhouette"
+      ]
+    },
+    "motif_language": {
+      "allowed": [
+        "surface",
+        "material",
+        "trim_sheet",
+        "functional accents"
+      ],
+      "forbidden": [
+        "toy_like",
+        "random_faceting",
+        "unlabeled_material"
+      ],
+      "placement_rules": [
+        "place motifs where they clarify function or silhouette"
+      ]
+    },
+    "surface_story_requirements": {
+      "wear_logic": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ],
+      "decals": [
+        "only when decal improves function or theme read"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "surface_story": {
+      "wear_logic": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ],
+      "decals": [
+        "only when decal improves function or theme read"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "platform": {
+      "target": "game_runtime_proxy",
+      "triangle_budget_warning": null,
+      "triangle_budget_strict": null,
+      "texture_policy": "proxy_or_deferred"
+    },
+    "certification_targets": {
+      "warning_min_score": 75,
+      "strict_min_score": 90,
+      "required_dimensions": [
+        "silhouette_strength",
+        "proportion_intent",
+        "material_contrast",
+        "detail_hierarchy",
+        "motif_coherence",
+        "surface_storytelling",
+        "functional_readability",
+        "style_consistency",
+        "procedural_noise_penalty"
+      ],
+      "warning_minimum": 0.75,
+      "strict_minimum": 0.9,
+      "dimensions": [
+        "silhouette_strength",
+        "proportion_intent",
+        "material_contrast",
+        "detail_hierarchy",
+        "motif_coherence",
+        "surface_storytelling",
+        "functional_readability",
+        "style_consistency",
+        "procedural_noise_penalty"
+      ]
+    },
+    "likely_failure_modes": [
+      "material zones without semantic purpose",
+      "random primitive stack",
+      "random_faceting",
+      "style mismatch between parts",
+      "toy_like",
+      "unbounded procedural noise",
+      "unlabeled_material",
+      "weak thumbnail read"
+    ],
+    "metrics": {
+      "silhouette_strength": 0.48,
+      "proportion_intent": 0.68,
+      "material_contrast": 0.58,
+      "detail_hierarchy": 0.96,
+      "motif_coherence": 0.78,
+      "surface_storytelling": 0.64,
+      "functional_readability": 0.5,
+      "style_consistency": 1.0,
+      "procedural_noise_penalty": 0.17
+    },
+    "semantic_critique": {
+      "schema_version": "lathe.asset_quality.semantic_critique.v1",
+      "asset_id": "scatter_demo",
+      "source_quality_plan": "quality_plan.json",
+      "summary": {
+        "status": "warning_pass_with_repairs",
+        "highest_priority_issue": "low_functional_readability"
+      },
+      "issue_count": 5,
+      "issues": [
+        {
+          "issue_id": "a35d54f8a1e2941a",
+          "issue": "low_functional_readability",
+          "severity": "warning",
+          "dimension": "functional_readability",
+          "score": 0.5,
+          "threshold": 0.75,
+          "target": "visual_hierarchy.secondary_read",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Clarify handles, buttons, edges, screens, sockets, or other use affordances.",
+          "preserve": [
+            "primary_silhouette",
+            "platform_budget"
+          ]
+        },
+        {
+          "issue_id": "2a57e8a0e4c4e9e3",
+          "issue": "low_material_contrast",
+          "severity": "warning",
+          "dimension": "material_contrast",
+          "score": 0.58,
+          "threshold": 0.75,
+          "target": "materials.zones",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Increase value/hue separation and bind accent material to a focal affordance.",
+          "preserve": [
+            "primary_silhouette",
+            "material_roles"
+          ]
+        },
+        {
+          "issue_id": "148d7920e6a50cbd",
+          "issue": "low_proportion_intent",
+          "severity": "warning",
+          "dimension": "proportion_intent",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "proportion_policy.scale_anchors",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Tighten functional scale relationships before adding tertiary detail.",
+          "preserve": [
+            "construction_identity",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "ad38efdcf6825b4a",
+          "issue": "low_silhouette_strength",
+          "severity": "warning",
+          "dimension": "silhouette_strength",
+          "score": 0.48,
+          "threshold": 0.75,
+          "target": "silhouette.required_distinctive_features",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Add or emphasize a family-specific silhouette landmark visible at 128px.",
+          "preserve": [
+            "primary_silhouette",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "2990e66f06bb95a6",
+          "issue": "low_surface_storytelling",
+          "severity": "warning",
+          "dimension": "surface_storytelling",
+          "score": 0.64,
+          "threshold": 0.75,
+          "target": "surface_story.wear_logic",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Move wear and grime to contact, edge, recess, and affordance zones.",
+          "preserve": [
+            "material_roles",
+            "construction_identity"
+          ]
+        }
+      ],
+      "repairs": [
+        {
+          "issue_id": "a35d54f8a1e2941a",
+          "issue": "low_functional_readability",
+          "severity": "warning",
+          "dimension": "functional_readability",
+          "score": 0.5,
+          "threshold": 0.75,
+          "target": "visual_hierarchy.secondary_read",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Clarify handles, buttons, edges, screens, sockets, or other use affordances.",
+          "preserve": [
+            "primary_silhouette",
+            "platform_budget"
+          ]
+        },
+        {
+          "issue_id": "2a57e8a0e4c4e9e3",
+          "issue": "low_material_contrast",
+          "severity": "warning",
+          "dimension": "material_contrast",
+          "score": 0.58,
+          "threshold": 0.75,
+          "target": "materials.zones",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Increase value/hue separation and bind accent material to a focal affordance.",
+          "preserve": [
+            "primary_silhouette",
+            "material_roles"
+          ]
+        },
+        {
+          "issue_id": "148d7920e6a50cbd",
+          "issue": "low_proportion_intent",
+          "severity": "warning",
+          "dimension": "proportion_intent",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "proportion_policy.scale_anchors",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Tighten functional scale relationships before adding tertiary detail.",
+          "preserve": [
+            "construction_identity",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "ad38efdcf6825b4a",
+          "issue": "low_silhouette_strength",
+          "severity": "warning",
+          "dimension": "silhouette_strength",
+          "score": 0.48,
+          "threshold": 0.75,
+          "target": "silhouette.required_distinctive_features",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Add or emphasize a family-specific silhouette landmark visible at 128px.",
+          "preserve": [
+            "primary_silhouette",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "2990e66f06bb95a6",
+          "issue": "low_surface_storytelling",
+          "severity": "warning",
+          "dimension": "surface_storytelling",
+          "score": 0.64,
+          "threshold": 0.75,
+          "target": "surface_story.wear_logic",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Move wear and grime to contact, edge, recess, and affordance zones.",
+          "preserve": [
+            "material_roles",
+            "construction_identity"
+          ]
+        }
+      ]
+    }
+  },
+  "generation_adapters": {
+    "quality_plan_available": true,
+    "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+    "object_family": "prop",
+    "feature_density_multiplier": 1.22,
+    "panel_depth_multiplier": 1.1400000000000001,
+    "edge_weight_multiplier": 1.1300000000000001,
+    "silhouette_bias_multiplier": 1.07,
+    "trim_scale_multiplier": 1.08,
+    "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+    "material_contrast_policy": "high",
+    "motifs": [
+      "surface",
+      "material",
+      "trim_sheet",
+      "functional accents",
+      "toy_like",
+      "random_faceting",
+      "unlabeled_material",
+      "place motifs where they clarify function or silhouette"
+    ],
+    "wear_anchors": [
+      "convex edge wear",
+      "contact polish",
+      "recess grime",
+      "only when decal improves function or theme read",
+      "recesses",
+      "lower contact points",
+      "handled/touched affordances"
+    ],
+    "runtime_budget_multiplier": 1.0
+  },
+  "diagnostics": []
+}

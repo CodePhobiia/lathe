@@ -1,0 +1,26 @@
+{
+  "objects": [
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 20000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 7938,
+        "polys_after": 3977,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "body"
+    }
+  ]
+}

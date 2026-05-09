@@ -1,0 +1,1712 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 2,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm",
+    "emissive"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm",
+      "emissive"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 4096,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "anodized_aluminum_body",
+      "anodized_aluminum_body",
+      "carbon_fiber_trim",
+      "carbon_fiber_trim",
+      "carbon_fiber_trim",
+      "carbon_fiber_trim",
+      "carbon_fiber_trim",
+      "carbon_fiber_trim"
+    ],
+    "material_slots": 2,
+    "decals": [
+      "serials",
+      "warning_labels",
+      "thin_color_bar",
+      "service_number",
+      "hazard_stripe",
+      "edge_rub",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "utility",
+      "industrial",
+      "access",
+      "frame_rhythm",
+      "threshold",
+      "hinge_side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "hero_surface": false,
+    "program": "",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "utility",
+      "industrial",
+      "access",
+      "frame_rhythm",
+      "threshold",
+      "hinge-side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "palette": "courier_premium",
+    "source_material_zones": [
+      "anodized_aluminum_body",
+      "carbon_fiber_trim",
+      "amber_glass_lens"
+    ],
+    "source_bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "edge_wear",
+      "painted_steel",
+      "bare_metal",
+      "rubber"
+    ],
+    "surface_story": {
+      "wear_story": "field_used",
+      "wear_level": 0.54,
+      "story_decals": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub",
+        "serials",
+        "warning_labels"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "architecture",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "utility",
+          "industrial",
+          "access",
+          "frame rhythm",
+          "threshold",
+          "hinge-side emphasis",
+          "toy_like",
+          "random_faceting"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "utility",
+        "industrial",
+        "access",
+        "frame rhythm",
+        "threshold",
+        "hinge-side emphasis",
+        "toy_like",
+        "random_faceting"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": true,
+      "chart_grouping": "part",
+      "material_id_strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base",
+        "lightmap"
+      ],
+      "chart_count": 8,
+      "material_id_count": 2,
+      "part_to_chart": {
+        "body": "uvc_01_body",
+        "cargo_door": "uvc_02_cargo_door",
+        "landing_leg_l": "uvc_03_landing_leg_l",
+        "landing_leg_r": "uvc_04_landing_leg_r",
+        "rotor_fl": "uvc_05_rotor_fl",
+        "rotor_fr": "uvc_06_rotor_fr",
+        "rotor_rl": "uvc_07_rotor_rl",
+        "rotor_rr": "uvc_08_rotor_rr"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_02_cargo_door",
+        "group": "cargo_door",
+        "grouping": "part",
+        "island_name": "semantic_cargo_door",
+        "parts": [
+          "cargo_door"
+        ],
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_03_landing_leg_l",
+        "group": "landing_leg_l",
+        "grouping": "part",
+        "island_name": "semantic_landing_leg_l",
+        "parts": [
+          "landing_leg_l"
+        ],
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_04_landing_leg_r",
+        "group": "landing_leg_r",
+        "grouping": "part",
+        "island_name": "semantic_landing_leg_r",
+        "parts": [
+          "landing_leg_r"
+        ],
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_05_rotor_fl",
+        "group": "rotor_fl",
+        "grouping": "part",
+        "island_name": "semantic_rotor_fl",
+        "parts": [
+          "rotor_fl"
+        ],
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_06_rotor_fr",
+        "group": "rotor_fr",
+        "grouping": "part",
+        "island_name": "semantic_rotor_fr",
+        "parts": [
+          "rotor_fr"
+        ],
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_07_rotor_rl",
+        "group": "rotor_rl",
+        "grouping": "part",
+        "island_name": "semantic_rotor_rl",
+        "parts": [
+          "rotor_rl"
+        ],
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_08_rotor_rr",
+        "group": "rotor_rr",
+        "grouping": "part",
+        "island_name": "semantic_rotor_rr",
+        "parts": [
+          "rotor_rr"
+        ],
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "count": 2,
+      "ids": [
+        {
+          "material_id": "matid_01_anodized_aluminum_body",
+          "material": "anodized_aluminum_body",
+          "parts": [
+            "body",
+            "cargo_door"
+          ],
+          "rgb": [
+            216,
+            74,
+            72
+          ]
+        },
+        {
+          "material_id": "matid_02_carbon_fiber_trim",
+          "material": "carbon_fiber_trim",
+          "parts": [
+            "landing_leg_l",
+            "landing_leg_r",
+            "rotor_fl",
+            "rotor_fr",
+            "rotor_rl",
+            "rotor_rr"
+          ],
+          "rgb": [
+            74,
+            137,
+            220
+          ]
+        }
+      ],
+      "per_part": {
+        "body": "matid_01_anodized_aluminum_body",
+        "cargo_door": "matid_01_anodized_aluminum_body",
+        "landing_leg_l": "matid_02_carbon_fiber_trim",
+        "landing_leg_r": "matid_02_carbon_fiber_trim",
+        "rotor_fl": "matid_02_carbon_fiber_trim",
+        "rotor_fr": "matid_02_carbon_fiber_trim",
+        "rotor_rl": "matid_02_carbon_fiber_trim",
+        "rotor_rr": "matid_02_carbon_fiber_trim"
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 22,
+      "placements": [
+        {
+          "decal": "serials",
+          "target_part": "rotor_rr",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.504151,
+            0.407027
+          ],
+          "scale": 0.340479,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_01_serials"
+        },
+        {
+          "decal": "warning_labels",
+          "target_part": "landing_leg_l",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.48204,
+            0.428375
+          ],
+          "scale": 0.272505,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_02_warning_labels"
+        },
+        {
+          "decal": "thin_color_bar",
+          "target_part": "rotor_rr",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.576033,
+            0.337623
+          ],
+          "scale": 0.264606,
+          "rotation_deg": 5,
+          "layer": "story",
+          "mask_id": "story_03_thin_color_bar"
+        },
+        {
+          "decal": "service_number",
+          "target_part": "rotor_fr",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.407106,
+            0.500726
+          ],
+          "scale": 0.333711,
+          "rotation_deg": -5,
+          "layer": "story",
+          "mask_id": "story_04_service_number"
+        },
+        {
+          "decal": "hazard_stripe",
+          "target_part": "rotor_fl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.427062,
+            0.481457
+          ],
+          "scale": 0.366901,
+          "rotation_deg": 3,
+          "layer": "story",
+          "mask_id": "story_05_hazard_stripe"
+        },
+        {
+          "decal": "edge_rub",
+          "target_part": "landing_leg_l",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.327951,
+            0.577151
+          ],
+          "scale": 0.266859,
+          "rotation_deg": 6,
+          "layer": "story",
+          "mask_id": "story_06_edge_rub"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "rotor_rl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.523203,
+            0.388631
+          ],
+          "scale": 0.375463,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_07_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.496061,
+            0.414838
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_08_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "rotor_rr",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.634174,
+            0.281487
+          ],
+          "scale": 0.229342,
+          "rotation_deg": 0,
+          "layer": "surface",
+          "mask_id": "story_09_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "cargo_door",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.190039,
+            0.710308
+          ],
+          "scale": 0.370522,
+          "rotation_deg": 1,
+          "layer": "surface",
+          "mask_id": "story_10_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "rotor_fr",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.561912,
+            0.351257
+          ],
+          "scale": 0.26881,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_11_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "rotor_rl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.411745,
+            0.496246
+          ],
+          "scale": 0.230112,
+          "rotation_deg": -5,
+          "layer": "surface",
+          "mask_id": "story_12_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "rotor_rr",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.659262,
+            0.257264
+          ],
+          "scale": 0.357125,
+          "rotation_deg": -4,
+          "layer": "surface",
+          "mask_id": "story_13_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "landing_leg_r",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.289595,
+            0.614184
+          ],
+          "scale": 0.282448,
+          "rotation_deg": 8,
+          "layer": "surface",
+          "mask_id": "story_14_lower_contact_points"
+        },
+        {
+          "decal": "utility",
+          "target_part": "rotor_fl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.212178,
+            0.688931
+          ],
+          "scale": 0.330372,
+          "rotation_deg": -3,
+          "layer": "surface",
+          "mask_id": "story_15_utility"
+        },
+        {
+          "decal": "industrial",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.527501,
+            0.384482
+          ],
+          "scale": 0.229757,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_16_industrial"
+        },
+        {
+          "decal": "access",
+          "target_part": "rotor_rl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.584845,
+            0.329116
+          ],
+          "scale": 0.337313,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_17_access"
+        },
+        {
+          "decal": "frame_rhythm",
+          "target_part": "cargo_door",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.564975,
+            0.3483
+          ],
+          "scale": 0.280772,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_18_frame_rhythm"
+        },
+        {
+          "decal": "threshold",
+          "target_part": "rotor_rl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.300173,
+            0.603971
+          ],
+          "scale": 0.330305,
+          "rotation_deg": 1,
+          "layer": "surface",
+          "mask_id": "story_19_threshold"
+        },
+        {
+          "decal": "hinge_side_emphasis",
+          "target_part": "rotor_fl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.43012,
+            0.478505
+          ],
+          "scale": 0.364392,
+          "rotation_deg": 5,
+          "layer": "surface",
+          "mask_id": "story_20_hinge_side_emphasis"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "rotor_fl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.725887,
+            0.192936
+          ],
+          "scale": 0.388581,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_21_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "rotor_rl",
+          "material": "carbon_fiber_trim",
+          "material_id": "matid_02_carbon_fiber_trim",
+          "anchor_uv": [
+            0.332695,
+            0.57257
+          ],
+          "scale": 0.304738,
+          "rotation_deg": -6,
+          "layer": "surface",
+          "mask_id": "story_22_random_faceting"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "anodized_aluminum_body",
+      "basecolor": [
+        104,
+        112,
+        122
+      ],
+      "metallic": 1.0,
+      "roughness": 0.478752,
+      "roughness_range": [
+        0.25408,
+        0.598016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "brushed_metal",
+      "wear": 0.3728,
+      "normal_intensity": 0.15776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "cargo_door",
+      "material": "anodized_aluminum_body",
+      "basecolor": [
+        104,
+        112,
+        122
+      ],
+      "metallic": 1.0,
+      "roughness": 0.478752,
+      "roughness_range": [
+        0.25408,
+        0.598016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "brushed_metal",
+      "wear": 0.3728,
+      "normal_intensity": 0.15776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "landing_leg_l",
+      "material": "carbon_fiber_trim",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "landing_leg_r",
+      "material": "carbon_fiber_trim",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "rotor_fl",
+      "material": "carbon_fiber_trim",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "rotor_fr",
+      "material": "carbon_fiber_trim",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "rotor_rl",
+      "material": "carbon_fiber_trim",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "rotor_rr",
+      "material": "carbon_fiber_trim",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 8,
+    "material_id_count": 2,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "cargo_door": "uvc_02_cargo_door",
+      "landing_leg_l": "uvc_03_landing_leg_l",
+      "landing_leg_r": "uvc_04_landing_leg_r",
+      "rotor_fl": "uvc_05_rotor_fl",
+      "rotor_fr": "uvc_06_rotor_fr",
+      "rotor_rl": "uvc_07_rotor_rl",
+      "rotor_rr": "uvc_08_rotor_rr"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "anodized_aluminum_body",
+      "material_id": "matid_01_anodized_aluminum_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_cargo_door",
+      "group": "cargo_door",
+      "grouping": "part",
+      "island_name": "semantic_cargo_door",
+      "parts": [
+        "cargo_door"
+      ],
+      "material": "anodized_aluminum_body",
+      "material_id": "matid_01_anodized_aluminum_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_landing_leg_l",
+      "group": "landing_leg_l",
+      "grouping": "part",
+      "island_name": "semantic_landing_leg_l",
+      "parts": [
+        "landing_leg_l"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_landing_leg_r",
+      "group": "landing_leg_r",
+      "grouping": "part",
+      "island_name": "semantic_landing_leg_r",
+      "parts": [
+        "landing_leg_r"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_rotor_fl",
+      "group": "rotor_fl",
+      "grouping": "part",
+      "island_name": "semantic_rotor_fl",
+      "parts": [
+        "rotor_fl"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_rotor_fr",
+      "group": "rotor_fr",
+      "grouping": "part",
+      "island_name": "semantic_rotor_fr",
+      "parts": [
+        "rotor_fr"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_rotor_rl",
+      "group": "rotor_rl",
+      "grouping": "part",
+      "island_name": "semantic_rotor_rl",
+      "parts": [
+        "rotor_rl"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_08_rotor_rr",
+      "group": "rotor_rr",
+      "grouping": "part",
+      "island_name": "semantic_rotor_rr",
+      "parts": [
+        "rotor_rr"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 2,
+    "ids": [
+      {
+        "material_id": "matid_01_anodized_aluminum_body",
+        "material": "anodized_aluminum_body",
+        "parts": [
+          "body",
+          "cargo_door"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_carbon_fiber_trim",
+        "material": "carbon_fiber_trim",
+        "parts": [
+          "landing_leg_l",
+          "landing_leg_r",
+          "rotor_fl",
+          "rotor_fr",
+          "rotor_rl",
+          "rotor_rr"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_01_anodized_aluminum_body",
+      "cargo_door": "matid_01_anodized_aluminum_body",
+      "landing_leg_l": "matid_02_carbon_fiber_trim",
+      "landing_leg_r": "matid_02_carbon_fiber_trim",
+      "rotor_fl": "matid_02_carbon_fiber_trim",
+      "rotor_fr": "matid_02_carbon_fiber_trim",
+      "rotor_rl": "matid_02_carbon_fiber_trim",
+      "rotor_rr": "matid_02_carbon_fiber_trim"
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 22,
+    "placements": [
+      {
+        "decal": "serials",
+        "target_part": "rotor_rr",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.504151,
+          0.407027
+        ],
+        "scale": 0.340479,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_01_serials"
+      },
+      {
+        "decal": "warning_labels",
+        "target_part": "landing_leg_l",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.48204,
+          0.428375
+        ],
+        "scale": 0.272505,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_02_warning_labels"
+      },
+      {
+        "decal": "thin_color_bar",
+        "target_part": "rotor_rr",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.576033,
+          0.337623
+        ],
+        "scale": 0.264606,
+        "rotation_deg": 5,
+        "layer": "story",
+        "mask_id": "story_03_thin_color_bar"
+      },
+      {
+        "decal": "service_number",
+        "target_part": "rotor_fr",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.407106,
+          0.500726
+        ],
+        "scale": 0.333711,
+        "rotation_deg": -5,
+        "layer": "story",
+        "mask_id": "story_04_service_number"
+      },
+      {
+        "decal": "hazard_stripe",
+        "target_part": "rotor_fl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.427062,
+          0.481457
+        ],
+        "scale": 0.366901,
+        "rotation_deg": 3,
+        "layer": "story",
+        "mask_id": "story_05_hazard_stripe"
+      },
+      {
+        "decal": "edge_rub",
+        "target_part": "landing_leg_l",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.327951,
+          0.577151
+        ],
+        "scale": 0.266859,
+        "rotation_deg": 6,
+        "layer": "story",
+        "mask_id": "story_06_edge_rub"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "rotor_rl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.523203,
+          0.388631
+        ],
+        "scale": 0.375463,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_07_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.496061,
+          0.414838
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_08_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "rotor_rr",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.634174,
+          0.281487
+        ],
+        "scale": 0.229342,
+        "rotation_deg": 0,
+        "layer": "surface",
+        "mask_id": "story_09_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "cargo_door",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.190039,
+          0.710308
+        ],
+        "scale": 0.370522,
+        "rotation_deg": 1,
+        "layer": "surface",
+        "mask_id": "story_10_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "rotor_fr",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.561912,
+          0.351257
+        ],
+        "scale": 0.26881,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_11_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "rotor_rl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.411745,
+          0.496246
+        ],
+        "scale": 0.230112,
+        "rotation_deg": -5,
+        "layer": "surface",
+        "mask_id": "story_12_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "rotor_rr",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.659262,
+          0.257264
+        ],
+        "scale": 0.357125,
+        "rotation_deg": -4,
+        "layer": "surface",
+        "mask_id": "story_13_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "landing_leg_r",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.289595,
+          0.614184
+        ],
+        "scale": 0.282448,
+        "rotation_deg": 8,
+        "layer": "surface",
+        "mask_id": "story_14_lower_contact_points"
+      },
+      {
+        "decal": "utility",
+        "target_part": "rotor_fl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.212178,
+          0.688931
+        ],
+        "scale": 0.330372,
+        "rotation_deg": -3,
+        "layer": "surface",
+        "mask_id": "story_15_utility"
+      },
+      {
+        "decal": "industrial",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.527501,
+          0.384482
+        ],
+        "scale": 0.229757,
+        "rotation_deg": 11,
+        "layer": "surface",
+        "mask_id": "story_16_industrial"
+      },
+      {
+        "decal": "access",
+        "target_part": "rotor_rl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.584845,
+          0.329116
+        ],
+        "scale": 0.337313,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_17_access"
+      },
+      {
+        "decal": "frame_rhythm",
+        "target_part": "cargo_door",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.564975,
+          0.3483
+        ],
+        "scale": 0.280772,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_18_frame_rhythm"
+      },
+      {
+        "decal": "threshold",
+        "target_part": "rotor_rl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.300173,
+          0.603971
+        ],
+        "scale": 0.330305,
+        "rotation_deg": 1,
+        "layer": "surface",
+        "mask_id": "story_19_threshold"
+      },
+      {
+        "decal": "hinge_side_emphasis",
+        "target_part": "rotor_fl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.43012,
+          0.478505
+        ],
+        "scale": 0.364392,
+        "rotation_deg": 5,
+        "layer": "surface",
+        "mask_id": "story_20_hinge_side_emphasis"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "rotor_fl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.725887,
+          0.192936
+        ],
+        "scale": 0.388581,
+        "rotation_deg": -8,
+        "layer": "surface",
+        "mask_id": "story_21_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "rotor_rl",
+        "material": "carbon_fiber_trim",
+        "material_id": "matid_02_carbon_fiber_trim",
+        "anchor_uv": [
+          0.332695,
+          0.57257
+        ],
+        "scale": 0.304738,
+        "rotation_deg": -6,
+        "layer": "surface",
+        "mask_id": "story_22_random_faceting"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

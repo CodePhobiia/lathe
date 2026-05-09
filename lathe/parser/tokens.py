@@ -93,6 +93,16 @@ class _TokenStream:
             raise LatheParseError(f"Expected identifier, got '{self.peek() or 'end of file'}'")
         return self.pop()
 
+    def peek_next(self, offset: int = 1) -> str:
+        """Peek at the token ``offset`` positions ahead without consuming.
+
+        Returns the empty string when looking past the end of the stream.
+        """
+        index = self.index + offset
+        if index >= len(self.tokens):
+            return ""
+        return self.tokens[index][1]
+
     def eof(self) -> bool:
         """Eof.
 

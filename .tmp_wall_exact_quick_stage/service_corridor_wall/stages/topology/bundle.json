@@ -1,0 +1,926 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 85736,
+    "triangle_count": 46591,
+    "watertight": false,
+    "volume": 0.0,
+    "bounds_min": [
+      -311.498474,
+      -137.703079,
+      -39.757042
+    ],
+    "bounds_max": [
+      311.498474,
+      437.6008,
+      52.185234
+    ],
+    "extents": [
+      622.996948,
+      575.303879,
+      91.942276
+    ],
+    "body_count": 18633
+  },
+  "normals": {
+    "mode": "face",
+    "count": 46591
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 15650,
+      "vertex_count": 27996,
+      "bounds_min": [
+        -311.498474,
+        -125.879631,
+        -23.570816
+      ],
+      "bounds_max": [
+        311.498474,
+        114.255936,
+        37.939266
+      ]
+    },
+    {
+      "name": "frame_panel",
+      "face_count": 275,
+      "vertex_count": 673,
+      "bounds_min": [
+        -90.751549,
+        -38.214718,
+        -7.56681
+      ],
+      "bounds_max": [
+        90.751549,
+        437.6008,
+        15.020333
+      ]
+    },
+    {
+      "name": "mount_bottom",
+      "face_count": 6292,
+      "vertex_count": 11777,
+      "bounds_min": [
+        -311.498474,
+        -137.703079,
+        -25.669083
+      ],
+      "bounds_max": [
+        311.498474,
+        76.916115,
+        52.185234
+      ]
+    },
+    {
+      "name": "mount_top",
+      "face_count": 5271,
+      "vertex_count": 9699,
+      "bounds_min": [
+        -141.118484,
+        -76.916115,
+        -39.757042
+      ],
+      "bounds_max": [
+        141.118484,
+        436.19165,
+        52.185234
+      ]
+    },
+    {
+      "name": "screen_panel",
+      "face_count": 7899,
+      "vertex_count": 14121,
+      "bounds_min": [
+        -141.118484,
+        -57.591209,
+        -16.182711
+      ],
+      "bounds_max": [
+        141.118484,
+        437.6008,
+        16.182711
+      ]
+    },
+    {
+      "name": "vent_l",
+      "face_count": 4319,
+      "vertex_count": 8013,
+      "bounds_min": [
+        -90.751549,
+        -130.509125,
+        -6.759839
+      ],
+      "bounds_max": [
+        -22.967882,
+        -1.993542,
+        15.020333
+      ]
+    },
+    {
+      "name": "vent_r",
+      "face_count": 6885,
+      "vertex_count": 13457,
+      "bounds_min": [
+        21.892801,
+        -130.509125,
+        -6.759839
+      ],
+      "bounds_max": [
+        141.118484,
+        65.589539,
+        16.182711
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "face_count": 15650,
+      "vertex_count": 27996,
+      "tags": [
+        "body",
+        "panel",
+        "shell"
+      ],
+      "parent_blueprint_component": "wall_panel_shell",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -311.498474,
+        -125.879631,
+        -23.570816
+      ],
+      "bounds_max": [
+        311.498474,
+        114.255936,
+        37.939266
+      ]
+    },
+    {
+      "name": "frame_panel",
+      "face_count": 275,
+      "vertex_count": 673,
+      "tags": [
+        "frame",
+        "panel"
+      ],
+      "parent_blueprint_component": "wall_frame_panel",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -90.751549,
+        -38.214718,
+        -7.56681
+      ],
+      "bounds_max": [
+        90.751549,
+        437.6008,
+        15.020333
+      ]
+    },
+    {
+      "name": "mount_bottom",
+      "face_count": 6292,
+      "vertex_count": 11777,
+      "tags": [
+        "bottom",
+        "bracket",
+        "mount"
+      ],
+      "parent_blueprint_component": "wall_mount_bottom",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -311.498474,
+        -137.703079,
+        -25.669083
+      ],
+      "bounds_max": [
+        311.498474,
+        76.916115,
+        52.185234
+      ]
+    },
+    {
+      "name": "mount_top",
+      "face_count": 5271,
+      "vertex_count": 9699,
+      "tags": [
+        "bracket",
+        "mount",
+        "top"
+      ],
+      "parent_blueprint_component": "wall_mount_top",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -141.118484,
+        -76.916115,
+        -39.757042
+      ],
+      "bounds_max": [
+        141.118484,
+        436.19165,
+        52.185234
+      ]
+    },
+    {
+      "name": "screen_panel",
+      "face_count": 7899,
+      "vertex_count": 14121,
+      "tags": [
+        "bezel",
+        "panel",
+        "screen"
+      ],
+      "parent_blueprint_component": "wall_screen_bezel",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -141.118484,
+        -57.591209,
+        -16.182711
+      ],
+      "bounds_max": [
+        141.118484,
+        437.6008,
+        16.182711
+      ]
+    },
+    {
+      "name": "vent_l",
+      "face_count": 4319,
+      "vertex_count": 8013,
+      "tags": [
+        "left",
+        "vent"
+      ],
+      "parent_blueprint_component": "wall_vent_l",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -90.751549,
+        -130.509125,
+        -6.759839
+      ],
+      "bounds_max": [
+        -22.967882,
+        -1.993542,
+        15.020333
+      ]
+    },
+    {
+      "name": "vent_r",
+      "face_count": 6885,
+      "vertex_count": 13457,
+      "tags": [
+        "right",
+        "vent"
+      ],
+      "parent_blueprint_component": "wall_vent_r",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        21.892801,
+        -130.509125,
+        -6.759839
+      ],
+      "bounds_max": [
+        141.118484,
+        65.589539,
+        16.182711
+      ]
+    }
+  ],
+  "part_count": 7,
+  "multi_part_scene_source": "blender_output_glb",
+  "hard_edge_groups": [
+    {
+      "name": "panel_shell",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "screen_bezel",
+      "part": "frame_panel",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "screen_region",
+      "part": "screen_panel",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "console_strip_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "mount_top_region",
+      "part": "mount_top",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "mount_bottom_region",
+      "part": "mount_bottom",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "vent_left_region",
+      "part": "vent_l",
+      "edge_class": "grille"
+    },
+    {
+      "name": "vent_right_region",
+      "part": "vent_r",
+      "edge_class": "grille"
+    }
+  ],
+  "panel_seams": [
+    "screen_bezel",
+    "screen_region",
+    "console_strip_region"
+  ],
+  "bake_groups": [
+    {
+      "name": "panel_shell",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "screen_bezel",
+      "part": "frame_panel",
+      "material_boundary": true
+    },
+    {
+      "name": "screen_region",
+      "part": "screen_panel",
+      "material_boundary": true
+    },
+    {
+      "name": "console_strip_region",
+      "part": "body",
+      "material_boundary": true
+    },
+    {
+      "name": "mount_top_region",
+      "part": "mount_top",
+      "material_boundary": false
+    },
+    {
+      "name": "mount_bottom_region",
+      "part": "mount_bottom",
+      "material_boundary": false
+    },
+    {
+      "name": "vent_left_region",
+      "part": "vent_l",
+      "material_boundary": false
+    },
+    {
+      "name": "vent_right_region",
+      "part": "vent_r",
+      "material_boundary": false
+    }
+  ],
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 723,
+    "region_count": 8,
+    "primitive_diversity": 0.047026,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 703,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "groove_channel",
+      "inset_panel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "rib",
+      "screen_bezel",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "support_bracket",
+      "trim_band",
+      "trim_strip",
+      "vent_grille"
+    ],
+    "feature_density": 50.214286,
+    "edge_treatment_count": 88,
+    "panel_feature_count": 136,
+    "support_feature_count": 100,
+    "attachment_region_count": 3,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 616,
+    "geometry_detail_feature_count": 616,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 24,
+      "attachment_rail": 32,
+      "attachment_vent_stack": 40,
+      "bolt_cap": 32,
+      "bolt_washer": 32,
+      "corner_guard": 32,
+      "edge_break": 32,
+      "groove_channel": 32,
+      "layer_plate": 24,
+      "linear_detail_array": 32,
+      "module_antenna": 32,
+      "module_power_cell": 32,
+      "module_shield_plate": 16,
+      "panel_seam": 48,
+      "silhouette_guard_cowl": 15,
+      "silhouette_outrigger": 20,
+      "silhouette_spine": 15,
+      "silhouette_tower": 30,
+      "socket_collar": 32,
+      "socket_recess": 32,
+      "trim_strip": 32
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ],
+    "primitive_selector_applied_count": 0,
+    "primitive_selector_by_component": {},
+    "primitive_selector_by_target": {},
+    "geometry_detail_zones_applied": [
+      {
+        "zone": "global",
+        "target": "panel_shell",
+        "part": "body",
+        "component": "shell",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "screen_bezel",
+        "part": "frame_panel",
+        "component": "bezel",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "screen_region",
+        "part": "screen_panel",
+        "component": "panel",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "console_strip_region",
+        "part": "body",
+        "component": "panel",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "mount_top_region",
+        "part": "mount_top",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "mount_bottom_region",
+        "part": "mount_bottom",
+        "component": "bracket",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 83
+      },
+      {
+        "zone": "global",
+        "target": "vent_left_region",
+        "part": "vent_l",
+        "component": "vent",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      },
+      {
+        "zone": "global",
+        "target": "vent_right_region",
+        "part": "vent_r",
+        "component": "vent",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 67
+      }
+    ]
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "success_multi_part_recovered",
+    "fallback_reason": null,
+    "error": null,
+    "actual_adapter": "blender_subprocess_multi_part_recovered",
+    "execution": {
+      "mode": "blender_subprocess_multi_part_recovered",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 9000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "created: 1\n06:48:38 | INFO: Extracting primitive: mount_top\n06:48:38 | INFO: Primitives created: 1\n06:48:38 | INFO: Extracting primitive: screen_panel\n06:48:38 | INFO: Primitives created: 1\n06:48:38 | INFO: Extracting primitive: vent_l\n06:48:38 | INFO: Primitives created: 1\n06:48:38 | INFO: Extracting primitive: vent_r\n06:48:38 | INFO: Primitives created: 1\n06:48:38 | INFO: Finished glTF 2.0 export in 0.0991051197052002 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 85736,
+        "triangle_count": 46591,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -311.498474,
+          -137.703079,
+          -39.757042
+        ],
+        "bounds_max": [
+          311.498474,
+          437.6008,
+          52.185234
+        ],
+        "extents": [
+          622.996948,
+          575.303879,
+          91.942276
+        ],
+        "body_count": 18633
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": true
+      },
+      "multi_part_override": {
+        "source": "blender_output_glb",
+        "part_count": 7,
+        "face_count": 46591,
+        "note": "Watertight fallback was discarded in favour of preserving Blender's 18-part scene; downstream stages operate on the multi-part topology."
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": false,
+    "reason": "skipped_for_multi_part_preservation",
+    "skipped_because": "blender_subprocess_multi_part_recovered"
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "blender_subprocess_multi_part_recovered"
+  },
+  "_part_groups_emitted": [
+    "body",
+    "frame_panel",
+    "mount_bottom",
+    "mount_top",
+    "screen_panel",
+    "vent_l",
+    "vent_r"
+  ]
+}

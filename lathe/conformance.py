@@ -231,7 +231,10 @@ def fit_provider_proposals(
     accepted_deltas: list[dict[str, Any]] = []
     rejected_deltas: list[dict[str, Any]] = []
     proposal_sources_used: list[str] = []
-    authoritative_reason = "native_assembly_blueprint"
+    authoritative_reason = str(
+        scaffold_result.get("report", {}).get("authoritative_candidate_reason")
+        or "native_assembly_blueprint"
+    )
     runtime_candidates = scaffold_candidates
 
     best_proposal: ShapeProposal | None = None

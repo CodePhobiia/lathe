@@ -71,6 +71,11 @@ NODE_TYPES: frozenset[str] = frozenset(
         "trim",
         "guard",
         "rail",
+        "bracket",
+        "vent",
+        "conduit",
+        "latch",
+        "weld",
         "socket",
         "mount",
         "handle",
@@ -169,19 +174,23 @@ _NODE_TYPE_RULES: tuple[tuple[tuple[str, ...], str], ...] = (
     (("body",), "primary_volume"),
     (("lid",), "panel"),
     (("frame",), "frame"),
+    (("vent", "grille", "grill", "louver", "louvre", "slat"), "vent"),
+    (("conduit", "cable", "pipe", "duct", "raceway"), "conduit"),
+    (("weld", "welded", "welding"), "weld"),
+    (("latch", "clasp", "lock"), "latch"),
+    (("bracket", "brace", "gusset"), "bracket"),
     (("panel",), "panel"),
     (("trim", "band"), "trim"),
     (("corner_guard", "corner", "guard"), "guard"),
     (("rail",), "rail"),
     (("socket",), "socket"),
-    (("mount", "bracket"), "mount"),
+    (("mount",), "mount"),
     (("handle",), "handle"),
     (("hinge",), "hinge"),
     (("fastener", "bolt", "rivet", "screw"), "fastener"),
     (("decal", "label", "warning"), "decal_zone"),
     (("wear",), "wear_zone"),
     (("material",), "material_zone"),
-    (("latch",), "inset"),
     (("foot", "feet"), "mount"),
 )
 
@@ -226,6 +235,204 @@ def _collect_part_node_ids(asset: dict[str, Any]) -> list[str]:
         if isinstance(part, str) and part:
             parts.append(part)
     return parts
+
+
+_AUTHORED_GRAPH_NODE_FIELDS: tuple[tuple[tuple[str, ...], str | None], ...] = (
+    (("intent", "materials"), "material_zone"),
+    (("intent", "interactions"), "socket"),
+    (("features", "allow"), None),
+    (("assembly", "components"), None),
+    (("assembly", "mechanisms"), "socket"),
+    (("assembly", "traits"), None),
+    (("surface", "materials"), "material_zone"),
+    (("surface", "patterns"), "decal_zone"),
+)
+
+_MAX_AUTHORED_GRAPH_NODES = 32
+_REPAIR_POLICY_HARDSURFACE_DEFAULT_FEATURES = (
+    "edge_break",
+    "trim_band",
+    "fastener_grid",
+    "panel_frame",
+    "support_bracket",
+)
+_REPAIR_POLICY_ACTION_FEATURES: dict[str, tuple[str, ...]] = {
+    "add_secondary_features": ("trim_band", "fastener_grid"),
+    "restore_edge_treatment": ("edge_break",),
+    "increase_panel_depth": ("panel_frame", "trim_band", "inset_panel"),
+    "improve_attachment_integration": ("socket_point", "support_bracket", "mount_plate"),
+    "refine_support_layout": ("support_bracket", "mount_plate"),
+    "restore_hinge_alignment": ("hinge", "support_bracket"),
+    "shroud_exposed_frame": ("tube_shroud",),
+}
+_REPAIR_POLICY_FEATURE_NODE_TYPES: dict[str, tuple[str, ...]] = {
+    "edge_break": ("trim",),
+    "trim_band": ("trim",),
+    "fastener_grid": ("fastener",),
+    "panel_frame": ("panel",),
+    "inset_panel": ("inset",),
+    "support_bracket": ("bracket",),
+    "socket_point": ("socket",),
+    "mount_plate": ("mount",),
+    "hinge": ("hinge",),
+    "tube_shroud": ("conduit",),
+}
+
+
+def _value_at_path(source: dict[str, Any], path: tuple[str, ...]) -> Any:
+    current: Any = source
+    for key in path:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(key)
+    return current
+
+
+def _iter_text_fragments(value: Any) -> tuple[str, ...]:
+    if isinstance(value, str):
+        fragment = value.strip()
+        return (fragment,) if fragment else ()
+    if isinstance(value, list):
+        fragments: list[str] = []
+        for entry in value:
+            fragments.extend(_iter_text_fragments(entry))
+        return tuple(fragments)
+    if isinstance(value, dict):
+        fragments: list[str] = []
+        for key in sorted(value.keys(), key=str):
+            key_fragment = str(key).strip()
+            if key_fragment:
+                fragments.append(key_fragment)
+            fragments.extend(_iter_text_fragments(value[key]))
+        return tuple(fragments)
+    return ()
+
+
+def _slug_fragment(value: str) -> str:
+    lowered = value.lower()
+    chars: list[str] = []
+    previous_was_separator = False
+    for char in lowered:
+        if char.isalnum():
+            chars.append(char)
+            previous_was_separator = False
+            continue
+        if not previous_was_separator:
+            chars.append("_")
+            previous_was_separator = True
+    slug = "".join(chars).strip("_")
+    return slug[:48] if slug else "value"
+
+
+def _authored_graph_nodes(
+    asset: dict[str, Any],
+    existing_ids: set[str],
+) -> tuple[ConstructionNode, ...]:
+    """Return graph nodes implied by existing positive authoring fields."""
+    nodes: list[ConstructionNode] = []
+    seen_ids: set[str] = set(existing_ids)
+    for path, fallback_node_type in _AUTHORED_GRAPH_NODE_FIELDS:
+        raw_value = _value_at_path(asset, path)
+        source_path = ".".join(path)
+        for fragment in _iter_text_fragments(raw_value):
+            if len(nodes) >= _MAX_AUTHORED_GRAPH_NODES:
+                return tuple(nodes)
+            node_id = f"source.{source_path}.{_slug_fragment(fragment)}"
+            if node_id in seen_ids:
+                continue
+            seen_ids.add(node_id)
+            node_type = fallback_node_type or _classify_part(fragment)
+            nodes.append(
+                ConstructionNode(
+                    node_id=node_id,
+                    node_type=node_type,
+                    attributes={
+                        "source": "authored_source_field",
+                        "source_path": source_path,
+                        "source_value": fragment,
+                    },
+                )
+            )
+    return tuple(nodes)
+
+
+def _repair_policy_slugs(value: Any) -> frozenset[str]:
+    return frozenset(_slug_fragment(fragment) for fragment in _iter_text_fragments(value))
+
+
+def _repair_policy_feature_kinds(asset: dict[str, Any]) -> tuple[str, ...]:
+    policy = _as_dict(asset.get("repair_policy"))
+    if not policy:
+        return ()
+    request_slugs = set(_repair_policy_slugs(policy.get("use")))
+    request_slugs.update(_repair_policy_slugs(policy.get("mode")))
+    request_slugs.update(_repair_policy_slugs(policy.get("allow")))
+    deny_slugs = _repair_policy_slugs(policy.get("deny"))
+    selected: list[str] = []
+    seen: set[str] = set()
+
+    def denies(kind: str, action: str = "") -> bool:
+        kind_slug = _slug_fragment(kind)
+        action_slug = _slug_fragment(action) if action else ""
+        if kind_slug in deny_slugs or (action_slug and action_slug in deny_slugs):
+            return True
+        deny_tokens = {token for slug in deny_slugs for token in slug.split("_") if token}
+        kind_tokens = {token for token in kind_slug.split("_") if token}
+        action_tokens = {token for token in action_slug.split("_") if token}
+        return bool((kind_tokens and kind_tokens & deny_tokens) or (action_tokens and action_tokens & deny_tokens))
+
+    def add_kind(kind: str, action: str = "") -> None:
+        kind_slug = _slug_fragment(kind)
+        if kind_slug not in _REPAIR_POLICY_FEATURE_NODE_TYPES or kind_slug in seen:
+            return
+        if denies(kind_slug, action):
+            return
+        seen.add(kind_slug)
+        selected.append(kind_slug)
+
+    if request_slugs & {
+        "hero_hardsurface_repair",
+        "hero_hard_surface_repair",
+        "hardsurface_repair",
+        "hard_surface_repair",
+    }:
+        for kind in _REPAIR_POLICY_HARDSURFACE_DEFAULT_FEATURES:
+            add_kind(kind, "hero_hardsurface_repair")
+
+    for action_slug in sorted(request_slugs):
+        for kind in _REPAIR_POLICY_ACTION_FEATURES.get(action_slug, ()):
+            add_kind(kind, action_slug)
+        if action_slug in _REPAIR_POLICY_FEATURE_NODE_TYPES:
+            add_kind(action_slug, action_slug)
+    return tuple(selected)
+
+
+def _repair_policy_graph_nodes(
+    asset: dict[str, Any],
+    existing_ids: set[str],
+) -> tuple[ConstructionNode, ...]:
+    nodes: list[ConstructionNode] = []
+    seen_ids: set[str] = set(existing_ids)
+    for kind in _repair_policy_feature_kinds(asset):
+        for node_type in _REPAIR_POLICY_FEATURE_NODE_TYPES.get(kind, ()):
+            if len(nodes) >= _MAX_AUTHORED_GRAPH_NODES:
+                return tuple(nodes)
+            node_id = f"source.repair_policy.{kind}.{node_type}"
+            if node_id in seen_ids:
+                continue
+            seen_ids.add(node_id)
+            nodes.append(
+                ConstructionNode(
+                    node_id=node_id,
+                    node_type=node_type,
+                    attributes={
+                        "source": "repair_policy",
+                        "source_path": "repair_policy",
+                        "repair_policy_feature": kind,
+                    },
+                )
+            )
+    return tuple(nodes)
 
 
 def _asset_graph_extra_node_ids(
@@ -284,6 +491,7 @@ def _build_nodes(
     part_ids = _collect_part_node_ids(asset)
     seen: set[str] = set(part_ids)
     extras = _asset_graph_extra_node_ids(runtime, seen)
+    seen.update(extras)
 
     ordered_ids = list(part_ids) + list(extras)
 
@@ -296,6 +504,10 @@ def _build_nodes(
                 attributes={},
             )
         )
+    authored_nodes = _authored_graph_nodes(asset, seen)
+    nodes.extend(authored_nodes)
+    seen.update(node.node_id for node in authored_nodes)
+    nodes.extend(_repair_policy_graph_nodes(asset, seen))
     return tuple(nodes)
 
 

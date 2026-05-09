@@ -1,0 +1,50 @@
+{
+  "objects": [
+    {
+      "mode": "modifier_stack",
+      "fidelity_tier": "hero",
+      "auto_smooth_enabled": true,
+      "subsurf": {
+        "applied": false,
+        "reason": "skipped",
+        "skip_reason": "terrain_heightfield_flag",
+        "requested_level": 1
+      },
+      "bevel": {
+        "applied": false
+      },
+      "decimate": {
+        "applied": false,
+        "reason": "already_under_budget",
+        "target_quads": 20000
+      },
+      "scatter": {
+        "applied": false
+      },
+      "subsurf_level": 0,
+      "subsurf_requested_level": 1,
+      "subsurf_skip_reason": "terrain_heightfield_flag",
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 20000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 7938,
+        "polys_after": 3990,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "polys_initial": 7938,
+      "polys_before_triangulate": 3990,
+      "polys_final": 7938,
+      "object": "body"
+    }
+  ]
+}

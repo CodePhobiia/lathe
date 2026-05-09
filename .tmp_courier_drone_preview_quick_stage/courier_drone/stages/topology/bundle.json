@@ -1,0 +1,832 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 264721,
+    "triangle_count": 88317,
+    "watertight": false,
+    "volume": 0.0,
+    "bounds_min": [
+      -201.934647,
+      -36.203583,
+      -151.670929
+    ],
+    "bounds_max": [
+      201.927124,
+      59.971142,
+      204.278137
+    ],
+    "extents": [
+      403.861771,
+      96.174725,
+      355.949066
+    ],
+    "body_count": 88199
+  },
+  "normals": {
+    "mode": "face",
+    "count": 88317
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 35986,
+      "vertex_count": 107925,
+      "bounds_min": [
+        -201.934647,
+        -20.477871,
+        -151.670929
+      ],
+      "bounds_max": [
+        201.927124,
+        59.971142,
+        204.278137
+      ]
+    },
+    {
+      "name": "cargo_door",
+      "face_count": 5082,
+      "vertex_count": 15218,
+      "bounds_min": [
+        -111.116928,
+        -16.172205,
+        -58.812469
+      ],
+      "bounds_max": [
+        111.116928,
+        -2.62273,
+        85.506805
+      ]
+    },
+    {
+      "name": "landing_leg_l",
+      "face_count": 6297,
+      "vertex_count": 18825,
+      "bounds_min": [
+        35.014648,
+        -36.203583,
+        -16.542171
+      ],
+      "bounds_max": [
+        53.15361,
+        26.859489,
+        32.46468
+      ]
+    },
+    {
+      "name": "landing_leg_r",
+      "face_count": 6425,
+      "vertex_count": 19254,
+      "bounds_min": [
+        -47.142452,
+        -36.203583,
+        -9.006254
+      ],
+      "bounds_max": [
+        -36.641533,
+        26.859489,
+        32.099258
+      ]
+    },
+    {
+      "name": "rotor_fl",
+      "face_count": 8895,
+      "vertex_count": 26681,
+      "bounds_min": [
+        71.084236,
+        1.390208,
+        78.84256
+      ],
+      "bounds_max": [
+        93.410042,
+        25.480829,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_fr",
+      "face_count": 8754,
+      "vertex_count": 26221,
+      "bounds_min": [
+        -93.410042,
+        1.417516,
+        78.84256
+      ],
+      "bounds_max": [
+        -71.084236,
+        25.360306,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_rl",
+      "face_count": 9225,
+      "vertex_count": 27642,
+      "bounds_min": [
+        66.760941,
+        1.417516,
+        -101.168365
+      ],
+      "bounds_max": [
+        93.410042,
+        25.360418,
+        -45.350361
+      ]
+    },
+    {
+      "name": "rotor_rr",
+      "face_count": 7653,
+      "vertex_count": 22955,
+      "bounds_min": [
+        -93.410042,
+        1.464551,
+        -101.168365
+      ],
+      "bounds_max": [
+        -66.434441,
+        25.327162,
+        -45.305733
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "face_count": 35986,
+      "vertex_count": 107925,
+      "tags": [
+        "body",
+        "shell"
+      ],
+      "parent_blueprint_component": "courier_body",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -201.934647,
+        -20.477871,
+        -151.670929
+      ],
+      "bounds_max": [
+        201.927124,
+        59.971142,
+        204.278137
+      ]
+    },
+    {
+      "name": "cargo_door",
+      "face_count": 5082,
+      "vertex_count": 15218,
+      "tags": [
+        "cargo",
+        "door"
+      ],
+      "parent_blueprint_component": "cargo_door_panel",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -111.116928,
+        -16.172205,
+        -58.812469
+      ],
+      "bounds_max": [
+        111.116928,
+        -2.62273,
+        85.506805
+      ]
+    },
+    {
+      "name": "landing_leg_l",
+      "face_count": 6297,
+      "vertex_count": 18825,
+      "tags": [
+        "foot",
+        "left",
+        "leg"
+      ],
+      "parent_blueprint_component": "landing_leg_left",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        35.014648,
+        -36.203583,
+        -16.542171
+      ],
+      "bounds_max": [
+        53.15361,
+        26.859489,
+        32.46468
+      ]
+    },
+    {
+      "name": "landing_leg_r",
+      "face_count": 6425,
+      "vertex_count": 19254,
+      "tags": [
+        "foot",
+        "left",
+        "leg",
+        "right"
+      ],
+      "parent_blueprint_component": "landing_leg_right",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -47.142452,
+        -36.203583,
+        -9.006254
+      ],
+      "bounds_max": [
+        -36.641533,
+        26.859489,
+        32.099258
+      ]
+    },
+    {
+      "name": "rotor_fl",
+      "face_count": 8895,
+      "vertex_count": 26681,
+      "tags": [
+        "front",
+        "left",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_front_left",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        71.084236,
+        1.390208,
+        78.84256
+      ],
+      "bounds_max": [
+        93.410042,
+        25.480829,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_fr",
+      "face_count": 8754,
+      "vertex_count": 26221,
+      "tags": [
+        "front",
+        "right",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_front_right",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -93.410042,
+        1.417516,
+        78.84256
+      ],
+      "bounds_max": [
+        -71.084236,
+        25.360306,
+        101.246956
+      ]
+    },
+    {
+      "name": "rotor_rl",
+      "face_count": 9225,
+      "vertex_count": 27642,
+      "tags": [
+        "left",
+        "rear",
+        "right",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_rear_left",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        66.760941,
+        1.417516,
+        -101.168365
+      ],
+      "bounds_max": [
+        93.410042,
+        25.360418,
+        -45.350361
+      ]
+    },
+    {
+      "name": "rotor_rr",
+      "face_count": 7653,
+      "vertex_count": 22955,
+      "tags": [
+        "rear",
+        "right",
+        "rotor",
+        "rotor_pod"
+      ],
+      "parent_blueprint_component": "rotor_rear_right",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -93.410042,
+        1.464551,
+        -101.168365
+      ],
+      "bounds_max": [
+        -66.434441,
+        25.327162,
+        -45.305733
+      ]
+    }
+  ],
+  "part_count": 8,
+  "multi_part_scene_source": "blender_output_glb",
+  "hard_edge_groups": [
+    {
+      "name": "body_shell",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "canopy_bezel",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "cargo_door_region",
+      "part": "cargo_door",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "keel_spine",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_front_left",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_front_right",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_rear_left",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "fairing_rear_right",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_front_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_rear_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_left_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "arm_right_bar",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fl_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fl_pod",
+      "part": "rotor_fl",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fr_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_fr_pod",
+      "part": "rotor_fr",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rl_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rl_pod",
+      "part": "rotor_rl",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rr_mount",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "rotor_rr_pod",
+      "part": "rotor_rr",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "leg_left_region",
+      "part": "landing_leg_l",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "leg_right_region",
+      "part": "landing_leg_r",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "cargo_door_repair_region",
+      "part": "cargo_door",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [
+    "canopy_bezel",
+    "cargo_door_region"
+  ],
+  "bake_groups": [
+    {
+      "name": "body_shell",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "canopy_bezel",
+      "part": "body",
+      "material_boundary": true
+    },
+    {
+      "name": "cargo_door_region",
+      "part": "cargo_door",
+      "material_boundary": false
+    },
+    {
+      "name": "keel_spine",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_front_left",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_front_right",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_rear_left",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "fairing_rear_right",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_front_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_rear_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_left_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "arm_right_bar",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fl_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fl_pod",
+      "part": "rotor_fl",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fr_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_fr_pod",
+      "part": "rotor_fr",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rl_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rl_pod",
+      "part": "rotor_rl",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rr_mount",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "rotor_rr_pod",
+      "part": "rotor_rr",
+      "material_boundary": false
+    },
+    {
+      "name": "leg_left_region",
+      "part": "landing_leg_l",
+      "material_boundary": false
+    },
+    {
+      "name": "leg_right_region",
+      "part": "landing_leg_r",
+      "material_boundary": false
+    },
+    {
+      "name": "cargo_door_repair_region",
+      "part": "cargo_door",
+      "material_boundary": false
+    }
+  ],
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 2041,
+    "region_count": 23,
+    "primitive_diversity": 0.018618,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 1998,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "corner_guard",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "groove_channel",
+      "inset_panel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "rib",
+      "rotor_shroud",
+      "screen_bezel",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "support_bracket",
+      "trim_band",
+      "trim_strip"
+    ],
+    "feature_density": 124.875,
+    "edge_treatment_count": 248,
+    "panel_feature_count": 320,
+    "support_feature_count": 302,
+    "attachment_region_count": 15,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 1762,
+    "geometry_detail_feature_count": 1762,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 66,
+      "attachment_rail": 88,
+      "attachment_vent_stack": 110,
+      "bolt_cap": 88,
+      "bolt_washer": 88,
+      "corner_guard": 88,
+      "edge_break": 88,
+      "groove_channel": 88,
+      "layer_plate": 66,
+      "linear_detail_array": 88,
+      "module_antenna": 88,
+      "module_power_cell": 88,
+      "module_shield_plate": 44,
+      "panel_seam": 132,
+      "silhouette_guard_cowl": 54,
+      "silhouette_outrigger": 72,
+      "silhouette_spine": 54,
+      "silhouette_tower": 108,
+      "socket_collar": 88,
+      "socket_recess": 88,
+      "trim_strip": 88
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ],
+    "primitive_selector_applied_count": 0,
+    "primitive_selector_by_component": {},
+    "primitive_selector_by_target": {}
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "success_multi_part_recovered",
+    "fallback_reason": null,
+    "error": null,
+    "actual_adapter": "blender_subprocess_multi_part_recovered",
+    "execution": {
+      "mode": "blender_subprocess_multi_part_recovered",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 18000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "created: 1\n08:07:49 | INFO: Extracting primitive: rotor_fl\n08:07:49 | INFO: Primitives created: 1\n08:07:49 | INFO: Extracting primitive: rotor_fr\n08:07:49 | INFO: Primitives created: 1\n08:07:49 | INFO: Extracting primitive: rotor_rl\n08:07:49 | INFO: Primitives created: 1\n08:07:49 | INFO: Extracting primitive: rotor_rr\n08:07:49 | INFO: Primitives created: 1\n08:07:49 | INFO: Finished glTF 2.0 export in 0.14094853401184082 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 264721,
+        "triangle_count": 88317,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -201.934647,
+          -36.203583,
+          -151.670929
+        ],
+        "bounds_max": [
+          201.927124,
+          59.971142,
+          204.278137
+        ],
+        "extents": [
+          403.861771,
+          96.174725,
+          355.949066
+        ],
+        "body_count": 88199
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": true
+      },
+      "multi_part_override": {
+        "source": "blender_output_glb",
+        "part_count": 8,
+        "face_count": 88317,
+        "note": "Watertight fallback was discarded in favour of preserving Blender's 18-part scene; downstream stages operate on the multi-part topology."
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": false,
+    "reason": "skipped_for_multi_part_preservation",
+    "skipped_because": "blender_subprocess_multi_part_recovered"
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "blender_subprocess_multi_part_recovered"
+  },
+  "_part_groups_emitted": [
+    "body",
+    "cargo_door",
+    "landing_leg_l",
+    "landing_leg_r",
+    "rotor_fl",
+    "rotor_fr",
+    "rotor_rl",
+    "rotor_rr"
+  ]
+}

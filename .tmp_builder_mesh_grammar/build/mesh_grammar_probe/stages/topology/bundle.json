@@ -1,0 +1,394 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 10733,
+    "triangle_count": 22722,
+    "watertight": true,
+    "volume": 1070843.8134938162,
+    "bounds_min": [
+      -154.450882,
+      -1.04,
+      -105.889702
+    ],
+    "bounds_max": [
+      154.450882,
+      158.38356,
+      139.702621
+    ],
+    "extents": [
+      308.901764,
+      159.42356,
+      245.592323
+    ],
+    "body_count": 8
+  },
+  "normals": {
+    "mode": "face",
+    "count": 22722
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 22719,
+      "vertex_count": 10733,
+      "bounds_min": [
+        -154.450882,
+        -1.04,
+        -105.889702
+      ],
+      "bounds_max": [
+        154.450882,
+        158.38356,
+        139.702621
+      ]
+    },
+    {
+      "name": "front_panel",
+      "face_count": 1,
+      "vertex_count": 3,
+      "bounds_min": [
+        154.450882,
+        2.37633,
+        -67.099365
+      ],
+      "bounds_max": [
+        154.450882,
+        6.408205,
+        -12.34779
+      ]
+    },
+    {
+      "name": "pipe_rail",
+      "face_count": 1,
+      "vertex_count": 3,
+      "bounds_min": [
+        -154.450882,
+        2.37633,
+        -67.099365
+      ],
+      "bounds_max": [
+        -154.450882,
+        6.408205,
+        12.34779
+      ]
+    },
+    {
+      "name": "side_fin",
+      "face_count": 1,
+      "vertex_count": 3,
+      "bounds_min": [
+        -154.450882,
+        2.37633,
+        -67.099365
+      ],
+      "bounds_max": [
+        -154.450882,
+        6.408205,
+        12.34779
+      ]
+    }
+  ],
+  "hard_edge_groups": [
+    {
+      "name": "machine_base_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "machine_column_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "left_machine_arm_00_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "right_machine_arm_01_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "left_hydraulic_00_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "right_hydraulic_01_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "conveyor_00_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "left_gear_00_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "right_gear_01_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "left_tool_head_00_region",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "front_panel_repair_region",
+      "part": "front_panel",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "pipe_rail_repair_region",
+      "part": "pipe_rail",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "side_fin_repair_region",
+      "part": "side_fin",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [
+    "front_panel_repair_region",
+    "pipe_rail_repair_region",
+    "side_fin_repair_region"
+  ],
+  "bake_groups": [
+    {
+      "name": "machine_base_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "machine_column_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "left_machine_arm_00_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "right_machine_arm_01_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "left_hydraulic_00_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "right_hydraulic_01_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "conveyor_00_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "left_gear_00_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "right_gear_01_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "left_tool_head_00_region",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "front_panel_repair_region",
+      "part": "front_panel",
+      "material_boundary": true
+    },
+    {
+      "name": "pipe_rail_repair_region",
+      "part": "pipe_rail",
+      "material_boundary": true
+    },
+    {
+      "name": "side_fin_repair_region",
+      "part": "side_fin",
+      "material_boundary": true
+    }
+  ],
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 802,
+    "region_count": 13,
+    "primitive_diversity": 0.037406,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 799,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_grid",
+      "conveyor",
+      "corner_guard",
+      "edge_break",
+      "gear",
+      "groove_channel",
+      "hydraulic_piston",
+      "layer_plate",
+      "linear_detail_array",
+      "machine_base",
+      "machine_column",
+      "manipulator_arm",
+      "mesh_extrude",
+      "mesh_loft",
+      "mesh_sweep",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_point",
+      "tool_head",
+      "trim_strip"
+    ],
+    "feature_density": 99.875,
+    "edge_treatment_count": 799,
+    "panel_feature_count": 130,
+    "support_feature_count": 80,
+    "attachment_region_count": 0,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 750,
+    "geometry_detail_feature_count": 750,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_grid",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_point",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 30,
+      "attachment_rail": 40,
+      "attachment_vent_stack": 50,
+      "bolt_grid": 40,
+      "corner_guard": 40,
+      "edge_break": 40,
+      "groove_channel": 40,
+      "layer_plate": 30,
+      "linear_detail_array": 40,
+      "module_antenna": 40,
+      "module_power_cell": 40,
+      "module_shield_plate": 20,
+      "panel_seam": 60,
+      "silhouette_guard_cowl": 30,
+      "silhouette_outrigger": 40,
+      "silhouette_spine": 30,
+      "silhouette_tower": 60,
+      "socket_point": 40,
+      "trim_strip": 40
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ]
+  },
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "reference_cleanup",
+    "selected_adapter": "reference_cleanup",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "forced",
+    "actual_adapter": "reference_cleanup",
+    "execution": {
+      "mode": "reference_cleanup",
+      "seal_strategy": null,
+      "heuristic_part_groups": true
+    }
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "reference_cleanup"
+  }
+}

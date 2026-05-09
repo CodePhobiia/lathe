@@ -1,0 +1,134 @@
+{
+  "backend_id": "lathe.uv.xatlas_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/uv/uv.glb",
+  "uv_sets": [
+    {
+      "name": "base",
+      "coverage": {
+        "u_min": 0.000652,
+        "u_max": 0.999348,
+        "v_min": 0.000416,
+        "v_max": 0.999584
+      },
+      "vertex_count": 977
+    }
+  ],
+  "packing_report": {
+    "chart_count": 1,
+    "semantic_chart_count": 1,
+    "semantic_grouping": "part",
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "pack_rotate": true,
+    "generated_source_uv_remap": {
+      "available": false,
+      "source": "input_mesh_visual_uv",
+      "preservation": "none"
+    }
+  },
+  "texel_density": {
+    "requested_px_per_m": null,
+    "actual_px_per_m": null
+  },
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": false,
+    "chart_grouping": "part",
+    "material_id_strategy": "none",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base"
+    ],
+    "chart_count": 1,
+    "material_id_count": 0,
+    "part_to_chart": {
+      "body": "uvc_01_body"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "stone",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "none",
+    "texture_set_strategy": "",
+    "count": 0,
+    "ids": [],
+    "per_part": {
+      "body": ""
+    }
+  },
+  "seam_guides": [],
+  "bake_groups": [],
+  "material_boundaries": [],
+  "lightmap_ready": false,
+  "feature_semantics": {
+    "shape_source": "mesh_program",
+    "primitive_count": 100,
+    "boolean_seam_group_count": 0,
+    "polybevel_modifier_count": 0,
+    "feature_density": 0.4,
+    "feature_coherence": 0.5,
+    "edge_treatment_count": 0,
+    "required_part_coverage": 1.0
+  },
+  "generated_uv_atlas_hints": {},
+  "adapter_report": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "xatlas",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "available": true,
+      "version": "0.0.11",
+      "code": "ok"
+    },
+    "status": "success",
+    "actual_adapter": "xatlas",
+    "execution": {
+      "mode": "xatlas",
+      "resolution": 2048,
+      "lightmap_strategy": "derived_inset",
+      "vertex_count": 977,
+      "triangle_count": 1032,
+      "generated_source_uv_remap": {
+        "available": false,
+        "source": "input_mesh_visual_uv",
+        "preservation": "none"
+      }
+    }
+  },
+  "style_routing": {
+    "texture_authoring": "procedural_designer",
+    "skip_unwrap": false,
+    "uv_layout_hint": "unique_udim"
+  },
+  "provenance": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "xatlas"
+  }
+}

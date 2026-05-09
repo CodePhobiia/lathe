@@ -12,13 +12,21 @@ from ...surface_runtime import build_surface_bundle
 from ..common import dump_json
 
 
-def run(executor: Any, uv_bundle: dict[str, Any], *, repair_mode: str | None = None) -> dict[str, Any]:
+def run(
+    executor: Any,
+    uv_bundle: dict[str, Any],
+    *,
+    repair_mode: str | None = None,
+    skip_bakes: bool = False,
+) -> dict[str, Any]:
     """Run.
 
     Args:
         executor: executor argument.
         uv_bundle: uv_bundle argument.
         repair_mode: repair_mode argument.
+        skip_bakes: when True, skip the texture-bake fanout and return the
+            lightweight semantic_passthrough bundle (used by ``lathe quick``).
 
     Returns:
         The result.
@@ -35,6 +43,7 @@ def run(executor: Any, uv_bundle: dict[str, Any], *, repair_mode: str | None = N
         repair_mode=repair_mode,
         runtime_config=executor.runtime_config,
         quality_generation=executor.runtime.get("_quality_generation"),
+        skip_bakes=skip_bakes,
     )
     executor.runtime["surface"] = {"bundle": bundle, "stage_dir": stage_dir}
     dump_json(stage_dir / "bundle.json", bundle)

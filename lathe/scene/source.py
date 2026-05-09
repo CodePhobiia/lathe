@@ -6643,8 +6643,14 @@ def _lower_scene_like_decl_to_scene_graph(
     material_bindings_by_object: list[list[dict[str, str]]] = []
     objects: list[dict[str, Any]] = []
     member_tags = _group_tags_by_member(scene)
+    group_composition_state = _group_composition_state_by_member(scene)
     default_region = regions[0]["region_id"] if regions else _prefixed_id("region", "main", "region")
     for node in object_nodes:
+        node_name = str(node.get("name"))
+        object_id = object_id_by_name.get(str(node.get("name")), "")
+        composition_state = dict(composition_state_by_object.get(object_id, {}))
+        composition_state.update(group_composition_state.get(node_name, {}))
+        composition_state.update(group_composition_state.get(object_id, {}))
         lowered, bindings = _lower_object(
             node,
             region_id_by_name,
@@ -6652,7 +6658,7 @@ def _lower_scene_like_decl_to_scene_graph(
             default_region,
             member_tags,
             anchor_positions,
-            composition_state_by_object.get(object_id_by_name.get(str(node.get("name")), ""), {}),
+            composition_state,
         )
         objects.append(lowered)
         material_bindings_by_object.append(bindings)
@@ -34559,6 +34565,7 @@ def _lower_object(
     raw_role = _string(node.get("role")) or _string(values.get("role"))
     tags = _string_list(values.get("semantic_tags") or values.get("tags"))
     tags.extend(member_tags.get(str(node.get("name")), []))
+    tags.extend(member_tags.get(object_id, []))
     tags.extend(str(tag) for tag in construct_spec.get("tags", []))
     if raw_role and raw_role not in _SCENE_ROLES:
         tags.append(raw_role)
@@ -34866,6 +34873,42 @@ def _group_tags_by_member(scene: Mapping[str, Any]) -> dict[str, list[str]]:
         for member in members:
             tags_by_member.setdefault(member, []).extend(group_tags)
     return {name: _dedupe(tags) for name, tags in tags_by_member.items()}
+
+
+def _group_composition_state_by_member(scene: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    state_by_member: dict[str, dict[str, Any]] = {}
+    for group in _mapping_list(scene.get("groups")):
+        values = _values(group)
+        group_name = str(group.get("name") or "")
+        composition_group = _group_composition_id(group_name, values)
+        if not composition_group:
+            continue
+        members = _string_list(values.get("members") or values.get("objects") or values.get("contains"))
+        for member in members:
+            state_by_member.setdefault(member, {}).update(
+                {
+                    "composition_group": composition_group,
+                    "scene_composition_group": composition_group,
+                    "compose_as_setpiece": True,
+                }
+            )
+    return state_by_member
+
+
+def _group_composition_id(group_name: str, values: Mapping[str, Any]) -> str:
+    for key in ("composition_group", "scene_composition_group", "setpiece_group", "compose_group"):
+        value = values.get(key)
+        if isinstance(value, str) and value.strip():
+            return _snake_id(value, "composition_group")
+        if value is True:
+            return _snake_id(group_name, "composition_group")
+    for key in ("compose_as_setpiece", "scene_composition", "generate_setpiece_parent"):
+        if values.get(key) is True:
+            return _snake_id(group_name, "composition_group")
+    kind = _string(values.get("kind") or values.get("type") or values.get("role"))
+    if kind in {"setpiece", "composition", "scene_composition", "assembly"}:
+        return _snake_id(group_name, "composition_group")
+    return ""
 
 
 def _lower_materials(
@@ -35265,9 +35308,9 @@ def _bounds(values: Mapping[str, Any], *, default_center: Sequence[float]) -> di
 def _transform(values: Mapping[str, Any]) -> dict[str, list[float]]:
     transform = values.get("transform") if isinstance(values.get("transform"), Mapping) else {}
     return {
-        "position": _vector3(transform.get("position") if isinstance(transform, Mapping) else values.get("position"), [0.0, 0.0, 0.0]),
-        "rotation": _vector3(transform.get("rotation") if isinstance(transform, Mapping) else values.get("rotation"), [0.0, 0.0, 0.0]),
-        "scale": _vector3(transform.get("scale") if isinstance(transform, Mapping) else values.get("scale"), [1.0, 1.0, 1.0]),
+        "position": _vector3(transform.get("position") or values.get("position"), [0.0, 0.0, 0.0]),
+        "rotation": _vector3(transform.get("rotation") or values.get("rotation"), [0.0, 0.0, 0.0]),
+        "scale": _vector3(transform.get("scale") or values.get("scale"), [1.0, 1.0, 1.0]),
     }
 
 

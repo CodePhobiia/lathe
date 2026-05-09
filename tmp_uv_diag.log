@@ -1,0 +1,3 @@
+D:\lathe_v0_1\lathe\cli\build_cmd.py:163: UserWarning: runtime_config tmp_verify_runtime_config.json contains unknown keys (ignored, will become errors in a future release): /execution/timeout_s
+  load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+lathe.cli.build: running with --candidates 2, output may be lower quality

@@ -1,0 +1,55 @@
+module examples.volume_smoke_cloud
+
+# Worked example for roadmap §7.8 -- volumetric smoke cloud
+# emitting a buoyancy-driven plume and extracting an isosurface
+# back to a triangle mesh suitable for the rest of the shape pipeline.
+
+volume_program billowing_smoke {
+    seed = 42
+    resolution = (64, 64, 64)
+    bounds = (-2.0, -2.0, 0.0, 2.0, 2.0, 4.0)
+
+    density_noise = {
+        kind = "fractal",
+        octaves = 4,
+        scale = 0.5,
+        persistence = 0.55,
+        seed = 42,
+    }
+
+    temperature_noise = {
+        kind = "fractal",
+        octaves = 2,
+        scale = 1.0,
+        persistence = 0.6,
+        seed = 43,
+    }
+
+    initial_velocity = (0.0, 0.0, 0.05)
+
+    simulator = {
+        stages = [
+            { kind = "buoyancy", buoyancy_coef = 0.5, dt = 0.05, steps = 20 },
+            { kind = "diffusion", rate = 0.1, dt = 0.05, steps = 10 },
+            { kind = "advection", dt = 0.05, steps = 5 },
+        ],
+    }
+
+    isosurface = {
+        threshold = 0.3,
+    }
+}
+
+asset volumetric_smoke_cloud_demo: hard_surface_prop {
+    intent {
+        asset_class = "vfx_volume"
+        summary = "Buoyancy-driven smoke cloud volumetric demo (roadmap section 7.8)"
+    }
+    geometry {
+        volume = {
+            program = billowing_smoke,
+            resolution = (64, 64, 64),
+            bounds = (-2.0, -2.0, 0.0, 2.0, 2.0, 4.0),
+        }
+    }
+}

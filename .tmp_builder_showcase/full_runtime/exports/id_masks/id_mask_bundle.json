@@ -1,0 +1,68 @@
+{
+  "schema_version": "lathe.scene_id_mask_export_bundle.v1",
+  "scene_id": "builder_mode_showcase",
+  "mode": "preview",
+  "encoding": "rgb_uint24_render_index",
+  "cameras": [
+    "camera_main",
+    "camera_topdown_debug"
+  ],
+  "entries": [
+    {
+      "camera_id": "camera_main",
+      "mask_path": "exports/id_masks/camera_main/object_id.png",
+      "object_index_path": "exports/id_masks/camera_main/object_index.json",
+      "object_count": 2432
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "mask_path": "exports/id_masks/camera_topdown_debug/object_id.png",
+      "object_index_path": "exports/id_masks/camera_topdown_debug/object_index.json",
+      "object_count": 2432
+    }
+  ],
+  "artifacts": [
+    {
+      "target": "id_mask",
+      "format": "png",
+      "camera_id": "camera_main",
+      "render_pass": "object_id",
+      "path": "exports/id_masks/camera_main/object_id.png",
+      "status": "built",
+      "width": 1280,
+      "height": 720,
+      "object_count": 2432,
+      "mode": "preview"
+    },
+    {
+      "target": "id_mask_object_index",
+      "format": "json",
+      "camera_id": "camera_main",
+      "path": "exports/id_masks/camera_main/object_index.json",
+      "status": "built",
+      "object_count": 2432,
+      "mode": "preview"
+    },
+    {
+      "target": "id_mask",
+      "format": "png",
+      "camera_id": "camera_topdown_debug",
+      "render_pass": "object_id",
+      "path": "exports/id_masks/camera_topdown_debug/object_id.png",
+      "status": "built",
+      "width": 1280,
+      "height": 720,
+      "object_count": 2432,
+      "mode": "preview"
+    },
+    {
+      "target": "id_mask_object_index",
+      "format": "json",
+      "camera_id": "camera_topdown_debug",
+      "path": "exports/id_masks/camera_topdown_debug/object_index.json",
+      "status": "built",
+      "object_count": 2432,
+      "mode": "preview"
+    }
+  ]
+}

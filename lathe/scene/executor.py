@@ -284,6 +284,12 @@ def _object_ids(scene_graph: Mapping[str, Any]) -> list[str]:
     return sorted(item for item in ids if isinstance(item, str))
 
 
+def _default_region_id(scene_graph: Mapping[str, Any]) -> str:
+    first_region = next(iter(_collection(scene_graph, "regions")), {})
+    region_id = first_region.get("region_id") if isinstance(first_region, Mapping) else None
+    return region_id if isinstance(region_id, str) and region_id else "region_unassigned"
+
+
 def _memory_scope_for_event(event: Mapping[str, Any], scene_graph: Mapping[str, Any]) -> str:
     affected_ids = event.get("affected_ids", [])
     if not isinstance(affected_ids, list) or not affected_ids:
@@ -322,6 +328,75 @@ def _world_memory_events(scene_graph: Mapping[str, Any]) -> list[dict[str, Any]]
 
 def _asset_proxy_path(task: Mapping[str, Any]) -> str:
     return f"build/{_safe_build_name(str(task.get('task_id', 'asset_task')))}/asset_proxy_manifest.json"
+
+
+def _scene_graph_with_plan_composition_instances(
+    scene_graph: Mapping[str, Any],
+    plan: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Return a runtime graph with synthetic setpiece instances from composition tasks."""
+    asset_tasks = {
+        str(task.get("task_id") or ""): task
+        for task in plan.get("asset_tasks", [])
+        if isinstance(task, Mapping) and str(task.get("task_id") or "")
+    }
+    existing_object_ids = set(_object_ids(scene_graph))
+    additions: list[dict[str, Any]] = []
+    for task in plan.get("assembly_tasks", []):
+        if not isinstance(task, Mapping):
+            continue
+        instance_overrides = task.get("instance_overrides")
+        if not isinstance(instance_overrides, Mapping):
+            continue
+        provenance = instance_overrides.get("provenance")
+        if not isinstance(provenance, Mapping) or provenance.get("created_from") != "scene_composition_group":
+            continue
+        object_id = task.get("object_id")
+        if not isinstance(object_id, str) or object_id in existing_object_ids:
+            continue
+        asset_task = asset_tasks.get(str(task.get("asset_task_id") or ""))
+        source = asset_task.get("source") if isinstance(asset_task, Mapping) and isinstance(asset_task.get("source"), Mapping) else {}
+        group_id = str(provenance.get("composition_group") or "")
+        material_bindings: list[dict[str, str]] = []
+        additions.append(
+            {
+                "object_id": object_id,
+                "name": str(instance_overrides.get("name") or object_id),
+                "role": str(instance_overrides.get("role") or "environment_structure"),
+                "region": str(task.get("region") or _default_region_id(scene_graph)),
+                "lathe_asset": str(source.get("ref") or object_id.removeprefix("obj_")),
+                "source_family": str(source.get("source_family") or "procedural_setpiece"),
+                "transform": copy.deepcopy(task.get("transform") if isinstance(task.get("transform"), Mapping) else {}),
+                "material_bindings": material_bindings,
+                "semantic_tags": [
+                    tag for tag in instance_overrides.get("semantic_tags", []) if isinstance(tag, str)
+                ]
+                if isinstance(instance_overrides.get("semantic_tags"), list)
+                else ["scene_composition", "generated_setpiece"],
+                "state": {
+                    "synthetic_scene_composition_instance": True,
+                    "scene_composition_group": group_id,
+                    "composition_member_object_ids": [
+                        item
+                        for item in provenance.get("member_object_ids", [])
+                        if isinstance(item, str)
+                    ]
+                    if isinstance(provenance.get("member_object_ids"), list)
+                    else [],
+                },
+                "provenance": copy.deepcopy(dict(provenance)),
+            }
+        )
+        existing_object_ids.add(object_id)
+    if not additions:
+        return copy.deepcopy(dict(scene_graph))
+    runtime_graph = copy.deepcopy(dict(scene_graph))
+    objects = list(runtime_graph.get("objects", [])) if isinstance(runtime_graph.get("objects"), list) else []
+    runtime_graph["objects"] = [
+        *objects,
+        *sorted(additions, key=lambda item: str(item.get("object_id") or "")),
+    ]
+    return runtime_graph
 
 
 def _asset_proxy_manifest(
@@ -1193,9 +1268,10 @@ def build_scene_preview(
     scene_plan = plan_scene(scene_graph, mode=build_mode)
     scene_plan["metadata"]["build_options"] = copy.deepcopy(build_options)
     _validate_plan_strictness(scene_plan, strict=bool(strict))
+    runtime_scene_graph = _scene_graph_with_plan_composition_instances(scene_graph, scene_plan)
     quality_report = _validate_quality(scene_graph, scene_graph_path, strict=bool(strict))
     world_memory = _build_world_memory(scene_graph)
-    scene_assembly = assemble_scene(scene_graph)
+    scene_assembly = assemble_scene(runtime_scene_graph)
     assembly_diagnostics = validate_scene_assembly_payload(scene_assembly)
     if assembly_diagnostics:
         _raise_build_error("Scene Assembly IR is invalid.", assembly_diagnostics)
@@ -1237,10 +1313,10 @@ def build_scene_preview(
         for task in scene_plan.get("asset_tasks", [])
         if isinstance(task, Mapping)
     }
-    normalized_graph = normalized_scene_graph(scene_graph)
+    normalized_graph = normalized_scene_graph(runtime_scene_graph)
     try:
         render_report = render_scene_graph(
-            scene_graph,
+            runtime_scene_graph,
             package_dir,
             mode=build_mode,
             passes=_render_passes_from_plan(scene_plan),
@@ -1252,7 +1328,7 @@ def build_scene_preview(
             include_contact_sheet=True,
         )
         export_report = export_scene_glbs(
-            scene_graph,
+            runtime_scene_graph,
             package_dir,
             mode=build_mode,
             export_tasks=_export_tasks_from_plan(scene_plan),
@@ -1261,7 +1337,7 @@ def build_scene_preview(
     except SceneArtifactError as exc:
         _raise_build_error("Scene render/export artifacts could not be built.", exc.diagnostics)
     scene_manifest = _scene_manifest(
-        scene_graph,
+        runtime_scene_graph,
         scene_plan,
         quality_report,
         mode=build_mode,
@@ -1271,7 +1347,7 @@ def build_scene_preview(
         export_report=export_report,
     )
     wonder_report = _wonder_report(
-        scene_graph,
+        runtime_scene_graph,
         scene_plan,
         quality_report,
         mode=build_mode,
@@ -1283,7 +1359,7 @@ def build_scene_preview(
     cache_records: list[dict[str, Any]] = []
     asset_reuse_report = _asset_reuse_report(scene_graph, cache_records, mode=build_mode)
     scene_build_report = _scene_build_report(
-        scene_graph,
+        runtime_scene_graph,
         scene_plan,
         quality_report,
         asset_reuse_report,
@@ -1328,7 +1404,7 @@ def build_scene_preview(
         _verify_asset_build_artifacts(package_dir, asset_proxy_paths)
         asset_reuse_report = _asset_reuse_report(scene_graph, cache_records, mode=build_mode)
         scene_build_report = _scene_build_report(
-            scene_graph,
+            runtime_scene_graph,
             scene_plan,
             quality_report,
             asset_reuse_report,

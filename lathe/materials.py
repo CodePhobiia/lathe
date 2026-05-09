@@ -493,6 +493,78 @@ def _custom_material(asset: dict[str, Any], name: str) -> dict[str, Any] | None:
     return None
 
 
+def _surface_material_zone_controls(surface: dict[str, Any]) -> tuple[dict[str, str], list[str]]:
+    """Return authored zone-to-material overrides and material tokens.
+
+    The public source surface already carries ``material_zones``. This
+    helper accepts the loose shapes authors naturally use today:
+    ``{"panel": "painted_metal"}``, ``{"zone": "panel", "material":
+    "painted_metal"}``, ``{"targets": ["panel", "trim"], "material":
+    "painted_metal"}``, or strings like ``"panel:painted_metal"``.
+    """
+    raw = surface.get("material_zones")
+    overrides: dict[str, str] = {}
+    materials: list[str] = []
+
+    def add_override(target: Any, material: Any) -> None:
+        target_text = str(target).strip()
+        material_text = str(material).strip()
+        if not target_text or not material_text:
+            return
+        overrides[target_text] = material_text
+        materials.append(material_text)
+
+    def consume_mapping(entry: dict[str, Any]) -> None:
+        material = (
+            entry.get("material")
+            or entry.get("material_zone")
+            or entry.get("surface_material")
+            or entry.get("value")
+        )
+        targets = entry.get("targets")
+        if isinstance(targets, list) and material:
+            for target in targets:
+                add_override(target, material)
+            return
+        target = (
+            entry.get("part")
+            or entry.get("target")
+            or entry.get("zone")
+            or entry.get("slot")
+            or entry.get("name")
+        )
+        if target and material:
+            add_override(target, material)
+        elif material:
+            materials.append(str(material).strip())
+
+    if isinstance(raw, dict):
+        for key, value in raw.items():
+            if isinstance(value, dict):
+                nested = dict(value)
+                nested.setdefault("zone", key)
+                consume_mapping(nested)
+            else:
+                add_override(key, value)
+    else:
+        for entry in _as_list(raw):
+            if isinstance(entry, dict):
+                consume_mapping(entry)
+                continue
+            text = str(entry).strip()
+            if not text:
+                continue
+            for separator in (":", "=", "->"):
+                if separator in text:
+                    left, right = text.split(separator, 1)
+                    add_override(left, right)
+                    break
+            else:
+                materials.append(text)
+
+    return overrides, list(dict.fromkeys(item for item in materials if item))
+
+
 def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[dict[str, Any]]:
     """Assign material zones.
 
@@ -505,10 +577,20 @@ def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[
     """
     surface_grammar = surface_grammar_for_asset(asset)
     surface = merge_surface_grammar(surface_with_style_pack_defaults(asset), surface_grammar)
+    authored_zone_overrides, authored_zone_materials = _surface_material_zone_controls(surface)
     materials = list(surface.get("materials", [])) or list(asset.get("intent", {}).get("materials", []))
+    if authored_zone_materials:
+        materials = (
+            list(dict.fromkeys([*materials, *authored_zone_materials]))
+            if materials
+            else list(dict.fromkeys(authored_zone_materials))
+        )
     material_layers = [str(item) for item in _as_list(surface.get("material_layers") or surface.get("layers"))]
     if material_layers:
-        materials = list(dict.fromkeys([*material_layers, *materials]))
+        # Material layers are treatments and palette slots. They should be
+        # available for semantic matching, but must not displace the authored
+        # or intent-level primary body material.
+        materials = list(dict.fromkeys([*materials, *material_layers])) if materials else list(dict.fromkeys(material_layers))
     palette = surface.get("resolved_palette", {})
     palette_materials = list(
         palette.get("values", {}).get("materials", []) or palette.get("values", {}).get("slots", [])
@@ -519,6 +601,7 @@ def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[
     zone_overrides = dict(
         surface.get("zones", {}) or surface_program.get("values", {}).get("zones", {}) or {}
     )
+    zone_overrides.update(authored_zone_overrides)
     primary = materials[0] if materials else "default_body"
     secondary = materials[1] if len(materials) > 1 else primary
     tertiary = materials[2] if len(materials) > 2 else secondary

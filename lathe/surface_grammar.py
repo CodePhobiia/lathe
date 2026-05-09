@@ -2,11 +2,71 @@
 
 from __future__ import annotations
 
+import math
 from copy import deepcopy
 from typing import Any
 
 from .creative_grammar import creative_grammar_from_asset
+from .fidelity import _tier_multipliers
 from .object_grammar import object_grammar_from_asset
+
+
+_ROUGHNESS_DELTA_CAP = 0.5
+_NORMAL_DELTA_CAP = 0.45
+
+
+def _scaled_delta(base: float, fidelity_tier: str, kind: str = "normal") -> float:
+    """Scale a base delta value by fidelity tier with sqrt-softened multiplier.
+
+    detail_density spans 0.7/1.0/1.35/2.2 across tiers; sqrt softens that to
+    ~0.84/1.0/1.16/1.48 so visual deltas grow without going hyperreal at hero/
+    cinematic tiers. Sign of base is preserved; magnitude is capped at the
+    physical clamp for the channel (roughness within [0,1], normal map clip).
+    """
+
+    if not base:
+        return 0.0
+    try:
+        mult = float(_tier_multipliers(fidelity_tier).get("detail_density", 1.0))
+    except KeyError:
+        mult = 1.0
+    scaled = base * math.sqrt(max(0.0, mult))
+    cap = _ROUGHNESS_DELTA_CAP if kind == "roughness" else _NORMAL_DELTA_CAP
+    if scaled > cap:
+        return cap
+    if scaled < -cap:
+        return -cap
+    return scaled
+
+
+def _scale_feature_deltas(feature: dict[str, Any], fidelity_tier: str) -> None:
+    """In-place scale roughness/normal deltas of a feature dict by tier."""
+
+    rough = float(feature.get("roughness_delta", 0.0) or 0.0)
+    normal = float(feature.get("normal_delta", 0.0) or 0.0)
+    if rough:
+        feature["roughness_delta"] = _scaled_delta(rough, fidelity_tier, "roughness")
+    if normal:
+        feature["normal_delta"] = _scaled_delta(normal, fidelity_tier, "normal")
+
+
+def _infer_fidelity_tier_from_asset(asset: dict[str, Any]) -> str:
+    """Mirror ``infer_fidelity_profile`` thresholds without an AssetGraph.
+
+    The presets here run in the surface stage where the materialized asset is
+    the only context available; this avoids importing AssetGraph circularly.
+    """
+
+    validate = asset.get("validate", {}) if isinstance(asset.get("validate"), dict) else {}
+    critic_name = str(validate.get("score") or "").lower()
+    threshold = _number(validate.get("threshold"), 0.80)
+    if "cinematic" in critic_name or threshold >= 0.92:
+        return "cinematic"
+    if "hero" in critic_name or threshold >= 0.86:
+        return "hero"
+    if threshold <= 0.78:
+        return "blockout"
+    return "game"
 
 
 def _as_list(value: Any) -> list[Any]:
@@ -1151,10 +1211,12 @@ def surface_grammar_for_controls(
     procedural_family: str | None = None,
     shape_controls: dict[str, Any] | None = None,
     surface: dict[str, Any] | None = None,
+    fidelity_tier: str = "game",
 ) -> dict[str, Any]:
     """Derive reusable surface intent from procedural and scene context."""
     controls = shape_controls if isinstance(shape_controls, dict) else {}
     source_surface = surface if isinstance(surface, dict) else {}
+    tier = fidelity_tier if fidelity_tier in {"blockout", "game", "hero", "cinematic"} else "game"
     family = _token(procedural_family or controls.get("scene_source_family") or source_surface.get("family"))
     landform = _token(
         controls.get("landform")
@@ -1631,6 +1693,11 @@ def surface_grammar_for_controls(
 
     if not any(grammar.get(key) for key in ("materials", "material_layers", "story_decals", "zones", "features")):
         return {}
+    if tier != "game":
+        for feature in grammar.get("features", []):
+            if isinstance(feature, dict):
+                _scale_feature_deltas(feature, tier)
+    grammar["fidelity_tier"] = tier
     return grammar
 
 
@@ -1666,6 +1733,7 @@ def surface_grammar_for_asset(asset: dict[str, Any]) -> dict[str, Any]:
         procedural_family=str(family or ""),
         shape_controls=object_shape_controls if isinstance(object_shape_controls, dict) else {},
         surface=asset.get("surface", {}) if isinstance(asset.get("surface"), dict) else {},
+        fidelity_tier=_infer_fidelity_tier_from_asset(asset),
     )
 
 

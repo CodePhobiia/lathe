@@ -1,0 +1,180 @@
+{
+  "objects": [
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 21246,
+        "polys_after": 14043,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "body"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 1999,
+        "polys_after": 1659,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "foot_l"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 2000,
+        "polys_after": 1658,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "foot_r"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 1031,
+        "polys_after": 944,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "front_hatch"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 2125,
+        "polys_after": 1967,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "handle_l"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 2111,
+        "polys_after": 1954,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "handle_r"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 950,
+        "polys_after": 847,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "lid_panel"
+    },
+    {
+      "mode": "modifier_stack",
+      "subsurf_level": 0,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 12000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 2065,
+        "polys_after": 1835,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "object": "lock_plate"
+    }
+  ]
+}

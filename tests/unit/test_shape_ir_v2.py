@@ -3,8 +3,7 @@
 Covers per task #5 of ``docs/asset-quality/improvement-tasklist.md``:
 
 - ``ShapeOp`` and ``ShapeProgram`` are frozen dataclasses.
-- The six op-family frozensets have their expected exact membership
-  (6, 7, 4, 5, 4, 4 — total 30).
+- The six op-family frozensets have their expected exact membership.
 - ``ALL_OPS`` is the union and has the expected count.
 - ``to_dict`` round-trips the dataclasses (tuples become lists, dicts
   preserved).
@@ -39,6 +38,7 @@ from lathe.asset_quality.shape_ir_v2 import (
     REPETITION_OPS,
     SHAPE_IR_V2_VERSION,
     SOLID_OPS,
+    SOP_OPS,
     ShapeOp,
     ShapeProgram,
     V1AdapterResult,
@@ -93,12 +93,18 @@ def test_solid_ops_membership() -> None:
             "solid.box",
             "solid.rounded_box",
             "solid.cylinder",
+            "solid.sphere",
+            "solid.torus",
+            "solid.revolved_profile",
+            "solid.extruded_profile",
+            "solid.swept_profile",
+            "solid.subdivision_box",
             "solid.prism",
             "solid.rail",
             "solid.panel",
         }
     )
-    assert len(SOLID_OPS) == 6
+    assert len(SOLID_OPS) == 12
 
 
 def test_boolean_ops_membership() -> None:
@@ -126,6 +132,24 @@ def test_edge_ops_membership() -> None:
         }
     )
     assert len(EDGE_OPS) == 4
+
+
+def test_sop_ops_membership() -> None:
+    assert SOP_OPS == frozenset(
+        {
+            "sop.boolean",
+            "sop.polybevel",
+            "sop.sweep",
+            "sop.polyextrude",
+            "sop.loft",
+            "sop.copy_to_points",
+            "sop.subdivide",
+            "sop.remesh",
+            "sop.carve",
+            "sop.polywire",
+        }
+    )
+    assert len(SOP_OPS) == 10
 
 
 def test_repetition_ops_membership() -> None:
@@ -165,16 +189,17 @@ def test_wear_ops_membership() -> None:
     assert len(WEAR_OPS) == 4
 
 
-def test_all_ops_is_union_of_families_with_count_30() -> None:
+def test_all_ops_is_union_of_families_with_current_count() -> None:
     assert ALL_OPS == (
         SOLID_OPS
         | BOOLEAN_OPS
         | EDGE_OPS
+        | SOP_OPS
         | REPETITION_OPS
         | INTEGRATION_OPS
         | WEAR_OPS
     )
-    assert len(ALL_OPS) == 30
+    assert len(ALL_OPS) == 46
 
 
 def test_op_families_are_disjoint() -> None:
@@ -182,6 +207,7 @@ def test_op_families_are_disjoint() -> None:
         SOLID_OPS,
         BOOLEAN_OPS,
         EDGE_OPS,
+        SOP_OPS,
         REPETITION_OPS,
         INTEGRATION_OPS,
         WEAR_OPS,
@@ -289,7 +315,7 @@ def test_lower_to_v1_emits_no_v1_equivalent_for_op_bevel() -> None:
     assert result.unsupported_ops == ()
 
 
-def test_lower_to_v1_lowers_solid_rail_as_box_approximation() -> None:
+def test_lower_to_v1_lowers_solid_rail_as_extruded_profile() -> None:
     op = ShapeOp(
         op="solid.rail",
         target="body.bottom_front",
@@ -300,15 +326,22 @@ def test_lower_to_v1_lowers_solid_rail_as_box_approximation() -> None:
 
     assert len(result.v1_records) == 1
     record = result.v1_records[0]
-    assert record["primitive_type"] == "box"
+    assert record["primitive_type"] == "extruded_profile"
     assert record["part"] == "body.bottom_front"
-    assert record["extents"] == (60.0, 4.0, 4.0)
-    assert record["tags"] == ["rail_approx"]
+    assert record["axis"] == "x"
+    assert record["extrude_height"] == 60.0
+    assert record["profile_polygon"] == (
+        (-2.0, -2.0),
+        (2.0, -2.0),
+        (2.0, 2.0),
+        (-2.0, 2.0),
+    )
+    assert record["tags"] == ["solid_rail", "rail_profile"]
     assert record["v2_op"] == "solid.rail"
     assert result.diagnostics == ()
 
 
-def test_lower_to_v1_lowers_solid_panel_as_thin_box_approximation() -> None:
+def test_lower_to_v1_lowers_solid_panel_as_extruded_profile() -> None:
     op = ShapeOp(
         op="solid.panel",
         target="body.front_panel",
@@ -319,11 +352,129 @@ def test_lower_to_v1_lowers_solid_panel_as_thin_box_approximation() -> None:
 
     assert len(result.v1_records) == 1
     record = result.v1_records[0]
-    assert record["primitive_type"] == "box"
+    assert record["primitive_type"] == "extruded_profile"
     assert record["part"] == "body.front_panel"
-    assert record["extents"] == (32.0, 20.0, 1.5)
-    assert record["tags"] == ["panel_approx"]
+    assert record["axis"] == "z"
+    assert record["extrude_height"] == 1.5
+    assert record["profile_polygon"] == (
+        (-16.0, -10.0),
+        (16.0, -10.0),
+        (16.0, 10.0),
+        (-16.0, 10.0),
+    )
+    assert record["tags"] == ["solid_panel", "panel_profile"]
     assert record["v2_op"] == "solid.panel"
+    assert result.diagnostics == ()
+
+
+def test_lower_to_v1_lowers_solid_prism_as_extruded_profile() -> None:
+    op = ShapeOp(
+        op="solid.prism",
+        target="roof.wedge",
+        parameters={"width_cm": 24.0, "height_cm": 12.0, "depth_cm": 18.0},
+        purpose="roof.prism",
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "extruded_profile"
+    assert record["part"] == "roof.wedge"
+    assert record["axis"] == "z"
+    assert record["extrude_height"] == 18.0
+    assert record["profile_polygon"] == (
+        (-12.0, -6.0),
+        (12.0, -6.0),
+        (0.0, 6.0),
+    )
+    assert record["tags"] == ["solid_prism"]
+    assert record["v2_op"] == "solid.prism"
+    assert result.diagnostics == ()
+
+
+def test_lower_to_v1_lowers_sop_boolean_source_with_blend_mode() -> None:
+    op = ShapeOp(
+        op="sop.boolean",
+        target="body.cut",
+        parameters={
+            "operation": "subtract",
+            "source": {
+                "op": "solid.panel",
+                "target": "body.slot",
+                "parameters": {"width_cm": 12.0, "height_cm": 4.0, "thickness_cm": 2.0},
+            },
+        },
+        purpose="slot.cut",
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "extruded_profile"
+    assert record["part"] == "body.cut"
+    assert record["blend_mode"] == "subtract"
+    assert "sop_boolean" in record["tags"]
+    assert "boolean_subtract" in record["tags"]
+    assert record["v2_op"] == "sop.boolean"
+    assert result.diagnostics == ()
+
+
+def test_lower_to_v1_lowers_sop_polybevel_box_source_to_subdivision_box() -> None:
+    op = ShapeOp(
+        op="sop.polybevel",
+        target="body.beveled",
+        parameters={
+            "width_cm": 1.25,
+            "segments": 5,
+            "source": {
+                "op": "solid.box",
+                "target": "body",
+                "parameters": {"width_cm": 20.0, "height_cm": 10.0, "depth_cm": 8.0},
+            },
+        },
+        purpose="body.bevel",
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "subdivision_box"
+    assert record["part"] == "body.beveled"
+    assert record["corner_radii"] == (1.25,) * 8
+    assert record["corner_segments"] == 5
+    assert "sop_polybevel" in record["tags"]
+    assert "polybeveled_box_to_subdivision" in record["tags"]
+    assert record["v2_op"] == "sop.polybevel"
+    assert result.diagnostics == ()
+
+
+def test_lower_to_v1_lowers_sop_carve_swept_source_path() -> None:
+    op = ShapeOp(
+        op="sop.carve",
+        target="cable.segment",
+        parameters={
+            "u_start": 0.25,
+            "u_end": 0.75,
+            "source": {
+                "op": "solid.swept_profile",
+                "target": "cable",
+                "parameters": {
+                    "cross_section": [(-1.0, -1.0), (1.0, -1.0), (0.0, 1.0)],
+                    "sweep_path": [(0.0, 0.0, 0.0), (10.0, 0.0, 0.0), (20.0, 0.0, 0.0)],
+                },
+            },
+        },
+        purpose="cable.visible_segment",
+    )
+    result = lower_to_v1(_program(ops=(op,)))
+
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "swept_profile"
+    assert record["part"] == "cable.segment"
+    assert record["sweep_path"] == ((5.0, 0.0, 0.0), (15.0, 0.0, 0.0))
+    assert "sop_carve" in record["tags"]
+    assert record["v2_op"] == "sop.carve"
     assert result.diagnostics == ()
 
 

@@ -31,6 +31,7 @@ def _shape_bundle(
     candidate_id: str = "cand_00",
     integration_mode: str | None = "sdf_voxel_fusion",
     assessment: dict[str, Any] | None = None,
+    watertight: bool = True,
 ) -> dict[str, Any]:
     if regions is None:
         regions = [
@@ -42,6 +43,7 @@ def _shape_bundle(
     candidate: dict[str, Any] = {"candidate_id": candidate_id}
     if integration_mode is not None:
         candidate["integration_report"] = {"mode": integration_mode}
+    candidate["mesh_stats"] = {"watertight": watertight}
     return {
         "shape_ir": [{"regions": regions}],
         "selected_candidate_id": candidate_id,
@@ -92,6 +94,7 @@ class TestDeriveTopologySemantics:
             "panel_seams": [],
             "bake_groups": [],
             "feature_semantics": {},
+            "generated_uv_semantics": {},
         }
 
     def test_malformed_shape_bundle_missing_region_keys_raises(self) -> None:
@@ -108,6 +111,14 @@ class TestShouldPreserveIntegratedShape:
     def test_preserve_true_for_exact_component_assembly(self) -> None:
         bundle = _shape_bundle(integration_mode="exact_component_assembly")
         assert should_preserve_integrated_shape(bundle) is True
+
+    def test_preserve_true_for_watertight_exact_boolean_manifold_kernel(self) -> None:
+        bundle = _shape_bundle(integration_mode="exact_boolean_manifold_kernel", watertight=True)
+        assert should_preserve_integrated_shape(bundle) is True
+
+    def test_preserve_false_for_nonwatertight_exact_boolean_manifold_kernel(self) -> None:
+        bundle = _shape_bundle(integration_mode="exact_boolean_manifold_kernel", watertight=False)
+        assert should_preserve_integrated_shape(bundle) is False
 
     def test_preserve_false_when_adapter_forced(self) -> None:
         bundle = _shape_bundle(integration_mode="sdf_voxel_fusion")

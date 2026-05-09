@@ -1,0 +1,1322 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 296,
+    "triangle_count": 588,
+    "watertight": true,
+    "volume": 3538097602.842398,
+    "bounds_min": [
+      -1343.883511,
+      -1247.380727,
+      -578.4
+    ],
+    "bounds_max": [
+      1346.826649,
+      1376.711403,
+      528.44358
+    ],
+    "extents": [
+      2690.71016,
+      2624.09213,
+      1106.84358
+    ],
+    "body_count": 1
+  },
+  "normals": {
+    "mode": "face",
+    "count": 588
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 588,
+      "vertex_count": 296,
+      "bounds_min": [
+        -1343.883511,
+        -1247.380727,
+        -578.4
+      ],
+      "bounds_max": [
+        1346.826649,
+        1376.711403,
+        528.44358
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "face_count": 588,
+      "vertex_count": 296,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -1343.883511,
+        -1247.380727,
+        -578.4
+      ],
+      "bounds_max": [
+        1346.826649,
+        1376.711403,
+        528.44358
+      ]
+    }
+  ],
+  "part_count": 1,
+  "multi_part_scene_source": "runtime_mesh_face_parts",
+  "hard_edge_groups": [
+    {
+      "name": "body_0",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_1",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_2",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_3",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_4",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_5",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_6",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_7",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_8",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_9",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_10",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_11",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_12",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_13",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_14",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_15",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_16",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_17",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_18",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_19",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_20",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_21",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_22",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_23",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_24",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_25",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_26",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_27",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_28",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_29",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_30",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_31",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_32",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_33",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_34",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_35",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_36",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_37",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_38",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_39",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_40",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_41",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_42",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_43",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_44",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_45",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_46",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_47",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_48",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_49",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_50",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_51",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_52",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_53",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_54",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_55",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_56",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_57",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_58",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_59",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_60",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_61",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_62",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_63",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_64",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_65",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_66",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_67",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_68",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_69",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_70",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_71",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_72",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_73",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_74",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_75",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_76",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_77",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_78",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_79",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_80",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_81",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_82",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_83",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_84",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_85",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_86",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_87",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_88",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_89",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_90",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_91",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_92",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_93",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_94",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_95",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_96",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_97",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_98",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_99",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_100",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_101",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_102",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_103",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_104",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_105",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_106",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_107",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_108",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    },
+    {
+      "name": "body_109",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [],
+  "bake_groups": [
+    {
+      "name": "body_0",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_1",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_2",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_3",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_4",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_5",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_6",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_7",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_8",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_9",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_10",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_11",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_12",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_13",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_14",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_15",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_16",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_17",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_18",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_19",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_20",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_21",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_22",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_23",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_24",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_25",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_26",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_27",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_28",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_29",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_30",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_31",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_32",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_33",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_34",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_35",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_36",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_37",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_38",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_39",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_40",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_41",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_42",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_43",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_44",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_45",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_46",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_47",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_48",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_49",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_50",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_51",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_52",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_53",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_54",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_55",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_56",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_57",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_58",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_59",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_60",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_61",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_62",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_63",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_64",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_65",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_66",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_67",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_68",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_69",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_70",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_71",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_72",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_73",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_74",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_75",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_76",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_77",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_78",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_79",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_80",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_81",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_82",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_83",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_84",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_85",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_86",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_87",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_88",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_89",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_90",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_91",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_92",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_93",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_94",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_95",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_96",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_97",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_98",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_99",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_100",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_101",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_102",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_103",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_104",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_105",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_106",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_107",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_108",
+      "part": "body",
+      "material_boundary": false
+    },
+    {
+      "name": "body_109",
+      "part": "body",
+      "material_boundary": false
+    }
+  ],
+  "feature_semantics": {
+    "shape_source": "mesh_program",
+    "primitive_count": 110,
+    "boolean_seam_group_count": 0,
+    "polybevel_modifier_count": 0,
+    "feature_density": 0.4,
+    "feature_coherence": 0.5,
+    "edge_treatment_count": 0,
+    "required_part_coverage": 1.0
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "fallback",
+    "fallback_reason": "Blender topology adapter produced a non-watertight mesh",
+    "error": {
+      "type": "quality_gate",
+      "message": "Blender topology adapter produced a non-watertight mesh"
+    },
+    "actual_adapter": "reference_cleanup",
+    "execution": {
+      "mode": "reference_cleanup",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 20000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "der create Mesh node body\n14:34:38 | INFO: glTF import finished in 0.06s\nINFO Draco mesh compression is available, use library at C:\\Program Files\\Blender Foundation\\Blender 5.0\\5.0\\scripts\\addons_core\\io_scene_gltf2\\extern_draco.dll\n14:34:39 | INFO: Starting glTF 2.0 export\n14:34:39 | INFO: Extracting primitive: body\n14:34:39 | INFO: Primitives created: 1\n14:34:39 | INFO: Finished glTF 2.0 export in 0.04696488380432129 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 119616,
+        "triangle_count": 40000,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -1500.0,
+          -1494.255371,
+          -578.400024
+        ],
+        "bounds_max": [
+          1500.0,
+          1494.255371,
+          528.462708
+        ],
+        "extents": [
+          3000.0,
+          2988.510742,
+          1106.862732
+        ],
+        "body_count": 39808
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": false
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": true,
+    "scheme": "catmull_clark",
+    "levels": 1,
+    "boundary": "smooth",
+    "spec_source": "hero_default",
+    "input_stats": {
+      "vertex_count": 51,
+      "edge_count": 147,
+      "face_count": 98,
+      "boundary_edge_count": 0,
+      "nonmanifold_edge_count": 0,
+      "is_quad_only": false,
+      "is_triangle_only": true
+    },
+    "output_stats": {
+      "vertex_count": 296,
+      "edge_count": 588,
+      "face_count": 294,
+      "is_quad_only": true
+    },
+    "crease_count": 0,
+    "corner_count": 0,
+    "backend_attempted": "auto",
+    "backend_actual": "cpu",
+    "opensubdiv_available": false,
+    "opensubdiv_module": null,
+    "opensubdiv_version": null,
+    "fallback_reason": "pyopensubdiv / OpenSubdiv import failed; CPU fallback in use",
+    "input_face_count": 98,
+    "output_face_count": 588
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "reference_cleanup"
+  },
+  "_part_groups_emitted": [
+    "body"
+  ]
+}

@@ -5,9 +5,24 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-SETPIECE_CHILD_MODULE_KINDS = ("vehicle", "boat", "machine", "interior", "furniture", "foliage")
+SETPIECE_CHILD_MODULE_KINDS = (
+    "building",
+    "road",
+    "terrain",
+    "infrastructure",
+    "vehicle",
+    "boat",
+    "machine",
+    "interior",
+    "furniture",
+    "foliage",
+)
 
 _COUNT_KEYS: dict[str, tuple[str, ...]] = {
+    "building": ("building_slot_count", "building_count", "buildings", "structure_count"),
+    "road": ("road_slot_count", "road_count", "roads", "route_count", "routes"),
+    "terrain": ("terrain_slot_count", "terrain_patch_count", "terrain_count", "landform_count"),
+    "infrastructure": ("infrastructure_slot_count", "infrastructure_count", "utility_count", "service_count"),
     "vehicle": ("vehicle_slot_count", "vehicle_count", "vehicles"),
     "boat": ("boat_slot_count", "boat_count", "boats"),
     "machine": ("machine_slot_count", "machine_count", "machines"),
@@ -17,6 +32,10 @@ _COUNT_KEYS: dict[str, tuple[str, ...]] = {
 }
 
 _SUPPORTS: dict[str, tuple[str, ...]] = {
+    "building": ("procedural_building", "building", "structure", "tower", "facade"),
+    "road": ("procedural_road", "road", "route", "street", "path"),
+    "terrain": ("procedural_terrain", "terrain", "landform", "ground", "hill"),
+    "infrastructure": ("procedural_infrastructure", "infrastructure", "utility", "pipe", "power", "service"),
     "vehicle": ("procedural_vehicle", "vehicle", "rover", "drone", "car", "truck"),
     "boat": ("procedural_boat", "boat", "ship", "watercraft", "barge"),
     "machine": ("procedural_machine", "machine", "conveyor", "crane", "assembler"),
@@ -27,6 +46,10 @@ _SUPPORTS: dict[str, tuple[str, ...]] = {
 }
 
 _MOUNT_KIND: dict[str, str] = {
+    "building": "building_pad",
+    "road": "road_coupler",
+    "terrain": "terrain_anchor",
+    "infrastructure": "utility_junction",
     "vehicle": "parking_bay",
     "boat": "mooring",
     "machine": "machine_pad",
@@ -37,6 +60,10 @@ _MOUNT_KIND: dict[str, str] = {
 }
 
 _CLEARANCE: dict[str, float] = {
+    "building": 0.20,
+    "road": 0.06,
+    "terrain": 0.04,
+    "infrastructure": 0.14,
     "vehicle": 0.18,
     "boat": 0.22,
     "machine": 0.16,
@@ -47,6 +74,10 @@ _CLEARANCE: dict[str, float] = {
 }
 
 _FAMILY_BY_KIND: dict[str, str] = {
+    "building": "procedural_building",
+    "road": "procedural_road",
+    "terrain": "procedural_terrain",
+    "infrastructure": "procedural_infrastructure",
     "vehicle": "procedural_vehicle",
     "boat": "procedural_boat",
     "machine": "procedural_machine",
@@ -57,6 +88,78 @@ _FAMILY_BY_KIND: dict[str, str] = {
 }
 
 _MODULE_LIBRARY: dict[str, tuple[dict[str, Any], ...]] = {
+    "building": (
+        {
+            "template": "workshop_block",
+            "family": "procedural_building",
+            "archetype": "workshop",
+            "controls": {"building_type": "workshop", "floor_count": 2, "facade_bay_count": 3},
+            "components": ("building_body", "roof", "entry_door"),
+            "tags": ("workshop", "building", "industrial"),
+        },
+        {
+            "template": "watchtower",
+            "family": "procedural_building",
+            "archetype": "tower",
+            "controls": {"building_type": "tower", "floor_count": 3, "tower_count": 1},
+            "components": ("tower_body", "roof", "balcony"),
+            "tags": ("watchtower", "building", "vertical"),
+        },
+    ),
+    "road": (
+        {
+            "template": "service_lane",
+            "family": "procedural_road",
+            "archetype": "lane",
+            "controls": {"road_type": "service_lane", "lane_count": 1, "road_segment_count": 1},
+            "components": ("road_deck", "road_edge", "marker"),
+            "tags": ("road", "service_lane", "route"),
+        },
+        {
+            "template": "street_spine",
+            "family": "procedural_road",
+            "archetype": "street",
+            "controls": {"road_type": "street", "lane_count": 2, "road_segment_count": 2},
+            "components": ("road_deck", "curb", "crosswalk"),
+            "tags": ("road", "street", "urban"),
+        },
+    ),
+    "terrain": (
+        {
+            "template": "raised_ground_patch",
+            "family": "procedural_terrain",
+            "archetype": "ground_patch",
+            "controls": {"terrain_type": "ground_patch", "terrain_patch_count": 1, "rock_count": 2},
+            "components": ("terrain_patch", "rock", "ground_detail"),
+            "tags": ("terrain", "ground", "landform"),
+        },
+        {
+            "template": "rocky_mound",
+            "family": "procedural_terrain",
+            "archetype": "mound",
+            "controls": {"terrain_type": "mound", "terrain_patch_count": 1, "rock_count": 4},
+            "components": ("terrain_patch", "natural_rock", "slope"),
+            "tags": ("terrain", "mound", "rocky"),
+        },
+    ),
+    "infrastructure": (
+        {
+            "template": "utility_node",
+            "family": "procedural_infrastructure",
+            "archetype": "utility",
+            "controls": {"infrastructure_type": "utility_node", "pipe_count": 2, "junction_count": 1},
+            "components": ("junction_box", "pipe_run", "service_rail"),
+            "tags": ("infrastructure", "utility", "service"),
+        },
+        {
+            "template": "power_node",
+            "family": "procedural_infrastructure",
+            "archetype": "power",
+            "controls": {"infrastructure_type": "power", "transformer_count": 1, "cable_count": 2},
+            "components": ("transformer_box", "cable_span", "support_bracket"),
+            "tags": ("infrastructure", "power", "utility"),
+        },
+    ),
     "vehicle": (
         {
             "template": "utility_rover",
@@ -202,12 +305,12 @@ _MODULE_LIBRARY: dict[str, tuple[dict[str, Any], ...]] = {
 }
 
 _ARCHETYPE_TEMPLATE_HINTS: dict[str, dict[str, str]] = {
-    "outpost": {"vehicle": "utility_rover", "interior": "barracks_room"},
-    "market": {"furniture": "market_table_set", "foliage": "tree_cluster"},
-    "factory": {"machine": "assembler_station", "interior": "control_room_pod"},
-    "harbor": {"boat": "work_skiff", "machine": "gantry_crane"},
-    "hangar": {"vehicle": "cargo_tug", "machine": "conveyor_loader"},
-    "temple": {"interior": "control_room_pod", "furniture": "market_table_set", "foliage": "rock_garden"},
+    "outpost": {"building": "watchtower", "vehicle": "utility_rover", "interior": "barracks_room"},
+    "market": {"building": "workshop_block", "road": "street_spine", "furniture": "market_table_set", "foliage": "tree_cluster"},
+    "factory": {"building": "workshop_block", "infrastructure": "utility_node", "machine": "assembler_station", "interior": "control_room_pod"},
+    "harbor": {"road": "service_lane", "boat": "work_skiff", "machine": "gantry_crane"},
+    "hangar": {"building": "workshop_block", "vehicle": "cargo_tug", "machine": "conveyor_loader"},
+    "temple": {"building": "watchtower", "interior": "control_room_pod", "furniture": "market_table_set", "foliage": "rock_garden"},
 }
 
 

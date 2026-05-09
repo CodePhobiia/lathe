@@ -1,0 +1,63 @@
+23:07:26 | INFO: Data are loaded, start creating Blender stuff
+23:07:26 | INFO: Blender create Mesh node access
+23:07:26 | INFO: Blender create Mesh node body
+23:07:26 | INFO: Blender create Mesh node facade
+23:07:26 | INFO: Blender create Mesh node foliage
+23:07:26 | INFO: Blender create Mesh node foot_l
+23:07:26 | INFO: Blender create Mesh node foot_r
+23:07:26 | INFO: Blender create Mesh node front_hatch
+23:07:26 | INFO: Blender create Mesh node handle_l
+23:07:26 | INFO: Blender create Mesh node handle_r
+23:07:26 | INFO: Blender create Mesh node infrastructure
+23:07:26 | INFO: Blender create Mesh node interface
+23:07:26 | INFO: Blender create Mesh node interior
+23:07:26 | INFO: Blender create Mesh node lid_panel
+23:07:26 | INFO: Blender create Mesh node lighting
+23:07:26 | INFO: Blender create Mesh node lock_plate
+23:07:26 | INFO: Blender create Mesh node scene_anchor
+23:07:26 | INFO: Blender create Mesh node street_scene
+23:07:26 | INFO: Blender create Mesh node weapon
+23:07:26 | INFO: glTF import finished in 0.09s
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+23:07:26 | INFO: Starting glTF 2.0 export
+23:07:26 | INFO: Extracting primitive: access
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: body
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: facade
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: foliage
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: foot_l
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: foot_r
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: front_hatch
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: handle_l
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: handle_r
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: infrastructure
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: interface
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: interior
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: lid_panel
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: lighting
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: lock_plate
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: scene_anchor
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: street_scene
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Extracting primitive: weapon
+23:07:26 | INFO: Primitives created: 1
+23:07:26 | INFO: Finished glTF 2.0 export in 0.18905854225158691 s
+
+Blender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)
+
+Blender quit

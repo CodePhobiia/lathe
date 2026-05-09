@@ -1,0 +1,97 @@
+// V1.4 §5.7 DEMO — mesh_program first-wave op vocabulary expansion (all 8 ops).
+//
+// Builds a comprehensive mechanical panel exercising every newly-authorable
+// shape_ir_v2 op shipped in the §5.7 first wave:
+//
+//   solid constructors:
+//     1. ``solid_panel``       — 40x30x2cm slab body
+//     2. ``solid_rounded_box`` — chamfered inset plate fused to body
+//     3. ``solid_cylinder``    — boss / standoff fused to body
+//     4. ``solid_rail``        — square-section mounting rail fused along x
+//     5. ``solid_prism``       — triangular reinforcement gusset
+//
+//   compound ops:
+//     6. ``op_vent_slats``    — air-intake slots on the front face
+//     7. ``op_fastener_grid`` — rivet grid on the front face
+//     8. ``op_trim_band``     — banded trim wrapping the body along y
+//
+// Lower this asset with ``lathe.mesh_program.lower_mesh_program`` to get
+// the deterministic ``ShapePrimitive`` list, then feed it through the
+// shape pipeline (``lathe quick`` or ``lathe build``) to produce a glTF.
+module demo.mech_prop
+
+asset mech_prop_demo : hard_surface_prop {
+  intent {
+    role = "mechanical prop demo"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 42
+
+      mesh_program {
+        // 1. Body — 40x30x2cm flat panel.
+        let body = solid_panel(extents: [40cm, 30cm, 2cm])
+
+        // 2. Inset plate — fuse a rounded inset chamfered block to the body
+        //    on the +z face, offset to the right side.
+        let inset = solid_rounded_box(extents: [12cm, 8cm, 1cm], radius: 3mm)
+              .translate([10cm, 0cm, 1cm])
+        let body_plus_inset = boolean(op: union, a: body, b: inset, seam_group: "inset_lip")
+
+        // 3. Boss / standoff — short cylinder protruding from the +z face
+        //    on the upper-left.
+        let boss = solid_cylinder(radius: 2cm, height: 3cm, axis: "z")
+              .translate([12cm, 8cm, 1cm])
+        let body_plus_boss = boolean(op: union, a: body, b: boss, seam_group: "boss_lip")
+
+        // 4. Rail — square-section mounting rail along the x axis,
+        //    seated on the +z face along the bottom edge.
+        let rail = solid_rail(length: 38cm, profile: 8mm, axis: "x")
+              .translate([0cm, 12cm, 1cm])
+        let body_plus_rail = boolean(op: union, a: body, b: rail, seam_group: "rail_lip")
+
+        // 5. Gusset — triangular reinforcement prism at the upper-right corner.
+        let gusset = solid_prism(extents: [3cm, 3cm, 1cm])
+              .translate([18cm, 13cm, 1cm])
+        let body_plus_gusset = boolean(op: union, a: body, b: gusset, seam_group: "gusset_lip")
+
+        // 6. Vent slats — 6 slots cut into the +z face, marching along x.
+        op_vent_slats(
+          target: body,
+          face: "+z",
+          count: 6,
+          slot_width: 8mm,
+          slot_length: 12cm,
+          slot_depth: 1cm,
+          spacing: 16mm,
+          axis: "x",
+          seam_group: "vent_lip",
+        )
+
+        // 7. Fastener grid — 2x6 rivets stamped on the +z face.
+        op_fastener_grid(
+          target: body,
+          face: "+z",
+          rows: 2,
+          cols: 6,
+          spacing: 5cm,
+          fastener_radius: 3mm,
+          fastener_height: 4mm,
+          seam_group: "rivet_lip",
+        )
+
+        // 8. Trim band — 1cm band wrapping body along y with a 2mm proud edge.
+        op_trim_band(
+          target: body,
+          axis: "y",
+          width: 1cm,
+          depth: 2mm,
+        )
+      }
+    }
+  }
+}

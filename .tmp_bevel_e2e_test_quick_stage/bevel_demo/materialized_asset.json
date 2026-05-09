@@ -1,0 +1,443 @@
+{
+  "node_type": "asset",
+  "name": "bevel_demo",
+  "kind": "hard_surface_prop",
+  "from": "",
+  "uses": [],
+  "refs": {
+    "images": [],
+    "meshes": [],
+    "assets": [],
+    "materials": [],
+    "notes": [],
+    "reference_sets": [],
+    "resolved_reference_sets": []
+  },
+  "intent": {
+    "role": "bevel demo",
+    "asset_class": "hero",
+    "resolved_asset_class_profile": {
+      "name": "hero",
+      "body": {
+        "poly_budget": {
+          "tris_max": 80000,
+          "quads_target": 20000
+        },
+        "texture_budget": {
+          "basecolor": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "normal": {
+            "type": "unit",
+            "value": 4096,
+            "unit": "px"
+          },
+          "orm": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "emissive": {
+            "type": "unit",
+            "value": 1024,
+            "unit": "px"
+          }
+        },
+        "lod_count": 3,
+        "validator_threshold": 0.88
+      }
+    },
+    "style": [],
+    "parts": [],
+    "materials": [],
+    "negatives": [],
+    "interactions": [],
+    "notes": [],
+    "style_stack": {
+      "material_model": "pbr_stylized",
+      "shading_model": "lambert_ambient",
+      "texture_authoring": "procedural_designer",
+      "outline_mode": "none",
+      "lighting_strategy": "dynamic_global_illumination",
+      "detail_layer_compose": "multi_band_pbr",
+      "animation_rate": "fluid",
+      "construction_grammar": "free_form"
+    },
+    "style_bridges": []
+  },
+  "geometry": {},
+  "features": {
+    "allow": []
+  },
+  "surface": {
+    "resolved_palette": {},
+    "resolved_materials": {},
+    "resolved_patterns": [],
+    "resolved_surface_program": {},
+    "resolved_surface_policy": {},
+    "resolved_surface_backend": {},
+    "resolved_decal_libraries": [],
+    "resolved_mask_programs": [],
+    "resolved_trim_sheets": [],
+    "resolved_material_graph": {},
+    "program": "",
+    "material_graph": "",
+    "patterns": [],
+    "palette": "",
+    "material_zones": [],
+    "materials": [],
+    "decals": [],
+    "bake": [],
+    "backend": "",
+    "policy": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "authoring": {}
+  },
+  "assembly": {
+    "resolved_family": {},
+    "resolved_components": [],
+    "resolved_mechanisms": [],
+    "resolved_traits": [],
+    "family": "",
+    "components": [],
+    "mechanisms": [],
+    "traits": []
+  },
+  "fit": {
+    "resolved_fit_profile": {},
+    "resolved_reconstruct_policy": {}
+  },
+  "transfer": {
+    "resolved_adapt_policy": {},
+    "resolved_transfer_rules": []
+  },
+  "reuse": {},
+  "constraints": {
+    "resolved_assembly_policy": {}
+  },
+  "ingest": {},
+  "assembly_rules": {},
+  "execution": {
+    "resolved_execution_profile": {},
+    "resolved_inspection_policy": {},
+    "resolved_library_bindings": [],
+    "profile": "",
+    "engine": "",
+    "mode": "",
+    "deterministic": null,
+    "preserve_blend": "",
+    "geometry_backend": "",
+    "uv_backend": "",
+    "bake_backend": "",
+    "surface_backend": "",
+    "render_backend": "",
+    "package_backend": "",
+    "library_backend": "",
+    "library_bindings": [],
+    "inspection_policy": ""
+  },
+  "space": {
+    "use": "",
+    "values": {},
+    "vary": [],
+    "freeze": [],
+    "objectives": [],
+    "select": {},
+    "resolved_name": ""
+  },
+  "repair_policy": {
+    "allow": [],
+    "deny": [],
+    "resolved_name": "",
+    "use": "",
+    "mode": "",
+    "max_rounds": null
+  },
+  "build": {
+    "shape": {
+      "mode": "generate",
+      "candidates": 1,
+      "seed": 42,
+      "mesh_program": {
+        "node_type": "mesh_program",
+        "statements": [
+          {
+            "node_type": "mesh_let",
+            "target": "body",
+            "expr": {
+              "type": "call",
+              "name": "box",
+              "args": [
+                {
+                  "name": "extents",
+                  "value": [
+                    {
+                      "type": "unit",
+                      "value": 10,
+                      "unit": "cm"
+                    },
+                    {
+                      "type": "unit",
+                      "value": 10,
+                      "unit": "cm"
+                    },
+                    {
+                      "type": "unit",
+                      "value": 10,
+                      "unit": "cm"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "node_type": "mesh_let",
+            "target": "cutout",
+            "expr": {
+              "type": "method_call",
+              "receiver": {
+                "type": "call",
+                "name": "box",
+                "args": [
+                  {
+                    "name": "extents",
+                    "value": [
+                      {
+                        "type": "unit",
+                        "value": 8,
+                        "unit": "cm"
+                      },
+                      {
+                        "type": "unit",
+                        "value": 8,
+                        "unit": "cm"
+                      },
+                      {
+                        "type": "unit",
+                        "value": 4,
+                        "unit": "cm"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "method": "translate",
+              "args": [
+                {
+                  "name": null,
+                  "value": [
+                    {
+                      "type": "unit",
+                      "value": 0,
+                      "unit": "cm"
+                    },
+                    {
+                      "type": "unit",
+                      "value": 0,
+                      "unit": "cm"
+                    },
+                    {
+                      "type": "unit",
+                      "value": 4,
+                      "unit": "cm"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "node_type": "mesh_let",
+            "target": "result",
+            "expr": {
+              "type": "call",
+              "name": "boolean",
+              "args": [
+                {
+                  "name": "op",
+                  "value": "subtract"
+                },
+                {
+                  "name": "a",
+                  "value": "body"
+                },
+                {
+                  "name": "b",
+                  "value": "cutout"
+                },
+                {
+                  "name": "seam_group",
+                  "value": "lip"
+                }
+              ]
+            }
+          },
+          {
+            "node_type": "mesh_call",
+            "expr": {
+              "type": "call",
+              "name": "fillet_edge",
+              "args": [
+                {
+                  "name": "target",
+                  "value": "result"
+                },
+                {
+                  "name": "edge_class",
+                  "value": "lip"
+                },
+                {
+                  "name": "radius",
+                  "value": {
+                    "type": "unit",
+                    "value": 1,
+                    "unit": "cm"
+                  }
+                },
+                {
+                  "name": "segments",
+                  "value": 4
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "backend": "auto",
+      "symmetry": "none",
+      "preserve": []
+    },
+    "surface": {
+      "resolved_bake_profile": {},
+      "resolved_render_fixture": {},
+      "resolution": {
+        "type": "unit",
+        "value": 4096,
+        "unit": "px"
+      },
+      "texture_budget": {
+        "basecolor": {
+          "type": "unit",
+          "value": 2048,
+          "unit": "px"
+        },
+        "normal": {
+          "type": "unit",
+          "value": 4096,
+          "unit": "px"
+        },
+        "orm": {
+          "type": "unit",
+          "value": 2048,
+          "unit": "px"
+        },
+        "emissive": {
+          "type": "unit",
+          "value": 1024,
+          "unit": "px"
+        }
+      },
+      "backend": "auto",
+      "workflow": "pbr_metal_rough",
+      "maps": [
+        "basecolor",
+        "normal",
+        "orm"
+      ],
+      "bakes": [],
+      "bake_profile": "",
+      "render_fixture": "",
+      "decals": [],
+      "id_map": false
+    },
+    "topology": {
+      "target_quads": 20000,
+      "tris_max": 80000,
+      "backend": "auto",
+      "retopo": "auto",
+      "ngons": "avoid",
+      "preserve": []
+    },
+    "optimize": {
+      "lods": 3,
+      "backend": "auto",
+      "atlas": false,
+      "mesh_compression": false,
+      "strip_hidden_faces": false,
+      "instance_candidates": false
+    },
+    "uv": {
+      "backend": "auto",
+      "sets": [
+        "base"
+      ],
+      "unwrap": "auto",
+      "tile_mode": "zero_to_one",
+      "padding": {
+        "type": "unit",
+        "value": 8,
+        "unit": "px"
+      },
+      "pack_rotate": true,
+      "udims": []
+    },
+    "rig": {
+      "backend": "auto",
+      "type": "none",
+      "joints": [],
+      "pivot_policy": "auto",
+      "joint_limits": "auto"
+    },
+    "interfaces": {
+      "backend": "auto",
+      "sockets": [],
+      "pivots": [],
+      "anchors": [],
+      "connections": [],
+      "auto_connect": false
+    },
+    "physics": {
+      "backend": "auto",
+      "collision": "none",
+      "max_hulls": 10,
+      "mass": "auto",
+      "center_of_mass": "auto"
+    }
+  },
+  "validate": {
+    "rules": [],
+    "repair": {
+      "allow": [],
+      "deny": [],
+      "mode": "auto_until_pass",
+      "max_rounds": 3
+    },
+    "threshold": 0.88
+  },
+  "package": {
+    "backend": "auto",
+    "formats": [
+      "usd",
+      "glb"
+    ],
+    "manifest": true,
+    "previews": [],
+    "embed_textures": false,
+    "include_trace": true,
+    "naming": "auto"
+  },
+  "publish": {
+    "registry": "",
+    "version": "auto_patch",
+    "tags": [],
+    "visibility": "private",
+    "approval": "required",
+    "channel": "dev"
+  },
+  "experimental": {}
+}

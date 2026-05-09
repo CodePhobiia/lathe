@@ -1,0 +1,14 @@
+{
+  "backend_id": "lathe.physics.proxy_v1",
+  "collision": "none",
+  "collision_proxy_type": "box",
+  "collision_proxy_source": "build.physics.collision",
+  "collision_proxy_uri": "stages/physics/collision.glb",
+  "collision_proxy": true,
+  "mass_kg": 856.6751,
+  "center_of_mass": [
+    0.301932,
+    24.629069,
+    16.02903
+  ]
+}

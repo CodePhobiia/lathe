@@ -154,6 +154,12 @@
       "properties": {
         "autonomous": { "type": "boolean" },
         "max_rounds": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "max_rounds_override": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 32,
+          "description": "Invocation-time override for asset-declared validate.repair.max_rounds. When set, wins over the asset value (and over the default max_rounds). Intended for fast iteration / diagnostics; production builds should leave this unset so the asset declaration is authoritative."
+        },
         "min_improvement": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
         "budget_seconds": { "type": "number", "minimum": 1.0, "maximum": 3600.0 }
       }

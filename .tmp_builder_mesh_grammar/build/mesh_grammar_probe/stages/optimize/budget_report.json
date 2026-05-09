@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "texture_memory": {
+    "budget_bytes": 134217728,
+    "estimated_bytes": 10485760,
+    "per_material": [
+      {
+        "name": "edge_wear",
+        "bytes": 10485760
+      }
+    ],
+    "status": "pass"
+  },
+  "materials": {
+    "budget": 16,
+    "count": 1,
+    "status": "pass",
+    "materials": [
+      "edge_wear"
+    ]
+  },
+  "draw_calls": {
+    "budget": 64,
+    "estimated": 1,
+    "status": "pass",
+    "breakdown": [
+      {
+        "lod": 0,
+        "count": 1
+      }
+    ]
+  },
+  "overall_status": "pass"
+}

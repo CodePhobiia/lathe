@@ -1,0 +1,12 @@
+15:33:43 | INFO: Data are loaded, start creating Blender stuff
+15:33:43 | INFO: Blender create Mesh node body
+15:33:43 | INFO: glTF import finished in 0.00s
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+15:33:43 | INFO: Starting glTF 2.0 export
+15:33:43 | INFO: Extracting primitive: body
+15:33:43 | INFO: Primitives created: 1
+15:33:43 | INFO: Finished glTF 2.0 export in 0.0029981136322021484 s
+
+Blender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)
+
+Blender quit

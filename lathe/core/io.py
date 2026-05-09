@@ -7,9 +7,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import trimesh
+from trimesh.visual.texture import TextureVisuals
 
 from .geometry import runtime_scene_parts
 from .mesh import RuntimeMesh
@@ -89,6 +91,80 @@ def export_runtime_scene_glb(runtime_mesh: RuntimeMesh, path: Path) -> None:
     scene = trimesh.Scene()
     for part_name, submesh in runtime_scene_parts(runtime_mesh):
         scene.add_geometry(submesh, geom_name=part_name, node_name=part_name)
+    path.write_bytes(scene.export(file_type="glb"))
+
+
+def export_runtime_scene_glb_with_pbr(
+    runtime_mesh: RuntimeMesh,
+    path: Path,
+    material: Any,
+) -> None:
+    """Export multi-part scene glb with shared PBR atlas applied per part.
+
+    Each named part submesh becomes its own glTF node so engine importers
+    (Unity glTFast, Godot native, Unreal) unpack into a child hierarchy
+    rather than a single fused StaticMesh. The supplied ``PBRMaterial``
+    (atlas-shared) is applied to every part — they all index into the
+    same UV atlas already authored by the UV stage.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    parent_uv = getattr(runtime_mesh.mesh.visual, "uv", None)
+    scene = trimesh.Scene()
+    parts = runtime_scene_parts(runtime_mesh)
+    if parent_uv is not None and len(parts) > 1:
+        faces_arr = np.asarray(runtime_mesh.mesh.faces, dtype=np.int64)
+        for part_name in sorted(set(runtime_mesh.face_parts)):
+            face_indices = [
+                idx
+                for idx, name in enumerate(runtime_mesh.face_parts)
+                if name == part_name
+            ]
+            if not face_indices:
+                continue
+            submesh = runtime_mesh.mesh.submesh(
+                [face_indices], append=True, repair=False
+            )
+            sub_uv = getattr(submesh.visual, "uv", None)
+            if sub_uv is None:
+                used_vertex_ids = np.unique(faces_arr[face_indices].reshape(-1))
+                sub_uv = parent_uv[used_vertex_ids]
+            submesh.visual = TextureVisuals(uv=sub_uv.copy(), material=material)
+            scene.add_geometry(submesh, geom_name=part_name, node_name=part_name)
+    else:
+        for part_name, submesh in parts:
+            sub_uv = getattr(submesh.visual, "uv", None)
+            if sub_uv is not None:
+                submesh.visual = TextureVisuals(uv=sub_uv.copy(), material=material)
+            scene.add_geometry(submesh, geom_name=part_name, node_name=part_name)
+    path.write_bytes(scene.export(file_type="glb"))
+
+
+def export_scene_glb_from_named_meshes(
+    named_meshes: Iterable[tuple[str, trimesh.Trimesh]],
+    path: Path,
+) -> None:
+    """Export an ordered list of ``(name, mesh)`` pairs as a multi-node glb.
+
+    Used for collision-part hulls where parts are already separate
+    Trimesh instances rather than a single fused mesh with face_parts.
+    Skips empty meshes; emits an empty placeholder geometry when no
+    non-empty inputs are supplied so callers can rely on the file
+    existing.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    scene = trimesh.Scene()
+    has_geometry = False
+    for name, mesh in named_meshes:
+        if mesh is None or len(mesh.faces) == 0:
+            continue
+        scene.add_geometry(mesh, geom_name=name, node_name=name)
+        has_geometry = True
+    if not has_geometry:
+        scene.add_geometry(
+            trimesh.Trimesh(process=False),
+            geom_name="mesh",
+            node_name="mesh",
+        )
     path.write_bytes(scene.export(file_type="glb"))
 
 

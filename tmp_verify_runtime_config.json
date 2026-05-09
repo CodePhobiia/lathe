@@ -1,0 +1,9 @@
+{
+  "execution": {
+    "timeout_s": 2400
+  },
+  "repair": {
+    "max_rounds": 3,
+    "max_rounds_override": 1
+  }
+}

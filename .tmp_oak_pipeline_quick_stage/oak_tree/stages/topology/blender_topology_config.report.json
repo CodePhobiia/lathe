@@ -1,0 +1,51 @@
+{
+  "objects": [
+    {
+      "mode": "modifier_stack",
+      "fidelity_tier": "hero",
+      "auto_smooth_enabled": true,
+      "subsurf": {
+        "applied": true,
+        "polys_before": 80100,
+        "polys_after": 240300,
+        "level": 1
+      },
+      "bevel": {
+        "applied": false
+      },
+      "decimate": {
+        "applied": true,
+        "polys_before": 240300,
+        "polys_after": 240000,
+        "target_quads": 20000
+      },
+      "scatter": {
+        "applied": false
+      },
+      "subsurf_level": 1,
+      "subsurf_requested_level": 1,
+      "subsurf_skip_reason": null,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": true,
+      "decimate_target_quads": 20000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 240000,
+        "polys_after": 151662,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "polys_initial": 80100,
+      "polys_before_triangulate": 151662,
+      "polys_final": 240000,
+      "object": "body"
+    }
+  ]
+}

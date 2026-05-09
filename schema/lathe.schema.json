@@ -37,6 +37,16 @@
     "library_bindings",
     "material_graphs",
     "inspection_policies",
+    "asset_class_profiles",
+    "vegetation_species",
+    "vegetation_kits",
+    "wind_programs",
+    "volume_programs",
+    "wfc_tilesets",
+    "wfc_adjacencies",
+    "terrain_programs",
+    "subdivision_finishings",
+    "f_rep_programs",
     "repair_policies",
     "fixtures",
     "tests",
@@ -69,6 +79,7 @@
     "trim_sheets": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "palettes": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "style_packs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "style_bridges": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "reference_sets": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "reconstruct_policies": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "adapt_policies": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
@@ -81,6 +92,16 @@
     "library_bindings": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "material_graphs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "inspection_policies": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "asset_class_profiles": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "vegetation_species": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "vegetation_kits": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "wind_programs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "volume_programs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "wfc_tilesets": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "wfc_adjacencies": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "terrain_programs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "subdivision_finishings": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
+    "f_rep_programs": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "repair_policies": { "type": "array", "items": { "$ref": "#/$defs/top_level_repair_policy" } },
     "fixtures": { "type": "array", "items": { "$ref": "#/$defs/mapping_decl" } },
     "tests": { "type": "array", "items": { "$ref": "#/$defs/test_like" } },
@@ -581,7 +602,11 @@
         "space": { "$ref": "#/$defs/space_spec" },
         "repair_policy": { "$ref": "#/$defs/repair_policy_spec" },
         "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
-        "values": { "type": "object" }
+        "values": { "type": "object" },
+        "version": { "type": "string" },
+        "ports": { "type": "array", "items": { "$ref": "#/$defs/hda_port_decl" } },
+        "parameters": { "type": "array", "items": { "$ref": "#/$defs/hda_parameter_decl" } },
+        "body": { "$ref": "#/$defs/hda_body" }
       }
     },
     "mapping_decl": {
@@ -589,9 +614,58 @@
       "required": ["node_type", "name", "uses", "values"],
       "additionalProperties": false,
       "properties": {
-        "node_type": { "type": "string", "enum": ["library", "kit", "pattern", "material", "surface_program", "surface_backend", "surface_policy", "decal_library", "mask_program", "trim_sheet", "palette", "style_pack", "reference_set", "reconstruct_policy", "adapt_policy", "assembly_policy", "fit_profile", "transfer_rule", "execution_profile", "render_fixture", "bake_profile", "library_binding", "material_graph", "inspection_policy", "fixture"] },
+        "node_type": { "type": "string", "enum": ["library", "kit", "pattern", "material", "surface_program", "surface_backend", "surface_policy", "decal_library", "mask_program", "trim_sheet", "palette", "style_pack", "style_bridge", "reference_set", "reconstruct_policy", "adapt_policy", "assembly_policy", "fit_profile", "transfer_rule", "execution_profile", "render_fixture", "bake_profile", "library_binding", "material_graph", "inspection_policy", "asset_class_profile", "vegetation_species", "vegetation_kit", "wind_program", "volume_program", "wfc_tileset", "wfc_adjacency", "terrain_program", "subdivision_finishing", "fixture"] },
         "name": { "type": "string" },
         "uses": { "type": "array", "items": { "type": "string" } },
+        "values": { "type": "object" },
+        "version": { "type": "string" },
+        "ports": { "type": "array", "items": { "$ref": "#/$defs/hda_port_decl" } },
+        "parameters": { "type": "array", "items": { "$ref": "#/$defs/hda_parameter_decl" } },
+        "body": { "$ref": "#/$defs/hda_body" }
+      }
+    },
+    "hda_port_decl": {
+      "type": "object",
+      "required": ["node_type", "direction", "name", "port_type", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "port_decl" },
+        "direction": { "type": "string", "enum": ["in", "out"] },
+        "name": { "type": "string" },
+        "port_type": { "type": "string" },
+        "options": { "type": "object" }
+      }
+    },
+    "hda_parameter_decl": {
+      "type": "object",
+      "required": ["node_type", "name", "param_type", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "parameter_decl" },
+        "name": { "type": "string" },
+        "param_type": { "type": "string" },
+        "options": { "type": "object" }
+      }
+    },
+    "hda_kit_use": {
+      "type": "object",
+      "required": ["node_type", "kit", "version_constraint", "bindings"],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "kit_use_stmt" },
+        "kit": { "type": "string" },
+        "version_constraint": { "type": "string" },
+        "bindings": { "type": "object" }
+      }
+    },
+    "hda_body": {
+      "type": "object",
+      "required": ["node_type", "kit_uses", "rules", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "body" },
+        "kit_uses": { "type": "array", "items": { "$ref": "#/$defs/hda_kit_use" } },
+        "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
         "values": { "type": "object" }
       }
     },
@@ -747,6 +821,46 @@
         "on": { "type": "string" },
         "patches": { "type": "array", "items": { "$ref": "#/$defs/patch" } }
       }
+    },
+    "mesh_program_block": {
+      "description": "V1.4 §5.1 ordered procedural mesh script that lives under build.shape.mesh_program. Statements are evaluated top-to-bottom; later statements may reference identifiers introduced by earlier `let` bindings. The lowering layer turns this AST into a list of ShapePrimitive records consumed by the standard exact-solid + post-boolean polybevel chain.",
+      "type": "object",
+      "required": ["node_type", "statements"],
+      "additionalProperties": false,
+      "properties": {
+        "node_type": { "const": "mesh_program" },
+        "statements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/mesh_program_statement" }
+        }
+      }
+    },
+    "mesh_program_statement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["node_type", "target", "expr"],
+          "additionalProperties": false,
+          "properties": {
+            "node_type": { "const": "mesh_let" },
+            "target": { "type": "string" },
+            "expr": { "$ref": "#/$defs/mesh_program_expr" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["node_type", "expr"],
+          "additionalProperties": false,
+          "properties": {
+            "node_type": { "const": "mesh_call" },
+            "expr": { "$ref": "#/$defs/mesh_program_expr" }
+          }
+        }
+      ]
+    },
+    "mesh_program_expr": {
+      "description": "Either a primitive constructor call (box(extents: ...)), an identifier reference, a chained method call (.translate(...)), a fusion call (boolean(op:, a:, b:, seam_group:?)), or an edge-finishing call (fillet_edge(target:, edge_class:, radius:, segments:?)).",
+      "type": "object"
     }
   }
 }

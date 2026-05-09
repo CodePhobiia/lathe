@@ -82,6 +82,20 @@ def run(executor: Any) -> dict[str, Any]:
         _shape_collect_conditioning(executor.asset, executor.source_root),
         executor.runtime.get("_quality_generation"),
     )
+    # Velocity flags (``lathe quick --candidates``/``--no-search``) plumb a
+    # forced search-count through the conditioning dict so the scaffold
+    # compiler can bypass the hero-tier floor of 3 and the space.select
+    # best_of amplification. Either flag is sufficient to force the
+    # collapse — ``--candidates`` to its explicit value, ``--no-search``
+    # alone to ``candidates_count`` (i.e. exactly the asset-declared count
+    # with no search amplification).
+    shape_overrides = getattr(executor, "shape_overrides", None) or {}
+    if shape_overrides.get("candidates") is not None:
+        conditioning = dict(conditioning)
+        conditioning["force_search_count"] = int(shape_overrides["candidates"])
+    elif shape_overrides.get("no_search"):
+        conditioning = dict(conditioning)
+        conditioning["force_search_count"] = candidates_count
     provider_result = _shape_run_backend(
         backend["id"],
         executor.asset,
@@ -117,11 +131,12 @@ def run(executor: Any) -> dict[str, Any]:
         mesh_path = executor.stage_dirs["shape"] / f"{candidate_id}.glb"
         export_glb(runtime_mesh.mesh, mesh_path)
         preview_path = executor.stage_dirs["shape"] / f"{candidate_id}.png"
-        render_mesh_preview(runtime_mesh, preview_path, mode="material_ids")
+        preview_report = render_mesh_preview(runtime_mesh, preview_path, mode="material_ids")
         candidate = {
             "candidate_id": candidate_id,
             "mesh_uri": relpath(executor.out_dir, mesh_path),
             "preview_uri": relpath(executor.out_dir, preview_path),
+            "preview_report": preview_report,
             "units": runtime_mesh.units,
             "frame": {"handedness": "right", "up": "+Y", "forward": "+Z"},
             "part_labels": sorted(meta["parts"]),
@@ -139,6 +154,7 @@ def run(executor: Any) -> dict[str, Any]:
             "candidate_params": meta.get("candidate_params", {}),
             "game_pipeline_hints": meta.get("game_pipeline_hints", {}),
             "integration_report": meta.get("integration_report", {}),
+            "mesh_ir": meta.get("mesh_ir") or {},
         }
         candidates.append(candidate)
         if (
@@ -157,12 +173,23 @@ def run(executor: Any) -> dict[str, Any]:
             "invariant violation: shape stage produced no selected candidate after "
             f"iterating {candidates_count} candidate(s); selected={selected!r}"
         )
+    shape_ir_list = shape_ir if isinstance(shape_ir, list) else []
+    try:
+        selected_shape_ir_index = int(str(selected["candidate_id"]).rsplit("_", 1)[-1])
+    except (KeyError, TypeError, ValueError):
+        selected_shape_ir_index = -1
+    selected_shape_ir = (
+        shape_ir_list[selected_shape_ir_index]
+        if 0 <= selected_shape_ir_index < len(shape_ir_list)
+        else {}
+    )
     bundle = {
         "backend_id": backend["id"],
         "backend_version": backend["version"],
         "determinism_class": backend["determinism_class"],
         "seed": seed,
         "selected_candidate_id": selected["candidate_id"],
+        "selected_shape_ir_index": selected_shape_ir_index,
         "blueprint_id": scaffold_report.get("blueprint_id"),
         "primitives_used": scaffold_report.get("primitives_used", []),
         "conditioning_report": conditioning,
@@ -177,6 +204,8 @@ def run(executor: Any) -> dict[str, Any]:
         "kit_ir": kit_ir.to_dict(),
         "asset_graph": asset_graph,
         "shape_ir": shape_ir,
+        "selected_shape_ir": selected_shape_ir,
+        "integration_report": selected.get("integration_report", {}),
         "scaffold_report": scaffold_report,
         "conformance_report": conformance_report,
         "proposal_sources_attempted": conformance_report.get("proposal_sources_attempted", []),
@@ -251,6 +280,18 @@ def select_candidate(executor: Any, candidate_id: str, reason: str) -> None:
         raise BuildError(f"Unknown shape candidate '{candidate_id}' for reselection")
     bundle["selected_candidate_id"] = candidate_id
     bundle["authoritative_candidate_reason"] = reason
+    shape_ir_list = bundle.get("shape_ir") if isinstance(bundle.get("shape_ir"), list) else []
+    try:
+        selected_shape_ir_index = int(str(candidate_id).rsplit("_", 1)[-1])
+    except (TypeError, ValueError):
+        selected_shape_ir_index = -1
+    bundle["selected_shape_ir_index"] = selected_shape_ir_index
+    bundle["selected_shape_ir"] = (
+        shape_ir_list[selected_shape_ir_index]
+        if 0 <= selected_shape_ir_index < len(shape_ir_list)
+        else {}
+    )
+    bundle["integration_report"] = selected.get("integration_report", {})
     executor.runtime["shape"]["selected"] = selected
     executor.runtime["shape"]["runtime_mesh"] = runtime_mesh
     attempts = executor.runtime["shape"].setdefault("reselection_attempts", [])

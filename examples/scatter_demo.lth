@@ -1,0 +1,87 @@
+// Phase 2 §6.x — scatter / Copy-to-Points productivity multiplier demo.
+//
+// Replaces N explicit ``box(...).translate([...])`` lines with a single
+// ``scatter(primitive: ..., points: ...)`` declaration. The same op
+// generalises across hard-surface (rivets, screws), vegetation (leaf
+// cards), terrain (rocks), SDF (surface bumps), and WFC (cell decorations);
+// this demo proves the hard-surface case end-to-end.
+//
+// Three productivity wins shown below:
+//   * ``points_grid`` — generates a 4 x 8 grid of 32 rivet positions
+//     (one declaration replaces 32 hand-written translates).
+//   * ``points_random`` — generates 12 deterministic random screw
+//     positions on a sub-region (one declaration replaces 12 more).
+//   * ``points_combine`` — concatenates two point sets, then scatter
+//     iterates the union in a single op.
+//
+// The ``op_trim_band`` keeps the panel body in the primitive list (the
+// existing convention for compound ops to anchor a let-bound primitive).
+// scatter itself only emits placed copies — it does not auto-emit the
+// scatter template, since callers want N instances, not N+1.
+module demo.scatter
+
+asset scatter_demo : hard_surface_prop {
+  intent {
+    role = "scatter pattern demo"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 7
+
+      mesh_program {
+        // Panel body — anchored via op_trim_band so it lands in the
+        // primitive list alongside the scatter copies.
+        let body = solid_panel(extents: [40cm, 30cm, 2cm])
+        op_trim_band(
+          target: body,
+          axis: "x",
+          width: 2cm,
+          depth: 5mm,
+        )
+
+        // 4 x 8 grid of rivets via scatter — one declaration, 32 copies.
+        let rivet = solid_cylinder(radius: 3mm, height: 4mm, axis: "z")
+              .translate([0cm, 0cm, 1cm])
+        let rivet_grid = points_grid(
+          extents: [36cm, 26cm],
+          rows: 4,
+          cols: 8,
+        )
+        scatter(
+          primitive: rivet,
+          points: rivet_grid,
+          jitter: 0.5mm,
+        )
+
+        // 12 random screws on a sub-region — deterministic via seed.
+        let screw = solid_cylinder(radius: 2mm, height: 6mm, axis: "z")
+              .translate([0cm, 0cm, 1cm])
+        let screw_random = points_random(
+          count: 12,
+          seed: 7,
+          extents: [10cm, 10cm],
+        )
+        scatter(
+          primitive: screw,
+          points: screw_random,
+        )
+
+        // Ring of bolts via points_circle + points_combine showing
+        // multi-source point clouds compose into one scatter call.
+        let bolt = solid_cylinder(radius: 4mm, height: 5mm, axis: "z")
+              .translate([0cm, 0cm, 1cm])
+        let ring_a = points_circle(count: 8, radius: 12cm, axis: "z")
+        let ring_b = points_circle(count: 4, radius: 5cm, axis: "z")
+        let bolt_points = points_combine([ring_a, ring_b])
+        scatter(
+          primitive: bolt,
+          points: bolt_points,
+        )
+      }
+    }
+  }
+}

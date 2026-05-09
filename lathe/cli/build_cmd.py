@@ -169,6 +169,30 @@ def run_build(args) -> None:
         allow_fallback=True if getattr(args, "allow_fallback", False) else None,
         codex_imagegen=args.codex_imagegen,
     )
+    repair_rounds_override = getattr(args, "repair_rounds", None)
+    if repair_rounds_override is not None:
+        if int(repair_rounds_override) < 0:
+            raise SystemExit(
+                f"--repair-rounds must be >= 0 (got {int(repair_rounds_override)})"
+            )
+        runtime_config = dict(runtime_config)
+        repair_section = dict(runtime_config.get("repair") or {})
+        repair_section["max_rounds_override"] = int(repair_rounds_override)
+        runtime_config["repair"] = repair_section
+    shape_overrides: dict[str, Any] | None = None
+    candidates_override = getattr(args, "candidates", None)
+    no_search = bool(getattr(args, "no_search", False))
+    if candidates_override is not None or no_search:
+        shape_overrides = {}
+        if candidates_override is not None:
+            shape_overrides["candidates"] = int(candidates_override)
+            if int(candidates_override) < 3:
+                _LOGGER.warning(
+                    "lathe.cli.build: running with --candidates %d, output may be lower quality",
+                    int(candidates_override),
+                )
+        if no_search:
+            shape_overrides["no_search"] = True
     try:
         report = build_asset(
             program,
@@ -176,6 +200,7 @@ def run_build(args) -> None:
             out_dir,
             runtime_config=runtime_config,
             execution_profile_override=args.execution_profile,
+            shape_overrides=shape_overrides,
         )
         # BL-33 (Plan 08 Phase 3): ``report["repair_rounds"]`` is populated
         # by BuildExecutor.build via run_repair_loop() when the validate

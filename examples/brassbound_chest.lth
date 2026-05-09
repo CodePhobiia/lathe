@@ -45,6 +45,8 @@ critic hero_prop(a: asset) = weighted {
 asset brassbound_chest: hard_surface_prop from brassbound_chest_family uses shipping_prop {
   intent {
     role = "ornate brassbound loot chest"
+    asset_class = "hero"
+    style_target = "stylized_pbr_aaa"
     style = ["adventure", "stylized", "wood_and_brass"]
     parts = [
       body,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import Any
 
 from .assembly_kernel import BlueprintComponent, refresh_shape_ir
 from .asset_graph import AssetGraph
@@ -19,6 +20,17 @@ from .repair_planner import SemanticRepairAction
 from .repair_planner import apply_shape_repairs as _apply_semantic_repairs
 from .shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
 
+_V2_REPAIR_OPERATIONS = frozenset(
+    {
+        "op.bevel",
+        "op.bracket",
+        "op.fastener_grid",
+        "op.mount_plate",
+        "op.socket",
+        "op.trim_band",
+    }
+)
+
 
 def _component_from_region(shape_ir: ShapeIR, region: ShapeRegion) -> BlueprintComponent:
     return BlueprintComponent(
@@ -36,6 +48,60 @@ def _component_from_region(shape_ir: ShapeIR, region: ShapeRegion) -> BlueprintC
 
 def _region(shape_ir: ShapeIR, predicate) -> list[ShapeRegion]:
     return [region for region in shape_ir.regions if predicate(region)]
+
+
+def _metadata_dict(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _repair_operation_id(
+    repair: SemanticRepairAction,
+    operation: str,
+    *,
+    primitive_index: int,
+) -> str:
+    action_token = "".join(char if char.isalnum() else "_" for char in repair.action).strip("_")
+    op_token = "".join(char if char.isalnum() else "_" for char in operation).strip("_")
+    return f"repair:{action_token or 'action'}:{op_token or 'operation'}:{primitive_index:04d}"
+
+
+def _annotate_repair_primitive(
+    primitive: ShapePrimitive,
+    repair: SemanticRepairAction,
+    operation: str,
+    *,
+    primitive_index: int,
+) -> dict[str, object]:
+    operation_id = _repair_operation_id(
+        repair,
+        operation,
+        primitive_index=primitive_index,
+    )
+    metadata = _metadata_dict(primitive.semantic_metadata)
+    metadata["semantic_repair"] = {
+        "action": repair.action,
+        "target": repair.target,
+        "reason": repair.reason,
+        "lowered_operation": operation,
+        "operation_id": operation_id,
+        "execution_path": "repair_executor.feature_primitives",
+    }
+    if operation in _V2_REPAIR_OPERATIONS:
+        v2_metadata = _metadata_dict(metadata.get("shape_ir_v2"))
+        v2_metadata.setdefault("operation_id", operation_id)
+        v2_metadata.setdefault("v2_op", operation)
+        v2_metadata.setdefault("v2_purpose", repair.reason)
+        v2_metadata.setdefault("repair_action", repair.action)
+        metadata["shape_ir_v2"] = v2_metadata
+    primitive.semantic_metadata = metadata
+    return {
+        "operation": operation,
+        "operation_id": operation_id,
+        "primitive_type": primitive.primitive_type,
+        "part": primitive.part,
+        "component": primitive.component,
+        "region": primitive.region,
+    }
 
 
 def execute_shape_repairs(
@@ -69,10 +135,32 @@ def execute_shape_repairs(
     working = deepcopy(repaired_shape_ir)
     custom_applied: list[dict[str, object]] = []
 
-    def add_feature_primitives(primitives: list[ShapePrimitive]) -> None:
+    def add_feature_primitives(
+        primitives: list[ShapePrimitive],
+        repair: SemanticRepairAction,
+        operations: tuple[str, ...],
+    ) -> list[dict[str, object]]:
+        if not primitives:
+            return []
+        if not operations:
+            operations = ("repair.feature_primitive",)
+        traces: list[dict[str, object]] = []
+        start_index = len(working.primitives)
+        for offset, primitive in enumerate(primitives):
+            operation = operations[min(offset, len(operations) - 1)]
+            traces.append(
+                _annotate_repair_primitive(
+                    primitive,
+                    repair,
+                    operation,
+                    primitive_index=start_index + offset,
+                )
+            )
         working.primitives.extend(primitives)
+        return traces
 
     for repair in custom_repairs:
+        executed_operations: list[dict[str, object]] = []
         if repair.action == "add_secondary_features":
             shell_region = next(
                 (region for region in working.regions if region.component in {"shell", "body"}), None
@@ -80,9 +168,19 @@ def execute_shape_repairs(
             if shell_region is None:
                 continue
             component = _component_from_region(working, shell_region)
-            add_feature_primitives(trim_band_features(component, depth_scale=1.12, thickness_scale=1.0))
-            add_feature_primitives(
-                fastener_strip_features(component, count=4, depth_scale=1.0, size_scale=0.95)
+            executed_operations.extend(
+                add_feature_primitives(
+                    trim_band_features(component, depth_scale=1.12, thickness_scale=1.0),
+                    repair,
+                    ("op.trim_band",),
+                )
+            )
+            executed_operations.extend(
+                add_feature_primitives(
+                    fastener_strip_features(component, count=4, depth_scale=1.0, size_scale=0.95),
+                    repair,
+                    ("op.fastener_grid",),
+                )
             )
             repair.applied = True
         elif repair.action == "restore_edge_treatment":
@@ -92,9 +190,15 @@ def execute_shape_repairs(
             if not targets:
                 continue
             for region in targets[:3]:
-                add_feature_primitives(
-                    edge_break_features(
-                        _component_from_region(working, region), depth_scale=1.08, thickness_scale=1.05
+                executed_operations.extend(
+                    add_feature_primitives(
+                        edge_break_features(
+                            _component_from_region(working, region),
+                            depth_scale=1.08,
+                            thickness_scale=1.05,
+                        ),
+                        repair,
+                        ("op.bevel",),
                     )
                 )
             repair.applied = True
@@ -104,9 +208,15 @@ def execute_shape_repairs(
                 continue
             for region in targets:
                 region.extents = (region.extents[0], region.extents[1], region.extents[2] * 1.18)
-                add_feature_primitives(
-                    panel_frame_features(
-                        _component_from_region(working, region), depth_scale=1.22, thickness_scale=1.02
+                executed_operations.extend(
+                    add_feature_primitives(
+                        panel_frame_features(
+                            _component_from_region(working, region),
+                            depth_scale=1.22,
+                            thickness_scale=1.02,
+                        ),
+                        repair,
+                        ("op.trim_band",),
                     )
                 )
             repair.applied = True
@@ -122,8 +232,12 @@ def execute_shape_repairs(
             for region in targets:
                 x, y, z = region.center
                 region.center = (x * 1.10 if x != 0 else x, y, z)
-                add_feature_primitives(
-                    support_bracket_features(_component_from_region(working, region), depth_scale=1.08)
+                executed_operations.extend(
+                    add_feature_primitives(
+                        support_bracket_features(_component_from_region(working, region), depth_scale=1.08),
+                        repair,
+                        ("op.bracket",),
+                    )
                 )
             repair.applied = True
         elif repair.action == "shroud_exposed_frame":
@@ -131,8 +245,12 @@ def execute_shape_repairs(
             if not pods:
                 continue
             for region in pods:
-                add_feature_primitives(
-                    rotor_shroud_features(_component_from_region(working, region), scale=1.06)
+                executed_operations.extend(
+                    add_feature_primitives(
+                        rotor_shroud_features(_component_from_region(working, region), scale=1.06),
+                        repair,
+                        ("repair.rotor_shroud",),
+                    )
                 )
             repair.applied = True
         elif repair.action == "regularize_symmetry":
@@ -169,14 +287,35 @@ def execute_shape_repairs(
             for region in targets:
                 component = _component_from_region(working, region)
                 if region.component == "handle":
-                    add_feature_primitives(recessed_handle_features(component, depth_scale=1.05))
+                    executed_operations.extend(
+                        add_feature_primitives(
+                            recessed_handle_features(component, depth_scale=1.05),
+                            repair,
+                            ("op.socket",),
+                        )
+                    )
                 elif region.component == "hinge":
-                    add_feature_primitives(hinge_set_features(component, depth_scale=1.0))
+                    executed_operations.extend(
+                        add_feature_primitives(
+                            hinge_set_features(component, depth_scale=1.0),
+                            repair,
+                            ("op.bracket",),
+                        )
+                    )
                 else:
-                    add_feature_primitives(clasp_set_features(component, depth_scale=1.0))
+                    executed_operations.extend(
+                        add_feature_primitives(
+                            clasp_set_features(component, depth_scale=1.0),
+                            repair,
+                            ("op.mount_plate",),
+                        )
+                    )
             repair.applied = True
 
         if repair.applied:
+            if executed_operations:
+                repair.details["executed_operations"] = executed_operations
+                repair.details["generated_primitive_count"] = len(executed_operations)
             custom_applied.append(repair.to_dict())
 
     refreshed = refresh_shape_ir(

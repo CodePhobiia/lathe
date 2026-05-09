@@ -17,6 +17,7 @@ from .mesh import RuntimeMesh
 IMAGE_SIZE = 1024
 PREVIEW_BG = (248, 248, 250, 255)
 LINE_COLOR = (24, 28, 33, 255)
+MAX_PREVIEW_FACES = 25000
 
 
 def _rotation_matrix(x_angle: float, y_angle: float) -> np.ndarray:
@@ -37,7 +38,21 @@ def _rotation_matrix(x_angle: float, y_angle: float) -> np.ndarray:
     return rx @ ry
 
 
-def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "shaded") -> None:
+def _sample_face_indices(face_count: int) -> np.ndarray:
+    if face_count <= MAX_PREVIEW_FACES:
+        return np.arange(face_count, dtype=np.int64)
+    return np.linspace(0, face_count - 1, MAX_PREVIEW_FACES, dtype=np.int64)
+
+
+def _face_normals(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
+    triangles = vertices[faces]
+    normals = np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0])
+    lengths = np.linalg.norm(normals, axis=1)
+    safe_lengths = np.where(lengths > 1e-12, lengths, 1.0)
+    return normals / safe_lengths[:, None]
+
+
+def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "shaded") -> dict[str, object]:
     """Render mesh preview.
 
     Args:
@@ -46,7 +61,18 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
         mode: mode argument.
     """
     mesh = runtime_mesh.mesh
-    vertices = mesh.vertices
+    vertices = np.asarray(mesh.vertices, dtype=np.float64)
+    faces = np.asarray(mesh.faces, dtype=np.int64)
+    if len(vertices) == 0 or len(faces) == 0:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGBA", (IMAGE_SIZE, IMAGE_SIZE), PREVIEW_BG).save(path)
+        return {
+            "status": "empty_mesh_preview",
+            "mode": mode,
+            "face_count": int(len(faces)),
+            "rendered_face_count": 0,
+            "sampled": False,
+        }
     rotation = _rotation_matrix(math.radians(35.264), math.radians(45.0))
     projected = vertices @ rotation.T
     xy = projected[:, :2]
@@ -60,8 +86,11 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
     image = Image.new("RGBA", (IMAGE_SIZE, IMAGE_SIZE), PREVIEW_BG)
     draw = ImageDraw.Draw(image, "RGBA")
 
+    face_indices = _sample_face_indices(len(faces))
+    sampled_faces = faces[face_indices]
+    normals = _face_normals(vertices, sampled_faces)
     triangles = []
-    for face_index, face in enumerate(mesh.faces):
+    for draw_index, (face_index, face) in enumerate(zip(face_indices, sampled_faces, strict=True)):
         pts = [tuple(screen[idx]) for idx in face]
         depth = float(np.mean(z[face]))
         part = (
@@ -71,7 +100,7 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
         )
         color = runtime_mesh.part_colors.get(part, (140, 160, 190))
         brightness = 0.78 + 0.22 * (
-            0.5 + 0.5 * np.clip(np.dot(mesh.face_normals[face_index], np.array([0.5, 0.7, 0.5])), -1, 1)
+            0.5 + 0.5 * np.clip(np.dot(normals[draw_index], np.array([0.5, 0.7, 0.5])), -1, 1)
         )
         shaded = tuple(min(255, max(0, int(channel * brightness))) for channel in color) + (255,)
         triangles.append((depth, pts, shaded))
@@ -87,6 +116,14 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
 
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
+    return {
+        "status": "rendered_sampled_preview" if len(face_indices) < len(faces) else "rendered_preview",
+        "mode": mode,
+        "face_count": int(len(faces)),
+        "rendered_face_count": int(len(face_indices)),
+        "sampled": bool(len(face_indices) < len(faces)),
+        "max_preview_faces": int(MAX_PREVIEW_FACES),
+    }
 
 
 def render_uv_layout(runtime_mesh: RuntimeMesh, path: Path) -> None:

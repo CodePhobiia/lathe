@@ -1,0 +1,141 @@
+// IMAGINATION-TO-LIFE CAPSTONE SHOWCASE.
+//
+// The single .lth source that proves Lathe ships ONE kernel for FIVE
+// procedural domains. Five paradigms shipped in Phase 3 — hard-surface
+// mechanical props (Phase 1 §5.7), vegetation (slice 1), terrain
+// (slice 2), organic SDF creatures (slice 3), and WFC modular
+// composition (slice 4) — all coexist inside a single mesh_program{}
+// block, producing a complete scene from one shape stage call, one
+// topology pipeline, and one GLB output.
+//
+// Scene contents:
+//
+//   * 30m x 30m rolling-hills heightfield ground plane.
+//   * Two procedural trees scattered on the terrain.
+//   * One mechanical chest with rivet grid + trim band.
+//   * One alien guardian creature built from smooth-blended SDF
+//     capsules + sphere head.
+//   * One small ruined dungeon corridor assembled by WFC from floor
+//     and wall modules.
+//
+// Author writes ~30 functional lines. The kernel does the rest.
+module demo.showcase
+
+asset alien_grove : hard_surface_prop {
+  intent {
+    role = "alien grove with guardian and ruined dungeon"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 7
+
+      mesh_program {
+        // ===== Terrain =====
+        let ground = terrain_heightfield(
+          extents: [30m, 30m],
+          resolution: 48,
+          scale_z: 4m,
+          seed: 7,
+        )
+        terrain_biome(
+          target: ground,
+          biome: "rolling_hills",
+          roughness: 0.3,
+          peak_density: 0.1,
+        )
+
+        // ===== Vegetation — two trees on the grove =====
+        let trunk_a = vegetation_trunk(
+          height: 6m,
+          base_radius: 30cm,
+          taper: 0.4,
+          segments: 6,
+        )
+        vegetation_canopy(
+          parent: trunk_a,
+          branch_count: 8,
+          leaf_density: 40,
+          leaf_size: 8cm,
+          foliage_radius: 150cm,
+        )
+
+        let trunk_b = vegetation_trunk(
+          height: 5m,
+          base_radius: 25cm,
+          taper: 0.5,
+          segments: 6,
+        ).translate([6m, 0cm, -4m])
+        vegetation_canopy(
+          parent: trunk_b,
+          branch_count: 6,
+          leaf_density: 30,
+          leaf_size: 6cm,
+          foliage_radius: 120cm,
+        )
+
+        // ===== Hard-surface mechanical chest in the grove =====
+        let chest_body = solid_panel(extents: [80cm, 50cm, 50cm])
+              .translate([-3m, 0cm, 5m])
+        op_fastener_grid(
+          target: chest_body,
+          face: "+y",
+          rows: 1,
+          cols: 4,
+          spacing: 18cm,
+          fastener_radius: 15mm,
+          fastener_height: 8mm,
+        )
+        op_trim_band(
+          target: chest_body,
+          axis: "y",
+          width: 4cm,
+          depth: 5mm,
+        )
+
+        // ===== Organic alien guardian via SDFs =====
+        let body = sdf_capsule(half_height: 80cm, radius: 40cm)
+        let arm_l = sdf_capsule(half_height: 60cm, radius: 12cm)
+              .translate([60cm, 0cm, 0cm])
+        let arm_r = sdf_capsule(half_height: 60cm, radius: 12cm)
+              .translate([-60cm, 0cm, 0cm])
+        let head = sdf_sphere(radius: 30cm).translate([0cm, 0cm, 100cm])
+        let alien = sdf_smooth_union(
+          targets: [body, arm_l, arm_r, head],
+          k: 25cm,
+        )
+        sdf_extract(
+          target: alien,
+          resolution: 48,
+          bounds_min: [-1500mm, -1500mm, -500mm],
+          bounds_max: [1500mm, 1500mm, 2m],
+        )
+
+        // ===== WFC modular ruined dungeon corridor =====
+        let dungeon_floor = solid_panel(extents: [3m, 30cm, 3m])
+        let dungeon_wall = solid_panel(extents: [3m, 3m, 30cm])
+        let mod_floor = wfc_module(
+          name: "floor",
+          primitive: dungeon_floor,
+          weight: 0.7,
+        )
+        let mod_wall = wfc_module(
+          name: "wall",
+          primitive: dungeon_wall,
+          weight: 0.3,
+        )
+        let rule_ff = wfc_rule(a: "floor", b: "floor", direction: "x")
+        wfc_modular(
+          canvas_size: [4, 1, 4],
+          cell_size: 3m,
+          modules: [mod_floor, mod_wall],
+          adjacency: [rule_ff],
+          seed: 123,
+        )
+      }
+    }
+  }
+}

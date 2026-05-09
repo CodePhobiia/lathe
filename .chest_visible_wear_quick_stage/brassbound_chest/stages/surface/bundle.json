@@ -1,0 +1,2334 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 4,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm",
+    "ao",
+    "curvature",
+    "id"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 2048,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "edge_dust",
+      "oak_body",
+      "edge_dust",
+      "edge_dust",
+      "aged_brass_trim",
+      "aged_brass_trim",
+      "edge_dust",
+      "aged_brass_trim",
+      "aged_brass_trim",
+      "edge_dust",
+      "edge_dust",
+      "edge_dust",
+      "oak_body",
+      "aged_brass_trim",
+      "aged_brass_trim",
+      "weathered_wood",
+      "edge_dust",
+      "edge_dust"
+    ],
+    "material_slots": 4,
+    "decals": [
+      "crest",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "plank_spacing_hero",
+      "rivet_row_hero",
+      "inventory",
+      "economy",
+      "readable",
+      "functional_accents",
+      "toy_like",
+      "random_faceting",
+      "unreadable_value",
+      "place_motifs_where_they_clarify_function_or_silh"
+    ],
+    "hero_surface": false,
+    "program": "chest_wood_brass_hero",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "plank_spacing_hero",
+      "rivet_row_hero",
+      "inventory",
+      "economy",
+      "readable",
+      "functional_accents",
+      "toy_like",
+      "random_faceting",
+      "unreadable_value",
+      "place_motifs_where_they_clarify_function_or_silh"
+    ],
+    "palette": "fantasy_brassbound",
+    "source_material_zones": [
+      "oak_body",
+      "aged_brass_trim",
+      "velvet_interior"
+    ],
+    "source_bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "edge_dust"
+    ],
+    "surface_story": {
+      "wear_story": "",
+      "wear_level": "",
+      "story_decals": [
+        "crest",
+        "trim_wear"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "prop",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "inventory",
+          "economy",
+          "readable",
+          "functional accents",
+          "toy_like",
+          "random_faceting",
+          "unreadable_value",
+          "place motifs where they clarify function or silhouette"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "inventory",
+        "economy",
+        "readable",
+        "functional accents",
+        "toy_like",
+        "random_faceting",
+        "unreadable_value",
+        "place motifs where they clarify function or silhouette"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": true,
+      "chart_grouping": "part",
+      "material_id_strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base",
+        "lightmap"
+      ],
+      "chart_count": 18,
+      "material_id_count": 4,
+      "part_to_chart": {
+        "access": "uvc_01_access",
+        "body": "uvc_02_body",
+        "facade": "uvc_03_facade",
+        "foliage": "uvc_04_foliage",
+        "foot_l": "uvc_05_foot_l",
+        "foot_r": "uvc_06_foot_r",
+        "front_hatch": "uvc_07_front_hatch",
+        "handle_l": "uvc_08_handle_l",
+        "handle_r": "uvc_09_handle_r",
+        "infrastructure": "uvc_10_infrastructure",
+        "interface": "uvc_11_interface",
+        "interior": "uvc_12_interior",
+        "lid_panel": "uvc_13_lid_panel",
+        "lighting": "uvc_14_lighting",
+        "lock_plate": "uvc_15_lock_plate",
+        "scene_anchor": "uvc_16_scene_anchor",
+        "street_scene": "uvc_17_street_scene",
+        "weapon": "uvc_18_weapon"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_access",
+        "group": "access",
+        "grouping": "part",
+        "island_name": "semantic_access",
+        "parts": [
+          "access"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_02_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_03_facade",
+        "group": "facade",
+        "grouping": "part",
+        "island_name": "semantic_facade",
+        "parts": [
+          "facade"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_04_foliage",
+        "group": "foliage",
+        "grouping": "part",
+        "island_name": "semantic_foliage",
+        "parts": [
+          "foliage"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_05_foot_l",
+        "group": "foot_l",
+        "grouping": "part",
+        "island_name": "semantic_foot_l",
+        "parts": [
+          "foot_l"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_06_foot_r",
+        "group": "foot_r",
+        "grouping": "part",
+        "island_name": "semantic_foot_r",
+        "parts": [
+          "foot_r"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_07_front_hatch",
+        "group": "front_hatch",
+        "grouping": "part",
+        "island_name": "semantic_front_hatch",
+        "parts": [
+          "front_hatch"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_08_handle_l",
+        "group": "handle_l",
+        "grouping": "part",
+        "island_name": "semantic_handle_l",
+        "parts": [
+          "handle_l"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_09_handle_r",
+        "group": "handle_r",
+        "grouping": "part",
+        "island_name": "semantic_handle_r",
+        "parts": [
+          "handle_r"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_10_infrastructure",
+        "group": "infrastructure",
+        "grouping": "part",
+        "island_name": "semantic_infrastructure",
+        "parts": [
+          "infrastructure"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_11_interface",
+        "group": "interface",
+        "grouping": "part",
+        "island_name": "semantic_interface",
+        "parts": [
+          "interface"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_12_interior",
+        "group": "interior",
+        "grouping": "part",
+        "island_name": "semantic_interior",
+        "parts": [
+          "interior"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_13_lid_panel",
+        "group": "lid_panel",
+        "grouping": "part",
+        "island_name": "semantic_lid_panel",
+        "parts": [
+          "lid_panel"
+        ],
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_14_lighting",
+        "group": "lighting",
+        "grouping": "part",
+        "island_name": "semantic_lighting",
+        "parts": [
+          "lighting"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_15_lock_plate",
+        "group": "lock_plate",
+        "grouping": "part",
+        "island_name": "semantic_lock_plate",
+        "parts": [
+          "lock_plate"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_16_scene_anchor",
+        "group": "scene_anchor",
+        "grouping": "part",
+        "island_name": "semantic_scene_anchor",
+        "parts": [
+          "scene_anchor"
+        ],
+        "material": "weathered_wood",
+        "material_id": "matid_04_weathered_wood",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_17_street_scene",
+        "group": "street_scene",
+        "grouping": "part",
+        "island_name": "semantic_street_scene",
+        "parts": [
+          "street_scene"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_18_weapon",
+        "group": "weapon",
+        "grouping": "part",
+        "island_name": "semantic_weapon",
+        "parts": [
+          "weapon"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "count": 4,
+      "ids": [
+        {
+          "material_id": "matid_01_aged_brass_trim",
+          "material": "aged_brass_trim",
+          "parts": [
+            "foot_l",
+            "foot_r",
+            "handle_l",
+            "handle_r",
+            "lighting",
+            "lock_plate"
+          ],
+          "rgb": [
+            216,
+            74,
+            72
+          ]
+        },
+        {
+          "material_id": "matid_02_edge_dust",
+          "material": "edge_dust",
+          "parts": [
+            "access",
+            "facade",
+            "foliage",
+            "front_hatch",
+            "infrastructure",
+            "interface",
+            "interior",
+            "street_scene",
+            "weapon"
+          ],
+          "rgb": [
+            74,
+            137,
+            220
+          ]
+        },
+        {
+          "material_id": "matid_03_oak_body",
+          "material": "oak_body",
+          "parts": [
+            "body",
+            "lid_panel"
+          ],
+          "rgb": [
+            88,
+            178,
+            120
+          ]
+        },
+        {
+          "material_id": "matid_04_weathered_wood",
+          "material": "weathered_wood",
+          "parts": [
+            "scene_anchor"
+          ],
+          "rgb": [
+            231,
+            168,
+            64
+          ]
+        }
+      ],
+      "per_part": {
+        "access": "matid_02_edge_dust",
+        "body": "matid_03_oak_body",
+        "facade": "matid_02_edge_dust",
+        "foliage": "matid_02_edge_dust",
+        "foot_l": "matid_01_aged_brass_trim",
+        "foot_r": "matid_01_aged_brass_trim",
+        "front_hatch": "matid_02_edge_dust",
+        "handle_l": "matid_01_aged_brass_trim",
+        "handle_r": "matid_01_aged_brass_trim",
+        "infrastructure": "matid_02_edge_dust",
+        "interface": "matid_02_edge_dust",
+        "interior": "matid_02_edge_dust",
+        "lid_panel": "matid_03_oak_body",
+        "lighting": "matid_01_aged_brass_trim",
+        "lock_plate": "matid_01_aged_brass_trim",
+        "scene_anchor": "matid_04_weathered_wood",
+        "street_scene": "matid_02_edge_dust",
+        "weapon": "matid_02_edge_dust"
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 19,
+      "placements": [
+        {
+          "decal": "crest",
+          "target_part": "foot_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.658381,
+            0.258115
+          ],
+          "scale": 0.221667,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_01_crest"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "scene_anchor",
+          "material": "weathered_wood",
+          "material_id": "matid_04_weathered_wood",
+          "anchor_uv": [
+            0.655693,
+            0.26071
+          ],
+          "scale": 0.30734,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_02_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.710231,
+            0.208053
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_03_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "scene_anchor",
+          "material": "weathered_wood",
+          "material_id": "matid_04_weathered_wood",
+          "anchor_uv": [
+            0.535394,
+            0.376861
+          ],
+          "scale": 0.264646,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_04_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "facade",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.354185,
+            0.551821
+          ],
+          "scale": 0.382396,
+          "rotation_deg": -6,
+          "layer": "surface",
+          "mask_id": "story_05_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "lid_panel",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.447841,
+            0.461395
+          ],
+          "scale": 0.228577,
+          "rotation_deg": 2,
+          "layer": "surface",
+          "mask_id": "story_06_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "lighting",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.575828,
+            0.337821
+          ],
+          "scale": 0.365691,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_07_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "weapon",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.432212,
+            0.476485
+          ],
+          "scale": 0.363843,
+          "rotation_deg": 1,
+          "layer": "surface",
+          "mask_id": "story_08_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "handle_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.280195,
+            0.62326
+          ],
+          "scale": 0.341508,
+          "rotation_deg": 7,
+          "layer": "surface",
+          "mask_id": "story_09_lower_contact_points"
+        },
+        {
+          "decal": "plank_spacing_hero",
+          "target_part": "weapon",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.554117,
+            0.358784
+          ],
+          "scale": 0.339091,
+          "rotation_deg": 7,
+          "layer": "surface",
+          "mask_id": "story_10_plank_spacing_hero"
+        },
+        {
+          "decal": "rivet_row_hero",
+          "target_part": "foot_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.305316,
+            0.599006
+          ],
+          "scale": 0.35734,
+          "rotation_deg": 5,
+          "layer": "surface",
+          "mask_id": "story_11_rivet_row_hero"
+        },
+        {
+          "decal": "inventory",
+          "target_part": "facade",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.600246,
+            0.314245
+          ],
+          "scale": 0.286549,
+          "rotation_deg": 2,
+          "layer": "surface",
+          "mask_id": "story_12_inventory"
+        },
+        {
+          "decal": "economy",
+          "target_part": "lighting",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.264701,
+            0.63822
+          ],
+          "scale": 0.399885,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_13_economy"
+        },
+        {
+          "decal": "readable",
+          "target_part": "facade",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.531051,
+            0.381054
+          ],
+          "scale": 0.256075,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_14_readable"
+        },
+        {
+          "decal": "functional_accents",
+          "target_part": "lighting",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.479687,
+            0.430647
+          ],
+          "scale": 0.309203,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_15_functional_accents"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "infrastructure",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.542513,
+            0.369988
+          ],
+          "scale": 0.25108,
+          "rotation_deg": 13,
+          "layer": "surface",
+          "mask_id": "story_16_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "scene_anchor",
+          "material": "weathered_wood",
+          "material_id": "matid_04_weathered_wood",
+          "anchor_uv": [
+            0.676481,
+            0.240639
+          ],
+          "scale": 0.348896,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_17_random_faceting"
+        },
+        {
+          "decal": "unreadable_value",
+          "target_part": "street_scene",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.569044,
+            0.344371
+          ],
+          "scale": 0.33015,
+          "rotation_deg": 2,
+          "layer": "surface",
+          "mask_id": "story_18_unreadable_value"
+        },
+        {
+          "decal": "place_motifs_where_they_clarify_function_or_silh",
+          "target_part": "body",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.419055,
+            0.489189
+          ],
+          "scale": 0.315342,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_19_place_motifs_where_they_clarify_function_or_silh"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "access",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "body",
+      "material": "oak_body",
+      "basecolor": [
+        125,
+        82,
+        48
+      ],
+      "metallic": 0.0,
+      "roughness": 0.68,
+      "roughness_range": [
+        0.56,
+        0.82
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "wood_grain",
+      "wear": 0.18,
+      "normal_intensity": 0.12,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "facade",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "foliage",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "foot_l",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "foot_r",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "front_hatch",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "handle_l",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "handle_r",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "infrastructure",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "interface",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "interior",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "lid_panel",
+      "material": "oak_body",
+      "basecolor": [
+        125,
+        82,
+        48
+      ],
+      "metallic": 0.0,
+      "roughness": 0.68,
+      "roughness_range": [
+        0.56,
+        0.82
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "wood_grain",
+      "wear": 0.18,
+      "normal_intensity": 0.12,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "lighting",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "accent",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "lock_plate",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "scene_anchor",
+      "material": "weathered_wood",
+      "basecolor": [
+        125,
+        82,
+        48
+      ],
+      "metallic": 0.0,
+      "roughness": 0.68,
+      "roughness_range": [
+        0.56,
+        0.82
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "wood_grain",
+      "wear": 0.18,
+      "normal_intensity": 0.12,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "street_scene",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "weapon",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 18,
+    "material_id_count": 4,
+    "part_to_chart": {
+      "access": "uvc_01_access",
+      "body": "uvc_02_body",
+      "facade": "uvc_03_facade",
+      "foliage": "uvc_04_foliage",
+      "foot_l": "uvc_05_foot_l",
+      "foot_r": "uvc_06_foot_r",
+      "front_hatch": "uvc_07_front_hatch",
+      "handle_l": "uvc_08_handle_l",
+      "handle_r": "uvc_09_handle_r",
+      "infrastructure": "uvc_10_infrastructure",
+      "interface": "uvc_11_interface",
+      "interior": "uvc_12_interior",
+      "lid_panel": "uvc_13_lid_panel",
+      "lighting": "uvc_14_lighting",
+      "lock_plate": "uvc_15_lock_plate",
+      "scene_anchor": "uvc_16_scene_anchor",
+      "street_scene": "uvc_17_street_scene",
+      "weapon": "uvc_18_weapon"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_access",
+      "group": "access",
+      "grouping": "part",
+      "island_name": "semantic_access",
+      "parts": [
+        "access"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "oak_body",
+      "material_id": "matid_03_oak_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_facade",
+      "group": "facade",
+      "grouping": "part",
+      "island_name": "semantic_facade",
+      "parts": [
+        "facade"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_foliage",
+      "group": "foliage",
+      "grouping": "part",
+      "island_name": "semantic_foliage",
+      "parts": [
+        "foliage"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_foot_l",
+      "group": "foot_l",
+      "grouping": "part",
+      "island_name": "semantic_foot_l",
+      "parts": [
+        "foot_l"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_foot_r",
+      "group": "foot_r",
+      "grouping": "part",
+      "island_name": "semantic_foot_r",
+      "parts": [
+        "foot_r"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_front_hatch",
+      "group": "front_hatch",
+      "grouping": "part",
+      "island_name": "semantic_front_hatch",
+      "parts": [
+        "front_hatch"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_08_handle_l",
+      "group": "handle_l",
+      "grouping": "part",
+      "island_name": "semantic_handle_l",
+      "parts": [
+        "handle_l"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_09_handle_r",
+      "group": "handle_r",
+      "grouping": "part",
+      "island_name": "semantic_handle_r",
+      "parts": [
+        "handle_r"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_10_infrastructure",
+      "group": "infrastructure",
+      "grouping": "part",
+      "island_name": "semantic_infrastructure",
+      "parts": [
+        "infrastructure"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_11_interface",
+      "group": "interface",
+      "grouping": "part",
+      "island_name": "semantic_interface",
+      "parts": [
+        "interface"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_12_interior",
+      "group": "interior",
+      "grouping": "part",
+      "island_name": "semantic_interior",
+      "parts": [
+        "interior"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_13_lid_panel",
+      "group": "lid_panel",
+      "grouping": "part",
+      "island_name": "semantic_lid_panel",
+      "parts": [
+        "lid_panel"
+      ],
+      "material": "oak_body",
+      "material_id": "matid_03_oak_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_14_lighting",
+      "group": "lighting",
+      "grouping": "part",
+      "island_name": "semantic_lighting",
+      "parts": [
+        "lighting"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_15_lock_plate",
+      "group": "lock_plate",
+      "grouping": "part",
+      "island_name": "semantic_lock_plate",
+      "parts": [
+        "lock_plate"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_16_scene_anchor",
+      "group": "scene_anchor",
+      "grouping": "part",
+      "island_name": "semantic_scene_anchor",
+      "parts": [
+        "scene_anchor"
+      ],
+      "material": "weathered_wood",
+      "material_id": "matid_04_weathered_wood",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_17_street_scene",
+      "group": "street_scene",
+      "grouping": "part",
+      "island_name": "semantic_street_scene",
+      "parts": [
+        "street_scene"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_18_weapon",
+      "group": "weapon",
+      "grouping": "part",
+      "island_name": "semantic_weapon",
+      "parts": [
+        "weapon"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 4,
+    "ids": [
+      {
+        "material_id": "matid_01_aged_brass_trim",
+        "material": "aged_brass_trim",
+        "parts": [
+          "foot_l",
+          "foot_r",
+          "handle_l",
+          "handle_r",
+          "lighting",
+          "lock_plate"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_edge_dust",
+        "material": "edge_dust",
+        "parts": [
+          "access",
+          "facade",
+          "foliage",
+          "front_hatch",
+          "infrastructure",
+          "interface",
+          "interior",
+          "street_scene",
+          "weapon"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      },
+      {
+        "material_id": "matid_03_oak_body",
+        "material": "oak_body",
+        "parts": [
+          "body",
+          "lid_panel"
+        ],
+        "rgb": [
+          88,
+          178,
+          120
+        ]
+      },
+      {
+        "material_id": "matid_04_weathered_wood",
+        "material": "weathered_wood",
+        "parts": [
+          "scene_anchor"
+        ],
+        "rgb": [
+          231,
+          168,
+          64
+        ]
+      }
+    ],
+    "per_part": {
+      "access": "matid_02_edge_dust",
+      "body": "matid_03_oak_body",
+      "facade": "matid_02_edge_dust",
+      "foliage": "matid_02_edge_dust",
+      "foot_l": "matid_01_aged_brass_trim",
+      "foot_r": "matid_01_aged_brass_trim",
+      "front_hatch": "matid_02_edge_dust",
+      "handle_l": "matid_01_aged_brass_trim",
+      "handle_r": "matid_01_aged_brass_trim",
+      "infrastructure": "matid_02_edge_dust",
+      "interface": "matid_02_edge_dust",
+      "interior": "matid_02_edge_dust",
+      "lid_panel": "matid_03_oak_body",
+      "lighting": "matid_01_aged_brass_trim",
+      "lock_plate": "matid_01_aged_brass_trim",
+      "scene_anchor": "matid_04_weathered_wood",
+      "street_scene": "matid_02_edge_dust",
+      "weapon": "matid_02_edge_dust"
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 19,
+    "placements": [
+      {
+        "decal": "crest",
+        "target_part": "foot_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.658381,
+          0.258115
+        ],
+        "scale": 0.221667,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_01_crest"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "scene_anchor",
+        "material": "weathered_wood",
+        "material_id": "matid_04_weathered_wood",
+        "anchor_uv": [
+          0.655693,
+          0.26071
+        ],
+        "scale": 0.30734,
+        "rotation_deg": 11,
+        "layer": "surface",
+        "mask_id": "story_02_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.710231,
+          0.208053
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_03_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "scene_anchor",
+        "material": "weathered_wood",
+        "material_id": "matid_04_weathered_wood",
+        "anchor_uv": [
+          0.535394,
+          0.376861
+        ],
+        "scale": 0.264646,
+        "rotation_deg": -8,
+        "layer": "surface",
+        "mask_id": "story_04_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "facade",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.354185,
+          0.551821
+        ],
+        "scale": 0.382396,
+        "rotation_deg": -6,
+        "layer": "surface",
+        "mask_id": "story_05_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "lid_panel",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.447841,
+          0.461395
+        ],
+        "scale": 0.228577,
+        "rotation_deg": 2,
+        "layer": "surface",
+        "mask_id": "story_06_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "lighting",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.575828,
+          0.337821
+        ],
+        "scale": 0.365691,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_07_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "weapon",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.432212,
+          0.476485
+        ],
+        "scale": 0.363843,
+        "rotation_deg": 1,
+        "layer": "surface",
+        "mask_id": "story_08_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "handle_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.280195,
+          0.62326
+        ],
+        "scale": 0.341508,
+        "rotation_deg": 7,
+        "layer": "surface",
+        "mask_id": "story_09_lower_contact_points"
+      },
+      {
+        "decal": "plank_spacing_hero",
+        "target_part": "weapon",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.554117,
+          0.358784
+        ],
+        "scale": 0.339091,
+        "rotation_deg": 7,
+        "layer": "surface",
+        "mask_id": "story_10_plank_spacing_hero"
+      },
+      {
+        "decal": "rivet_row_hero",
+        "target_part": "foot_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.305316,
+          0.599006
+        ],
+        "scale": 0.35734,
+        "rotation_deg": 5,
+        "layer": "surface",
+        "mask_id": "story_11_rivet_row_hero"
+      },
+      {
+        "decal": "inventory",
+        "target_part": "facade",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.600246,
+          0.314245
+        ],
+        "scale": 0.286549,
+        "rotation_deg": 2,
+        "layer": "surface",
+        "mask_id": "story_12_inventory"
+      },
+      {
+        "decal": "economy",
+        "target_part": "lighting",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.264701,
+          0.63822
+        ],
+        "scale": 0.399885,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_13_economy"
+      },
+      {
+        "decal": "readable",
+        "target_part": "facade",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.531051,
+          0.381054
+        ],
+        "scale": 0.256075,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_14_readable"
+      },
+      {
+        "decal": "functional_accents",
+        "target_part": "lighting",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.479687,
+          0.430647
+        ],
+        "scale": 0.309203,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_15_functional_accents"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "infrastructure",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.542513,
+          0.369988
+        ],
+        "scale": 0.25108,
+        "rotation_deg": 13,
+        "layer": "surface",
+        "mask_id": "story_16_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "scene_anchor",
+        "material": "weathered_wood",
+        "material_id": "matid_04_weathered_wood",
+        "anchor_uv": [
+          0.676481,
+          0.240639
+        ],
+        "scale": 0.348896,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_17_random_faceting"
+      },
+      {
+        "decal": "unreadable_value",
+        "target_part": "street_scene",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.569044,
+          0.344371
+        ],
+        "scale": 0.33015,
+        "rotation_deg": 2,
+        "layer": "surface",
+        "mask_id": "story_18_unreadable_value"
+      },
+      {
+        "decal": "place_motifs_where_they_clarify_function_or_silh",
+        "target_part": "body",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.419055,
+          0.489189
+        ],
+        "scale": 0.315342,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_19_place_motifs_where_they_clarify_function_or_silh"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

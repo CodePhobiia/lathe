@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
@@ -1945,6 +1946,14 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "resources_required": ("resources_required", "resources"),
     "supplies": ("supplies", "goods"),
     "dock_count": ("dock_count", "pier_count"),
+    "buildings": ("building_count", "buildings", "structure_count"),
+    "building_count": ("building_count", "buildings", "structure_count"),
+    "roads": ("road_count", "roads", "route_count"),
+    "road_count": ("road_count", "roads", "route_count"),
+    "terrain_patches": ("terrain_patch_count", "terrain_slot_count", "landform_count"),
+    "terrain_patch_count": ("terrain_patch_count", "terrain_slot_count", "landform_count"),
+    "infrastructure_nodes": ("infrastructure_count", "utility_count", "service_count"),
+    "infrastructure_count": ("infrastructure_count", "utility_count", "service_count"),
     "vehicles": ("vehicle_count", "vehicles"),
     "vehicle_count": ("vehicle_count", "vehicles"),
     "boats": ("boat_count", "boats"),
@@ -1961,12 +1970,24 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "child_socket_count": ("child_socket_count", "module_socket_count"),
     "child_module_count": ("child_module_count", "module_slot_count"),
     "module_slot_count": ("module_slot_count", "child_module_count"),
+    "building_slot_count": ("building_slot_count", "building_count", "buildings"),
+    "road_slot_count": ("road_slot_count", "road_count", "routes"),
+    "terrain_slot_count": ("terrain_slot_count", "terrain_patch_count", "terrain_count"),
+    "infrastructure_slot_count": ("infrastructure_slot_count", "infrastructure_count", "utility_count"),
     "vehicle_slot_count": ("vehicle_slot_count", "vehicle_count"),
     "boat_slot_count": ("boat_slot_count", "boat_count"),
     "machine_slot_count": ("machine_slot_count", "machine_count"),
     "interior_slot_count": ("interior_slot_count", "interior_module_count", "interior_count"),
     "furniture_slot_count": ("furniture_slot_count", "furniture_cluster_count", "furniture_count"),
     "foliage_slot_count": ("foliage_slot_count", "foliage_cluster_count", "foliage_count"),
+    "building_module": ("building_module", "building_template", "building_archetype"),
+    "building_modules": ("building_modules", "building_module_templates"),
+    "road_module": ("road_module", "road_template", "road_archetype"),
+    "road_modules": ("road_modules", "road_module_templates"),
+    "terrain_module": ("terrain_module", "terrain_template", "terrain_archetype"),
+    "terrain_modules": ("terrain_modules", "terrain_module_templates"),
+    "infrastructure_module": ("infrastructure_module", "infrastructure_template", "infrastructure_archetype"),
+    "infrastructure_modules": ("infrastructure_modules", "infrastructure_module_templates"),
     "vehicle_module": ("vehicle_module", "vehicle_template", "vehicle_archetype"),
     "vehicle_modules": ("vehicle_modules", "vehicle_module_templates"),
     "boat_module": ("boat_module", "boat_template", "boat_archetype"),
@@ -1982,7 +2003,19 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "child_module_template": ("child_module_template",),
     "apron_count": ("apron_count",),
 }
-_CHILD_MODULE_KINDS = ("vehicle", "boat", "machine", "interior", "furniture", "foliage", "generic")
+_CHILD_MODULE_KINDS = (
+    "building",
+    "road",
+    "terrain",
+    "infrastructure",
+    "vehicle",
+    "boat",
+    "machine",
+    "interior",
+    "furniture",
+    "foliage",
+    "generic",
+)
 _CHILD_MODULE_MAPPING_KEYS = {
     "child_modules",
     "module_overrides",
@@ -2017,6 +2050,53 @@ _CHILD_MODULE_DIRECT_KEYS = {
     "module_slot_count",
     "module_socket_count",
 }
+_SCENE_MODULE_KIND_HINTS: dict[str, tuple[str, ...]] = {
+    "building": ("building", "structure", "tower", "facade", "workshop", "hangar", "warehouse", "house"),
+    "road": ("road", "route", "street", "lane", "path", "walkway", "track", "spine"),
+    "terrain": ("terrain", "ground", "landform", "hill", "mound", "plateau", "cliff", "earth"),
+    "infrastructure": ("infrastructure", "utility", "pipe", "power", "substation", "transformer", "service"),
+    "vehicle": ("vehicle", "rover", "drone", "car", "truck", "buggy", "tug", "crawler"),
+    "boat": ("boat", "ship", "vessel", "watercraft", "skiff", "barge", "harbor"),
+    "machine": ("machine", "crane", "gantry", "conveyor", "console", "mechanism", "generator", "assembler"),
+    "interior": ("room", "interior", "corridor", "chamber", "pod", "bay", "hab", "quarters"),
+    "furniture": ("furniture", "table", "chair", "counter", "shelf", "cabinet", "fixture", "bench"),
+    "foliage": ("foliage", "tree", "plant", "rock", "garden", "shrub", "boulder", "moss"),
+    "generic": ("module", "kit", "prop", "attachment", "socket", "crate", "container", "panel"),
+}
+_SCENE_MODULE_KIND_BY_FAMILY: dict[str, str] = {
+    "procedural_building": "building",
+    "procedural_road": "road",
+    "procedural_bridge": "road",
+    "procedural_access": "road",
+    "procedural_terrain": "terrain",
+    "procedural_infrastructure": "infrastructure",
+    "procedural_vehicle": "vehicle",
+    "procedural_boat": "boat",
+    "procedural_machine": "machine",
+    "procedural_interior": "interior",
+    "procedural_furniture": "furniture",
+    "procedural_foliage": "foliage",
+}
+_SCENE_MODULE_TEMPLATE_KEYS = (
+    "module_template",
+    "child_module_template",
+    "template",
+    "archetype",
+    "object_archetype",
+    "loadout",
+    "family_loadout",
+    "building_loadout",
+    "road_loadout",
+    "terrain_loadout",
+    "infrastructure_loadout",
+    "vehicle_loadout",
+    "boat_loadout",
+    "vessel_loadout",
+    "machine_loadout",
+    "furniture_type",
+    "fixture_type",
+    "content_asset_type",
+)
 _ASSEMBLY_SURFACE_ZONES: dict[str, dict[str, str]] = {
     "rack": {
         "assembly_anchor": "industrial_steel",
@@ -3160,6 +3240,7 @@ def _asset_source_text(
         objects=objects,
         task=task,
         procedural_family=procedural_family,
+        child_module_layout=child_module_layout,
     )
     connection_layout = connection_layout_from_authoring(
         family=procedural_family or "",
@@ -3790,6 +3871,11 @@ def _shape_controls_for_generated_asset(
     if isinstance(state_overrides, Mapping):
         _merge_state_shape_controls(controls, state_overrides)
     controls.update(_transform_shape_controls(objects, procedural_family=procedural_family))
+    for key, value in _scene_object_module_shape_controls(
+        objects,
+        procedural_family=procedural_family,
+    ).items():
+        controls.setdefault(key, value)
     for obj in objects:
         state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
         building_controls = state.get("building_envelope_controls") if isinstance(state, Mapping) else {}
@@ -4247,6 +4333,7 @@ def _interface_controls_for_generated_asset(
     objects: list[Mapping[str, Any]],
     task: Mapping[str, Any],
     procedural_family: str | None,
+    child_module_layout: Mapping[str, Any] | None = None,
 ) -> dict[str, list[Any]]:
     controls: dict[str, list[Any]] = {"sockets": [], "anchors": [], "pivots": [], "connections": []}
     defaults = _PROCEDURAL_INTERFACE_DEFAULTS.get(procedural_family or "")
@@ -4267,6 +4354,7 @@ def _interface_controls_for_generated_asset(
         scene_graph=scene_graph,
         objects=objects,
         procedural_family=procedural_family,
+        child_module_layout=child_module_layout,
     )
     overrides = task.get("asset_overrides") if isinstance(task.get("asset_overrides"), Mapping) else {}
     state_overrides = overrides.get("state") if isinstance(overrides.get("state"), Mapping) else {}
@@ -4362,10 +4450,12 @@ def _merge_scene_relationship_connections(
     scene_graph: Mapping[str, Any],
     objects: list[Mapping[str, Any]],
     procedural_family: str | None,
+    child_module_layout: Mapping[str, Any] | None,
 ) -> None:
     object_ids = {str(obj.get("object_id")) for obj in objects if isinstance(obj.get("object_id"), str)}
     if not object_ids:
         return
+    slot_refs = _scene_relationship_slot_refs(objects, child_module_layout)
     for relationship in scene_graph.get("relationships", []) or []:
         if not isinstance(relationship, Mapping):
             continue
@@ -4378,20 +4468,33 @@ def _merge_scene_relationship_connections(
         if not from_local and not to_local:
             continue
         relation = str(relationship.get("type") or "connects_to")
-        source_endpoint = (
-            _relationship_local_endpoint(procedural_family, relation, outbound=True)
-            if from_local
-            else _scene_endpoint_ref(source_ref)
+        source_slot = slot_refs.get(source_ref) if from_local else None
+        target_slot = slot_refs.get(target_ref) if to_local else None
+        source_endpoint, source_role = _scene_relationship_endpoint(
+            source_slot,
+            procedural_family=procedural_family,
+            relation=relation,
+            outbound=True,
+            external_ref=source_ref if not from_local else "",
         )
-        target_endpoint = (
-            _relationship_local_endpoint(procedural_family, relation, outbound=False)
-            if to_local
-            else _scene_endpoint_ref(target_ref)
+        target_endpoint, target_role = _scene_relationship_endpoint(
+            target_slot,
+            procedural_family=procedural_family,
+            relation=relation,
+            outbound=False,
+            external_ref=target_ref if not to_local else "",
         )
         if from_local:
-            target["anchors"].append(_slug(source_endpoint, fallback="anchor"))
+            _append_relationship_endpoint(target, source_endpoint, role=source_role)
         if to_local:
-            target["anchors"].append(_slug(target_endpoint, fallback="anchor"))
+            _append_relationship_endpoint(target, target_endpoint, role=target_role)
+        metadata = _scene_relationship_metadata(
+            relationship,
+            source_ref=source_ref,
+            target_ref=target_ref,
+            source_slot=source_slot,
+            target_slot=target_slot,
+        )
         target["connections"].append(
             {
                 "id": _slug(
@@ -4401,8 +4504,103 @@ def _merge_scene_relationship_connections(
                 "source": source_endpoint,
                 "target": target_endpoint,
                 "relation": relation,
+                "metadata": metadata,
             }
         )
+
+
+def _scene_relationship_slot_refs(
+    objects: list[Mapping[str, Any]],
+    child_module_layout: Mapping[str, Any] | None,
+) -> dict[str, dict[str, Any]]:
+    if not isinstance(child_module_layout, Mapping):
+        return {}
+    raw_slots = child_module_layout.get("slots")
+    if not isinstance(raw_slots, Sequence) or isinstance(raw_slots, str | bytes | bytearray):
+        return {}
+    slots = [slot for slot in raw_slots if isinstance(slot, Mapping)]
+    if not slots:
+        return {}
+    object_index = _objects_by_id({"objects": objects})
+    slots_by_id = {str(slot.get("id") or ""): slot for slot in slots if str(slot.get("id") or "")}
+    indexes_by_kind: dict[str, int] = {}
+    refs: dict[str, dict[str, Any]] = {}
+    for obj in objects:
+        object_id = str(obj.get("object_id") or "")
+        if not object_id:
+            continue
+        kind = _scene_object_module_kind(obj)
+        if not kind:
+            continue
+        if _scene_object_position(obj, object_index=object_index) is None:
+            continue
+        index = indexes_by_kind.get(kind, 0)
+        indexes_by_kind[kind] = index + 1
+        slot_id = f"{kind}_{index:02d}"
+        slot = slots_by_id.get(slot_id)
+        if not isinstance(slot, Mapping):
+            continue
+        position = _numeric_vector3(slot.get("normalized_position")) or [0.0, 0.0, 0.0]
+        refs[object_id] = {
+            "slot_id": slot_id,
+            "kind": kind,
+            "socket": str(slot.get("socket") or f"module_socket_{slot_id}"),
+            "anchor": str(slot.get("anchor") or f"{kind}_mount_{index:02d}"),
+            "normalized_position": position,
+        }
+    return refs
+
+
+def _scene_relationship_endpoint(
+    slot_ref: Mapping[str, Any] | None,
+    *,
+    procedural_family: str | None,
+    relation: str,
+    outbound: bool,
+    external_ref: str,
+) -> tuple[str, str]:
+    if external_ref:
+        return _scene_endpoint_ref(external_ref), "external"
+    if slot_ref:
+        relation_key = relation.lower()
+        if outbound or relation_key in {"connects_to", "routes_to", "opens_to"}:
+            return str(slot_ref.get("socket") or ""), "socket"
+        return str(slot_ref.get("anchor") or ""), "anchor"
+    return _relationship_local_endpoint(procedural_family, relation, outbound=outbound), "anchor"
+
+
+def _append_relationship_endpoint(target: dict[str, list[Any]], endpoint: str, *, role: str) -> None:
+    if not endpoint or role == "external":
+        return
+    bucket = "sockets" if role == "socket" else "anchors"
+    target[bucket].append(_slug(endpoint, fallback=role))
+
+
+def _scene_relationship_metadata(
+    relationship: Mapping[str, Any],
+    *,
+    source_ref: str,
+    target_ref: str,
+    source_slot: Mapping[str, Any] | None,
+    target_slot: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    metadata: dict[str, Any] = {
+        "scene_relationship_id": str(relationship.get("relationship_id") or ""),
+        "scene_relationship_from": source_ref,
+        "scene_relationship_to": target_ref,
+        "scene_relationship_endpoint_mode": "child_module_slot"
+        if source_slot or target_slot
+        else "family_endpoint",
+    }
+    if source_slot:
+        metadata["source_slot_id"] = str(source_slot.get("slot_id") or "")
+        metadata["source_slot_kind"] = str(source_slot.get("kind") or "")
+        metadata["source_normalized_position"] = list(source_slot.get("normalized_position") or [0.0, 0.0, 0.0])
+    if target_slot:
+        metadata["target_slot_id"] = str(target_slot.get("slot_id") or "")
+        metadata["target_slot_kind"] = str(target_slot.get("kind") or "")
+        metadata["target_normalized_position"] = list(target_slot.get("normalized_position") or [0.0, 0.0, 0.0])
+    return metadata
 
 
 def _scene_endpoint_ref(value: str) -> str:
@@ -4527,6 +4725,365 @@ def _assembly_count(state: Mapping[str, Any]) -> int:
 
 def _dedupe_identifiers(values: Sequence[str]) -> list[str]:
     return list(dict.fromkeys(_slug(value, fallback="interface") for value in values if value))
+
+
+def _scene_object_module_shape_controls(
+    objects: list[Mapping[str, Any]],
+    *,
+    procedural_family: str | None,
+) -> dict[str, Any]:
+    if procedural_family != "procedural_setpiece" or len(objects) < 2:
+        return {}
+
+    object_index = _objects_by_id({"objects": objects})
+    entries: list[dict[str, Any]] = []
+    for obj in objects:
+        kind = _scene_object_module_kind(obj)
+        position = _scene_object_position(obj, object_index=object_index)
+        if not kind or position is None:
+            continue
+        entries.append(
+            {
+                "kind": kind,
+                "position": position,
+                "facing_degrees": _scene_object_facing_degrees(obj, object_index=object_index),
+                "template": _scene_object_module_template(obj, kind=kind),
+                "uses_parent_space": _scene_object_uses_parent_space(obj),
+            }
+        )
+    if len(entries) < 2:
+        return {}
+
+    depth_axis = _scene_module_depth_axis(entries)
+    normalized_positions = _normalized_scene_module_positions(entries, depth_axis=depth_axis)
+    by_kind: dict[str, int] = {}
+    controls: dict[str, Any] = {
+        "scene_module_layout": "scene_transform",
+        "scene_module_position_source": "transform.position",
+        "scene_module_depth_axis": "z" if depth_axis == 2 else "y",
+        "scene_module_source_count": len(entries),
+        "scene_module_transform_space": "mixed_parent_local"
+        if any(bool(entry.get("uses_parent_space")) for entry in entries)
+        else "world",
+        "child_socket_count": len(entries),
+        "module_socket_count": len(entries),
+        "module_slot_count": len(entries),
+    }
+    slot_ids: list[str] = []
+    slot_kinds: list[str] = []
+    for entry, normalized_position in zip(entries, normalized_positions, strict=True):
+        kind = str(entry["kind"])
+        index = by_kind.get(kind, 0)
+        by_kind[kind] = index + 1
+        slot_id = f"{kind}_{index:02d}"
+        slot_key = f"{kind}_slot_{index:02d}"
+        slot_ids.append(slot_id)
+        slot_kinds.append(kind)
+        controls[f"{slot_key}_position"] = normalized_position
+        controls[f"{slot_key}_facing_degrees"] = float(entry["facing_degrees"])
+        controls[f"connection_endpoint_module_socket_{slot_id}_position"] = normalized_position
+        controls[f"connection_endpoint_{kind}_mount_{index:02d}_position"] = normalized_position
+        if entry.get("template"):
+            controls[f"{slot_key}_module"] = str(entry["template"])
+    for kind, count in by_kind.items():
+        controls[f"{kind}_slot_count"] = count
+    controls["child_module_count"] = sum(count for kind, count in by_kind.items() if kind != "generic")
+    controls["child_module_slots"] = slot_ids
+    controls["child_module_slot_kinds"] = slot_kinds
+    return controls
+
+
+def _scene_object_module_kind(obj: Mapping[str, Any]) -> str | None:
+    state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
+    if isinstance(state, Mapping):
+        for key in ("child_module_kind", "module_kind", "setpiece_module_kind"):
+            value = state.get(key)
+            if isinstance(value, str):
+                token = _slug(value, fallback="module")
+                if token in _CHILD_MODULE_KINDS:
+                    return token
+    for field in ("source_family", "lathe_asset", "source_asset", "source_kit"):
+        value = obj.get(field)
+        if isinstance(value, str):
+            kind = _SCENE_MODULE_KIND_BY_FAMILY.get(_slug(value, fallback="family"))
+            if kind:
+                return kind
+    tokens = _scene_object_module_tokens(obj)
+    for kind in _CHILD_MODULE_KINDS:
+        if kind == "generic":
+            continue
+        if tokens.intersection(_SCENE_MODULE_KIND_HINTS[kind]):
+            return kind
+    if tokens.intersection(_SCENE_MODULE_KIND_HINTS["generic"]):
+        return "generic"
+    return None
+
+
+def _scene_object_module_tokens(obj: Mapping[str, Any]) -> set[str]:
+    raw_parts: list[str] = []
+    for field in (
+        "object_id",
+        "name",
+        "role",
+        "lathe_asset",
+        "source_family",
+        "source_asset",
+        "source_kit",
+        "variant",
+    ):
+        value = obj.get(field)
+        if isinstance(value, str):
+            raw_parts.append(value)
+    tags = obj.get("semantic_tags")
+    if isinstance(tags, Sequence) and not isinstance(tags, str | bytes | bytearray):
+        raw_parts.extend(str(tag) for tag in tags if isinstance(tag, str))
+    state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
+    if isinstance(state, Mapping):
+        for key in (
+            "module_kind",
+            "child_module_kind",
+            "setpiece_module_kind",
+            "archetype",
+            "object_archetype",
+            "loadout",
+            "family_loadout",
+            "vehicle_loadout",
+            "vehicle_archetype",
+            "boat_loadout",
+            "boat_archetype",
+            "vessel_loadout",
+            "vessel_archetype",
+            "machine_loadout",
+            "machine_archetype",
+            "furniture_type",
+            "fixture_type",
+            "content_asset_type",
+        ):
+            value = state.get(key)
+            if isinstance(value, str):
+                raw_parts.append(value)
+    tokens: set[str] = set()
+    for part in raw_parts:
+        tokens.update(token for token in _NON_IDENTIFIER_RE.sub("_", part.lower()).split("_") if token)
+    return tokens
+
+
+def _scene_object_module_template(obj: Mapping[str, Any], *, kind: str) -> str:
+    state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
+    if isinstance(state, Mapping):
+        for key in (
+            f"{kind}_module",
+            f"{kind}_template",
+            f"{kind}_archetype",
+            f"{kind}_loadout",
+            *_SCENE_MODULE_TEMPLATE_KEYS,
+        ):
+            template = _scene_module_template_value(state.get(key))
+            if template:
+                return template
+    for key in ("lathe_asset", "source_asset", "source_kit", "variant"):
+        template = _scene_module_template_value(obj.get(key))
+        if template:
+            return template
+    return ""
+
+
+def _scene_module_template_value(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    token = _slug(value, fallback="module")
+    if token.startswith("procedural_") or token in {*_CHILD_MODULE_KINDS, "module", "asset", "object", "scene"}:
+        return ""
+    return token
+
+
+def _scene_object_position(
+    obj: Mapping[str, Any],
+    *,
+    object_index: Mapping[str, Mapping[str, Any]] | None = None,
+    stack: tuple[str, ...] = (),
+) -> list[float] | None:
+    transform = obj.get("transform") if isinstance(obj.get("transform"), Mapping) else {}
+    if not isinstance(transform, Mapping):
+        return None
+    local_position = _numeric_vector3(transform.get("position"))
+    if local_position is None:
+        return None
+    if object_index is None or not _scene_object_uses_parent_space(obj):
+        return local_position
+    parent_id = _scene_object_parent_ref(obj)
+    if not parent_id or parent_id in stack:
+        return local_position
+    parent = object_index.get(parent_id)
+    if not isinstance(parent, Mapping):
+        return local_position
+    parent_position = _scene_object_position(parent, object_index=object_index, stack=(*stack, parent_id))
+    if parent_position is None:
+        return local_position
+    parent_transform = parent.get("transform") if isinstance(parent.get("transform"), Mapping) else {}
+    parent_rotation = _numeric_vector3(parent_transform.get("rotation") if isinstance(parent_transform, Mapping) else None) or [0.0, 0.0, 0.0]
+    parent_scale = _numeric_vector3(parent_transform.get("scale") if isinstance(parent_transform, Mapping) else None) or [1.0, 1.0, 1.0]
+    return _compose_parent_local_position(
+        parent_position=parent_position,
+        parent_rotation=parent_rotation,
+        parent_scale=parent_scale,
+        local_position=local_position,
+    )
+
+
+def _scene_object_facing_degrees(
+    obj: Mapping[str, Any],
+    *,
+    object_index: Mapping[str, Mapping[str, Any]] | None = None,
+    stack: tuple[str, ...] = (),
+) -> float:
+    state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
+    local_facing: float | None = None
+    if isinstance(state, Mapping):
+        for key in ("facing_degrees", "module_facing_degrees", "yaw_degrees", "rotation_degrees"):
+            value = _numeric_float(state.get(key))
+            if value is not None:
+                local_facing = round(value, 6)
+                break
+    if local_facing is None:
+        transform = obj.get("transform") if isinstance(obj.get("transform"), Mapping) else {}
+        rotation = _numeric_vector3(transform.get("rotation") if isinstance(transform, Mapping) else None)
+        if rotation is None:
+            local_facing = 0.0
+        else:
+            yaw = rotation[2]
+            if abs(yaw) <= 1.0e-9 and abs(rotation[1]) > 1.0e-9:
+                yaw = rotation[1]
+            local_facing = round(yaw, 6)
+    if object_index is None or not _scene_object_uses_parent_space(obj):
+        return local_facing
+    parent_id = _scene_object_parent_ref(obj)
+    if not parent_id or parent_id in stack:
+        return local_facing
+    parent = object_index.get(parent_id)
+    if not isinstance(parent, Mapping):
+        return local_facing
+    return round(
+        local_facing
+        + _scene_object_facing_degrees(parent, object_index=object_index, stack=(*stack, parent_id)),
+        6,
+    )
+
+
+def _scene_object_uses_parent_space(obj: Mapping[str, Any]) -> bool:
+    state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
+    if not isinstance(state, Mapping):
+        return False
+    for key in ("transform_space", "position_space", "placement_space"):
+        value = state.get(key)
+        if isinstance(value, str) and _slug(value, fallback="space") in {"local", "parent", "parent_local", "relative"}:
+            return True
+    return any(state.get(key) is True for key in ("local_to_parent", "parent_space", "relative_transform"))
+
+
+def _scene_object_parent_ref(obj: Mapping[str, Any]) -> str:
+    state = obj.get("state") if isinstance(obj.get("state"), Mapping) else {}
+    if isinstance(state, Mapping):
+        for key in ("parent_object", "parent", "assembly_parent", "assembly_target"):
+            value = state.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    value = obj.get("parent_object") or obj.get("parent")
+    return value.strip() if isinstance(value, str) and value.strip() else ""
+
+
+def _compose_parent_local_position(
+    *,
+    parent_position: Sequence[float],
+    parent_rotation: Sequence[float],
+    parent_scale: Sequence[float],
+    local_position: Sequence[float],
+) -> list[float]:
+    scaled = [
+        float(local_position[axis]) * float(parent_scale[axis])
+        for axis in range(3)
+    ]
+    yaw = math.radians(float(parent_rotation[2])) if len(parent_rotation) >= 3 else 0.0
+    cos_yaw = math.cos(yaw)
+    sin_yaw = math.sin(yaw)
+    rotated_x = scaled[0] * cos_yaw - scaled[1] * sin_yaw
+    rotated_y = scaled[0] * sin_yaw + scaled[1] * cos_yaw
+    rotated_z = scaled[2]
+    return [
+        round(float(parent_position[0]) + rotated_x, 6),
+        round(float(parent_position[1]) + rotated_y, 6),
+        round(float(parent_position[2]) + rotated_z, 6),
+    ]
+
+
+def _scene_module_depth_axis(entries: Sequence[Mapping[str, Any]]) -> int:
+    y_values = [float(entry["position"][1]) for entry in entries if isinstance(entry.get("position"), Sequence)]
+    z_values = [float(entry["position"][2]) for entry in entries if isinstance(entry.get("position"), Sequence)]
+    if _span(z_values) > 1.0e-6 and _span(y_values) <= 1.0e-6:
+        return 2
+    return 1
+
+
+def _normalized_scene_module_positions(
+    entries: Sequence[Mapping[str, Any]],
+    *,
+    depth_axis: int,
+) -> list[list[float]]:
+    x_values = [float(entry["position"][0]) for entry in entries if isinstance(entry.get("position"), Sequence)]
+    depth_values = [
+        float(entry["position"][depth_axis])
+        for entry in entries
+        if isinstance(entry.get("position"), Sequence)
+    ]
+    return [
+        [
+            _normalized_scene_axis(float(entry["position"][0]), x_values),
+            0.0,
+            _normalized_scene_axis(float(entry["position"][depth_axis]), depth_values),
+        ]
+        for entry in entries
+        if isinstance(entry.get("position"), Sequence)
+    ]
+
+
+def _normalized_scene_axis(value: float, values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    low = min(values)
+    high = max(values)
+    span = high - low
+    if span <= 1.0e-6:
+        return 0.0
+    center = (low + high) * 0.5
+    normalized = ((value - center) / span) * 0.92
+    return round(max(-0.46, min(0.46, normalized)), 6)
+
+
+def _numeric_vector3(value: Any) -> list[float] | None:
+    if not isinstance(value, Sequence) or isinstance(value, str | bytes | bytearray) or len(value) < 3:
+        return None
+    vector: list[float] = []
+    for item in value[:3]:
+        number = _numeric_float(item)
+        if number is None:
+            return None
+        vector.append(round(number, 6))
+    return vector
+
+
+def _numeric_float(value: Any) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    number = float(value)
+    if not math.isfinite(number):
+        return None
+    return number
+
+
+def _span(values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    return max(values) - min(values)
 
 
 def _transform_shape_controls(

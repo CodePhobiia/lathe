@@ -176,9 +176,9 @@ class FuseShapeIRTests(unittest.TestCase):
         self.assertGreater(len(mesh_ir.faces), 0)
 
     def test_invalid_primitive_type_raises_value_error(self) -> None:
-        # 'sphere' isn't supported — the kernel should raise rather than
-        # silently produce a degenerate mesh.
-        bad = ShapePrimitive(primitive_type="sphere", part="x", center=(0.0, 0.0, 0.0))
+        # Unknown primitive kinds should raise rather than silently produce
+        # a degenerate mesh.
+        bad = ShapePrimitive(primitive_type="superellipsoid", part="x", center=(0.0, 0.0, 0.0))
         regions = [_region_for("x", (0.0, 0.0, 0.0))]
         shape_ir = _shape_ir(primitives=[bad], regions=regions)
         with self.assertRaises(ValueError):

@@ -1,0 +1,324 @@
+D:\lathe_v0_1\lathe\cli\build_cmd.py:163: UserWarning: runtime_config tmp_verify_runtime_config.json contains unknown keys (ignored, will become errors in a future release): /execution/timeout_s
+  load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+{
+  "ok": false,
+  "code": "lathe.cli.build.build_failed",
+  "message": "Validation failed",
+  "diagnostics": [
+    {
+      "code": "L6301",
+      "name": "semantic_silhouette_fidelity_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.silhouette_fidelity",
+      "message": "Semantic validator failed for silhouette_fidelity: 0.529 < 0.820",
+      "details": {
+        "metric": "silhouette_fidelity",
+        "actual": 0.52884,
+        "minimum": 0.82
+      },
+      "suggested_repairs": [
+        "refit_silhouette_region",
+        "reselect_candidate",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6302",
+      "name": "semantic_fragmentation_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.fragmentation_penalty",
+      "message": "Semantic validator failed for fragmentation_penalty: 1.000 > 0.220",
+      "details": {
+        "metric": "fragmentation_penalty",
+        "actual": 1.0,
+        "maximum": 0.22
+      },
+      "suggested_repairs": [
+        "split_merged_parts",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6399",
+      "name": "toy_or_primitive_detected",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.toy_detected",
+      "message": "Semantic validator detected an under-structured toy/primitive-like output",
+      "details": {
+        "part_coverage": 1.0,
+        "silhouette_fidelity": 0.52884,
+        "symmetry_score": 0.96906,
+        "component_score": 0.0,
+        "interface_score": 1.0,
+        "adjacency_score": 1.0,
+        "fragmentation_penalty": 1.0,
+        "structural_richness": 0.8,
+        "toy_detected": true
+      },
+      "suggested_repairs": [
+        "increase_structural_richness",
+        "split_merged_parts",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6401",
+      "name": "visual_primitive_likeness_penalty_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.primitive_likeness_penalty",
+      "message": "Visual validator failed for primitive_likeness_penalty: 0.236 > 0.180",
+      "details": {
+        "metric": "primitive_likeness_penalty",
+        "actual": 0.236241,
+        "maximum": 0.18
+      },
+      "suggested_repairs": [
+        "add_secondary_features",
+        "improve_attachment_integration",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6402",
+      "name": "hero_quality_diagnostic_curvature_distribution_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.quality_diagnostics.curvature_distribution",
+      "message": "Hero asset_class='hero' blocked: curvature_distribution 0.275 < 0.550 (quality_diagnostics_threshold)",
+      "details": {
+        "metric": "curvature_distribution",
+        "actual": 0.275219,
+        "minimum": 0.55,
+        "direction": "quality",
+        "asset_class": "hero",
+        "quality_diagnostics_threshold": 0.55
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6403",
+      "name": "hero_quality_diagnostic_topology_class_compliance_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.quality_diagnostics.topology_class_compliance",
+      "message": "Hero asset_class='hero' blocked: topology_class_compliance 0.480 < 0.550 (quality_diagnostics_threshold)",
+      "details": {
+        "metric": "topology_class_compliance",
+        "actual": 0.480122,
+        "minimum": 0.55,
+        "direction": "quality",
+        "asset_class": "hero",
+        "quality_diagnostics_threshold": 0.55
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6404",
+      "name": "hero_quality_diagnostic_texel_density_consistency_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.quality_diagnostics.texel_density_consistency",
+      "message": "Hero asset_class='hero' blocked: texel_density_consistency 0.000 < 0.550 (quality_diagnostics_threshold)",
+      "details": {
+        "metric": "texel_density_consistency",
+        "actual": 0.0,
+        "minimum": 0.55,
+        "direction": "quality",
+        "asset_class": "hero",
+        "quality_diagnostics_threshold": 0.55
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6201",
+      "name": "self_intersecting",
+      "severity": "warning",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.geometry_integrity.self_intersection_rate",
+      "message": "Geometry integrity detected 569 self-intersecting face pair(s) out of 97534 tested",
+      "details": {
+        "metric": "self_intersection_rate",
+        "intersecting_pairs": 569,
+        "tested_pairs": 97534,
+        "rate": 1.291030477270257e-06
+      },
+      "suggested_repairs": [
+        "repair_self_intersections"
+      ]
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'chest'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "chest",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'loot'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "loot",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'container'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "container",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'fantasy'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "fantasy",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6100",
+      "name": "ensure_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": null,
+      "path": null,
+      "message": "Rule failed",
+      "details": {
+        "message": "Rule failed",
+        "value": false
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6100",
+      "name": "ensure_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": null,
+      "path": null,
+      "message": "Rule failed",
+      "details": {
+        "message": "Rule failed",
+        "value": false
+      },
+      "suggested_repairs": []
+    }
+  ]
+}

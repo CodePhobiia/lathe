@@ -228,8 +228,10 @@ def _metric_dispatch() -> dict[str, Any]:
 
 
 def _metric_prompt_match(asset: dict[str, Any], runtime: dict[str, Any]) -> float:
+    from ..validators.semantic_quality import _resolve_part_bboxes
+
     expected_parts = set(asset.get("intent", {}).get("parts", []))
-    actual_parts = {group["name"] for group in runtime["topology"]["bundle"].get("part_groups", [])}
+    actual_parts = {group["name"] for group in _resolve_part_bboxes(runtime["topology"]["bundle"])}
     part_ratio = len(expected_parts & actual_parts) / max(1, len(expected_parts))
     visual = runtime.get("visual_quality", {}).get("metrics", {})
     return round(
@@ -334,8 +336,10 @@ def _metric_part_coherence(asset: dict[str, Any], runtime: dict[str, Any]) -> fl
             ),
             6,
         )
+    from ..validators.semantic_quality import _resolve_part_bboxes
+
     expected_parts = set(asset.get("intent", {}).get("parts", []))
-    actual_parts = {group["name"] for group in runtime["topology"]["bundle"].get("part_groups", [])}
+    actual_parts = {group["name"] for group in _resolve_part_bboxes(runtime["topology"]["bundle"])}
     ratio = len(expected_parts & actual_parts) / max(1, len(expected_parts))
     return round(min(1.0, 0.8 + 0.2 * ratio), 6)
 

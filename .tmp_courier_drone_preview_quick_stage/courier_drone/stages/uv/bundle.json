@@ -1,0 +1,773 @@
+{
+  "backend_id": "lathe.uv.xatlas_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/uv/uv.glb",
+  "uv_sets": [
+    {
+      "name": "base",
+      "coverage": {
+        "u_min": 0.000244,
+        "u_max": 0.999756,
+        "v_min": 0.000244,
+        "v_max": 0.999756
+      },
+      "vertex_count": 264724
+    },
+    {
+      "name": "lightmap",
+      "coverage": {
+        "u_min": 0.05022,
+        "u_max": 0.94978,
+        "v_min": 0.05022,
+        "v_max": 0.94978
+      },
+      "vertex_count": 264724
+    }
+  ],
+  "packing_report": {
+    "chart_count": 24530,
+    "atlas_count": 13,
+    "per_part_chart_count": 8,
+    "semantic_chart_count": 8,
+    "semantic_grouping": "part",
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "pack_rotate": true,
+    "utilization": 0.8736913204193115,
+    "per_part_islands": [
+      {
+        "part": "body",
+        "importance_weight": 0.512821,
+        "raw_weight": 0.4,
+        "surface_area": 331023.486459,
+        "vertex_count": 107927,
+        "triangle_count": 35986,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 13170,
+        "tags": [
+          "body",
+          "shell"
+        ],
+        "parent_blueprint_component": "courier_body"
+      },
+      {
+        "part": "cargo_door",
+        "importance_weight": 0.128205,
+        "raw_weight": 0.1,
+        "surface_area": 34435.32401,
+        "vertex_count": 15218,
+        "triangle_count": 5082,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1620,
+        "tags": [
+          "cargo",
+          "door"
+        ],
+        "parent_blueprint_component": "cargo_door_panel"
+      },
+      {
+        "part": "landing_leg_l",
+        "importance_weight": 0.051282,
+        "raw_weight": 0.04,
+        "surface_area": 2075.687146,
+        "vertex_count": 18825,
+        "triangle_count": 6297,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1169,
+        "tags": [
+          "foot",
+          "left",
+          "leg"
+        ],
+        "parent_blueprint_component": "landing_leg_left"
+      },
+      {
+        "part": "landing_leg_r",
+        "importance_weight": 0.051282,
+        "raw_weight": 0.04,
+        "surface_area": 1952.861555,
+        "vertex_count": 19255,
+        "triangle_count": 6425,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1187,
+        "tags": [
+          "foot",
+          "left",
+          "leg",
+          "right"
+        ],
+        "parent_blueprint_component": "landing_leg_right"
+      },
+      {
+        "part": "rotor_fl",
+        "importance_weight": 0.064103,
+        "raw_weight": 0.05,
+        "surface_area": 3119.255483,
+        "vertex_count": 26681,
+        "triangle_count": 8895,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1865,
+        "tags": [
+          "front",
+          "left",
+          "rotor",
+          "rotor_pod"
+        ],
+        "parent_blueprint_component": "rotor_front_left"
+      },
+      {
+        "part": "rotor_fr",
+        "importance_weight": 0.064103,
+        "raw_weight": 0.05,
+        "surface_area": 3090.187353,
+        "vertex_count": 26221,
+        "triangle_count": 8754,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1859,
+        "tags": [
+          "front",
+          "right",
+          "rotor",
+          "rotor_pod"
+        ],
+        "parent_blueprint_component": "rotor_front_right"
+      },
+      {
+        "part": "rotor_rl",
+        "importance_weight": 0.064103,
+        "raw_weight": 0.05,
+        "surface_area": 3119.282644,
+        "vertex_count": 27642,
+        "triangle_count": 9225,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1842,
+        "tags": [
+          "left",
+          "rear",
+          "right",
+          "rotor",
+          "rotor_pod"
+        ],
+        "parent_blueprint_component": "rotor_rear_left"
+      },
+      {
+        "part": "rotor_rr",
+        "importance_weight": 0.064103,
+        "raw_weight": 0.05,
+        "surface_area": 3108.65136,
+        "vertex_count": 22955,
+        "triangle_count": 7653,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1818,
+        "tags": [
+          "rear",
+          "right",
+          "rotor",
+          "rotor_pod"
+        ],
+        "parent_blueprint_component": "rotor_rear_right"
+      }
+    ],
+    "part_source": "multi_part_scene",
+    "generated_source_uv_remap": {
+      "available": false,
+      "source": "input_mesh_visual_uv",
+      "preservation": "per_part_xatlas_v1"
+    }
+  },
+  "texel_density": {
+    "requested_px_per_m": 512.0,
+    "actual_px_per_m": 512.0
+  },
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 8,
+    "material_id_count": 2,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "cargo_door": "uvc_02_cargo_door",
+      "landing_leg_l": "uvc_03_landing_leg_l",
+      "landing_leg_r": "uvc_04_landing_leg_r",
+      "rotor_fl": "uvc_05_rotor_fl",
+      "rotor_fr": "uvc_06_rotor_fr",
+      "rotor_rl": "uvc_07_rotor_rl",
+      "rotor_rr": "uvc_08_rotor_rr"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "anodized_aluminum_body",
+      "material_id": "matid_01_anodized_aluminum_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_cargo_door",
+      "group": "cargo_door",
+      "grouping": "part",
+      "island_name": "semantic_cargo_door",
+      "parts": [
+        "cargo_door"
+      ],
+      "material": "anodized_aluminum_body",
+      "material_id": "matid_01_anodized_aluminum_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_landing_leg_l",
+      "group": "landing_leg_l",
+      "grouping": "part",
+      "island_name": "semantic_landing_leg_l",
+      "parts": [
+        "landing_leg_l"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_landing_leg_r",
+      "group": "landing_leg_r",
+      "grouping": "part",
+      "island_name": "semantic_landing_leg_r",
+      "parts": [
+        "landing_leg_r"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_rotor_fl",
+      "group": "rotor_fl",
+      "grouping": "part",
+      "island_name": "semantic_rotor_fl",
+      "parts": [
+        "rotor_fl"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_rotor_fr",
+      "group": "rotor_fr",
+      "grouping": "part",
+      "island_name": "semantic_rotor_fr",
+      "parts": [
+        "rotor_fr"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_rotor_rl",
+      "group": "rotor_rl",
+      "grouping": "part",
+      "island_name": "semantic_rotor_rl",
+      "parts": [
+        "rotor_rl"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_08_rotor_rr",
+      "group": "rotor_rr",
+      "grouping": "part",
+      "island_name": "semantic_rotor_rr",
+      "parts": [
+        "rotor_rr"
+      ],
+      "material": "carbon_fiber_trim",
+      "material_id": "matid_02_carbon_fiber_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 2,
+    "ids": [
+      {
+        "material_id": "matid_01_anodized_aluminum_body",
+        "material": "anodized_aluminum_body",
+        "parts": [
+          "body",
+          "cargo_door"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_carbon_fiber_trim",
+        "material": "carbon_fiber_trim",
+        "parts": [
+          "landing_leg_l",
+          "landing_leg_r",
+          "rotor_fl",
+          "rotor_fr",
+          "rotor_rl",
+          "rotor_rr"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_01_anodized_aluminum_body",
+      "cargo_door": "matid_01_anodized_aluminum_body",
+      "landing_leg_l": "matid_02_carbon_fiber_trim",
+      "landing_leg_r": "matid_02_carbon_fiber_trim",
+      "rotor_fl": "matid_02_carbon_fiber_trim",
+      "rotor_fr": "matid_02_carbon_fiber_trim",
+      "rotor_rl": "matid_02_carbon_fiber_trim",
+      "rotor_rr": "matid_02_carbon_fiber_trim"
+    }
+  },
+  "seam_guides": [],
+  "bake_groups": [],
+  "material_boundaries": [],
+  "lightmap_ready": true,
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 2041,
+    "region_count": 23,
+    "primitive_diversity": 0.018618,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 1998,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "corner_guard",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "groove_channel",
+      "inset_panel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "rib",
+      "rotor_shroud",
+      "screen_bezel",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "support_bracket",
+      "trim_band",
+      "trim_strip"
+    ],
+    "feature_density": 124.875,
+    "edge_treatment_count": 248,
+    "panel_feature_count": 320,
+    "support_feature_count": 302,
+    "attachment_region_count": 15,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 1762,
+    "geometry_detail_feature_count": 1762,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 66,
+      "attachment_rail": 88,
+      "attachment_vent_stack": 110,
+      "bolt_cap": 88,
+      "bolt_washer": 88,
+      "corner_guard": 88,
+      "edge_break": 88,
+      "groove_channel": 88,
+      "layer_plate": 66,
+      "linear_detail_array": 88,
+      "module_antenna": 88,
+      "module_power_cell": 88,
+      "module_shield_plate": 44,
+      "panel_seam": 132,
+      "silhouette_guard_cowl": 54,
+      "silhouette_outrigger": 72,
+      "silhouette_spine": 54,
+      "silhouette_tower": 108,
+      "socket_collar": 88,
+      "socket_recess": 88,
+      "trim_strip": 88
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ],
+    "primitive_selector_applied_count": 0,
+    "primitive_selector_by_component": {},
+    "primitive_selector_by_target": {}
+  },
+  "generated_uv_atlas_hints": {},
+  "adapter_report": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "xatlas",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "available": true,
+      "version": "0.0.11",
+      "code": "ok"
+    },
+    "status": "success",
+    "actual_adapter": "xatlas_per_part",
+    "execution": {
+      "mode": "xatlas_per_part",
+      "resolution": 2048,
+      "part_count": 8,
+      "part_source": "multi_part_scene",
+      "lightmap_strategy": "derived_inset",
+      "vertex_count": 264724,
+      "triangle_count": 88317,
+      "utilization": 0.8736913204193115,
+      "per_part_islands": [
+        {
+          "part": "body",
+          "importance_weight": 0.512821,
+          "raw_weight": 0.4,
+          "surface_area": 331023.486459,
+          "vertex_count": 107927,
+          "triangle_count": 35986,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 13170,
+          "tags": [
+            "body",
+            "shell"
+          ],
+          "parent_blueprint_component": "courier_body"
+        },
+        {
+          "part": "cargo_door",
+          "importance_weight": 0.128205,
+          "raw_weight": 0.1,
+          "surface_area": 34435.32401,
+          "vertex_count": 15218,
+          "triangle_count": 5082,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1620,
+          "tags": [
+            "cargo",
+            "door"
+          ],
+          "parent_blueprint_component": "cargo_door_panel"
+        },
+        {
+          "part": "landing_leg_l",
+          "importance_weight": 0.051282,
+          "raw_weight": 0.04,
+          "surface_area": 2075.687146,
+          "vertex_count": 18825,
+          "triangle_count": 6297,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1169,
+          "tags": [
+            "foot",
+            "left",
+            "leg"
+          ],
+          "parent_blueprint_component": "landing_leg_left"
+        },
+        {
+          "part": "landing_leg_r",
+          "importance_weight": 0.051282,
+          "raw_weight": 0.04,
+          "surface_area": 1952.861555,
+          "vertex_count": 19255,
+          "triangle_count": 6425,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1187,
+          "tags": [
+            "foot",
+            "left",
+            "leg",
+            "right"
+          ],
+          "parent_blueprint_component": "landing_leg_right"
+        },
+        {
+          "part": "rotor_fl",
+          "importance_weight": 0.064103,
+          "raw_weight": 0.05,
+          "surface_area": 3119.255483,
+          "vertex_count": 26681,
+          "triangle_count": 8895,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1865,
+          "tags": [
+            "front",
+            "left",
+            "rotor",
+            "rotor_pod"
+          ],
+          "parent_blueprint_component": "rotor_front_left"
+        },
+        {
+          "part": "rotor_fr",
+          "importance_weight": 0.064103,
+          "raw_weight": 0.05,
+          "surface_area": 3090.187353,
+          "vertex_count": 26221,
+          "triangle_count": 8754,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1859,
+          "tags": [
+            "front",
+            "right",
+            "rotor",
+            "rotor_pod"
+          ],
+          "parent_blueprint_component": "rotor_front_right"
+        },
+        {
+          "part": "rotor_rl",
+          "importance_weight": 0.064103,
+          "raw_weight": 0.05,
+          "surface_area": 3119.282644,
+          "vertex_count": 27642,
+          "triangle_count": 9225,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1842,
+          "tags": [
+            "left",
+            "rear",
+            "right",
+            "rotor",
+            "rotor_pod"
+          ],
+          "parent_blueprint_component": "rotor_rear_left"
+        },
+        {
+          "part": "rotor_rr",
+          "importance_weight": 0.064103,
+          "raw_weight": 0.05,
+          "surface_area": 3108.65136,
+          "vertex_count": 22955,
+          "triangle_count": 7653,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1818,
+          "tags": [
+            "rear",
+            "right",
+            "rotor",
+            "rotor_pod"
+          ],
+          "parent_blueprint_component": "rotor_rear_right"
+        }
+      ]
+    }
+  },
+  "style_routing": {
+    "texture_authoring": "procedural_designer",
+    "skip_unwrap": false,
+    "uv_layout_hint": "unique_udim"
+  },
+  "provenance": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "xatlas_per_part"
+  }
+}

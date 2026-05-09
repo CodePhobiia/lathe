@@ -11,6 +11,7 @@ from copy import deepcopy
 from typing import Any
 
 from .errors import NormalizationError
+from .style_presets import resolve_style_target
 from .defaults import (
     ASSET_DEFAULTS,
     ASSET_REPAIR_POLICY_DEFAULTS,
@@ -81,6 +82,7 @@ CANONICAL_SCENE_KEYS = [
     "curiosity_anchors",
     "hidden_state",
     "exports",
+    "wfc",
 ]
 CANONICAL_SCENE_CHILD_KEYS = ["node_type", "name", "type", "role", "framing", "target", "from", "values"]
 CANONICAL_REPAIR_POLICY_KEYS = ["node_type", "name", "mode", "max_rounds", "allow", "deny"]
@@ -234,7 +236,102 @@ def _normalize_mapping_decl(decl: dict[str, Any], node_type: str) -> dict[str, A
     out = deep_fill_missing(decl, MAPPING_DECL_DEFAULTS)
     out["node_type"] = node_type
     out["uses"] = dedupe_keep_first(out.get("uses", []))
+    if node_type in {"kit", "library"} and _has_hda_fields(decl):
+        _normalize_hda_fields(out, decl)
+        return _ordered(out, [*CANONICAL_MAPPING_DECL_KEYS, "version", "ports", "parameters", "body"])
     return _ordered(out, CANONICAL_MAPPING_DECL_KEYS)
+
+
+HDA_PORT_TYPES = {
+    "polygon_2d",
+    "polygon_3d",
+    "face_ref",
+    "vertex_ref",
+    "edge_ref",
+    "socket",
+    "mesh",
+    "points",
+    "volume",
+    "heightfield",
+    "spline",
+    "sdf",
+    "image",
+    "shape_primitive_set",
+    "material_ref",
+    "number",
+    "int",
+    "boolean",
+    "string",
+    "enum",
+    "vec2",
+    "vec3",
+    "vec4",
+    "color",
+}
+
+HDA_PARAMETER_TYPES = {
+    "number",
+    "int",
+    "boolean",
+    "string",
+    "enum",
+    "vec2",
+    "vec3",
+    "vec4",
+    "color",
+}
+
+
+def _has_hda_fields(decl: dict[str, Any]) -> bool:
+    """Return True when the decl carries HDA-class fields from the parser."""
+    return any(key in decl for key in ("version", "ports", "parameters", "body"))
+
+
+def _normalize_port(port: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "node_type": "port_decl",
+        "direction": str(port.get("direction", "in")),
+        "name": str(port.get("name", "")),
+        "port_type": str(port.get("port_type", "")),
+        "options": deepcopy(port.get("options", {})) or {},
+    }
+
+
+def _normalize_parameter(parameter: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "node_type": "parameter_decl",
+        "name": str(parameter.get("name", "")),
+        "param_type": str(parameter.get("param_type", "")),
+        "options": deepcopy(parameter.get("options", {})) or {},
+    }
+
+
+def _normalize_kit_use(use: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "node_type": "kit_use_stmt",
+        "kit": str(use.get("kit", "")),
+        "version_constraint": str(use.get("version_constraint", "")),
+        "bindings": deepcopy(use.get("bindings", {})) or {},
+    }
+
+
+def _normalize_body(body: dict[str, Any] | None) -> dict[str, Any]:
+    body = body or {}
+    return {
+        "node_type": "body",
+        "kit_uses": [_normalize_kit_use(u) for u in body.get("kit_uses", []) if isinstance(u, dict)],
+        "rules": _normalize_rules(body.get("rules", [])),
+        "values": deepcopy(body.get("values", {})) or {},
+    }
+
+
+def _normalize_hda_fields(out: dict[str, Any], decl: dict[str, Any]) -> None:
+    out["version"] = str(decl.get("version", "") or "")
+    out["ports"] = [_normalize_port(p) for p in decl.get("ports", []) if isinstance(p, dict)]
+    out["parameters"] = [
+        _normalize_parameter(p) for p in decl.get("parameters", []) if isinstance(p, dict)
+    ]
+    out["body"] = _normalize_body(decl.get("body"))
 
 
 def _normalize_structured_decl(decl: dict[str, Any], node_type: str) -> dict[str, Any]:
@@ -262,6 +359,12 @@ def _normalize_structured_decl(decl: dict[str, Any], node_type: str) -> dict[str
         out["surface"]["bake"] = dedupe_keep_first(out["surface"]["bake"])
     if "patterns" in out["surface"]:
         out["surface"]["patterns"] = dedupe_keep_first(out["surface"]["patterns"])
+    if node_type == "mechanism" and _has_hda_fields(decl):
+        _normalize_hda_fields(out, decl)
+        return _ordered(
+            out,
+            [*CANONICAL_STRUCTURED_DECL_KEYS, "version", "ports", "parameters", "body"],
+        )
     return _ordered(out, CANONICAL_STRUCTURED_DECL_KEYS)
 
 
@@ -371,7 +474,44 @@ def normalize_asset(asset: dict[str, Any]) -> dict[str, Any]:
     if not out["package"].get("formats"):
         out["package"]["formats"] = ["usd", "glb"]
 
+    _expand_style_stack(out)
+
     return _ordered(out, CANONICAL_ASSET_KEYS)
+
+
+def _expand_style_stack(out: dict[str, Any]) -> None:
+    """Expand ``intent.style_target`` into a fully-populated 8-axis stack.
+
+    Roadmap §6.8: authors may write ``style_target = "stylized_pbr_aaa"``
+    for the named-preset shorthand, or supply a dict with per-axis
+    overrides. Either way the normalizer materializes
+    ``intent.style_stack`` with all 8 axes present so per-stage routing
+    code can read a single axis without fallback logic.
+
+    Also normalizes ``intent.style_bridges`` (zero or more author-declared
+    bridge records) into a list of dicts so the checker has a stable
+    shape to consume.
+    """
+    intent = out.get("intent")
+    if not isinstance(intent, dict):
+        return
+    target = intent.get("style_target")
+    intent["style_stack"] = resolve_style_target(target)
+    bridges = intent.get("style_bridges")
+    if bridges is None:
+        intent["style_bridges"] = []
+    elif isinstance(bridges, dict):
+        intent["style_bridges"] = [bridges]
+    elif isinstance(bridges, list):
+        normalized: list[dict[str, Any]] = []
+        for entry in bridges:
+            if isinstance(entry, dict):
+                normalized.append(entry)
+            elif isinstance(entry, str):
+                normalized.append({"name": entry, "bridges": []})
+        intent["style_bridges"] = normalized
+    else:
+        intent["style_bridges"] = []
 
 
 def _normalize_variant(variant: dict[str, Any]) -> dict[str, Any]:
@@ -486,6 +626,10 @@ def _normalize_scene(scene: dict[str, Any]) -> dict[str, Any]:
         [_normalize_scene_child(item, "scene_export") for item in out.get("exports", [])],
         key=lambda d: d["name"],
     )
+    out["wfc"] = sorted(
+        [_normalize_scene_child(item, "scene_wfc") for item in out.get("wfc", [])],
+        key=lambda d: (d.get("name") or ""),
+    )
     return _ordered(out, CANONICAL_SCENE_KEYS)
 
 
@@ -561,6 +705,10 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         [_normalize_mapping_decl(item, "style_pack") for item in out.get("style_packs", [])],
         key=lambda d: d["name"],
     )
+    out["style_bridges"] = sorted(
+        [_normalize_mapping_decl(item, "style_bridge") for item in out.get("style_bridges", [])],
+        key=lambda d: d["name"],
+    )
     out["execution_profiles"] = sorted(
         [_normalize_mapping_decl(item, "execution_profile") for item in out.get("execution_profiles", [])],
         key=lambda d: d["name"],
@@ -583,6 +731,76 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
     )
     out["inspection_policies"] = sorted(
         [_normalize_mapping_decl(item, "inspection_policy") for item in out.get("inspection_policies", [])],
+        key=lambda d: d["name"],
+    )
+    out["asset_class_profiles"] = sorted(
+        [
+            _normalize_mapping_decl(item, "asset_class_profile")
+            for item in out.get("asset_class_profiles", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["vegetation_species"] = sorted(
+        [
+            _normalize_mapping_decl(item, "vegetation_species")
+            for item in out.get("vegetation_species", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["vegetation_kits"] = sorted(
+        [
+            _normalize_mapping_decl(item, "vegetation_kit")
+            for item in out.get("vegetation_kits", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["wind_programs"] = sorted(
+        [
+            _normalize_mapping_decl(item, "wind_program")
+            for item in out.get("wind_programs", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["volume_programs"] = sorted(
+        [
+            _normalize_mapping_decl(item, "volume_program")
+            for item in out.get("volume_programs", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["subdivision_finishings"] = sorted(
+        [
+            _normalize_mapping_decl(item, "subdivision_finishing")
+            for item in out.get("subdivision_finishings", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["terrain_programs"] = sorted(
+        [
+            _normalize_mapping_decl(item, "terrain_program")
+            for item in out.get("terrain_programs", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["wfc_tilesets"] = sorted(
+        [
+            _normalize_mapping_decl(item, "wfc_tileset")
+            for item in out.get("wfc_tilesets", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["wfc_adjacencies"] = sorted(
+        [
+            _normalize_mapping_decl(item, "wfc_adjacency")
+            for item in out.get("wfc_adjacencies", [])
+        ],
+        key=lambda d: d["name"],
+    )
+    out["f_rep_programs"] = sorted(
+        [
+            _normalize_mapping_decl(item, "f_rep_program")
+            for item in out.get("f_rep_programs", [])
+        ],
         key=lambda d: d["name"],
     )
     out["repair_policies"] = sorted(
@@ -648,12 +866,23 @@ def normalize_program(program: dict[str, Any]) -> dict[str, Any]:
         "trim_sheets": out["trim_sheets"],
         "palettes": out["palettes"],
         "style_packs": out["style_packs"],
+        "style_bridges": out["style_bridges"],
         "execution_profiles": out["execution_profiles"],
         "render_fixtures": out["render_fixtures"],
         "bake_profiles": out["bake_profiles"],
         "library_bindings": out["library_bindings"],
         "material_graphs": out["material_graphs"],
         "inspection_policies": out["inspection_policies"],
+        "asset_class_profiles": out["asset_class_profiles"],
+        "vegetation_species": out["vegetation_species"],
+        "vegetation_kits": out["vegetation_kits"],
+        "wind_programs": out["wind_programs"],
+        "volume_programs": out["volume_programs"],
+        "subdivision_finishings": out["subdivision_finishings"],
+        "terrain_programs": out["terrain_programs"],
+        "wfc_tilesets": out["wfc_tilesets"],
+        "wfc_adjacencies": out["wfc_adjacencies"],
+        "f_rep_programs": out["f_rep_programs"],
         "reference_sets": sorted(
             [_normalize_mapping_decl(item, "reference_set") for item in out.get("reference_sets", [])],
             key=lambda d: d["name"],

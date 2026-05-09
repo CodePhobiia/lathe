@@ -1,0 +1,1070 @@
+{
+  "module": "demo.showcase",
+  "imports": [],
+  "profiles": [],
+  "contracts": [],
+  "critics": [],
+  "libraries": [],
+  "kits": [],
+  "patterns": [],
+  "families": [],
+  "components": [],
+  "assemblies": [],
+  "traits": [],
+  "mechanisms": [],
+  "materials": [],
+  "surface_programs": [],
+  "surface_backends": [],
+  "surface_policies": [],
+  "decal_libraries": [],
+  "mask_programs": [],
+  "trim_sheets": [],
+  "palettes": [],
+  "style_packs": [],
+  "style_bridges": [],
+  "execution_profiles": [],
+  "render_fixtures": [],
+  "bake_profiles": [],
+  "library_bindings": [],
+  "material_graphs": [],
+  "inspection_policies": [],
+  "asset_class_profiles": [],
+  "vegetation_species": [],
+  "vegetation_kits": [],
+  "wind_programs": [],
+  "volume_programs": [],
+  "subdivision_finishings": [],
+  "terrain_programs": [],
+  "wfc_tilesets": [],
+  "wfc_adjacencies": [],
+  "f_rep_programs": [],
+  "reference_sets": [],
+  "reconstruct_policies": [],
+  "adapt_policies": [],
+  "assembly_policies": [],
+  "fit_profiles": [],
+  "transfer_rules": [],
+  "repair_policies": [],
+  "fixtures": [],
+  "tests": [],
+  "benchmarks": [],
+  "spaces": [],
+  "worlds": [],
+  "scenes": [],
+  "assets": [
+    {
+      "node_type": "asset",
+      "name": "alien_grove",
+      "kind": "hard_surface_prop",
+      "from": "",
+      "uses": [],
+      "refs": {
+        "images": [],
+        "meshes": [],
+        "assets": [],
+        "materials": [],
+        "reference_sets": [],
+        "notes": []
+      },
+      "intent": {
+        "role": "alien grove with guardian and ruined dungeon",
+        "asset_class": "hero",
+        "style": [],
+        "parts": [],
+        "materials": [],
+        "negatives": [],
+        "interactions": [],
+        "notes": [],
+        "style_stack": {
+          "material_model": "pbr_stylized",
+          "shading_model": "lambert_ambient",
+          "texture_authoring": "procedural_designer",
+          "outline_mode": "none",
+          "lighting_strategy": "dynamic_global_illumination",
+          "detail_layer_compose": "multi_band_pbr",
+          "animation_rate": "fluid",
+          "construction_grammar": "free_form"
+        },
+        "style_bridges": []
+      },
+      "geometry": {},
+      "features": {
+        "allow": []
+      },
+      "surface": {
+        "program": "",
+        "material_graph": "",
+        "patterns": [],
+        "palette": "",
+        "material_zones": [],
+        "materials": [],
+        "decals": [],
+        "bake": [],
+        "backend": "",
+        "policy": "",
+        "decal_libraries": [],
+        "mask_programs": [],
+        "trim_sheets": [],
+        "authoring": {}
+      },
+      "assembly": {
+        "family": "",
+        "components": [],
+        "mechanisms": [],
+        "traits": []
+      },
+      "fit": {},
+      "transfer": {},
+      "reuse": {},
+      "constraints": {},
+      "ingest": {},
+      "assembly_rules": {},
+      "execution": {
+        "profile": "",
+        "engine": "",
+        "mode": "",
+        "deterministic": null,
+        "preserve_blend": "",
+        "geometry_backend": "",
+        "uv_backend": "",
+        "bake_backend": "",
+        "surface_backend": "",
+        "render_backend": "",
+        "package_backend": "",
+        "library_backend": "",
+        "library_bindings": [],
+        "inspection_policy": ""
+      },
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "build": {
+        "shape": {
+          "mode": "generate",
+          "candidates": 1,
+          "seed": 7,
+          "mesh_program": {
+            "node_type": "mesh_program",
+            "statements": [
+              {
+                "node_type": "mesh_let",
+                "target": "ground",
+                "expr": {
+                  "type": "call",
+                  "name": "terrain_heightfield",
+                  "args": [
+                    {
+                      "name": "extents",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "m"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "resolution",
+                      "value": 48
+                    },
+                    {
+                      "name": "scale_z",
+                      "value": {
+                        "type": "unit",
+                        "value": 4,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "name": "seed",
+                      "value": 7
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "terrain_biome",
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": "ground"
+                    },
+                    {
+                      "name": "biome",
+                      "value": "rolling_hills"
+                    },
+                    {
+                      "name": "roughness",
+                      "value": 0.3
+                    },
+                    {
+                      "name": "peak_density",
+                      "value": 0.1
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "trunk_a",
+                "expr": {
+                  "type": "call",
+                  "name": "vegetation_trunk",
+                  "args": [
+                    {
+                      "name": "height",
+                      "value": {
+                        "type": "unit",
+                        "value": 6,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "name": "base_radius",
+                      "value": {
+                        "type": "unit",
+                        "value": 30,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "taper",
+                      "value": 0.4
+                    },
+                    {
+                      "name": "segments",
+                      "value": 6
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "vegetation_canopy",
+                  "args": [
+                    {
+                      "name": "parent",
+                      "value": "trunk_a"
+                    },
+                    {
+                      "name": "branch_count",
+                      "value": 8
+                    },
+                    {
+                      "name": "leaf_density",
+                      "value": 40
+                    },
+                    {
+                      "name": "leaf_size",
+                      "value": {
+                        "type": "unit",
+                        "value": 8,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "foliage_radius",
+                      "value": {
+                        "type": "unit",
+                        "value": 150,
+                        "unit": "cm"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "trunk_b",
+                "expr": {
+                  "type": "method_call",
+                  "receiver": {
+                    "type": "call",
+                    "name": "vegetation_trunk",
+                    "args": [
+                      {
+                        "name": "height",
+                        "value": {
+                          "type": "unit",
+                          "value": 5,
+                          "unit": "m"
+                        }
+                      },
+                      {
+                        "name": "base_radius",
+                        "value": {
+                          "type": "unit",
+                          "value": 25,
+                          "unit": "cm"
+                        }
+                      },
+                      {
+                        "name": "taper",
+                        "value": 0.5
+                      },
+                      {
+                        "name": "segments",
+                        "value": 6
+                      }
+                    ]
+                  },
+                  "method": "translate",
+                  "args": [
+                    {
+                      "name": null,
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 6,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": -4,
+                          "unit": "m"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "vegetation_canopy",
+                  "args": [
+                    {
+                      "name": "parent",
+                      "value": "trunk_b"
+                    },
+                    {
+                      "name": "branch_count",
+                      "value": 6
+                    },
+                    {
+                      "name": "leaf_density",
+                      "value": 30
+                    },
+                    {
+                      "name": "leaf_size",
+                      "value": {
+                        "type": "unit",
+                        "value": 6,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "foliage_radius",
+                      "value": {
+                        "type": "unit",
+                        "value": 120,
+                        "unit": "cm"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "chest_body",
+                "expr": {
+                  "type": "method_call",
+                  "receiver": {
+                    "type": "call",
+                    "name": "solid_panel",
+                    "args": [
+                      {
+                        "name": "extents",
+                        "value": [
+                          {
+                            "type": "unit",
+                            "value": 80,
+                            "unit": "cm"
+                          },
+                          {
+                            "type": "unit",
+                            "value": 50,
+                            "unit": "cm"
+                          },
+                          {
+                            "type": "unit",
+                            "value": 50,
+                            "unit": "cm"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "method": "translate",
+                  "args": [
+                    {
+                      "name": null,
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": -3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 5,
+                          "unit": "m"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "op_fastener_grid",
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": "chest_body"
+                    },
+                    {
+                      "name": "face",
+                      "value": "+y"
+                    },
+                    {
+                      "name": "rows",
+                      "value": 1
+                    },
+                    {
+                      "name": "cols",
+                      "value": 4
+                    },
+                    {
+                      "name": "spacing",
+                      "value": {
+                        "type": "unit",
+                        "value": 18,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "fastener_radius",
+                      "value": {
+                        "type": "unit",
+                        "value": 15,
+                        "unit": "mm"
+                      }
+                    },
+                    {
+                      "name": "fastener_height",
+                      "value": {
+                        "type": "unit",
+                        "value": 8,
+                        "unit": "mm"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "op_trim_band",
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": "chest_body"
+                    },
+                    {
+                      "name": "axis",
+                      "value": "y"
+                    },
+                    {
+                      "name": "width",
+                      "value": {
+                        "type": "unit",
+                        "value": 4,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "depth",
+                      "value": {
+                        "type": "unit",
+                        "value": 5,
+                        "unit": "mm"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "body",
+                "expr": {
+                  "type": "call",
+                  "name": "sdf_capsule",
+                  "args": [
+                    {
+                      "name": "half_height",
+                      "value": {
+                        "type": "unit",
+                        "value": 80,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "radius",
+                      "value": {
+                        "type": "unit",
+                        "value": 40,
+                        "unit": "cm"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "arm_l",
+                "expr": {
+                  "type": "method_call",
+                  "receiver": {
+                    "type": "call",
+                    "name": "sdf_capsule",
+                    "args": [
+                      {
+                        "name": "half_height",
+                        "value": {
+                          "type": "unit",
+                          "value": 60,
+                          "unit": "cm"
+                        }
+                      },
+                      {
+                        "name": "radius",
+                        "value": {
+                          "type": "unit",
+                          "value": 12,
+                          "unit": "cm"
+                        }
+                      }
+                    ]
+                  },
+                  "method": "translate",
+                  "args": [
+                    {
+                      "name": null,
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 60,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "arm_r",
+                "expr": {
+                  "type": "method_call",
+                  "receiver": {
+                    "type": "call",
+                    "name": "sdf_capsule",
+                    "args": [
+                      {
+                        "name": "half_height",
+                        "value": {
+                          "type": "unit",
+                          "value": 60,
+                          "unit": "cm"
+                        }
+                      },
+                      {
+                        "name": "radius",
+                        "value": {
+                          "type": "unit",
+                          "value": 12,
+                          "unit": "cm"
+                        }
+                      }
+                    ]
+                  },
+                  "method": "translate",
+                  "args": [
+                    {
+                      "name": null,
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": -60,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "head",
+                "expr": {
+                  "type": "method_call",
+                  "receiver": {
+                    "type": "call",
+                    "name": "sdf_sphere",
+                    "args": [
+                      {
+                        "name": "radius",
+                        "value": {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "cm"
+                        }
+                      }
+                    ]
+                  },
+                  "method": "translate",
+                  "args": [
+                    {
+                      "name": null,
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 0,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 100,
+                          "unit": "cm"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "alien",
+                "expr": {
+                  "type": "call",
+                  "name": "sdf_smooth_union",
+                  "args": [
+                    {
+                      "name": "targets",
+                      "value": [
+                        "body",
+                        "arm_l",
+                        "arm_r",
+                        "head"
+                      ]
+                    },
+                    {
+                      "name": "k",
+                      "value": {
+                        "type": "unit",
+                        "value": 25,
+                        "unit": "cm"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "sdf_extract",
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": "alien"
+                    },
+                    {
+                      "name": "resolution",
+                      "value": 48
+                    },
+                    {
+                      "name": "bounds_min",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": -1500,
+                          "unit": "mm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": -1500,
+                          "unit": "mm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": -500,
+                          "unit": "mm"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "bounds_max",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 1500,
+                          "unit": "mm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 1500,
+                          "unit": "mm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 2,
+                          "unit": "m"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "dungeon_floor",
+                "expr": {
+                  "type": "call",
+                  "name": "solid_panel",
+                  "args": [
+                    {
+                      "name": "extents",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "dungeon_wall",
+                "expr": {
+                  "type": "call",
+                  "name": "solid_panel",
+                  "args": [
+                    {
+                      "name": "extents",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "cm"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "mod_floor",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_module",
+                  "args": [
+                    {
+                      "name": "name",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "primitive",
+                      "value": "dungeon_floor"
+                    },
+                    {
+                      "name": "weight",
+                      "value": 0.7
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "mod_wall",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_module",
+                  "args": [
+                    {
+                      "name": "name",
+                      "value": "wall"
+                    },
+                    {
+                      "name": "primitive",
+                      "value": "dungeon_wall"
+                    },
+                    {
+                      "name": "weight",
+                      "value": 0.3
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "rule_ff",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_rule",
+                  "args": [
+                    {
+                      "name": "a",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "b",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "direction",
+                      "value": "x"
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_modular",
+                  "args": [
+                    {
+                      "name": "canvas_size",
+                      "value": [
+                        4,
+                        1,
+                        4
+                      ]
+                    },
+                    {
+                      "name": "cell_size",
+                      "value": {
+                        "type": "unit",
+                        "value": 3,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "name": "modules",
+                      "value": [
+                        "mod_floor",
+                        "mod_wall"
+                      ]
+                    },
+                    {
+                      "name": "adjacency",
+                      "value": [
+                        "rule_ff"
+                      ]
+                    },
+                    {
+                      "name": "seed",
+                      "value": 123
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "backend": "auto",
+          "symmetry": "none",
+          "preserve": []
+        },
+        "topology": {
+          "backend": "auto",
+          "retopo": "auto",
+          "ngons": "avoid",
+          "preserve": []
+        },
+        "uv": {
+          "backend": "auto",
+          "sets": [
+            "base"
+          ],
+          "unwrap": "auto",
+          "tile_mode": "zero_to_one",
+          "padding": {
+            "type": "unit",
+            "value": 8,
+            "unit": "px"
+          },
+          "pack_rotate": true,
+          "udims": []
+        },
+        "surface": {
+          "backend": "auto",
+          "workflow": "pbr_metal_rough",
+          "maps": [
+            "basecolor",
+            "normal",
+            "orm"
+          ],
+          "resolution": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "bakes": [],
+          "bake_profile": "",
+          "render_fixture": "",
+          "decals": [],
+          "id_map": false
+        },
+        "rig": {
+          "backend": "auto",
+          "type": "none",
+          "joints": [],
+          "pivot_policy": "auto",
+          "joint_limits": "auto"
+        },
+        "interfaces": {
+          "backend": "auto",
+          "sockets": [],
+          "pivots": [],
+          "anchors": [],
+          "connections": [],
+          "auto_connect": false
+        },
+        "physics": {
+          "backend": "auto",
+          "collision": "none",
+          "max_hulls": 10,
+          "mass": "auto",
+          "center_of_mass": "auto"
+        },
+        "optimize": {
+          "backend": "auto",
+          "lods": 1,
+          "atlas": false,
+          "mesh_compression": false,
+          "strip_hidden_faces": false,
+          "instance_candidates": false
+        }
+      },
+      "validate": {
+        "rules": [],
+        "threshold": 0.8,
+        "repair": {
+          "mode": "auto_until_pass",
+          "max_rounds": 3,
+          "allow": [],
+          "deny": []
+        }
+      },
+      "package": {
+        "backend": "auto",
+        "formats": [
+          "usd",
+          "glb"
+        ],
+        "manifest": true,
+        "previews": [],
+        "embed_textures": false,
+        "include_trace": true,
+        "naming": "auto"
+      },
+      "publish": {
+        "registry": "",
+        "version": "auto_patch",
+        "tags": [],
+        "visibility": "private",
+        "approval": "required",
+        "channel": "dev"
+      },
+      "experimental": {}
+    }
+  ],
+  "variants": []
+}

@@ -62,6 +62,7 @@ def _minimal_program() -> dict[str, Any]:
         "library_bindings": [],
         "material_graphs": [],
         "inspection_policies": [],
+        "asset_class_profiles": [],
         "repair_policies": [],
         "fixtures": [],
         "tests": [],

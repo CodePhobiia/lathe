@@ -39,6 +39,8 @@ weighted credits:
   (normal, ao, curvature, id) are present in the surface outputs.
 - ``manifest_quality`` (max 0.10) — both high and low URIs are
   populated and no external tool was skipped.
+- ``projection_quality`` (max 0.20) — ray/cage transfer quality is
+  available and trusted enough to carry authored high-detail maps.
 
 Score >= 0.80 clears the warning (``is_real_highlow=True``); score
 < 0.80 fires the warning. The warning text is informational only and
@@ -89,6 +91,7 @@ _DISTINCT_URI_CREDIT = 0.15
 _DISTINCT_TRIANGLE_CREDIT = 0.30
 _BAKE_MAP_COMPLETENESS_CREDIT = 0.25
 _MANIFEST_QUALITY_CREDIT = 0.10
+_PROJECTION_QUALITY_CREDIT = 0.20
 
 _EXPECTED_BAKE_MAPS: tuple[str, ...] = ("normal", "ao", "curvature", "id")
 
@@ -150,6 +153,10 @@ class HighlowEvidence:
     bake_map_count_present: int
     bake_map_count_expected: int
     skipped_reasons: tuple[dict[str, str], ...]
+    projection_quality: dict[str, Any]
+    transfer_decision: str
+    transfer_policy: dict[str, Any]
+    projection_trust: float
     is_real_highlow: bool
     realness_score: float
     required: bool
@@ -173,6 +180,19 @@ def _as_int_or_none(value: Any) -> int | None:
     if isinstance(value, float):
         return int(value)
     return None
+
+
+def _as_float(value: Any, default: float = 0.0) -> float:
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return default
+    return default
 
 
 def _strict_mode_enabled() -> bool:
@@ -313,10 +333,11 @@ def _compute_realness_score(
     high_mesh_uri: str | None,
     low_mesh_uri: str | None,
     skipped_reasons_count: int,
+    projection_trust: float,
 ) -> float:
     """Compute the realness score in ``[0.0, 1.0]``.
 
-    Four weighted credits sum to a single score:
+    Five weighted credits sum to a single score:
 
     - ``distinct_uri_credit`` (0.15) — high and low URIs are distinct.
     - ``distinct_triangle_credit`` (0.30) — full credit at delta ratio
@@ -325,6 +346,8 @@ def _compute_realness_score(
       bake maps that are present.
     - ``manifest_quality`` (0.10) — both URIs populated and no skipped
       reasons recorded.
+    - ``projection_quality`` (0.20) — ray/cage transfer quality is
+      available and trusted enough to carry authored high-detail maps.
     """
     distinct_uri_credit = _DISTINCT_URI_CREDIT if distinct_uris else 0.0
     if triangle_delta_ratio >= _TRIANGLE_DELTA_FULL_CREDIT_RATIO:
@@ -337,11 +360,16 @@ def _compute_realness_score(
     )
     manifest_complete = bool(high_mesh_uri and low_mesh_uri and skipped_reasons_count == 0)
     manifest_quality = _MANIFEST_QUALITY_CREDIT if manifest_complete else 0.0
+    projection_quality = _PROJECTION_QUALITY_CREDIT * max(
+        0.0,
+        min(1.0, projection_trust),
+    )
     score = (
         distinct_uri_credit
         + distinct_triangle_credit
         + bake_map_completeness
         + manifest_quality
+        + projection_quality
     )
     return round(max(0.0, min(1.0, score)), 6)
 
@@ -366,6 +394,96 @@ def _runtime_low_uri(topology_bundle: dict[str, Any]) -> str | None:
     return _as_str_or_none(topology_bundle.get("mesh_uri"))
 
 
+def _projection_trust(decision: str) -> float:
+    if decision == "ray_primary":
+        return 1.0
+    if decision == "mixed_ray_fallback":
+        return 0.72
+    if decision == "fallback_primary":
+        return 0.44
+    return 0.30
+
+
+def _projection_policy_from_quality(projection_quality: dict[str, Any]) -> dict[str, Any]:
+    decision = str(projection_quality.get("decision") or "unavailable_no_projection_stats")
+    trust = _projection_trust(decision)
+    if decision == "ray_primary":
+        policy = {
+            "policy": "accept_ray_projected_high_detail",
+            "normal_source": "ray_projected_high_to_low_tangent_space",
+            "curvature_source": "ray_projected_high_to_low_uv",
+            "detail_reliability": "authoritative",
+            "fallback_action": "none",
+        }
+    elif decision == "mixed_ray_fallback":
+        policy = {
+            "policy": "accept_mixed_projection_with_fallback_accounting",
+            "normal_source": "mixed_ray_and_cage_nearest_high",
+            "curvature_source": "mixed_ray_and_cage_nearest_high",
+            "detail_reliability": "usable_mixed",
+            "fallback_action": "keep_projection_stats_and_blend_curvature_by_trust",
+        }
+    elif decision == "fallback_primary":
+        policy = {
+            "policy": "accept_cage_nearest_with_low_detail_trust",
+            "normal_source": "cage_nearest_high_tangent_space",
+            "curvature_source": "cage_nearest_high",
+            "detail_reliability": "fallback",
+            "fallback_action": "neutralize_curvature_by_trust_before_wear",
+        }
+    elif decision == "fallback_backend_unavailable":
+        policy = {
+            "policy": "degrade_to_cage_nearest_without_ray_backend",
+            "normal_source": "cage_nearest_high_tangent_space",
+            "curvature_source": "cage_nearest_high",
+            "detail_reliability": "backend_limited",
+            "fallback_action": "preserve_maps_but_mark_transfer_backend_unavailable",
+        }
+    else:
+        policy = {
+            "policy": "treat_highlow_transfer_as_unavailable",
+            "normal_source": "low_surface_or_missing_transfer",
+            "curvature_source": "low_surface_or_missing_transfer",
+            "detail_reliability": "unavailable",
+            "fallback_action": "do_not_credit_projection_quality",
+        }
+    return {
+        **policy,
+        "decision": decision,
+        "projection_trust": round(trust, 6),
+        "overall_hit_ratio": projection_quality.get("overall_hit_ratio", 0.0),
+        "overall_fallback_ratio": projection_quality.get("overall_fallback_ratio", 0.0),
+    }
+
+
+def _projection_evidence(highlow: dict[str, Any]) -> tuple[dict[str, Any], str, dict[str, Any], float]:
+    bake_transfer = _as_dict(highlow.get("bake_transfer"))
+    projection_quality = _as_dict(
+        highlow.get("projection_quality") or bake_transfer.get("projection_quality")
+    )
+    decision = str(
+        highlow.get("transfer_decision")
+        or bake_transfer.get("transfer_decision")
+        or projection_quality.get("decision")
+        or "unavailable_no_projection_stats"
+    )
+    if projection_quality:
+        projection_quality = {**projection_quality, "decision": decision}
+    else:
+        projection_quality = {"decision": decision, "channels": {}}
+    transfer_policy = _as_dict(
+        highlow.get("transfer_policy") or bake_transfer.get("transfer_policy")
+    )
+    if not transfer_policy:
+        transfer_policy = _projection_policy_from_quality(projection_quality)
+    projection_trust = _as_float(
+        transfer_policy.get("projection_trust"),
+        default=_projection_trust(decision),
+    )
+    projection_trust = round(max(0.0, min(1.0, projection_trust)), 6)
+    return projection_quality, decision, transfer_policy, projection_trust
+
+
 def _build_evidence(asset: dict[str, Any], runtime: dict[str, Any]) -> HighlowEvidence:
     surface_bundle = _surface_bundle(runtime)
     topology_bundle = _topology_bundle(runtime)
@@ -376,6 +494,12 @@ def _build_evidence(asset: dict[str, Any], runtime: dict[str, Any]) -> HighlowEv
     runtime_low_uri = _runtime_low_uri(topology_bundle)
     high_triangle_count = _as_int_or_none(highlow.get("high_triangle_count"))
     low_triangle_count = _as_int_or_none(highlow.get("low_triangle_count"))
+    (
+        projection_quality,
+        transfer_decision,
+        transfer_policy,
+        projection_trust,
+    ) = _projection_evidence(highlow)
     distinct_uris = bool(
         high_mesh_uri and low_mesh_uri and high_mesh_uri != low_mesh_uri
     )
@@ -410,6 +534,7 @@ def _build_evidence(asset: dict[str, Any], runtime: dict[str, Any]) -> HighlowEv
         high_mesh_uri=high_mesh_uri,
         low_mesh_uri=low_mesh_uri,
         skipped_reasons_count=len(skipped_reasons),
+        projection_trust=projection_trust,
     )
     is_real_highlow = realness_score >= _REALNESS_PASS_THRESHOLD
     return HighlowEvidence(
@@ -425,6 +550,10 @@ def _build_evidence(asset: dict[str, Any], runtime: dict[str, Any]) -> HighlowEv
         bake_map_count_present=bake_map_count_present,
         bake_map_count_expected=bake_map_count_expected,
         skipped_reasons=tuple(skipped_reasons),
+        projection_quality=projection_quality,
+        transfer_decision=transfer_decision,
+        transfer_policy=transfer_policy,
+        projection_trust=projection_trust,
         is_real_highlow=is_real_highlow,
         realness_score=realness_score,
         required=required,
@@ -473,6 +602,18 @@ def _warning_text(evidence: HighlowEvidence) -> str:
             "hero asset has no high-poly source; consider a real high-poly producer "
             "(Phase 8+)."
         )
+    if evidence.transfer_decision in {
+        "fallback_primary",
+        "fallback_backend_unavailable",
+        "unavailable_no_projection_stats",
+        "unavailable_no_faces",
+    }:
+        return (
+            f"hero asset has weak high/low transfer projection "
+            f"(transfer_decision={evidence.transfer_decision}, "
+            f"projection_trust={evidence.projection_trust:.3f}); consider a stronger "
+            f"ray/cage projection setup or authored high-poly source."
+        )
     return (
         f"hero asset has weak high/low realness "
         f"(realness_score={evidence.realness_score:.3f}); consider a real high-poly "
@@ -496,6 +637,9 @@ def _diagnostic_record(evidence: HighlowEvidence) -> dict[str, Any]:
             "triangle_delta_ratio": evidence.triangle_delta_ratio,
             "bake_map_count_present": evidence.bake_map_count_present,
             "bake_map_count_expected": evidence.bake_map_count_expected,
+            "transfer_decision": evidence.transfer_decision,
+            "projection_trust": evidence.projection_trust,
+            "transfer_policy": evidence.transfer_policy,
         },
     }
 
@@ -552,6 +696,10 @@ def evaluate_highlow_relation(
         "bake_maps": bake_maps_payload,
         "bake_map_count_present": evidence.bake_map_count_present,
         "bake_map_count_expected": evidence.bake_map_count_expected,
+        "projection_quality": evidence.projection_quality,
+        "transfer_decision": evidence.transfer_decision,
+        "transfer_policy": evidence.transfer_policy,
+        "projection_trust": evidence.projection_trust,
         "skipped_reasons": skipped_reasons_payload,
         "warnings": warnings,
         "diagnostics": diagnostics,

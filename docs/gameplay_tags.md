@@ -22,6 +22,8 @@ STAGE-12 of the V0.2 E3 roadmap. Lathe uses a **closed** controlled vocabulary f
 | `cover`         | AI cover-node-friendly geometry.                                        |
 | `waypoint`      | AI patrol / navigation waypoint.                                        |
 | `vfx_anchor`    | Particle / decal emitter attach point.                                  |
+| `mechanical`    | Powered/mechanized hard-surface asset (motors, hinges, actuators).      |
+| `airlock`       | Pressure-sealed door/portal subtype. Implies `door`.                    |
 
 ## Usage
 

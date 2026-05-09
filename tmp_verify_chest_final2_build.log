@@ -1,0 +1,414 @@
+D:\lathe_v0_1\lathe\cli\build_cmd.py:163: UserWarning: runtime_config tmp_verify_runtime_config.json contains unknown keys (ignored, will become errors in a future release): /execution/timeout_s
+  load_runtime_config(args.runtime_config) if args.runtime_config else load_runtime_config(None)
+{
+  "ok": false,
+  "code": "lathe.cli.build.build_failed",
+  "message": "Validation failed",
+  "diagnostics": [
+    {
+      "code": "L6301",
+      "name": "semantic_part_coverage_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.part_coverage",
+      "message": "Semantic validator failed for part_coverage: 0.125 < 0.850",
+      "details": {
+        "metric": "part_coverage",
+        "actual": 0.125,
+        "minimum": 0.85
+      },
+      "suggested_repairs": [
+        "add_missing_required_part",
+        "split_merged_parts",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6302",
+      "name": "semantic_silhouette_fidelity_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.silhouette_fidelity",
+      "message": "Semantic validator failed for silhouette_fidelity: 0.304 < 0.820",
+      "details": {
+        "metric": "silhouette_fidelity",
+        "actual": 0.303779,
+        "minimum": 0.82
+      },
+      "suggested_repairs": [
+        "refit_silhouette_region",
+        "reselect_candidate",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6303",
+      "name": "semantic_adjacency_score_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.adjacency_score",
+      "message": "Semantic validator failed for adjacency_score: 0.000 < 0.720",
+      "details": {
+        "metric": "adjacency_score",
+        "actual": 0.0,
+        "minimum": 0.72
+      },
+      "suggested_repairs": [
+        "restore_hinge_alignment",
+        "split_merged_parts",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6399",
+      "name": "toy_or_primitive_detected",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.semantic.toy_detected",
+      "message": "Semantic validator detected an under-structured toy/primitive-like output",
+      "details": {
+        "part_coverage": 0.125,
+        "silhouette_fidelity": 0.303779,
+        "symmetry_score": 1.0,
+        "component_score": 1.0,
+        "interface_score": 1.0,
+        "adjacency_score": 0.0,
+        "fragmentation_penalty": 0.0,
+        "structural_richness": 0.78125,
+        "toy_detected": true
+      },
+      "suggested_repairs": [
+        "increase_structural_richness",
+        "split_merged_parts",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6401",
+      "name": "visual_silhouette_complexity_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.silhouette_complexity",
+      "message": "Visual validator failed for silhouette_complexity: 0.662 < 0.720",
+      "details": {
+        "metric": "silhouette_complexity",
+        "actual": 0.6618,
+        "minimum": 0.72
+      },
+      "suggested_repairs": [
+        "refit_silhouette_region",
+        "add_secondary_features",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6402",
+      "name": "visual_attachment_integration_quality_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.attachment_integration_quality",
+      "message": "Visual validator failed for attachment_integration_quality: 0.550 < 0.740",
+      "details": {
+        "metric": "attachment_integration_quality",
+        "actual": 0.55,
+        "minimum": 0.74
+      },
+      "suggested_repairs": [
+        "improve_attachment_integration",
+        "restore_hinge_alignment",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6403",
+      "name": "visual_geometry_integration_quality_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.geometry_integration_quality",
+      "message": "Visual validator failed for geometry_integration_quality: 0.730 < 0.850",
+      "details": {
+        "metric": "geometry_integration_quality",
+        "actual": 0.730385,
+        "minimum": 0.85,
+        "topology_runtime_mesh_present": true,
+        "topology_face_count": 4416
+      },
+      "suggested_repairs": [
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6404",
+      "name": "visual_primitive_likeness_penalty_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.primitive_likeness_penalty",
+      "message": "Visual validator failed for primitive_likeness_penalty: 0.272 > 0.180",
+      "details": {
+        "metric": "primitive_likeness_penalty",
+        "actual": 0.272231,
+        "maximum": 0.18
+      },
+      "suggested_repairs": [
+        "add_secondary_features",
+        "improve_attachment_integration",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6405",
+      "name": "visual_assembled_primitives_penalty_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.assembled_primitives_penalty",
+      "message": "Visual validator failed for assembled_primitives_penalty: 0.218 > 0.200",
+      "details": {
+        "metric": "assembled_primitives_penalty",
+        "actual": 0.218497,
+        "maximum": 0.2
+      },
+      "suggested_repairs": [
+        "add_secondary_features",
+        "improve_attachment_integration",
+        "increase_structural_richness"
+      ]
+    },
+    {
+      "code": "L6406",
+      "name": "hero_quality_diagnostic_curvature_distribution_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.quality_diagnostics.curvature_distribution",
+      "message": "Hero asset_class='hero' blocked: curvature_distribution 0.000 < 0.550 (quality_diagnostics_threshold)",
+      "details": {
+        "metric": "curvature_distribution",
+        "actual": 0.0,
+        "minimum": 0.55,
+        "direction": "quality",
+        "asset_class": "hero",
+        "quality_diagnostics_threshold": 0.55
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6407",
+      "name": "hero_quality_diagnostic_topology_class_compliance_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.quality_diagnostics.topology_class_compliance",
+      "message": "Hero asset_class='hero' blocked: topology_class_compliance 0.505 < 0.550 (quality_diagnostics_threshold)",
+      "details": {
+        "metric": "topology_class_compliance",
+        "actual": 0.504756,
+        "minimum": 0.55,
+        "direction": "quality",
+        "asset_class": "hero",
+        "quality_diagnostics_threshold": 0.55
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6408",
+      "name": "hero_quality_diagnostic_texel_density_consistency_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.visual.quality_diagnostics.texel_density_consistency",
+      "message": "Hero asset_class='hero' blocked: texel_density_consistency 0.000 < 0.550 (quality_diagnostics_threshold)",
+      "details": {
+        "metric": "texel_density_consistency",
+        "actual": 0.0,
+        "minimum": 0.55,
+        "direction": "quality",
+        "asset_class": "hero",
+        "quality_diagnostics_threshold": 0.55
+      },
+      "suggested_repairs": []
+    },
+    {
+      "code": "L6201",
+      "name": "self_intersecting",
+      "severity": "warning",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.geometry_integrity.self_intersection_rate",
+      "message": "Geometry integrity detected 4 self-intersecting face pair(s) out of 31741 tested",
+      "details": {
+        "metric": "self_intersection_rate",
+        "intersecting_pairs": 4,
+        "tested_pairs": 31741,
+        "rate": 4.103271127743037e-07
+      },
+      "suggested_repairs": [
+        "repair_self_intersections"
+      ]
+    },
+    {
+      "code": "L6202",
+      "name": "inconsistent_normals",
+      "severity": "warning",
+      "phase": "validate",
+      "asset": "brassbound_chest",
+      "stage": "validate",
+      "path": "validate.geometry_integrity.normal_consistency",
+      "message": "Geometry integrity detected inconsistent face winding / normals (252 flipped edge-adjacencies of 6624)",
+      "details": {
+        "metric": "normal_consistency",
+        "is_winding_consistent": true,
+        "inconsistent_edges": 252,
+        "edge_pairs": 6624
+      },
+      "suggested_repairs": [
+        "repair_face_winding"
+      ]
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'chest'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "chest",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'loot'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "loot",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'container'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "container",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    },
+    {
+      "code": "L6410",
+      "id": "L6410",
+      "name": "unknown_gameplay_tag",
+      "severity": "warning",
+      "phase": "validate",
+      "stage": "validate",
+      "validator": "gameplay_tags",
+      "message": "Unknown gameplay tag 'fantasy'. Allowed: ['collectible', 'consumable', 'cover', 'decoration', 'destructible', 'door', 'hazard', 'interactable', 'kinematic', 'spawn_point', 'static', 'trigger', 'vehicle', 'vfx_anchor', 'waypoint', 'weapon'].",
+      "details": {
+        "tag": "fantasy",
+        "allowed": [
+          "collectible",
+          "consumable",
+          "cover",
+          "decoration",
+          "destructible",
+          "door",
+          "hazard",
+          "interactable",
+          "kinematic",
+          "spawn_point",
+          "static",
+          "trigger",
+          "vehicle",
+          "vfx_anchor",
+          "waypoint",
+          "weapon"
+        ]
+      }
+    }
+  ]
+}

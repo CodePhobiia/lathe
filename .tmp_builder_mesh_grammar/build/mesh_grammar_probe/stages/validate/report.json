@@ -1,0 +1,2706 @@
+{
+  "certified": false,
+  "threshold": 0.8,
+  "score": 1.0,
+  "semantic_quality": {
+    "family": "procedural_machine",
+    "blueprint_id": "lathe.blueprint.procedural_machine_v1",
+    "metrics": {
+      "part_coverage": 1.0,
+      "silhouette_fidelity": 0.752256,
+      "symmetry_score": 1.0,
+      "component_score": 1.0,
+      "interface_score": 1.0,
+      "adjacency_score": 1.0,
+      "fragmentation_penalty": 0.0,
+      "structural_richness": 1.0,
+      "toy_detected": false
+    },
+    "thresholds": {
+      "part_coverage": 0.84,
+      "silhouette_fidelity": 0.78,
+      "symmetry_score": 0.62,
+      "interface_score": 0.64,
+      "structural_richness": 0.72,
+      "adjacency_score": 0.72,
+      "maximum_fragmentation_penalty": 0.24
+    },
+    "diagnostics": [
+      {
+        "code": "L6301",
+        "name": "semantic_silhouette_fidelity_failed",
+        "severity": "error",
+        "phase": "validate",
+        "asset": "mesh_grammar_probe",
+        "stage": "validate",
+        "path": "validate.semantic.silhouette_fidelity",
+        "message": "Semantic validator failed for silhouette_fidelity: 0.752 < 0.780",
+        "details": {
+          "metric": "silhouette_fidelity",
+          "actual": 0.752256,
+          "minimum": 0.78
+        },
+        "suggested_repairs": [
+          "refit_silhouette_region",
+          "reselect_candidate"
+        ]
+      }
+    ]
+  },
+  "visual_quality": {
+    "family": "procedural_machine",
+    "blueprint_id": "lathe.blueprint.procedural_machine_v1",
+    "metrics": {
+      "detail_density": 1.0,
+      "silhouette_complexity": 0.80079,
+      "edge_readability": 0.795993,
+      "attachment_integration_quality": 0.65,
+      "support_plausibility": 0.75,
+      "feature_coherence": 0.906699,
+      "geometry_integration_quality": 1.0,
+      "surface_authoring_quality": 0.711624,
+      "primitive_likeness_penalty": 0.19031,
+      "assembled_primitives_penalty": 0.147196,
+      "render_silhouette_complexity": 1.0,
+      "render_primitive_penalty": 0.832578,
+      "render_assembly_artifact_penalty": 0.0,
+      "render_shading_variance": 0.103837,
+      "bevel_continuity": 0.844811,
+      "seam_quality": 1.0,
+      "stair_step_penalty": 0.197334,
+      "boolean_scar_penalty": 0.269521,
+      "shading_continuity": 0.686954,
+      "geometry_dihedral_continuity": 0.768839,
+      "geometry_feature_edge_persistence": 0.895458,
+      "geometry_stair_step_penalty": 0.197334,
+      "geometry_tiny_face_penalty": 0.449201,
+      "texture_entropy": 0.578987,
+      "normal_richness": 0.93571,
+      "roughness_variation": 0.535956,
+      "material_zone_coherence": 0.795747,
+      "decal_coherence": 0.651751,
+      "bake_cleanliness": 0.861303,
+      "highlow_distinction_quality": 0.45,
+      "surface_texture_entropy": 0.578987,
+      "surface_chroma_variation": 0.82327,
+      "surface_normal_richness": 0.93571,
+      "surface_roughness_variation": 0.535956,
+      "surface_bake_cleanliness": 0.861303,
+      "surface_material_zone_coherence": 0.795747,
+      "surface_emissive_coherence": 0.8,
+      "surface_highlow_realness": 0.45
+    },
+    "thresholds": {
+      "detail_density": 0.72,
+      "silhouette_complexity": 0.68,
+      "edge_readability": 0.66,
+      "attachment_integration_quality": 0.7,
+      "support_plausibility": 0.6,
+      "feature_coherence": 0.72,
+      "geometry_integration_quality": 0.8,
+      "surface_authoring_quality": 0.7,
+      "maximum_primitive_likeness_penalty": 0.22,
+      "maximum_assembled_primitives_penalty": 0.24
+    },
+    "render_report": {
+      "views": {
+        "front": {
+          "area": 2104.0,
+          "bbox_area": 7623.0,
+          "perimeter": 1028.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 1.0,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.0
+        },
+        "side": {
+          "area": 2954.0,
+          "bbox_area": 9559.0,
+          "perimeter": 940.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 1.0,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.00102
+        },
+        "iso": {
+          "area": 5518.0,
+          "bbox_area": 11011.0,
+          "perimeter": 1052.0,
+          "components": 1.0,
+          "complexity": 1.0,
+          "primitive_penalty": 0.497735,
+          "artifact_penalty": 0.0,
+          "clutter": 0.166667,
+          "shading_variance": 0.310491
+        }
+      },
+      "metrics": {
+        "render_silhouette_complexity": 1.0,
+        "render_primitive_penalty": 0.832578,
+        "render_assembly_artifact_penalty": 0.0,
+        "render_component_clutter": 0.166667,
+        "render_shading_variance": 0.103837
+      }
+    },
+    "diagnostics": [
+      {
+        "code": "L6401",
+        "name": "visual_attachment_integration_quality_failed",
+        "severity": "error",
+        "phase": "validate",
+        "asset": "mesh_grammar_probe",
+        "stage": "validate",
+        "path": "validate.visual.attachment_integration_quality",
+        "message": "Visual validator failed for attachment_integration_quality: 0.650 < 0.700",
+        "details": {
+          "metric": "attachment_integration_quality",
+          "actual": 0.65,
+          "minimum": 0.7
+        },
+        "suggested_repairs": [
+          "improve_attachment_integration",
+          "restore_hinge_alignment"
+        ]
+      }
+    ]
+  },
+  "flow_quality": {
+    "mode": "generate",
+    "metrics": {},
+    "thresholds": {},
+    "diagnostics": []
+  },
+  "geometry_integrity": {
+    "metrics": {
+      "self_intersection_rate": 0.0,
+      "normal_consistency": 0.999677,
+      "body_count_stability": 1.0
+    },
+    "evidence": {
+      "evaluated": true,
+      "intersecting_pairs": 0,
+      "tested_pairs": 67452,
+      "is_winding_consistent": true,
+      "inconsistent_edge_adjacencies": 11,
+      "edge_adjacencies": 34083,
+      "body_count_stability_check": false,
+      "observed_body_counts": [],
+      "geometry_strict": false
+    },
+    "diagnostics": [
+      {
+        "code": "L6202",
+        "name": "inconsistent_normals",
+        "severity": "warning",
+        "phase": "validate",
+        "asset": "mesh_grammar_probe",
+        "stage": "validate",
+        "path": "validate.geometry_integrity.normal_consistency",
+        "message": "Geometry integrity detected inconsistent face winding / normals (11 flipped edge-adjacencies of 34083)",
+        "details": {
+          "metric": "normal_consistency",
+          "is_winding_consistent": true,
+          "inconsistent_edges": 11,
+          "edge_pairs": 34083
+        },
+        "suggested_repairs": [
+          "repair_face_winding"
+        ]
+      }
+    ]
+  },
+  "urdf_validation": {
+    "metrics": {
+      "gated_off": true
+    },
+    "joint_count": 0,
+    "moving_part_count": 0,
+    "diagnostics": []
+  },
+  "quality_diagnostics": {
+    "version": "asset_quality_diagnostics_v1",
+    "metrics": {
+      "random_triangulation_penalty": 0.328721,
+      "debug_material_preview_penalty": 0.375003,
+      "highlow_fake_detail_penalty": 0.5,
+      "attachment_seating_quality": 0.37634,
+      "primary_secondary_tertiary_balance": 0.940237,
+      "family_grammar_coverage": 0.6
+    },
+    "warnings": [
+      "large flat faces split by noisy diagonal topology (random_triangulation_penalty=0.329)",
+      "hero asset lacks meaningful high-poly/low-poly distinction (highlow_fake_detail_penalty=0.500)",
+      "attachments appear stuck-on or under-integrated (attachment_seating_quality=0.376)"
+    ],
+    "recommendations": [
+      "Add controlled panel lines, bevels, or simplified topology on large flat faces. Avoid arbitrary diagonal triangulation.",
+      "Add a real high-poly source (bevels, embossed detail, chamfered edges) and bake to the runtime low-poly's normal/AO/curvature maps. If hero mode is intended, opt into the Phase 7 high-poly producer.",
+      "Seat attachments (handles, hinges, latches, panels) into sockets, brackets, mount plates, or recessed insets rather than placing them as separate primitives on top of the body."
+    ],
+    "findings": [
+      {
+        "metric": "random_triangulation_penalty",
+        "severity": "warning",
+        "warning": "large flat faces split by noisy diagonal topology (random_triangulation_penalty=0.329)",
+        "recommendation": "Add controlled panel lines, bevels, or simplified topology on large flat faces. Avoid arbitrary diagonal triangulation."
+      },
+      {
+        "metric": "highlow_fake_detail_penalty",
+        "severity": "warning",
+        "warning": "hero asset lacks meaningful high-poly/low-poly distinction (highlow_fake_detail_penalty=0.500)",
+        "recommendation": "Add a real high-poly source (bevels, embossed detail, chamfered edges) and bake to the runtime low-poly's normal/AO/curvature maps. If hero mode is intended, opt into the Phase 7 high-poly producer."
+      },
+      {
+        "metric": "attachment_seating_quality",
+        "severity": "warning",
+        "warning": "attachments appear stuck-on or under-integrated (attachment_seating_quality=0.376)",
+        "recommendation": "Seat attachments (handles, hinges, latches, panels) into sockets, brackets, mount plates, or recessed insets rather than placing them as separate primitives on top of the body."
+      }
+    ],
+    "diagnostics": []
+  },
+  "design_brief": {
+    "version": "design_brief_v1",
+    "brief": {
+      "asset_name": "mesh_grammar_probe",
+      "family": "industrial_crate",
+      "role": "reinforced industrial cargo crate",
+      "style_tags": [
+        "utility",
+        "industrial",
+        "shipping"
+      ],
+      "silhouette": "bold",
+      "bevel_language": "chunky_industrial",
+      "shape_language": "rectangular_with_45deg_cuts",
+      "detail_density": "hero",
+      "wear": "medium_edge_wear",
+      "material_age": "used_not_destroyed",
+      "greeble_style": "functional_only",
+      "negative_constraints": [
+        "toy_like",
+        "random_faceting",
+        "ornate"
+      ]
+    },
+    "family_inference": {
+      "matched_family": "industrial_crate",
+      "match_signal": "role",
+      "match_token": "crate"
+    },
+    "user_provided_via_experimental": {
+      "fields": []
+    },
+    "diagnostics": []
+  },
+  "construction_graph": {
+    "version": "construction_graph_v1",
+    "family": "industrial_crate",
+    "asset_name": "mesh_grammar_probe",
+    "nodes": [
+      {
+        "node_id": "body",
+        "node_type": "primary_volume",
+        "attributes": {}
+      },
+      {
+        "node_id": "front_panel",
+        "node_type": "panel",
+        "attributes": {}
+      },
+      {
+        "node_id": "pipe_rail",
+        "node_type": "rail",
+        "attributes": {}
+      },
+      {
+        "node_id": "side_fin",
+        "node_type": "panel",
+        "attributes": {}
+      }
+    ],
+    "edges": [
+      {
+        "source_id": "front_panel",
+        "target_id": "body",
+        "edge_type": "attached_to",
+        "attributes": {}
+      },
+      {
+        "source_id": "pipe_rail",
+        "target_id": "body",
+        "edge_type": "attached_to",
+        "attributes": {}
+      },
+      {
+        "source_id": "side_fin",
+        "target_id": "body",
+        "edge_type": "attached_to",
+        "attributes": {}
+      }
+    ],
+    "node_count": 4,
+    "edge_count": 3,
+    "node_types_present": [
+      "panel",
+      "primary_volume",
+      "rail"
+    ],
+    "edge_types_present": [
+      "attached_to"
+    ],
+    "diagnostics": []
+  },
+  "family_grammar": {
+    "version": "family_grammar_v1",
+    "family": "industrial_crate",
+    "coverage": 0.6,
+    "satisfied_count": 2,
+    "partial_count": 8,
+    "missing_count": 0,
+    "requirement_results": [
+      {
+        "name": "body_shell",
+        "severity": "required",
+        "status": "satisfied",
+        "evidence": {
+          "matched_parts": [
+            "body"
+          ]
+        }
+      },
+      {
+        "name": "lid_seam",
+        "severity": "required",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "front_panel",
+            "side_fin",
+            "recipe.lid_seam"
+          ]
+        }
+      },
+      {
+        "name": "corner_guards",
+        "severity": "required",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.corner_guard_0",
+            "recipe.corner_guard_1",
+            "recipe.corner_guard_2",
+            "recipe.corner_guard_3",
+            "recipe.corner_guard_4",
+            "recipe.corner_guard_5",
+            "recipe.corner_guard_6",
+            "recipe.corner_guard_7"
+          ]
+        }
+      },
+      {
+        "name": "latch_or_latch_plate",
+        "severity": "required",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.latch_plate"
+          ]
+        }
+      },
+      {
+        "name": "recessed_or_bracketed_handles",
+        "severity": "required",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.handle_l",
+            "recipe.handle_r"
+          ]
+        }
+      },
+      {
+        "name": "foot_rails_or_feet",
+        "severity": "recommended",
+        "status": "satisfied",
+        "evidence": {
+          "matched_parts": [
+            "pipe_rail"
+          ]
+        }
+      },
+      {
+        "name": "trim_bands",
+        "severity": "recommended",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.trim_band_mid"
+          ]
+        }
+      },
+      {
+        "name": "fasteners",
+        "severity": "recommended",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.fastener_grid_front"
+          ]
+        }
+      },
+      {
+        "name": "warning_or_decal_zones",
+        "severity": "recommended",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.warning_decal_zone"
+          ]
+        }
+      },
+      {
+        "name": "edge_wear_masks",
+        "severity": "recommended",
+        "status": "partial",
+        "evidence": {
+          "matched_parts": [],
+          "matched_graph_nodes": [
+            "recipe.edge_wear_zone"
+          ]
+        }
+      }
+    ],
+    "recommendations": [
+      "Add a lid seam: the industrial crate grammar requires a visible lid break wrapping the top of the body.",
+      "Add corner guards: the industrial crate grammar requires reinforcement corners on the eight body corners.",
+      "Add a latch or latch plate at the lid/body seam so the crate has a clear front face.",
+      "Seat handles into recessed wells or bracket plates rather than placing them as floating primitives on the shell.",
+      "Add horizontal or vertical trim bands to break up the body shell with medium-scale construction hierarchy.",
+      "Add visible fasteners (bolts, rivets, or screws) at structural junctions to reinforce the industrial brief.",
+      "Add warning text, stencils, or decal zones to provide surface storytelling on the body.",
+      "Add edge wear masks so paint chips and metal show at high-traffic edges instead of a uniform debug-material look."
+    ],
+    "diagnostics": []
+  },
+  "quality_plan": {
+    "schema_version": "lathe.asset_quality.quality_plan.v1",
+    "asset_id": "mesh_grammar_probe",
+    "family": "industrial_crate",
+    "object_family": "container",
+    "source_art_direction": "design_brief.json",
+    "source_family_metadata": "family_grammar_coverage.json",
+    "primary_secondary_tertiary": {
+      "primary": [
+        "body_shell"
+      ],
+      "secondary": [
+        "frame",
+        "corner_guards",
+        "handles"
+      ],
+      "tertiary": [
+        "decals",
+        "wear",
+        "fasteners"
+      ]
+    },
+    "art_direction_ir": {
+      "schema_version": "lathe.asset_quality.art_direction_ir.v1",
+      "asset_id": "mesh_grammar_probe",
+      "family": "industrial_crate",
+      "object_family": "container",
+      "style_intent": {
+        "genre": "industrial",
+        "substyle": "utility industrial shipping",
+        "mood": [
+          "utility",
+          "industrial",
+          "shipping"
+        ],
+        "audience": "game_runtime_proxy",
+        "quality_bar": "warning_quality"
+      },
+      "visual_hierarchy": {
+        "primary_read": "container identity through body",
+        "secondary_read": "functional parts and silhouette accents remain readable",
+        "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function",
+        "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance"
+      },
+      "silhouette": {
+        "target_strength": "high",
+        "thumbnail_size_px": 128,
+        "required_distinctive_features": [
+          "body",
+          "front_panel",
+          "pipe_rail",
+          "side_fin"
+        ],
+        "forbidden_shapes": [
+          "toy_like",
+          "random_faceting",
+          "ornate"
+        ]
+      },
+      "proportion_policy": {
+        "functional_scale_required": true,
+        "exaggeration_allowed_when_style_requires": true,
+        "scale_anchors": [
+          "body volume",
+          "lid/seam scale",
+          "handle and foot clearance"
+        ]
+      },
+      "materials": {
+        "required_separation": "high",
+        "zones": [
+          "primary material",
+          "secondary support material",
+          "accent/focal material",
+          "wear overlay",
+          "feature-linked material: body"
+        ],
+        "contrast_policy": "primary/secondary/accent/readability"
+      },
+      "motifs": {
+        "allowed": [
+          "utility",
+          "industrial",
+          "shipping",
+          "reinforced corners",
+          "panel seams",
+          "labels"
+        ],
+        "forbidden": [
+          "toy_like",
+          "random_faceting",
+          "ornate"
+        ],
+        "placement_rules": [
+          "place motifs on panels, corners, latches, and decals"
+        ]
+      },
+      "surface_story": {
+        "wear_logic": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime"
+        ],
+        "decals": [
+          "warning labels",
+          "serial marks",
+          "orientation arrows"
+        ],
+        "grime_logic": [
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ]
+      },
+      "platform": {
+        "target": "game_runtime_proxy",
+        "triangle_budget_warning": null,
+        "triangle_budget_strict": null,
+        "texture_policy": "proxy_or_deferred"
+      },
+      "forbidden_failure_modes": [
+        "material zones without semantic purpose",
+        "ornate",
+        "random primitive stack",
+        "random_faceting",
+        "style mismatch between parts",
+        "toy_like",
+        "unbounded procedural noise",
+        "weak thumbnail read"
+      ],
+      "forbidden_visual_failure_modes": [
+        "material zones without semantic purpose",
+        "ornate",
+        "random primitive stack",
+        "random_faceting",
+        "style mismatch between parts",
+        "toy_like",
+        "unbounded procedural noise",
+        "weak thumbnail read"
+      ],
+      "reference_summary": {
+        "has_reference_board": false,
+        "silhouette_count": 0,
+        "material_count": 0,
+        "negative_count": 0
+      },
+      "family_metadata_summary": {
+        "coverage": 0.6,
+        "required_rule_count": 0,
+        "missing_required_count": 0
+      }
+    },
+    "style_pack": {
+      "present": false
+    },
+    "visual_hierarchy": {
+      "primary_read": "container identity through body",
+      "secondary_read": "functional parts and silhouette accents remain readable",
+      "tertiary_read": "ornament, decals, wear, and microdetail are bounded by motif or function",
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance"
+    },
+    "silhouette_requirements": [
+      "body",
+      "front_panel",
+      "pipe_rail",
+      "side_fin"
+    ],
+    "proportion_requirements": {
+      "functional_scale_required": true,
+      "exaggeration_allowed_when_style_requires": true,
+      "scale_anchors": [
+        "body volume",
+        "lid/seam scale",
+        "handle and foot clearance"
+      ]
+    },
+    "material_requirements": {
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay",
+        "feature-linked material: body"
+      ],
+      "contrast_policy": "primary/secondary/accent/readability"
+    },
+    "material_separation_requirements": {
+      "required_separation": "high",
+      "zones": [
+        "primary material",
+        "secondary support material",
+        "accent/focal material",
+        "wear overlay",
+        "feature-linked material: body"
+      ],
+      "contrast_policy": "primary/secondary/accent/readability"
+    },
+    "detail_requirements": {
+      "density_zones": {
+        "primary": [
+          "body_shell"
+        ],
+        "secondary": [
+          "frame",
+          "corner_guards",
+          "handles"
+        ],
+        "tertiary": [
+          "decals",
+          "wear",
+          "fasteners"
+        ]
+      },
+      "tertiary_detail_budget": "bounded",
+      "noise_policy": "ornament must map to a declared motif, material transition, or functional affordance"
+    },
+    "detail_density_zones": {
+      "primary": [
+        "body_shell"
+      ],
+      "secondary": [
+        "frame",
+        "corner_guards",
+        "handles"
+      ],
+      "tertiary": [
+        "decals",
+        "wear",
+        "fasteners"
+      ]
+    },
+    "motif_requirements": {
+      "allowed": [
+        "utility",
+        "industrial",
+        "shipping",
+        "reinforced corners",
+        "panel seams",
+        "labels"
+      ],
+      "forbidden": [
+        "toy_like",
+        "random_faceting",
+        "ornate"
+      ],
+      "placement_rules": [
+        "place motifs on panels, corners, latches, and decals"
+      ]
+    },
+    "motif_language": {
+      "allowed": [
+        "utility",
+        "industrial",
+        "shipping",
+        "reinforced corners",
+        "panel seams",
+        "labels"
+      ],
+      "forbidden": [
+        "toy_like",
+        "random_faceting",
+        "ornate"
+      ],
+      "placement_rules": [
+        "place motifs on panels, corners, latches, and decals"
+      ]
+    },
+    "surface_story_requirements": {
+      "wear_logic": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ],
+      "decals": [
+        "warning labels",
+        "serial marks",
+        "orientation arrows"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "surface_story": {
+      "wear_logic": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime"
+      ],
+      "decals": [
+        "warning labels",
+        "serial marks",
+        "orientation arrows"
+      ],
+      "grime_logic": [
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "platform": {
+      "target": "game_runtime_proxy",
+      "triangle_budget_warning": null,
+      "triangle_budget_strict": null,
+      "texture_policy": "proxy_or_deferred"
+    },
+    "certification_targets": {
+      "warning_min_score": 75,
+      "strict_min_score": 90,
+      "required_dimensions": [
+        "silhouette_strength",
+        "proportion_intent",
+        "material_contrast",
+        "detail_hierarchy",
+        "motif_coherence",
+        "surface_storytelling",
+        "functional_readability",
+        "style_consistency",
+        "procedural_noise_penalty"
+      ],
+      "warning_minimum": 0.75,
+      "strict_minimum": 0.9,
+      "dimensions": [
+        "silhouette_strength",
+        "proportion_intent",
+        "material_contrast",
+        "detail_hierarchy",
+        "motif_coherence",
+        "surface_storytelling",
+        "functional_readability",
+        "style_consistency",
+        "procedural_noise_penalty"
+      ]
+    },
+    "likely_failure_modes": [
+      "material zones without semantic purpose",
+      "ornate",
+      "random primitive stack",
+      "random_faceting",
+      "style mismatch between parts",
+      "toy_like",
+      "unbounded procedural noise",
+      "weak thumbnail read"
+    ],
+    "metrics": {
+      "silhouette_strength": 0.68,
+      "proportion_intent": 0.68,
+      "material_contrast": 0.62,
+      "detail_hierarchy": 0.96,
+      "motif_coherence": 0.78,
+      "surface_storytelling": 0.72,
+      "functional_readability": 0.58,
+      "style_consistency": 1.0,
+      "procedural_noise_penalty": 0.17
+    },
+    "semantic_critique": {
+      "schema_version": "lathe.asset_quality.semantic_critique.v1",
+      "asset_id": "mesh_grammar_probe",
+      "source_quality_plan": "quality_plan.json",
+      "summary": {
+        "status": "warning_pass_with_repairs",
+        "highest_priority_issue": "low_functional_readability"
+      },
+      "issue_count": 5,
+      "issues": [
+        {
+          "issue_id": "a35d54f8a1e2941a",
+          "issue": "low_functional_readability",
+          "severity": "warning",
+          "dimension": "functional_readability",
+          "score": 0.58,
+          "threshold": 0.75,
+          "target": "visual_hierarchy.secondary_read",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Clarify handles, buttons, edges, screens, sockets, or other use affordances.",
+          "preserve": [
+            "primary_silhouette",
+            "platform_budget"
+          ]
+        },
+        {
+          "issue_id": "2a57e8a0e4c4e9e3",
+          "issue": "low_material_contrast",
+          "severity": "warning",
+          "dimension": "material_contrast",
+          "score": 0.62,
+          "threshold": 0.75,
+          "target": "materials.zones",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Increase value/hue separation and bind accent material to a focal affordance.",
+          "preserve": [
+            "primary_silhouette",
+            "material_roles"
+          ]
+        },
+        {
+          "issue_id": "148d7920e6a50cbd",
+          "issue": "low_proportion_intent",
+          "severity": "warning",
+          "dimension": "proportion_intent",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "proportion_policy.scale_anchors",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Tighten functional scale relationships before adding tertiary detail.",
+          "preserve": [
+            "construction_identity",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "ad38efdcf6825b4a",
+          "issue": "low_silhouette_strength",
+          "severity": "warning",
+          "dimension": "silhouette_strength",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "silhouette.required_distinctive_features",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Add or emphasize a family-specific silhouette landmark visible at 128px.",
+          "preserve": [
+            "primary_silhouette",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "2990e66f06bb95a6",
+          "issue": "low_surface_storytelling",
+          "severity": "warning",
+          "dimension": "surface_storytelling",
+          "score": 0.72,
+          "threshold": 0.75,
+          "target": "surface_story.wear_logic",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Move wear and grime to contact, edge, recess, and affordance zones.",
+          "preserve": [
+            "material_roles",
+            "construction_identity"
+          ]
+        }
+      ],
+      "repairs": [
+        {
+          "issue_id": "a35d54f8a1e2941a",
+          "issue": "low_functional_readability",
+          "severity": "warning",
+          "dimension": "functional_readability",
+          "score": 0.58,
+          "threshold": 0.75,
+          "target": "visual_hierarchy.secondary_read",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Clarify handles, buttons, edges, screens, sockets, or other use affordances.",
+          "preserve": [
+            "primary_silhouette",
+            "platform_budget"
+          ]
+        },
+        {
+          "issue_id": "2a57e8a0e4c4e9e3",
+          "issue": "low_material_contrast",
+          "severity": "warning",
+          "dimension": "material_contrast",
+          "score": 0.62,
+          "threshold": 0.75,
+          "target": "materials.zones",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Increase value/hue separation and bind accent material to a focal affordance.",
+          "preserve": [
+            "primary_silhouette",
+            "material_roles"
+          ]
+        },
+        {
+          "issue_id": "148d7920e6a50cbd",
+          "issue": "low_proportion_intent",
+          "severity": "warning",
+          "dimension": "proportion_intent",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "proportion_policy.scale_anchors",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Tighten functional scale relationships before adding tertiary detail.",
+          "preserve": [
+            "construction_identity",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "ad38efdcf6825b4a",
+          "issue": "low_silhouette_strength",
+          "severity": "warning",
+          "dimension": "silhouette_strength",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "silhouette.required_distinctive_features",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Add or emphasize a family-specific silhouette landmark visible at 128px.",
+          "preserve": [
+            "primary_silhouette",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "2990e66f06bb95a6",
+          "issue": "low_surface_storytelling",
+          "severity": "warning",
+          "dimension": "surface_storytelling",
+          "score": 0.72,
+          "threshold": 0.75,
+          "target": "surface_story.wear_logic",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Move wear and grime to contact, edge, recess, and affordance zones.",
+          "preserve": [
+            "material_roles",
+            "construction_identity"
+          ]
+        }
+      ]
+    },
+    "diagnostics": []
+  },
+  "grammar_lowering": {
+    "version": "grammar_lowering_v1",
+    "family": "industrial_crate",
+    "shape_program": {
+      "version": "shape_ir_v2",
+      "asset_name": "mesh_grammar_probe",
+      "family": "industrial_crate",
+      "ops": [
+        {
+          "op": "solid.box",
+          "target": "body",
+          "parameters": {
+            "width_cm": 92.0,
+            "height_cm": 58.0,
+            "depth_cm": 64.0
+          },
+          "purpose": "body_shell.primary_volume"
+        },
+        {
+          "op": "op.inset",
+          "target": "body.top_band",
+          "parameters": {
+            "depth_cm": 0.4
+          },
+          "purpose": "lid_seam.inset"
+        },
+        {
+          "op": "op.cut_panel_line",
+          "target": "body.top_band",
+          "parameters": {
+            "width_cm": 0.4
+          },
+          "purpose": "lid_seam.cut"
+        },
+        {
+          "op": "op.corner_guard_set",
+          "target": "body.corners",
+          "parameters": {
+            "size_cm": 4.0,
+            "guard_count": 8
+          },
+          "purpose": "corner_guard_set.eight_corners"
+        },
+        {
+          "op": "op.mount_plate",
+          "target": "body.front_face",
+          "parameters": {
+            "width_cm": 8.0,
+            "height_cm": 6.0
+          },
+          "purpose": "latch_plate.mount_plate"
+        },
+        {
+          "op": "op.socket",
+          "target": "body.left_face",
+          "parameters": {
+            "clearance_cm": 0.6,
+            "mount_type": "recessed_bracket"
+          },
+          "purpose": "handles.socket_left"
+        },
+        {
+          "op": "op.socket",
+          "target": "body.right_face",
+          "parameters": {
+            "clearance_cm": 0.6,
+            "mount_type": "recessed_bracket"
+          },
+          "purpose": "handles.socket_right"
+        },
+        {
+          "op": "solid.rail",
+          "target": "body.bottom_front",
+          "parameters": {
+            "length_cm": 60.0,
+            "profile_cm": 4.0
+          },
+          "purpose": "foot_rails.front"
+        },
+        {
+          "op": "solid.rail",
+          "target": "body.bottom_back",
+          "parameters": {
+            "length_cm": 60.0,
+            "profile_cm": 4.0
+          },
+          "purpose": "foot_rails.back"
+        },
+        {
+          "op": "op.trim_band",
+          "target": "body.mid_plane",
+          "parameters": {
+            "width_cm": 2.0
+          },
+          "purpose": "trim_bands.mid_plane"
+        },
+        {
+          "op": "op.fastener_grid",
+          "target": "body.front_face",
+          "parameters": {
+            "rows": 2,
+            "columns": 2,
+            "spacing_cm": 8.0
+          },
+          "purpose": "fasteners.front_grid"
+        },
+        {
+          "op": "op.repeat",
+          "target": "body.front_face",
+          "parameters": {
+            "count": 1,
+            "axis": "z"
+          },
+          "purpose": "warning_decal_zone.front_face"
+        },
+        {
+          "op": "op.chip_edges",
+          "target": "body.outer_edges",
+          "parameters": {
+            "amount": 0.28
+          },
+          "purpose": "edge_wear_masks.chip_edges"
+        }
+      ]
+    },
+    "shape_program_summary": {
+      "op_count": 13,
+      "ops_by_family": {
+        "solid_ops": 3,
+        "boolean_ops": 2,
+        "edge_ops": 0,
+        "repetition_ops": 4,
+        "integration_ops": 3,
+        "wear_ops": 1
+      },
+      "ops_by_requirement": {
+        "body_shell": 1,
+        "corner_guard_set": 1,
+        "edge_wear_masks": 1,
+        "fasteners": 1,
+        "foot_rails": 2,
+        "handles": 2,
+        "latch_plate": 1,
+        "lid_seam": 2,
+        "trim_bands": 1,
+        "warning_decal_zone": 1
+      }
+    },
+    "synthesized_graph_nodes": [
+      {
+        "node_id": "recipe.body_shell",
+        "node_type": "primary_volume",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.lid_seam",
+        "node_type": "panel",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_0",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_1",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_2",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_3",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_4",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_5",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_6",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.corner_guard_7",
+        "node_type": "guard",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.latch_plate",
+        "node_type": "inset",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.handle_l",
+        "node_type": "handle",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.handle_r",
+        "node_type": "handle",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.foot_rail_front",
+        "node_type": "rail",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.foot_rail_back",
+        "node_type": "rail",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.trim_band_mid",
+        "node_type": "trim",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.fastener_grid_front",
+        "node_type": "fastener",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.warning_decal_zone",
+        "node_type": "decal_zone",
+        "attributes": {}
+      },
+      {
+        "node_id": "recipe.edge_wear_zone",
+        "node_type": "wear_zone",
+        "attributes": {}
+      }
+    ],
+    "synthesized_node_count": 19,
+    "v1_lowering": {
+      "v1_record_count": 3,
+      "diagnostics": [
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.inset",
+          "reason": "op 'op.inset' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.cut_panel_line",
+          "reason": "op 'op.cut_panel_line' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.corner_guard_set",
+          "reason": "op 'op.corner_guard_set' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.mount_plate",
+          "reason": "op 'op.mount_plate' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.socket",
+          "reason": "op 'op.socket' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.socket",
+          "reason": "op 'op.socket' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.trim_band",
+          "reason": "op 'op.trim_band' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.fastener_grid",
+          "reason": "op 'op.fastener_grid' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.repeat",
+          "reason": "op 'op.repeat' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        },
+        {
+          "code": "no_v1_equivalent",
+          "op": "op.chip_edges",
+          "reason": "op 'op.chip_edges' is valid in ShapeIR v2 but has no v1 primitive equivalent"
+        }
+      ],
+      "unsupported_ops": []
+    },
+    "diagnostics": []
+  },
+  "highlow_relation": {
+    "version": "highlow_relation_v1",
+    "is_real_highlow": false,
+    "realness_score": 0.5,
+    "high_mesh_uri": "stages/shape/candidate_00.glb",
+    "low_mesh_uri": "stages/topology/topology.glb",
+    "runtime_low_uri": "stages/topology/topology.glb",
+    "high_triangle_count": 22722,
+    "low_triangle_count": 22722,
+    "triangle_delta_ratio": 0.0,
+    "distinct_uris": true,
+    "distinct_triangle_counts": false,
+    "bake_maps": [
+      {
+        "map_name": "normal",
+        "present": true,
+        "uri": "maps\\normal.png",
+        "skipped_reason": null
+      },
+      {
+        "map_name": "ao",
+        "present": true,
+        "uri": "maps\\ao.png",
+        "skipped_reason": null
+      },
+      {
+        "map_name": "curvature",
+        "present": true,
+        "uri": "maps\\curvature.png",
+        "skipped_reason": null
+      },
+      {
+        "map_name": "id",
+        "present": true,
+        "uri": "maps\\id.png",
+        "skipped_reason": null
+      }
+    ],
+    "bake_map_count_present": 4,
+    "bake_map_count_expected": 4,
+    "skipped_reasons": [],
+    "warnings": [
+      "hero asset uses fake high/low: high_triangle_count == low_triangle_count == 22722; consider a real high-poly producer (Phase 8+)."
+    ],
+    "required": true,
+    "diagnostics": []
+  },
+  "material_wear_graph": {
+    "version": "material_wear_v1",
+    "family": "industrial_crate",
+    "graph": {
+      "family": "industrial_crate",
+      "version": "material_wear_v1",
+      "materials": [
+        {
+          "zone_id": "painted_steel_body",
+          "zone_type": "base_material",
+          "base_color": "#4f5668",
+          "roughness": 0.62,
+          "metalness": 0.0,
+          "bound_part": "body",
+          "parameters": {}
+        }
+      ],
+      "underlayers": [
+        {
+          "zone_id": "dark_bare_metal",
+          "zone_type": "underlayer",
+          "base_color": "#2a2a2a",
+          "roughness": 0.5,
+          "metalness": 1.0,
+          "bound_part": "body",
+          "parameters": {}
+        }
+      ],
+      "wear_masks": [
+        {
+          "mask_id": "recipe.wear.convex_edges_body",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.28,
+          "bound_node_id": null,
+          "bound_edge_target": "body.outer_edges",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.concave_grime_lid_seam",
+          "mask_type": "concave_grime",
+          "intensity": 0.22,
+          "bound_node_id": "recipe.lid_seam",
+          "bound_edge_target": "body.top_band",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.foot_scuff_l",
+          "mask_type": "lower_contact_scuff",
+          "intensity": 0.35,
+          "bound_node_id": "recipe.foot_rail_front",
+          "bound_edge_target": "body.bottom_front",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.foot_scuff_r",
+          "mask_type": "lower_contact_scuff",
+          "intensity": 0.35,
+          "bound_node_id": "recipe.foot_rail_back",
+          "bound_edge_target": "body.bottom_back",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.handle_touch_l",
+          "mask_type": "handle_touch_wear",
+          "intensity": 0.18,
+          "bound_node_id": "recipe.handle_l",
+          "bound_edge_target": "body.left_face",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.handle_touch_r",
+          "mask_type": "handle_touch_wear",
+          "intensity": 0.18,
+          "bound_node_id": "recipe.handle_r",
+          "bound_edge_target": "body.right_face",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.warning_decal",
+          "mask_type": "decal_wear",
+          "intensity": 0.2,
+          "bound_node_id": "recipe.warning_decal_zone",
+          "bound_edge_target": "body.front_face",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_0",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_0",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_1",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_1",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_2",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_2",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_3",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_3",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_4",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_4",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_5",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_5",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_6",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_6",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        },
+        {
+          "mask_id": "recipe.wear.corner_guard_7",
+          "mask_type": "convex_edge_wear",
+          "intensity": 0.24,
+          "bound_node_id": "recipe.corner_guard_7",
+          "bound_edge_target": "body.corners",
+          "parameters": {}
+        }
+      ]
+    },
+    "graph_summary": {
+      "graph_source": "family_default",
+      "material_graph_reference": "",
+      "material_zone_count": 1,
+      "underlayer_count": 1,
+      "wear_mask_count": 15,
+      "wear_masks_by_type": {
+        "concave_grime": 1,
+        "convex_edge_wear": 9,
+        "decal_wear": 1,
+        "handle_touch_wear": 2,
+        "lower_contact_scuff": 2
+      },
+      "bound_to_construction_nodes": 14,
+      "bound_to_edge_targets": 15,
+      "bound_to_both": 14,
+      "declared_node_bindings": 14,
+      "declared_edge_bindings": 15,
+      "resolved_bindings": 15
+    },
+    "binding_validation": {
+      "all_node_bindings_resolved": true,
+      "all_edge_bindings_resolved": true,
+      "orphan_node_bindings": [],
+      "orphan_edge_bindings": [],
+      "construction_graph_node_count": 23,
+      "edge_target_count": 19
+    },
+    "uniform_noise": {
+      "is_uniform_noise": false,
+      "uniform_noise_score": 0.0,
+      "zone_diversity": 1.0,
+      "wear_binding_ratio": 1.0,
+      "warnings": []
+    },
+    "skipped_reasons": [],
+    "quality_plan_alignment": {
+      "quality_plan_present": true,
+      "object_family": "container",
+      "required_material_goal_count": 5,
+      "material_zone_count": 1,
+      "surface_story_rule_count": 3,
+      "wear_mask_count": 15
+    },
+    "diagnostics": []
+  },
+  "preview_evidence": {
+    "version": "preview_evidence_v1",
+    "asset_name": "mesh_grammar_probe",
+    "previews": {
+      "final_beauty": [],
+      "material_ids": [],
+      "wireframe": [],
+      "uv_layout": [],
+      "collision": [],
+      "lod_sheet": [],
+      "bake_maps": [
+        {
+          "role": "normal_map",
+          "uri": "stages/surface/maps/normal.png",
+          "status": "declared"
+        },
+        {
+          "role": "ao_map",
+          "uri": "stages/surface/maps/ao.png",
+          "status": "declared"
+        },
+        {
+          "role": "curvature_map",
+          "uri": "stages/surface/maps/curvature.png",
+          "status": "declared"
+        },
+        {
+          "role": "id_map",
+          "uri": "stages/surface/maps/id.png",
+          "status": "declared"
+        }
+      ],
+      "comparison_sheet": []
+    },
+    "preview_summary": {
+      "final_beauty_present": false,
+      "material_ids_present": false,
+      "wireframe_present": false,
+      "final_beauty_declared": false,
+      "material_ids_declared": false,
+      "wireframe_declared": false,
+      "bake_map_count": 4,
+      "comparison_sheet_present": false,
+      "comparison_sheet_requested": false,
+      "comparison_sheet_renderer_available": false,
+      "distinct_final_from_material_ids": false,
+      "total_preview_count": 0
+    },
+    "report_links": [
+      "stages/surface/maps/normal.png",
+      "stages/surface/maps/ao.png",
+      "stages/surface/maps/curvature.png",
+      "stages/surface/maps/id.png"
+    ],
+    "skipped_reasons": [
+      {
+        "category": "collision",
+        "reason": "preview_not_requested_by_package_config"
+      },
+      {
+        "category": "comparison_sheet",
+        "reason": "comparison_sheet_not_requested"
+      },
+      {
+        "category": "final_beauty",
+        "reason": "preview_not_requested_by_package_config"
+      },
+      {
+        "category": "lod_sheet",
+        "reason": "preview_not_requested_by_package_config"
+      },
+      {
+        "category": "material_ids",
+        "reason": "preview_not_requested_by_package_config"
+      },
+      {
+        "category": "uv_layout",
+        "reason": "preview_not_requested_by_package_config"
+      },
+      {
+        "category": "wireframe",
+        "reason": "preview_not_requested_by_package_config"
+      }
+    ],
+    "warnings": [],
+    "diagnostics": []
+  },
+  "vision_critique": {
+    "version": "vision_critique_v1",
+    "asset_name": "mesh_grammar_probe",
+    "provider": {
+      "name": "deterministic_stub",
+      "version": "v1",
+      "configured": false
+    },
+    "provider_config": {
+      "enabled": false,
+      "requested_provider": null,
+      "resolved_provider": "deterministic_stub",
+      "external_provider_configured": false,
+      "safe_config_keys": [],
+      "sensitive_values_redacted": true
+    },
+    "issues": [
+      {
+        "issue_id": "3c4ef9c9e21152d5",
+        "severity": "warning",
+        "evidence_view": "highlow_relation",
+        "recommendation": "High/low distinction is weak; bake more meaningful detail into the runtime low-poly.",
+        "patch_proposals": [
+          {
+            "target": "design_brief",
+            "field": "design_brief.detail_density",
+            "operation": "set",
+            "current_value": "hero",
+            "proposed_value": "hero",
+            "rationale": "highlow_fake_detail_penalty=0.500 exceeds threshold 0.40"
+          }
+        ]
+      },
+      {
+        "issue_id": "744d4de93a4cb598",
+        "severity": "warning",
+        "evidence_view": "quality_diagnostics",
+        "recommendation": "Large flat faces split by noisy diagonal topology; introduce panel lines or controlled bevels.",
+        "patch_proposals": [
+          {
+            "target": "shape_ir_v2",
+            "field": "shape_ir_v2.ops.cut_panel_line",
+            "operation": "add",
+            "current_value": null,
+            "proposed_value": {
+              "reason": "introduce_controlled_panel_break"
+            },
+            "rationale": "random_triangulation_penalty=0.329 exceeds threshold 0.30"
+          },
+          {
+            "target": "design_brief",
+            "field": "design_brief.shape_language",
+            "operation": "set",
+            "current_value": "rectangular_with_45deg_cuts",
+            "proposed_value": "rectangular_with_45deg_cuts",
+            "rationale": "random_triangulation_penalty=0.329 exceeds threshold 0.30"
+          }
+        ]
+      },
+      {
+        "issue_id": "cb522808a7934c80",
+        "severity": "warning",
+        "evidence_view": "family_grammar",
+        "recommendation": "Family grammar coverage below 0.70; missing required parts.",
+        "patch_proposals": [
+          {
+            "target": "family_grammar",
+            "field": "family_grammar.missing_requirements",
+            "operation": "add",
+            "current_value": null,
+            "proposed_value": [
+              "lid_seam",
+              "corner_guards",
+              "latch_or_latch_plate",
+              "recessed_or_bracketed_handles",
+              "trim_bands",
+              "fasteners",
+              "warning_or_decal_zones",
+              "edge_wear_masks"
+            ],
+            "rationale": "family_grammar.coverage=0.600 below threshold 0.70"
+          }
+        ]
+      }
+    ],
+    "patch_validation": {
+      "all_patches_valid": true,
+      "approved_count": 4,
+      "rejected_count": 0,
+      "rejections": []
+    },
+    "summary": {
+      "issue_count": 3,
+      "issues_by_severity": {
+        "info": 0,
+        "warning": 3,
+        "error": 0
+      },
+      "patch_count": 4,
+      "approved_patches": 4
+    },
+    "iteration_history": [
+      {
+        "iteration": 0,
+        "provider": "deterministic_stub",
+        "external_provider_configured": false,
+        "issue_count": 3,
+        "patch_count": 4,
+        "approved_patch_count": 4,
+        "before_after_available": false,
+        "applied": false,
+        "status": "evidence_recorded"
+      }
+    ],
+    "before_after_metrics": {
+      "available": false,
+      "comparison_sheet_requested": false,
+      "before": {},
+      "after": {},
+      "delta": {},
+      "skipped_reason": "comparison_sheet_not_requested"
+    },
+    "skipped_reasons": [
+      {
+        "category": "vision_provider",
+        "reason": "vision_provider_not_configured"
+      }
+    ],
+    "warnings": [],
+    "quality_plan_critique": {
+      "schema_version": "lathe.asset_quality.semantic_critique.v1",
+      "asset_id": "mesh_grammar_probe",
+      "source_quality_plan": "quality_plan.json",
+      "summary": {
+        "status": "warning_pass_with_repairs",
+        "highest_priority_issue": "low_functional_readability"
+      },
+      "issue_count": 5,
+      "issues": [
+        {
+          "issue_id": "a35d54f8a1e2941a",
+          "issue": "low_functional_readability",
+          "severity": "warning",
+          "dimension": "functional_readability",
+          "score": 0.58,
+          "threshold": 0.75,
+          "target": "visual_hierarchy.secondary_read",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Clarify handles, buttons, edges, screens, sockets, or other use affordances.",
+          "preserve": [
+            "primary_silhouette",
+            "platform_budget"
+          ]
+        },
+        {
+          "issue_id": "2a57e8a0e4c4e9e3",
+          "issue": "low_material_contrast",
+          "severity": "warning",
+          "dimension": "material_contrast",
+          "score": 0.62,
+          "threshold": 0.75,
+          "target": "materials.zones",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Increase value/hue separation and bind accent material to a focal affordance.",
+          "preserve": [
+            "primary_silhouette",
+            "material_roles"
+          ]
+        },
+        {
+          "issue_id": "148d7920e6a50cbd",
+          "issue": "low_proportion_intent",
+          "severity": "warning",
+          "dimension": "proportion_intent",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "proportion_policy.scale_anchors",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Tighten functional scale relationships before adding tertiary detail.",
+          "preserve": [
+            "construction_identity",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "ad38efdcf6825b4a",
+          "issue": "low_silhouette_strength",
+          "severity": "warning",
+          "dimension": "silhouette_strength",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "silhouette.required_distinctive_features",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Add or emphasize a family-specific silhouette landmark visible at 128px.",
+          "preserve": [
+            "primary_silhouette",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "2990e66f06bb95a6",
+          "issue": "low_surface_storytelling",
+          "severity": "warning",
+          "dimension": "surface_storytelling",
+          "score": 0.72,
+          "threshold": 0.75,
+          "target": "surface_story.wear_logic",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Move wear and grime to contact, edge, recess, and affordance zones.",
+          "preserve": [
+            "material_roles",
+            "construction_identity"
+          ]
+        }
+      ],
+      "repairs": [
+        {
+          "issue_id": "a35d54f8a1e2941a",
+          "issue": "low_functional_readability",
+          "severity": "warning",
+          "dimension": "functional_readability",
+          "score": 0.58,
+          "threshold": 0.75,
+          "target": "visual_hierarchy.secondary_read",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Clarify handles, buttons, edges, screens, sockets, or other use affordances.",
+          "preserve": [
+            "primary_silhouette",
+            "platform_budget"
+          ]
+        },
+        {
+          "issue_id": "2a57e8a0e4c4e9e3",
+          "issue": "low_material_contrast",
+          "severity": "warning",
+          "dimension": "material_contrast",
+          "score": 0.62,
+          "threshold": 0.75,
+          "target": "materials.zones",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Increase value/hue separation and bind accent material to a focal affordance.",
+          "preserve": [
+            "primary_silhouette",
+            "material_roles"
+          ]
+        },
+        {
+          "issue_id": "148d7920e6a50cbd",
+          "issue": "low_proportion_intent",
+          "severity": "warning",
+          "dimension": "proportion_intent",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "proportion_policy.scale_anchors",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Tighten functional scale relationships before adding tertiary detail.",
+          "preserve": [
+            "construction_identity",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "ad38efdcf6825b4a",
+          "issue": "low_silhouette_strength",
+          "severity": "warning",
+          "dimension": "silhouette_strength",
+          "score": 0.68,
+          "threshold": 0.75,
+          "target": "silhouette.required_distinctive_features",
+          "evidence": [
+            "quality_plan.json",
+            "construction_graph.json"
+          ],
+          "repair": "Add or emphasize a family-specific silhouette landmark visible at 128px.",
+          "preserve": [
+            "primary_silhouette",
+            "functional_parts"
+          ]
+        },
+        {
+          "issue_id": "2990e66f06bb95a6",
+          "issue": "low_surface_storytelling",
+          "severity": "warning",
+          "dimension": "surface_storytelling",
+          "score": 0.72,
+          "threshold": 0.75,
+          "target": "surface_story.wear_logic",
+          "evidence": [
+            "quality_plan.json",
+            "material_wear_graph.json"
+          ],
+          "repair": "Move wear and grime to contact, edge, recess, and affordance zones.",
+          "preserve": [
+            "material_roles",
+            "construction_identity"
+          ]
+        }
+      ]
+    },
+    "diagnostics": []
+  },
+  "reference_board": {
+    "version": "reference_board_v1",
+    "asset_name": "mesh_grammar_probe",
+    "family": "industrial_crate",
+    "board": {
+      "mood": null,
+      "silhouettes": [],
+      "materials": [],
+      "negatives": []
+    },
+    "summary": {
+      "has_mood": false,
+      "silhouette_count": 0,
+      "material_count": 0,
+      "negative_count": 0,
+      "all_required_present": false
+    },
+    "provenance": {},
+    "skipped_reasons": [
+      {
+        "category": "reference_board",
+        "reason": "reference_board_not_loaded"
+      }
+    ],
+    "warnings": [],
+    "user_provided_via_experimental": false,
+    "diagnostics": []
+  },
+  "kit_library": {
+    "version": "kit_library_v1",
+    "asset_name": "mesh_grammar_probe",
+    "family": "industrial_crate",
+    "library": {
+      "base_path": "D:\\lathe_v0_1\\std\\kits\\hardsurface",
+      "parts": [
+        {
+          "name": "stamped_corner_cap",
+          "category": "corner_guards",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "stamped_three_face_cap",
+            "edge_length_mm": 50.0,
+            "wall_thickness_mm": 1.6,
+            "stamping_radius_mm": 4.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "painted_steel_body"
+          ],
+          "sockets": [
+            {
+              "name": "corner_anchor",
+              "anchor_axis": "+y",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": false
+          },
+          "scale_range": {
+            "min": 0.9,
+            "max": 1.3
+          },
+          "allowed_families": [
+            "industrial_crate",
+            "supply_container"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod2",
+            "retained_for_collision": true
+          },
+          "bake_group": "corner_guard_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/corner_guards/stamped_corner_cap/preview_thumbnail"
+        },
+        {
+          "name": "welded_steel_l_bracket",
+          "category": "corner_guards",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "right_angle_l_bracket",
+            "leg_length_mm": 60.0,
+            "leg_thickness_mm": 3.5,
+            "weld_seam_mm": 2.0,
+            "edge_chamfer_mm": 1.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "painted_steel_body",
+            "dark_bare_metal_underlayer"
+          ],
+          "sockets": [
+            {
+              "name": "corner_anchor",
+              "anchor_axis": "+y",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "fastener_socket_a",
+              "anchor_axis": "-z",
+              "default_position": [
+                0.015,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "fastener_socket_b",
+              "anchor_axis": "-z",
+              "default_position": [
+                -0.015,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": false
+          },
+          "scale_range": {
+            "min": 0.85,
+            "max": 1.4
+          },
+          "allowed_families": [
+            "industrial_crate",
+            "supply_container",
+            "service_cabinet"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod3",
+            "retained_for_collision": true
+          },
+          "bake_group": "corner_guard_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/corner_guards/welded_steel_l_bracket/preview_thumbnail"
+        },
+        {
+          "name": "flat_rivet_4mm",
+          "category": "fasteners",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "domed_disc_with_short_shank",
+            "head_diameter_mm": 6.0,
+            "head_height_mm": 1.2,
+            "shank_diameter_mm": 4.0,
+            "shank_length_mm": 4.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "bare_metal_fastener"
+          ],
+          "sockets": [
+            {
+              "name": "shank_anchor",
+              "anchor_axis": "-z",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.75,
+            "max": 1.25
+          },
+          "allowed_families": [
+            "*"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod2",
+            "retained_for_collision": false
+          },
+          "bake_group": "trim_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/fasteners/flat_rivet_4mm/preview_thumbnail"
+        },
+        {
+          "name": "hex_bolt_m6",
+          "category": "fasteners",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "hex_prism_with_threaded_shank",
+            "head_diameter_mm": 10.0,
+            "head_height_mm": 4.0,
+            "shank_diameter_mm": 6.0,
+            "shank_length_mm": 18.0,
+            "thread_pitch_mm": 1.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "bare_metal_fastener"
+          ],
+          "sockets": [
+            {
+              "name": "shank_anchor",
+              "anchor_axis": "-z",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.8,
+            "max": 1.4
+          },
+          "allowed_families": [
+            "industrial_crate",
+            "service_cabinet",
+            "control_pedestal"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod2",
+            "retained_for_collision": false
+          },
+          "bake_group": "trim_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/fasteners/hex_bolt_m6/preview_thumbnail"
+        },
+        {
+          "name": "recessed_inset_grip",
+          "category": "handles",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "rounded_rect_inset_with_lip",
+            "outer_width_mm": 120.0,
+            "outer_height_mm": 50.0,
+            "inset_depth_mm": 18.0,
+            "lip_radius_mm": 6.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "painted_steel_body",
+            "dark_bare_metal_underlayer"
+          ],
+          "sockets": [
+            {
+              "name": "grip_anchor",
+              "anchor_axis": "+x",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.85,
+            "max": 1.25
+          },
+          "allowed_families": [
+            "industrial_crate",
+            "supply_container",
+            "service_cabinet"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod3",
+            "retained_for_collision": true
+          },
+          "bake_group": "trim_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/handles/recessed_inset_grip/preview_thumbnail"
+        },
+        {
+          "name": "foot_rail_bar",
+          "category": "rails",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "rectangular_bar_with_chamfer",
+            "length_mm": 480.0,
+            "cross_section_mm": [
+              22.0,
+              14.0
+            ],
+            "chamfer_mm": 0.8
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "painted_steel_body",
+            "dark_bare_metal_underlayer"
+          ],
+          "sockets": [
+            {
+              "name": "rail_start",
+              "anchor_axis": "-x",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "rail_end",
+              "anchor_axis": "+x",
+              "default_position": [
+                0.48,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "bottom",
+            "normal_axis": "-y",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.7,
+            "max": 1.5
+          },
+          "allowed_families": [
+            "industrial_crate",
+            "supply_container"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod3",
+            "retained_for_collision": true
+          },
+          "bake_group": "trim_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/rails/foot_rail_bar/preview_thumbnail"
+        },
+        {
+          "name": "trim_band_strip",
+          "category": "rails",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "thin_band_strip_with_seam",
+            "length_mm": 600.0,
+            "width_mm": 28.0,
+            "thickness_mm": 1.5,
+            "seam_step_mm": 100.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "dark_bare_metal_underlayer"
+          ],
+          "sockets": [
+            {
+              "name": "band_start",
+              "anchor_axis": "-x",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "band_end",
+              "anchor_axis": "+x",
+              "default_position": [
+                0.6,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.6,
+            "max": 1.6
+          },
+          "allowed_families": [
+            "*"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod2",
+            "retained_for_collision": false
+          },
+          "bake_group": "trim_metal",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/rails/trim_band_strip/preview_thumbnail"
+        },
+        {
+          "name": "biohazard_orange_decal",
+          "category": "warning_labels",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "decal_circle",
+            "diameter_mm": 90.0,
+            "icon": "biohazard_trefoil",
+            "background_color": "safety_orange",
+            "icon_color": "matte_black"
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "warning_label_orange"
+          ],
+          "sockets": [
+            {
+              "name": "decal_anchor",
+              "anchor_axis": "+y",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.6,
+            "max": 1.4
+          },
+          "allowed_families": [
+            "industrial_crate",
+            "supply_container",
+            "service_cabinet"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod2",
+            "retained_for_collision": false
+          },
+          "bake_group": "warning_decals",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/warning_labels/biohazard_orange_decal/preview_thumbnail"
+        },
+        {
+          "name": "caution_yellow_strip",
+          "category": "warning_labels",
+          "kind": "procedural",
+          "procedural_recipe": {
+            "primitive": "decal_strip",
+            "length_mm": 220.0,
+            "height_mm": 26.0,
+            "stripe_pattern": "diagonal_yellow_black",
+            "stripe_period_mm": 12.0
+          },
+          "mesh_stub_uri": null,
+          "material_zones": [
+            "warning_label_yellow"
+          ],
+          "sockets": [
+            {
+              "name": "decal_anchor",
+              "anchor_axis": "+y",
+              "default_position": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "placement_constraints": {
+            "face": "any",
+            "normal_axis": "any",
+            "requires_flat_surface": true
+          },
+          "scale_range": {
+            "min": 0.7,
+            "max": 1.5
+          },
+          "allowed_families": [
+            "*"
+          ],
+          "lod_behavior": {
+            "strategy": "drop_at_lod2",
+            "retained_for_collision": false
+          },
+          "bake_group": "warning_decals",
+          "provenance": {
+            "source": "std/kits/hardsurface (Phase 12 internal)",
+            "version": "v1",
+            "license": "internal"
+          },
+          "preview_thumbnail": "kit://hardsurface/warning_labels/caution_yellow_strip/preview_thumbnail"
+        }
+      ],
+      "skipped": []
+    },
+    "summary": {
+      "part_count": 9,
+      "parts_by_category": {
+        "fasteners": 2,
+        "corner_guards": 2,
+        "handles": 1,
+        "rails": 2,
+        "warning_labels": 2
+      },
+      "categories_covered": 5,
+      "all_required_categories_present": true,
+      "parts_for_family_count": 9
+    },
+    "skipped_reasons": [],
+    "warnings": [],
+    "user_provided_via_experimental": {
+      "declared_parts": []
+    },
+    "diagnostics": []
+  },
+  "rule_results": [],
+  "diagnostics": [
+    {
+      "code": "L6301",
+      "name": "semantic_silhouette_fidelity_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "mesh_grammar_probe",
+      "stage": "validate",
+      "path": "validate.semantic.silhouette_fidelity",
+      "message": "Semantic validator failed for silhouette_fidelity: 0.752 < 0.780",
+      "details": {
+        "metric": "silhouette_fidelity",
+        "actual": 0.752256,
+        "minimum": 0.78
+      },
+      "suggested_repairs": [
+        "refit_silhouette_region",
+        "reselect_candidate"
+      ]
+    },
+    {
+      "code": "L6401",
+      "name": "visual_attachment_integration_quality_failed",
+      "severity": "error",
+      "phase": "validate",
+      "asset": "mesh_grammar_probe",
+      "stage": "validate",
+      "path": "validate.visual.attachment_integration_quality",
+      "message": "Visual validator failed for attachment_integration_quality: 0.650 < 0.700",
+      "details": {
+        "metric": "attachment_integration_quality",
+        "actual": 0.65,
+        "minimum": 0.7
+      },
+      "suggested_repairs": [
+        "improve_attachment_integration",
+        "restore_hinge_alignment"
+      ]
+    },
+    {
+      "code": "L6202",
+      "name": "inconsistent_normals",
+      "severity": "warning",
+      "phase": "validate",
+      "asset": "mesh_grammar_probe",
+      "stage": "validate",
+      "path": "validate.geometry_integrity.normal_consistency",
+      "message": "Geometry integrity detected inconsistent face winding / normals (11 flipped edge-adjacencies of 34083)",
+      "details": {
+        "metric": "normal_consistency",
+        "is_winding_consistent": true,
+        "inconsistent_edges": 11,
+        "edge_pairs": 34083
+      },
+      "suggested_repairs": [
+        "repair_face_winding"
+      ]
+    }
+  ],
+  "repair_policy": {
+    "allow": [],
+    "deny": [],
+    "mode": "auto_until_pass",
+    "max_rounds": 3
+  },
+  "repair_suggestions": [
+    "improve_attachment_integration",
+    "refit_silhouette_region",
+    "repair_face_winding",
+    "reselect_candidate",
+    "restore_hinge_alignment"
+  ],
+  "failure_summary": {
+    "status": "failed",
+    "score": 1.0,
+    "threshold": 0.8,
+    "score_deficit": 0.0,
+    "error_count": 2,
+    "blocking_diagnostics": [
+      {
+        "code": "L6301",
+        "name": "semantic_silhouette_fidelity_failed",
+        "stage": "validate",
+        "path": "validate.semantic.silhouette_fidelity",
+        "message": "Semantic validator failed for silhouette_fidelity: 0.752 < 0.780",
+        "suggested_repairs": [
+          "refit_silhouette_region",
+          "reselect_candidate"
+        ],
+        "next_step": "Apply or inspect suggested repair `refit_silhouette_region`."
+      },
+      {
+        "code": "L6401",
+        "name": "visual_attachment_integration_quality_failed",
+        "stage": "validate",
+        "path": "validate.visual.attachment_integration_quality",
+        "message": "Visual validator failed for attachment_integration_quality: 0.650 < 0.700",
+        "suggested_repairs": [
+          "improve_attachment_integration",
+          "restore_hinge_alignment"
+        ],
+        "next_step": "Apply or inspect suggested repair `improve_attachment_integration`."
+      }
+    ],
+    "next_steps": [
+      "Run or apply repair `improve_attachment_integration`.",
+      "Run or apply repair `refit_silhouette_region`.",
+      "Run or apply repair `repair_face_winding`.",
+      "Run or apply repair `reselect_candidate`.",
+      "Run or apply repair `restore_hinge_alignment`."
+    ]
+  },
+  "semantic_repairs_applied": [
+    {
+      "action": "add_missing_required_part",
+      "target": "front_panel",
+      "reason": "required part is missing from the authoritative blueprint",
+      "details": {},
+      "applied": true
+    },
+    {
+      "action": "add_missing_required_part",
+      "target": "pipe_rail",
+      "reason": "required part is missing from the authoritative blueprint",
+      "details": {},
+      "applied": true
+    },
+    {
+      "action": "add_missing_required_part",
+      "target": "side_fin",
+      "reason": "required part is missing from the authoritative blueprint",
+      "details": {},
+      "applied": true
+    }
+  ],
+  "reselection_attempts": []
+}

@@ -190,6 +190,11 @@ class TestEnhanceNormalAndDecals:
         enhanced = enhance_normal_map(base_normal, id_map, zones, curv)
         assert enhanced.mode == "RGB"
         assert enhanced.size == (SIZE, SIZE)
+        base_xy = np.asarray(base_normal, dtype=np.float64)[:, :, :2] - 128.0
+        enhanced_xy = np.asarray(enhanced, dtype=np.float64)[:, :, :2] - 128.0
+        assert np.mean(np.linalg.norm(enhanced_xy, axis=2)) > np.mean(
+            np.linalg.norm(base_xy, axis=2)
+        )
 
     def test_no_decals_returns_inputs_unchanged(self) -> None:
         mesh = _box_with_uvs()

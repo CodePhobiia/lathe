@@ -1,0 +1,1793 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 4,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm",
+    "ao",
+    "curvature",
+    "id",
+    "emissive"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm",
+      "ao",
+      "curvature",
+      "id",
+      "emissive"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 2048,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "painted_steel_body",
+      "painted_steel_body",
+      "rubber_trim_dark",
+      "aged_brass_trim",
+      "aged_brass_trim",
+      "warning_paint",
+      "painted_steel_body"
+    ],
+    "material_slots": 4,
+    "decals": [
+      "door_number",
+      "warning_band",
+      "thin_color_bar",
+      "calibration_id",
+      "service_number",
+      "hazard_stripe",
+      "edge_rub",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "warning_stripe_band",
+      "vent_slats_dense",
+      "utility",
+      "industrial",
+      "access",
+      "frame_rhythm",
+      "threshold",
+      "hinge_side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "hero_surface": false,
+    "program": "mechanical_door_hero",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "warning_stripe_band",
+      "vent_slats_dense",
+      "utility",
+      "industrial",
+      "access",
+      "frame_rhythm",
+      "threshold",
+      "hinge-side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "palette": "mechanical_door_hero_palette",
+    "source_material_zones": [
+      "painted_steel_body",
+      "seal_rubber",
+      "smoked_glass_screen"
+    ],
+    "source_bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "edge_wear",
+      "ceramic_composite",
+      "brushed_aluminum",
+      "signal_glass",
+      "painted_steel",
+      "bare_metal",
+      "rubber"
+    ],
+    "surface_story": {
+      "wear_story": "field_used",
+      "wear_level": 0.54,
+      "story_decals": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub",
+        "door_number",
+        "warning_band"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "architecture",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "utility",
+          "industrial",
+          "access",
+          "frame rhythm",
+          "threshold",
+          "hinge-side emphasis",
+          "toy_like",
+          "random_faceting"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "utility",
+        "industrial",
+        "access",
+        "frame rhythm",
+        "threshold",
+        "hinge-side emphasis",
+        "toy_like",
+        "random_faceting"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": true,
+      "chart_grouping": "part",
+      "material_id_strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base",
+        "lightmap"
+      ],
+      "chart_count": 7,
+      "material_id_count": 4,
+      "part_to_chart": {
+        "body": "uvc_01_body",
+        "door_leaf": "uvc_02_door_leaf",
+        "handle": "uvc_03_handle",
+        "hinge_bottom": "uvc_04_hinge_bottom",
+        "hinge_top": "uvc_05_hinge_top",
+        "lock_plate": "uvc_06_lock_plate",
+        "threshold_plate": "uvc_07_threshold_plate"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_02_door_leaf",
+        "group": "door_leaf",
+        "grouping": "part",
+        "island_name": "semantic_door_leaf",
+        "parts": [
+          "door_leaf"
+        ],
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_03_handle",
+        "group": "handle",
+        "grouping": "part",
+        "island_name": "semantic_handle",
+        "parts": [
+          "handle"
+        ],
+        "material": "rubber_trim_dark",
+        "material_id": "matid_03_rubber_trim_dark",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_04_hinge_bottom",
+        "group": "hinge_bottom",
+        "grouping": "part",
+        "island_name": "semantic_hinge_bottom",
+        "parts": [
+          "hinge_bottom"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_05_hinge_top",
+        "group": "hinge_top",
+        "grouping": "part",
+        "island_name": "semantic_hinge_top",
+        "parts": [
+          "hinge_top"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_06_lock_plate",
+        "group": "lock_plate",
+        "grouping": "part",
+        "island_name": "semantic_lock_plate",
+        "parts": [
+          "lock_plate"
+        ],
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_07_threshold_plate",
+        "group": "threshold_plate",
+        "grouping": "part",
+        "island_name": "semantic_threshold_plate",
+        "parts": [
+          "threshold_plate"
+        ],
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "count": 4,
+      "ids": [
+        {
+          "material_id": "matid_01_aged_brass_trim",
+          "material": "aged_brass_trim",
+          "parts": [
+            "hinge_bottom",
+            "hinge_top"
+          ],
+          "rgb": [
+            216,
+            74,
+            72
+          ]
+        },
+        {
+          "material_id": "matid_02_painted_steel_body",
+          "material": "painted_steel_body",
+          "parts": [
+            "body",
+            "door_leaf",
+            "threshold_plate"
+          ],
+          "rgb": [
+            74,
+            137,
+            220
+          ]
+        },
+        {
+          "material_id": "matid_03_rubber_trim_dark",
+          "material": "rubber_trim_dark",
+          "parts": [
+            "handle"
+          ],
+          "rgb": [
+            88,
+            178,
+            120
+          ]
+        },
+        {
+          "material_id": "matid_04_warning_paint",
+          "material": "warning_paint",
+          "parts": [
+            "lock_plate"
+          ],
+          "rgb": [
+            231,
+            168,
+            64
+          ]
+        }
+      ],
+      "per_part": {
+        "body": "matid_02_painted_steel_body",
+        "door_leaf": "matid_02_painted_steel_body",
+        "handle": "matid_03_rubber_trim_dark",
+        "hinge_bottom": "matid_01_aged_brass_trim",
+        "hinge_top": "matid_01_aged_brass_trim",
+        "lock_plate": "matid_04_warning_paint",
+        "threshold_plate": "matid_02_painted_steel_body"
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 25,
+      "placements": [
+        {
+          "decal": "door_number",
+          "target_part": "hinge_bottom",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.326087,
+            0.578951
+          ],
+          "scale": 0.285676,
+          "rotation_deg": 12,
+          "layer": "surface",
+          "mask_id": "story_01_door_number"
+        },
+        {
+          "decal": "warning_band",
+          "target_part": "hinge_top",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.2616,
+            0.641214
+          ],
+          "scale": 0.323538,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_02_warning_band"
+        },
+        {
+          "decal": "thin_color_bar",
+          "target_part": "threshold_plate",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.258485,
+            0.644221
+          ],
+          "scale": 0.22408,
+          "rotation_deg": -7,
+          "layer": "story",
+          "mask_id": "story_03_thin_color_bar"
+        },
+        {
+          "decal": "calibration_id",
+          "target_part": "hinge_top",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.300701,
+            0.603461
+          ],
+          "scale": 0.323414,
+          "rotation_deg": 12,
+          "layer": "story",
+          "mask_id": "story_04_calibration_id"
+        },
+        {
+          "decal": "service_number",
+          "target_part": "hinge_top",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.264573,
+            0.638343
+          ],
+          "scale": 0.313533,
+          "rotation_deg": 0,
+          "layer": "story",
+          "mask_id": "story_05_service_number"
+        },
+        {
+          "decal": "hazard_stripe",
+          "target_part": "hinge_bottom",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.528013,
+            0.383988
+          ],
+          "scale": 0.278994,
+          "rotation_deg": 5,
+          "layer": "story",
+          "mask_id": "story_06_hazard_stripe"
+        },
+        {
+          "decal": "edge_rub",
+          "target_part": "handle",
+          "material": "rubber_trim_dark",
+          "material_id": "matid_03_rubber_trim_dark",
+          "anchor_uv": [
+            0.564909,
+            0.348364
+          ],
+          "scale": 0.250071,
+          "rotation_deg": 9,
+          "layer": "story",
+          "mask_id": "story_07_edge_rub"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "threshold_plate",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.469103,
+            0.440866
+          ],
+          "scale": 0.260492,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_08_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.581756,
+            0.332098
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_09_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "threshold_plate",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.405693,
+            0.502089
+          ],
+          "scale": 0.281391,
+          "rotation_deg": -3,
+          "layer": "surface",
+          "mask_id": "story_10_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.605176,
+            0.309485
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_11_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "lock_plate",
+          "material": "warning_paint",
+          "material_id": "matid_04_warning_paint",
+          "anchor_uv": [
+            0.489473,
+            0.421199
+          ],
+          "scale": 0.355202,
+          "rotation_deg": 7,
+          "layer": "surface",
+          "mask_id": "story_12_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "lock_plate",
+          "material": "warning_paint",
+          "material_id": "matid_04_warning_paint",
+          "anchor_uv": [
+            0.553772,
+            0.359116
+          ],
+          "scale": 0.293181,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_13_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "threshold_plate",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.219224,
+            0.682128
+          ],
+          "scale": 0.3035,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_14_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "hinge_bottom",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.64242,
+            0.273526
+          ],
+          "scale": 0.346121,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_15_lower_contact_points"
+        },
+        {
+          "decal": "warning_stripe_band",
+          "target_part": "hinge_top",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.438992,
+            0.469938
+          ],
+          "scale": 0.27355,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_16_warning_stripe_band"
+        },
+        {
+          "decal": "vent_slats_dense",
+          "target_part": "lock_plate",
+          "material": "warning_paint",
+          "material_id": "matid_04_warning_paint",
+          "anchor_uv": [
+            0.687678,
+            0.229828
+          ],
+          "scale": 0.380856,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_17_vent_slats_dense"
+        },
+        {
+          "decal": "utility",
+          "target_part": "hinge_bottom",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.655933,
+            0.260478
+          ],
+          "scale": 0.354719,
+          "rotation_deg": 2,
+          "layer": "surface",
+          "mask_id": "story_18_utility"
+        },
+        {
+          "decal": "industrial",
+          "target_part": "body",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.615524,
+            0.299494
+          ],
+          "scale": 0.229757,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_19_industrial"
+        },
+        {
+          "decal": "access",
+          "target_part": "lock_plate",
+          "material": "warning_paint",
+          "material_id": "matid_04_warning_paint",
+          "anchor_uv": [
+            0.719142,
+            0.199449
+          ],
+          "scale": 0.397195,
+          "rotation_deg": -1,
+          "layer": "surface",
+          "mask_id": "story_20_access"
+        },
+        {
+          "decal": "frame_rhythm",
+          "target_part": "body",
+          "material": "painted_steel_body",
+          "material_id": "matid_02_painted_steel_body",
+          "anchor_uv": [
+            0.74348,
+            0.175951
+          ],
+          "scale": 0.258623,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_21_frame_rhythm"
+        },
+        {
+          "decal": "threshold",
+          "target_part": "lock_plate",
+          "material": "warning_paint",
+          "material_id": "matid_04_warning_paint",
+          "anchor_uv": [
+            0.479596,
+            0.430735
+          ],
+          "scale": 0.280966,
+          "rotation_deg": -3,
+          "layer": "surface",
+          "mask_id": "story_22_threshold"
+        },
+        {
+          "decal": "hinge_side_emphasis",
+          "target_part": "hinge_bottom",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.357086,
+            0.549021
+          ],
+          "scale": 0.377099,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_23_hinge_side_emphasis"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "hinge_bottom",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.533526,
+            0.378665
+          ],
+          "scale": 0.30156,
+          "rotation_deg": 9,
+          "layer": "surface",
+          "mask_id": "story_24_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "lock_plate",
+          "material": "warning_paint",
+          "material_id": "matid_04_warning_paint",
+          "anchor_uv": [
+            0.446985,
+            0.462221
+          ],
+          "scale": 0.391223,
+          "rotation_deg": 13,
+          "layer": "surface",
+          "mask_id": "story_25_random_faceting"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "painted_steel_body",
+      "basecolor": [
+        92,
+        102,
+        116
+      ],
+      "metallic": 0.0,
+      "roughness": 0.598752,
+      "roughness_range": [
+        0.31408,
+        0.798016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "painted_panel",
+      "wear": 0.3928,
+      "normal_intensity": 0.19776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "door_leaf",
+      "material": "painted_steel_body",
+      "basecolor": [
+        92,
+        102,
+        116
+      ],
+      "metallic": 0.0,
+      "roughness": 0.598752,
+      "roughness_range": [
+        0.31408,
+        0.798016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "painted_panel",
+      "wear": 0.3928,
+      "normal_intensity": 0.19776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "handle",
+      "material": "rubber_trim_dark",
+      "basecolor": [
+        46,
+        50,
+        54
+      ],
+      "metallic": 0.0,
+      "roughness": 0.778752,
+      "roughness_range": [
+        0.61408,
+        0.898016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "carbon_rubber",
+      "wear": 0.2528,
+      "normal_intensity": 0.21776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "hinge_bottom",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.418752,
+      "roughness_range": [
+        0.19408,
+        0.558016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.4328,
+      "normal_intensity": 0.17776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "hinge_top",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.418752,
+      "roughness_range": [
+        0.19408,
+        0.558016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.4328,
+      "normal_intensity": 0.17776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "lock_plate",
+      "material": "warning_paint",
+      "basecolor": [
+        92,
+        102,
+        116
+      ],
+      "metallic": 0.0,
+      "roughness": 0.598752,
+      "roughness_range": [
+        0.39408,
+        0.718016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "painted_panel",
+      "wear": 0.3328,
+      "normal_intensity": 0.17776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    },
+    {
+      "part": "threshold_plate",
+      "material": "painted_steel_body",
+      "basecolor": [
+        92,
+        102,
+        116
+      ],
+      "metallic": 0.0,
+      "roughness": 0.598752,
+      "roughness_range": [
+        0.31408,
+        0.798016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "painted_panel",
+      "wear": 0.3928,
+      "normal_intensity": 0.19776,
+      "procedural_layers": [
+        "edge_wear",
+        "ceramic_composite",
+        "brushed_aluminum",
+        "signal_glass",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "calibration_id",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 7,
+    "material_id_count": 4,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "door_leaf": "uvc_02_door_leaf",
+      "handle": "uvc_03_handle",
+      "hinge_bottom": "uvc_04_hinge_bottom",
+      "hinge_top": "uvc_05_hinge_top",
+      "lock_plate": "uvc_06_lock_plate",
+      "threshold_plate": "uvc_07_threshold_plate"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "painted_steel_body",
+      "material_id": "matid_02_painted_steel_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_door_leaf",
+      "group": "door_leaf",
+      "grouping": "part",
+      "island_name": "semantic_door_leaf",
+      "parts": [
+        "door_leaf"
+      ],
+      "material": "painted_steel_body",
+      "material_id": "matid_02_painted_steel_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_handle",
+      "group": "handle",
+      "grouping": "part",
+      "island_name": "semantic_handle",
+      "parts": [
+        "handle"
+      ],
+      "material": "rubber_trim_dark",
+      "material_id": "matid_03_rubber_trim_dark",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_hinge_bottom",
+      "group": "hinge_bottom",
+      "grouping": "part",
+      "island_name": "semantic_hinge_bottom",
+      "parts": [
+        "hinge_bottom"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_hinge_top",
+      "group": "hinge_top",
+      "grouping": "part",
+      "island_name": "semantic_hinge_top",
+      "parts": [
+        "hinge_top"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_lock_plate",
+      "group": "lock_plate",
+      "grouping": "part",
+      "island_name": "semantic_lock_plate",
+      "parts": [
+        "lock_plate"
+      ],
+      "material": "warning_paint",
+      "material_id": "matid_04_warning_paint",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_threshold_plate",
+      "group": "threshold_plate",
+      "grouping": "part",
+      "island_name": "semantic_threshold_plate",
+      "parts": [
+        "threshold_plate"
+      ],
+      "material": "painted_steel_body",
+      "material_id": "matid_02_painted_steel_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 4,
+    "ids": [
+      {
+        "material_id": "matid_01_aged_brass_trim",
+        "material": "aged_brass_trim",
+        "parts": [
+          "hinge_bottom",
+          "hinge_top"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_painted_steel_body",
+        "material": "painted_steel_body",
+        "parts": [
+          "body",
+          "door_leaf",
+          "threshold_plate"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      },
+      {
+        "material_id": "matid_03_rubber_trim_dark",
+        "material": "rubber_trim_dark",
+        "parts": [
+          "handle"
+        ],
+        "rgb": [
+          88,
+          178,
+          120
+        ]
+      },
+      {
+        "material_id": "matid_04_warning_paint",
+        "material": "warning_paint",
+        "parts": [
+          "lock_plate"
+        ],
+        "rgb": [
+          231,
+          168,
+          64
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_02_painted_steel_body",
+      "door_leaf": "matid_02_painted_steel_body",
+      "handle": "matid_03_rubber_trim_dark",
+      "hinge_bottom": "matid_01_aged_brass_trim",
+      "hinge_top": "matid_01_aged_brass_trim",
+      "lock_plate": "matid_04_warning_paint",
+      "threshold_plate": "matid_02_painted_steel_body"
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 25,
+    "placements": [
+      {
+        "decal": "door_number",
+        "target_part": "hinge_bottom",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.326087,
+          0.578951
+        ],
+        "scale": 0.285676,
+        "rotation_deg": 12,
+        "layer": "surface",
+        "mask_id": "story_01_door_number"
+      },
+      {
+        "decal": "warning_band",
+        "target_part": "hinge_top",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.2616,
+          0.641214
+        ],
+        "scale": 0.323538,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_02_warning_band"
+      },
+      {
+        "decal": "thin_color_bar",
+        "target_part": "threshold_plate",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.258485,
+          0.644221
+        ],
+        "scale": 0.22408,
+        "rotation_deg": -7,
+        "layer": "story",
+        "mask_id": "story_03_thin_color_bar"
+      },
+      {
+        "decal": "calibration_id",
+        "target_part": "hinge_top",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.300701,
+          0.603461
+        ],
+        "scale": 0.323414,
+        "rotation_deg": 12,
+        "layer": "story",
+        "mask_id": "story_04_calibration_id"
+      },
+      {
+        "decal": "service_number",
+        "target_part": "hinge_top",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.264573,
+          0.638343
+        ],
+        "scale": 0.313533,
+        "rotation_deg": 0,
+        "layer": "story",
+        "mask_id": "story_05_service_number"
+      },
+      {
+        "decal": "hazard_stripe",
+        "target_part": "hinge_bottom",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.528013,
+          0.383988
+        ],
+        "scale": 0.278994,
+        "rotation_deg": 5,
+        "layer": "story",
+        "mask_id": "story_06_hazard_stripe"
+      },
+      {
+        "decal": "edge_rub",
+        "target_part": "handle",
+        "material": "rubber_trim_dark",
+        "material_id": "matid_03_rubber_trim_dark",
+        "anchor_uv": [
+          0.564909,
+          0.348364
+        ],
+        "scale": 0.250071,
+        "rotation_deg": 9,
+        "layer": "story",
+        "mask_id": "story_07_edge_rub"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "threshold_plate",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.469103,
+          0.440866
+        ],
+        "scale": 0.260492,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_08_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.581756,
+          0.332098
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_09_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "threshold_plate",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.405693,
+          0.502089
+        ],
+        "scale": 0.281391,
+        "rotation_deg": -3,
+        "layer": "surface",
+        "mask_id": "story_10_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "body",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.605176,
+          0.309485
+        ],
+        "scale": 0.390097,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_11_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "lock_plate",
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "anchor_uv": [
+          0.489473,
+          0.421199
+        ],
+        "scale": 0.355202,
+        "rotation_deg": 7,
+        "layer": "surface",
+        "mask_id": "story_12_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "lock_plate",
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "anchor_uv": [
+          0.553772,
+          0.359116
+        ],
+        "scale": 0.293181,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_13_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "threshold_plate",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.219224,
+          0.682128
+        ],
+        "scale": 0.3035,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_14_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "hinge_bottom",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.64242,
+          0.273526
+        ],
+        "scale": 0.346121,
+        "rotation_deg": -8,
+        "layer": "surface",
+        "mask_id": "story_15_lower_contact_points"
+      },
+      {
+        "decal": "warning_stripe_band",
+        "target_part": "hinge_top",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.438992,
+          0.469938
+        ],
+        "scale": 0.27355,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_16_warning_stripe_band"
+      },
+      {
+        "decal": "vent_slats_dense",
+        "target_part": "lock_plate",
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "anchor_uv": [
+          0.687678,
+          0.229828
+        ],
+        "scale": 0.380856,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_17_vent_slats_dense"
+      },
+      {
+        "decal": "utility",
+        "target_part": "hinge_bottom",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.655933,
+          0.260478
+        ],
+        "scale": 0.354719,
+        "rotation_deg": 2,
+        "layer": "surface",
+        "mask_id": "story_18_utility"
+      },
+      {
+        "decal": "industrial",
+        "target_part": "body",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.615524,
+          0.299494
+        ],
+        "scale": 0.229757,
+        "rotation_deg": 11,
+        "layer": "surface",
+        "mask_id": "story_19_industrial"
+      },
+      {
+        "decal": "access",
+        "target_part": "lock_plate",
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "anchor_uv": [
+          0.719142,
+          0.199449
+        ],
+        "scale": 0.397195,
+        "rotation_deg": -1,
+        "layer": "surface",
+        "mask_id": "story_20_access"
+      },
+      {
+        "decal": "frame_rhythm",
+        "target_part": "body",
+        "material": "painted_steel_body",
+        "material_id": "matid_02_painted_steel_body",
+        "anchor_uv": [
+          0.74348,
+          0.175951
+        ],
+        "scale": 0.258623,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_21_frame_rhythm"
+      },
+      {
+        "decal": "threshold",
+        "target_part": "lock_plate",
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "anchor_uv": [
+          0.479596,
+          0.430735
+        ],
+        "scale": 0.280966,
+        "rotation_deg": -3,
+        "layer": "surface",
+        "mask_id": "story_22_threshold"
+      },
+      {
+        "decal": "hinge_side_emphasis",
+        "target_part": "hinge_bottom",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.357086,
+          0.549021
+        ],
+        "scale": 0.377099,
+        "rotation_deg": 11,
+        "layer": "surface",
+        "mask_id": "story_23_hinge_side_emphasis"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "hinge_bottom",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.533526,
+          0.378665
+        ],
+        "scale": 0.30156,
+        "rotation_deg": 9,
+        "layer": "surface",
+        "mask_id": "story_24_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "lock_plate",
+        "material": "warning_paint",
+        "material_id": "matid_04_warning_paint",
+        "anchor_uv": [
+          0.446985,
+          0.462221
+        ],
+        "scale": 0.391223,
+        "rotation_deg": 13,
+        "layer": "surface",
+        "mask_id": "story_25_random_faceting"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

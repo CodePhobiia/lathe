@@ -1,0 +1,60 @@
+module studio.env.modules
+import std.policies.v11_asset_ops
+
+// CGA-style worked example for §7.4 of the Lathe imagination roadmap.
+//
+// Demonstrates the `productions = [ ... ]` CGA form inside `assembly_rules`.
+// Compiled by `lathe/cga/`. Initial shape: a 12m x 6m x 9m lot.
+//
+// Expected expansion under root = Lot, seed = 0 (initial shape 12m wide, 6m
+// deep, 9m tall after extrusion along z):
+//   Lot --> extrude(z, 9m) Building            (height = 9m)
+//   Building --> split(z) {1m Foundation | 3m Floor1 | 3m Floor2 | 2m Roof}
+//   Floor1 --> split(x) {1.5m Door | 2.0m* WindowBay (fills remaining 10.5m)}
+//   Floor2 --> split(x) {2.0m* WindowBay (fills full 12m)}
+//   WindowBay --> repeat(3) { Window }         (each ~3.5m wide for Floor1)
+//   Window --> chooseOne {0.7 round_window | 0.3 square_window}
+
+profile parametric_building_profile {
+  defaults {
+    build.optimize.lods = 2
+    package.formats = [glb]
+    package.manifest = true
+  }
+  ensure units(m)
+  ensure manifold
+}
+
+asset parametric_facade: env_module uses parametric_building_profile {
+  intent {
+    role = "parametric building facade demonstrating CGA shape grammar"
+    style = ["modular", "procedural", "facade"]
+    parts = [foundation, door, window, roof_band]
+    materials = ["concrete", "glass", "metal_trim"]
+    scale = 12.0m
+  }
+
+  assembly_rules {
+    root = "Lot"
+    seed = 0
+    recursion_budget = 32
+    productions = [
+      "Lot --> extrude(height: 9m) Building",
+      "Building --> split(z) { 1m: Foundation, 3m: Floor1, 3m: Floor2, 2m: Roof }",
+      "Floor1 --> split(x) { 1.5m: Door, 2.0*: WindowBay }",
+      "Floor2 --> split(x) { 2.0*: WindowBay }",
+      "WindowBay --> repeat(3) { Window }",
+      "Window --> chooseOne { 0.7: round_window, 0.3: square_window }",
+      "Foundation --> foundation_band",
+      "Door --> entrance_door",
+      "Roof --> roof_cap"
+    ]
+  }
+
+  build {
+    shape {
+      mode = assemble
+      candidates = 1
+    }
+  }
+}

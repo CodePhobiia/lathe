@@ -411,6 +411,10 @@ class _TransformerExprMixin(Transformer):
         repair_policy: dict[str, Any] = {}
         rules: list[dict[str, Any]] = []
         assigns: list[tuple[str, Any]] = []
+        version: str = ""
+        ports: list[dict[str, Any]] = []
+        parameters: list[dict[str, Any]] = []
+        body: dict[str, Any] | None = None
         for item in rest:
             if item is None:
                 continue
@@ -436,13 +440,21 @@ class _TransformerExprMixin(Transformer):
                     repair_policy = item["values"]
                 elif node == "rule":
                     rules.append(item)
+                elif node == "version_clause":
+                    version = item.get("version", "")
+                elif node == "ports":
+                    ports = item.get("ports", [])
+                elif node == "parameters":
+                    parameters = item.get("parameters", [])
+                elif node == "body":
+                    body = item
                 else:
                     raise LatheParseError(f"Unexpected {node_type} item: {item!r}")
             elif isinstance(item, tuple) and len(item) == 2:
                 assigns.append(item)
             else:
                 raise LatheParseError(f"Unexpected {node_type} item: {item!r}")
-        return {
+        decl = {
             "node_type": node_type,
             "name": name,
             "kind": kind,
@@ -458,10 +470,20 @@ class _TransformerExprMixin(Transformer):
             "rules": rules,
             "values": self._assignments(assigns, node_type),
         }
+        if version or ports or parameters or body is not None:
+            decl["version"] = version
+            decl["ports"] = ports
+            decl["parameters"] = parameters
+            decl["body"] = body or {"node_type": "body", "kit_uses": [], "rules": [], "values": {}}
+        return decl
 
     def _mapping_decl(self, node_type: str, name: str, *rest: Any) -> dict[str, Any]:
         uses: list[str] = []
         assigns: list[tuple[str, Any]] = []
+        version: str = ""
+        ports: list[dict[str, Any]] = []
+        parameters: list[dict[str, Any]] = []
+        body: dict[str, Any] | None = None
         for item in rest:
             if item is None:
                 continue
@@ -469,14 +491,32 @@ class _TransformerExprMixin(Transformer):
                 uses = item
             elif isinstance(item, tuple) and len(item) == 2:
                 assigns.append(item)
+            elif isinstance(item, dict):
+                node = item.get("node_type")
+                if node == "version_clause":
+                    version = item.get("version", "")
+                elif node == "ports":
+                    ports = item.get("ports", [])
+                elif node == "parameters":
+                    parameters = item.get("parameters", [])
+                elif node == "body":
+                    body = item
+                else:
+                    raise LatheParseError(f"Unexpected {node_type} item: {item!r}")
             else:
                 raise LatheParseError(f"Unexpected {node_type} item: {item!r}")
-        return {
+        decl = {
             "node_type": node_type,
             "name": name,
             "uses": _dedupe_keep_first(uses),
             "values": self._assignments(assigns, node_type),
         }
+        if version or ports or parameters or body is not None:
+            decl["version"] = version
+            decl["ports"] = ports
+            decl["parameters"] = parameters
+            decl["body"] = body or {"node_type": "body", "kit_uses": [], "rules": [], "values": {}}
+        return decl
 
     def _space_spec(self, node_type: str, name: str | None, *rest: Any) -> dict[str, Any]:
         assigns: list[tuple[str, Any]] = []

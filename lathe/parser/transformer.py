@@ -75,6 +75,8 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 program["palettes"].append(item)
             elif kind == "style_pack":
                 program["style_packs"].append(item)
+            elif kind == "style_bridge":
+                program["style_bridges"].append(item)
             elif kind == "reference_set":
                 program["reference_sets"].append(item)
             elif kind == "reconstruct_policy":
@@ -99,6 +101,24 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 program["material_graphs"].append(item)
             elif kind == "inspection_policy":
                 program["inspection_policies"].append(item)
+            elif kind == "asset_class_profile":
+                program["asset_class_profiles"].append(item)
+            elif kind == "vegetation_species":
+                program["vegetation_species"].append(item)
+            elif kind == "vegetation_kit":
+                program["vegetation_kits"].append(item)
+            elif kind == "wind_program":
+                program["wind_programs"].append(item)
+            elif kind == "volume_program":
+                program["volume_programs"].append(item)
+            elif kind == "wfc_tileset":
+                program["wfc_tilesets"].append(item)
+            elif kind == "wfc_adjacency":
+                program["wfc_adjacencies"].append(item)
+            elif kind == "terrain_program":
+                program["terrain_programs"].append(item)
+            elif kind == "subdivision_finishing":
+                program["subdivision_finishings"].append(item)
             elif kind == "repair_policy":
                 program["repair_policies"].append(item)
             elif kind == "fixture":
@@ -436,6 +456,18 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
         """
         return self._mapping_decl("style_pack", name, *rest)
 
+    def style_bridge_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Style bridge decl (roadmap §6.8).
+
+        Sanctions a normally-incompatible style-stack pairing such as
+        ``pbr_realistic + npr_cel`` (Borderlands-style hybrid). Authors
+        list the bridged axis values plus a free-form ``technique`` tag
+        and ``description``. The checker reads the program-level
+        ``style_bridges`` namespace to decide whether to suppress a
+        refusal diagnostic.
+        """
+        return self._mapping_decl("style_bridge", name, *rest)
+
     def faction_pack_decl(self, name: str, *rest: Any) -> dict[str, Any]:
         return self._style_system_decl("faction_pack", name, *rest)
 
@@ -599,6 +631,59 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
         """
         return self._mapping_decl("inspection_policy", name, *rest)
 
+    def asset_class_profile_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Asset class profile decl.
+
+        Args:
+            name: name argument.
+            *rest: *rest argument.
+
+        Returns:
+            The result.
+        """
+        return self._mapping_decl("asset_class_profile", name, *rest)
+
+    def vegetation_species_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Vegetation species decl."""
+        return self._mapping_decl("vegetation_species", name, *rest)
+
+    def vegetation_kit_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Vegetation kit decl."""
+        return self._mapping_decl("vegetation_kit", name, *rest)
+
+    def wind_program_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Wind program decl."""
+        return self._mapping_decl("wind_program", name, *rest)
+
+    def wfc_tileset_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """WFC tileset decl."""
+        return self._mapping_decl("wfc_tileset", name, *rest)
+
+    def wfc_adjacency_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """WFC adjacency decl."""
+        return self._mapping_decl("wfc_adjacency", name, *rest)
+
+    def terrain_program_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Terrain program decl."""
+        return self._mapping_decl("terrain_program", name, *rest)
+
+    def volume_program_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Volume program decl."""
+        return self._mapping_decl("volume_program", name, *rest)
+
+    def subdivision_finishing_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """Subdivision finishing decl (roadmap §7.5)."""
+        return self._mapping_decl("subdivision_finishing", name, *rest)
+
+    def f_rep_program_decl(self, name: str, *rest: Any) -> dict[str, Any]:
+        """F-Rep / SDF program decl (roadmap §7.6).
+
+        Body bindings are IQ-style SDF expressions composed via
+        :mod:`lathe.f_rep`. Compiled lazily by ``compile_program`` when
+        an asset references the program from its ``geometry`` block.
+        """
+        return self._mapping_decl("f_rep_program", name, *rest)
+
     def repair_policy_decl(self, name: str, *assignments: Any) -> dict[str, Any]:
         """Repair policy decl.
 
@@ -725,6 +810,7 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
         curiosity_anchors: list[dict[str, Any]] = []
         hidden_state: list[dict[str, Any]] = []
         exports: list[dict[str, Any]] = []
+        wfc_blocks: list[dict[str, Any]] = []
         for item in items:
             if isinstance(item, tuple) and len(item) == 2:
                 values.append(item)
@@ -772,6 +858,8 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
                 hidden_state.append(item)
             elif isinstance(item, dict) and item.get("node_type") == "scene_export":
                 exports.append(item)
+            elif isinstance(item, dict) and item.get("node_type") == "scene_wfc":
+                wfc_blocks.append(item)
             else:
                 raise LatheParseError(f"Unexpected scene item: {item!r}")
         return {
@@ -800,6 +888,7 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
             "curiosity_anchors": curiosity_anchors,
             "hidden_state": hidden_state,
             "exports": exports,
+            "wfc": wfc_blocks,
         }
 
     def style_scene_block(self, name: str, *assignments: Any) -> dict[str, Any]:
@@ -2686,6 +2775,21 @@ class _LatheTransformer(_TransformerBlocksMixin, Transformer):
             "node_type": "scene_export",
             "name": name,
             "values": self._assignments(assignments, "export"),
+        }
+
+    def wfc_inline_block(self, *items: Any) -> dict[str, Any]:
+        """Inline ``wfc { ... }`` block in a scene body."""
+        name = ""
+        assignments: list[Any] = []
+        for item in items:
+            if isinstance(item, str):
+                name = item
+            else:
+                assignments.append(item)
+        return {
+            "node_type": "scene_wfc",
+            "name": name,
+            "values": self._assignments(assignments, "wfc"),
         }
 
     def asset_decl(self, name: str, kind: str, *rest: Any) -> dict[str, Any]:

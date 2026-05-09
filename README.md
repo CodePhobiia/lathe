@@ -146,6 +146,17 @@ By default, the demo keeps terminal output concise and writes command outputs
 under `tmp_lathe_demo/_demo_workflow/`; add `-VerboseOutput` or
 `--verbose-output` when recording a full terminal walkthrough.
 
+For the **Imagination-to-Life capstone showcase** (a single `.lth` source
+combining hard-surface mechanical, vegetation, terrain, organic SDF, and WFC
+modular composition in one `mesh_program{}` block) see
+[`docs/imagination_to_life_demos.md`](docs/imagination_to_life_demos.md).
+The runnable source is `examples/alien_grove_showcase.lth`:
+
+```bash
+python -m lathe.cli quick examples/alien_grove_showcase.lth alien_grove \
+    --out tmp_alien_grove.glb --no-cache
+```
+
 Optional extras are opt-in and intentionally small:
 
 | Extra | Installs | Notes |

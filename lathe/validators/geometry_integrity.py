@@ -26,11 +26,15 @@ import trimesh
 _SELF_INTERSECTION_CODE = "L6201"
 _NORMAL_CONSISTENCY_CODE = "L6202"
 _BODY_COUNT_STABILITY_CODE = "L6203"
+_BOOLEAN_FALLBACK_CODE = "L6204"
+_DIRECT_MODIFIER_CODE = "L6205"
 _MIN_TRIANGLE_PAIR_FACES = 2
 _TRIANGLE_DIMENSIONS = 2
 _TRIANGLE_VERTICES = 2
 _GEOMETRY_EPS = 1e-12
 _INCONSISTENT_NORMAL_DOT = -0.5
+_MAX_SELF_INTERSECTION_PAIRS = 25_000
+_DIRECT_MODIFIER_RECORD_LIMIT = 32
 
 
 def _get_runtime_mesh(runtime: dict[str, Any]) -> trimesh.Trimesh | None:
@@ -48,23 +52,28 @@ def _get_runtime_mesh(runtime: dict[str, Any]) -> trimesh.Trimesh | None:
     return mesh
 
 
-def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
-    """Return ``(rate, intersecting_pair_count, tested_pair_count)``.
+def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int, bool]:
+    """Return ``(rate, intersecting_pair_count, tested_pair_count, scan_limited)``.
 
     Broad phase is AABB overlap; narrow phase is a SAT + segment-pierces-
     triangle test. Adjacent faces are excluded — adjacency is taken as
     *shared vertex position* (not just shared index) so that seam-split
     duplicates along part boundaries do not register as self-intersections.
+
+    The narrow phase is intentionally bounded. Large generated fixtures can
+    produce enough overlapping AABB pairs for the SAT/segment test to dominate
+    end-to-end builds. When the cap is reached, validator evidence marks the
+    result as a bounded sample rather than implying an exhaustive scan.
     """
     faces = mesh.faces
     n_faces = len(faces)
     if n_faces < _MIN_TRIANGLE_PAIR_FACES:
-        return 0.0, 0, 0
+        return 0.0, 0, 0, False
 
     try:
         tri_verts = mesh.vertices[faces]
     except (IndexError, ValueError):
-        return 0.0, 0, 0
+        return 0.0, 0, 0, False
 
     # Position-based vertex keys: snap each coordinate to a coarse grid so
     # duplicated seam vertices at the same physical location fold into one
@@ -100,11 +109,13 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
     bounds_min = tri_verts.min(axis=1)
     bounds_max = tri_verts.max(axis=1)
 
-    max_pairs_to_scan = 400_000
+    max_pairs_to_scan = max(1, int(_MAX_SELF_INTERSECTION_PAIRS))
+    scan_limited = False
     intersecting = 0
     tested = 0
     for i in range(n_faces - 1):
         if tested >= max_pairs_to_scan:
+            scan_limited = True
             break
         lo_i = bounds_min[i]
         hi_i = bounds_max[i]
@@ -114,17 +125,19 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int]:
             j_int = int(j)
             if (i, j_int) in adjacency_pairs:
                 continue
-            tested += 1
-            if tested > max_pairs_to_scan:
+            if tested >= max_pairs_to_scan:
+                scan_limited = True
                 break
+            tested += 1
             if _triangles_intersect(tri_verts[i], tri_verts[j_int]):
                 intersecting += 1
 
     total_pairs = n_faces * (n_faces - 1) // 2
-    if total_pairs <= 0:
-        return 0.0, intersecting, tested
-    rate = intersecting / float(total_pairs)
-    return float(rate), int(intersecting), int(tested)
+    if total_pairs <= 0 or tested <= 0:
+        return 0.0, intersecting, tested, scan_limited
+    denominator = tested if scan_limited else total_pairs
+    rate = intersecting / float(max(1, denominator))
+    return float(rate), int(intersecting), int(tested), bool(scan_limited)
 
 
 def _triangles_intersect(a: np.ndarray, b: np.ndarray) -> bool:
@@ -277,6 +290,126 @@ def _body_count_stability(
     return float(score), counts
 
 
+def _selected_shape_integration_report(runtime: dict[str, Any]) -> dict[str, Any]:
+    shape_state = runtime.get("shape")
+    if not isinstance(shape_state, dict):
+        return {}
+    bundle = shape_state.get("bundle")
+    if not isinstance(bundle, dict):
+        return {}
+    selected_id = str(bundle.get("selected_candidate_id") or "")
+    for candidate in bundle.get("candidates") or []:
+        if not isinstance(candidate, dict):
+            continue
+        if str(candidate.get("candidate_id") or "") != selected_id:
+            continue
+        report = candidate.get("integration_report")
+        return dict(report) if isinstance(report, dict) else {}
+    return {}
+
+
+def _boolean_fallback_evidence(report: dict[str, Any]) -> dict[str, Any]:
+    fallback_records = [
+        dict(record)
+        for record in report.get("kernel_program_boolean_fallback_records", []) or []
+        if isinstance(record, dict)
+    ]
+    fallback_reason = (
+        report.get("boolean_fallback_reason")
+        or report.get("kernel_program_failure_reason")
+        or report.get("reason")
+        or ""
+    )
+    fallback_mode = str(report.get("mode") or "")
+    boolean_fallback = str(report.get("boolean_fallback") or "")
+    fallback_count = int(report.get("kernel_program_boolean_fallback_count", 0) or 0)
+    has_fallback = bool(
+        fallback_records
+        or fallback_count > 0
+        or boolean_fallback
+        or "fallback" in fallback_mode
+        or "fallback" in str(fallback_reason)
+        or "omitted" in str(fallback_reason)
+    )
+    return {
+        "has_boolean_fallback": has_fallback,
+        "fallback_count": max(fallback_count, len(fallback_records)),
+        "fallback_records": fallback_records,
+        "fallback_reason": str(fallback_reason),
+        "boolean_fallback": boolean_fallback,
+        "mode": fallback_mode,
+        "geometry_kernel": str(
+            report.get("geometry_kernel")
+            or report.get("boolean_kernel")
+            or report.get("kernel_program_kernel")
+            or ""
+        ),
+        "kernel_program_succeeded": bool(report.get("kernel_program_succeeded", False)),
+    }
+
+
+def _direct_modifier_execution_evidence(mesh: trimesh.Trimesh) -> dict[str, Any]:
+    metadata = getattr(mesh, "metadata", {}) or {}
+    if not isinstance(metadata, dict):
+        return {
+            "attempted_count": 0,
+            "applied_count": 0,
+            "degraded_count": 0,
+            "preserved_downstream_count": 0,
+            "degraded_records": [],
+        }
+    raw_applications = metadata.get("lathe_v2_kernel_modifier_applications")
+    if isinstance(raw_applications, dict):
+        raw_applications = raw_applications.get("applications")
+    applications = [
+        dict(record)
+        for record in (raw_applications or [])
+        if isinstance(record, dict)
+    ]
+    degraded_records: list[dict[str, Any]] = []
+    preserved_count = 0
+    applied_count = 0
+    for record in applications:
+        application = str(record.get("geometry_application") or "")
+        if bool(record.get("geometry_applied")):
+            applied_count += 1
+        if application == "direct_modifier_preserved_for_downstream_stage":
+            preserved_count += 1
+            continue
+        fallback_reason = str(record.get("fallback_reason") or "")
+        degraded = bool(
+            application.startswith("unsupported")
+            or application.startswith("invalid")
+            or application.endswith("_failed")
+            or "blocked_after_prior_modifier" in application
+            or "missing" in application
+            or "failed" in application
+            or bool(record.get("failure_reason"))
+            or bool(record.get("failure_type"))
+            or (fallback_reason and "fallback" in fallback_reason.lower())
+        )
+        if degraded:
+            degraded_records.append(
+                {
+                    "name": str(record.get("name") or ""),
+                    "geometry_application": application,
+                    "geometry_applied": bool(record.get("geometry_applied")),
+                    "operation": str(record.get("operation") or ""),
+                    "failure_type": str(record.get("failure_type") or ""),
+                    "failure_reason": str(record.get("failure_reason") or ""),
+                    "fallback_reason": fallback_reason,
+                }
+            )
+    return {
+        "attempted_count": len(applications),
+        "applied_count": applied_count,
+        "degraded_count": len(degraded_records),
+        "preserved_downstream_count": preserved_count,
+        "degraded_records": degraded_records[:_DIRECT_MODIFIER_RECORD_LIMIT],
+        "degraded_records_truncated": len(degraded_records) > _DIRECT_MODIFIER_RECORD_LIMIT,
+    }
+
+
 def evaluate_geometry_integrity(
     asset: dict[str, Any],
     runtime: dict[str, Any],
@@ -312,7 +445,7 @@ def evaluate_geometry_integrity(
     geometry_strict = bool(shape_cfg.get("geometry_strict", False))
     body_count_stability_check = bool(shape_cfg.get("body_count_stability_check", False))
 
-    intersection_rate, intersecting_pairs, tested_pairs = _self_intersection_rate(mesh)
+    intersection_rate, intersecting_pairs, tested_pairs, intersection_scan_limited = _self_intersection_rate(mesh)
     normal_score, winding_ok, bad_edges, edge_pairs = _normal_consistency(mesh)
 
     if body_count_stability_check:
@@ -320,6 +453,9 @@ def evaluate_geometry_integrity(
     else:
         body_stability = 1.0
         body_counts = []
+    shape_integration_report = _selected_shape_integration_report(runtime)
+    boolean_fallback = _boolean_fallback_evidence(shape_integration_report)
+    direct_modifier_evidence = _direct_modifier_execution_evidence(mesh)
 
     severity_intersection = "error" if geometry_strict else "warning"
     if intersecting_pairs > 0:
@@ -340,6 +476,8 @@ def evaluate_geometry_integrity(
                     "metric": "self_intersection_rate",
                     "intersecting_pairs": intersecting_pairs,
                     "tested_pairs": tested_pairs,
+                    "scan_limited": intersection_scan_limited,
+                    "pair_budget": _MAX_SELF_INTERSECTION_PAIRS,
                     "rate": intersection_rate,
                 },
                 "suggested_repairs": ["repair_self_intersections"],
@@ -393,21 +531,76 @@ def evaluate_geometry_integrity(
             }
         )
 
+    if boolean_fallback["has_boolean_fallback"]:
+        diagnostics.append(
+            {
+                "code": _BOOLEAN_FALLBACK_CODE,
+                "name": "boolean_csg_fallback",
+                "severity": "error" if geometry_strict else "warning",
+                "phase": "validate",
+                "asset": asset.get("name"),
+                "stage": "validate",
+                "path": "validate.geometry_integrity.boolean_csg_fallback",
+                "message": (
+                    "Geometry integrity detected a degraded boolean/kernel path; "
+                    "fallback execution cannot silently certify a final asset claim"
+                ),
+                "details": {
+                    "metric": "boolean_kernel_fallback_count",
+                    **boolean_fallback,
+                },
+                "suggested_repairs": ["use_manifold_geometry_kernel", "repair_boolean_csg"],
+            }
+        )
+
+    if int(direct_modifier_evidence["degraded_count"]) > 0:
+        diagnostics.append(
+            {
+                "code": _DIRECT_MODIFIER_CODE,
+                "name": "direct_modifier_degraded",
+                "severity": "error" if geometry_strict else "warning",
+                "phase": "validate",
+                "asset": asset.get("name"),
+                "stage": "validate",
+                "path": "validate.geometry_integrity.direct_modifier_degraded",
+                "message": (
+                    "Geometry integrity detected ShapeIR v2 direct modifier(s) "
+                    "that were unsupported, invalid, blocked, failed, or degraded"
+                ),
+                "details": {
+                    "metric": "direct_modifier_degraded_count",
+                    **direct_modifier_evidence,
+                },
+                "suggested_repairs": [
+                    "repair_direct_modifier_parameters",
+                    "lower_supported_shape_ir_v2_operation",
+                    "use_supported_geometry_modifier",
+                ],
+            }
+        )
+
     metrics = {
         "self_intersection_rate": round(float(intersection_rate), 6),
         "normal_consistency": round(float(normal_score), 6),
         "body_count_stability": round(float(body_stability), 6),
+        "boolean_kernel_fallback_count": int(boolean_fallback["fallback_count"]),
+        "direct_modifier_degraded_count": int(direct_modifier_evidence["degraded_count"]),
+        "direct_modifier_attempted_count": int(direct_modifier_evidence["attempted_count"]),
     }
 
     evidence = {
         "evaluated": True,
         "intersecting_pairs": intersecting_pairs,
         "tested_pairs": tested_pairs,
+        "self_intersection_scan_limited": bool(intersection_scan_limited),
+        "self_intersection_pair_budget": int(_MAX_SELF_INTERSECTION_PAIRS),
         "is_winding_consistent": bool(winding_ok),
         "inconsistent_edge_adjacencies": int(bad_edges),
         "edge_adjacencies": int(edge_pairs),
         "body_count_stability_check": body_count_stability_check,
         "observed_body_counts": body_counts,
+        "boolean_fallback": boolean_fallback,
+        "direct_modifier_execution": direct_modifier_evidence,
         "geometry_strict": geometry_strict,
     }
 

@@ -1,0 +1,232 @@
+{
+  "backend_id": "lathe.topology.blender_hard_surface_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/topology/topology.glb",
+  "mesh_stats": {
+    "vertex_count": 416,
+    "triangle_count": 828,
+    "watertight": true,
+    "volume": 5726170814.745891,
+    "bounds_min": [
+      -1995.555556,
+      -1993.174603,
+      0.067
+    ],
+    "bounds_max": [
+      1995.555556,
+      1993.174603,
+      794.337555
+    ],
+    "extents": [
+      3991.111111,
+      3986.349206,
+      794.270555
+    ],
+    "body_count": 1
+  },
+  "normals": {
+    "mode": "face",
+    "count": 828
+  },
+  "part_groups": [
+    {
+      "name": "body",
+      "face_count": 828,
+      "vertex_count": 416,
+      "bounds_min": [
+        -1995.555556,
+        -1993.174603,
+        0.067
+      ],
+      "bounds_max": [
+        1995.555556,
+        1993.174603,
+        794.337555
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "face_count": 828,
+      "vertex_count": 416,
+      "tags": [],
+      "parent_blueprint_component": "",
+      "transform": null,
+      "metadata": {},
+      "bounds_min": [
+        -1995.555556,
+        -1993.174603,
+        0.067
+      ],
+      "bounds_max": [
+        1995.555556,
+        1993.174603,
+        794.337555
+      ]
+    }
+  ],
+  "part_count": 1,
+  "multi_part_scene_source": "runtime_mesh_face_parts",
+  "hard_edge_groups": [
+    {
+      "name": "body_0",
+      "part": "body",
+      "edge_class": "hard_surface_feature"
+    }
+  ],
+  "panel_seams": [],
+  "bake_groups": [
+    {
+      "name": "body_0",
+      "part": "body",
+      "material_boundary": false
+    }
+  ],
+  "feature_semantics": {
+    "shape_source": "mesh_program",
+    "primitive_count": 1,
+    "boolean_seam_group_count": 0,
+    "polybevel_modifier_count": 0,
+    "feature_density": 0.4,
+    "feature_coherence": 0.5,
+    "edge_treatment_count": 0,
+    "required_part_coverage": 1.0
+  },
+  "generated_uv_semantics": {},
+  "adapter_report": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "blender_subprocess",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "python_module_available": false,
+      "supported_modes": [
+        "background_cli"
+      ],
+      "asset_libraries": [],
+      "addons": [],
+      "available": true,
+      "path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+      "version": "5.0.1",
+      "gpu_cpu_render_capability": "cpu",
+      "export_capabilities": {
+        "usd": true,
+        "glb": true,
+        "gltf": true,
+        "obj": true
+      },
+      "code": "ok"
+    },
+    "status": "fallback",
+    "fallback_reason": "Blender topology adapter produced a non-watertight mesh",
+    "error": {
+      "type": "quality_gate",
+      "message": "Blender topology adapter produced a non-watertight mesh"
+    },
+    "actual_adapter": "reference_cleanup",
+    "execution": {
+      "mode": "reference_cleanup",
+      "fallback_from": "blender_subprocess",
+      "reason": "Blender topology adapter produced a non-watertight mesh",
+      "blender_execution": {
+        "mode": "blender_subprocess",
+        "blender_path": "C:\\Users\\talme\\AppData\\Local\\Microsoft\\WindowsApps\\blender.CMD",
+        "blender_version": "5.0.1",
+        "input_artifact": "blender_input.glb",
+        "output_artifact": "blender_output.glb",
+        "config_artifact": "blender_topology_config.json",
+        "adapter_config_summary": {
+          "subsurf_level": 0,
+          "decimate_target_quads": 20000,
+          "bevel_seam_group_count": 0,
+          "bevel_width": 0.0,
+          "instance_pattern_record_count": 0
+        },
+        "stdout_tail": "er create Mesh node body\n13:40:45 | INFO: glTF import finished in 0.01s\nINFO Draco mesh compression is available, use library at C:\\Program Files\\Blender Foundation\\Blender 5.0\\5.0\\scripts\\addons_core\\io_scene_gltf2\\extern_draco.dll\n13:40:45 | INFO: Starting glTF 2.0 export\n13:40:45 | INFO: Extracting primitive: body\n13:40:45 | INFO: Primitives created: 1\n13:40:45 | INFO: Finished glTF 2.0 export in 0.017999649047851562 s\n\nBlender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)\n\nBlender quit",
+        "stderr_tail": null,
+        "matched_stderr_patterns": []
+      },
+      "blender_mesh_stats": {
+        "vertex_count": 23783,
+        "triangle_count": 7938,
+        "watertight": false,
+        "volume": 0.0,
+        "bounds_min": [
+          -2000.0,
+          -1994.285767,
+          0.007267
+        ],
+        "bounds_max": [
+          2000.0,
+          1994.285767,
+          795.605042
+        ],
+        "extents": [
+          4000.0,
+          3988.571533,
+          795.597775
+        ],
+        "body_count": 7922
+      },
+      "fallback_execution": {
+        "mode": "reference_cleanup",
+        "seal_strategy": "convex_hull",
+        "heuristic_part_groups": false
+      }
+    }
+  },
+  "style_routing": {
+    "shading_model": "lambert_ambient",
+    "material_model": "pbr_stylized",
+    "outline_mode": "none",
+    "lighting_strategy": "dynamic_global_illumination",
+    "artist_edited_normals": false,
+    "preserve_flat_shading": false,
+    "needs_inverted_hull_pass": false,
+    "needs_sobel_post_pass": false
+  },
+  "subdivision_finishing": {
+    "applied": true,
+    "scheme": "catmull_clark",
+    "levels": 1,
+    "boundary": "smooth",
+    "spec_source": "hero_default",
+    "input_stats": {
+      "vertex_count": 71,
+      "edge_count": 207,
+      "face_count": 138,
+      "boundary_edge_count": 0,
+      "nonmanifold_edge_count": 0,
+      "is_quad_only": false,
+      "is_triangle_only": true
+    },
+    "output_stats": {
+      "vertex_count": 416,
+      "edge_count": 828,
+      "face_count": 414,
+      "is_quad_only": true
+    },
+    "crease_count": 0,
+    "corner_count": 0,
+    "backend_attempted": "auto",
+    "backend_actual": "cpu",
+    "opensubdiv_available": false,
+    "opensubdiv_module": null,
+    "opensubdiv_version": null,
+    "fallback_reason": "pyopensubdiv / OpenSubdiv import failed; CPU fallback in use",
+    "input_face_count": 138,
+    "output_face_count": 828
+  },
+  "provenance": {
+    "backend_id": "lathe.topology.blender_hard_surface_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "reference_cleanup"
+  },
+  "_part_groups_emitted": [
+    "body"
+  ]
+}

@@ -30,7 +30,7 @@ REPO_ROOT = GRAMMAR_PATH.parent.parent
 
 
 _UNIT_RE = re.compile(
-    r"^(?P<value>(?:\d+\.\d+|\d+))(?P<unit>mm|cm|m|deg|rad|g|kg|ms|s|kb|mb|gb|px|px_per_m|px_per_cm)$"
+    r"^(?P<value>-?(?:\d+\.\d+|\d+))(?P<unit>mm|cm|m|deg|rad|g|kg|ms|s|kb|mb|gb|px|px_per_m|px_per_cm)$"
 )
 
 PROGRAM_ARRAY_KEYS = [
@@ -54,6 +54,7 @@ PROGRAM_ARRAY_KEYS = [
     "trim_sheets",
     "palettes",
     "style_packs",
+    "style_bridges",
     "reference_sets",
     "reconstruct_policies",
     "adapt_policies",
@@ -66,6 +67,12 @@ PROGRAM_ARRAY_KEYS = [
     "library_bindings",
     "material_graphs",
     "inspection_policies",
+    "asset_class_profiles",
+    "wfc_tilesets",
+    "wfc_adjacencies",
+    "terrain_programs",
+    "subdivision_finishings",
+    "f_rep_programs",
     "repair_policies",
     "fixtures",
     "tests",
@@ -102,6 +109,7 @@ def _empty_program() -> dict[str, Any]:
         "trim_sheets": [],
         "palettes": [],
         "style_packs": [],
+        "style_bridges": [],
         "reference_sets": [],
         "reconstruct_policies": [],
         "adapt_policies": [],
@@ -114,6 +122,16 @@ def _empty_program() -> dict[str, Any]:
         "library_bindings": [],
         "material_graphs": [],
         "inspection_policies": [],
+        "asset_class_profiles": [],
+        "vegetation_species": [],
+        "vegetation_kits": [],
+        "wind_programs": [],
+        "volume_programs": [],
+        "wfc_tilesets": [],
+        "wfc_adjacencies": [],
+        "terrain_programs": [],
+        "subdivision_finishings": [],
+        "f_rep_programs": [],
         "repair_policies": [],
         "fixtures": [],
         "tests": [],

@@ -1,0 +1,6 @@
+{
+  "backend_id": "lathe.rig.rigid_mechanical_stub_v1",
+  "type": "none",
+  "pivot_policy": "auto",
+  "joints": []
+}

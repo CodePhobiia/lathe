@@ -1,0 +1,7 @@
+{
+  "subsurf_level": 1,
+  "decimate_target_quads": 20000,
+  "bevel_segments": 2,
+  "skip_subsurf_for_terrain": true,
+  "fidelity_tier": "hero"
+}

@@ -174,7 +174,7 @@ class _FastParserExprMixin:
         self.ts.pop("]")
         return items
 
-    def _call_after_name(self, name: str) -> dict[str, Any]:
+    def _call_after_name(self, name: str, *, mesh_args: bool = False) -> dict[str, Any]:
         args = []
         self.ts.pop("(")
         while not self.ts.peek(")"):
@@ -182,12 +182,13 @@ class _FastParserExprMixin:
             next_kind = (
                 self.ts.tokens[next_idx][1] if next_idx < len(self.ts.tokens) else None
             )
+            value_parser = self._mesh_arg_value if mesh_args else self._expr
             if self.ts.kind() == "ident" and next_kind == ":":
                 arg_name = self.ts.pop_ident()
                 self.ts.pop(":")
-                args.append({"name": arg_name, "value": self._expr()})
+                args.append({"name": arg_name, "value": value_parser()})
             else:
-                args.append({"name": None, "value": self._expr()})
+                args.append({"name": None, "value": value_parser()})
             if self.ts.peek(","):
                 self.ts.pop(",")
                 if self.ts.peek(")"):
@@ -196,6 +197,46 @@ class _FastParserExprMixin:
                 break
         self.ts.pop(")")
         return {"type": "call", "name": name, "args": args}
+
+    def _mesh_arg_value(self) -> Any:
+        if self.ts.peek("+") or self.ts.peek("-"):
+            sign = self.ts.peek()
+            next_idx = self.ts.index + 1
+            next_kind = self.ts.tokens[next_idx][0] if next_idx < len(self.ts.tokens) else None
+            next_value = self.ts.tokens[next_idx][1] if next_idx < len(self.ts.tokens) else None
+            if next_kind == "ident" and next_value in {"x", "y", "z"}:
+                self.ts.pop(sign)
+                axis = self.ts.pop_ident()
+                return f"{sign}{axis}"
+        if self.ts.peek("["):
+            return self._mesh_list()
+        next_idx = self.ts.index + 1
+        next_value = self.ts.tokens[next_idx][1] if next_idx < len(self.ts.tokens) else None
+        if self.ts.kind() == "ident":
+            if next_value == "(":
+                return self._mesh_expr()
+            method_open_idx = self.ts.index + 3
+            if (
+                next_value == "."
+                and method_open_idx < len(self.ts.tokens)
+                and self.ts.tokens[method_open_idx][1] == "("
+            ):
+                return self._mesh_expr()
+        return self._expr()
+
+    def _mesh_list(self) -> list[Any]:
+        items: list[Any] = []
+        self.ts.pop("[")
+        while not self.ts.peek("]"):
+            items.append(self._mesh_arg_value())
+            if self.ts.peek(","):
+                self.ts.pop(",")
+                if self.ts.peek("]"):
+                    break
+            else:
+                break
+        self.ts.pop("]")
+        return items
 
     def _number_value(self) -> int | float:
         if self.ts.kind() != "number":

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "lods": [
+    {
+      "level": 0,
+      "ratio": 1.0,
+      "tris": 22722,
+      "verts": 68166,
+      "path": "stages/optimize/lod_0.glb",
+      "distance_min": 0.0,
+      "distance_max": 10.0,
+      "screen_coverage": 1.0
+    }
+  ]
+}

@@ -84,6 +84,241 @@ def check_new_declarations(checker: Any) -> None:
             )
 
     _check_scenes(checker)
+    _check_hda_kit_declarations(checker)
+
+
+_HDA_PORT_TYPES = {
+    "polygon_2d",
+    "polygon_3d",
+    "face_ref",
+    "vertex_ref",
+    "edge_ref",
+    "socket",
+    "mesh",
+    "points",
+    "volume",
+    "heightfield",
+    "spline",
+    "sdf",
+    "image",
+    "shape_primitive_set",
+    "material_ref",
+    "number",
+    "int",
+    "boolean",
+    "string",
+    "enum",
+    "vec2",
+    "vec3",
+    "vec4",
+    "color",
+}
+
+_HDA_PARAMETER_TYPES = {
+    "number",
+    "int",
+    "boolean",
+    "string",
+    "enum",
+    "vec2",
+    "vec3",
+    "vec4",
+    "color",
+}
+
+_HDA_UI_HINTS = {
+    "slider",
+    "dropdown",
+    "toggle",
+    "colorpicker",
+    "text",
+    "spinner",
+    "checkbox",
+    "radio",
+}
+
+
+def _check_hda_kit_declarations(checker: Any) -> None:
+    """Validate HDA-class kit/library/mechanism declarations.
+
+    Backwards-compatible: declarations without ``ports``, ``parameters`` or
+    ``version`` are treated as legacy and skipped. Only declarations that
+    carry HDA fields are scrutinized for type and option correctness.
+    """
+    for collection_key, kind in (
+        ("kits", "kit"),
+        ("libraries", "library"),
+        ("mechanisms", "mechanism"),
+    ):
+        for decl in checker.program.get(collection_key, []) or []:
+            if not _is_hda_decl(decl):
+                continue
+            _check_hda_ports(checker, decl, kind)
+            _check_hda_parameters(checker, decl, kind)
+            _check_hda_body_kit_uses(checker, decl, kind)
+
+
+def _is_hda_decl(decl: dict[str, Any]) -> bool:
+    return any(
+        key in decl and (decl[key] or key == "version")
+        for key in ("version", "ports", "parameters", "body")
+    )
+
+
+def _check_hda_ports(checker: Any, decl: dict[str, Any], kind: str) -> None:
+    seen: set[str] = set()
+    for port in decl.get("ports", []) or []:
+        if not isinstance(port, dict):
+            continue
+        port_name = str(port.get("name", ""))
+        port_type = str(port.get("port_type", ""))
+        direction = str(port.get("direction", ""))
+        path = f"{kind}.{decl['name']}.ports.{port_name}"
+        if not port_name:
+            checker.diagnostics.append(
+                diag(
+                    "L6510",
+                    "kit_port_missing_name",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' has a port with no name",
+                    path=path,
+                )
+            )
+            continue
+        if port_name in seen:
+            checker.diagnostics.append(
+                diag(
+                    "L6511",
+                    "kit_duplicate_port_name",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' declares duplicate port '{port_name}'",
+                    path=path,
+                )
+            )
+        seen.add(port_name)
+        if direction not in {"in", "out"}:
+            checker.diagnostics.append(
+                diag(
+                    "L6512",
+                    "kit_port_invalid_direction",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' port '{port_name}' has invalid "
+                    f"direction '{direction}' (expected 'in' or 'out')",
+                    path=path,
+                )
+            )
+        if port_type and port_type not in _HDA_PORT_TYPES:
+            checker.diagnostics.append(
+                diag(
+                    "L6513",
+                    "kit_port_unknown_type",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' port '{port_name}' has unknown "
+                    f"type '{port_type}'",
+                    path=path,
+                )
+            )
+
+
+def _check_hda_parameters(checker: Any, decl: dict[str, Any], kind: str) -> None:
+    seen: set[str] = set()
+    for parameter in decl.get("parameters", []) or []:
+        if not isinstance(parameter, dict):
+            continue
+        param_name = str(parameter.get("name", ""))
+        param_type = str(parameter.get("param_type", ""))
+        options = parameter.get("options", {}) or {}
+        path = f"{kind}.{decl['name']}.parameters.{param_name}"
+        if not param_name:
+            checker.diagnostics.append(
+                diag(
+                    "L6520",
+                    "kit_parameter_missing_name",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' has a parameter with no name",
+                    path=path,
+                )
+            )
+            continue
+        if param_name in seen:
+            checker.diagnostics.append(
+                diag(
+                    "L6521",
+                    "kit_duplicate_parameter_name",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' declares duplicate parameter "
+                    f"'{param_name}'",
+                    path=path,
+                )
+            )
+        seen.add(param_name)
+        if param_type and param_type not in _HDA_PARAMETER_TYPES:
+            checker.diagnostics.append(
+                diag(
+                    "L6522",
+                    "kit_parameter_unknown_type",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' parameter '{param_name}' has "
+                    f"unknown type '{param_type}'",
+                    path=path,
+                )
+            )
+        ui_hint = options.get("ui")
+        if isinstance(ui_hint, str) and ui_hint and ui_hint not in _HDA_UI_HINTS:
+            checker.diagnostics.append(
+                diag(
+                    "L6523",
+                    "kit_parameter_unknown_ui_hint",
+                    "error",
+                    "typecheck",
+                    f"{kind} '{decl['name']}' parameter '{param_name}' has "
+                    f"unknown ui hint '{ui_hint}'",
+                    path=path,
+                )
+            )
+        if param_type == "enum":
+            allowed = options.get("values") or options.get("enum") or []
+            if not isinstance(allowed, list) or not allowed:
+                checker.diagnostics.append(
+                    diag(
+                        "L6524",
+                        "kit_enum_missing_values",
+                        "error",
+                        "typecheck",
+                        f"{kind} '{decl['name']}' enum parameter "
+                        f"'{param_name}' must declare 'values' = [...]",
+                        path=path,
+                    )
+                )
+
+
+def _check_hda_body_kit_uses(checker: Any, decl: dict[str, Any], kind: str) -> None:
+    body = decl.get("body") or {}
+    for use in body.get("kit_uses", []) or []:
+        if not isinstance(use, dict):
+            continue
+        target = str(use.get("kit", ""))
+        if not target:
+            continue
+        if target not in checker.resolver.kit_map:
+            checker.diagnostics.append(
+                diag(
+                    "L6530",
+                    "kit_body_unknown_kit_reference",
+                    "error",
+                    "resolve",
+                    f"{kind} '{decl['name']}' body references unknown kit "
+                    f"'{target}'",
+                    path=f"{kind}.{decl['name']}.body.use_kit.{target}",
+                )
+            )
 
 
 def _check_scene_id_prefix(

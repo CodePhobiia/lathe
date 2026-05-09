@@ -15,6 +15,17 @@ ScenePlanMode = Literal["preview", "final"]
 
 _SOURCE_FIELDS = ("source_asset", "lathe_asset", "source_family", "source_kit")
 _EMPTY_OVERRIDE_FINGERPRINT = "44136fa355b3678a"
+_COMPOSITION_GROUP_FIELDS = (
+    "composition_group",
+    "scene_composition_group",
+    "setpiece_group",
+    "compose_group",
+)
+_COMPOSITION_OPT_IN_FIELDS = (
+    "compose_as_setpiece",
+    "scene_composition",
+    "generate_setpiece_parent",
+)
 
 _MODE_BUDGETS: dict[ScenePlanMode, dict[str, Any]] = {
     "preview": {
@@ -538,6 +549,134 @@ def _object_complexity(item: Mapping[str, Any]) -> int:
     return score
 
 
+def _object_state(item: Mapping[str, Any]) -> Mapping[str, Any]:
+    state = item.get("state")
+    return state if isinstance(state, Mapping) else {}
+
+
+def _composition_group_id(item: Mapping[str, Any]) -> str:
+    state = _object_state(item)
+    for field in _COMPOSITION_GROUP_FIELDS:
+        value = state.get(field)
+        if isinstance(value, str) and value.strip():
+            return _slug(value, max_length=48)
+    if any(state.get(field) is True for field in _COMPOSITION_OPT_IN_FIELDS):
+        for field in ("parent_object", "parent", "assembly_parent", "assembly_target"):
+            value = state.get(field)
+            if isinstance(value, str) and value.strip():
+                return _slug(value, max_length=48)
+        return "scene_setpiece"
+    return ""
+
+
+def _composition_asset_source(
+    *,
+    scene_id: str,
+    group_id: str,
+    object_ids: list[str],
+) -> dict[str, Any]:
+    ref = _slug(f"{scene_id}_{group_id}_setpiece", max_length=72)
+    return {
+        "kind": "generated_fallback",
+        "ref": ref,
+        "generated": True,
+        "source_family": "procedural_setpiece",
+        "generated_intent": {
+            "composition_group": group_id,
+            "composition_kind": "scene_connected_setpiece",
+            "object_ids": list(object_ids),
+            "object_count": len(object_ids),
+        },
+    }
+
+
+def _composition_asset_overrides(
+    *,
+    group_id: str,
+    object_ids: list[str],
+) -> dict[str, Any]:
+    return {
+        "state": {
+            "object_archetype": "setpiece",
+            "setpiece": group_id,
+            "scene_composition_group": group_id,
+            "scene_composition_member_count": len(object_ids),
+            "child_socket_count": len(object_ids),
+            "module_socket_count": len(object_ids),
+        }
+    }
+
+
+def _composition_groups(object_records: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for record in object_records:
+        item = record.get("item")
+        if not isinstance(item, Mapping):
+            continue
+        group_id = _composition_group_id(item)
+        if not group_id:
+            continue
+        groups.setdefault(group_id, []).append(record)
+    return {
+        group_id: records
+        for group_id, records in sorted(groups.items())
+        if len([record for record in records if str(record.get("object_id") or "")]) >= 2
+    }
+
+
+def _vector3_from_transform(item: Mapping[str, Any], field: str, default: tuple[float, float, float]) -> tuple[float, float, float]:
+    transform = item.get("transform")
+    raw = transform.get(field) if isinstance(transform, Mapping) else None
+    if not isinstance(raw, list | tuple):
+        return default
+    padded = list(raw[:3]) + [default[0], default[1], default[2]]
+    out: list[float] = []
+    for index, fallback in enumerate(default):
+        try:
+            out.append(float(padded[index]))
+        except (TypeError, ValueError):
+            out.append(float(fallback))
+    return (out[0], out[1], out[2])
+
+
+def _composition_object_id(scene_id: str, group_id: str) -> str:
+    body = _slug(f"{scene_id}_{group_id}_setpiece", max_length=76)
+    return f"obj_{body}"
+
+
+def _composition_group_transform(records: list[dict[str, Any]]) -> dict[str, list[float]]:
+    items = [record.get("item") for record in records if isinstance(record.get("item"), Mapping)]
+    positions = [_vector3_from_transform(item, "position", (0.0, 0.0, 0.0)) for item in items]
+    scales = [_vector3_from_transform(item, "scale", (1.0, 1.0, 1.0)) for item in items]
+    if not positions:
+        return {"position": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0], "scale": [1.0, 1.0, 1.0]}
+    mins = [
+        min(float(position[axis]) - max(0.5, float(scale[axis]) * 0.5) for position, scale in zip(positions, scales))
+        for axis in range(3)
+    ]
+    maxs = [
+        max(float(position[axis]) + max(0.5, float(scale[axis]) * 0.5) for position, scale in zip(positions, scales))
+        for axis in range(3)
+    ]
+    center = [round((mins[axis] + maxs[axis]) * 0.5, 6) for axis in range(3)]
+    extents = [round(max(1.0, maxs[axis] - mins[axis]), 6) for axis in range(3)]
+    return {"position": center, "rotation": [0.0, 0.0, 0.0], "scale": extents}
+
+
+def _composition_group_region(records: list[dict[str, Any]]) -> str | None:
+    counts: dict[str, int] = {}
+    for record in records:
+        item = record.get("item")
+        if not isinstance(item, Mapping):
+            continue
+        region = _string_field(item, "region")
+        if region is not None:
+            counts[region] = counts.get(region, 0) + 1
+    if not counts:
+        return None
+    return sorted(counts.items(), key=lambda item: (-item[1], item[0]))[0][0]
+
+
 def _cache_key(
     *,
     mode: ScenePlanMode,
@@ -556,6 +695,91 @@ def _cache_key(
         f"scene_asset.v1:{mode}:{_slug(str(source['kind']))}:"
         f"{_slug(str(source['ref']))}:{_slug(variant or 'default')}:{_fingerprint(components)}"
     )
+
+
+def _composition_asset_tasks(
+    *,
+    mode: ScenePlanMode,
+    scene_id: str,
+    composition_groups: Mapping[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    tasks: list[dict[str, Any]] = []
+    for group_id, records in sorted(composition_groups.items()):
+        object_ids = sorted(str(record["object_id"]) for record in records if str(record.get("object_id") or ""))
+        source = _composition_asset_source(scene_id=scene_id, group_id=group_id, object_ids=object_ids)
+        overrides = _composition_asset_overrides(group_id=group_id, object_ids=object_ids)
+        cache_key = _cache_key(mode=mode, source=source, variant=None, overrides=overrides)
+        group = {
+            "source": source,
+            "variant": None,
+            "asset_overrides": overrides,
+            "override_fingerprint": _fingerprint(overrides),
+            "estimated_complexity": sum(int(record.get("estimated_complexity") or 0) for record in records)
+            + len(object_ids) * 2,
+            "object_ids": object_ids,
+        }
+        task = _asset_task(
+            task_id=_asset_task_id(source, cache_key),
+            mode=mode,
+            cache_key=cache_key,
+            group=group,
+        )
+        task["requires_unique_build"] = True
+        task["uniqueness_reasons"] = ["scene_composition_group", group_id]
+        tasks.append(task)
+    return tasks
+
+
+def _composition_assembly_tasks(
+    *,
+    mode: ScenePlanMode,
+    scene_id: str,
+    composition_tasks: list[dict[str, Any]],
+    composition_groups: Mapping[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    tasks: list[dict[str, Any]] = []
+    for asset_task in sorted(composition_tasks, key=lambda task: str(task.get("task_id") or "")):
+        source = asset_task.get("source") if isinstance(asset_task.get("source"), Mapping) else {}
+        generated_intent = source.get("generated_intent") if isinstance(source.get("generated_intent"), Mapping) else {}
+        group_id = str(generated_intent.get("composition_group") or "")
+        records = list(composition_groups.get(group_id, []))
+        if not group_id or not records:
+            continue
+        object_ids = sorted(str(record["object_id"]) for record in records if str(record.get("object_id") or ""))
+        object_id = _composition_object_id(scene_id, group_id)
+        task_id = f"assembly_task_{_slug_with_digest(object_id, max_slug=72, digest_size=10)}"
+        transform = _composition_group_transform(records)
+        instance_overrides = {
+            "name": f"{group_id.replace('_', ' ').title()} Setpiece",
+            "role": "environment_structure",
+            "semantic_tags": [
+                "scene_composition",
+                "generated_setpiece",
+                f"composition_group:{group_id}",
+            ],
+            "provenance": {
+                "created_by": "lathe.scene.planner",
+                "created_from": "scene_composition_group",
+                "composition_group": group_id,
+                "member_object_ids": object_ids,
+            },
+        }
+        tasks.append(
+            {
+                "task_id": task_id,
+                "task_type": "scene_assembly",
+                "mode": mode,
+                "object_id": object_id,
+                "asset_task_id": str(asset_task.get("task_id") or ""),
+                "cache_key": str(asset_task.get("cache_key") or ""),
+                "region": _composition_group_region(records),
+                "transform": _normal_json(transform),
+                "asset_overrides": dict(asset_task.get("asset_overrides") or {}),
+                "instance_overrides": _normal_json(instance_overrides),
+                "depends_on": [str(asset_task.get("task_id") or "")],
+            }
+        )
+    return tasks
 
 
 def _plan_id(scene_graph: Mapping[str, Any], *, mode: ScenePlanMode, scene_id: str) -> str:
@@ -822,6 +1046,7 @@ def plan_scene(
                 "item": item,
                 "cache_key": cache_key,
                 "asset_overrides": asset_overrides,
+                "estimated_complexity": object_complexity,
             }
         )
 
@@ -832,10 +1057,26 @@ def plan_scene(
         _asset_task(task_id=asset_task_ids[cache_key], mode=mode, cache_key=cache_key, group=group)
         for cache_key, group in sorted(asset_groups.items(), key=_asset_group_sort_key)
     ]
+    composition_groups = _composition_groups(object_records)
+    composition_asset_tasks = _composition_asset_tasks(
+        mode=mode,
+        scene_id=scene_id,
+        composition_groups=composition_groups,
+    )
+    asset_tasks.extend(composition_asset_tasks)
     assembly_tasks = [
         _assembly_task(mode=mode, record=record, asset_task_id=asset_task_ids[str(record["cache_key"])])
         for record in sorted(object_records, key=lambda item: str(item["object_id"]))
     ]
+    assembly_tasks.extend(
+        _composition_assembly_tasks(
+            mode=mode,
+            scene_id=scene_id,
+            composition_tasks=composition_asset_tasks,
+            composition_groups=composition_groups,
+        )
+    )
+    assembly_tasks = sorted(assembly_tasks, key=lambda item: str(item.get("task_id") or ""))
     assembly_task_ids = [task["task_id"] for task in assembly_tasks]
     render_tasks = _render_tasks(scene_graph, mode=mode, depends_on=assembly_task_ids)
     render_task_ids = [task["task_id"] for task in render_tasks]

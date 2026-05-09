@@ -1,0 +1,102 @@
+// doc:
+//   purpose: V0.1 §7.1 worked-example vegetation declarations.
+//            SpeedTree-class procedural vegetation: 3 foundation
+//            species (oak, pine, grass) + 7 derived species, plus a
+//            forest kit and three wind programs.
+//   exports: vegetation_species oak, pine, grass_temperate, willow,
+//            birch, palm, fern, grass_tropical, ivy, moss;
+//            vegetation_kit forest_temperate, savanna_dry, alpine_mixed;
+//            wind_program calm, breezy, stormy.
+//   depends_on: lathe.std.vegetation (Python compiler).
+//   used_by: example .lth sources that opt into procedural foliage.
+//   stability: stable
+//   layer: V0.1 / Phase 3 §7.1
+module std.vegetation.worked_examples
+
+// --- Foundation species ---
+
+vegetation_species oak version "1.0" {
+  base = "oak"
+  foliage_kind = "broadleaf"
+  lod_count = 4
+  silhouette_extents_cm = [550.0, 850.0, 550.0]
+}
+
+vegetation_species pine version "1.0" {
+  base = "pine"
+  foliage_kind = "needle"
+  lod_count = 4
+  silhouette_extents_cm = [450.0, 1200.0, 450.0]
+}
+
+vegetation_species grass_temperate version "1.0" {
+  base = "grass_temperate"
+  foliage_kind = "grass"
+  lod_count = 3
+  silhouette_extents_cm = [40.0, 30.0, 40.0]
+}
+
+// --- Derived species (one-line variants of the foundation set). ---
+
+vegetation_species willow      version "1.0" { base = "willow"      foliage_kind = "broadleaf" }
+vegetation_species birch       version "1.0" { base = "birch"       foliage_kind = "broadleaf" }
+vegetation_species palm        version "1.0" { base = "palm"        foliage_kind = "frond" }
+vegetation_species fern        version "1.0" { base = "fern"        foliage_kind = "frond" }
+vegetation_species grass_tropical version "1.0" { base = "grass_tropical" foliage_kind = "grass" }
+vegetation_species ivy         version "1.0" { base = "ivy"         foliage_kind = "broadleaf" }
+vegetation_species moss        version "1.0" { base = "moss"        foliage_kind = "moss" }
+
+// --- Vegetation kits (forest/garden/biome bundles). ---
+
+vegetation_kit forest_temperate version "1.0" {
+  biome = "temperate"
+  density_per_m2 = 0.4
+  distribution = "poisson"
+  species = ["oak", "birch", "pine", "fern", "grass_temperate"]
+}
+
+vegetation_kit savanna_dry version "1.0" {
+  biome = "savanna"
+  density_per_m2 = 0.18
+  distribution = "poisson"
+  species = ["palm", "grass_tropical", "ivy"]
+}
+
+vegetation_kit alpine_mixed version "1.0" {
+  biome = "alpine"
+  density_per_m2 = 0.3
+  distribution = "poisson"
+  species = ["pine", "moss", "grass_temperate"]
+}
+
+// --- Wind programs (sway hints for engine-side animation). ---
+
+wind_program calm {
+  direction = [1.0, 0.0, 0.0]
+  strength = 0.3
+  band_amplitudes_cm = [0.0, 0.4, 1.5]
+  band_frequencies_hz = [0.0, 0.3, 0.7]
+  band_turbulence = [0.0, 0.05, 0.15]
+  gust_period_s = 12.0
+  gust_strength = 0.15
+}
+
+wind_program breezy {
+  direction = [1.0, 0.0, 0.0]
+  strength = 1.0
+  band_amplitudes_cm = [0.0, 1.5, 4.0]
+  band_frequencies_hz = [0.0, 0.6, 1.4]
+  band_turbulence = [0.0, 0.2, 0.55]
+  gust_period_s = 6.0
+  gust_strength = 0.4
+}
+
+wind_program stormy {
+  direction = [1.0, 0.0, 0.0]
+  strength = 2.5
+  band_amplitudes_cm = [0.5, 5.0, 12.0]
+  band_frequencies_hz = [0.2, 1.4, 3.0]
+  band_turbulence = [0.1, 0.55, 0.85]
+  gust_period_s = 2.5
+  gust_strength = 0.9
+}

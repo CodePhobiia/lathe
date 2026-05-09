@@ -11,6 +11,7 @@ def build_atlas_assembly_ir(
     uv_organization: dict[str, Any] | None = None,
     chart_manifest: list[dict[str, Any]] | None = None,
     material_id_layout: dict[str, Any] | None = None,
+    generated_surface_charts: dict[str, Any] | None = None,
     surface_story_placement_plan: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     ir = {
@@ -30,6 +31,12 @@ def build_atlas_assembly_ir(
         ir["chart_manifest"] = list(chart_manifest)
     if material_id_layout:
         ir["material_id_layout"] = dict(material_id_layout)
+    if generated_surface_charts:
+        ir["generated_surface_charts"] = dict(generated_surface_charts)
+    if control_pack.get("generated_surface_chart_maps"):
+        ir["generated_surface_chart_maps"] = dict(control_pack.get("generated_surface_chart_maps") or {})
+    if control_pack.get("generated_surface_chart_atlas"):
+        ir["generated_surface_chart_atlas"] = dict(control_pack.get("generated_surface_chart_atlas") or {})
     if surface_story_placement_plan:
         ir["surface_story_placement_plan"] = dict(surface_story_placement_plan)
     return ir

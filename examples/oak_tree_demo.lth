@@ -1,0 +1,47 @@
+// Phase 3 first slice — minimum-viable vegetation primitive.
+//
+// Proves Lathe ships diverse asset types: same kernel that builds chests
+// and drones now builds trees via two new mesh_program ops:
+//
+//   * vegetation_trunk(height, base_radius, taper, segments, bend?)
+//     -> a tapered, gently bent lofted_solid trunk.
+//   * vegetation_canopy(parent, branch_count, leaf_density, leaf_size,
+//                       foliage_radius, branch_pitch?)
+//     -> N branch cylinders + M leaf spheres anchored on the trunk top.
+//
+// Both ops compose existing stable ShapeIR primitives — there is no
+// vegetation-specific code path through topology / UV / package.
+// This is the proof point that Lathe is multi-domain, not the full
+// SpeedTree replacement (no bark, no LOD chain, no wind animation).
+module demo.vegetation
+
+asset oak_tree : hard_surface_prop {
+  intent {
+    role = "procedural oak tree"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 42
+
+      mesh_program {
+        let trunk = vegetation_trunk(
+          height: 4m,
+          base_radius: 25cm,
+          taper: 0.4,
+          segments: 6,
+        )
+        vegetation_canopy(
+          parent: trunk,
+          branch_count: 10,
+          leaf_density: 60,
+          leaf_size: 6cm,
+          foliage_radius: 140cm,
+        )
+      }
+    }
+  }
+}

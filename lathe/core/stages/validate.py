@@ -196,6 +196,56 @@ def _report_section_with_diagnostics(entry: dict[str, Any]) -> dict[str, Any]:
     return evidence
 
 
+def _shape_program_validate_diagnostics(executor: Any) -> list[dict[str, Any]]:
+    shape_bundle = executor.runtime.get("shape", {}).get("bundle", {})
+    if not isinstance(shape_bundle, dict):
+        return []
+    scaffold_report = shape_bundle.get("scaffold_report")
+    scaffold_report = scaffold_report if isinstance(scaffold_report, dict) else {}
+    sources: list[tuple[str, dict[str, Any]]] = []
+    for index, feature_report in enumerate(scaffold_report.get("feature_reports") or []):
+        if not isinstance(feature_report, dict):
+            continue
+        grammar_report = feature_report.get("grammar_program")
+        if isinstance(grammar_report, dict):
+            sources.append((f"shape.scaffold_report.feature_reports[{index}].grammar_program", grammar_report))
+    for index, grammar_report in enumerate(scaffold_report.get("grammar_program_candidates") or []):
+        if isinstance(grammar_report, dict):
+            sources.append((f"shape.scaffold_report.grammar_program_candidates[{index}]", grammar_report))
+
+    diagnostics: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for path, grammar_report in sources:
+        for raw_diag in grammar_report.get("diagnostics") or []:
+            if not isinstance(raw_diag, dict):
+                continue
+            code = str(raw_diag.get("code") or raw_diag.get("name") or "shape_program_diagnostic")
+            if code not in {
+                "construction_graph_feature_request_unresolved",
+                "construction_graph_surface_request_unresolved",
+            }:
+                continue
+            request = str(raw_diag.get("request") or "")
+            status = str(raw_diag.get("status") or "")
+            key = (code, request, status)
+            if key in seen:
+                continue
+            seen.add(key)
+            diag = dict(raw_diag)
+            diag.setdefault("code", code)
+            diag.setdefault("name", code)
+            diag.setdefault("severity", "warning")
+            diag.setdefault("phase", "shape")
+            diag.setdefault("stage", "shape")
+            diag.setdefault("asset", executor.asset.get("name", executor.asset_name))
+            diag.setdefault("path", f"{path}.diagnostics")
+            diag.setdefault("message", diag.get("reason") or f"{request or code} did not resolve to selected shape output")
+            if "suggested_repairs" not in diag and isinstance(diag.get("repair_actions"), list):
+                diag["suggested_repairs"] = list(diag["repair_actions"])
+            diagnostics.append(diag)
+    return diagnostics
+
+
 def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     """Run.
 
@@ -208,6 +258,51 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     """
     stage_dir = executor.stage_dirs["validate"]
     diagnostics: list[dict[str, Any]] = []
+
+    # Sentinel check (task #22): compare current part_groups against the
+    # snapshot taken at topology emission. If they diverge, some stage
+    # between topology and validate mutated the runtime dict in-memory
+    # (the on-disk bundle.json reflects the topology-time snapshot). The
+    # _resolve_part_bboxes helper already routes around this by reading
+    # the parts manifest, so we surface the mutation as an informational
+    # diagnostic rather than failing the build.
+    topology_bundle_runtime = executor.runtime.get("topology", {}).get("bundle", {})
+    if isinstance(topology_bundle_runtime, dict):
+        emitted = topology_bundle_runtime.get("_part_groups_emitted")
+        if isinstance(emitted, list):
+            current = sorted(
+                str(group.get("name", ""))
+                for group in topology_bundle_runtime.get("part_groups", []) or []
+                if isinstance(group, dict)
+            )
+            if current != emitted:
+                diagnostics.append(
+                    {
+                        "code": "L6500",
+                        "name": "topology_part_groups_runtime_mutated",
+                        "severity": "warning",
+                        "phase": "validate",
+                        "asset": executor.asset.get("name", "unnamed"),
+                        "stage": "validate",
+                        "path": "validate.runtime_topology.part_groups",
+                        "message": (
+                            "runtime['topology']['bundle']['part_groups'] was "
+                            f"mutated between topology and validate stages "
+                            f"(emitted={len(emitted)} parts, "
+                            f"runtime={len(current)} parts). Validators now "
+                            f"read the multi-part manifest as a stable source; "
+                            "this warning surfaces the underlying mutation "
+                            "for root-cause hunt."
+                        ),
+                        "details": {
+                            "emitted_part_count": len(emitted),
+                            "runtime_part_count": len(current),
+                            "emitted_part_names": list(emitted),
+                            "runtime_part_names": list(current),
+                        },
+                        "suggested_repairs": [],
+                    }
+                )
 
     cert_bundle = _PIPELINE.run(executor.runtime, executor.asset, artifacts={})
     semantic_entry = cert_bundle["validators"]["semantic_quality"]
@@ -641,6 +736,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     diagnostics.extend(gameplay_tag_entry.get("diagnostics", []))
     diagnostics.extend(highlow_relation_entry.get("diagnostics", []))
     diagnostics.extend(executor.runtime.get("execution", {}).get("bundle", {}).get("diagnostics", []))
+    diagnostics.extend(_shape_program_validate_diagnostics(executor))
     rule_results = []
     for rule in executor.asset["validate"].get("rules", []):
         if rule.get("kind") == "ensure":

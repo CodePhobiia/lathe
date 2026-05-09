@@ -1,0 +1,1060 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 1,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm",
+    "emissive"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm",
+      "emissive"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 4096,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "anodized_aluminum_body"
+    ],
+    "material_slots": 1,
+    "decals": [
+      "serials",
+      "warning_labels",
+      "thin_color_bar",
+      "service_number",
+      "hazard_stripe",
+      "edge_rub",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "utility",
+      "industrial",
+      "access",
+      "frame_rhythm",
+      "threshold",
+      "hinge_side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "hero_surface": false,
+    "program": "",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "utility",
+      "industrial",
+      "access",
+      "frame_rhythm",
+      "threshold",
+      "hinge-side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "palette": "courier_premium",
+    "source_material_zones": [
+      "anodized_aluminum_body",
+      "carbon_fiber_trim",
+      "amber_glass_lens"
+    ],
+    "source_bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "edge_wear",
+      "painted_steel",
+      "bare_metal",
+      "rubber"
+    ],
+    "surface_story": {
+      "wear_story": "field_used",
+      "wear_level": 0.54,
+      "story_decals": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub",
+        "serials",
+        "warning_labels"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "architecture",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "utility",
+          "industrial",
+          "access",
+          "frame rhythm",
+          "threshold",
+          "hinge-side emphasis",
+          "toy_like",
+          "random_faceting"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "utility",
+        "industrial",
+        "access",
+        "frame rhythm",
+        "threshold",
+        "hinge-side emphasis",
+        "toy_like",
+        "random_faceting"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": true,
+      "chart_grouping": "part",
+      "material_id_strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base",
+        "lightmap"
+      ],
+      "chart_count": 1,
+      "material_id_count": 1,
+      "part_to_chart": {
+        "body": "uvc_01_body"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "count": 1,
+      "ids": [
+        {
+          "material_id": "matid_01_anodized_aluminum_body",
+          "material": "anodized_aluminum_body",
+          "parts": [
+            "body"
+          ],
+          "rgb": [
+            216,
+            74,
+            72
+          ]
+        }
+      ],
+      "per_part": {
+        "body": "matid_01_anodized_aluminum_body"
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 22,
+      "placements": [
+        {
+          "decal": "serials",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.580593,
+            0.33322
+          ],
+          "scale": 0.377057,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_01_serials"
+        },
+        {
+          "decal": "warning_labels",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.543397,
+            0.369134
+          ],
+          "scale": 0.281795,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_02_warning_labels"
+        },
+        {
+          "decal": "thin_color_bar",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.275116,
+            0.628164
+          ],
+          "scale": 0.32475,
+          "rotation_deg": 7,
+          "layer": "story",
+          "mask_id": "story_03_thin_color_bar"
+        },
+        {
+          "decal": "service_number",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.585309,
+            0.328667
+          ],
+          "scale": 0.395775,
+          "rotation_deg": 0,
+          "layer": "story",
+          "mask_id": "story_04_service_number"
+        },
+        {
+          "decal": "hazard_stripe",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.310076,
+            0.594409
+          ],
+          "scale": 0.369591,
+          "rotation_deg": -2,
+          "layer": "story",
+          "mask_id": "story_05_hazard_stripe"
+        },
+        {
+          "decal": "edge_rub",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.539058,
+            0.373323
+          ],
+          "scale": 0.321656,
+          "rotation_deg": 13,
+          "layer": "story",
+          "mask_id": "story_06_edge_rub"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.525478,
+            0.386435
+          ],
+          "scale": 0.264181,
+          "rotation_deg": -1,
+          "layer": "surface",
+          "mask_id": "story_07_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.496061,
+            0.414838
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_08_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.633445,
+            0.282191
+          ],
+          "scale": 0.308592,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_09_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.666616,
+            0.250163
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_10_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.273206,
+            0.630008
+          ],
+          "scale": 0.397446,
+          "rotation_deg": -6,
+          "layer": "surface",
+          "mask_id": "story_11_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.511169,
+            0.40025
+          ],
+          "scale": 0.267054,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_12_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.394599,
+            0.512801
+          ],
+          "scale": 0.377693,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_13_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.548125,
+            0.364569
+          ],
+          "scale": 0.263845,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_14_lower_contact_points"
+        },
+        {
+          "decal": "utility",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.427386,
+            0.481144
+          ],
+          "scale": 0.253978,
+          "rotation_deg": 2,
+          "layer": "surface",
+          "mask_id": "story_15_utility"
+        },
+        {
+          "decal": "industrial",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.527501,
+            0.384482
+          ],
+          "scale": 0.229757,
+          "rotation_deg": 11,
+          "layer": "surface",
+          "mask_id": "story_16_industrial"
+        },
+        {
+          "decal": "access",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.673031,
+            0.24397
+          ],
+          "scale": 0.320196,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_17_access"
+        },
+        {
+          "decal": "frame_rhythm",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.327843,
+            0.577255
+          ],
+          "scale": 0.258623,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_18_frame_rhythm"
+        },
+        {
+          "decal": "threshold",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.542954,
+            0.369562
+          ],
+          "scale": 0.246754,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_19_threshold"
+        },
+        {
+          "decal": "hinge_side_emphasis",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.556898,
+            0.356099
+          ],
+          "scale": 0.359549,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_20_hinge_side_emphasis"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.186814,
+            0.713421
+          ],
+          "scale": 0.220097,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_21_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "body",
+          "material": "anodized_aluminum_body",
+          "material_id": "matid_01_anodized_aluminum_body",
+          "anchor_uv": [
+            0.438586,
+            0.47033
+          ],
+          "scale": 0.224379,
+          "rotation_deg": 10,
+          "layer": "surface",
+          "mask_id": "story_22_random_faceting"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "anodized_aluminum_body",
+      "basecolor": [
+        104,
+        112,
+        122
+      ],
+      "metallic": 1.0,
+      "roughness": 0.478752,
+      "roughness_range": [
+        0.25408,
+        0.598016
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "brushed_metal",
+      "wear": 0.3728,
+      "normal_intensity": 0.15776,
+      "procedural_layers": [
+        "edge_wear",
+        "painted_steel",
+        "bare_metal",
+        "rubber"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "field_used",
+      "story_marks": [
+        "thin_color_bar",
+        "service_number",
+        "hazard_stripe",
+        "edge_rub"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.54
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.4428
+        },
+        {
+          "kind": "dirt_grime",
+          "intensity": 0.378
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 1,
+    "material_id_count": 1,
+    "part_to_chart": {
+      "body": "uvc_01_body"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "anodized_aluminum_body",
+      "material_id": "matid_01_anodized_aluminum_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 1,
+    "ids": [
+      {
+        "material_id": "matid_01_anodized_aluminum_body",
+        "material": "anodized_aluminum_body",
+        "parts": [
+          "body"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_01_anodized_aluminum_body"
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 22,
+    "placements": [
+      {
+        "decal": "serials",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.580593,
+          0.33322
+        ],
+        "scale": 0.377057,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_01_serials"
+      },
+      {
+        "decal": "warning_labels",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.543397,
+          0.369134
+        ],
+        "scale": 0.281795,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_02_warning_labels"
+      },
+      {
+        "decal": "thin_color_bar",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.275116,
+          0.628164
+        ],
+        "scale": 0.32475,
+        "rotation_deg": 7,
+        "layer": "story",
+        "mask_id": "story_03_thin_color_bar"
+      },
+      {
+        "decal": "service_number",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.585309,
+          0.328667
+        ],
+        "scale": 0.395775,
+        "rotation_deg": 0,
+        "layer": "story",
+        "mask_id": "story_04_service_number"
+      },
+      {
+        "decal": "hazard_stripe",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.310076,
+          0.594409
+        ],
+        "scale": 0.369591,
+        "rotation_deg": -2,
+        "layer": "story",
+        "mask_id": "story_05_hazard_stripe"
+      },
+      {
+        "decal": "edge_rub",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.539058,
+          0.373323
+        ],
+        "scale": 0.321656,
+        "rotation_deg": 13,
+        "layer": "story",
+        "mask_id": "story_06_edge_rub"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.525478,
+          0.386435
+        ],
+        "scale": 0.264181,
+        "rotation_deg": -1,
+        "layer": "surface",
+        "mask_id": "story_07_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.496061,
+          0.414838
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_08_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.633445,
+          0.282191
+        ],
+        "scale": 0.308592,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_09_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.666616,
+          0.250163
+        ],
+        "scale": 0.390097,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_10_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.273206,
+          0.630008
+        ],
+        "scale": 0.397446,
+        "rotation_deg": -6,
+        "layer": "surface",
+        "mask_id": "story_11_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.511169,
+          0.40025
+        ],
+        "scale": 0.267054,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_12_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.394599,
+          0.512801
+        ],
+        "scale": 0.377693,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_13_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.548125,
+          0.364569
+        ],
+        "scale": 0.263845,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_14_lower_contact_points"
+      },
+      {
+        "decal": "utility",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.427386,
+          0.481144
+        ],
+        "scale": 0.253978,
+        "rotation_deg": 2,
+        "layer": "surface",
+        "mask_id": "story_15_utility"
+      },
+      {
+        "decal": "industrial",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.527501,
+          0.384482
+        ],
+        "scale": 0.229757,
+        "rotation_deg": 11,
+        "layer": "surface",
+        "mask_id": "story_16_industrial"
+      },
+      {
+        "decal": "access",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.673031,
+          0.24397
+        ],
+        "scale": 0.320196,
+        "rotation_deg": -8,
+        "layer": "surface",
+        "mask_id": "story_17_access"
+      },
+      {
+        "decal": "frame_rhythm",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.327843,
+          0.577255
+        ],
+        "scale": 0.258623,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_18_frame_rhythm"
+      },
+      {
+        "decal": "threshold",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.542954,
+          0.369562
+        ],
+        "scale": 0.246754,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_19_threshold"
+      },
+      {
+        "decal": "hinge_side_emphasis",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.556898,
+          0.356099
+        ],
+        "scale": 0.359549,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_20_hinge_side_emphasis"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.186814,
+          0.713421
+        ],
+        "scale": 0.220097,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_21_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "body",
+        "material": "anodized_aluminum_body",
+        "material_id": "matid_01_anodized_aluminum_body",
+        "anchor_uv": [
+          0.438586,
+          0.47033
+        ],
+        "scale": 0.224379,
+        "rotation_deg": 10,
+        "layer": "surface",
+        "mask_id": "story_22_random_faceting"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

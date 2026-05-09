@@ -1,0 +1,47 @@
+{
+  "objects": [
+    {
+      "mode": "modifier_stack",
+      "fidelity_tier": null,
+      "auto_smooth_enabled": false,
+      "subsurf": {
+        "applied": false
+      },
+      "bevel": {
+        "applied": false
+      },
+      "decimate": {
+        "applied": false,
+        "reason": "already_under_budget",
+        "target_quads": 20000
+      },
+      "scatter": {
+        "applied": false
+      },
+      "subsurf_level": 0,
+      "subsurf_requested_level": 0,
+      "subsurf_skip_reason": null,
+      "bevel_added": false,
+      "bevel_width": 0.0,
+      "bevel_segments": 2,
+      "bevel_use_edge_marks": false,
+      "bevel_matched_edge_count": 0,
+      "bevel_per_group_match": {},
+      "decimate_added": false,
+      "decimate_target_quads": 20000,
+      "scatter_added": false,
+      "instance_pattern_record_count": 0,
+      "tris_to_quads": {
+        "applied": true,
+        "polys_before": 172,
+        "polys_after": 151,
+        "face_threshold": 0.698,
+        "shape_threshold": 0.698
+      },
+      "polys_initial": 172,
+      "polys_before_triangulate": 151,
+      "polys_final": 172,
+      "object": "body"
+    }
+  ]
+}

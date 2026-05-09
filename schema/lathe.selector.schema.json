@@ -310,6 +310,136 @@
         }
       }
     },
+    "constructionProvenance": {
+      "type": "object",
+      "description": "Compact truth-preserving construction trace for downstream tools that need to know which kernel programs and semantic operations actually shaped the asset.",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "selectedCandidateId",
+        "shapeMode",
+        "geometryKernel",
+        "kernelProgramSucceeded",
+        "kernelProgramPrimary",
+        "kernelProgramBooleanFallbackCount",
+        "kernelProgramManifestCount",
+        "kernelProgramManifests",
+        "operationRecordCount",
+        "operationCounts",
+        "operationRecords"
+      ],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "lathe.selector.construction_provenance.v1"
+        },
+        "selectedCandidateId": { "type": "string" },
+        "shapeMode": { "type": "string" },
+        "geometryKernel": { "type": "string" },
+        "kernelProgramSucceeded": { "type": "boolean" },
+        "kernelProgramPrimary": { "type": "boolean" },
+        "kernelProgramBooleanFallbackCount": { "type": "integer", "minimum": 0 },
+        "kernelProgramManifestCount": { "type": "integer", "minimum": 0 },
+        "fallbackReason": { "type": "string" },
+        "kernelProgramManifests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programKind",
+              "route",
+              "backend",
+              "operandCount",
+              "operationCount",
+              "semanticOperationRecordCount",
+              "requiredCapabilities"
+            ],
+            "properties": {
+              "programKind": { "type": "string" },
+              "route": { "type": "string" },
+              "backend": { "type": "string" },
+              "operandCount": { "type": "integer", "minimum": 0 },
+              "operationCount": { "type": "integer", "minimum": 0 },
+              "semanticOperationRecordCount": { "type": "integer", "minimum": 0 },
+              "requiredCapabilities": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "diagnosticCount": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "operationRecordCount": { "type": "integer", "minimum": 0 },
+        "operationCounts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "operationRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["operation"],
+            "properties": {
+              "operation": { "type": "string" },
+              "operationId": { "type": "string" },
+              "operandId": { "type": "string" },
+              "operandIndex": { "type": "integer" },
+              "part": { "type": "string" },
+              "primitiveType": { "type": "string" },
+              "blendMode": { "type": "string" },
+              "source": { "type": "string" },
+              "semanticEquivalentOperationCount": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "kernelFeatureDetailCount": { "type": "integer", "minimum": 0 },
+        "kernelEdgeTreatmentCount": { "type": "integer", "minimum": 0 },
+        "kernelPatternInstanceCount": { "type": "integer", "minimum": 0 },
+        "kernelDeformCount": { "type": "integer", "minimum": 0 },
+        "kernelProfilePathCount": { "type": "integer", "minimum": 0 },
+        "kernelEdgeControlCount": { "type": "integer", "minimum": 0 },
+        "kernelComponentAssemblyCount": { "type": "integer", "minimum": 0 },
+        "kernelSdfFieldCount": { "type": "integer", "minimum": 0 },
+        "kernelTerrainFieldCount": { "type": "integer", "minimum": 0 },
+        "kernelScatterCount": { "type": "integer", "minimum": 0 },
+        "kernelSurfaceDamageCount": { "type": "integer", "minimum": 0 },
+        "kernelFeatureDetails": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelEdgeTreatments": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelPatternInstances": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelDeforms": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelProfilePaths": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelEdgeControls": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelComponentAssemblies": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelSdfFields": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelTerrainFields": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelScatters": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelSurfaceDamage": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        }
+      }
+    },
     "materials": {
       "type": "array",
       "minItems": 0,
@@ -450,6 +580,23 @@
             },
             "reason": { "type": "string" }
           }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "kernelConstructionRecords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation"],
+        "properties": {
+          "operation": { "type": "string" },
+          "kind": { "type": "string" },
+          "sourcePart": { "type": "string" },
+          "method": { "type": "string" },
+          "count": { "type": "integer", "minimum": 0 }
         }
       }
     }

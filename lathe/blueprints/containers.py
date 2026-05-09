@@ -31,7 +31,7 @@ def _chest_blueprint(
             body_part,
             (0.0, -height * 0.10, 0.0),
             (width, base_height, depth),
-            tags=["body", "container"],
+            tags=["body", "container", "chest", "plank_displacement", "oak_planks"],
         ),
         _component(
             "body_frame_front",
@@ -39,7 +39,7 @@ def _chest_blueprint(
             body_part,
             (0.0, -height * 0.10, depth * 0.39),
             (width * 0.92, base_height * 0.34, depth * 0.08),
-            tags=["frame", "front"],
+            tags=["frame", "front", "container", "chest"],
             adjacency=[door_part],
         ),
         _component(
@@ -48,7 +48,7 @@ def _chest_blueprint(
             body_part,
             (0.0, -height * 0.10, -depth * 0.39),
             (width * 0.92, base_height * 0.28, depth * 0.08),
-            tags=["frame", "rear"],
+            tags=["frame", "rear", "container", "chest"],
         ),
         _component(
             "lid_region",
@@ -56,7 +56,7 @@ def _chest_blueprint(
             lid_part,
             (0.0, height * 0.19, 0.0),
             (width * 0.96, lid_height, depth * 0.92),
-            tags=["lid"],
+            tags=["lid", "container", "chest"],
             adjacency=[body_part, lock_part],
         ),
         _component(
@@ -65,7 +65,7 @@ def _chest_blueprint(
             door_part,
             (0.0, -height * 0.03, depth * 0.48),
             (width * 0.78, base_height * 0.26, depth * 0.10),
-            tags=["door", "front"],
+            tags=["door", "front", "container", "chest"],
             adjacency=[body_part, lock_part],
         ),
         _component(
@@ -74,7 +74,7 @@ def _chest_blueprint(
             lock_part,
             (0.0, height * 0.03, depth * 0.53),
             (width * 0.16, height * 0.18, depth * 0.08),
-            tags=["lock", "front"],
+            tags=["lock", "front", "container", "chest"],
             adjacency=[lid_part, door_part],
         ),
     ]
@@ -86,7 +86,7 @@ def _chest_blueprint(
                 handle_l,
                 (-width * 0.53, -height * 0.02, 0.0),
                 (width * 0.10, height * 0.18, depth * 0.14),
-                tags=["handle", "left"],
+                tags=["handle", "left", "container", "chest"],
                 axis="x",
                 radius=height * 0.08,
                 height=width * 0.09,
@@ -102,7 +102,7 @@ def _chest_blueprint(
                 handle_r,
                 mirrored((-width * 0.53, -height * 0.02, 0.0)),
                 (width * 0.10, height * 0.18, depth * 0.14),
-                tags=["handle", "right"],
+                tags=["handle", "right", "container", "chest"],
                 axis="x",
                 radius=height * 0.08,
                 height=width * 0.09,
@@ -118,7 +118,7 @@ def _chest_blueprint(
                 foot_l,
                 (-width * 0.28, -height * 0.48, depth * 0.20),
                 (width * 0.12, height * 0.10, depth * 0.16),
-                tags=["foot", "left"],
+                tags=["foot", "left", "container", "chest"],
                 symmetry_mate=foot_r,
                 interface_role="support",
             )
@@ -131,7 +131,7 @@ def _chest_blueprint(
                 foot_r,
                 mirrored((-width * 0.28, -height * 0.48, depth * 0.20)),
                 (width * 0.12, height * 0.10, depth * 0.16),
-                tags=["foot", "right"],
+                tags=["foot", "right", "container", "chest"],
                 symmetry_mate=foot_l,
                 interface_role="support",
             )

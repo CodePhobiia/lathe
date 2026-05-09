@@ -1,0 +1,112 @@
+{
+  "schema_version": "lathe.scene_render_artifacts.v1",
+  "scene_id": "builder_mode_showcase",
+  "mode": "preview",
+  "renderer": "lathe.scene.proxy_renderer.v1",
+  "resolution": [
+    1280,
+    720
+  ],
+  "cameras": [
+    "camera_main",
+    "camera_topdown_debug"
+  ],
+  "passes": [
+    "beauty",
+    "object_id"
+  ],
+  "artifacts": [
+    {
+      "camera_id": "camera_main",
+      "render_pass": "beauty",
+      "path": "renders/camera_main/beauty.png",
+      "width": 1280,
+      "height": 720,
+      "renderer": "lathe.scene.proxy_renderer.v1",
+      "status": "built"
+    },
+    {
+      "camera_id": "camera_main",
+      "render_pass": "object_id",
+      "path": "renders/camera_main/object_id.png",
+      "width": 1280,
+      "height": 720,
+      "renderer": "lathe.scene.proxy_renderer.v1",
+      "status": "built"
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "render_pass": "beauty",
+      "path": "renders/camera_topdown_debug/beauty.png",
+      "width": 1280,
+      "height": 720,
+      "renderer": "lathe.scene.proxy_renderer.v1",
+      "status": "built"
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "render_pass": "object_id",
+      "path": "renders/camera_topdown_debug/object_id.png",
+      "width": 1280,
+      "height": 720,
+      "renderer": "lathe.scene.proxy_renderer.v1",
+      "status": "built"
+    },
+    {
+      "camera_id": "camera_object_contact_sheet",
+      "render_pass": "beauty",
+      "path": "renders/camera_object_contact_sheet/beauty.png",
+      "width": 1280,
+      "height": 720,
+      "renderer": "lathe.scene.proxy_renderer.v1",
+      "status": "built",
+      "kind": "object_contact_sheet",
+      "object_count": 2432
+    }
+  ],
+  "object_indices": [
+    {
+      "camera_id": "camera_main",
+      "path": "renders/camera_main/object_index.json",
+      "objects": 2432
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "path": "renders/camera_topdown_debug/object_index.json",
+      "objects": 2432
+    },
+    {
+      "camera_id": "camera_object_contact_sheet",
+      "path": "renders/camera_object_contact_sheet/object_index.json",
+      "objects": 2432
+    }
+  ],
+  "material_indices": [
+    {
+      "camera_id": "camera_main",
+      "path": "renders/camera_main/material_index.json",
+      "materials": 14
+    },
+    {
+      "camera_id": "camera_topdown_debug",
+      "path": "renders/camera_topdown_debug/material_index.json",
+      "materials": 14
+    },
+    {
+      "camera_id": "camera_object_contact_sheet",
+      "path": "renders/camera_object_contact_sheet/material_index.json",
+      "materials": 14
+    }
+  ],
+  "contact_sheets": [
+    {
+      "camera_id": "camera_object_contact_sheet",
+      "path": "renders/camera_object_contact_sheet/beauty.png",
+      "object_count": 2432,
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "diagnostics": [],
+  "timeout_seconds": 120
+}

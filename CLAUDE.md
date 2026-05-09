@@ -6,7 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Lathe is a declarative language + reference compiler/runtime for 3D asset intent. Source `.lth` files describe *what* an asset is, *how* to build it, and *what counts as passing*. The compiler produces certified production-ready asset packages (usd/glb/gltf/obj). This repo is the **v0.1 reference scaffold** with additive V0.8 → V1.3.1 language layers on top.
 
+**Product boundary:** Wonder is the creative director that asks for assets, scenes, inspections, repairs; Lathe is the deterministic execution substrate that turns those requests into geometry, materials, previews, reports, and packages. Learned providers may exist as optional proposal sources, but they are not the product center and must not become the critical path for asset quality.
+
 **Core invariant:** the stable shape-stage contract ID `lathe.shape.intent_mesh_handoff_v1` is treated as a public contract. Do not change it unless the task explicitly asks for a migration.
+
+**Current implementation northstar:** use `docs/asset-quality/lathe-implementation-northstar.md` as the source of truth for the next visible-geometry / asset-quality implementation push. It consolidates the imagination-to-life roadmap, asset-quality research, blocker audits, and Sprint 0 execution path. Sprint 0 fixture is `industrial_crate` with `mechanical_door` / `fantasy_weapon` as the guardrail to prove changes aren't crate-only.
 
 ## Commands
 
@@ -27,7 +31,11 @@ python -m lathe.cli check examples/courier_drone.lth
 python -m lathe.cli plan examples/courier_drone.lth courier_drone
 python -m lathe.cli materialize examples/courier_drone.lth courier_drone_mobile
 python -m lathe.cli build examples/courier_drone.lth courier_drone --out dist
+python -m lathe.cli quick examples/brassbound_chest.lth brassbound_chest --out preview.glb [--render preview.png]   # ~30-60s preview (no bakes/LODs/validation), inspired by ForgeCAD
+python -m lathe.cli quick examples/alien_grove_showcase.lth alien_grove --out tmp_alien_grove.glb --no-cache         # CAPSTONE imagination-to-life demo: hard-surface + vegetation + terrain + SDF + WFC in one .lth
 ```
+
+Imagination-to-Life demos (one paradigm each, plus the showcase combining all five): see `docs/imagination_to_life_demos.md`.
 
 Testing:
 
@@ -68,12 +76,12 @@ Shape is the only probabilistic stage. Topology, UV, surface (bakes), validate, 
 
 ### Source → AST → build plan → artifact
 
-1. `lathe/parser.py` parses `.lth` text (grammar in `grammar/lathe.lark`) into raw AST JSON; resolves relative refs against the source file.
+1. `lathe/parser/` (package; entry `fast_parser.py` + `transformer*.py`) parses `.lth` text (grammar in `grammar/lathe.lark`) into raw AST JSON; resolves relative refs against the source file. `.lathe_lark_cache` is a build artifact — safe to regenerate.
 2. `lathe/normalizer.py` inserts canonical defaults.
 3. `lathe/resolver.py` applies `uses` chains, profile/contract inheritance, and variant patches; produces a materialized asset.
-4. `lathe/checker.py` enforces semantic rules and backend-compatibility constraints.
+4. `lathe/checker/` (package: `language.py`, `assets.py`, `declarations.py`, `surface.py`, `cross_stage.py`, `interfaces.py`, `experimental.py`) enforces semantic rules and backend-compatibility constraints.
 5. `lathe/planner.py` emits effective build plans.
-6. `lathe/executor.py` drives the deterministic downstream runtime across stages in `STAGE_ORDER`.
+6. `lathe/executor.py` drives the deterministic downstream runtime; the actual stage runners live in `lathe/core/stages/{shape,topology,uv,surface,execution,interfaces,physics,optimize,validate,package,publish,rig}.py` and execute in `STAGE_ORDER`.
 7. `schema/lathe.schema.json` is the canonical JSON-schema for the normalized AST and must stay in sync with the grammar.
 
 ### Shape stage internals
@@ -85,6 +93,8 @@ intent → AssetGraph → assembly blueprint → ShapeIR → fused search geomet
 ```
 
 Key modules: `asset_graph.py`, `assembly_kernel.py`, `scaffold_compiler.py`, `shape_ir.py`, `feature_grammar.py`, `feature_fusion.py`, `mesh_finalize.py`, `conformance.py`, `shape_backend.py` (runs the contract), `shape_providers.py` (learned/fallback provider mux).
+
+`lathe/asset_quality/` is the active center for the visible-geometry / quality push: `shape_ir_v2.py` (next-gen ShapeIR with new primitives like `extruded_profile`, `revolved_profile`, `torus`, `subdivision_box`, `swept_profile`), `construction_graph.py`, `design_brief.py`, `family_grammar.py`, `grammar_lowering.py`, `highlow_relation.py`, `diagnostics.py`, `quality_planner.py`, `preview_evidence.py`, `silhouette.py`, `vision_critique.py`. Diagnostics here are evidence-driven and judge visible output.
 
 Providers are **optional proposal sources** under a stable contract, not the product center. When a provider falls back, the trace records both the *attempted* and the *actual* provider. The same attempted-vs-actual pattern applies to the Blender topology adapter and xatlas UV adapter.
 
@@ -105,6 +115,19 @@ V0.8+ authoring layer: `std/{families,components,materials,patterns,surface_prog
 ### Validators
 
 `lathe/validators/{semantic_quality,visual_quality,flow_quality,surface_quality,silhouette}.py` run evidence-based certification (geometry integration, render-level silhouette checks, flow-specific metrics like `semantic_preservation_quality`, `join_legality`, `reconstruct_honesty_score`). Weak/toy-like outputs fail certification — don't weaken these without intent.
+
+## Truthful claim labels (from AGENTS.md "Rule of Truth")
+
+When reporting on outputs, traces, or evidence, use these exact labels rather than implying success:
+
+- `real` — visible in mesh / material / preview / export evidence.
+- `proxy` — deterministic placeholder or non-final evidence, explicitly labeled.
+- `fallback` — requested path degraded to another path; record both *attempted* and *actual*.
+- `unsupported` — rejected or warned before false success.
+- `not verified` — code exists but no relevant command/artifact was produced in the current run.
+- `blocked` — required dependency or upstream condition is missing and named.
+
+Forbidden state: language/docs/validator/report says it happened, but mesh/material/preview/package/import evidence does not prove it. Never claim "production-ready", "game-ready", "Roblox/Unity/Unreal-ready", "fixed", "complete", or "done" unless the relevant evidence was actually generated and checked. The same attempted-vs-actual pattern applies to providers, kernels, renderers, topology adapters, UV adapters, and package exporters.
 
 ## Change rules (from AGENTS.md)
 

@@ -39,6 +39,7 @@ PIVOT_TYPES = (
 
 DEFAULT_SOCKET_TYPE = "attach"
 DEFAULT_PIVOT_TYPE = "center"
+_MAX_AUTHORED_INTERACTION_INTERFACES = 16
 
 
 def _identity_transform() -> list[list[float]]:
@@ -84,6 +85,151 @@ def _coerce_entry(entry: Any) -> dict[str, Any]:
       - call — source form, ``socket(id: foo, socket_type: attach)``.
     """
     return coerce_interface_entry(entry)
+
+
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def _slug_fragment(value: str) -> str:
+    lowered = value.lower()
+    chars: list[str] = []
+    previous_was_separator = False
+    for char in lowered:
+        if char.isalnum():
+            chars.append(char)
+            previous_was_separator = False
+            continue
+        if not previous_was_separator:
+            chars.append("_")
+            previous_was_separator = True
+    slug = "".join(chars).strip("_")
+    return slug[:48] if slug else "interaction"
+
+
+def _entry_id(raw: Any) -> str:
+    entry = _coerce_entry(raw)
+    return str(entry.get("id") or entry.get("name") or "").strip()
+
+
+def _socket_type_for_interaction(interaction: str) -> str | None:
+    token = interaction.lower()
+    if any(part in token for part in ("fire", "shoot", "muzzle", "projectile", "barrel")):
+        return "muzzle"
+    if any(part in token for part in ("grab", "grip", "hold", "pickup", "pick_up", "carry")):
+        return "grip"
+    if any(part in token for part in ("hand", "inspect", "use", "usable")):
+        return "hand"
+    if any(part in token for part in ("open", "close", "hinge", "swing", "door", "gate")):
+        return "hinge"
+    if any(part in token for part in ("mount", "attach", "dock", "snap", "connect", "socket")):
+        return "mount"
+    if any(part in token for part in ("insert", "slot", "reload", "magazine", "cartridge")):
+        return "slot"
+    if any(part in token for part in ("plug", "port", "charge", "cable", "power", "data")):
+        return "port"
+    if any(part in token for part in ("rail", "slide", "track")):
+        return "rail"
+    return None
+
+
+def _pivot_type_for_interaction(interaction: str) -> str | None:
+    token = interaction.lower()
+    if any(part in token for part in ("grab", "grip", "hold", "pickup", "pick_up", "carry", "hand")):
+        return "hand_hold"
+    if any(part in token for part in ("aim", "sight", "fire", "shoot", "muzzle", "camera")):
+        return "sight_line"
+    if any(part in token for part in ("ground", "place", "stand", "floor", "contact")):
+        return "contact"
+    if any(part in token for part in ("open", "close", "hinge", "swing", "rotate", "turn", "slide", "rail")):
+        return "center"
+    return None
+
+
+def _socket_motion_fields(socket_type: str, interaction: str) -> dict[str, Any]:
+    token = interaction.lower()
+    if socket_type in {"hinge", "door"}:
+        return {
+            "axis": [0.0, 1.0, 0.0],
+            "limit_lower": -90.0,
+            "limit_upper": 90.0,
+            "child_part_id": _slug_fragment(interaction),
+        }
+    if socket_type in {"rail", "slot"} or any(part in token for part in ("slide", "rail", "track", "drawer")):
+        return {
+            "axis": [1.0, 0.0, 0.0],
+            "limit_lower": -25.0,
+            "limit_upper": 25.0,
+            "child_part_id": _slug_fragment(interaction),
+        }
+    return {}
+
+
+def _authored_interaction_interfaces(
+    asset: dict[str, Any],
+    cfg: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Infer sockets/pivots from existing interaction/mechanism source fields."""
+    explicit_socket_ids = {
+        value for value in (_entry_id(raw) for raw in _as_list(cfg.get("sockets"))) if value
+    }
+    explicit_pivot_ids = {
+        value
+        for value in (
+            *(_entry_id(raw) for raw in _as_list(cfg.get("pivots"))),
+            *(_entry_id(raw) for raw in _as_list(cfg.get("anchors"))),
+        )
+        if value
+    }
+    raw_interactions = [
+        *_as_list(asset.get("intent", {}).get("interactions")),
+        *_as_list(asset.get("assembly", {}).get("mechanisms")),
+    ]
+    sockets: list[dict[str, Any]] = []
+    pivots: list[dict[str, Any]] = []
+    seen_sources: set[str] = set()
+    for raw in raw_interactions:
+        if len(sockets) + len(pivots) >= _MAX_AUTHORED_INTERACTION_INTERFACES:
+            break
+        interaction = str(raw).strip()
+        if not interaction:
+            continue
+        slug = _slug_fragment(interaction)
+        if slug in seen_sources:
+            continue
+        seen_sources.add(slug)
+        metadata = {
+            "source": "authored_interaction",
+            "source_value": interaction,
+        }
+        socket_type = _socket_type_for_interaction(interaction)
+        if socket_type is not None:
+            socket_id = f"interaction_{slug}_{socket_type}"
+            if socket_id not in explicit_socket_ids:
+                sockets.append(
+                    {
+                        "id": socket_id,
+                        "name": socket_id,
+                        "socket_type": socket_type,
+                        **_socket_motion_fields(socket_type, interaction),
+                        "metadata": metadata,
+                    }
+                )
+        pivot_type = _pivot_type_for_interaction(interaction)
+        if pivot_type is not None:
+            pivot_id = f"interaction_{slug}_{pivot_type}"
+            if pivot_id not in explicit_pivot_ids:
+                pivots.append(
+                    {
+                        "id": pivot_id,
+                        "name": pivot_id,
+                        "pivot_type": pivot_type,
+                        "metadata": metadata,
+                    }
+                )
+    return sockets, pivots
 
 
 def _resolve_socket_type(entry: dict[str, Any], *, source_label: str) -> str:
@@ -133,7 +279,8 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
     # 1% of Z extent as socket AABB half-width — small, symmetric, deterministic.
     socket_aabb_radius = max(abs(z_extent) * 0.01, 1e-4)
 
-    raw_sockets = cfg.get("sockets", []) or []
+    inferred_sockets, inferred_pivots = _authored_interaction_interfaces(executor.asset, cfg)
+    raw_sockets = [*_as_list(cfg.get("sockets")), *inferred_sockets]
     sockets: list[dict[str, Any]] = []
     for idx, raw in enumerate(raw_sockets):
         entry = _coerce_entry(raw)
@@ -163,6 +310,13 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
             socket["compat_kind"] = entry["compat_kind"]
         if "parent_part_id" in entry and isinstance(entry["parent_part_id"], str):
             socket["parent_part_id"] = entry["parent_part_id"]
+        if "child_part_id" in entry and isinstance(entry["child_part_id"], str):
+            socket["child_part_id"] = entry["child_part_id"]
+        if "axis" in entry and isinstance(entry["axis"], list) and len(entry["axis"]) == 3:
+            socket["axis"] = _round_vec3(entry["axis"])
+        for limit_key in ("limit_lower", "limit_upper"):
+            if isinstance(entry.get(limit_key), (int, float)):
+                socket[limit_key] = round(float(entry[limit_key]), 6)
         if "metadata" in entry and isinstance(entry["metadata"], dict):
             socket["metadata"] = dict(entry["metadata"])
         sockets.append(socket)
@@ -170,7 +324,7 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
     # Pivots — derived from explicit `pivots = [...]` if present (V0.2+), and
     # also from the legacy `anchors = [...]` list (V0.1 sources continue to
     # compile). Plus an implicit world pivot if no pivots are declared at all.
-    raw_pivots = cfg.get("pivots", []) or []
+    raw_pivots = [*_as_list(cfg.get("pivots")), *inferred_pivots]
     raw_anchors = cfg.get("anchors", []) or []
     pivots: list[dict[str, Any]] = []
     seen_pivot_ids: set[str] = set()
@@ -285,6 +439,10 @@ def run(executor: Any, rig_bundle: dict[str, Any]) -> dict[str, Any]:
         "connection_slots": connection_bundle["connection_slots"],
         "clearance": cfg.get("clearance"),
         "snap_grid": cfg.get("snap_grid"),
+        "authored_interaction_interfaces": {
+            "sockets": inferred_sockets,
+            "pivots": inferred_pivots,
+        },
     }
     executor.runtime["interfaces"] = {"bundle": bundle}
     dump_json(stage_dir / "bundle.json", bundle)

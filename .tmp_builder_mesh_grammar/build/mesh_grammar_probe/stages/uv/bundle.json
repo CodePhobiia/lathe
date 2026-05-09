@@ -1,0 +1,285 @@
+{
+  "backend_id": "lathe.uv.xatlas_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/uv/uv.glb",
+  "uv_sets": [
+    {
+      "name": "base",
+      "coverage": {
+        "u_min": 0.001953,
+        "u_max": 0.998047,
+        "v_min": 0.001953,
+        "v_max": 0.998047
+      },
+      "vertex_count": 68166
+    }
+  ],
+  "packing_report": {
+    "chart_count": 4,
+    "semantic_grouping": "part",
+    "resolution": 2048,
+    "cells": 2,
+    "padding_normalized": 0.003906,
+    "pack_rotate": true
+  },
+  "texel_density": {
+    "requested_px_per_m": null,
+    "actual_px_per_m": null
+  },
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": false,
+    "chart_grouping": "part",
+    "material_id_strategy": "none",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base"
+    ],
+    "chart_count": 4,
+    "material_id_count": 0,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "front_panel": "uvc_02_front_panel",
+      "pipe_rail": "uvc_03_pipe_rail",
+      "side_fin": "uvc_04_side_fin"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_front_panel",
+      "group": "front_panel",
+      "grouping": "part",
+      "island_name": "semantic_front_panel",
+      "parts": [
+        "front_panel"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_pipe_rail",
+      "group": "pipe_rail",
+      "grouping": "part",
+      "island_name": "semantic_pipe_rail",
+      "parts": [
+        "pipe_rail"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_side_fin",
+      "group": "side_fin",
+      "grouping": "part",
+      "island_name": "semantic_side_fin",
+      "parts": [
+        "side_fin"
+      ],
+      "material": "edge_wear",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "none",
+    "texture_set_strategy": "",
+    "count": 0,
+    "ids": [],
+    "per_part": {
+      "body": "",
+      "front_panel": "",
+      "pipe_rail": "",
+      "side_fin": ""
+    }
+  },
+  "seam_guides": [],
+  "bake_groups": [],
+  "material_boundaries": [],
+  "lightmap_ready": true,
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 802,
+    "region_count": 13,
+    "primitive_diversity": 0.037406,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 799,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_grid",
+      "conveyor",
+      "corner_guard",
+      "edge_break",
+      "gear",
+      "groove_channel",
+      "hydraulic_piston",
+      "layer_plate",
+      "linear_detail_array",
+      "machine_base",
+      "machine_column",
+      "manipulator_arm",
+      "mesh_extrude",
+      "mesh_loft",
+      "mesh_sweep",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_point",
+      "tool_head",
+      "trim_strip"
+    ],
+    "feature_density": 99.875,
+    "edge_treatment_count": 799,
+    "panel_feature_count": 130,
+    "support_feature_count": 80,
+    "attachment_region_count": 0,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 750,
+    "geometry_detail_feature_count": 750,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_grid",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_point",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 30,
+      "attachment_rail": 40,
+      "attachment_vent_stack": 50,
+      "bolt_grid": 40,
+      "corner_guard": 40,
+      "edge_break": 40,
+      "groove_channel": 40,
+      "layer_plate": 30,
+      "linear_detail_array": 40,
+      "module_antenna": 40,
+      "module_power_cell": 40,
+      "module_shield_plate": 20,
+      "panel_seam": 60,
+      "silhouette_guard_cowl": 30,
+      "silhouette_outrigger": 40,
+      "silhouette_spine": 30,
+      "silhouette_tower": 60,
+      "socket_point": 40,
+      "trim_strip": 40
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ]
+  },
+  "adapter_report": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "requested_adapter": "reference_box",
+    "selected_adapter": "reference_box",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": false,
+    "fallback_available": true,
+    "probe": {
+      "available": false,
+      "version": null,
+      "code": "not_installed",
+      "message": "Python xatlas bindings are not installed",
+      "build_tools": {
+        "nmake": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\nmake.exe",
+        "cmake": null,
+        "cl": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe",
+        "vsdevcmd": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat"
+      }
+    },
+    "status": "forced",
+    "fallback_reason": "Python xatlas bindings are not installed",
+    "actual_adapter": "reference_box",
+    "execution": {
+      "mode": "reference_box"
+    }
+  },
+  "provenance": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "reference_box"
+  }
+}

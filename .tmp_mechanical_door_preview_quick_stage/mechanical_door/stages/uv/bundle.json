@@ -1,0 +1,976 @@
+{
+  "backend_id": "lathe.uv.xatlas_v1",
+  "backend_version": "1.0.0",
+  "mesh_uri": "stages/uv/uv.glb",
+  "uv_sets": [
+    {
+      "name": "base",
+      "coverage": {
+        "u_min": 0.0,
+        "u_max": 0.999756,
+        "v_min": 0.0,
+        "v_max": 0.999756
+      },
+      "vertex_count": 55169
+    },
+    {
+      "name": "lightmap",
+      "coverage": {
+        "u_min": 0.05,
+        "u_max": 0.94978,
+        "v_min": 0.05,
+        "v_max": 0.94978
+      },
+      "vertex_count": 55169
+    }
+  ],
+  "packing_report": {
+    "chart_count": 6797,
+    "atlas_count": 12,
+    "per_part_chart_count": 7,
+    "semantic_chart_count": 7,
+    "semantic_grouping": "part",
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "pack_rotate": true,
+    "utilization": 0.8950769901275635,
+    "per_part_islands": [
+      {
+        "part": "body",
+        "importance_weight": 0.533333,
+        "raw_weight": 0.4,
+        "surface_area": 280248.862865,
+        "vertex_count": 12598,
+        "triangle_count": 6707,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1823,
+        "tags": [
+          "body",
+          "frame",
+          "shell"
+        ],
+        "parent_blueprint_component": "door_frame_shell"
+      },
+      {
+        "part": "door_leaf",
+        "importance_weight": 0.133333,
+        "raw_weight": 0.1,
+        "surface_area": 106466.80484,
+        "vertex_count": 11787,
+        "triangle_count": 5961,
+        "uv_bounds": {
+          "u_min": 0.0,
+          "u_max": 0.999756,
+          "v_min": 0.0,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 1900,
+        "tags": [
+          "door",
+          "leaf",
+          "left",
+          "panel"
+        ],
+        "parent_blueprint_component": "door_leaf_panel"
+      },
+      {
+        "part": "handle",
+        "importance_weight": 0.066667,
+        "raw_weight": 0.05,
+        "surface_area": 141343.575227,
+        "vertex_count": 4484,
+        "triangle_count": 2529,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 497,
+        "tags": [
+          "handle"
+        ],
+        "parent_blueprint_component": "door_handle_main"
+      },
+      {
+        "part": "hinge_bottom",
+        "importance_weight": 0.066667,
+        "raw_weight": 0.05,
+        "surface_area": 35242.444348,
+        "vertex_count": 6561,
+        "triangle_count": 2995,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 620,
+        "tags": [
+          "bottom",
+          "hinge"
+        ],
+        "parent_blueprint_component": "door_hinge_bottom"
+      },
+      {
+        "part": "hinge_top",
+        "importance_weight": 0.066667,
+        "raw_weight": 0.05,
+        "surface_area": 170628.471469,
+        "vertex_count": 6512,
+        "triangle_count": 3068,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 609,
+        "tags": [
+          "hinge",
+          "top"
+        ],
+        "parent_blueprint_component": "door_hinge_top"
+      },
+      {
+        "part": "lock_plate",
+        "importance_weight": 0.066667,
+        "raw_weight": 0.05,
+        "surface_area": 141976.762381,
+        "vertex_count": 4057,
+        "triangle_count": 2050,
+        "uv_bounds": {
+          "u_min": 0.0,
+          "u_max": 0.999756,
+          "v_min": 0.0,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 466,
+        "tags": [
+          "lock",
+          "lock_plate",
+          "plate"
+        ],
+        "parent_blueprint_component": "door_lock_plate"
+      },
+      {
+        "part": "threshold_plate",
+        "importance_weight": 0.066667,
+        "raw_weight": 0.05,
+        "surface_area": 202372.731892,
+        "vertex_count": 9170,
+        "triangle_count": 4728,
+        "uv_bounds": {
+          "u_min": 0.000244,
+          "u_max": 0.999756,
+          "v_min": 0.000244,
+          "v_max": 0.999756
+        },
+        "uv_island_chart_count": 882,
+        "tags": [
+          "hold",
+          "panel",
+          "plate",
+          "threshold"
+        ],
+        "parent_blueprint_component": "threshold_trim_plate"
+      }
+    ],
+    "part_source": "multi_part_scene",
+    "generated_source_uv_remap": {
+      "available": false,
+      "source": "input_mesh_visual_uv",
+      "preservation": "per_part_xatlas_v1"
+    }
+  },
+  "texel_density": {
+    "requested_px_per_m": 512.0,
+    "actual_px_per_m": 512.0
+  },
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 7,
+    "material_id_count": 4,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "door_leaf": "uvc_02_door_leaf",
+      "handle": "uvc_03_handle",
+      "hinge_bottom": "uvc_04_hinge_bottom",
+      "hinge_top": "uvc_05_hinge_top",
+      "lock_plate": "uvc_06_lock_plate",
+      "threshold_plate": "uvc_07_threshold_plate"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "painted_steel_body",
+      "material_id": "matid_02_painted_steel_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_door_leaf",
+      "group": "door_leaf",
+      "grouping": "part",
+      "island_name": "semantic_door_leaf",
+      "parts": [
+        "door_leaf"
+      ],
+      "material": "painted_steel_body",
+      "material_id": "matid_02_painted_steel_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_handle",
+      "group": "handle",
+      "grouping": "part",
+      "island_name": "semantic_handle",
+      "parts": [
+        "handle"
+      ],
+      "material": "rubber_trim_dark",
+      "material_id": "matid_03_rubber_trim_dark",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_hinge_bottom",
+      "group": "hinge_bottom",
+      "grouping": "part",
+      "island_name": "semantic_hinge_bottom",
+      "parts": [
+        "hinge_bottom"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_hinge_top",
+      "group": "hinge_top",
+      "grouping": "part",
+      "island_name": "semantic_hinge_top",
+      "parts": [
+        "hinge_top"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_lock_plate",
+      "group": "lock_plate",
+      "grouping": "part",
+      "island_name": "semantic_lock_plate",
+      "parts": [
+        "lock_plate"
+      ],
+      "material": "warning_paint",
+      "material_id": "matid_04_warning_paint",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_threshold_plate",
+      "group": "threshold_plate",
+      "grouping": "part",
+      "island_name": "semantic_threshold_plate",
+      "parts": [
+        "threshold_plate"
+      ],
+      "material": "painted_steel_body",
+      "material_id": "matid_02_painted_steel_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 4,
+    "ids": [
+      {
+        "material_id": "matid_01_aged_brass_trim",
+        "material": "aged_brass_trim",
+        "parts": [
+          "hinge_bottom",
+          "hinge_top"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_painted_steel_body",
+        "material": "painted_steel_body",
+        "parts": [
+          "body",
+          "door_leaf",
+          "threshold_plate"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      },
+      {
+        "material_id": "matid_03_rubber_trim_dark",
+        "material": "rubber_trim_dark",
+        "parts": [
+          "handle"
+        ],
+        "rgb": [
+          88,
+          178,
+          120
+        ]
+      },
+      {
+        "material_id": "matid_04_warning_paint",
+        "material": "warning_paint",
+        "parts": [
+          "lock_plate"
+        ],
+        "rgb": [
+          231,
+          168,
+          64
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_02_painted_steel_body",
+      "door_leaf": "matid_02_painted_steel_body",
+      "handle": "matid_03_rubber_trim_dark",
+      "hinge_bottom": "matid_01_aged_brass_trim",
+      "hinge_top": "matid_01_aged_brass_trim",
+      "lock_plate": "matid_04_warning_paint",
+      "threshold_plate": "matid_02_painted_steel_body"
+    }
+  },
+  "seam_guides": [],
+  "bake_groups": [],
+  "material_boundaries": [],
+  "lightmap_ready": true,
+  "feature_semantics": {
+    "required_part_coverage": 1.0,
+    "primitive_count": 611,
+    "region_count": 7,
+    "primitive_diversity": 0.055646,
+    "symmetry_region_score": 1.0,
+    "richness_floor": 1.0,
+    "feature_count": 597,
+    "feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "clasp_set",
+      "corner_guard",
+      "edge_break",
+      "fastener_strip",
+      "frame_lip",
+      "groove_channel",
+      "hinge_set",
+      "inset_panel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "radial_detail_array",
+      "recessed_handle",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "feature_density": 42.642857,
+    "edge_treatment_count": 64,
+    "panel_feature_count": 111,
+    "support_feature_count": 87,
+    "attachment_region_count": 6,
+    "silhouette_complexity": 1.0,
+    "feature_coherence": 1.0,
+    "surface_detail_feature_count": 543,
+    "geometry_detail_feature_count": 543,
+    "geometry_detail_feature_types": [
+      "attachment_guard_bar",
+      "attachment_rail",
+      "attachment_vent_stack",
+      "bolt_cap",
+      "bolt_washer",
+      "corner_guard",
+      "edge_break",
+      "groove_channel",
+      "layer_plate",
+      "linear_detail_array",
+      "module_antenna",
+      "module_power_cell",
+      "module_shield_plate",
+      "panel_seam",
+      "radial_detail_array",
+      "silhouette_guard_cowl",
+      "silhouette_outrigger",
+      "silhouette_spine",
+      "silhouette_tower",
+      "socket_collar",
+      "socket_recess",
+      "trim_strip"
+    ],
+    "geometry_detail_operator_counts": {
+      "attachment_guard_bar": 21,
+      "attachment_rail": 28,
+      "attachment_vent_stack": 35,
+      "bolt_cap": 28,
+      "bolt_washer": 28,
+      "corner_guard": 28,
+      "edge_break": 28,
+      "groove_channel": 28,
+      "layer_plate": 21,
+      "linear_detail_array": 28,
+      "module_antenna": 28,
+      "module_power_cell": 28,
+      "module_shield_plate": 14,
+      "panel_seam": 42,
+      "radial_detail_array": 42,
+      "silhouette_guard_cowl": 6,
+      "silhouette_outrigger": 8,
+      "silhouette_spine": 6,
+      "silhouette_tower": 12,
+      "socket_collar": 28,
+      "socket_recess": 28,
+      "trim_strip": 28
+    },
+    "geometry_detail_edge_metadata": [
+      "edge_hardness_hard",
+      "edge_treatment_chamfered"
+    ],
+    "geometry_detail_style_modifiers": [
+      "brutalist",
+      "industrial",
+      "modular"
+    ],
+    "geometry_detail_style_packs": [
+      "industrial_hero"
+    ],
+    "geometry_detail_attachment_motifs": [
+      "guard",
+      "rail",
+      "vent_stack"
+    ],
+    "geometry_detail_module_categories": [
+      "antenna",
+      "power_cell",
+      "shield_plate"
+    ],
+    "geometry_detail_silhouette_profiles": [
+      "wide_heavy"
+    ],
+    "geometry_detail_silhouette_motifs": [
+      "guard_cowl",
+      "outrigger",
+      "spine",
+      "tower"
+    ],
+    "primitive_selector_applied_count": 0,
+    "primitive_selector_by_component": {},
+    "primitive_selector_by_target": {},
+    "geometry_detail_zones_applied": [
+      {
+        "zone": "global",
+        "target": "door_frame",
+        "part": "body",
+        "component": "frame",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 89
+      },
+      {
+        "zone": "global",
+        "target": "door_leaf_region",
+        "part": "door_leaf",
+        "component": "door",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 89
+      },
+      {
+        "zone": "global",
+        "target": "hinge_top_region",
+        "part": "hinge_top",
+        "component": "hinge",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "hinge_bottom_region",
+        "part": "hinge_bottom",
+        "component": "hinge",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "door_handle_region",
+        "part": "handle",
+        "component": "handle",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "door_lock_region",
+        "part": "lock_plate",
+        "component": "lock_plate",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      },
+      {
+        "zone": "global",
+        "target": "threshold_region",
+        "part": "threshold_plate",
+        "component": "socket_plate",
+        "motifs": [
+          "bolt_grid",
+          "corner_guard",
+          "groove_channel",
+          "guard_bar",
+          "linear_detail_array",
+          "panel_seam",
+          "rail",
+          "socket_point",
+          "trim_strip"
+        ],
+        "attachment_motifs": [
+          "guard_bar",
+          "rail",
+          "vent_stack"
+        ],
+        "module_categories": [
+          "antenna",
+          "power_cell",
+          "shield_plate"
+        ],
+        "silhouette_profile": "wide_heavy",
+        "silhouette_motifs": [
+          "guard_cowl",
+          "outrigger",
+          "spine",
+          "tower"
+        ],
+        "falloff": "uniform",
+        "feature_count": 73
+      }
+    ]
+  },
+  "generated_uv_atlas_hints": {},
+  "adapter_report": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "requested_adapter": "auto",
+    "selected_adapter": "xatlas",
+    "strict": false,
+    "available": true,
+    "real_adapter_available": true,
+    "fallback_available": true,
+    "probe": {
+      "available": true,
+      "version": "0.0.11",
+      "code": "ok"
+    },
+    "status": "success",
+    "actual_adapter": "xatlas_per_part",
+    "execution": {
+      "mode": "xatlas_per_part",
+      "resolution": 2048,
+      "part_count": 7,
+      "part_source": "multi_part_scene",
+      "lightmap_strategy": "derived_inset",
+      "vertex_count": 55169,
+      "triangle_count": 28038,
+      "utilization": 0.8950769901275635,
+      "per_part_islands": [
+        {
+          "part": "body",
+          "importance_weight": 0.533333,
+          "raw_weight": 0.4,
+          "surface_area": 280248.862865,
+          "vertex_count": 12598,
+          "triangle_count": 6707,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1823,
+          "tags": [
+            "body",
+            "frame",
+            "shell"
+          ],
+          "parent_blueprint_component": "door_frame_shell"
+        },
+        {
+          "part": "door_leaf",
+          "importance_weight": 0.133333,
+          "raw_weight": 0.1,
+          "surface_area": 106466.80484,
+          "vertex_count": 11787,
+          "triangle_count": 5961,
+          "uv_bounds": {
+            "u_min": 0.0,
+            "u_max": 0.999756,
+            "v_min": 0.0,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 1900,
+          "tags": [
+            "door",
+            "leaf",
+            "left",
+            "panel"
+          ],
+          "parent_blueprint_component": "door_leaf_panel"
+        },
+        {
+          "part": "handle",
+          "importance_weight": 0.066667,
+          "raw_weight": 0.05,
+          "surface_area": 141343.575227,
+          "vertex_count": 4484,
+          "triangle_count": 2529,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 497,
+          "tags": [
+            "handle"
+          ],
+          "parent_blueprint_component": "door_handle_main"
+        },
+        {
+          "part": "hinge_bottom",
+          "importance_weight": 0.066667,
+          "raw_weight": 0.05,
+          "surface_area": 35242.444348,
+          "vertex_count": 6561,
+          "triangle_count": 2995,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 620,
+          "tags": [
+            "bottom",
+            "hinge"
+          ],
+          "parent_blueprint_component": "door_hinge_bottom"
+        },
+        {
+          "part": "hinge_top",
+          "importance_weight": 0.066667,
+          "raw_weight": 0.05,
+          "surface_area": 170628.471469,
+          "vertex_count": 6512,
+          "triangle_count": 3068,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 609,
+          "tags": [
+            "hinge",
+            "top"
+          ],
+          "parent_blueprint_component": "door_hinge_top"
+        },
+        {
+          "part": "lock_plate",
+          "importance_weight": 0.066667,
+          "raw_weight": 0.05,
+          "surface_area": 141976.762381,
+          "vertex_count": 4057,
+          "triangle_count": 2050,
+          "uv_bounds": {
+            "u_min": 0.0,
+            "u_max": 0.999756,
+            "v_min": 0.0,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 466,
+          "tags": [
+            "lock",
+            "lock_plate",
+            "plate"
+          ],
+          "parent_blueprint_component": "door_lock_plate"
+        },
+        {
+          "part": "threshold_plate",
+          "importance_weight": 0.066667,
+          "raw_weight": 0.05,
+          "surface_area": 202372.731892,
+          "vertex_count": 9170,
+          "triangle_count": 4728,
+          "uv_bounds": {
+            "u_min": 0.000244,
+            "u_max": 0.999756,
+            "v_min": 0.000244,
+            "v_max": 0.999756
+          },
+          "uv_island_chart_count": 882,
+          "tags": [
+            "hold",
+            "panel",
+            "plate",
+            "threshold"
+          ],
+          "parent_blueprint_component": "threshold_trim_plate"
+        }
+      ]
+    }
+  },
+  "style_routing": {
+    "texture_authoring": "procedural_designer",
+    "skip_unwrap": false,
+    "uv_layout_hint": "unique_udim"
+  },
+  "provenance": {
+    "backend_id": "lathe.uv.xatlas_v1",
+    "backend_version": "1.0.0",
+    "runtime_adapter": "xatlas_per_part"
+  }
+}

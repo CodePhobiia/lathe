@@ -7,6 +7,7 @@ etc.) that scaffolds and user sources use to describe local geometry.
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import replace
 from typing import Any
 
 from .assembly_kernel import BlueprintComponent, refresh_shape_ir
@@ -19,6 +20,7 @@ from .feature_ops import (
     blade_module_features,
     cable_attachment_features,
     bolt_grid_features,
+    brass_band_rivets_features,
     clasp_set_features,
     column_set_features,
     corner_guard_features,
@@ -75,8 +77,141 @@ from .geometry_detail import (
     geometry_detail_controls_from_authoring,
 )
 from .shape_ir import ShapeIR, ShapePrimitive
+from .shape_authoring_context import ShapeAuthoringContext, authoring_context_from_asset_graph
 
 HIGH_FEATURE_DENSITY = 0.95
+
+_AUTHORING_FEATURE_TRACE_SCHEMA = "lathe.shape.authoring_feature_trace.v1"
+
+
+def _bounded_float(value: float, low: float, high: float) -> float:
+    return max(low, min(high, float(value)))
+
+
+def _feature_kind(feature: ShapePrimitive) -> str:
+    return str(feature.component or feature.primitive_type or "feature")
+
+
+def _feature_tokens(feature: ShapePrimitive) -> str:
+    return " ".join(
+        [
+            _feature_kind(feature),
+            str(feature.part or ""),
+            str(feature.region or ""),
+            *[str(tag) for tag in feature.tags if str(tag)],
+        ]
+    )
+
+
+def _feature_matches_authoring(feature: ShapePrimitive, context: ShapeAuthoringContext) -> bool:
+    if not context.feature_allow:
+        return True
+    return context.matches_allowed_feature(
+        _feature_kind(feature),
+        feature.part,
+        feature.region,
+        _feature_tokens(feature),
+    )
+
+
+def _feature_density_cap(feature: ShapePrimitive, context: ShapeAuthoringContext) -> int | None:
+    multiplier = context.density_multiplier
+    if multiplier <= 0.0:
+        return 0
+    if multiplier >= 1.0:
+        return None
+    kind = _feature_kind(feature).lower()
+    if any(token in kind for token in ("fastener", "bolt", "rivet", "socket")):
+        return max(1, int(round(4 * multiplier)))
+    if any(token in kind for token in ("vent", "slat", "grille", "rib")):
+        return max(1, int(round(3 * multiplier)))
+    if any(token in kind for token in ("trim", "frame", "panel", "groove", "ridge")):
+        return max(1, int(round(2 * multiplier)))
+    return max(1, int(round(2 * multiplier)))
+
+
+def _annotate_feature_with_authoring(
+    feature: ShapePrimitive,
+    context: ShapeAuthoringContext,
+    *,
+    filter_state: str,
+) -> None:
+    metadata = dict(feature.semantic_metadata or {})
+    metadata["authoring_feature"] = {
+        "schema": _AUTHORING_FEATURE_TRACE_SCHEMA,
+        "filter_state": filter_state,
+        "feature_kind": _feature_kind(feature),
+        "feature_allow": list(context.feature_allow),
+        "feature_density": context.feature_density,
+        "density_multiplier": context.density_multiplier,
+        "source_paths": list(context.source_paths),
+    }
+    feature.semantic_metadata = metadata
+
+
+def _filter_features_by_authoring_context(
+    features: list[ShapePrimitive],
+    context: ShapeAuthoringContext,
+) -> tuple[list[ShapePrimitive], dict[str, Any]]:
+    kept: list[ShapePrimitive] = []
+    counts_before: dict[str, int] = {}
+    counts_after: dict[str, int] = {}
+    filtered_by_allow = 0
+    filtered_by_density = 0
+    for feature in features:
+        kind = _feature_kind(feature)
+        counts_before[kind] = counts_before.get(kind, 0) + 1
+        if not _feature_matches_authoring(feature, context):
+            filtered_by_allow += 1
+            continue
+        cap = _feature_density_cap(feature, context)
+        if cap == 0:
+            filtered_by_density += 1
+            continue
+        kept_for_kind = counts_after.get(kind, 0)
+        if cap is not None and kept_for_kind >= cap:
+            filtered_by_density += 1
+            continue
+        counts_after[kind] = kept_for_kind + 1
+        _annotate_feature_with_authoring(feature, context, filter_state="kept")
+        kept.append(feature)
+    return kept, {
+        "feature_count_before": len(features),
+        "feature_count_after": len(kept),
+        "filtered_by_feature_allow": filtered_by_allow,
+        "filtered_by_density": filtered_by_density,
+        "features_by_kind": dict(sorted(counts_before.items())),
+        "kept_by_kind": dict(sorted(counts_after.items())),
+    }
+
+
+def _merge_authoring_filter_reports(
+    context: ShapeAuthoringContext,
+    reports: list[dict[str, Any]],
+) -> dict[str, Any]:
+    summary = {
+        "consumed": context.to_dict(),
+        "feature_count_before": 0,
+        "feature_count_after": 0,
+        "filtered_by_feature_allow": 0,
+        "filtered_by_density": 0,
+        "features_by_kind": {},
+        "kept_by_kind": {},
+    }
+    for report in reports:
+        summary["feature_count_before"] += int(report.get("feature_count_before", 0) or 0)
+        summary["feature_count_after"] += int(report.get("feature_count_after", 0) or 0)
+        summary["filtered_by_feature_allow"] += int(report.get("filtered_by_feature_allow", 0) or 0)
+        summary["filtered_by_density"] += int(report.get("filtered_by_density", 0) or 0)
+        for field in ("features_by_kind", "kept_by_kind"):
+            totals = summary[field]
+            values = report.get(field, {})
+            if isinstance(values, dict):
+                for key, value in values.items():
+                    totals[str(key)] = int(totals.get(str(key), 0) or 0) + int(value or 0)
+    summary["features_by_kind"] = dict(sorted(summary["features_by_kind"].items()))
+    summary["kept_by_kind"] = dict(sorted(summary["kept_by_kind"].items()))
+    return summary
 
 
 def _component_from_region(shape_ir: ShapeIR, region_name: str) -> BlueprintComponent | None:
@@ -108,7 +243,15 @@ def _shape_component_features(
     edge_scale = max(0.75, params.edge_weight)
     panel_depth = max(0.7, params.panel_depth)
     features = []
-    feature_count = 2 if fidelity.tier == "blockout" else 4 if fidelity.tier == "game" else 6
+    feature_count = (
+        2
+        if fidelity.tier == "blockout"
+        else 4
+        if fidelity.tier == "game"
+        else 6
+        if fidelity.tier == "hero"
+        else 9
+    )
 
     if component.component_type in {"shell", "body"}:
         features.extend(edge_break_features(component, depth_scale=edge_scale, thickness_scale=edge_scale))
@@ -130,13 +273,29 @@ def _shape_component_features(
                     size_scale=params.trim_scale,
                 )
             )
-        if asset_graph.family == "console_terminal":
+        if _console_like_tokens(asset_graph, component):
             features.extend(
                 rib_features(
                     component,
                     count=max(4, feature_count),
                     depth_scale=panel_depth,
                     thickness_scale=edge_scale * 0.85,
+                )
+            )
+        if "plank_displacement" in component.tags:
+            # Emit rivets only on the canonical body_shell component
+            # (uniquely marked by the ``plank_displacement`` tag in
+            # _chest_blueprint). Avoids triplicating across alternate
+            # shell components that share the ``body`` tag.
+            band_count = 3
+            rivets_per_band = 8
+            features.extend(
+                brass_band_rivets_features(
+                    component,
+                    band_count=band_count,
+                    rivets_per_band=rivets_per_band,
+                    band_z_fractions=[-0.34, 0.0, 0.34],
+                    radius_scale=params.trim_scale,
                 )
             )
     elif component.component_type in {"lid", "door"}:
@@ -182,7 +341,7 @@ def _shape_component_features(
                     size_scale=params.trim_scale,
                 )
             )
-        if asset_graph.family == "console_terminal":
+        if _console_like_tokens(asset_graph, component):
             features.extend(
                 trim_band_features(
                     component, depth_scale=panel_depth * 0.9, thickness_scale=params.trim_scale * 0.8
@@ -209,7 +368,7 @@ def _shape_component_features(
                     thickness_scale=edge_scale * 0.8,
                 )
             )
-        if asset_graph.family == "console_terminal":
+        if _console_like_tokens(asset_graph, component):
             features.extend(
                 fastener_strip_features(
                     component,
@@ -520,6 +679,42 @@ def _component_zone_tokens(component: BlueprintComponent) -> set[str]:
     }
     tokens.update(_token(tag) for tag in component.tags)
     return {token for token in tokens if token}
+
+
+def _asset_graph_tokens(asset_graph: AssetGraph) -> set[str]:
+    authoring = asset_graph.authoring if isinstance(asset_graph.authoring, dict) else {}
+    values: list[object] = [
+        asset_graph.family,
+        asset_graph.kind,
+        asset_graph.role,
+        authoring.get("asset_class"),
+        authoring.get("style_target"),
+        authoring.get("family_ref"),
+        authoring.get("from_family"),
+    ]
+    values.extend(asset_graph.styles)
+    values.extend(asset_graph.materials)
+    return {_token(value) for value in values if _token(value)}
+
+
+def _console_like_tokens(asset_graph: AssetGraph, component: BlueprintComponent) -> bool:
+    tokens = _component_zone_tokens(component) | _asset_graph_tokens(asset_graph)
+    return bool(
+        tokens
+        & {
+            "console",
+            "terminal",
+            "control",
+            "controls",
+            "interface",
+            "screen",
+            "display",
+            "bezel",
+            "keypad",
+            "instrument",
+            "dashboard",
+        }
+    )
 
 
 def _matches_detail_zone(component: BlueprintComponent, controls: GeometryDetailControls) -> bool:
@@ -1119,6 +1314,226 @@ def _tag_controlled_features(
             feature.rounding = max(feature.rounding, min(rounding, 2.5))
 
 
+_MULTI_OCTAVE_PRIMARY_KINDS = {
+    # Additive primaries that read as raised hardware where rivets/fasteners
+    # belong. Subtractive features (inset_panel, panel_seam, vent slats) are
+    # deliberately excluded — putting rivets inside a recess or cut line is
+    # architecturally wrong.
+    "frame_lip",
+    "trim_band",
+    "trim_strip",
+    "outset_panel",
+    "layer_plate",
+    "screen_bezel",
+    "corner_guard",
+    "raised_ridge",
+    "support_bracket",
+    "hull_keel",
+    "structural_frame",
+}
+
+
+def _polygon_extents(polygon: list[tuple[float, float]] | None) -> tuple[float, float]:
+    if not polygon:
+        return 0.0, 0.0
+    us = [p[0] for p in polygon]
+    vs = [p[1] for p in polygon]
+    return (max(us) - min(us)), (max(vs) - min(vs))
+
+
+def _axis_local_to_world(axis: str) -> tuple[str, str, str]:
+    """Return (u_axis, v_axis, h_axis) world-axis labels for a local extrude axis.
+
+    Convention matches _chamfered_rectangle_polygon + _feature_extruded_profile:
+    polygon (u, v) lives in the plane perpendicular to ``axis``; ``extrude_height``
+    sweeps along ``axis``.
+    """
+    if axis == "z":
+        return ("x", "y", "z")
+    if axis == "x":
+        return ("y", "z", "x")
+    return ("z", "x", "y")  # axis == "y"
+
+
+def _offset_along_axis(
+    center: tuple[float, float, float], axis: str, delta: float
+) -> tuple[float, float, float]:
+    cx, cy, cz = center
+    if axis == "x":
+        return (cx + delta, cy, cz)
+    if axis == "y":
+        return (cx, cy + delta, cz)
+    return (cx, cy, cz + delta)
+
+
+def _rivet_primitive(
+    parent: ShapePrimitive,
+    *,
+    center: tuple[float, float, float],
+    radius: float,
+    depth: float,
+    axis: str,
+    octave: str,
+    kind: str,
+) -> ShapePrimitive:
+    half_depth = max(depth * 0.5, radius * 0.18, 0.001)
+    profile_points = [
+        (-half_depth, radius * 0.82),
+        (-half_depth * 0.18, radius),
+        (half_depth * 0.48, radius * 0.74),
+        (half_depth, radius * 0.18),
+    ]
+    parent_kind = parent.component or "feature"
+    return ShapePrimitive(
+        primitive_type="revolved_profile",
+        part=parent.part,
+        center=center,
+        axis=axis,
+        profile_points=profile_points,
+        tags=[
+            "feature",
+            kind,
+            "multi_octave",
+            f"octave_{octave}",
+            f"parent_{parent_kind}",
+            "mesh_op_revolved_profile",
+        ],
+        component=kind,
+        region=parent.region,
+        blend_mode="union",
+    )
+
+
+def _multi_octave_features(
+    parent_features: list[ShapePrimitive],
+    fidelity_tier: str,
+    asset_graph: AssetGraph | None = None,
+    authoring_context: ShapeAuthoringContext | None = None,
+) -> list[ShapePrimitive]:
+    """Spawn high-frequency secondary detail (rivets, fasteners) over large primary features.
+
+    For each primary feature whose ``component`` is in
+    :data:`_MULTI_OCTAVE_PRIMARY_KINDS`, sample N small rivets along the
+    feature's longest local axis. For ``cinematic`` tier, optionally
+    emit a tiny tertiary micro-bevel below each rivet head to push the
+    surface up another octave.
+
+    Per-tier defaults (after Wave 2A gate retune):
+      blockout/game: 0 (skip entirely)
+      hero: 0 by default; opt-in via ``features { density = "high" }``
+            adds 2 secondaries per primary so authors can request dense
+            detail without inflating uniformity-based validators by default
+      cinematic: 6 secondaries per primary (was 12), with one tertiary
+            micro-bevel per secondary
+    """
+    if fidelity_tier not in {"hero", "cinematic"}:
+        return []
+
+    if authoring_context is None and asset_graph is not None:
+        authoring_context = authoring_context_from_asset_graph(asset_graph)
+    feature_density = (
+        str(authoring_context.feature_density or "").lower()
+        if authoring_context is not None
+        else ""
+    )
+    density_multiplier = (
+        float(authoring_context.density_multiplier)
+        if authoring_context is not None
+        else 1.0
+    )
+
+    if fidelity_tier == "hero":
+        # Hero defaults to clean game-ready surfaces. Multi-octave detail is
+        # opt-in via an authored high/hero/dense feature-density request.
+        if feature_density not in {"high", "hero", "dense", "ultra"} and density_multiplier < 1.25:
+            return []
+        secondary_target = max(2, min(5, int(round(2 * density_multiplier))))
+        tertiary_per_secondary = 0
+    else:
+        # cinematic: still visibly richer than hero, but tuned down from
+        # the original 12-per-primary which inflated surface variance metrics.
+        secondary_target = max(4, min(8, int(round(4 * density_multiplier))))
+        tertiary_per_secondary = 1
+
+    octave: list[ShapePrimitive] = []
+    for parent in parent_features:
+        if (parent.component or "") not in _MULTI_OCTAVE_PRIMARY_KINDS:
+            continue
+        # Estimate parent's footprint and longest local axis.
+        if parent.primitive_type == "extruded_profile" and parent.profile_polygon:
+            u_span, v_span = _polygon_extents(parent.profile_polygon)
+            h_span = float(parent.extrude_height or 0.0)
+            u_axis, v_axis, h_axis = _axis_local_to_world(parent.axis or "y")
+            spans = [(u_span, u_axis), (v_span, v_axis), (h_span, h_axis)]
+        elif parent.primitive_type in {"box", "subdivision_box"} and parent.extents:
+            ex, ey, ez = parent.extents
+            spans = [(ex, "x"), (ey, "y"), (ez, "z")]
+        else:
+            continue
+
+        spans.sort(key=lambda item: item[0], reverse=True)
+        long_span, long_axis = spans[0]
+        short_span, _ = spans[1] if len(spans) > 1 else (long_span, long_axis)
+        if long_span <= 0.4:
+            continue
+
+        # Rivet count scales with the primary's length.
+        density_factor = min(1.4, max(0.5, long_span / 8.0))
+        rivet_count = max(2, min(secondary_target, int(round(secondary_target * density_factor))))
+
+        # Rivet size: tiny relative to short span and long span.
+        rivet_radius = max(min(short_span * 0.18, long_span * 0.04, 0.40), 0.10)
+        rivet_depth = max(rivet_radius * 1.05, 0.10)
+
+        # Rivet axis: spawn rivets oriented outward along the parent's
+        # extrusion/normal axis when known; for box-like parents use the
+        # shortest dimension as the proud-out direction.
+        if parent.primitive_type == "extruded_profile":
+            rivet_axis = parent.axis or "y"
+        else:
+            shortest = min(spans, key=lambda item: item[0])
+            rivet_axis = shortest[1]
+
+        if rivet_count > 1:
+            spacing = long_span * 0.78 / (rivet_count - 1)
+            start = -spacing * (rivet_count - 1) / 2.0
+        else:
+            spacing = 0.0
+            start = 0.0
+
+        for index in range(rivet_count):
+            delta = start + spacing * index
+            center = _offset_along_axis(parent.center, long_axis, delta)
+            rivet = _rivet_primitive(
+                parent,
+                center=center,
+                radius=rivet_radius,
+                depth=rivet_depth,
+                axis=rivet_axis,
+                octave="secondary",
+                kind="multi_octave_rivet",
+            )
+            octave.append(rivet)
+
+            for _t in range(tertiary_per_secondary):
+                tertiary_radius = max(rivet_radius * 0.45, 0.05)
+                tertiary_depth = max(rivet_depth * 0.55, 0.05)
+                tertiary_center = _offset_along_axis(center, rivet_axis, -rivet_depth * 0.35)
+                octave.append(
+                    _rivet_primitive(
+                        parent,
+                        center=tertiary_center,
+                        radius=tertiary_radius,
+                        depth=tertiary_depth,
+                        axis=rivet_axis,
+                        octave="tertiary",
+                        kind="multi_octave_micro_bevel",
+                    )
+                )
+
+    return octave
+
+
 def compile_feature_enhancements(
     asset_graph: AssetGraph,
     shape_ir: ShapeIR,
@@ -1142,18 +1557,49 @@ def compile_feature_enhancements(
     geometry_detail_added = []
     geometry_detail_applications: list[dict[str, Any]] = []
     feature_ops_used: set[str] = set()
+    multi_octave_added: list[ShapePrimitive] = []
+    authoring_filter_reports: list[dict[str, Any]] = []
+    authoring_context = authoring_context_from_asset_graph(asset_graph)
+    effective_params = replace(
+        params,
+        feature_density=_bounded_float(
+            params.feature_density * authoring_context.density_multiplier,
+            0.0,
+            3.0,
+        ),
+    )
     geometry_detail_controls = geometry_detail_controls_from_authoring(asset_graph.authoring)
     for region in shape_ir.regions:
         component = _component_from_region(shape_ir, region.name)
         if component is None:
             continue
-        features = _shape_component_features(asset_graph, shape_ir, component, fidelity, params)
+        features = _shape_component_features(asset_graph, shape_ir, component, fidelity, effective_params)
         controlled_features, controlled_applications = _controlled_geometry_detail_features(
-            component, geometry_detail_controls, params
+            component, geometry_detail_controls, effective_params
         )
         features.extend(controlled_features)
-        geometry_detail_added.extend(controlled_features)
-        geometry_detail_applications.extend(controlled_applications)
+        octave_features = _multi_octave_features(
+            features,
+            fidelity.tier,
+            asset_graph,
+            authoring_context=authoring_context,
+        )
+        if octave_features:
+            features.extend(octave_features)
+        features, authoring_report = _filter_features_by_authoring_context(features, authoring_context)
+        authoring_filter_reports.append(authoring_report)
+        kept_ids = {id(feature) for feature in features}
+        kept_controlled_features = [
+            feature for feature in controlled_features if id(feature) in kept_ids
+        ]
+        kept_octave_features = [
+            feature for feature in octave_features if id(feature) in kept_ids
+        ]
+        if kept_controlled_features:
+            geometry_detail_added.extend(kept_controlled_features)
+            geometry_detail_applications.extend(controlled_applications)
+        if kept_octave_features:
+            multi_octave_added.extend(kept_octave_features)
         if not features:
             continue
         added.extend(features)
@@ -1165,8 +1611,21 @@ def compile_feature_enhancements(
         notes=[
             *list(shape_ir.signature.get("blueprint_notes", [])),
             f"fidelity={fidelity.tier}",
-            f"feature_density={params.feature_density:.3f}",
+            f"feature_density={effective_params.feature_density:.3f}",
         ],
+    )
+    authoring_consumption = _merge_authoring_filter_reports(authoring_context, authoring_filter_reports)
+    enriched.signature["authoring_context"] = authoring_context.to_dict()
+    enriched.signature["authoring_feature_consumption"] = authoring_consumption
+    enriched.assessment["authoring_feature_count_before"] = int(
+        authoring_consumption["feature_count_before"]
+    )
+    enriched.assessment["authoring_feature_count_after"] = int(
+        authoring_consumption["feature_count_after"]
+    )
+    enriched.assessment["authoring_features_filtered"] = int(
+        authoring_consumption["filtered_by_feature_allow"]
+        + authoring_consumption["filtered_by_density"]
     )
     geometry_detail_feature_types = sorted(
         {feature.component or "feature" for feature in geometry_detail_added}
@@ -1180,9 +1639,19 @@ def compile_feature_enhancements(
     report = {
         "fidelity": fidelity.to_dict(),
         "candidate_params": params.to_dict(),
+        "effective_candidate_params": effective_params.to_dict(),
+        "authoring_context": authoring_context.to_dict(),
+        "authoring_feature_consumption": authoring_consumption,
         "feature_ops_used": sorted(feature_ops_used),
         "feature_count_added": len(added),
     }
+    if multi_octave_added:
+        secondary = sum(1 for f in multi_octave_added if "octave_secondary" in f.tags)
+        tertiary = sum(1 for f in multi_octave_added if "octave_tertiary" in f.tags)
+        report["multi_octave_feature_count"] = len(multi_octave_added)
+        report["multi_octave_secondary_count"] = secondary
+        report["multi_octave_tertiary_count"] = tertiary
+        enriched.assessment["multi_octave_feature_count"] = len(multi_octave_added)
     if geometry_detail_controls.explicit_fields:
         report["geometry_detail_controls"] = geometry_detail_controls.to_dict()
         report["geometry_detail_feature_count"] = len(geometry_detail_added)

@@ -1,0 +1,50 @@
+// Phase 3 second slice — minimum-viable terrain primitive.
+//
+// Proves Lathe ships THREE domains across one kernel: hard-surface
+// props (chests, drones), vegetation (oak_tree_demo), now terrain.
+// Two new mesh_program ops shipped:
+//
+//   * terrain_heightfield(extents, resolution, scale_z, seed, octaves?)
+//     -> a triangulated grid of fbm noise emitted as the stable
+//     ShapePrimitive(primitive_type="heightfield") record. The
+//     existing exact_solids._heightfield_mesh consumes it directly,
+//     no terrain-specific topology / UV / package code.
+//   * terrain_biome(target, biome, roughness?, peak_density?)
+//     -> mutates the target heightfield in place per biome rule.
+//     "alpine" stamps Gaussian peaks; "rolling_hills" multiplies a
+//     soft low-frequency envelope; "rocky" adds high-frequency
+//     fractal detail.
+//
+// This is the v1 existence proof, not a SpeedTree-grade terrain
+// authoring suite (no erosion, no biome-specific texturing, no LOD).
+module demo.terrain
+
+asset rocky_hill : hard_surface_prop {
+  intent {
+    role = "rocky hilltop terrain"
+    asset_class = "hero"
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 1234
+
+      mesh_program {
+        let ground = terrain_heightfield(
+          extents: [40m, 40m],
+          resolution: 64,
+          scale_z: 8m,
+          seed: 1234,
+        )
+        terrain_biome(
+          target: ground,
+          biome: "alpine",
+          roughness: 0.6,
+          peak_density: 0.3,
+        )
+      }
+    }
+  }
+}

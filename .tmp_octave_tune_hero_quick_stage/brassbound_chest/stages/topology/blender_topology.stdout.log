@@ -1,0 +1,33 @@
+12:18:03 | INFO: Data are loaded, start creating Blender stuff
+12:18:03 | INFO: Blender create Mesh node body
+12:18:03 | INFO: Blender create Mesh node foot_l
+12:18:03 | INFO: Blender create Mesh node foot_r
+12:18:03 | INFO: Blender create Mesh node front_hatch
+12:18:03 | INFO: Blender create Mesh node handle_l
+12:18:03 | INFO: Blender create Mesh node handle_r
+12:18:03 | INFO: Blender create Mesh node lid_panel
+12:18:03 | INFO: Blender create Mesh node lock_plate
+12:18:03 | INFO: glTF import finished in 0.05s
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+12:18:03 | INFO: Starting glTF 2.0 export
+12:18:03 | INFO: Extracting primitive: body
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: foot_l
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: foot_r
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: front_hatch
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: handle_l
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: handle_r
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: lid_panel
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Extracting primitive: lock_plate
+12:18:03 | INFO: Primitives created: 1
+12:18:03 | INFO: Finished glTF 2.0 export in 0.06899881362915039 s
+
+Blender 5.0.1 (hash a3db93c5b259 built 2025-12-16 01:32:30)
+
+Blender quit

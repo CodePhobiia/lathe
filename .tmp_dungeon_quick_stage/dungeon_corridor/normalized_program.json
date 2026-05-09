@@ -1,0 +1,527 @@
+{
+  "module": "demo.dungeon",
+  "imports": [],
+  "profiles": [],
+  "contracts": [],
+  "critics": [],
+  "libraries": [],
+  "kits": [],
+  "patterns": [],
+  "families": [],
+  "components": [],
+  "assemblies": [],
+  "traits": [],
+  "mechanisms": [],
+  "materials": [],
+  "surface_programs": [],
+  "surface_backends": [],
+  "surface_policies": [],
+  "decal_libraries": [],
+  "mask_programs": [],
+  "trim_sheets": [],
+  "palettes": [],
+  "style_packs": [],
+  "style_bridges": [],
+  "execution_profiles": [],
+  "render_fixtures": [],
+  "bake_profiles": [],
+  "library_bindings": [],
+  "material_graphs": [],
+  "inspection_policies": [],
+  "asset_class_profiles": [],
+  "vegetation_species": [],
+  "vegetation_kits": [],
+  "wind_programs": [],
+  "volume_programs": [],
+  "subdivision_finishings": [],
+  "terrain_programs": [],
+  "wfc_tilesets": [],
+  "wfc_adjacencies": [],
+  "f_rep_programs": [],
+  "reference_sets": [],
+  "reconstruct_policies": [],
+  "adapt_policies": [],
+  "assembly_policies": [],
+  "fit_profiles": [],
+  "transfer_rules": [],
+  "repair_policies": [],
+  "fixtures": [],
+  "tests": [],
+  "benchmarks": [],
+  "spaces": [],
+  "worlds": [],
+  "scenes": [],
+  "assets": [
+    {
+      "node_type": "asset",
+      "name": "dungeon_corridor",
+      "kind": "hard_surface_prop",
+      "from": "",
+      "uses": [],
+      "refs": {
+        "images": [],
+        "meshes": [],
+        "assets": [],
+        "materials": [],
+        "reference_sets": [],
+        "notes": []
+      },
+      "intent": {
+        "role": "modular dungeon corridor",
+        "asset_class": "hero",
+        "style": [
+          "dungeon",
+          "modular"
+        ],
+        "materials": [
+          "stone_grey",
+          "moss"
+        ],
+        "scale": {
+          "type": "unit",
+          "value": 30,
+          "unit": "m"
+        },
+        "parts": [],
+        "negatives": [],
+        "interactions": [],
+        "notes": [],
+        "style_stack": {
+          "material_model": "pbr_stylized",
+          "shading_model": "lambert_ambient",
+          "texture_authoring": "procedural_designer",
+          "outline_mode": "none",
+          "lighting_strategy": "dynamic_global_illumination",
+          "detail_layer_compose": "multi_band_pbr",
+          "animation_rate": "fluid",
+          "construction_grammar": "free_form"
+        },
+        "style_bridges": []
+      },
+      "geometry": {},
+      "features": {
+        "allow": []
+      },
+      "surface": {
+        "program": "",
+        "material_graph": "",
+        "patterns": [],
+        "palette": "",
+        "material_zones": [],
+        "materials": [],
+        "decals": [],
+        "bake": [],
+        "backend": "",
+        "policy": "",
+        "decal_libraries": [],
+        "mask_programs": [],
+        "trim_sheets": [],
+        "authoring": {}
+      },
+      "assembly": {
+        "family": "",
+        "components": [],
+        "mechanisms": [],
+        "traits": []
+      },
+      "fit": {},
+      "transfer": {},
+      "reuse": {},
+      "constraints": {},
+      "ingest": {},
+      "assembly_rules": {},
+      "execution": {
+        "profile": "",
+        "engine": "",
+        "mode": "",
+        "deterministic": null,
+        "preserve_blend": "",
+        "geometry_backend": "",
+        "uv_backend": "",
+        "bake_backend": "",
+        "surface_backend": "",
+        "render_backend": "",
+        "package_backend": "",
+        "library_backend": "",
+        "library_bindings": [],
+        "inspection_policy": ""
+      },
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "build": {
+        "shape": {
+          "mode": "generate",
+          "candidates": 1,
+          "seed": 42,
+          "mesh_program": {
+            "node_type": "mesh_program",
+            "statements": [
+              {
+                "node_type": "mesh_let",
+                "target": "floor",
+                "expr": {
+                  "type": "call",
+                  "name": "solid_panel",
+                  "args": [
+                    {
+                      "name": "extents",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "cm"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "wall",
+                "expr": {
+                  "type": "call",
+                  "name": "solid_panel",
+                  "args": [
+                    {
+                      "name": "extents",
+                      "value": [
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 3,
+                          "unit": "m"
+                        },
+                        {
+                          "type": "unit",
+                          "value": 30,
+                          "unit": "cm"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "pillar",
+                "expr": {
+                  "type": "call",
+                  "name": "solid_cylinder",
+                  "args": [
+                    {
+                      "name": "radius",
+                      "value": {
+                        "type": "unit",
+                        "value": 30,
+                        "unit": "cm"
+                      }
+                    },
+                    {
+                      "name": "height",
+                      "value": {
+                        "type": "unit",
+                        "value": 3,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "name": "axis",
+                      "value": "y"
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "mod_floor",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_module",
+                  "args": [
+                    {
+                      "name": "name",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "primitive",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "weight",
+                      "value": 0.7
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "mod_wall",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_module",
+                  "args": [
+                    {
+                      "name": "name",
+                      "value": "wall"
+                    },
+                    {
+                      "name": "primitive",
+                      "value": "wall"
+                    },
+                    {
+                      "name": "weight",
+                      "value": 0.2
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "mod_pillar",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_module",
+                  "args": [
+                    {
+                      "name": "name",
+                      "value": "pillar"
+                    },
+                    {
+                      "name": "primitive",
+                      "value": "pillar"
+                    },
+                    {
+                      "name": "weight",
+                      "value": 0.1
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "rule_ff_x",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_rule",
+                  "args": [
+                    {
+                      "name": "a",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "b",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "direction",
+                      "value": "x"
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_let",
+                "target": "rule_ff_z",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_rule",
+                  "args": [
+                    {
+                      "name": "a",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "b",
+                      "value": "floor"
+                    },
+                    {
+                      "name": "direction",
+                      "value": "z"
+                    }
+                  ]
+                }
+              },
+              {
+                "node_type": "mesh_call",
+                "expr": {
+                  "type": "call",
+                  "name": "wfc_modular",
+                  "args": [
+                    {
+                      "name": "canvas_size",
+                      "value": [
+                        10,
+                        1,
+                        10
+                      ]
+                    },
+                    {
+                      "name": "cell_size",
+                      "value": {
+                        "type": "unit",
+                        "value": 3,
+                        "unit": "m"
+                      }
+                    },
+                    {
+                      "name": "modules",
+                      "value": [
+                        "mod_floor",
+                        "mod_wall",
+                        "mod_pillar"
+                      ]
+                    },
+                    {
+                      "name": "adjacency",
+                      "value": [
+                        "rule_ff_x",
+                        "rule_ff_z"
+                      ]
+                    },
+                    {
+                      "name": "seed",
+                      "value": 42
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "backend": "auto",
+          "symmetry": "none",
+          "preserve": []
+        },
+        "topology": {
+          "backend": "auto",
+          "retopo": "auto",
+          "ngons": "avoid",
+          "preserve": []
+        },
+        "uv": {
+          "backend": "auto",
+          "sets": [
+            "base"
+          ],
+          "unwrap": "auto",
+          "tile_mode": "zero_to_one",
+          "padding": {
+            "type": "unit",
+            "value": 8,
+            "unit": "px"
+          },
+          "pack_rotate": true,
+          "udims": []
+        },
+        "surface": {
+          "backend": "auto",
+          "workflow": "pbr_metal_rough",
+          "maps": [
+            "basecolor",
+            "normal",
+            "orm"
+          ],
+          "resolution": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          },
+          "bakes": [],
+          "bake_profile": "",
+          "render_fixture": "",
+          "decals": [],
+          "id_map": false
+        },
+        "rig": {
+          "backend": "auto",
+          "type": "none",
+          "joints": [],
+          "pivot_policy": "auto",
+          "joint_limits": "auto"
+        },
+        "interfaces": {
+          "backend": "auto",
+          "sockets": [],
+          "pivots": [],
+          "anchors": [],
+          "connections": [],
+          "auto_connect": false
+        },
+        "physics": {
+          "backend": "auto",
+          "collision": "none",
+          "max_hulls": 10,
+          "mass": "auto",
+          "center_of_mass": "auto"
+        },
+        "optimize": {
+          "backend": "auto",
+          "lods": 1,
+          "atlas": false,
+          "mesh_compression": false,
+          "strip_hidden_faces": false,
+          "instance_candidates": false
+        }
+      },
+      "validate": {
+        "rules": [],
+        "threshold": 0.8,
+        "repair": {
+          "mode": "auto_until_pass",
+          "max_rounds": 3,
+          "allow": [],
+          "deny": []
+        }
+      },
+      "package": {
+        "backend": "auto",
+        "formats": [
+          "usd",
+          "glb"
+        ],
+        "manifest": true,
+        "previews": [],
+        "embed_textures": false,
+        "include_trace": true,
+        "naming": "auto"
+      },
+      "publish": {
+        "registry": "",
+        "version": "auto_patch",
+        "tags": [],
+        "visibility": "private",
+        "approval": "required",
+        "channel": "dev"
+      },
+      "experimental": {}
+    }
+  ],
+  "variants": []
+}

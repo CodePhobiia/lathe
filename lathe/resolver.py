@@ -12,6 +12,12 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from .asset_class_profiles import (
+    GENERIC_ASSET_CLASS,
+    cascade_into_asset,
+    resolve_asset_class_profile,
+)
+
 # re-export — authoritative definitions live in lathe/errors.py
 from .errors import ResolutionError, UnresolvedNameError
 from .logging_utils import debug as log_debug
@@ -48,6 +54,188 @@ def _dedupe(values: list[Any]) -> list[Any]:
             seen.add(key)
             out.append(value)
     return out
+
+
+def _parse_semver(version: str) -> tuple[int, int, int] | None:
+    """Parse a dotted semver-style version into a (major, minor, patch) tuple.
+
+    Returns ``None`` for empty or unparseable inputs. Trailing components
+    default to zero (e.g. ``"1.2"`` → ``(1, 2, 0)``).
+    """
+    if not version:
+        return None
+    parts = version.strip().split(".")
+    while len(parts) < 3:
+        parts.append("0")
+    try:
+        return (int(parts[0]), int(parts[1]), int(parts[2]))
+    except (ValueError, IndexError):
+        return None
+
+
+def _version_satisfies(version: str, constraint: str) -> bool:
+    """Return True when ``version`` satisfies the npm-style ``constraint``.
+
+    Supported constraint forms:
+    - ``""`` (empty) → always satisfied (legacy / unversioned kit).
+    - ``"=1.2.3"`` exact pin.
+    - ``"^1.2.3"`` caret: same major (``>=1.2.3, <2.0.0``).
+    - ``"~1.2.3"`` tilde: same minor (``>=1.2.3, <1.3.0``).
+    - ``">=1.2.3"`` / ``">1.2.3"`` / ``"<=1.2.3"`` / ``"<1.2.3"`` range.
+    - bare ``"1.2.3"`` is treated as ``=1.2.3``.
+    """
+    if not constraint:
+        return True
+    constraint = constraint.strip()
+    parsed_version = _parse_semver(version)
+    if parsed_version is None:
+        return False
+    if constraint.startswith("^"):
+        target = _parse_semver(constraint[1:])
+        if target is None:
+            return False
+        return parsed_version >= target and parsed_version[0] == target[0]
+    if constraint.startswith("~"):
+        target = _parse_semver(constraint[1:])
+        if target is None:
+            return False
+        return (
+            parsed_version >= target
+            and parsed_version[0] == target[0]
+            and parsed_version[1] == target[1]
+        )
+    for prefix, op in ((">=", "ge"), ("<=", "le"), (">", "gt"), ("<", "lt"), ("=", "eq")):
+        if constraint.startswith(prefix):
+            target = _parse_semver(constraint[len(prefix) :])
+            if target is None:
+                return False
+            if op == "ge":
+                return parsed_version >= target
+            if op == "le":
+                return parsed_version <= target
+            if op == "gt":
+                return parsed_version > target
+            if op == "lt":
+                return parsed_version < target
+            return parsed_version == target
+    target = _parse_semver(constraint)
+    if target is None:
+        return False
+    return parsed_version == target
+
+
+_HDA_PARAMETER_TYPES = {
+    "number",
+    "int",
+    "boolean",
+    "string",
+    "enum",
+    "vec2",
+    "vec3",
+    "vec4",
+    "color",
+}
+
+
+def _validate_kit_ports_and_parameters(
+    resolved_kit: dict[str, Any], bindings: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Return diagnostics for unwired ports and out-of-range parameters.
+
+    The kit's input ports must each be present in ``bindings`` (which holds
+    the asset-side wiring expressions). Output ports are informational and
+    not checked here. Parameters with explicit ``min``/``max``/``enum``
+    options have their bound values range-checked.
+    """
+    diags: list[dict[str, Any]] = []
+    if not resolved_kit:
+        return diags
+    ports = resolved_kit.get("ports", []) or []
+    parameters = resolved_kit.get("parameters", []) or []
+    if not ports and not parameters:
+        return diags
+    binding_names = set(bindings.keys()) if isinstance(bindings, dict) else set()
+    for port in ports:
+        if not isinstance(port, dict):
+            continue
+        if port.get("direction") != "in":
+            continue
+        port_name = str(port.get("name", ""))
+        if not port_name:
+            continue
+        if port_name not in binding_names:
+            diags.append(
+                {
+                    "code": "K6502",
+                    "kit": resolved_kit.get("name", ""),
+                    "port": port_name,
+                    "message": (
+                        f"required input port '{port_name}' on kit "
+                        f"'{resolved_kit.get('name', '')}' is not wired"
+                    ),
+                }
+            )
+    for parameter in parameters:
+        if not isinstance(parameter, dict):
+            continue
+        param_name = str(parameter.get("name", ""))
+        if not param_name or param_name not in binding_names:
+            continue
+        param_type = str(parameter.get("param_type", ""))
+        if param_type and param_type not in _HDA_PARAMETER_TYPES:
+            diags.append(
+                {
+                    "code": "K6505",
+                    "kit": resolved_kit.get("name", ""),
+                    "parameter": param_name,
+                    "message": (
+                        f"parameter '{param_name}' on kit "
+                        f"'{resolved_kit.get('name', '')}' has unknown type '{param_type}'"
+                    ),
+                }
+            )
+        options = parameter.get("options", {}) or {}
+        bound_value = bindings.get(param_name)
+        if param_type in {"number", "int"} and isinstance(bound_value, (int, float)):
+            if "min" in options and bound_value < options["min"]:
+                diags.append(
+                    {
+                        "code": "K6503",
+                        "kit": resolved_kit.get("name", ""),
+                        "parameter": param_name,
+                        "message": (
+                            f"parameter '{param_name}'={bound_value} below "
+                            f"minimum {options['min']}"
+                        ),
+                    }
+                )
+            if "max" in options and bound_value > options["max"]:
+                diags.append(
+                    {
+                        "code": "K6503",
+                        "kit": resolved_kit.get("name", ""),
+                        "parameter": param_name,
+                        "message": (
+                            f"parameter '{param_name}'={bound_value} above "
+                            f"maximum {options['max']}"
+                        ),
+                    }
+                )
+        if param_type == "enum" and isinstance(bound_value, str):
+            allowed = options.get("values") or options.get("enum") or []
+            if isinstance(allowed, list) and allowed and bound_value not in allowed:
+                diags.append(
+                    {
+                        "code": "K6504",
+                        "kit": resolved_kit.get("name", ""),
+                        "parameter": param_name,
+                        "message": (
+                            f"parameter '{param_name}'='{bound_value}' is not "
+                            f"one of {allowed}"
+                        ),
+                    }
+                )
+    return diags
 
 
 def _merge_space_spec(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
@@ -113,6 +301,13 @@ class Resolver:
         self.trim_sheet_map = {decl["name"]: decl for decl in program.get("trim_sheets", [])}
         self.palette_map = {decl["name"]: decl for decl in program.get("palettes", [])}
         self.style_pack_map = {decl["name"]: decl for decl in program.get("style_packs", [])}
+        # Roadmap §6.8: style_bridges are program-level decls that sanction
+        # otherwise-incompatible style-stack pairings (e.g. Borderlands-style
+        # PBR base + cel ramp overlay). The checker reads this map to decide
+        # whether to suppress L6810-L6817 refusal diagnostics.
+        self.style_bridge_map = {
+            decl["name"]: decl for decl in program.get("style_bridges", [])
+        }
         self.reference_set_map = {decl["name"]: decl for decl in program.get("reference_sets", [])}
         self.reconstruct_policy_map = {decl["name"]: decl for decl in program.get("reconstruct_policies", [])}
         self.adapt_policy_map = {decl["name"]: decl for decl in program.get("adapt_policies", [])}
@@ -125,6 +320,18 @@ class Resolver:
         self.library_binding_map = {decl["name"]: decl for decl in program.get("library_bindings", [])}
         self.material_graph_map = {decl["name"]: decl for decl in program.get("material_graphs", [])}
         self.inspection_policy_map = {decl["name"]: decl for decl in program.get("inspection_policies", [])}
+        self.asset_class_profile_map = {
+            decl["name"]: decl for decl in program.get("asset_class_profiles", [])
+        }
+        self.vegetation_species_map = {
+            decl["name"]: decl for decl in program.get("vegetation_species", [])
+        }
+        self.vegetation_kit_map = {
+            decl["name"]: decl for decl in program.get("vegetation_kits", [])
+        }
+        self.wind_program_map = {
+            decl["name"]: decl for decl in program.get("wind_programs", [])
+        }
         self.repair_policy_map = {decl["name"]: decl for decl in program.get("repair_policies", [])}
         self.fixture_map = {decl["name"]: decl for decl in program.get("fixtures", [])}
         self.test_map = {decl["name"]: decl for decl in program.get("tests", [])}
@@ -454,11 +661,31 @@ class Resolver:
 
         from_name = str(explicit.get("from", "") or "")
         resolved_kit: dict[str, Any] = {}
+        kit_version_constraint = str(
+            explicit.get("assembly", {}).get("kit_version", "") or ""
+        )
+        kit_bindings = deepcopy(explicit.get("assembly", {}).get("kit_bindings", {}) or {})
+        kit_use_diagnostics: list[dict[str, Any]] = []
         family_name = explicit.get("assembly", {}).get("family", "")
         if not family_name and from_name in self.family_map:
             family_name = from_name
         if from_name and from_name in self.kit_map:
             resolved_kit = deepcopy(self._resolve_named_decl(self.kit_map, from_name, "kit"))
+            kit_version = str(resolved_kit.get("version", "") or "")
+            if kit_version_constraint and not _version_satisfies(kit_version, kit_version_constraint):
+                kit_use_diagnostics.append(
+                    {
+                        "code": "K6501",
+                        "kit": from_name,
+                        "message": (
+                            f"kit '{from_name}' version '{kit_version}' does not satisfy "
+                            f"constraint '{kit_version_constraint}'"
+                        ),
+                    }
+                )
+            kit_use_diagnostics.extend(
+                _validate_kit_ports_and_parameters(resolved_kit, kit_bindings)
+            )
             family_name = str(
                 resolved_kit.get("values", {}).get("family", "")
                 or resolved_kit.get("values", {}).get("family_bias", "")
@@ -515,6 +742,13 @@ class Resolver:
             merged.setdefault("assembly", {})
             merged["assembly"]["kit"] = from_name
             merged["assembly"]["resolved_kit"] = resolved_kit
+            merged["assembly"]["resolved_kit_use"] = {
+                "kit": from_name,
+                "version": str(resolved_kit.get("version", "") or ""),
+                "version_constraint": kit_version_constraint,
+                "bindings": kit_bindings,
+                "diagnostics": kit_use_diagnostics,
+            }
             if not merged["assembly"].get("components"):
                 merged["assembly"]["components"] = list(resolved_kit.get("values", {}).get("modules", []))
             merged["constraints"] = deep_merge(
@@ -698,7 +932,30 @@ class Resolver:
                     )
             merged["experimental"] = experimental
 
+        # §5.10: cascade `intent.asset_class` budgets into the asset's
+        # build/validate slots before normalization. Author-declared
+        # values always win — cascade only fills missing leaves.
+        self._apply_asset_class_cascade(merged)
+
         return normalize_asset(merged)
+
+    def _apply_asset_class_cascade(self, asset: dict[str, Any]) -> None:
+        intent = asset.get("intent") if isinstance(asset.get("intent"), dict) else {}
+        raw = intent.get("asset_class") if isinstance(intent, dict) else None
+        if not isinstance(raw, str):
+            return
+        name = raw.strip()
+        if not name or name == GENERIC_ASSET_CLASS:
+            return
+        body = resolve_asset_class_profile(name, self.asset_class_profile_map)
+        if body is None:
+            return
+        cascade_into_asset(asset, body)
+        asset.setdefault("intent", {})
+        asset["intent"]["resolved_asset_class_profile"] = {
+            "name": name,
+            "body": body,
+        }
 
     def _resolve_experimental_reference_path(self, use_value: str) -> str:
         """Resolve ``experimental.references.use`` to an absolute path.

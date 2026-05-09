@@ -66,6 +66,160 @@ _INDUSTRIAL_CRATE_REQUIREMENT_NAMES: tuple[str, ...] = (
 )
 
 
+_MECHANICAL_DOOR_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "door_frame",
+    "inset_door_leaf",
+    "hinge_stack",
+    "lock_or_actuator",
+    "guide_or_threshold_rails",
+    "panel_grooves",
+    "access_handle",
+    "fasteners",
+    "warning_or_decal_zones",
+    "edge_wear_masks",
+)
+
+
+_SERVICE_CABINET_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "cabinet_shell",
+    "front_door_panel",
+    "hinge_line",
+    "pull_handle",
+    "latch_or_lock_plate",
+    "vent_slats",
+    "mounting_brackets",
+    "fasteners",
+    "label_or_decal_zone",
+    "edge_wear_masks",
+)
+
+
+_WEAPON_PROP_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "primary_weapon_body",
+    "grip_or_handle",
+    "guard_or_hand_stop",
+    "active_edge_or_barrel",
+    "centerline_detail",
+    "pommel_or_end_cap",
+    "socket_or_hardpoint",
+    "fasteners",
+    "marking_or_decal_zone",
+    "edge_wear_masks",
+)
+
+
+_VEHICLE_PROP_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "primary_chassis_or_hull",
+    "cabin_or_control_zone",
+    "motion_system",
+    "front_back_orientation",
+    "cargo_or_payload_zone",
+    "access_steps_or_handles",
+    "lights_or_sensors",
+    "mechanical_fasteners",
+    "marking_or_decal_zone",
+    "edge_wear_masks",
+)
+
+
+_FURNITURE_PROP_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "primary_contact_surface",
+    "support_structure",
+    "back_or_storage_volume",
+    "trim_or_edge_band",
+    "handle_or_pull",
+    "fasteners_or_joinery",
+    "cushion_or_soft_volume",
+    "floor_contact_or_feet",
+    "label_or_decal_zone",
+    "edge_wear_masks",
+)
+
+
+_NATURAL_FORM_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "organic_primary_mass",
+    "swept_growth_or_rooting",
+    "clustered_secondary_forms",
+    "surface_strata_or_bark",
+    "ground_contact_transition",
+    "asymmetric_silhouette_breaks",
+    "small_detail_scatter",
+    "material_zone_variation",
+    "weathering_or_erosion_masks",
+    "scale_anchor",
+)
+
+
+_ENVIRONMENT_ARCHITECTURE_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "floor_or_foundation",
+    "wall_or_enclosure",
+    "opening_system",
+    "roof_or_cover",
+    "vertical_supports",
+    "circulation_or_access",
+    "facade_trim_or_banding",
+    "modular_bays",
+    "lighting_or_signage_zone",
+    "weathering_or_edge_wear",
+)
+
+
+_LIGHTING_PROP_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "base_or_mount",
+    "support_or_armature",
+    "emitter_or_lens",
+    "housing_or_shade",
+    "power_or_cable_route",
+    "control_or_service_plate",
+    "signage_or_marker_face",
+    "fasteners",
+    "protective_guard_or_cage",
+    "soot_or_edge_wear_masks",
+)
+
+
+_MACHINE_CONSOLE_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "primary_machine_body",
+    "control_face_or_panel",
+    "display_or_readout",
+    "input_controls",
+    "service_access_panel",
+    "ports_or_sockets",
+    "cooling_or_ventilation",
+    "cable_or_pipe_connections",
+    "status_or_warning_markings",
+    "service_wear_masks",
+)
+
+
+_PORTAL_RELIC_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "anchor_base_or_plinth",
+    "frame_or_vertical_core",
+    "threshold_or_active_center",
+    "power_nodes_or_keystones",
+    "radial_or_symmetric_layout",
+    "runes_or_inscriptions",
+    "offering_or_attachment_mounts",
+    "conduits_or_energy_paths",
+    "environment_contact",
+    "age_or_aura_wear_masks",
+)
+
+
+_TOOL_PROP_REQUIREMENT_NAMES: tuple[str, ...] = (
+    "primary_tool_body",
+    "grip_or_handle",
+    "working_head_or_bit",
+    "shaft_or_spine",
+    "guard_or_stop",
+    "adjustment_or_joint",
+    "sockets_or_attachment_points",
+    "fasteners",
+    "marking_or_scale_zone",
+    "contact_wear_masks",
+)
+
+
 def _runtime_with_family(family: str) -> dict[str, Any]:
     """Build a runtime that publishes a Phase 2-style design_brief block."""
     return {"design_brief": {"brief": {"family": family}}}
@@ -144,6 +298,138 @@ def test_industrial_crate_grammar_has_ten_requirements_in_canonical_order() -> N
 
     names = tuple(item["name"] for item in payload["requirement_results"])
     assert names == _INDUSTRIAL_CRATE_REQUIREMENT_NAMES
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_mechanical_door_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("mechanical_door"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _MECHANICAL_DOOR_REQUIREMENT_NAMES
+    assert payload["family"] == "mechanical_door"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_service_cabinet_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("service_cabinet"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _SERVICE_CABINET_REQUIREMENT_NAMES
+    assert payload["family"] == "service_cabinet"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_weapon_prop_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("weapon_prop"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _WEAPON_PROP_REQUIREMENT_NAMES
+    assert payload["family"] == "weapon_prop"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_vehicle_prop_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("vehicle_prop"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _VEHICLE_PROP_REQUIREMENT_NAMES
+    assert payload["family"] == "vehicle_prop"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_furniture_prop_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("furniture_prop"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _FURNITURE_PROP_REQUIREMENT_NAMES
+    assert payload["family"] == "furniture_prop"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_natural_form_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("natural_form"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _NATURAL_FORM_REQUIREMENT_NAMES
+    assert payload["family"] == "natural_form"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_environment_architecture_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("environment_architecture"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _ENVIRONMENT_ARCHITECTURE_REQUIREMENT_NAMES
+    assert payload["family"] == "environment_architecture"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_lighting_prop_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("lighting_prop"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _LIGHTING_PROP_REQUIREMENT_NAMES
+    assert payload["family"] == "lighting_prop"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_machine_console_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("machine_console"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _MACHINE_CONSOLE_REQUIREMENT_NAMES
+    assert payload["family"] == "machine_console"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_portal_relic_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("portal_relic"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _PORTAL_RELIC_REQUIREMENT_NAMES
+    assert payload["family"] == "portal_relic"
+    assert len(payload["requirement_results"]) == 10
+
+
+def test_tool_prop_grammar_has_ten_requirements_in_canonical_order() -> None:
+    payload = evaluate_family_grammar(
+        {"intent": {"parts": []}},
+        _runtime_with_family("tool_prop"),
+    )
+
+    names = tuple(item["name"] for item in payload["requirement_results"])
+    assert names == _TOOL_PROP_REQUIREMENT_NAMES
+    assert payload["family"] == "tool_prop"
     assert len(payload["requirement_results"]) == 10
 
 

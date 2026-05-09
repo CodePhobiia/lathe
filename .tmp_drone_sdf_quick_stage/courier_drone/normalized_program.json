@@ -1,0 +1,2393 @@
+{
+  "module": "studio.props.drones",
+  "imports": [
+    "std.materials.hero_materials",
+    "std.components.courier_drone",
+    "std.mechanisms.hero_mechanisms",
+    "std.palettes.hero_palettes",
+    "std.repair.hero_hardsurface",
+    "std.spaces.hero_spaces",
+    "std.families.courier_drone",
+    "std.benchmarks.hero_nearmiss"
+  ],
+  "profiles": [
+    {
+      "node_type": "profile",
+      "name": "mobile_runtime",
+      "uses": [],
+      "defaults": {
+        "build": {
+          "optimize": {
+            "lods": 3
+          },
+          "surface": {
+            "resolution": {
+              "type": "unit",
+              "value": 2048,
+              "unit": "px"
+            }
+          }
+        }
+      },
+      "rules": [
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "material_slots",
+            "args": [
+              {
+                "name": "max",
+                "value": 2
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "texture_budget",
+            "args": [
+              {
+                "name": "max",
+                "value": {
+                  "type": "unit",
+                  "value": 16,
+                  "unit": "mb"
+                }
+              }
+            ]
+          },
+          "node_type": "rule"
+        }
+      ],
+      "repair": {
+        "mode": "auto_until_pass",
+        "max_rounds": 3,
+        "allow": [],
+        "deny": []
+      }
+    },
+    {
+      "node_type": "profile",
+      "name": "unreal_interactable_prop",
+      "uses": [],
+      "defaults": {
+        "build": {
+          "optimize": {
+            "lods": 4
+          }
+        },
+        "package": {
+          "formats": [
+            "usd",
+            "glb"
+          ],
+          "manifest": true,
+          "include_trace": true
+        }
+      },
+      "rules": [
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "units",
+            "args": [
+              {
+                "name": null,
+                "value": "cm"
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": "manifold",
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": "watertight",
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "material_slots",
+            "args": [
+              {
+                "name": "max",
+                "value": 4
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "uv_range",
+            "args": [
+              {
+                "name": "set",
+                "value": "base"
+              },
+              {
+                "name": "range",
+                "value": {
+                  "type": "range",
+                  "from": 0,
+                  "to": 1
+                }
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": "lightmap_uvs",
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": "collision_proxy",
+          "node_type": "rule"
+        }
+      ],
+      "repair": {
+        "mode": "auto_until_pass",
+        "max_rounds": 3,
+        "allow": [],
+        "deny": []
+      }
+    }
+  ],
+  "contracts": [
+    {
+      "node_type": "contract",
+      "name": "shipping_prop",
+      "uses": [
+        "unreal_interactable_prop"
+      ],
+      "defaults": {
+        "build": {
+          "interfaces": {
+            "clearance": {
+              "type": "unit",
+              "value": 2,
+              "unit": "cm"
+            }
+          }
+        }
+      },
+      "rules": [
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "pivots",
+            "args": [
+              {
+                "name": "policy",
+                "value": "studio_standard"
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "names",
+            "args": [
+              {
+                "name": "policy",
+                "value": "studio_standard"
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "texel_density",
+            "args": [
+              {
+                "name": "target",
+                "value": {
+                  "type": "unit",
+                  "value": 512,
+                  "unit": "px_per_m"
+                }
+              },
+              {
+                "name": "tolerance",
+                "value": 0.1
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "ensure",
+          "expr": {
+            "type": "call",
+            "name": "runtime_budget",
+            "args": [
+              {
+                "name": "draw_calls",
+                "value": 3
+              },
+              {
+                "name": "texture_memory",
+                "value": {
+                  "type": "unit",
+                  "value": 32,
+                  "unit": "mb"
+                }
+              }
+            ]
+          },
+          "node_type": "rule"
+        },
+        {
+          "kind": "prefer",
+          "expr": "silhouette_readability",
+          "weight": 0.3,
+          "node_type": "rule"
+        },
+        {
+          "kind": "prefer",
+          "expr": "part_coherence",
+          "weight": 0.2,
+          "node_type": "rule"
+        }
+      ],
+      "repair": {
+        "mode": "auto_until_pass",
+        "max_rounds": 3,
+        "allow": [],
+        "deny": []
+      }
+    }
+  ],
+  "critics": [
+    {
+      "node_type": "critic",
+      "name": "hero_prop",
+      "param": {
+        "name": "a",
+        "type": "asset"
+      },
+      "body": {
+        "type": "weighted",
+        "items": [
+          {
+            "metric": "prompt_match",
+            "weight": 0.25
+          },
+          {
+            "metric": "silhouette_readability",
+            "weight": 0.15
+          },
+          {
+            "metric": "topology_quality",
+            "weight": 0.2
+          },
+          {
+            "metric": "material_quality",
+            "weight": 0.15
+          },
+          {
+            "metric": "runtime_efficiency",
+            "weight": 0.1
+          },
+          {
+            "metric": "part_coherence",
+            "weight": 0.15
+          }
+        ]
+      }
+    }
+  ],
+  "libraries": [],
+  "kits": [],
+  "patterns": [],
+  "families": [
+    {
+      "node_type": "family",
+      "name": "courier_drone_family",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "mode": "exact_hard_surface",
+        "seam_classes": [
+          "cargo_break",
+          "pod_split",
+          "service_panel"
+        ],
+        "edge_classes": [
+          "hero_bevel",
+          "pod_bevel",
+          "support_bevel"
+        ],
+        "integration_rules": [
+          "boolean_union",
+          "preserve_rotor_mounts"
+        ]
+      },
+      "features": {
+        "allow": [
+          "trim_band",
+          "vent_grille",
+          "rotor_shroud",
+          "support_bracket",
+          "edge_break"
+        ],
+        "density": "hero"
+      },
+      "surface": {
+        "palette": "courier_premium",
+        "materials": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ],
+        "material_zones": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ],
+        "decals": [
+          "serials",
+          "warning_labels"
+        ],
+        "bake": [
+          "normal",
+          "ao",
+          "curvature",
+          "id"
+        ]
+      },
+      "assembly": {
+        "components": [
+          "courier_body",
+          "rotor_front_left",
+          "rotor_front_right",
+          "rotor_rear_left",
+          "rotor_rear_right",
+          "cargo_door_panel",
+          "landing_leg_left",
+          "landing_leg_right"
+        ],
+        "mechanisms": [
+          "rotor_spin_mechanism"
+        ]
+      },
+      "space": {
+        "use": "drone_hero_search",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "hero_hardsurface_repair",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "runtime_family": "courier_drone",
+        "blueprint_id": "lathe.blueprint.mechanical_quad_drone_v1"
+      }
+    }
+  ],
+  "components": [
+    {
+      "node_type": "component",
+      "name": "cargo_door_panel",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "door"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "cargo_door",
+        "tags": [
+          "door",
+          "cargo"
+        ],
+        "articulation": "hinge",
+        "material_zone": "anodized_aluminum_body"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "courier_body",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "shell"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "body",
+        "tags": [
+          "body",
+          "shell"
+        ],
+        "material_zone": "anodized_aluminum_body"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "landing_leg_left",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "foot"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "landing_leg_l",
+        "tags": [
+          "foot",
+          "left"
+        ],
+        "interface_role": "support",
+        "material_zone": "carbon_fiber_trim"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "landing_leg_right",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "foot"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "landing_leg_r",
+        "tags": [
+          "foot",
+          "right"
+        ],
+        "interface_role": "support",
+        "material_zone": "carbon_fiber_trim"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "rotor_front_left",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "rotor_pod"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "rotor_fl",
+        "tags": [
+          "rotor",
+          "front",
+          "left"
+        ],
+        "material_zone": "carbon_fiber_trim"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "rotor_front_right",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "rotor_pod"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "rotor_fr",
+        "tags": [
+          "rotor",
+          "front",
+          "right"
+        ],
+        "material_zone": "carbon_fiber_trim"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "rotor_rear_left",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "rotor_pod"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "rotor_rl",
+        "tags": [
+          "rotor",
+          "rear",
+          "left"
+        ],
+        "material_zone": "carbon_fiber_trim"
+      }
+    },
+    {
+      "node_type": "component",
+      "name": "rotor_rear_right",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {
+        "component_type": "rotor_pod"
+      },
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "part": "rotor_rr",
+        "tags": [
+          "rotor",
+          "rear",
+          "right"
+        ],
+        "material_zone": "carbon_fiber_trim"
+      }
+    }
+  ],
+  "assemblies": [],
+  "traits": [],
+  "mechanisms": [
+    {
+      "node_type": "mechanism",
+      "name": "console_service_panel_mechanism",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {},
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "type": "maintenance_panel",
+        "axis": "x"
+      }
+    },
+    {
+      "node_type": "mechanism",
+      "name": "crate_latch_mechanism",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {},
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "type": "latch_lock",
+        "axis": "z"
+      }
+    },
+    {
+      "node_type": "mechanism",
+      "name": "door_hinge_mechanism",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {},
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "type": "hinge",
+        "axis": "y"
+      }
+    },
+    {
+      "node_type": "mechanism",
+      "name": "door_lock_mechanism",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {},
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "type": "latch_lock",
+        "axis": "z"
+      }
+    },
+    {
+      "node_type": "mechanism",
+      "name": "lid_hinge_mechanism",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {},
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "type": "hinge",
+        "axis": "x"
+      }
+    },
+    {
+      "node_type": "mechanism",
+      "name": "rotor_spin_mechanism",
+      "kind": null,
+      "uses": [],
+      "defaults": {},
+      "params": {},
+      "geometry": {},
+      "features": {},
+      "surface": {},
+      "assembly": {},
+      "space": {
+        "use": "",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "rules": [],
+      "values": {
+        "type": "rotor_spin",
+        "axis": "y"
+      }
+    }
+  ],
+  "materials": [
+    {
+      "node_type": "material",
+      "name": "aged_brass_trim",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          191,
+          150,
+          72
+        ],
+        "metallic": 1.0,
+        "roughness": 0.36,
+        "roughness_range": [
+          0.22,
+          0.52
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "worn_brass",
+        "wear": 0.26,
+        "normal_intensity": 0.1
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "amber_glass_lens",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          214,
+          152,
+          78
+        ],
+        "metallic": 0.0,
+        "roughness": 0.18,
+        "roughness_range": [
+          0.1,
+          0.28
+        ],
+        "emissive": [
+          26,
+          18,
+          6
+        ],
+        "surface_profile": "screen_glass",
+        "wear": 0.03,
+        "normal_intensity": 0.04
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "anodized_aluminum_body",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          104,
+          112,
+          122
+        ],
+        "metallic": 1.0,
+        "roughness": 0.42,
+        "roughness_range": [
+          0.28,
+          0.56
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "brushed_metal",
+        "wear": 0.2,
+        "normal_intensity": 0.08
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "carbon_fiber_trim",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          46,
+          50,
+          54
+        ],
+        "metallic": 0.0,
+        "roughness": 0.72,
+        "roughness_range": [
+          0.64,
+          0.86
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "carbon_rubber",
+        "wear": 0.08,
+        "normal_intensity": 0.14
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "oak_body",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          125,
+          82,
+          48
+        ],
+        "metallic": 0.0,
+        "roughness": 0.68,
+        "roughness_range": [
+          0.56,
+          0.82
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "wood_grain",
+        "wear": 0.18,
+        "normal_intensity": 0.12
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "painted_steel_body",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          92,
+          102,
+          116
+        ],
+        "metallic": 0.0,
+        "roughness": 0.54,
+        "roughness_range": [
+          0.34,
+          0.76
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "painted_panel",
+        "wear": 0.22,
+        "normal_intensity": 0.12
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "rubber_trim_dark",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          36,
+          39,
+          44
+        ],
+        "metallic": 0.0,
+        "roughness": 0.74,
+        "roughness_range": [
+          0.58,
+          0.88
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "carbon_rubber",
+        "wear": 0.08,
+        "normal_intensity": 0.14
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "seal_rubber",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          42,
+          46,
+          50
+        ],
+        "metallic": 0.0,
+        "roughness": 0.82,
+        "roughness_range": [
+          0.72,
+          0.92
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "carbon_rubber",
+        "wear": 0.04,
+        "normal_intensity": 0.1
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "smoked_glass_screen",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          92,
+          122,
+          144
+        ],
+        "metallic": 0.0,
+        "roughness": 0.16,
+        "roughness_range": [
+          0.08,
+          0.26
+        ],
+        "emissive": [
+          20,
+          64,
+          110
+        ],
+        "surface_profile": "screen_glass",
+        "wear": 0.02,
+        "normal_intensity": 0.04
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "velvet_interior",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          132,
+          28,
+          32
+        ],
+        "metallic": 0.0,
+        "roughness": 0.82,
+        "roughness_range": [
+          0.74,
+          0.92
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "fabric_lining",
+        "wear": 0.05,
+        "normal_intensity": 0.05
+      }
+    },
+    {
+      "node_type": "material",
+      "name": "warning_paint",
+      "uses": [],
+      "values": {
+        "basecolor": [
+          216,
+          170,
+          54
+        ],
+        "metallic": 0.0,
+        "roughness": 0.48,
+        "roughness_range": [
+          0.38,
+          0.62
+        ],
+        "emissive": [
+          0,
+          0,
+          0
+        ],
+        "surface_profile": "painted_panel",
+        "wear": 0.12,
+        "normal_intensity": 0.08
+      }
+    }
+  ],
+  "surface_programs": [],
+  "surface_backends": [],
+  "surface_policies": [],
+  "decal_libraries": [],
+  "mask_programs": [],
+  "trim_sheets": [],
+  "palettes": [
+    {
+      "node_type": "palette",
+      "name": "courier_premium",
+      "uses": [],
+      "values": {
+        "materials": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ]
+      }
+    },
+    {
+      "node_type": "palette",
+      "name": "fantasy_brassbound",
+      "uses": [],
+      "values": {
+        "materials": [
+          "oak_body",
+          "aged_brass_trim",
+          "velvet_interior"
+        ]
+      }
+    },
+    {
+      "node_type": "palette",
+      "name": "industrial_crate_hero_palette",
+      "uses": [],
+      "values": {
+        "materials": [
+          "painted_steel_body",
+          "rubber_trim_dark",
+          "warning_paint"
+        ]
+      }
+    },
+    {
+      "node_type": "palette",
+      "name": "industrial_service_console",
+      "uses": [],
+      "values": {
+        "materials": [
+          "painted_steel_body",
+          "smoked_glass_screen",
+          "rubber_trim_dark"
+        ]
+      }
+    },
+    {
+      "node_type": "palette",
+      "name": "mechanical_door_hero_palette",
+      "uses": [],
+      "values": {
+        "materials": [
+          "painted_steel_body",
+          "seal_rubber",
+          "smoked_glass_screen"
+        ]
+      }
+    }
+  ],
+  "style_packs": [],
+  "style_bridges": [],
+  "execution_profiles": [],
+  "render_fixtures": [],
+  "bake_profiles": [],
+  "library_bindings": [],
+  "material_graphs": [],
+  "inspection_policies": [],
+  "asset_class_profiles": [],
+  "vegetation_species": [],
+  "vegetation_kits": [],
+  "wind_programs": [],
+  "volume_programs": [],
+  "subdivision_finishings": [],
+  "terrain_programs": [],
+  "wfc_tilesets": [],
+  "wfc_adjacencies": [],
+  "f_rep_programs": [],
+  "reference_sets": [],
+  "reconstruct_policies": [],
+  "adapt_policies": [],
+  "assembly_policies": [],
+  "fit_profiles": [],
+  "transfer_rules": [],
+  "repair_policies": [
+    {
+      "node_type": "repair_policy",
+      "name": "hero_hardsurface_repair",
+      "mode": "auto_until_pass",
+      "max_rounds": 4,
+      "allow": [
+        "reselect_candidate",
+        "enforce_symmetry",
+        "seal_mesh",
+        "retopo_auto",
+        "reduce_tris",
+        "repack_uvs",
+        "rebake_maps",
+        "reauthor_surface_layer",
+        "normalize_pivots",
+        "create_collision_proxy",
+        "generate_lods"
+      ],
+      "deny": [
+        "rebuild_shape"
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "node_type": "fixture",
+      "name": "legacy_brassbound_chest_v06_fixture",
+      "uses": [],
+      "values": {
+        "asset": "brassbound_chest",
+        "build_dir": "dist_v06_chest/brassbound_chest",
+        "expect": "fail"
+      }
+    },
+    {
+      "node_type": "fixture",
+      "name": "legacy_console_terminal_v06_fixture",
+      "uses": [],
+      "values": {
+        "asset": "console_terminal",
+        "build_dir": "dist_v06_console/console_terminal",
+        "expect": "fail"
+      }
+    },
+    {
+      "node_type": "fixture",
+      "name": "legacy_courier_drone_v06_fixture",
+      "uses": [],
+      "values": {
+        "asset": "courier_drone",
+        "build_dir": "dist_v06_drone/courier_drone",
+        "expect": "fail"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "node_type": "test",
+      "name": "courier_drone_language_surface",
+      "values": {
+        "asset": "courier_drone"
+      },
+      "asserts": [
+        {
+          "node_type": "assert",
+          "expr": {
+            "type": "binary",
+            "op": "==",
+            "left": "assembly.family",
+            "right": "courier_drone_family"
+          }
+        },
+        {
+          "node_type": "assert",
+          "expr": {
+            "type": "binary",
+            "op": "==",
+            "left": "surface.palette",
+            "right": "courier_premium"
+          }
+        },
+        {
+          "node_type": "assert",
+          "expr": {
+            "type": "binary",
+            "op": "==",
+            "left": "space.use",
+            "right": "drone_hero_search"
+          }
+        }
+      ]
+    }
+  ],
+  "benchmarks": [],
+  "spaces": [
+    {
+      "node_type": "space",
+      "name": "cabinet_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.22
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.2
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.18
+          }
+        },
+        {
+          "path": "trim_scale",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.14
+          }
+        }
+      ],
+      "freeze": [
+        "width_scale"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.18
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.32
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.22
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.28
+        }
+      ],
+      "select": {
+        "best_of": 10
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "chest_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.95,
+            "to": 1.28
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.9,
+            "to": 1.24
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.92,
+            "to": 1.22
+          }
+        }
+      ],
+      "freeze": [
+        "silhouette_bias"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.25
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.3
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.2
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.25
+        }
+      ],
+      "select": {
+        "best_of": 10
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "console_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.92,
+            "to": 1.18
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.22
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.92,
+            "to": 1.16
+          }
+        },
+        {
+          "path": "trim_scale",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.16
+          }
+        }
+      ],
+      "freeze": [
+        "width_scale"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.22
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.28
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.25
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.25
+        }
+      ],
+      "select": {
+        "best_of": 9
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "crate_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.22
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.18
+          }
+        },
+        {
+          "path": "trim_scale",
+          "domain": {
+            "type": "range",
+            "from": 0.92,
+            "to": 1.14
+          }
+        },
+        {
+          "path": "support_spread",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.1
+          }
+        }
+      ],
+      "freeze": [
+        "silhouette_bias"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.2
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.32
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.2
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.28
+        }
+      ],
+      "select": {
+        "best_of": 10
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "door_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.22
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.98,
+            "to": 1.24
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.18
+          }
+        },
+        {
+          "path": "attachment_spread",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.1
+          }
+        }
+      ],
+      "freeze": [
+        "width_scale"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.18
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.34
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.22
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.26
+        }
+      ],
+      "select": {
+        "best_of": 10
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "drone_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.24
+          }
+        },
+        {
+          "path": "support_spread",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.16
+          }
+        },
+        {
+          "path": "rotor_guard_scale",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.18
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.92,
+            "to": 1.18
+          }
+        }
+      ],
+      "freeze": [
+        "silhouette_bias"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.2
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.35
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.2
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.25
+        }
+      ],
+      "select": {
+        "best_of": 12
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "pedestal_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.24
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.98,
+            "to": 1.24
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.2
+          }
+        },
+        {
+          "path": "trim_scale",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.16
+          }
+        }
+      ],
+      "freeze": [
+        "width_scale"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.2
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.28
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.24
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.28
+        }
+      ],
+      "select": {
+        "best_of": 10
+      }
+    },
+    {
+      "node_type": "space",
+      "name": "supply_hero_search",
+      "use": "",
+      "values": {},
+      "vary": [
+        {
+          "path": "feature_density",
+          "domain": {
+            "type": "range",
+            "from": 0.95,
+            "to": 1.24
+          }
+        },
+        {
+          "path": "panel_depth",
+          "domain": {
+            "type": "range",
+            "from": 0.96,
+            "to": 1.22
+          }
+        },
+        {
+          "path": "edge_weight",
+          "domain": {
+            "type": "range",
+            "from": 0.94,
+            "to": 1.18
+          }
+        },
+        {
+          "path": "attachment_spread",
+          "domain": {
+            "type": "range",
+            "from": 0.92,
+            "to": 1.12
+          }
+        }
+      ],
+      "freeze": [
+        "silhouette_bias"
+      ],
+      "objectives": [
+        {
+          "direction": "maximize",
+          "metric": "silhouette_readability",
+          "weight": 0.2
+        },
+        {
+          "direction": "maximize",
+          "metric": "geometry_integration_quality",
+          "weight": 0.3
+        },
+        {
+          "direction": "maximize",
+          "metric": "visual_surface_quality",
+          "weight": 0.22
+        },
+        {
+          "direction": "minimize",
+          "metric": "primitive_likeness_penalty",
+          "weight": 0.28
+        }
+      ],
+      "select": {
+        "best_of": 10
+      }
+    }
+  ],
+  "worlds": [],
+  "scenes": [],
+  "assets": [
+    {
+      "node_type": "asset",
+      "name": "courier_drone",
+      "kind": "mechanical_assembly",
+      "from": "",
+      "uses": [
+        "shipping_prop"
+      ],
+      "refs": {
+        "images": [
+          "refs/courier_front.png",
+          "refs/courier_side.png",
+          "refs/materials.jpg"
+        ],
+        "meshes": [],
+        "assets": [],
+        "materials": [],
+        "reference_sets": [],
+        "notes": []
+      },
+      "intent": {
+        "role": "last-mile courier drone",
+        "style": [
+          "premium",
+          "industrial",
+          "near-future"
+        ],
+        "parts": [
+          "body",
+          "rotor_fl",
+          "rotor_fr",
+          "rotor_rl",
+          "rotor_rr",
+          "cargo_door",
+          "landing_leg_l",
+          "landing_leg_r"
+        ],
+        "materials": [
+          "anodized_aluminum",
+          "carbon_fiber",
+          "amber_glass"
+        ],
+        "negatives": [
+          "military",
+          "toy_like",
+          "fragile"
+        ],
+        "scale": {
+          "type": "unit",
+          "value": 0.9,
+          "unit": "m"
+        },
+        "interactions": [
+          "pickup",
+          "open_cargo_door",
+          "dock_battery"
+        ],
+        "notes": [],
+        "style_stack": {
+          "material_model": "pbr_stylized",
+          "shading_model": "lambert_ambient",
+          "texture_authoring": "procedural_designer",
+          "outline_mode": "none",
+          "lighting_strategy": "dynamic_global_illumination",
+          "detail_layer_compose": "multi_band_pbr",
+          "animation_rate": "fluid",
+          "construction_grammar": "free_form"
+        },
+        "style_bridges": []
+      },
+      "geometry": {
+        "meshing_strategy": "sdf",
+        "seam_classes": [
+          "cargo_break",
+          "pod_split",
+          "service_panel"
+        ],
+        "edge_classes": [
+          "hero_bevel",
+          "pod_bevel",
+          "support_bevel"
+        ],
+        "integration_rules": [
+          "boolean_union",
+          "preserve_rotor_mounts"
+        ]
+      },
+      "features": {
+        "density": "hero",
+        "allow": [
+          "trim_band",
+          "vent_grille",
+          "rotor_shroud",
+          "support_bracket",
+          "edge_break"
+        ]
+      },
+      "surface": {
+        "palette": "courier_premium",
+        "material_zones": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ],
+        "materials": [
+          "anodized_aluminum_body",
+          "carbon_fiber_trim",
+          "amber_glass_lens"
+        ],
+        "decals": [
+          "serials",
+          "warning_labels"
+        ],
+        "bake": [
+          "normal",
+          "ao",
+          "curvature",
+          "id"
+        ],
+        "program": "",
+        "material_graph": "",
+        "patterns": [],
+        "backend": "",
+        "policy": "",
+        "decal_libraries": [],
+        "mask_programs": [],
+        "trim_sheets": [],
+        "authoring": {}
+      },
+      "assembly": {
+        "family": "courier_drone_family",
+        "components": [
+          "courier_body",
+          "rotor_front_left",
+          "rotor_front_right",
+          "rotor_rear_left",
+          "rotor_rear_right",
+          "cargo_door_panel",
+          "landing_leg_left",
+          "landing_leg_right"
+        ],
+        "mechanisms": [
+          "rotor_spin_mechanism"
+        ],
+        "traits": []
+      },
+      "fit": {},
+      "transfer": {},
+      "reuse": {},
+      "constraints": {},
+      "ingest": {},
+      "assembly_rules": {},
+      "execution": {
+        "profile": "",
+        "engine": "",
+        "mode": "",
+        "deterministic": null,
+        "preserve_blend": "",
+        "geometry_backend": "",
+        "uv_backend": "",
+        "bake_backend": "",
+        "surface_backend": "",
+        "render_backend": "",
+        "package_backend": "",
+        "library_backend": "",
+        "library_bindings": [],
+        "inspection_policy": ""
+      },
+      "space": {
+        "use": "drone_hero_search",
+        "values": {},
+        "vary": [],
+        "freeze": [],
+        "objectives": [],
+        "select": {}
+      },
+      "repair_policy": {
+        "use": "hero_hardsurface_repair",
+        "mode": "",
+        "max_rounds": null,
+        "allow": [],
+        "deny": []
+      },
+      "build": {
+        "shape": {
+          "mode": "generate",
+          "candidates": 12,
+          "seed": 42,
+          "symmetry": "x",
+          "preserve": [
+            "silhouette",
+            "part_graph",
+            "symmetry",
+            "proportions"
+          ],
+          "backend": "auto"
+        },
+        "topology": {
+          "retopo": "auto",
+          "target_quads": 18000,
+          "ngons": "forbid",
+          "preserve": [
+            "hard_edges",
+            "part_borders"
+          ],
+          "backend": "auto"
+        },
+        "uv": {
+          "sets": [
+            "base",
+            "lightmap"
+          ],
+          "unwrap": "auto",
+          "padding": {
+            "type": "unit",
+            "value": 8,
+            "unit": "px"
+          },
+          "texel_density": {
+            "type": "unit",
+            "value": 512,
+            "unit": "px_per_m"
+          },
+          "backend": "auto",
+          "tile_mode": "zero_to_one",
+          "pack_rotate": true,
+          "udims": []
+        },
+        "surface": {
+          "workflow": "pbr_metal_rough",
+          "maps": [
+            "basecolor",
+            "normal",
+            "orm",
+            "emissive"
+          ],
+          "resolution": {
+            "type": "unit",
+            "value": 4096,
+            "unit": "px"
+          },
+          "bakes": [
+            "ao",
+            "curvature",
+            "id"
+          ],
+          "decals": [
+            "serials",
+            "warning_labels"
+          ],
+          "id_map": true,
+          "backend": "auto",
+          "bake_profile": "",
+          "render_fixture": ""
+        },
+        "rig": {
+          "type": "rigid_mechanical",
+          "joints": [
+            "rotor_fl",
+            "rotor_fr",
+            "rotor_rl",
+            "rotor_rr",
+            "cargo_door"
+          ],
+          "pivot_policy": "studio_standard",
+          "joint_limits": "auto",
+          "backend": "auto"
+        },
+        "interfaces": {
+          "sockets": [
+            {
+              "type": "call",
+              "name": "socket",
+              "args": [
+                {
+                  "name": "id",
+                  "value": "battery_slot"
+                },
+                {
+                  "name": "socket_type",
+                  "value": "slot"
+                }
+              ]
+            },
+            {
+              "type": "call",
+              "name": "socket",
+              "args": [
+                {
+                  "name": "id",
+                  "value": "underslung_mount"
+                },
+                {
+                  "name": "socket_type",
+                  "value": "mount"
+                }
+              ]
+            }
+          ],
+          "pivots": [
+            {
+              "type": "call",
+              "name": "pivot",
+              "args": [
+                {
+                  "name": "id",
+                  "value": "floor_contact"
+                },
+                {
+                  "name": "pivot_type",
+                  "value": "contact"
+                }
+              ]
+            }
+          ],
+          "clearance": {
+            "type": "unit",
+            "value": 2,
+            "unit": "cm"
+          },
+          "backend": "auto",
+          "anchors": [],
+          "connections": [],
+          "auto_connect": false
+        },
+        "physics": {
+          "collision": "convex_decomp",
+          "max_hulls": 10,
+          "mass": "auto",
+          "center_of_mass": "auto",
+          "backend": "auto"
+        },
+        "optimize": {
+          "lods": 4,
+          "atlas": true,
+          "draw_calls": 3,
+          "texture_budget": {
+            "type": "unit",
+            "value": 32,
+            "unit": "mb"
+          },
+          "mesh_compression": true,
+          "backend": "auto",
+          "strip_hidden_faces": false,
+          "instance_candidates": false
+        }
+      },
+      "validate": {
+        "score": "hero_prop",
+        "threshold": 0.86,
+        "rules": [],
+        "repair": {
+          "mode": "auto_until_pass",
+          "max_rounds": 4,
+          "allow": [
+            "reselect_candidate",
+            "enforce_symmetry",
+            "seal_mesh",
+            "retopo_auto",
+            "reduce_tris",
+            "repack_uvs",
+            "rebake_maps",
+            "normalize_pivots",
+            "create_collision_proxy",
+            "generate_lods"
+          ],
+          "deny": [
+            "rebuild_shape"
+          ]
+        }
+      },
+      "package": {
+        "formats": [
+          "usd",
+          "glb"
+        ],
+        "previews": [
+          "turntable",
+          "wireframe",
+          "material_ids",
+          "uv_layout",
+          "collision",
+          "lod_sheet"
+        ],
+        "embed_textures": false,
+        "backend": "auto",
+        "manifest": true,
+        "include_trace": true,
+        "naming": "auto"
+      },
+      "publish": {
+        "registry": "props/drones/courier_drone",
+        "version": "0.1.0",
+        "tags": [
+          "drone",
+          "courier",
+          "mechanical"
+        ],
+        "visibility": "studio",
+        "approval": "required",
+        "channel": "dev"
+      },
+      "experimental": {}
+    }
+  ],
+  "variants": [
+    {
+      "node_type": "variant",
+      "name": "courier_drone_mobile",
+      "on": "courier_drone",
+      "patches": [
+        {
+          "op": "append",
+          "path": "uses",
+          "value": "mobile_runtime"
+        },
+        {
+          "op": "set",
+          "path": "build.surface.resolution",
+          "value": {
+            "type": "unit",
+            "value": 2048,
+            "unit": "px"
+          }
+        },
+        {
+          "op": "set",
+          "path": "build.optimize.texture_budget",
+          "value": {
+            "type": "unit",
+            "value": 16,
+            "unit": "mb"
+          }
+        },
+        {
+          "op": "set",
+          "path": "build.optimize.draw_calls",
+          "value": 2
+        },
+        {
+          "op": "set",
+          "path": "validate.threshold",
+          "value": 0.82
+        }
+      ]
+    }
+  ]
+}

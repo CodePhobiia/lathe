@@ -1,0 +1,850 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 1,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 4096,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "stone"
+    ],
+    "material_slots": 1,
+    "decals": [
+      "edge_grime",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "environment",
+      "architecture",
+      "modular",
+      "frame_rhythm",
+      "threshold",
+      "hinge_side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "hero_surface": false,
+    "program": "",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "environment",
+      "architecture",
+      "modular",
+      "frame_rhythm",
+      "threshold",
+      "hinge-side_emphasis",
+      "toy_like",
+      "random_faceting"
+    ],
+    "palette": "",
+    "source_material_zones": [],
+    "source_bake": [],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [],
+    "surface_story": {
+      "wear_story": "",
+      "wear_level": "",
+      "story_decals": [
+        "edge_grime"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "architecture",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "environment",
+          "architecture",
+          "modular",
+          "frame rhythm",
+          "threshold",
+          "hinge-side emphasis",
+          "toy_like",
+          "random_faceting"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "environment",
+        "architecture",
+        "modular",
+        "frame rhythm",
+        "threshold",
+        "hinge-side emphasis",
+        "toy_like",
+        "random_faceting"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": false,
+      "chart_grouping": "part",
+      "material_id_strategy": "none",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base"
+      ],
+      "chart_count": 1,
+      "material_id_count": 0,
+      "part_to_chart": {
+        "body": "uvc_01_body"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "stone",
+        "material_id": "",
+        "uv_sets": [
+          "base"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "none",
+      "texture_set_strategy": "",
+      "count": 0,
+      "ids": [],
+      "per_part": {
+        "body": ""
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 17,
+      "placements": [
+        {
+          "decal": "edge_grime",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.444094,
+            0.465013
+          ],
+          "scale": 0.28173,
+          "rotation_deg": -1,
+          "layer": "story",
+          "mask_id": "story_01_edge_grime"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.22769,
+            0.673955
+          ],
+          "scale": 0.264181,
+          "rotation_deg": -1,
+          "layer": "surface",
+          "mask_id": "story_02_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.710231,
+            0.208053
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_03_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.571825,
+            0.341686
+          ],
+          "scale": 0.308592,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_04_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.747019,
+            0.172533
+          ],
+          "scale": 0.390097,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_05_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.424298,
+            0.484126
+          ],
+          "scale": 0.397446,
+          "rotation_deg": -6,
+          "layer": "surface",
+          "mask_id": "story_06_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.458293,
+            0.451303
+          ],
+          "scale": 0.267054,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_07_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.708224,
+            0.20999
+          ],
+          "scale": 0.377693,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_08_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.700103,
+            0.217831
+          ],
+          "scale": 0.263845,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_09_lower_contact_points"
+        },
+        {
+          "decal": "environment",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.319022,
+            0.585772
+          ],
+          "scale": 0.299631,
+          "rotation_deg": 5,
+          "layer": "surface",
+          "mask_id": "story_10_environment"
+        },
+        {
+          "decal": "architecture",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.430862,
+            0.477789
+          ],
+          "scale": 0.357626,
+          "rotation_deg": -7,
+          "layer": "surface",
+          "mask_id": "story_11_architecture"
+        },
+        {
+          "decal": "modular",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.687167,
+            0.230322
+          ],
+          "scale": 0.35705,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_12_modular"
+        },
+        {
+          "decal": "frame_rhythm",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.682235,
+            0.235083
+          ],
+          "scale": 0.258623,
+          "rotation_deg": -2,
+          "layer": "surface",
+          "mask_id": "story_13_frame_rhythm"
+        },
+        {
+          "decal": "threshold",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.252391,
+            0.650105
+          ],
+          "scale": 0.246754,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_14_threshold"
+        },
+        {
+          "decal": "hinge_side_emphasis",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.418199,
+            0.490015
+          ],
+          "scale": 0.359549,
+          "rotation_deg": -11,
+          "layer": "surface",
+          "mask_id": "story_15_hinge_side_emphasis"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.533357,
+            0.378828
+          ],
+          "scale": 0.220097,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_16_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "body",
+          "material": "stone",
+          "material_id": "",
+          "anchor_uv": [
+            0.202635,
+            0.698146
+          ],
+          "scale": 0.224379,
+          "rotation_deg": 10,
+          "layer": "surface",
+          "mask_id": "story_17_random_faceting"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "stone",
+      "basecolor": [
+        126,
+        126,
+        116
+      ],
+      "metallic": 0.0,
+      "roughness": 0.76,
+      "roughness_range": [
+        0.62,
+        0.9
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mineral_stone",
+      "wear": 0.24,
+      "normal_intensity": 0.18,
+      "wear_story": "none",
+      "story_marks": [
+        "edge_grime"
+      ],
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": false,
+    "chart_grouping": "part",
+    "material_id_strategy": "none",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base"
+    ],
+    "chart_count": 1,
+    "material_id_count": 0,
+    "part_to_chart": {
+      "body": "uvc_01_body"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "stone",
+      "material_id": "",
+      "uv_sets": [
+        "base"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "none",
+    "texture_set_strategy": "",
+    "count": 0,
+    "ids": [],
+    "per_part": {
+      "body": ""
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 17,
+    "placements": [
+      {
+        "decal": "edge_grime",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.444094,
+          0.465013
+        ],
+        "scale": 0.28173,
+        "rotation_deg": -1,
+        "layer": "story",
+        "mask_id": "story_01_edge_grime"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.22769,
+          0.673955
+        ],
+        "scale": 0.264181,
+        "rotation_deg": -1,
+        "layer": "surface",
+        "mask_id": "story_02_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.710231,
+          0.208053
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_03_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.571825,
+          0.341686
+        ],
+        "scale": 0.308592,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_04_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.747019,
+          0.172533
+        ],
+        "scale": 0.390097,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_05_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.424298,
+          0.484126
+        ],
+        "scale": 0.397446,
+        "rotation_deg": -6,
+        "layer": "surface",
+        "mask_id": "story_06_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.458293,
+          0.451303
+        ],
+        "scale": 0.267054,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_07_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.708224,
+          0.20999
+        ],
+        "scale": 0.377693,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_08_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.700103,
+          0.217831
+        ],
+        "scale": 0.263845,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_09_lower_contact_points"
+      },
+      {
+        "decal": "environment",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.319022,
+          0.585772
+        ],
+        "scale": 0.299631,
+        "rotation_deg": 5,
+        "layer": "surface",
+        "mask_id": "story_10_environment"
+      },
+      {
+        "decal": "architecture",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.430862,
+          0.477789
+        ],
+        "scale": 0.357626,
+        "rotation_deg": -7,
+        "layer": "surface",
+        "mask_id": "story_11_architecture"
+      },
+      {
+        "decal": "modular",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.687167,
+          0.230322
+        ],
+        "scale": 0.35705,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_12_modular"
+      },
+      {
+        "decal": "frame_rhythm",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.682235,
+          0.235083
+        ],
+        "scale": 0.258623,
+        "rotation_deg": -2,
+        "layer": "surface",
+        "mask_id": "story_13_frame_rhythm"
+      },
+      {
+        "decal": "threshold",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.252391,
+          0.650105
+        ],
+        "scale": 0.246754,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_14_threshold"
+      },
+      {
+        "decal": "hinge_side_emphasis",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.418199,
+          0.490015
+        ],
+        "scale": 0.359549,
+        "rotation_deg": -11,
+        "layer": "surface",
+        "mask_id": "story_15_hinge_side_emphasis"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.533357,
+          0.378828
+        ],
+        "scale": 0.220097,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_16_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "body",
+        "material": "stone",
+        "material_id": "",
+        "anchor_uv": [
+          0.202635,
+          0.698146
+        ],
+        "scale": 0.224379,
+        "rotation_deg": 10,
+        "layer": "surface",
+        "mask_id": "story_17_random_faceting"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}

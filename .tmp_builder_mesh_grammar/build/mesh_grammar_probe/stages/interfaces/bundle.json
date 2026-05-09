@@ -1,0 +1,52 @@
+{
+  "backend_id": "lathe.interfaces.socket_stub_v1",
+  "sockets": [],
+  "pivots": [
+    {
+      "id": "world",
+      "name": "world",
+      "pivot_type": "world",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "transform": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "anchors": [],
+  "connections": [],
+  "connection_slots": [],
+  "clearance": null,
+  "snap_grid": null
+}

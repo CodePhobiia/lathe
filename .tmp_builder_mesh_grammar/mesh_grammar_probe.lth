@@ -1,0 +1,30 @@
+module tmp.builder.mesh_grammar
+
+asset mesh_grammar_probe: hard_surface_prop {
+  intent {
+    role = "industrial crate with extruded rails tapered side fins and bevels"
+    parts = [body, front_panel, pipe_rail, side_fin]
+    materials = [painted_steel, rubber]
+    scale = 1m
+  }
+
+  features {
+    density = game
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 17
+      mesh_ops = [
+        profile(armor_panel, width: 46cm, height: 28cm, thickness: 5cm, bevel: 2cm),
+        extrude(target: body, profile: armor_panel, side: front, depth: 9cm),
+        sweep(target: body, shape: circle, axis: x, radius: 2.2cm, length: 78cm, side: top, offset: [0cm, 6cm, 0cm]),
+        loft(target: body, axis: x, length: 52cm, start_width: 18cm, end_width: 4cm, start_height: 12cm, end_height: 3cm, sections: 5, side: right),
+        bevel(target: body, width: 3cm, segments: 4),
+        chamfer(target: mesh_extrude, width: 1.5cm),
+      ]
+    }
+  }
+}

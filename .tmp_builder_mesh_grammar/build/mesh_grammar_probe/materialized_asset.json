@@ -1,0 +1,485 @@
+{
+  "node_type": "asset",
+  "name": "mesh_grammar_probe",
+  "kind": "hard_surface_prop",
+  "from": "",
+  "uses": [],
+  "refs": {
+    "images": [],
+    "meshes": [],
+    "assets": [],
+    "materials": [],
+    "notes": [],
+    "reference_sets": [],
+    "resolved_reference_sets": []
+  },
+  "intent": {
+    "role": "industrial crate with extruded rails tapered side fins and bevels",
+    "parts": [
+      "body",
+      "front_panel",
+      "pipe_rail",
+      "side_fin"
+    ],
+    "materials": [
+      "painted_steel",
+      "rubber"
+    ],
+    "scale": {
+      "type": "unit",
+      "value": 1,
+      "unit": "m"
+    },
+    "style": [],
+    "negatives": [],
+    "interactions": [],
+    "notes": []
+  },
+  "geometry": {},
+  "features": {
+    "density": "game",
+    "allow": []
+  },
+  "surface": {
+    "resolved_palette": {},
+    "resolved_materials": {
+      "painted_steel": {
+        "node_type": "material",
+        "name": "painted_steel",
+        "uses": [],
+        "values": {}
+      },
+      "rubber": {
+        "node_type": "material",
+        "name": "rubber",
+        "uses": [],
+        "values": {}
+      }
+    },
+    "resolved_patterns": [],
+    "resolved_surface_program": {},
+    "resolved_surface_policy": {},
+    "resolved_surface_backend": {},
+    "resolved_decal_libraries": [],
+    "resolved_mask_programs": [],
+    "resolved_trim_sheets": [],
+    "resolved_material_graph": {},
+    "program": "",
+    "material_graph": "",
+    "patterns": [],
+    "palette": "",
+    "material_zones": [],
+    "materials": [],
+    "decals": [],
+    "bake": [],
+    "backend": "",
+    "policy": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "authoring": {}
+  },
+  "assembly": {
+    "resolved_family": {},
+    "resolved_components": [],
+    "resolved_mechanisms": [],
+    "resolved_traits": [],
+    "family": "",
+    "components": [],
+    "mechanisms": [],
+    "traits": []
+  },
+  "fit": {
+    "resolved_fit_profile": {},
+    "resolved_reconstruct_policy": {}
+  },
+  "transfer": {
+    "resolved_adapt_policy": {},
+    "resolved_transfer_rules": []
+  },
+  "reuse": {},
+  "constraints": {
+    "resolved_assembly_policy": {}
+  },
+  "ingest": {},
+  "assembly_rules": {},
+  "execution": {
+    "resolved_execution_profile": {},
+    "resolved_inspection_policy": {},
+    "resolved_library_bindings": [],
+    "profile": "",
+    "engine": "",
+    "mode": "",
+    "deterministic": null,
+    "preserve_blend": "",
+    "geometry_backend": "",
+    "uv_backend": "",
+    "bake_backend": "",
+    "surface_backend": "",
+    "render_backend": "",
+    "package_backend": "",
+    "library_backend": "",
+    "library_bindings": [],
+    "inspection_policy": ""
+  },
+  "space": {
+    "use": "",
+    "values": {},
+    "vary": [],
+    "freeze": [],
+    "objectives": [],
+    "select": {},
+    "resolved_name": ""
+  },
+  "repair_policy": {
+    "allow": [],
+    "deny": [],
+    "resolved_name": "",
+    "use": "",
+    "mode": "",
+    "max_rounds": null
+  },
+  "build": {
+    "shape": {
+      "mode": "generate",
+      "candidates": 1,
+      "seed": 17,
+      "mesh_ops": [
+        {
+          "type": "call",
+          "name": "profile",
+          "args": [
+            {
+              "name": null,
+              "value": "armor_panel"
+            },
+            {
+              "name": "width",
+              "value": {
+                "type": "unit",
+                "value": 46,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "height",
+              "value": {
+                "type": "unit",
+                "value": 28,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "thickness",
+              "value": {
+                "type": "unit",
+                "value": 5,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "bevel",
+              "value": {
+                "type": "unit",
+                "value": 2,
+                "unit": "cm"
+              }
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "name": "extrude",
+          "args": [
+            {
+              "name": "target",
+              "value": "body"
+            },
+            {
+              "name": "profile",
+              "value": "armor_panel"
+            },
+            {
+              "name": "side",
+              "value": "front"
+            },
+            {
+              "name": "depth",
+              "value": {
+                "type": "unit",
+                "value": 9,
+                "unit": "cm"
+              }
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "name": "sweep",
+          "args": [
+            {
+              "name": "target",
+              "value": "body"
+            },
+            {
+              "name": "shape",
+              "value": "circle"
+            },
+            {
+              "name": "axis",
+              "value": "x"
+            },
+            {
+              "name": "radius",
+              "value": {
+                "type": "unit",
+                "value": 2.2,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "length",
+              "value": {
+                "type": "unit",
+                "value": 78,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "side",
+              "value": "top"
+            },
+            {
+              "name": "offset",
+              "value": [
+                {
+                  "type": "unit",
+                  "value": 0,
+                  "unit": "cm"
+                },
+                {
+                  "type": "unit",
+                  "value": 6,
+                  "unit": "cm"
+                },
+                {
+                  "type": "unit",
+                  "value": 0,
+                  "unit": "cm"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "name": "loft",
+          "args": [
+            {
+              "name": "target",
+              "value": "body"
+            },
+            {
+              "name": "axis",
+              "value": "x"
+            },
+            {
+              "name": "length",
+              "value": {
+                "type": "unit",
+                "value": 52,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "start_width",
+              "value": {
+                "type": "unit",
+                "value": 18,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "end_width",
+              "value": {
+                "type": "unit",
+                "value": 4,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "start_height",
+              "value": {
+                "type": "unit",
+                "value": 12,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "end_height",
+              "value": {
+                "type": "unit",
+                "value": 3,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "sections",
+              "value": 5
+            },
+            {
+              "name": "side",
+              "value": "right"
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "name": "bevel",
+          "args": [
+            {
+              "name": "target",
+              "value": "body"
+            },
+            {
+              "name": "width",
+              "value": {
+                "type": "unit",
+                "value": 3,
+                "unit": "cm"
+              }
+            },
+            {
+              "name": "segments",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "name": "chamfer",
+          "args": [
+            {
+              "name": "target",
+              "value": "mesh_extrude"
+            },
+            {
+              "name": "width",
+              "value": {
+                "type": "unit",
+                "value": 1.5,
+                "unit": "cm"
+              }
+            }
+          ]
+        }
+      ],
+      "backend": "auto",
+      "symmetry": "none",
+      "preserve": []
+    },
+    "surface": {
+      "resolved_bake_profile": {},
+      "resolved_render_fixture": {},
+      "backend": "auto",
+      "workflow": "pbr_metal_rough",
+      "maps": [
+        "basecolor",
+        "normal",
+        "orm"
+      ],
+      "resolution": {
+        "type": "unit",
+        "value": 2048,
+        "unit": "px"
+      },
+      "bakes": [],
+      "bake_profile": "",
+      "render_fixture": "",
+      "decals": [],
+      "id_map": false
+    },
+    "topology": {
+      "backend": "auto",
+      "retopo": "auto",
+      "ngons": "avoid",
+      "preserve": []
+    },
+    "uv": {
+      "backend": "auto",
+      "sets": [
+        "base"
+      ],
+      "unwrap": "auto",
+      "tile_mode": "zero_to_one",
+      "padding": {
+        "type": "unit",
+        "value": 8,
+        "unit": "px"
+      },
+      "pack_rotate": true,
+      "udims": []
+    },
+    "rig": {
+      "backend": "auto",
+      "type": "none",
+      "joints": [],
+      "pivot_policy": "auto",
+      "joint_limits": "auto"
+    },
+    "interfaces": {
+      "backend": "auto",
+      "sockets": [],
+      "pivots": [],
+      "anchors": [],
+      "connections": [],
+      "auto_connect": false
+    },
+    "physics": {
+      "backend": "auto",
+      "collision": "none",
+      "max_hulls": 10,
+      "mass": "auto",
+      "center_of_mass": "auto"
+    },
+    "optimize": {
+      "backend": "auto",
+      "lods": 1,
+      "atlas": false,
+      "mesh_compression": false,
+      "strip_hidden_faces": false,
+      "instance_candidates": false
+    }
+  },
+  "validate": {
+    "rules": [],
+    "repair": {
+      "allow": [],
+      "deny": [],
+      "mode": "auto_until_pass",
+      "max_rounds": 3
+    },
+    "threshold": 0.8
+  },
+  "package": {
+    "backend": "auto",
+    "formats": [
+      "usd",
+      "glb"
+    ],
+    "manifest": true,
+    "previews": [],
+    "embed_textures": false,
+    "include_trace": true,
+    "naming": "auto"
+  },
+  "publish": {
+    "registry": "",
+    "version": "auto_patch",
+    "tags": [],
+    "visibility": "private",
+    "approval": "required",
+    "channel": "dev"
+  },
+  "experimental": {}
+}

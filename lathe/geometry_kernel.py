@@ -23,6 +23,23 @@ from .solid_ir import SolidIR, SolidOp
 
 _FUSION_CACHE: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
 MAX_FUSION_VOXELS = 6_500_000
+_SHAPE_IR_V2_KERNEL_MODIFIER_ATTRS = (
+    "v2_subdivision_modifier",
+    "v2_remesh_modifier",
+    "v2_polybevel_modifier",
+    "v2_mark_hard_edge_modifier",
+    "v2_inset_modifier",
+    "v2_weighted_normals_modifier",
+    "v2_hull_modifier",
+    "v2_minkowski_modifier",
+)
+_SHAPE_IR_V2_KERNEL_METADATA_CONTAINERS = (
+    "shape_ir_v2",
+    "shape_ir_v2_baked_source_modifiers",
+    "semantic_metadata",
+    "source_shape_primitive",
+    "source_shape_primitives",
+)
 
 
 class _MissingBoxExtentsError(ContractViolation):
@@ -41,12 +58,21 @@ class _MissingCylinderDimensionsError(ContractViolation):
         )
 
 
+class _MissingSphereRadiusError(ContractViolation):
+    def __init__(self, primitive: ShapePrimitive) -> None:
+        super().__init__(
+            "invariant violation: sphere ShapePrimitive requires radius, "
+            f"got radius={primitive.radius!r} (part={primitive.part!r})"
+        )
+
+
 class _UnsupportedPrimitiveTypeError(ValueError):
     def __init__(self, primitive_type: str) -> None:
         super().__init__(f"Unsupported primitive type '{primitive_type}'")
 
 
 def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple[np.ndarray, np.ndarray]:
+    center_offset = np.zeros(3, dtype=np.float64)
     if primitive.primitive_type == "box":
         if primitive.extents is None:
             raise _MissingBoxExtentsError(primitive.part)
@@ -62,6 +88,11 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             half = np.array([radius, radius, half_h], dtype=np.float64)
         else:
             half = np.array([radius, half_h, radius], dtype=np.float64)
+    elif primitive.primitive_type == "sphere":
+        if primitive.radius is None:
+            raise _MissingSphereRadiusError(primitive)
+        radius = float(primitive.radius) + rounding
+        half = np.array([radius, radius, radius], dtype=np.float64)
     elif primitive.primitive_type == "revolved_profile":
         # Bounding cylinder of the swept profile; SDF path uses this as
         # an outer envelope, which is fine for voxelization since the
@@ -73,13 +104,19 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             )
         radius = max(abs(float(r)) for _, r in points) + rounding
         axials = [float(a) for a, _ in points]
-        half_h = (max(axials) - min(axials)) / 2.0 + rounding
+        min_axial = min(axials)
+        max_axial = max(axials)
+        half_h = (max_axial - min_axial) / 2.0 + rounding
+        axial_center = (min_axial + max_axial) / 2.0
         if primitive.axis == "x":
             half = np.array([half_h, radius, radius], dtype=np.float64)
+            center_offset = np.array([axial_center, 0.0, 0.0], dtype=np.float64)
         elif primitive.axis == "z":
             half = np.array([radius, radius, half_h], dtype=np.float64)
+            center_offset = np.array([0.0, 0.0, axial_center], dtype=np.float64)
         else:
             half = np.array([radius, half_h, radius], dtype=np.float64)
+            center_offset = np.array([0.0, axial_center, 0.0], dtype=np.float64)
     elif primitive.primitive_type == "extruded_profile":
         # AABB of the polygon's 2D bbox extruded along ``axis``. The
         # voxelization fallback is rarely invoked; manifold/exact paths
@@ -95,15 +132,24 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
             )
         us = [float(u) for u, _ in polygon]
         vs = [float(v) for _, v in polygon]
-        half_u = (max(us) - min(us)) / 2.0 + rounding
-        half_v = (max(vs) - min(vs)) / 2.0 + rounding
+        min_u = min(us)
+        max_u = max(us)
+        min_v = min(vs)
+        max_v = max(vs)
+        half_u = (max_u - min_u) / 2.0 + rounding
+        half_v = (max_v - min_v) / 2.0 + rounding
+        center_u = (min_u + max_u) / 2.0
+        center_v = (min_v + max_v) / 2.0
         half_h = float(primitive.extrude_height) / 2.0 + rounding
         if primitive.axis == "x":
             half = np.array([half_h, half_u, half_v], dtype=np.float64)
+            center_offset = np.array([0.0, center_u, center_v], dtype=np.float64)
         elif primitive.axis == "z":
             half = np.array([half_u, half_v, half_h], dtype=np.float64)
+            center_offset = np.array([center_u, center_v, 0.0], dtype=np.float64)
         else:
             half = np.array([half_u, half_h, half_v], dtype=np.float64)
+            center_offset = np.array([center_u, 0.0, center_v], dtype=np.float64)
     elif primitive.primitive_type == "torus":
         # Bounding cylinder of the ring (outer radius major+minor, height
         # 2*minor). SDF voxelization uses this envelope; the manifold/
@@ -141,9 +187,22 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
         half = 0.5 * (path_max - path_min) + reach
         center = np.array(primitive.center, dtype=np.float64) + path_center
         return center - half, center + half
+    elif primitive.primitive_type == "lofted_solid":
+        # Same envelope strategy as swept_profile: section-centers AABB
+        # expanded by the worst-case cross-section reach. The SDF
+        # voxelization fallback is rarely hit for lofted_solid — the
+        # exact ring-stitched mesh path is preferred.
+        from .exact_solids import _lofted_solid_extents
+
+        path_min, path_max, circumradius = _lofted_solid_extents(primitive)
+        reach = circumradius + rounding
+        path_center = 0.5 * (path_min + path_max)
+        half = 0.5 * (path_max - path_min) + reach
+        center = np.array(primitive.center, dtype=np.float64) + path_center
+        return center - half, center + half
     else:
         raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
-    center = np.array(primitive.center, dtype=np.float64)
+    center = np.array(primitive.center, dtype=np.float64) + center_offset
     return center - half, center + half
 
 
@@ -183,16 +242,124 @@ def _cylinder_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float
     return outside + inside - rounding
 
 
-def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
-    if primitive.primitive_type == "box":
-        return _box_sdf(points, primitive, rounding)
-    if primitive.primitive_type == "cylinder":
-        return _cylinder_sdf(points, primitive, rounding)
-    if primitive.primitive_type == "revolved_profile":
-        # SDF path uses the bounding cylinder as a coarse approximation.
-        # The voxelization fallback is only invoked when the exact-solid
-        # path is unavailable; the manifold/exact paths produce the
-        # accurate revolved mesh.
+def _sphere_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    if primitive.radius is None:
+        raise _MissingSphereRadiusError(primitive)
+    center = np.array(primitive.center, dtype=np.float64)
+    radius = max(0.0, float(primitive.radius) - rounding)
+    return np.linalg.norm(points - center, axis=-1) - radius - rounding
+
+
+def _axis_local_points(points: np.ndarray, primitive: ShapePrimitive) -> tuple[np.ndarray, np.ndarray]:
+    center = np.asarray(primitive.center, dtype=np.float64)
+    local = points - center
+    if primitive.axis == "x":
+        return local[..., 0], local[..., [1, 2]]
+    if primitive.axis == "z":
+        return local[..., 2], local[..., [0, 1]]
+    return local[..., 1], local[..., [0, 2]]
+
+
+def _clean_polygon_points(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    clean: list[tuple[float, float]] = []
+    for u, v in points:
+        point = (float(u), float(v))
+        if not clean or clean[-1] != point:
+            clean.append(point)
+    if len(clean) > 1 and clean[0] == clean[-1]:
+        clean.pop()
+    return clean
+
+
+def _signed_polygon_distance_2d(points_2d: np.ndarray, polygon: list[tuple[float, float]]) -> np.ndarray:
+    vertices = np.asarray(_clean_polygon_points(polygon), dtype=np.float64)
+    if len(vertices) < 3:  # noqa: PLR2004
+        raise _UnsupportedPrimitiveTypeError("signed polygon SDF requires at least 3 points")
+
+    shape = points_2d.shape[:-1]
+    query = points_2d.reshape(-1, 2)
+    x = query[:, 0]
+    y = query[:, 1]
+    inside = np.zeros(len(query), dtype=bool)
+    min_distance_sq = np.full(len(query), np.inf, dtype=np.float64)
+
+    for index, left in enumerate(vertices):
+        right = vertices[(index + 1) % len(vertices)]
+        edge = right - left
+        edge_len_sq = float(np.dot(edge, edge))
+        if edge_len_sq > 0.0:
+            t = np.clip(((query - left) @ edge) / edge_len_sq, 0.0, 1.0)
+            closest = left + t[:, None] * edge
+            delta = query - closest
+            min_distance_sq = np.minimum(min_distance_sq, np.einsum("ij,ij->i", delta, delta))
+
+        x0, y0 = left
+        x1, y1 = right
+        denom = y1 - y0
+        if abs(float(denom)) <= 1.0e-12:
+            denom = 1.0e-12 if denom >= 0.0 else -1.0e-12
+        crossing = ((y0 > y) != (y1 > y)) & (x < ((x1 - x0) * (y - y0) / denom + x0))
+        inside ^= crossing
+
+    distance = np.sqrt(np.maximum(min_distance_sq, 0.0))
+    return np.where(inside, -distance, distance).reshape(shape)
+
+
+def _extruded_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    polygon = primitive.profile_polygon or []
+    if len(polygon) < 3:  # noqa: PLR2004
+        raise _UnsupportedPrimitiveTypeError(
+            f"extruded_profile primitive missing profile_polygon (part={primitive.part!r})"
+        )
+    if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
+        raise _UnsupportedPrimitiveTypeError(
+            f"extruded_profile primitive missing extrude_height (part={primitive.part!r})"
+        )
+    if (
+        primitive.extrude_start_scale is not None
+        or primitive.extrude_end_scale is not None
+        or primitive.extrude_twist_degrees is not None
+        or primitive.extrude_segments is not None
+    ):
+        raise _UnsupportedPrimitiveTypeError(
+            "generalized extruded_profile SDF fallback is unsupported; "
+            "use the exact mesh path for tapered or twisted extrusions"
+        )
+
+    axial, plane = _axis_local_points(points, primitive)
+    inset = max(0.0, float(rounding))
+    polygon_distance = _signed_polygon_distance_2d(plane, polygon) + inset
+    half_height = max(0.0, float(primitive.extrude_height) / 2.0 - inset)
+    axial_distance = np.abs(axial) - half_height
+    d = np.stack([polygon_distance, axial_distance], axis=-1)
+    outside = np.linalg.norm(np.maximum(d, 0.0), axis=-1)
+    inside = np.minimum(np.maximum(polygon_distance, axial_distance), 0.0)
+    return outside + inside - inset
+
+
+def _revolved_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    profile_points = primitive.profile_points or []
+    if not profile_points:
+        raise _UnsupportedPrimitiveTypeError(
+            f"revolved_profile primitive missing profile_points (part={primitive.part!r})"
+        )
+    if primitive.revolve_degrees is not None and abs(float(primitive.revolve_degrees) - 360.0) > 1e-6:
+        raise _UnsupportedPrimitiveTypeError(
+            "partial revolved_profile SDF fallback is unsupported; "
+            "use the exact mesh path for revolve_degrees < 360"
+        )
+
+    axial, plane = _axis_local_points(points, primitive)
+    radial = np.linalg.norm(plane, axis=-1)
+    query = np.stack([axial, radial], axis=-1)
+    profile = [(float(profile_points[0][0]), 0.0)]
+    profile.extend(
+        (float(axial_value), max(0.0, abs(float(radial_value))))
+        for axial_value, radial_value in profile_points
+    )
+    profile.append((float(profile_points[-1][0]), 0.0))
+    profile = _clean_polygon_points(profile)
+    if len(profile) < 3:  # noqa: PLR2004
         from .exact_solids import _revolved_profile_extents
 
         radius, height = _revolved_profile_extents(primitive)
@@ -207,61 +374,116 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
             rounding=primitive.rounding,
         )
         return _cylinder_sdf(points, proxy, rounding)
-    if primitive.primitive_type == "extruded_profile":
-        # SDF path uses the polygon's 2D bbox extruded along ``axis`` as a
-        # coarse outer envelope. The voxelization fallback is rarely
-        # invoked; manifold/exact paths produce the accurate prismatic
-        # mesh (per-edge plane SDF would be the hero refinement).
-        polygon = primitive.profile_polygon or []
-        if len(polygon) < 3:  # noqa: PLR2004
-            raise _UnsupportedPrimitiveTypeError(
-                f"extruded_profile primitive missing profile_polygon (part={primitive.part!r})"
-            )
-        if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
-            raise _UnsupportedPrimitiveTypeError(
-                f"extruded_profile primitive missing extrude_height (part={primitive.part!r})"
-            )
-        us = [float(u) for u, _ in polygon]
-        vs = [float(v) for _, v in polygon]
-        bbox_u = max(us) - min(us)
-        bbox_v = max(vs) - min(vs)
-        bbox_h = float(primitive.extrude_height)
-        if primitive.axis == "x":
-            extents = (bbox_h, bbox_u, bbox_v)
-        elif primitive.axis == "z":
-            extents = (bbox_u, bbox_v, bbox_h)
+    return _signed_polygon_distance_2d(query, profile) - max(0.0, float(rounding))
+
+
+def _torus_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    if primitive.major_radius is None or primitive.minor_radius is None:
+        raise _UnsupportedPrimitiveTypeError(
+            f"torus primitive missing major_radius/minor_radius (part={primitive.part!r})"
+        )
+    axial, plane = _axis_local_points(points, primitive)
+    major = float(primitive.major_radius)
+    minor = max(0.0, float(primitive.minor_radius) - rounding)
+    radial = np.linalg.norm(plane, axis=-1)
+    tube = np.stack([radial - major, axial], axis=-1)
+    return np.linalg.norm(tube, axis=-1) - minor - rounding
+
+
+def _distance_to_sweep_path(points: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
+    sweep_path = primitive.sweep_path or []
+    if len(sweep_path) < 2:  # noqa: PLR2004
+        raise _UnsupportedPrimitiveTypeError(
+            f"swept_profile primitive missing sweep_path (part={primitive.part!r})"
+        )
+    center = np.asarray(primitive.center, dtype=np.float64)
+    path = center + np.asarray(
+        [[float(x), float(y), float(z)] for x, y, z in sweep_path],
+        dtype=np.float64,
+    )
+    shape = points.shape[:-1]
+    query = points.reshape(-1, 3)
+    min_distance_sq = np.full(len(query), np.inf, dtype=np.float64)
+    for left, right in zip(path, path[1:], strict=True):
+        edge = right - left
+        edge_len_sq = float(np.dot(edge, edge))
+        if edge_len_sq <= 0.0:
+            delta = query - left
         else:
-            extents = (bbox_u, bbox_h, bbox_v)
-        proxy = ShapePrimitive(
-            primitive_type="box",
-            part=primitive.part,
-            center=primitive.center,
-            extents=extents,
-            blend_mode=primitive.blend_mode,
-            rounding=primitive.rounding,
+            t = np.clip(((query - left) @ edge) / edge_len_sq, 0.0, 1.0)
+            delta = query - (left + t[:, None] * edge)
+        min_distance_sq = np.minimum(min_distance_sq, np.einsum("ij,ij->i", delta, delta))
+    return np.sqrt(np.maximum(min_distance_sq, 0.0)).reshape(shape)
+
+
+def _swept_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    cross_section = primitive.cross_section or []
+    if len(cross_section) < 3:  # noqa: PLR2004
+        raise _UnsupportedPrimitiveTypeError(
+            f"swept_profile primitive missing cross_section (part={primitive.part!r})"
         )
-        return _box_sdf(points, proxy, rounding)
+    radius = max(float(np.hypot(float(u), float(v))) for u, v in cross_section)
+    inset = max(0.0, float(rounding))
+    return _distance_to_sweep_path(points, primitive) - max(0.0, radius - inset) - inset
+
+
+def _distance_to_section_path(points: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
+    section_centers = primitive.section_centers or []
+    if len(section_centers) < 2:  # noqa: PLR2004
+        raise _UnsupportedPrimitiveTypeError(
+            f"lofted_solid primitive missing section_centers (part={primitive.part!r})"
+        )
+    center = np.asarray(primitive.center, dtype=np.float64)
+    path = center + np.asarray(
+        [[float(x), float(y), float(z)] for x, y, z in section_centers],
+        dtype=np.float64,
+    )
+    shape = points.shape[:-1]
+    query = points.reshape(-1, 3)
+    min_distance_sq = np.full(len(query), np.inf, dtype=np.float64)
+    for left, right in zip(path, path[1:], strict=True):
+        edge = right - left
+        edge_len_sq = float(np.dot(edge, edge))
+        if edge_len_sq <= 0.0:
+            delta = query - left
+        else:
+            t = np.clip(((query - left) @ edge) / edge_len_sq, 0.0, 1.0)
+            delta = query - (left + t[:, None] * edge)
+        min_distance_sq = np.minimum(min_distance_sq, np.einsum("ij,ij->i", delta, delta))
+    return np.sqrt(np.maximum(min_distance_sq, 0.0)).reshape(shape)
+
+
+def _lofted_solid_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    cross_sections = primitive.cross_sections or []
+    if len(cross_sections) < 2:  # noqa: PLR2004
+        raise _UnsupportedPrimitiveTypeError(
+            f"lofted_solid primitive missing cross_sections (part={primitive.part!r})"
+        )
+    radius = 0.0
+    for section in cross_sections:
+        if not section:
+            continue
+        radius = max(
+            radius,
+            max(float(np.hypot(float(u), float(v))) for u, v in section),
+        )
+    inset = max(0.0, float(rounding))
+    return _distance_to_section_path(points, primitive) - max(0.0, radius - inset) - inset
+
+
+def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
+    if primitive.primitive_type == "box":
+        return _box_sdf(points, primitive, rounding)
+    if primitive.primitive_type == "cylinder":
+        return _cylinder_sdf(points, primitive, rounding)
+    if primitive.primitive_type == "sphere":
+        return _sphere_sdf(points, primitive, rounding)
+    if primitive.primitive_type == "revolved_profile":
+        return _revolved_profile_sdf(points, primitive, rounding)
+    if primitive.primitive_type == "extruded_profile":
+        return _extruded_profile_sdf(points, primitive, rounding)
     if primitive.primitive_type == "torus":
-        # Same fallback strategy as revolved_profile: substitute the
-        # bounding cylinder. Voxelization is rarely the active path; the
-        # manifold/exact paths produce the accurate ring geometry.
-        if primitive.major_radius is None or primitive.minor_radius is None:
-            raise _UnsupportedPrimitiveTypeError(
-                f"torus primitive missing major_radius/minor_radius (part={primitive.part!r})"
-            )
-        major = float(primitive.major_radius)
-        minor = float(primitive.minor_radius)
-        proxy = ShapePrimitive(
-            primitive_type="cylinder",
-            part=primitive.part,
-            center=primitive.center,
-            radius=major + minor,
-            height=2.0 * minor,
-            axis=primitive.axis,
-            blend_mode=primitive.blend_mode,
-            rounding=primitive.rounding,
-        )
-        return _cylinder_sdf(points, proxy, rounding)
+        return _torus_sdf(points, primitive, rounding)
     if primitive.primitive_type == "subdivision_box":
         # SDF path approximates per-corner radii by the maximum corner
         # radius applied uniformly via the existing rounded-box SDF.
@@ -278,24 +500,13 @@ def _primitive_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: floa
         return _box_sdf(points, proxy, rounding + max_radius)
     if primitive.primitive_type == "swept_profile":
         # SDF path is rarely hit for swept_profile — manifold/exact paths
-        # produce the accurate swept mesh. Use the AABB of the path
-        # expanded by the cross-section circumradius as a coarse box SDF
-        # proxy so voxelization still produces a non-empty volume.
-        from .exact_solids import _swept_profile_extents
-
-        path_min, path_max, circumradius = _swept_profile_extents(primitive)
-        reach = max(circumradius, 0.0)
-        path_center = 0.5 * (path_min + path_max)
-        full_extents = (path_max - path_min) + 2.0 * reach
-        proxy = ShapePrimitive(
-            primitive_type="box",
-            part=primitive.part,
-            center=tuple(np.asarray(primitive.center, dtype=np.float64) + path_center),
-            extents=tuple(float(v) for v in full_extents),
-            blend_mode=primitive.blend_mode,
-            rounding=primitive.rounding,
-        )
-        return _box_sdf(points, proxy, rounding)
+        return _swept_profile_sdf(points, primitive, rounding)
+    if primitive.primitive_type == "lofted_solid":
+        # SDF path is rarely hit for lofted_solid — the ring-stitched
+        # exact mesh path is preferred. Approximate with the worst-case
+        # cross-section reach + section_centers path: this is a safe
+        # outer envelope analogous to ``swept_profile``'s tube.
+        return _lofted_solid_sdf(points, primitive, rounding)
     raise _UnsupportedPrimitiveTypeError(primitive.primitive_type)
 
 
@@ -324,6 +535,46 @@ def solid_ir_from_shape(shape_ir: ShapeIR) -> SolidIR:
             params["radius"] = primitive.radius
         if primitive.height is not None:
             params["height"] = primitive.height
+        if primitive.profile_points is not None:
+            params["profile_points"] = [list(point) for point in primitive.profile_points]
+        if primitive.revolve_degrees is not None:
+            params["revolve_degrees"] = primitive.revolve_degrees
+        if primitive.revolve_start_degrees is not None:
+            params["revolve_start_degrees"] = primitive.revolve_start_degrees
+        if primitive.profile_polygon is not None:
+            params["profile_polygon"] = [list(point) for point in primitive.profile_polygon]
+        if primitive.extrude_height is not None:
+            params["extrude_height"] = primitive.extrude_height
+        if primitive.extrude_start_scale is not None:
+            params["extrude_start_scale"] = primitive.extrude_start_scale
+        if primitive.extrude_end_scale is not None:
+            params["extrude_end_scale"] = primitive.extrude_end_scale
+        if primitive.extrude_twist_degrees is not None:
+            params["extrude_twist_degrees"] = primitive.extrude_twist_degrees
+        if primitive.extrude_segments is not None:
+            params["extrude_segments"] = primitive.extrude_segments
+        if primitive.major_radius is not None:
+            params["major_radius"] = primitive.major_radius
+        if primitive.minor_radius is not None:
+            params["minor_radius"] = primitive.minor_radius
+        if primitive.corner_radii is not None:
+            params["corner_radii"] = list(primitive.corner_radii)
+            params["corner_segments"] = primitive.corner_segments
+        if primitive.cross_section is not None:
+            params["cross_section"] = [list(point) for point in primitive.cross_section]
+        if primitive.sweep_path is not None:
+            params["sweep_path"] = [list(point) for point in primitive.sweep_path]
+        if primitive.boolean_seam_groups:
+            params["boolean_seam_groups"] = list(primitive.boolean_seam_groups)
+        if primitive.bevel_seam_groups:
+            params["bevel_seam_groups"] = list(primitive.bevel_seam_groups)
+        if primitive.hard_edge_groups:
+            params["hard_edge_groups"] = list(primitive.hard_edge_groups)
+        for modifier_attr, modifier in _primitive_v2_modifier_items(primitive):
+            if modifier is not None:
+                params[modifier_attr] = dict(modifier) if isinstance(modifier, dict) else modifier
+        if primitive.semantic_metadata:
+            params["semantic_metadata"] = dict(primitive.semantic_metadata)
         operations.append(
             SolidOp(
                 op=primitive_blend_mode(primitive),
@@ -343,9 +594,88 @@ def solid_ir_from_shape(shape_ir: ShapeIR) -> SolidIR:
     )
 
 
+def _primitive_part_lookup(
+    shape_ir: ShapeIR,
+) -> list[tuple[str, np.ndarray, np.ndarray, np.ndarray, float]]:
+    """Build per-primitive (part, center, bmin, bmax, volume) entries.
+
+    Skips ``subtract`` primitives — those carve negative space and own no
+    output surfaces, so faces should never be attributed to a subtract
+    primitive's part. Restricts to primitives whose AABB can be computed
+    cheaply; primitives with unsupported types are skipped silently
+    (callers fall back to the region-based lookup).
+    """
+    entries: list[tuple[str, np.ndarray, np.ndarray, np.ndarray, float]] = []
+    for primitive in shape_ir.primitives:
+        if primitive_blend_mode(primitive) == "subtract":
+            continue
+        try:
+            bmin, bmax = _primitive_bounds(primitive, 0.0)
+        except _UnsupportedPrimitiveTypeError:
+            continue
+        center = (bmin + bmax) * 0.5
+        volume = float(np.prod(np.maximum(bmax - bmin, 1e-6)))
+        entries.append((primitive.part, center, bmin, bmax, volume))
+    return entries
+
+
 def _assign_face_parts(mesh: trimesh.Trimesh, shape_ir: ShapeIR) -> list[str]:
+    """Attribute each face of a fused mesh to a part name.
+
+    Prefers per-primitive AABB attribution: each output face centroid is
+    matched to the closest contributing (non-subtract) primitive whose
+    bounding box contains it, falling back to the nearest primitive when
+    no AABB contains the centroid. Primitive AABBs are tighter than
+    blueprint regions, so this avoids the failure mode where a small
+    region (e.g. ``lock_region``) extends into the body interior and
+    absorbs unrelated geometry. When primitive entries are unavailable
+    (e.g. unsupported primitive types upstream), falls back to the
+    legacy region-based lookup so existing call sites stay safe.
+    """
     centroids = np.asarray(mesh.triangles_center, dtype=np.float64)
-    region_entries = _region_lookup(shape_ir)
+    primitive_entries = _primitive_part_lookup(shape_ir)
+    if primitive_entries:
+        return _assign_face_parts_from_primitives(centroids, primitive_entries)
+    return _assign_face_parts_from_regions(centroids, _region_lookup(shape_ir))
+
+
+def _assign_face_parts_from_primitives(
+    centroids: np.ndarray,
+    entries: list[tuple[str, np.ndarray, np.ndarray, np.ndarray, float]],
+) -> list[str]:
+    labels: list[str] = []
+    pad = 0.1  # cm — primitives already include rounding/margin upstream
+    for centroid in centroids:
+        inside: list[tuple[str, float]] = []
+        nearest: list[tuple[str, float]] = []
+        for part, center, bmin, bmax, volume in entries:
+            inside_aabb = bool(
+                np.all(centroid >= bmin - pad) and np.all(centroid <= bmax + pad)
+            )
+            if inside_aabb:
+                # Distance to primitive center as the tiebreaker — picks
+                # the primitive whose center the face sits closest to,
+                # not whichever happens to have the smallest bbox.
+                inside.append((part, float(np.linalg.norm(centroid - center))))
+                continue
+            extent = np.maximum((bmax - bmin) / 2.0, 1e-6)
+            delta = np.abs(centroid - center) - extent
+            outside = np.maximum(delta, 0.0)
+            distance = float(np.linalg.norm(outside))
+            nearest.append((part, distance))
+        if inside:
+            labels.append(min(inside, key=lambda item: item[1])[0])
+        elif nearest:
+            labels.append(min(nearest, key=lambda item: item[1])[0])
+        else:
+            labels.append("")
+    return labels
+
+
+def _assign_face_parts_from_regions(
+    centroids: np.ndarray,
+    region_entries: list[tuple[ShapeRegion, np.ndarray, np.ndarray]],
+) -> list[str]:
     labels: list[str] = []
     for centroid in centroids:
         inside: list[tuple[str, float]] = []
@@ -370,6 +700,105 @@ def _fallback_report(reason: str) -> dict[str, str]:
     return {"mode": "constructive_fallback", "reason": reason}
 
 
+def _dict_metadata(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _primitive_v2_modifier_items(primitive: ShapePrimitive) -> list[tuple[str, Any]]:
+    return [
+        (name, value)
+        for name, value in vars(primitive).items()
+        if isinstance(name, str)
+        and name.startswith("v2_")
+        and name.endswith("_modifier")
+        and value not in (None, "", (), [], {})
+    ]
+
+
+def _has_v2_kernel_modifier_metadata(value: Any, *, depth: int = 0) -> bool:
+    if isinstance(value, list):
+        return depth <= 4 and any(
+            _has_v2_kernel_modifier_metadata(item, depth=depth + 1)
+            for item in value
+            if isinstance(item, dict)
+        )
+    metadata = _dict_metadata(value)
+    if not metadata or depth > 4:
+        return False
+    for key, item in metadata.items():
+        text_key = str(key)
+        if item in (None, "", (), [], {}):
+            continue
+        if text_key in _SHAPE_IR_V2_KERNEL_MODIFIER_ATTRS:
+            return True
+        if text_key.startswith("v2_") and text_key.endswith("_modifier"):
+            return True
+    return any(
+        _has_v2_kernel_modifier_metadata(metadata.get(container), depth=depth + 1)
+        for container in _SHAPE_IR_V2_KERNEL_METADATA_CONTAINERS
+    )
+
+
+def _primitive_has_semantic_operation(primitive: ShapePrimitive) -> bool:
+    semantic_metadata = _dict_metadata(getattr(primitive, "semantic_metadata", None))
+    v2_metadata = _dict_metadata(semantic_metadata.get("shape_ir_v2"))
+    repair_metadata = _dict_metadata(semantic_metadata.get("semantic_repair"))
+    if any(
+        (
+            v2_metadata.get("v2_op"),
+            v2_metadata.get("operation_id"),
+            repair_metadata.get("lowered_operation"),
+            repair_metadata.get("operation_id"),
+            semantic_metadata.get("operation"),
+            semantic_metadata.get("operation_id"),
+        )
+    ):
+        return True
+    if any(str(key).startswith("v2_") for key in semantic_metadata):
+        return True
+    if _primitive_v2_modifier_items(primitive):
+        return True
+    if _has_v2_kernel_modifier_metadata(semantic_metadata):
+        return True
+    if int(getattr(primitive, "subdivision_levels", 0) or 0) > 0:
+        return True
+    if getattr(primitive, "remesh_target_edge_length_cm", None) is not None:
+        return True
+    return any(
+        getattr(primitive, attr, None) is not None
+        for attr in _SHAPE_IR_V2_KERNEL_MODIFIER_ATTRS
+    )
+
+
+def _shape_ir_has_semantic_operations(shape_ir: ShapeIR) -> bool:
+    return any(_primitive_has_semantic_operation(primitive) for primitive in shape_ir.primitives)
+
+
+def _exact_combine_mode_for_shape_ir(shape_ir: ShapeIR, config: dict[str, Any]) -> str:
+    mode = str(config.get("exact_mode"))
+    if mode == "component_assembly":
+        signature = shape_ir.signature if isinstance(shape_ir.signature, dict) else {}
+        if signature.get("kernel_program_disabled"):
+            return mode
+        for primitive in shape_ir.primitives:
+            if primitive_blend_mode(primitive) in {"subtract", "intersect"}:
+                return "kernel_program"
+        if _shape_ir_has_semantic_operations(shape_ir):
+            return "kernel_program"
+        return mode
+    if mode != "explicit_mesh":
+        return mode
+    signature = shape_ir.signature if isinstance(shape_ir.signature, dict) else {}
+    if signature.get("kernel_program_disabled"):
+        return mode
+    for primitive in shape_ir.primitives:
+        if primitive_blend_mode(primitive) in {"subtract", "intersect"}:
+            return "kernel_program"
+    if _shape_ir_has_semantic_operations(shape_ir):
+        return "kernel_program"
+    return mode
+
+
 def _compile_exact_mesh_ir(
     shape_ir: ShapeIR,
     fidelity: FidelityProfile,
@@ -378,7 +807,7 @@ def _compile_exact_mesh_ir(
     mesh, face_parts, exact_report = compile_explicit_surface_mesh(
         shape_ir,
         fidelity,
-        combine_mode=str(config.get("exact_mode")),
+        combine_mode=_exact_combine_mode_for_shape_ir(shape_ir, config),
     )
     if not face_parts or len(face_parts) != len(mesh.faces):
         face_parts = _assign_face_parts(mesh, shape_ir)
@@ -387,6 +816,10 @@ def _compile_exact_mesh_ir(
         **exact_report,
         "search_mode": "parametric_exact_assembly",
         "hero_family": bool(config["hero_family"]),
+        "intent_driven_exact": bool(config.get("intent_driven_exact")),
+        "exact_reason": config.get("exact_reason"),
+        "exact_mode": config.get("exact_mode"),
+        "meshing_strategy": config.get("meshing_strategy"),
         "solid_ir": solid_ir.to_dict(),
         "cache_hit": False,
     }
@@ -527,6 +960,10 @@ def _finalize_fused_mesh_ir(
         "blur_sigma": sigma,
         "dims": [int(value) for value in dims],
         "hero_family": bool(config["hero_family"]),
+        "intent_driven_exact": bool(config.get("intent_driven_exact")),
+        "exact_reason": config.get("exact_reason"),
+        "exact_mode": config.get("exact_mode"),
+        "meshing_strategy": config.get("meshing_strategy"),
         "primitive_count": len(primitives),
         "cache_hit": False,
         "solid_ir": solid_ir.to_dict(),
@@ -539,7 +976,17 @@ def _finalize_fused_mesh_ir(
 
 def fuse_shape_ir(shape_ir: ShapeIR, fidelity: FidelityProfile) -> tuple[MeshIR | None, dict[str, Any]]:
     """Fuse shape primitives into a mesh IR and integration report."""
-    config = integration_config_for_family(shape_ir.family, fidelity)
+    meshing_strategy = (
+        shape_ir.signature.get("meshing_strategy") if shape_ir.signature else None
+    )
+    config = integration_config_for_family(
+        shape_ir.family,
+        fidelity,
+        meshing_strategy=meshing_strategy,
+        primitives=list(shape_ir.primitives),
+        shape_signature=shape_ir.signature,
+        shape_assessment=shape_ir.assessment,
+    )
     if not config["enabled"]:
         return None, _fallback_report("integration disabled for this family/fidelity")
 

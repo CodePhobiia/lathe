@@ -1,0 +1,1542 @@
+{
+  "backend_id": "lathe.surface.semantic_passthrough_v1",
+  "surface_backend_report": {
+    "requested_backend": "auto",
+    "selected_backend_id": "auto",
+    "surface_backend_decl": {},
+    "surface_policy_decl": {},
+    "authoring_mode": "deterministic_only",
+    "zone_first": false,
+    "codex_imagegen_requested": false,
+    "codex_imagegen_ran": false,
+    "backend_unavailable_policy": "fallback_deterministic",
+    "fallback_backend_id": "",
+    "fallback_reason": "",
+    "hero_surface": false,
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape"
+  },
+  "material_slots": 3,
+  "maps": [
+    "basecolor",
+    "normal",
+    "orm",
+    "ao",
+    "curvature",
+    "id"
+  ],
+  "surface_manifest": {
+    "workflow": "pbr_metal_rough",
+    "maps": [
+      "basecolor",
+      "normal",
+      "orm",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "resolution": {
+      "type": "unit",
+      "value": 2048,
+      "unit": "px"
+    },
+    "semantic_materials": [
+      "oak_body",
+      "aged_brass_trim",
+      "aged_brass_trim",
+      "edge_dust",
+      "aged_brass_trim",
+      "aged_brass_trim",
+      "oak_body",
+      "aged_brass_trim"
+    ],
+    "material_slots": 3,
+    "decals": [
+      "crest",
+      "trim_wear",
+      "edge_highlight",
+      "convex_edge_wear",
+      "contact_polish",
+      "recess_grime",
+      "only_when_decal_improves_function_or_theme_read",
+      "recesses",
+      "lower_contact_points",
+      "plank_spacing_hero",
+      "rivet_row_hero",
+      "inventory",
+      "economy",
+      "readable",
+      "functional_accents",
+      "toy_like",
+      "random_faceting",
+      "unreadable_value",
+      "place_motifs_where_they_clarify_function_or_silh"
+    ],
+    "hero_surface": false,
+    "program": "chest_wood_brass_hero",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "patterns": [
+      "plank_spacing_hero",
+      "rivet_row_hero",
+      "inventory",
+      "economy",
+      "readable",
+      "functional_accents",
+      "toy_like",
+      "random_faceting",
+      "unreadable_value",
+      "place_motifs_where_they_clarify_function_or_silh"
+    ],
+    "palette": "fantasy_brassbound",
+    "source_material_zones": [
+      "oak_body",
+      "aged_brass_trim",
+      "velvet_interior"
+    ],
+    "source_bake": [
+      "normal",
+      "ao",
+      "curvature",
+      "id"
+    ],
+    "authoring_backend": "auto",
+    "authoring_mode": "deterministic_only",
+    "surface_policy": "",
+    "bake_profile": "",
+    "render_fixture": "",
+    "decal_libraries": [],
+    "mask_programs": [],
+    "trim_sheets": [],
+    "library_driven_decals": [],
+    "procedural_material_layers": [
+      "edge_dust"
+    ],
+    "surface_story": {
+      "wear_story": "",
+      "wear_level": "",
+      "story_decals": [
+        "crest",
+        "trim_wear"
+      ]
+    },
+    "surface_grammar": {},
+    "material_wear_graph_hooks": {
+      "version": "material_wear_v1",
+      "material_graph": "",
+      "resolved_material_graph": {},
+      "has_resolved_material_graph": false,
+      "mask_textures_generated": false,
+      "surface_maps_driven_by_material_wear_graph": false,
+      "skipped_reasons": [],
+      "generated_surface_charts": {
+        "schema": "lathe.generated_surface_chart_bindings.v1",
+        "source": "uv.generated_uv_atlas_hints",
+        "count": 0,
+        "atlas_hint": "",
+        "xatlas_source_uv_remap": {},
+        "bindings": []
+      }
+    },
+    "surface_graph_handoff": {
+      "mode": "",
+      "materialx_uri": "",
+      "trace": {
+        "kind": "no_surface_program_graph_mode",
+        "fallback": "legacy_pbr_runtime"
+      },
+      "channels": {}
+    },
+    "quality_plan_consumed": true,
+    "quality_generation_source_stage": "pre_shape",
+    "quality_surface_conditioning": {
+      "quality_plan_consumed": true,
+      "source_stage": "pre_shape",
+      "quality_conditioning": {
+        "quality_plan_available": true,
+        "quality_plan_schema": "lathe.asset_quality.quality_plan.v1",
+        "object_family": "prop",
+        "feature_density_multiplier": 1.22,
+        "panel_depth_multiplier": 1.1400000000000001,
+        "edge_weight_multiplier": 1.1300000000000001,
+        "silhouette_bias_multiplier": 1.07,
+        "trim_scale_multiplier": 1.08,
+        "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+        "material_contrast_policy": "high",
+        "motifs": [
+          "inventory",
+          "economy",
+          "readable",
+          "functional accents",
+          "toy_like",
+          "random_faceting",
+          "unreadable_value",
+          "place motifs where they clarify function or silhouette"
+        ],
+        "wear_anchors": [
+          "convex edge wear",
+          "contact polish",
+          "recess grime",
+          "only when decal improves function or theme read",
+          "recesses",
+          "lower contact points",
+          "handled/touched affordances"
+        ],
+        "runtime_budget_multiplier": 1.0
+      },
+      "material_contrast_policy": "high",
+      "detail_policy": "ornament must map to a declared motif, material transition, or functional affordance",
+      "motifs": [
+        "inventory",
+        "economy",
+        "readable",
+        "functional accents",
+        "toy_like",
+        "random_faceting",
+        "unreadable_value",
+        "place motifs where they clarify function or silhouette"
+      ],
+      "wear_anchors": [
+        "convex edge wear",
+        "contact polish",
+        "recess grime",
+        "only when decal improves function or theme read",
+        "recesses",
+        "lower contact points",
+        "handled/touched affordances"
+      ]
+    },
+    "uv_organization": {
+      "schema": "lathe.uv_organization.v1",
+      "active": true,
+      "chart_grouping": "part",
+      "material_id_strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "layout_strategy": "box_grid",
+      "island_naming": "semantic",
+      "preserve_detail_zones": false,
+      "resolution": 2048,
+      "padding_normalized": 0.003906,
+      "requested_sets": [
+        "base",
+        "lightmap"
+      ],
+      "chart_count": 8,
+      "material_id_count": 3,
+      "part_to_chart": {
+        "body": "uvc_01_body",
+        "foot_l": "uvc_02_foot_l",
+        "foot_r": "uvc_03_foot_r",
+        "front_hatch": "uvc_04_front_hatch",
+        "handle_l": "uvc_05_handle_l",
+        "handle_r": "uvc_06_handle_r",
+        "lid_panel": "uvc_07_lid_panel",
+        "lock_plate": "uvc_08_lock_plate"
+      }
+    },
+    "chart_manifest": [
+      {
+        "chart_id": "uvc_01_body",
+        "group": "body",
+        "grouping": "part",
+        "island_name": "semantic_body",
+        "parts": [
+          "body"
+        ],
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_02_foot_l",
+        "group": "foot_l",
+        "grouping": "part",
+        "island_name": "semantic_foot_l",
+        "parts": [
+          "foot_l"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_03_foot_r",
+        "group": "foot_r",
+        "grouping": "part",
+        "island_name": "semantic_foot_r",
+        "parts": [
+          "foot_r"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_04_front_hatch",
+        "group": "front_hatch",
+        "grouping": "part",
+        "island_name": "semantic_front_hatch",
+        "parts": [
+          "front_hatch"
+        ],
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_05_handle_l",
+        "group": "handle_l",
+        "grouping": "part",
+        "island_name": "semantic_handle_l",
+        "parts": [
+          "handle_l"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_06_handle_r",
+        "group": "handle_r",
+        "grouping": "part",
+        "island_name": "semantic_handle_r",
+        "parts": [
+          "handle_r"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_07_lid_panel",
+        "group": "lid_panel",
+        "grouping": "part",
+        "island_name": "semantic_lid_panel",
+        "parts": [
+          "lid_panel"
+        ],
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      },
+      {
+        "chart_id": "uvc_08_lock_plate",
+        "group": "lock_plate",
+        "grouping": "part",
+        "island_name": "semantic_lock_plate",
+        "parts": [
+          "lock_plate"
+        ],
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "uv_sets": [
+          "base",
+          "lightmap"
+        ],
+        "texel_density_scale": 1.0
+      }
+    ],
+    "material_id_layout": {
+      "schema": "lathe.material_id_layout.v1",
+      "strategy": "per_material_zone",
+      "texture_set_strategy": "",
+      "count": 3,
+      "ids": [
+        {
+          "material_id": "matid_01_aged_brass_trim",
+          "material": "aged_brass_trim",
+          "parts": [
+            "foot_l",
+            "foot_r",
+            "handle_l",
+            "handle_r",
+            "lock_plate"
+          ],
+          "rgb": [
+            216,
+            74,
+            72
+          ]
+        },
+        {
+          "material_id": "matid_02_edge_dust",
+          "material": "edge_dust",
+          "parts": [
+            "front_hatch"
+          ],
+          "rgb": [
+            74,
+            137,
+            220
+          ]
+        },
+        {
+          "material_id": "matid_03_oak_body",
+          "material": "oak_body",
+          "parts": [
+            "body",
+            "lid_panel"
+          ],
+          "rgb": [
+            88,
+            178,
+            120
+          ]
+        }
+      ],
+      "per_part": {
+        "body": "matid_03_oak_body",
+        "foot_l": "matid_01_aged_brass_trim",
+        "foot_r": "matid_01_aged_brass_trim",
+        "front_hatch": "matid_02_edge_dust",
+        "handle_l": "matid_01_aged_brass_trim",
+        "handle_r": "matid_01_aged_brass_trim",
+        "lid_panel": "matid_03_oak_body",
+        "lock_plate": "matid_01_aged_brass_trim"
+      }
+    },
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    },
+    "surface_story_placement_plan": {
+      "schema": "lathe.surface_story_placement.v1",
+      "density": "standard",
+      "asymmetry": "balanced",
+      "targets": [],
+      "placement_count": 19,
+      "placements": [
+        {
+          "decal": "crest",
+          "target_part": "foot_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.658381,
+            0.258115
+          ],
+          "scale": 0.221667,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_01_crest"
+        },
+        {
+          "decal": "trim_wear",
+          "target_part": "lid_panel",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.369445,
+            0.537087
+          ],
+          "scale": 0.385809,
+          "rotation_deg": 12,
+          "layer": "surface",
+          "mask_id": "story_02_trim_wear"
+        },
+        {
+          "decal": "edge_highlight",
+          "target_part": "body",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.710231,
+            0.208053
+          ],
+          "scale": 0.270063,
+          "rotation_deg": 6,
+          "layer": "surface",
+          "mask_id": "story_03_edge_highlight"
+        },
+        {
+          "decal": "convex_edge_wear",
+          "target_part": "lock_plate",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.244439,
+            0.657783
+          ],
+          "scale": 0.310675,
+          "rotation_deg": -4,
+          "layer": "surface",
+          "mask_id": "story_04_convex_edge_wear"
+        },
+        {
+          "decal": "contact_polish",
+          "target_part": "foot_l",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.59069,
+            0.323471
+          ],
+          "scale": 0.355892,
+          "rotation_deg": 9,
+          "layer": "surface",
+          "mask_id": "story_05_contact_polish"
+        },
+        {
+          "decal": "recess_grime",
+          "target_part": "handle_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.190056,
+            0.710291
+          ],
+          "scale": 0.268412,
+          "rotation_deg": 7,
+          "layer": "surface",
+          "mask_id": "story_06_recess_grime"
+        },
+        {
+          "decal": "only_when_decal_improves_function_or_theme_read",
+          "target_part": "lid_panel",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.187554,
+            0.712706
+          ],
+          "scale": 0.3208,
+          "rotation_deg": 12,
+          "layer": "surface",
+          "mask_id": "story_07_only_when_decal_improves_function_or_theme_read"
+        },
+        {
+          "decal": "recesses",
+          "target_part": "lock_plate",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.45868,
+            0.450929
+          ],
+          "scale": 0.29579,
+          "rotation_deg": 7,
+          "layer": "surface",
+          "mask_id": "story_08_recesses"
+        },
+        {
+          "decal": "lower_contact_points",
+          "target_part": "front_hatch",
+          "material": "edge_dust",
+          "material_id": "matid_02_edge_dust",
+          "anchor_uv": [
+            0.583298,
+            0.330609
+          ],
+          "scale": 0.352373,
+          "rotation_deg": 1,
+          "layer": "surface",
+          "mask_id": "story_09_lower_contact_points"
+        },
+        {
+          "decal": "plank_spacing_hero",
+          "target_part": "lock_plate",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.387908,
+            0.519261
+          ],
+          "scale": 0.237555,
+          "rotation_deg": 5,
+          "layer": "surface",
+          "mask_id": "story_10_plank_spacing_hero"
+        },
+        {
+          "decal": "rivet_row_hero",
+          "target_part": "foot_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.305316,
+            0.599006
+          ],
+          "scale": 0.35734,
+          "rotation_deg": 5,
+          "layer": "surface",
+          "mask_id": "story_11_rivet_row_hero"
+        },
+        {
+          "decal": "inventory",
+          "target_part": "foot_l",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.758434,
+            0.161512
+          ],
+          "scale": 0.348634,
+          "rotation_deg": -12,
+          "layer": "surface",
+          "mask_id": "story_12_inventory"
+        },
+        {
+          "decal": "economy",
+          "target_part": "handle_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.444269,
+            0.464844
+          ],
+          "scale": 0.36102,
+          "rotation_deg": 8,
+          "layer": "surface",
+          "mask_id": "story_13_economy"
+        },
+        {
+          "decal": "readable",
+          "target_part": "foot_l",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.584006,
+            0.329925
+          ],
+          "scale": 0.326263,
+          "rotation_deg": -8,
+          "layer": "surface",
+          "mask_id": "story_14_readable"
+        },
+        {
+          "decal": "functional_accents",
+          "target_part": "handle_r",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.591868,
+            0.322334
+          ],
+          "scale": 0.318201,
+          "rotation_deg": 3,
+          "layer": "surface",
+          "mask_id": "story_15_functional_accents"
+        },
+        {
+          "decal": "toy_like",
+          "target_part": "handle_l",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.748944,
+            0.170675
+          ],
+          "scale": 0.383705,
+          "rotation_deg": 4,
+          "layer": "surface",
+          "mask_id": "story_16_toy_like"
+        },
+        {
+          "decal": "random_faceting",
+          "target_part": "lid_panel",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.534005,
+            0.378202
+          ],
+          "scale": 0.338374,
+          "rotation_deg": 7,
+          "layer": "surface",
+          "mask_id": "story_17_random_faceting"
+        },
+        {
+          "decal": "unreadable_value",
+          "target_part": "lock_plate",
+          "material": "aged_brass_trim",
+          "material_id": "matid_01_aged_brass_trim",
+          "anchor_uv": [
+            0.48969,
+            0.420989
+          ],
+          "scale": 0.396448,
+          "rotation_deg": 12,
+          "layer": "surface",
+          "mask_id": "story_18_unreadable_value"
+        },
+        {
+          "decal": "place_motifs_where_they_clarify_function_or_silh",
+          "target_part": "body",
+          "material": "oak_body",
+          "material_id": "matid_03_oak_body",
+          "anchor_uv": [
+            0.419055,
+            0.489189
+          ],
+          "scale": 0.315342,
+          "rotation_deg": -9,
+          "layer": "surface",
+          "mask_id": "story_19_place_motifs_where_they_clarify_function_or_silh"
+        }
+      ]
+    }
+  },
+  "material_wear_graph_hooks": {
+    "version": "material_wear_v1",
+    "material_graph": "",
+    "resolved_material_graph": {},
+    "has_resolved_material_graph": false,
+    "mask_textures_generated": false,
+    "surface_maps_driven_by_material_wear_graph": false,
+    "skipped_reasons": [],
+    "generated_surface_charts": {
+      "schema": "lathe.generated_surface_chart_bindings.v1",
+      "source": "uv.generated_uv_atlas_hints",
+      "count": 0,
+      "atlas_hint": "",
+      "xatlas_source_uv_remap": {},
+      "bindings": []
+    }
+  },
+  "material_zones": [
+    {
+      "part": "body",
+      "material": "oak_body",
+      "basecolor": [
+        125,
+        82,
+        48
+      ],
+      "metallic": 0.0,
+      "roughness": 0.68,
+      "roughness_range": [
+        0.56,
+        0.82
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "wood_grain",
+      "wear": 0.18,
+      "normal_intensity": 0.12,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "foot_l",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "foot_r",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "front_hatch",
+      "material": "edge_dust",
+      "basecolor": [
+        70,
+        58,
+        42
+      ],
+      "metallic": 0.0,
+      "roughness": 0.93,
+      "roughness_range": [
+        0.8,
+        0.99
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "mud_silt",
+      "wear": 0.32,
+      "normal_intensity": 0.24,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "handle_l",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "handle_r",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "secondary",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "lid_panel",
+      "material": "oak_body",
+      "basecolor": [
+        125,
+        82,
+        48
+      ],
+      "metallic": 0.0,
+      "roughness": 0.68,
+      "roughness_range": [
+        0.56,
+        0.82
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "wood_grain",
+      "wear": 0.18,
+      "normal_intensity": 0.12,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    },
+    {
+      "part": "lock_plate",
+      "material": "aged_brass_trim",
+      "basecolor": [
+        191,
+        150,
+        72
+      ],
+      "metallic": 1.0,
+      "roughness": 0.36,
+      "roughness_range": [
+        0.22,
+        0.52
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "surface_profile": "worn_brass",
+      "wear": 0.26,
+      "normal_intensity": 0.1,
+      "procedural_layers": [
+        "edge_dust"
+      ],
+      "material_layer_role": "base",
+      "wear_story": "none",
+      "wear_layers": [
+        {
+          "kind": "edge_wear",
+          "intensity": 0.0
+        },
+        {
+          "kind": "micro_scratches",
+          "intensity": 0.0
+        }
+      ]
+    }
+  ],
+  "uv_organization": {
+    "schema": "lathe.uv_organization.v1",
+    "active": true,
+    "chart_grouping": "part",
+    "material_id_strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "layout_strategy": "box_grid",
+    "island_naming": "semantic",
+    "preserve_detail_zones": false,
+    "resolution": 2048,
+    "padding_normalized": 0.003906,
+    "requested_sets": [
+      "base",
+      "lightmap"
+    ],
+    "chart_count": 8,
+    "material_id_count": 3,
+    "part_to_chart": {
+      "body": "uvc_01_body",
+      "foot_l": "uvc_02_foot_l",
+      "foot_r": "uvc_03_foot_r",
+      "front_hatch": "uvc_04_front_hatch",
+      "handle_l": "uvc_05_handle_l",
+      "handle_r": "uvc_06_handle_r",
+      "lid_panel": "uvc_07_lid_panel",
+      "lock_plate": "uvc_08_lock_plate"
+    }
+  },
+  "chart_manifest": [
+    {
+      "chart_id": "uvc_01_body",
+      "group": "body",
+      "grouping": "part",
+      "island_name": "semantic_body",
+      "parts": [
+        "body"
+      ],
+      "material": "oak_body",
+      "material_id": "matid_03_oak_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_02_foot_l",
+      "group": "foot_l",
+      "grouping": "part",
+      "island_name": "semantic_foot_l",
+      "parts": [
+        "foot_l"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_03_foot_r",
+      "group": "foot_r",
+      "grouping": "part",
+      "island_name": "semantic_foot_r",
+      "parts": [
+        "foot_r"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_04_front_hatch",
+      "group": "front_hatch",
+      "grouping": "part",
+      "island_name": "semantic_front_hatch",
+      "parts": [
+        "front_hatch"
+      ],
+      "material": "edge_dust",
+      "material_id": "matid_02_edge_dust",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_05_handle_l",
+      "group": "handle_l",
+      "grouping": "part",
+      "island_name": "semantic_handle_l",
+      "parts": [
+        "handle_l"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_06_handle_r",
+      "group": "handle_r",
+      "grouping": "part",
+      "island_name": "semantic_handle_r",
+      "parts": [
+        "handle_r"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_07_lid_panel",
+      "group": "lid_panel",
+      "grouping": "part",
+      "island_name": "semantic_lid_panel",
+      "parts": [
+        "lid_panel"
+      ],
+      "material": "oak_body",
+      "material_id": "matid_03_oak_body",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    },
+    {
+      "chart_id": "uvc_08_lock_plate",
+      "group": "lock_plate",
+      "grouping": "part",
+      "island_name": "semantic_lock_plate",
+      "parts": [
+        "lock_plate"
+      ],
+      "material": "aged_brass_trim",
+      "material_id": "matid_01_aged_brass_trim",
+      "uv_sets": [
+        "base",
+        "lightmap"
+      ],
+      "texel_density_scale": 1.0
+    }
+  ],
+  "material_id_layout": {
+    "schema": "lathe.material_id_layout.v1",
+    "strategy": "per_material_zone",
+    "texture_set_strategy": "",
+    "count": 3,
+    "ids": [
+      {
+        "material_id": "matid_01_aged_brass_trim",
+        "material": "aged_brass_trim",
+        "parts": [
+          "foot_l",
+          "foot_r",
+          "handle_l",
+          "handle_r",
+          "lock_plate"
+        ],
+        "rgb": [
+          216,
+          74,
+          72
+        ]
+      },
+      {
+        "material_id": "matid_02_edge_dust",
+        "material": "edge_dust",
+        "parts": [
+          "front_hatch"
+        ],
+        "rgb": [
+          74,
+          137,
+          220
+        ]
+      },
+      {
+        "material_id": "matid_03_oak_body",
+        "material": "oak_body",
+        "parts": [
+          "body",
+          "lid_panel"
+        ],
+        "rgb": [
+          88,
+          178,
+          120
+        ]
+      }
+    ],
+    "per_part": {
+      "body": "matid_03_oak_body",
+      "foot_l": "matid_01_aged_brass_trim",
+      "foot_r": "matid_01_aged_brass_trim",
+      "front_hatch": "matid_02_edge_dust",
+      "handle_l": "matid_01_aged_brass_trim",
+      "handle_r": "matid_01_aged_brass_trim",
+      "lid_panel": "matid_03_oak_body",
+      "lock_plate": "matid_01_aged_brass_trim"
+    }
+  },
+  "generated_surface_charts": {
+    "schema": "lathe.generated_surface_chart_bindings.v1",
+    "source": "uv.generated_uv_atlas_hints",
+    "count": 0,
+    "atlas_hint": "",
+    "xatlas_source_uv_remap": {},
+    "bindings": []
+  },
+  "surface_story_placement_plan": {
+    "schema": "lathe.surface_story_placement.v1",
+    "density": "standard",
+    "asymmetry": "balanced",
+    "targets": [],
+    "placement_count": 19,
+    "placements": [
+      {
+        "decal": "crest",
+        "target_part": "foot_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.658381,
+          0.258115
+        ],
+        "scale": 0.221667,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_01_crest"
+      },
+      {
+        "decal": "trim_wear",
+        "target_part": "lid_panel",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.369445,
+          0.537087
+        ],
+        "scale": 0.385809,
+        "rotation_deg": 12,
+        "layer": "surface",
+        "mask_id": "story_02_trim_wear"
+      },
+      {
+        "decal": "edge_highlight",
+        "target_part": "body",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.710231,
+          0.208053
+        ],
+        "scale": 0.270063,
+        "rotation_deg": 6,
+        "layer": "surface",
+        "mask_id": "story_03_edge_highlight"
+      },
+      {
+        "decal": "convex_edge_wear",
+        "target_part": "lock_plate",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.244439,
+          0.657783
+        ],
+        "scale": 0.310675,
+        "rotation_deg": -4,
+        "layer": "surface",
+        "mask_id": "story_04_convex_edge_wear"
+      },
+      {
+        "decal": "contact_polish",
+        "target_part": "foot_l",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.59069,
+          0.323471
+        ],
+        "scale": 0.355892,
+        "rotation_deg": 9,
+        "layer": "surface",
+        "mask_id": "story_05_contact_polish"
+      },
+      {
+        "decal": "recess_grime",
+        "target_part": "handle_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.190056,
+          0.710291
+        ],
+        "scale": 0.268412,
+        "rotation_deg": 7,
+        "layer": "surface",
+        "mask_id": "story_06_recess_grime"
+      },
+      {
+        "decal": "only_when_decal_improves_function_or_theme_read",
+        "target_part": "lid_panel",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.187554,
+          0.712706
+        ],
+        "scale": 0.3208,
+        "rotation_deg": 12,
+        "layer": "surface",
+        "mask_id": "story_07_only_when_decal_improves_function_or_theme_read"
+      },
+      {
+        "decal": "recesses",
+        "target_part": "lock_plate",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.45868,
+          0.450929
+        ],
+        "scale": 0.29579,
+        "rotation_deg": 7,
+        "layer": "surface",
+        "mask_id": "story_08_recesses"
+      },
+      {
+        "decal": "lower_contact_points",
+        "target_part": "front_hatch",
+        "material": "edge_dust",
+        "material_id": "matid_02_edge_dust",
+        "anchor_uv": [
+          0.583298,
+          0.330609
+        ],
+        "scale": 0.352373,
+        "rotation_deg": 1,
+        "layer": "surface",
+        "mask_id": "story_09_lower_contact_points"
+      },
+      {
+        "decal": "plank_spacing_hero",
+        "target_part": "lock_plate",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.387908,
+          0.519261
+        ],
+        "scale": 0.237555,
+        "rotation_deg": 5,
+        "layer": "surface",
+        "mask_id": "story_10_plank_spacing_hero"
+      },
+      {
+        "decal": "rivet_row_hero",
+        "target_part": "foot_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.305316,
+          0.599006
+        ],
+        "scale": 0.35734,
+        "rotation_deg": 5,
+        "layer": "surface",
+        "mask_id": "story_11_rivet_row_hero"
+      },
+      {
+        "decal": "inventory",
+        "target_part": "foot_l",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.758434,
+          0.161512
+        ],
+        "scale": 0.348634,
+        "rotation_deg": -12,
+        "layer": "surface",
+        "mask_id": "story_12_inventory"
+      },
+      {
+        "decal": "economy",
+        "target_part": "handle_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.444269,
+          0.464844
+        ],
+        "scale": 0.36102,
+        "rotation_deg": 8,
+        "layer": "surface",
+        "mask_id": "story_13_economy"
+      },
+      {
+        "decal": "readable",
+        "target_part": "foot_l",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.584006,
+          0.329925
+        ],
+        "scale": 0.326263,
+        "rotation_deg": -8,
+        "layer": "surface",
+        "mask_id": "story_14_readable"
+      },
+      {
+        "decal": "functional_accents",
+        "target_part": "handle_r",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.591868,
+          0.322334
+        ],
+        "scale": 0.318201,
+        "rotation_deg": 3,
+        "layer": "surface",
+        "mask_id": "story_15_functional_accents"
+      },
+      {
+        "decal": "toy_like",
+        "target_part": "handle_l",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.748944,
+          0.170675
+        ],
+        "scale": 0.383705,
+        "rotation_deg": 4,
+        "layer": "surface",
+        "mask_id": "story_16_toy_like"
+      },
+      {
+        "decal": "random_faceting",
+        "target_part": "lid_panel",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.534005,
+          0.378202
+        ],
+        "scale": 0.338374,
+        "rotation_deg": 7,
+        "layer": "surface",
+        "mask_id": "story_17_random_faceting"
+      },
+      {
+        "decal": "unreadable_value",
+        "target_part": "lock_plate",
+        "material": "aged_brass_trim",
+        "material_id": "matid_01_aged_brass_trim",
+        "anchor_uv": [
+          0.48969,
+          0.420989
+        ],
+        "scale": 0.396448,
+        "rotation_deg": 12,
+        "layer": "surface",
+        "mask_id": "story_18_unreadable_value"
+      },
+      {
+        "decal": "place_motifs_where_they_clarify_function_or_silh",
+        "target_part": "body",
+        "material": "oak_body",
+        "material_id": "matid_03_oak_body",
+        "anchor_uv": [
+          0.419055,
+          0.489189
+        ],
+        "scale": 0.315342,
+        "rotation_deg": -9,
+        "layer": "surface",
+        "mask_id": "story_19_place_motifs_where_they_clarify_function_or_silh"
+      }
+    ]
+  },
+  "surface_graph_handoff": {
+    "mode": "",
+    "materialx_uri": "",
+    "trace": {
+      "kind": "no_surface_program_graph_mode",
+      "fallback": "legacy_pbr_runtime"
+    },
+    "channels": {}
+  }
+}
