@@ -9,7 +9,10 @@ typed attribute schema in ``..attributes``.
 
 from __future__ import annotations
 
+from ...attributes.fastener import FastenerAttributes
 from ...attributes.frame import FrameAttributes
+from ...attributes.handle import HandleAttributes
+from ...attributes.material_zone import MaterialZoneAttributes
 from ...attributes.panel import PanelAttributes
 from ...attributes.primary_volume import PrimaryVolumeAttributes
 from ...attributes.trim import TrimAttributes
@@ -18,7 +21,7 @@ from ...domain_extension import (
     DomainExtensionRegistration,
 )
 from ...registry import REGISTRY
-from . import frame, panel, primary_volume, trim
+from . import fastener, frame, handle, material_zone, panel, primary_volume, trim
 
 
 HARD_SURFACE_DOMAIN_ID = "hard_surface"
@@ -29,6 +32,9 @@ HARD_SURFACE_NODE_SCHEMAS: dict[str, type] = {
     "panel": PanelAttributes,
     "frame": FrameAttributes,
     "trim": TrimAttributes,
+    "fastener": FastenerAttributes,
+    "handle": HandleAttributes,
+    "material_zone": MaterialZoneAttributes,
 }
 
 
@@ -42,6 +48,9 @@ HARD_SURFACE_GENERATORS = (
     panel.GENERATOR,
     frame.GENERATOR,
     trim.GENERATOR,
+    fastener.GENERATOR,
+    handle.GENERATOR,
+    material_zone.GENERATOR,
 )
 
 

@@ -15,7 +15,10 @@ from __future__ import annotations
 
 from typing import Any, Callable, Mapping
 
+from .fastener import FastenerAttributes
 from .frame import FrameAttributes
+from .handle import HandleAttributes
+from .material_zone import MaterialZoneAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
 from .trim import TrimAttributes
@@ -30,6 +33,9 @@ ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "panel": PanelAttributes.from_dict,
     "frame": FrameAttributes.from_dict,
     "trim": TrimAttributes.from_dict,
+    "fastener": FastenerAttributes.from_dict,
+    "handle": HandleAttributes.from_dict,
+    "material_zone": MaterialZoneAttributes.from_dict,
 }
 
 
@@ -48,7 +54,10 @@ def validate_attributes(node_type: str, raw_attributes: dict[str, Any]) -> Any:
 
 __all__ = [
     "ATTRIBUTE_SCHEMAS",
+    "FastenerAttributes",
     "FrameAttributes",
+    "HandleAttributes",
+    "MaterialZoneAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
     "TrimAttributes",
