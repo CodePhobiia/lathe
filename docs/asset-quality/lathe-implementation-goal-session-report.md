@@ -360,8 +360,8 @@ Important files in the implementation surface:
 ```text
 lathe/exact_solids.py
 lathe/geometry_kernel.py
-lathe/geometry/providers.py
-lathe/geometry/provider_registry.py
+lathe/providers/registry.py
+lathe/shape_providers.py
 lathe/adapters/manifold_kernel.py
 ```
 
@@ -584,7 +584,8 @@ Important files in the implementation surface:
 ```text
 lathe/asset_quality/diagnostics.py
 lathe/asset_quality/preview_evidence.py
-lathe/asset_quality/generation_steering.py
+lathe/asset_quality/quality_planner.py
+lathe/asset_quality/semantic_critique.py
 lathe/repair_executor.py
 lathe/repair_loop.py
 lathe/repair_policy.py
@@ -647,8 +648,7 @@ The worktree includes changes in:
 grammar/lathe.lark
 schema/lathe.schema.json
 spec/lathe-v0.1.md
-lathe/parser.py
-lathe/checker.py
+lathe/parser/
 lathe/checker/
 ```
 
@@ -747,7 +747,8 @@ lathe/geometry/
 lathe/geometry_kernel.py
 lathe/mesh_finalize.py
 lathe/mesh_program/
-lathe/parser.py
+lathe/parser/
+lathe/checker/
 lathe/repair_executor.py
 lathe/repair_loop.py
 lathe/scene/
