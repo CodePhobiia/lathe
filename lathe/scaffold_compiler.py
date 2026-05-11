@@ -30,7 +30,7 @@ from .exact_solids import primitive_mesh as _exact_primitive_mesh
 from .feature_grammar import compile_feature_enhancements
 from .fidelity import infer_fidelity_profile
 from .geometry import resolve_geometry_kernel
-from .geometry.shape_ir_program import execute_shape_ir_boolean_program
+from .geometry.shape_ir_lowering import execute_shape_ir_boolean_program
 from .geometry_detail import geometry_detail_controls_from_authoring
 from .geometry_kernel import fuse_shape_ir
 from .mesh_finalize import finalize_mesh_ir

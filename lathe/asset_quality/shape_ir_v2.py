@@ -3046,7 +3046,7 @@ def _kernel_record_for_context_aggregate(
     if len(context_records) == 1:
         return dict(context_records[0])
 
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     result = execute_shape_ir_kernel_program(
         geometry_kernel,
@@ -5791,7 +5791,7 @@ def _polyextrude_kernel_record_for_source(
     axis: str,
     distance: float,
 ) -> _V1Record:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     part = str(op.target or source_record.get("part") or "polyextrude")
     blend_mode = _optional_blend_mode(
@@ -7616,7 +7616,7 @@ def _kernel_import_record_for_single_source(
     modifier_payload: dict[str, Any],
     kernel_tag: str,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     polybevel = source_record.get("v2_polybevel_modifier")
     preserve_pending_polybevel = (
@@ -7737,7 +7737,7 @@ def _kernel_profile_record_for_single_source(
     kernel_tag: str,
     profile_kind: str,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     kernel_source_record = _record_with_kernel_semantic_metadata(op, source_record)
     result = execute_shape_ir_kernel_program(
@@ -7795,7 +7795,7 @@ def _kernel_sdf_field_record_for_single_source(
     kernel_tag: str,
     field_kind: str,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     kernel_source_record = _record_with_kernel_semantic_metadata(op, source_record)
     result = execute_shape_ir_kernel_program(
@@ -7849,7 +7849,7 @@ def _kernel_terrain_record_for_single_source(
     kernel_tag: str,
     terrain_kind: str,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     kernel_source_record = _record_with_kernel_semantic_metadata(op, source_record)
     result = execute_shape_ir_kernel_program(
@@ -7908,7 +7908,7 @@ def _kernel_union_record_for_records(
     region: str | None = None,
     result_primitive_type: str = "boolean_mesh",
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     kernel_records_list: list[dict[str, Any]] = []
     for record in records:
@@ -7983,7 +7983,7 @@ def _kernel_component_assembly_record_for_records(
     component: str | None = None,
     region: str | None = None,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     if not records:
         raise ValueError("component assembly kernel lowering requires at least one source record")
@@ -8430,7 +8430,7 @@ def _v1_record_for_op_hull(
     geometry_kernel: Any | None = None,
 ) -> dict[str, Any]:
     """Lower ``op.hull`` to a real raw mesh using the resolved geometry kernel."""
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     source_records = _source_records_for_hull(op, geometry_kernel=geometry_kernel)
     kernel_records = tuple(
@@ -8562,7 +8562,7 @@ def _v1_record_for_minkowski_pair(
     structuring_count: int,
     geometry_kernel: Any | None = None,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     kernel_records = tuple(
         _record_with_kernel_semantic_metadata(op, record)
@@ -8936,7 +8936,7 @@ def _kernel_polybevel_boolean_replay_record(
     if not records:
         return None
 
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     kernel_records = tuple(
         _record_with_kernel_semantic_metadata(
@@ -9264,7 +9264,7 @@ def _refine_kernel_record_for_source(
     refine_mode: str = "adaptive",
     refine_max_iterations: int = 6,
 ) -> _V1Record:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     part = str(op.target or source_record.get("part") or operation.replace(".", "_"))
     blend_mode = _optional_blend_mode(
@@ -9360,7 +9360,7 @@ def _carve_kernel_record_for_source(
     u_end: float,
     modifier_payload: dict[str, Any],
 ) -> _V1Record:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     part = str(op.target or source_record.get("part") or "carve")
     blend_mode = _optional_blend_mode(
@@ -11970,7 +11970,7 @@ def _v1_records_for_sop_copy_to_points(
         "samples": _metadata_safe_value(sample_records),
     }
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         kernel_source = _with_point_scatter_metadata(source_record, op, summary)
         result = execute_shape_ir_kernel_program(
@@ -13726,7 +13726,7 @@ def _deform_kernel_record_for_source(
     direction_axis: str | None = None,
     origin: tuple[float, float, float] | None = None,
 ) -> _V1Record:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     parameters = op.parameters
     part = str(op.target or source_record.get("part") or "deformed")
@@ -14756,8 +14756,8 @@ def _surface_scatter_result_with_target(
     target_record: _V1Record,
     scatter_result: Any,
 ) -> Any:
-    from ..geometry.program import KernelProgramResult
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.kernel_program import KernelProgramResult
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     target_kernel_record = _record_with_kernel_semantic_metadata(
         op,
@@ -14980,7 +14980,7 @@ def _v1_records_for_sop_scatter_on_surface(
     }
 
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         kernel_source = _with_surface_scatter_metadata(
             source_record,
@@ -15680,7 +15680,7 @@ def _v1_records_for_op_mirror(
     }
 
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         result = execute_shape_ir_kernel_program(
             geometry_kernel,
@@ -16030,7 +16030,7 @@ def _v1_record_for_sop_transform(
         return record
 
     import trimesh
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     matrix = trimesh.transformations.concatenate_matrices(
         trimesh.transformations.translation_matrix(translation),
@@ -23660,7 +23660,7 @@ def _kernel_inset_record(
         if isinstance(group, dict) and str(group.get("name") or "")
     ]
     if source_record is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         _remove_profile_cut_bevel_marker(record)
         polybevel = record.get("v2_polybevel_modifier")
@@ -24081,7 +24081,7 @@ def _extrude_kernel_record_for_source(
     axis: str,
     side: str,
 ) -> _V1Record:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     signed_distance = float(depth) if side == "positive" else -float(depth)
     part = str(op.target or source_record.get("part") or "extrude")
@@ -24479,7 +24479,7 @@ def _v1_records_for_op_repeat(
                 record["v2_repeat"]["instance_roll_degrees"] = float(roll_degrees)
             source_records.append(record)
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         result = execute_shape_ir_kernel_program(
             geometry_kernel,
@@ -27026,7 +27026,7 @@ def _v1_records_for_op_distribute(
         source_tags=source_tags,
     )
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         distribution_kernel_payload = {
             "pattern": pattern,
@@ -28214,7 +28214,7 @@ def _v1_records_for_op_shell(
         }
     )
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         for record in records:
             if str(record.get("blend_mode") or "") in {"subtract", "intersect"}:
@@ -28293,7 +28293,7 @@ def _kernel_source_cutter_boolean_record(
     component: str | None = None,
     region: str | None = None,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     cutter_blend = str(cutter_record.get("blend_mode") or "subtract")
     source_modifier_method = str(modifier_payload.get("method") or "")
@@ -28412,7 +28412,7 @@ def _kernel_boolean_record_for_records(
     component: str | None = None,
     region: str | None = None,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     if len(source_records) < 2:
         raise ValueError("kernel boolean lowering requires at least two source records")
@@ -28510,7 +28510,7 @@ def _kernel_source_attachment_boolean_record(
     component: str | None = None,
     region: str | None = None,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     attachment_blend = str(attachment_record.get("blend_mode") or "union")
     attachment_modifier_method = str(modifier_payload.get("method") or "")
@@ -28623,7 +28623,7 @@ def _kernel_source_feature_records_boolean_record(
     component: str | None = None,
     region: str | None = None,
 ) -> dict[str, Any]:
-    from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+    from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     feature_modifier_method = str(modifier_payload.get("method") or "")
     kernel_boolean_method = f"source_feature_boolean_{_op_tag_token(op.op)}_v1"
@@ -32099,7 +32099,7 @@ def _v1_records_for_op_fastener_grid(
         return (record,)
 
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         records: list[dict[str, Any]] = []
 
@@ -32988,7 +32988,7 @@ def _v1_records_for_op_vent_slats(
         return tuple(records)
 
     if geometry_kernel is not None:
-        from ..geometry.shape_ir_program import execute_shape_ir_kernel_program
+        from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
         if use_rounded_slot:
             slat_source_record = _v1_record_for_op_rounded_slot(

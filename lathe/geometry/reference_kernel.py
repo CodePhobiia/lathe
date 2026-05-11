@@ -1217,7 +1217,7 @@ def _source_mesh_from_shape_primitive_metadata(metadata: dict[str, Any]) -> trim
         primitive = _shape_primitive_from_params(primitive_type, metadata)
         mesh = primitive_mesh(primitive)
         if primitive_type in {"heightfield", "terrain_patch"} and not bool(mesh.is_watertight):
-            from .shape_ir_program import _solidify_heightfield_mesh
+            from .shape_ir_lowering import _solidify_heightfield_mesh
 
             mesh, _ = _solidify_heightfield_mesh(mesh)
         if len(mesh.faces) == 0 or not bool(mesh.is_watertight):
@@ -14936,7 +14936,7 @@ class ReferenceKernel:
             primitive = _shape_primitive_from_params(kind, params)
             mesh = primitive_mesh(primitive)
             if kind in {"heightfield", "terrain_patch"} and not bool(mesh.is_watertight):
-                from .shape_ir_program import _solidify_heightfield_mesh
+                from .shape_ir_lowering import _solidify_heightfield_mesh
 
                 mesh, _ = _solidify_heightfield_mesh(mesh)
             return self.from_trimesh(mesh)

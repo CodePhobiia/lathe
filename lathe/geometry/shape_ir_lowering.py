@@ -1,4 +1,14 @@
-"""Execute stable ShapeIR primitives through a geometry KernelProgram."""
+"""Lower stable ShapeIR primitives through a geometry KernelProgram.
+
+This module is the ShapeIR → KernelProgram bridge: it accepts a
+:class:`~lathe.shape_ir.ShapeIR` plus a resolved
+:class:`~lathe.geometry.kernel.GeometryKernel`, builds
+:class:`~lathe.geometry.kernel_program.KernelOperand` records, and
+delegates execution to the per-operation executors in
+:mod:`lathe.geometry.kernel_program`. Together with that module it
+forms the seam called out as task S0-7 in
+``docs/asset-quality/lathe-implementation-northstar.md``.
+"""
 
 from __future__ import annotations
 
@@ -10,7 +20,7 @@ import trimesh
 from ..shape_ir import ShapeIR
 from ..shape_ir import ShapePrimitive
 from .kernel import GeometryKernel
-from .program import (
+from .kernel_program import (
     KernelOperand,
     KernelProgramResult,
     _capability_names,

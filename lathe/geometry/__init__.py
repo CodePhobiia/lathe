@@ -1,8 +1,15 @@
-"""Geometry kernel subpackage (GEO-2/3).
+"""Geometry kernel subpackage.
 
 Exposes the :class:`GeometryKernel` Protocol, the kernel registry,
-:func:`resolve_geometry_kernel`, and the two built-in kernels
-(``lathe.geometry.manifold_v1``, ``lathe.geometry.reference_v1``).
+:func:`resolve_geometry_kernel`, the two built-in kernels
+(``lathe.geometry.manifold_v1``, ``lathe.geometry.reference_v1``), the
+``KernelProgram`` execution surface defined in
+:mod:`lathe.geometry.kernel_program`, and the ShapeIR → KernelProgram
+lowering bridge in :mod:`lathe.geometry.shape_ir_lowering`.
+
+The module names ``kernel_program`` and ``shape_ir_lowering`` are the
+canonical seam called out as task S0-7 in
+``docs/asset-quality/lathe-implementation-northstar.md``.
 """
 
 from __future__ import annotations
@@ -15,7 +22,7 @@ from .kernel import (
     register_geometry_kernel,
     resolve_geometry_kernel,
 )
-from .program import (
+from .kernel_program import (
     KERNEL_PROGRAM_VERSION,
     KernelOperand,
     KernelProgramCapabilityError,
@@ -65,7 +72,7 @@ from .program import (
     semantic_metadata_from_primitive,
     transform_operation_count,
 )
-from .shape_ir_program import (
+from .shape_ir_lowering import (
     execute_shape_ir_boolean_program,
     execute_shape_ir_kernel_program,
     operands_from_shape_ir,

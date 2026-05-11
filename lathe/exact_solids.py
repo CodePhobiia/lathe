@@ -14,7 +14,7 @@ from scipy.spatial import cKDTree
 
 from .errors import ContractViolation
 from .fidelity import FidelityProfile
-from .geometry.program import (
+from .geometry.kernel_program import (
     KernelOperand,
     KernelProgramCapabilityError,
     _kernel_capabilities,
@@ -17537,7 +17537,7 @@ def _combine_with_geometry_kernel(
     operation_count: int,
     route: str,
 ) -> tuple[trimesh.Trimesh, dict[str, Any]]:
-    from .geometry.shape_ir_program import operands_from_shape_ir
+    from .geometry.shape_ir_lowering import operands_from_shape_ir
 
     program_primitives = [
         dataclass_replace(primitive, blend_mode=mode)

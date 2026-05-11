@@ -594,7 +594,7 @@ class ManifoldKernel:
             primitive = _shape_primitive_from_params(kind, params)
             mesh = primitive_mesh(primitive)
             if kind in {"heightfield", "terrain_patch"} and not bool(mesh.is_watertight):
-                from ..geometry.shape_ir_program import _solidify_heightfield_mesh
+                from ..geometry.shape_ir_lowering import _solidify_heightfield_mesh
 
                 mesh, _ = _solidify_heightfield_mesh(mesh)
             return self.from_trimesh(mesh)
