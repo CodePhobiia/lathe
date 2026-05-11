@@ -18,6 +18,7 @@ from typing import Any, Callable, Mapping
 from .frame import FrameAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
+from .trim import TrimAttributes
 
 
 # Per-NODE_TYPE schema registry. Adding a new NODE_TYPE attribute
@@ -28,6 +29,7 @@ ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "primary_volume": PrimaryVolumeAttributes.from_dict,
     "panel": PanelAttributes.from_dict,
     "frame": FrameAttributes.from_dict,
+    "trim": TrimAttributes.from_dict,
 }
 
 
@@ -49,5 +51,6 @@ __all__ = [
     "FrameAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
+    "TrimAttributes",
     "validate_attributes",
 ]
