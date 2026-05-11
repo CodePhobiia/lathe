@@ -18313,6 +18313,65 @@ def _subdivision_box_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     return mesh
 
 
+def _partial_revolve_mesh(
+    profile: list[tuple[float, float]],
+    *,
+    sweep_degrees: float,
+    sections: int,
+) -> trimesh.Trimesh:
+    """Build a watertight partial-revolution trimesh.
+
+    trimesh's ``creation.revolve(angle=..., cap=True)`` produces an
+    open mesh whose start/end caps do not stitch cleanly to the spin
+    column. manifold3d's ``CrossSection(...).revolve(...)`` produces a
+    watertight result by construction. We prefer manifold3d when
+    available and fall back to trimesh's revolve only when the
+    manifold3d import path is unavailable — the trimesh fallback is
+    intentionally non-strict so authoring still works without
+    manifold3d.
+    """
+    raw_polygon = [(float(radial), float(axial)) for radial, axial in profile]
+    polygon: list[tuple[float, float]] = []
+    for point in raw_polygon:
+        if polygon and (
+            abs(polygon[-1][0] - point[0]) < NUMERIC_EPSILON
+            and abs(polygon[-1][1] - point[1]) < NUMERIC_EPSILON
+        ):
+            continue
+        polygon.append(point)
+    if (
+        len(polygon) >= 2
+        and abs(polygon[0][0] - polygon[-1][0]) < NUMERIC_EPSILON
+        and abs(polygon[0][1] - polygon[-1][1]) < NUMERIC_EPSILON
+    ):
+        polygon.pop()
+    # manifold3d.CrossSection requires CCW winding; reverse if CW.
+    signed_area_2x = 0.0
+    for i, (x0, y0) in enumerate(polygon):
+        x1, y1 = polygon[(i + 1) % len(polygon)]
+        signed_area_2x += (x1 - x0) * (y1 + y0)
+    if signed_area_2x > 0.0:
+        polygon = list(reversed(polygon))
+    try:
+        import manifold3d as _m3d  # local import — optional dep
+    except ImportError:  # pragma: no cover - exercised only when manifold3d is absent
+        return trimesh.creation.revolve(
+            np.asarray(profile, dtype=np.float64),
+            angle=float(np.deg2rad(sweep_degrees)),
+            cap=True,
+            sections=sections,
+        )
+    cross = _m3d.CrossSection([polygon])
+    manifold = cross.revolve(
+        circular_segments=int(max(3, sections)),
+        revolve_degrees=float(sweep_degrees),
+    )
+    mesh_data = manifold.to_mesh()
+    vertices = np.asarray(mesh_data.vert_properties, dtype=np.float64)[:, :3]
+    faces = np.asarray(mesh_data.tri_verts, dtype=np.int64)
+    return trimesh.Trimesh(vertices=vertices, faces=faces, process=True)
+
+
 def _revolved_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     """Build a solid-of-revolution trimesh from a 2D (axial, radial) profile.
 
@@ -18356,12 +18415,7 @@ def _revolved_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     if full_revolve:
         mesh = trimesh.creation.revolve(linestring, sections=sections)
     else:
-        mesh = trimesh.creation.revolve(
-            linestring,
-            angle=float(np.deg2rad(sweep_degrees)),
-            cap=True,
-            sections=sections,
-        )
+        mesh = _partial_revolve_mesh(profile, sweep_degrees=sweep_degrees, sections=sections)
     start_radians = float(np.deg2rad(start_degrees % 360.0))
     if abs(start_radians) > NUMERIC_EPSILON:
         mesh.apply_transform(
