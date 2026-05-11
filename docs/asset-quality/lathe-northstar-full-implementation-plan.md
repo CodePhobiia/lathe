@@ -1,14 +1,54 @@
 # Lathe Northstar Full Implementation Plan
 
-Date: 2026-05-11
+Date: 2026-05-11 (revision iteration 1: same day)
 Status: Canonical end-to-end sequencing plan for completing
 `docs/asset-quality/lathe-implementation-northstar.md` in full
 Scope: All 10 lanes (A-J), all 13 blockers (B0-B12), all 5 phases,
-plus the procedural synthesizer (`procedural-synthesizer-architecture-spec.md`)
-that resolves B12 and unblocks Lanes B/C/I
+plus the procedural synthesizer (`procedural-synthesizer-architecture-spec.md`,
+v2) that resolves B12 and unblocks Lanes B/C/I
 Companion docs: `lathe-implementation-northstar.md` (intent),
 `lathe-implementation-northstar-current-audit.md` (current state),
-`procedural-synthesizer-architecture-spec.md` (one architectural slice)
+`procedural-synthesizer-architecture-spec.md` v2 (one architectural slice)
+
+## Revision History
+
+- **2026-05-11 v1 (initial)** — first draft. Allowed Cycle 1 to ship
+  stub-only generators and a synthesizer that returns empty programs
+  for unknown families. Treated "one FamilyKnowledge pack per family"
+  as the end-state modular unit. Cycle 3 decommission acceptance used
+  the weak `grep 'family ==' lathe/` check. Cycle 6 deferred the domain
+  extension API to Phase 3 work. Recipe count cited as 73; actual is 71.
+  Section 3 / Section 12 disagreed on whether Cycles 1-2 are parallel.
+- **2026-05-11 v2 (this revision)** — review iteration resolved six
+  findings:
+  1. **Cycle 1 ships real procedural output.** No stub generators.
+     No empty-program route. Per spec v2 §9.3, the first commit
+     produces a non-empty ShapeProgram for authored-intent-only
+     fixtures.
+  2. **The modular unit is policy/style/domain, not family.** Plan
+     updated to reflect the spec v2 split into CompositionPolicy,
+     StyleKnowledge, FamilyAlias, DomainExtension. Family aliases
+     SELECT packs; they do not DEFINE structure.
+  3. **`no_family_dispatch` lint/test replaces the weak grep.**
+     Catches `_RECIPES.get(family)`, `.get(family)` in synthesis/
+     geometry paths, `family in` checks, and `_FAMILY_*` behavior
+     maps. Lives in CI; runs every commit.
+  4. **Recipe decommission interleaves with visual proof.** A family
+     migrates only after both the ShapeProgram diff AND a visible
+     build artifact pass. Cycle 3 does not "complete" before
+     Cycle 4 has caught up family-by-family.
+  5. **Domain extension API lands in Cycle 1, not Cycle 6.** The
+     `DomainExtensionManifest` and per-domain registration contract
+     are first-commit deliverables. Cycle 6 becomes "register
+     domain extensions," not "design the extension contract."
+  6. **Recipe count uses the live registry, not a hardcoded number.**
+     Plan refers to "the current `_RECIPES` registry" or a generated
+     audit count. Today: 71 entries.
+  Plus the sequencing contradiction is resolved: Cycle 1 must
+  complete before Cycle 2 can run (Cycle 2 depends on the
+  synthesizer's typed-attribute schemas and generator manifests).
+  Cycles 2 and 3 can overlap. Cycle 3 cannot complete before
+  Cycle 4 has caught up.
 
 This document is the master plan. The northstar declares what; this
 declares when and in what order. Each cycle ships production-grade
@@ -55,6 +95,11 @@ seam-refactor commits from session 2026-05-11:
 - KernelProgram seam factored into `kernel_program.py` /
   `shape_ir_lowering.py` per northstar S0-7 (`2bb70fa`).
 - Procedural synthesizer architecture specced (`97c8666`).
+- Procedural synthesizer spec revised to v2 (`e3e656b`) — splits
+  FamilyKnowledge into StyleKnowledge/CompositionPolicy/FamilyAlias,
+  declares typed attribute schemas, declares generator capability
+  manifests, declares domain extension contract, replaces linear
+  outer loop with 8-stage compiler pipeline.
 
 **Honest open state:**
 
@@ -62,8 +107,11 @@ seam-refactor commits from session 2026-05-11:
   blockout, not finished assets.
 - Lane A geometry kernel: strong but brittle; 12K-line concentration
   in `kernel_program.py`; some boolean fallbacks silent.
-- Lane B ShapeIR v2 driver: 73 family recipes still dispatch on
-  family name; brief/parts/graph_nodes ignored by recipes.
+- Lane B ShapeIR v2 driver: current `_RECIPES` registry (71 entries
+  at session 2026-05-11; refresh from
+  `lathe/asset_quality/grammar_lowering.py` for the live count)
+  still dispatches on family name; brief/parts/graph_nodes ignored
+  by recipes.
 - Lane C feature ops: partial; chest/crate-specific emitters remain.
 - Lane D surface: tangent-space normals partial; final beauty weak.
 - Lane E topology: can erase craft; Blender path optional and traced.
@@ -165,19 +213,41 @@ Production-grade per cycle means:
                        NORTHSTAR COMPLETE
 ```
 
-Cycles 4 and 5 may overlap (cycle 5 needs cycle 4's visible output
-to judge, but partial cycle 4 enables partial cycle 5). Cycles 1-3
-are strictly sequential — each unblocks the next.
+**Sequencing rules (resolved in v2):**
+
+- **Cycle 1 must complete before Cycle 2 starts.** Cycle 2 depends on
+  the typed attribute schemas, generator capability manifests, and
+  domain extension manifest that Cycle 1 produces. There is no
+  parallel start.
+- **Cycles 2 and 3 may overlap.** Cycle 2 (kernel capability) and
+  Cycle 3 (recipe decommissioning) operate on orthogonal layers
+  once Cycle 1's substrate is in place.
+- **Cycle 3 cannot complete before Cycle 4 has caught up family by
+  family.** A migrated family is only "done" after it has both
+  passed the ShapeProgram equivalence diff (Cycle 3) AND passed the
+  visible-artifact build inspection (Cycle 4). This prevents the
+  failure mode "ShapeProgram diff was acceptable but rendered output
+  is worse."
+- **Cycles 4 and 5 are paired and ship in tightly alternating commits.**
+  Each Cycle 4 visible-layer slice gets its Cycle 5 diagnostic
+  immediately after.
+- **Cycles 6, 7, 8 are strictly gated by their predecessors** and do
+  not parallelize backward.
 
 ## 4. Cycle 1: Procedural Engine Foundation
 
 ### 4.1 Goal
 
-Replace the 73-recipe family-name dispatch in
-`grammar_lowering.py` with a generic procedural engine driven by
-typed construction-graph nodes and informed (not dispatched) by
-declarative FamilyKnowledge packs. Family becomes metadata, never a
-discriminator.
+Replace family-name dispatch in `grammar_lowering.py` with a
+production-grade procedural compiler pipeline. The substrate must
+be modular by **policy, style, and domain** — not by family. Family
+identity collapses to an alias that selects packs; family identity
+does not select code paths and does not select structural decisions.
+Every generator, decorator, knowledge pack, and domain extension is
+introduced via a stable plugin contract Cycle 1 itself defines.
+
+**No stubs.** No empty-returning generators. No no-op routing. Every
+file committed in Cycle 1 produces real output end-to-end.
 
 ### 4.2 Lanes And Blockers Advanced
 
@@ -189,62 +259,175 @@ discriminator.
 
 ### 4.3 Concrete Deliverables
 
-Per `procedural-synthesizer-architecture-spec.md` §5 and §12:
+Per `procedural-synthesizer-architecture-spec.md` v2 §5 and §12.
+**Every file listed here must be production code on first commit —
+no skeletons, no stubs, no "filled in later" placeholders.**
+
+#### 4.3.1 Engine code
 
 ```
 lathe/asset_quality/procedural_synthesizer/
-    __init__.py
-    context.py                  # SynthesizerContext, _build_context
-    synthesizer.py              # outer loop + registries
-    trace.py                    # SynthesizerTrace schema
-    hint_resolution.py          # priority-merge logic
-    generators/
+    __init__.py                 # public API
+    context.py                  # SynthesizerContext (resolves alias->packs)
+    pipeline.py                 # 8 stages, all real
+    registry.py                 # GeneratorRegistry, keyed by (domain, type)
+    trace.py                    # SynthesizerTrace + TraceEntry
+    hint_resolution.py          # priority chain with trace attribution
+    domain_extension.py         # DomainExtensionManifest contract (CYCLE 1)
+    attributes/
         __init__.py
-        primary_volume.py       # generic primary_volume → ShapeOp
-        panel.py
-        fastener.py
-        trim.py
-        decal_zone.py
-        guard.py                # cycle 1 stops here at 6 generators
-        # remaining 14 generators stub-only, returning empty
+        primary_volume.py       # PrimaryVolumeAttributes (typed schema)
+        panel.py                # PanelAttributes (typed schema)
+    knowledge_loader/
+        __init__.py
+        style.py                # loads StyleKnowledge JSON
+        policy.py               # loads CompositionPolicy JSON
+        alias.py                # loads FamilyAlias JSON
+        schemas/
+            style.schema.json
+            policy.schema.json
+            alias.schema.json
+            domain_extension.schema.json
+    generators/
+        __init__.py             # registers built-in hard-surface domain
+        hard_surface/
+            __init__.py
+            primary_volume.py   # real generator + manifest
+            panel.py            # real generator + manifest
     decorators/
         __init__.py
-        attached_to.py
-        mirrors.py
-        aligned_with.py
-        # remaining 4-5 stub-only
-    knowledge/
-        __init__.py             # empty registry, populated in cycle 3
-
-tests/unit/test_procedural_synthesizer_foundation.py
-tests/unit/test_procedural_synthesizer_primary_volume.py
-tests/unit/test_procedural_synthesizer_panel.py
-tests/unit/test_procedural_synthesizer_fastener.py
-tests/unit/test_procedural_synthesizer_trim.py
-tests/unit/test_procedural_synthesizer_decal_zone.py
-tests/unit/test_procedural_synthesizer_guard.py
+        hard_surface/
+            __init__.py
+            attached_to.py      # real decorator + manifest
 ```
 
-Plus a routing change in `grammar_lowering.py`:
+No other generator or decorator file appears in Cycle 1. The set is
+**deliberately minimal but complete** — every committed file is
+real, tested, and produces visible geometry or a real graph
+relation.
 
-- Unknown families (those NOT in `_RECIPES`) route to
-  `synthesize_shape_program` instead of `_empty_recipe`.
-- An optional `_MIGRATED_TO_SYNTHESIZER` allowlist exists for use in
-  cycle 3.
+#### 4.3.2 Declarative knowledge
+
+```
+std/procedural/knowledge/
+    style/
+        industrial_pbr_v1.json
+    policy/
+        panelized_hard_surface_object.json
+    aliases/
+        # one alias file for the simplest family the synthesizer
+        # can handle end-to-end after Cycle 1, picked at migration
+        # time in Cycle 3 — Cycle 1 does NOT add an alias file
+```
+
+#### 4.3.3 DomainExtensionManifest contract (new in v2)
+
+The plugin contract for Cycle 6's per-domain packs lands NOW so
+domains plug in without redesigning the synthesizer:
+
+```python
+@dataclass(frozen=True)
+class DomainExtensionManifest:
+    """Declares a domain's contribution to the synthesizer.
+
+    Loaded at import time by domain extension packages. The registry
+    refuses to register a domain whose manifest reports incomplete
+    coverage of its own NODE_TYPES.
+    """
+
+    domain_id: str                                     # "hard_surface", "vegetation", ...
+    node_type_schemas: Mapping[str, type]              # NODE_TYPE -> typed schema class
+    edge_type_schemas: Mapping[str, type]              # EDGE_TYPE -> typed schema class
+    generators: tuple[NodeTypeGenerator, ...]
+    decorators: tuple[EdgeTypeDecorator, ...]
+    required_kernel_capabilities: tuple[str, ...]
+    emitted_shape_ir_ops: tuple[str, ...]              # subset of ALL_OPS
+    style_pack_compatibility: tuple[str, ...]          # which style packs work
+    policy_pack_compatibility: tuple[str, ...]         # which policies apply
+```
+
+Hard-surface domain is the first DomainExtension registered. Phase 3
+domains (vegetation, terrain, WFC, CGA, etc.) become additional
+DomainExtensions in Cycle 6 — **no engine code changes needed at
+that point.**
+
+#### 4.3.4 Routing change in grammar_lowering.py
+
+```python
+def evaluate_grammar_lowering(asset, runtime):
+    family = _resolve_family(brief)
+    if family in _MIGRATED_TO_SYNTHESIZER:
+        return synthesize_shape_program(asset, runtime)
+    recipe = _RECIPES.get(family)
+    if recipe is None:
+        # Unknown families route to the synthesizer, which produces
+        # REAL output from the construction graph + brief, NOT an
+        # empty program. This is the Cycle 1 acceptance fixture path.
+        return synthesize_shape_program(asset, runtime)
+    return recipe(brief, parts, graph_nodes)
+```
+
+`_MIGRATED_TO_SYNTHESIZER` is initialized in Cycle 1 with the alias
+authored in §4.3.2 (whichever simple family Cycle 3 picks as its
+first migration target). Cycle 3 grows that set.
+
+#### 4.3.5 Tests
+
+```
+tests/unit/test_procedural_synthesizer_pipeline.py
+tests/unit/test_procedural_synthesizer_attributes.py
+tests/unit/test_procedural_synthesizer_knowledge_loader.py
+tests/unit/test_procedural_synthesizer_domain_extension.py
+tests/unit/test_procedural_synthesizer_primary_volume.py
+tests/unit/test_procedural_synthesizer_panel.py
+tests/unit/test_procedural_synthesizer_attached_to.py
+tests/contract/test_no_family_dispatch.py     # NEW — lint test (CYCLE 1)
+```
+
+The `test_no_family_dispatch.py` contract test is a Cycle 1
+deliverable. It scans the codebase and fails if any of these
+patterns appear in synthesis/geometry/surface paths:
+
+- `_RECIPES.get(family)` or `_RECIPES[family]`
+- Any `dict.get(family)` or `dict[family]` where the dict is a
+  `_FAMILY_*` or `_GRAMMARS` or other family-keyed behavior map
+  (not allowlisted)
+- `family ==` or `family in` checks (outside trace/report fields
+  explicitly allowlisted via `# no-family-dispatch: report-only`)
+
+A small allowlist covers metadata-only references (trace fields,
+package report tags, audit logs). The allowlist lives in
+`tests/contract/_family_dispatch_allowlist.py` and entries require
+a reason comment. Cycle 3's "decommission acceptance" check uses
+this test — not a `grep`.
 
 ### 4.4 Acceptance Criteria
 
-- Six generators implemented end-to-end with hint-resolution
-  semantics per spec §3.4. Each is ≤ 300 lines.
-- An unknown-family fixture produces a non-empty, geometrically
-  valid ShapeProgram entirely from its construction graph.
-- Same family, different brief produces different ShapeProgram
-  output (intent dominance proven).
-- `family_dispatch_used: false` in trace for synthesizer-routed
-  programs.
-- 73 family recipes still pass their existing tests (coexistence).
-- Targeted suite green: synthesizer tests + grammar_lowering tests
-  + shape_handoff_v1 contract.
+- Three generators (`primary_volume`, `panel`) and one decorator
+  (`attached_to`) implemented end-to-end with capability manifests.
+  Each generator ≤ 300 lines. **No stubs anywhere.**
+- The 8-stage compiler pipeline is fully implemented. No stage is a
+  pass-through.
+- `DomainExtensionManifest` exists, validated, with hard-surface as
+  the first registered extension.
+- An **unknown-family** fixture (authored intent only: primary_volume
+  + 2 panels + attached_to edges, no family alias, no recipe in
+  `_RECIPES`) produces a non-empty, geometrically valid ShapeProgram
+  through the synthesizer. The fixture builds end-to-end via
+  `lathe build`, producing a real GLB containing visible panel
+  geometry attached to a primary volume. **This is the production-
+  grade proof — not a unit test alone.**
+- Same authored intent, different brief proportions produces a
+  structurally different ShapeProgram (intent dominance proven).
+- `family_dispatch_used: false` in the trace for every synthesizer-
+  routed program.
+- The `test_no_family_dispatch.py` contract test passes (the
+  synthesizer codebase introduces no new family-keyed dispatch).
+- All 71 family recipes still pass their existing tests
+  (coexistence preserved).
+- Targeted suite green: all synthesizer tests + grammar_lowering
+  tests + shape_handoff_v1 contract + the new
+  `test_no_family_dispatch.py`.
 
 ### 4.5 Dependencies
 
@@ -253,7 +436,9 @@ None — builds directly on the seam refactor from session
 
 ### 4.6 Estimated Effort
 
-3-5 sessions.
+3-5 sessions. Cycle 1 deliberately stays narrow (one fully-clean
+slice + the extension contract) rather than broad (many partial
+generators).
 
 ## 5. Cycle 2: Kernel Capability Closure
 
@@ -360,8 +545,11 @@ Target: every file ≤ 1500 lines.
 
 ### 5.5 Dependencies
 
-Cycle 1 not required (orthogonal layer), but cycles 1 and 2 can run
-in parallel if the agent splits work.
+**Cycle 1 required.** Cycle 2 consumes Cycle 1's typed attribute
+schemas, generator capability manifests, and the
+`DomainExtensionManifest` contract — Cycle 2's hard-surface generator
+extensions register through that contract. Once Cycle 1 has shipped,
+Cycle 2 and Cycle 3 may overlap.
 
 ### 5.6 Estimated Effort
 
@@ -371,10 +559,14 @@ in parallel if the agent splits work.
 
 ### 6.1 Goal
 
-All 73 family-named recipes migrated to FamilyKnowledge data packs
-driven by the procedural synthesizer. `_RECIPES` dict deleted.
-`grammar_lowering.py` reduces from 14,145 lines to its synthesizer-
-support core (target: under 2,000 lines).
+Migrate every entry in the current `_RECIPES` registry (71 entries
+at session 2026-05-11; check the live count when this cycle begins)
+to **declarative knowledge files** — StyleKnowledge JSON, CompositionPolicy
+JSON, and FamilyAlias JSON per the spec v2 §3.2. **A FamilyAlias is
+metadata only**; structure comes from policies matched by authored
+intent, not from family-keyed packs. `_RECIPES` dict deleted at
+cycle end. `grammar_lowering.py` reduces from 14,145 lines to its
+synthesizer-support core (target: under 2,000 lines).
 
 ### 6.2 Lanes And Blockers Advanced
 
@@ -386,59 +578,102 @@ support core (target: under 2,000 lines).
 
 ### 6.3 Concrete Deliverables
 
-Per `procedural-synthesizer-architecture-spec.md` §4 migration plan:
+Per `procedural-synthesizer-architecture-spec.md` v2 §4 migration plan.
 
-**Migration order, lowest risk first:**
+**Migration order — interleaved with visual proof:**
 
-1. **Round 1: Unknown families default to synthesizer** (no recipe
-   changes; coexistence routing only).
-2. **Round 2: Simple recipes (10 families)** — surface_material_sample,
-   set_dressing_prop, lighting_prop, decal_zone-heavy ones.
-3. **Round 3: Hard-surface guardrails (5 families)** —
-   industrial_crate, mechanical_door, service_cabinet, weapon_prop,
-   console_terminal (where present).
-4. **Round 4: Procedural-domain recipes (10 families)** —
-   vegetation_library_system, terrain_heightfield_system,
-   wfc_tile_solver_system, cga_building_grammar_system,
-   instance_pattern_scatter_system, f_rep_sdf_composition_system,
-   etc. Some will require Lane J node-type extensions.
-5. **Round 5: Bundle/system recipes (~48 families)** — the
-   world_system_assembly, engine_facing_runtime_bundle_system, etc.
-   Some require the "assembly" node-type extension noted as open
-   question §9.1 in the spec.
-6. **Round 6: Decommission** — delete `_RECIPES`, delete
+The v1 plan ordered migration purely by ShapeProgram-diff risk. The
+v2 plan interleaves migration with visible-artifact verification
+from Cycle 4. **A family is "migrated" only after a build artifact
+inspection passes — not after a ShapeProgram diff alone.** This
+prevents the failure mode "diff was acceptable but render is worse."
+
+1. **Round 0: Author reusable knowledge packs first.** Author the
+   composition policies that several families will share
+   (panelized_hard_surface_object, radial_mechanical_assembly,
+   l_system_branching, wfc_modular_layout, scatter_distribution).
+   These are non-family-keyed. A family migration then references
+   them rather than redefining structure.
+2. **Round 1: Unknown families default to synthesizer.** Coexistence
+   routing only; landed in Cycle 1. Confirm no regression.
+3. **Round 2: Simple recipes (10 families)** — small emitted-op count,
+   minimal structural decisions. Per family:
+   - Author StyleKnowledge JSON (or pick an existing one).
+   - Pick CompositionPolicies (or author one).
+   - Author FamilyAlias JSON pointing at them.
+   - Run ShapeProgram diff vs old recipe — must be equivalent or
+     better.
+   - **Run a real build of a fixture for that family** — confirm
+     the artifact's preview, mesh, and surface evidence are at
+     parity or better with the pre-migration build.
+   - Add family to `_MIGRATED_TO_SYNTHESIZER`. Delete the recipe.
+4. **Round 3: Hard-surface guardrails** — industrial_crate,
+   mechanical_door, service_cabinet, weapon_prop. Same per-family
+   protocol as Round 2. **Cycle 4 must be at least partially
+   shipped for these** so visible-artifact diff is real evidence,
+   not best-effort visual judgment.
+5. **Round 4: Procedural-domain recipes** — these require
+   corresponding DomainExtension packs (from Cycle 6). Migration of
+   each of these waits on its domain extension shipping.
+6. **Round 5: Bundle/system recipes** — require sub-asset
+   composition (open question §9.5 in spec). Prototype the
+   `assembly` NODE_TYPE before migrating these.
+7. **Round 6: Decommission** — delete `_RECIPES`, delete
    `_MIGRATED_TO_SYNTHESIZER`, replace the dispatch with direct
-   `synthesize_shape_program(asset, runtime)` call.
+   `synthesize_shape_program(asset, runtime)` call. **Only after
+   every family has been verified by build-artifact inspection.**
 
-**Generator completion:** the remaining 14 node-type generators
-stubbed in cycle 1 become real implementations as recipe rounds
-require them (frame, inset, rail, bracket, vent, conduit, latch,
-weld, socket, mount, handle, hinge, wear_zone, material_zone). Plus
-the 4-5 remaining edge decorators.
+**Generator and decorator completion:** the remaining NODE_TYPE
+generators (frame, inset, rail, bracket, vent, conduit, latch, weld,
+socket, mount, handle, hinge, fastener, trim, decal_zone, wear_zone,
+material_zone, guard) and EDGE_TYPE decorators (inset_into,
+wraps_around, mirrors, aligned_with, supports, cuts) ship as full
+production implementations as recipe rounds require them. **No
+stubs at any point.** Each new generator/decorator commit is
+complete on its own.
 
 ### 6.4 Acceptance Criteria
 
 - `_RECIPES` dict does not exist in the codebase.
-- All 73 families produce ShapeProgram outputs through the procedural
-  synthesizer.
+- All families that existed in the registry at Cycle 3 start
+  produce ShapeProgram outputs through the procedural synthesizer.
+  Count refresh: read the live registry at migration time, not a
+  hardcoded number.
 - `grammar_lowering.py` is under 2,000 lines.
-- `grep -r 'family ==' lathe/` returns no hits in synthesis or
-  geometry paths (metadata-only uses in report/trace fields
-  permitted).
-- For each of the 73 families: a side-by-side ShapeProgram diff
-  test exists, comparing the pre-migration recipe output to the
-  post-migration synthesizer output. Differences must be
-  documented as intent-driven (e.g., brief now respected) or
-  reduced.
-- All 20 NODE_TYPE generators implemented, each ≤ 300 lines.
-- Authoring a new (74th) family requires creating a single
-  FamilyKnowledge data pack, no Python recipe function.
+- The `test_no_family_dispatch.py` contract test (introduced in
+  Cycle 1) covers every form of family-keyed dispatch and passes:
+  - No `_RECIPES.get(family)` or `_RECIPES[family]` in any code path.
+  - No `dict.get(family)` / `dict[family]` for `_FAMILY_*`, `_GRAMMARS`,
+    or similar behavior maps outside the metadata allowlist.
+  - No `family ==` / `family in` checks outside trace/report fields
+    explicitly allowlisted with reason comments.
+  Metadata-only references (trace fields, package report tags,
+  audit logs) are listed in `tests/contract/_family_dispatch_allowlist.py`
+  with a reason per entry.
+- For each family migrated: a side-by-side ShapeProgram diff test
+  exists, comparing the pre-migration recipe output to the
+  post-migration synthesizer output. Differences must be documented
+  as intent-driven (e.g., brief now respected) or reduced.
+- For each family migrated: a **build-artifact diff test** exists.
+  At minimum: face count parity within ±20%, material zone count
+  parity, package output count parity. Visible regressions block
+  the migration.
+- All 20 hard-surface NODE_TYPE generators implemented, each ≤ 300
+  lines.
+- The `DomainExtensionManifest` contract (from Cycle 1) is
+  exercised by at least the hard-surface domain. Cycle 6 adds more.
+- Authoring a new family requires creating a single `FamilyAlias`
+  JSON file referencing existing StyleKnowledge + CompositionPolicy
+  packs. Zero Python code change.
 
 ### 6.5 Dependencies
 
-- Cycle 1 (procedural engine foundation) — required.
-- Cycle 2 (kernel capability) — strongly recommended; some recipes
-  emit ops whose execution path is improved by Cycle 2's work.
+- Cycle 1 — required.
+- Cycle 2 — strongly recommended; some recipes emit ops whose
+  execution path is improved by Cycle 2's work.
+- Cycle 4 — required to "complete" per family before that family's
+  Cycle 3 migration is considered done. Cycles 3 and 4 cannot run
+  fully sequentially; they interleave family-by-family.
 
 ### 6.6 Estimated Effort
 
@@ -638,8 +873,14 @@ layers; Cycle 5 lands diagnostics for each layer as it stabilizes.
 The procedural engine produces production-grade output across
 vegetation, terrain, modular environments (WFC), grammar-based
 architecture (CGA), F-Rep/SDF organic, scatter, and OpenSubDiv
-finishing — all driven by the same generic synthesizer with per-
-domain NODE_TYPE extensions.
+finishing — each registered as a `DomainExtension` against the
+contract Cycle 1 already shipped. **No engine code changes needed at
+this point;** Cycle 6 is purely the act of registering additional
+domain extensions with their own generators, schemas, and knowledge
+packs.
+
+This is what the v2 architecture buys: domain expansion becomes
+data + plugin registration, not synthesizer redesign.
 
 ### 9.2 Lanes And Blockers Advanced
 
@@ -648,15 +889,18 @@ domain NODE_TYPE extensions.
 
 ### 9.3 Concrete Deliverables
 
-Per northstar §11 Phase 3 deliverables:
+Per northstar §11 Phase 3 deliverables, each domain ships as a
+`DomainExtension` per the Cycle 1 contract:
 
-**Vegetation** (SpeedTree-inspired):
+**Vegetation** (SpeedTree-inspired) — registers as
+`DomainExtension(domain_id="vegetation", ...)`:
 
 - Trunk/branch/leaf vocabulary as NODE_TYPE extensions:
   `trunk`, `branch`, `leaf_cluster`, `frond`, `root`, `bark`.
-- Generic generators per type.
-- Family knowledge packs for tree types: deciduous, coniferous,
-  palm, shrub, fern.
+- Generic generators per type, under
+  `lathe/asset_quality/procedural_synthesizer/generators/vegetation/`.
+- StyleKnowledge packs for tree styles: deciduous, coniferous,
+  palm, shrub, fern. Aliases reference them.
 - L-system or recursive procedural composition via edge decorators
   (`branches_from`, `grows_along`).
 
@@ -701,17 +945,25 @@ Per northstar §11 Phase 3 deliverables:
 
 ### 9.4 Acceptance Criteria
 
+- 6 new domains each register as a `DomainExtension` per the Cycle 1
+  contract. **No changes to engine code in `pipeline.py`,
+  `registry.py`, `context.py`, `hint_resolution.py`, or `trace.py`.**
+  If those files need changes to support a new domain, the Cycle 1
+  contract was incomplete and the gap is fixed retroactively in Cycle
+  1 with a follow-up commit — not by domain-specific accommodations
+  in Cycle 6.
 - 6 new domains each ship one production-grade authored fixture
   built end-to-end through the procedural engine.
-- NODE_TYPES expanded by ~25-35 domain-specific types; no domain
-  reuses a hard-surface generator (clean separation, but shared
-  base engine).
+- NODE_TYPES grow per-domain (not centrally); each domain's NODE_TYPES
+  live in its own subpackage. Hard-surface NODE_TYPES are not touched.
 - Per-domain visible-layer audit (Cycle 4 standards apply): real
   topology, real materials, real UV, real diagnostics.
 - Each domain's repair routes (Cycle 5 standards) at least map one
   diagnostic to one repair action.
 - Family count grows but Python recipe count stays at 0 — all new
-  families are data packs.
+  families are FamilyAlias JSON files referencing StyleKnowledge +
+  CompositionPolicy + DomainExtension packs.
+- `test_no_family_dispatch.py` still passes across all new domain code.
 
 ### 9.5 Dependencies
 
@@ -756,9 +1008,11 @@ Per northstar §11 Phase 4 deliverables:
 
 ### 10.4 Acceptance Criteria
 
-- A character_creature fixture (one of the existing 73 family names,
-  now migrated to data pack) builds end-to-end with rig + skin +
-  morph evidence in package artifacts.
+- A character_creature fixture (one of the family aliases that
+  existed in the registry at Cycle 3 start, now migrated to a
+  FamilyAlias JSON pointing at style + policy + animation domain
+  extension) builds end-to-end with rig + skin + morph evidence in
+  package artifacts.
 - Animation clip binding test: bind a stock animation library clip
   to a rigged fixture, package, verify the export contains the
   expected animation track count.
@@ -844,34 +1098,54 @@ Per northstar §11 Phase 5 deliverables:
 10-20 sessions (plus external coordination time, not bounded by
 code-session estimates).
 
-## 12. Cross-Cycle Parallelization
+## 12. Cross-Cycle Parallelization (Authoritative Sequencing)
 
-While cycles are presented sequentially, some can overlap when
-multiple agents/sessions are available:
+This section is the authoritative sequencing reference. Where the
+diagram in §3 disagrees, this section wins.
 
-- **Cycle 1 and Cycle 2 are orthogonal** (synthesizer is the
-  language layer; kernel decomposition is the execution layer).
-  Both can run in parallel after the seam refactor.
-- **Cycle 4 and Cycle 5 are paired** but can ship in tightly
-  alternating commits — each Cycle 4 visible-layer slice gets its
-  Cycle 5 diagnostic immediately after.
-- **Cycle 6 domain extensions** can each run in parallel once the
-  cycle-6-base generators (heightfield, sdf, scatter) exist.
-
-Cycles 3, 7, and 8 are strictly gated by their dependencies and
-should not be parallelized with their predecessors.
+- **Cycle 1 must complete before Cycle 2 starts.** Cycle 2 depends
+  on Cycle 1's typed attribute schemas, generator capability
+  manifests, and `DomainExtensionManifest`. The v1 plan claimed
+  they were orthogonal — that was wrong.
+- **Cycles 2 and 3 may overlap.** Once Cycle 1's substrate ships,
+  Cycle 2 (kernel capability) and Cycle 3 (recipe decommissioning)
+  operate on orthogonal layers.
+- **Cycle 3 cannot complete before Cycle 4 has caught up
+  family-by-family.** A migration is "done" only after both
+  ShapeProgram diff AND visible-artifact build pass. Cycles 3 and 4
+  interleave family-by-family, not sequentially.
+- **Cycles 4 and 5 are paired and ship in tightly alternating
+  commits.** Each Cycle 4 visible-layer slice gets its Cycle 5
+  diagnostic immediately after.
+- **Cycle 6 cannot start before the `DomainExtensionManifest`
+  contract from Cycle 1 has been exercised by at least one
+  migration (typically the hard-surface domain registering itself
+  in Cycle 1).** Once the contract is proven, each Cycle 6 domain
+  registers independently and can ship in parallel with other
+  domains.
+- **Cycles 7 and 8 are strictly gated** by their dependencies and
+  do not parallelize backward.
 
 ## 13. Verification Floor Per Cycle
 
 Per the user's principle and the northstar's Rule of Truth (§4),
 each cycle's verification floor is the minimum below which "this
-works" cannot honestly be claimed:
+works" cannot honestly be claimed.
+
+**Every cycle includes:**
+
+- `test_no_family_dispatch.py` (introduced in Cycle 1) must pass.
+  This is the floor under "Lathe is procedural" — if the lint test
+  fails, no cycle is "done" until it passes again.
+- `test_shape_handoff_v1.py` contract test must pass.
+
+**Per-cycle additional floor:**
 
 | Cycle | Verification Floor |
 |---|---|
-| 1 | Synthesizer tests + grammar_lowering tests + shape_handoff_v1 contract. 136+ tests green. |
-| 2 | Cycle 1 floor + kernel-program decomposition tests + 83-op coverage assertion. ~180 tests green. |
-| 3 | Cycle 2 floor + per-family migration diff tests. ~250 tests green plus 73 migration diffs. |
+| 1 | Common floor + synthesizer pipeline tests + attribute schema tests + knowledge loader schema-validation tests + domain extension contract test + unknown-family fixture builds a real GLB with visible panel + attached_to relation. 136+ unit tests green plus one build-artifact assertion. |
+| 2 | Cycle 1 floor + kernel-program decomposition tests + 83-op `executed | approximated | unsupported` coverage assertion + Manifold-promoted-ahead-of-fallback test. ~180 tests green. |
+| 3 | Cycle 2 floor + per-family migration diff tests + per-family build-artifact diff tests. Live `_RECIPES` count = 0 at cycle end. ~250+ unit tests + N family build diffs (N = registry size at cycle start). |
 | 4 | Cycle 3 floor + visible-layer fixture builds with artifact assertions. ~280 tests + 4 build fixtures. |
 | 5 | Cycle 4 floor + diagnostic-trigger tests + closed-loop tests. ~320 tests + repair-loop fixtures. |
 | 6 | Cycle 5 floor + per-domain fixture builds. ~380 tests + 6 domain fixtures. |
@@ -933,7 +1207,7 @@ control.
 | Domain extensions inflate NODE_TYPES unboundedly | 6 | NODE_TYPES expansion gated by "must generalize across ≥3 unrelated families." Domain-specific subsets dispatched by brief's `domain` field, not packed into core NODE_TYPES. |
 | Engine integration in Cycle 8 blocked by external coordination | 8 | Cycle 8 verification floor distinguishes pure-code work (export emission) from external-engine round-trip (import verification). The former can ship without the latter. |
 | Visual quality remains weak even after Cycles 4-5 | 4-5 | Per northstar §3, this is the language-vs-engine gap. If outputs still look procedural after Cycle 4, the cycle is not done; do not move to Cycle 5 prematurely. |
-| 73-recipe domain knowledge incompletely captured in data packs | 3 | Per-recipe migration acceptance includes a diff test against original recipe output. Knowledge gaps surface as diff failures and are documented as required new generator capabilities. |
+| Recipe domain knowledge incompletely captured in policy + style + alias data | 3 | Per-recipe migration acceptance includes both ShapeProgram diff AND build-artifact diff against original recipe output. Knowledge gaps surface as diff failures and are documented as required new generator capabilities or new composition policies. |
 | Cycle 1 synthesizer skeleton ages without recipe migration following | 1-3 | Cycle 1 should be followed by at least 5 recipe migrations (Round 2 of Cycle 3) within the same calendar week so the engine sees real load before drift sets in. |
 | Animation vocabulary (Cycle 7) requires deformation kernel capabilities not in Cycle 2 | 7 | Cycle 7 emits a deferred-capabilities list during planning; Cycle 2 follow-up sessions fill that list before Cycle 7 acceptance. |
 | External engine versions break in CI (Cycle 8) | 8 | Pin engine versions in the import-test harness; provide a `not_verified` claim when the harness cannot run. |
@@ -976,31 +1250,69 @@ with verified engine handoff and signed package/repro evidence.
 
 For the next agent picking up this plan:
 
-1. **Read this plan, the northstar, the audit, and the synthesizer
-   spec** — in that order. ~30 minutes.
+1. **Read this plan (especially the revision history at top), the
+   northstar, the audit, and the procedural-synthesizer-spec v2** —
+   in that order. ~30 minutes.
 2. **Confirm git status clean and on main at origin/main.** Pull if
    needed.
-3. **Open `procedural-synthesizer-architecture-spec.md` §12.** That
-   is Cycle 1's first session implementation sequencing.
-4. **Execute Cycle 1 first commit chunk:**
-   - Create `lathe/asset_quality/procedural_synthesizer/` package.
-   - Implement `FamilyKnowledge`, `SynthesizerContext`, the empty
-     registries, the trace schema.
+3. **Open `procedural-synthesizer-architecture-spec.md` v2 §12 "First
+   commit (single session, all-in-one slice)".** That sequence is
+   the authoritative Cycle 1 first commit implementation order.
+4. **Execute Cycle 1 first commit — production-grade, no stubs:**
+
+   Engine code (`lathe/asset_quality/procedural_synthesizer/`):
+   - `pipeline.py` with the 8 stages, every stage real.
+   - `registry.py` with `GeneratorRegistry` keyed by
+     `(domain, node_type)`, manifest inspection at registration time.
+   - `trace.py` with `SynthesizerTrace`, `TraceEntry`, stage traces.
+   - `hint_resolution.py` with the priority chain + attribution.
+   - `domain_extension.py` with `DomainExtensionManifest` contract.
+   - `attributes/primary_volume.py` and `attributes/panel.py` —
+     typed schemas.
+   - `knowledge_loader/{style.py, policy.py, alias.py}` + JSON
+     schemas in `knowledge_loader/schemas/`.
+   - `generators/hard_surface/primary_volume.py` — real generator
+     with capability manifest.
+   - `generators/hard_surface/panel.py` — real generator with manifest.
+   - `decorators/hard_surface/attached_to.py` — real decorator
+     with manifest.
+
+   Declarative knowledge (`std/procedural/knowledge/`):
+   - `style/industrial_pbr_v1.json`
+   - `policy/panelized_hard_surface_object.json`
+
+   Routing (`lathe/asset_quality/grammar_lowering.py`):
    - Wire `evaluate_grammar_lowering` to route unknown families
-     through `synthesize_shape_program` (returns empty program for
-     now).
-   - Implement `_primary_volume_generator` end-to-end with hint
-     resolution.
-   - Add `tests/unit/test_procedural_synthesizer_primary_volume.py`.
-   - Verify the 136-test slice still green.
-   - Commit.
-   - Push.
+     through `synthesize_shape_program`. **The synthesizer produces
+     real ShapeProgram output from the construction graph + brief.
+     NO empty-program route.**
+
+   Tests:
+   - `tests/contract/test_no_family_dispatch.py` — the lint test
+     that catches `_RECIPES.get(family)`, `_FAMILY_*` dispatch,
+     `family ==`, `family in`. Initially trivially-passing (the
+     synthesizer adds no new family dispatch); will catch future
+     regressions across Cycles 2-8.
+   - `tests/unit/test_procedural_synthesizer_pipeline.py` — 8-stage
+     pipeline tests.
+   - `tests/unit/test_procedural_synthesizer_primary_volume.py`.
+   - `tests/unit/test_procedural_synthesizer_panel.py`.
+   - `tests/unit/test_procedural_synthesizer_attached_to.py`.
+   - One end-to-end test where an authored-intent-only fixture
+     (primary_volume + 2 panels + attached_to edges, no family
+     alias) produces a non-empty ShapeProgram AND builds to a real
+     GLB containing the expected geometry.
+
+   Verify the 136+ test slice green plus the new tests, commit,
+   push.
+
 5. **Update this plan's §1 "Starting Position"** to reflect the
    shipped slice. Commit the docs update.
 
 That is the first session's complete shape. Subsequent sessions
-follow Cycle 1's deliverable list, then Cycle 2's, then Cycle 3's,
-in order.
+extend Cycle 1's deliverable list (more generators / decorators /
+attribute schemas / knowledge packs), then advance to Cycle 2 or
+overlap with Cycle 3. **No session ships a no-op skeleton.**
 
 ## 19. Bottom Line
 
