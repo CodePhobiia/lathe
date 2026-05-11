@@ -1,0 +1,9 @@
+{
+  "family_id": "tool_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Tool prop fixture (body, grip handle, working-head guard, spine rail, safety guard, adjustment mount, attachment sockets, fasteners, marking decals, contact wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

@@ -1,0 +1,9 @@
+{
+  "family_id": "industrial_crate",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Industrial crate fixture (Sprint 0 hero \u2014 body shell volume, lid seam panel, 8 corner guards, latch-plate inset, paired handles, foot rails, trim band, fastener grid, warning decal zone, edge wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

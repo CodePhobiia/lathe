@@ -1,0 +1,9 @@
+{
+  "family_id": "environment_architecture",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Environment architecture fixture (foundation volume, wall panels, opening insets, roof frame, column rails, access handle, trim band, bay frames, signage decals, weathering wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

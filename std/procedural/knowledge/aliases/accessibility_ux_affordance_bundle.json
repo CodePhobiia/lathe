@@ -1,0 +1,9 @@
+{
+  "family_id": "accessibility_ux_affordance_bundle",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "accessibility_ux_affordance_bundle: Cycle 3 migration to declarative knowledge packs. The recipe's 10-op canonical pattern is reproduced through a typed NODE_TYPE construction graph driven by the panelized_hard_surface_object composition policy. Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py. Domain-specific (vegetation/terrain/sdf/etc.) DomainExtension packs land in Cycle 6; this alias remains semantic-correct and routing-valid under the hard_surface domain in the interim."
+}

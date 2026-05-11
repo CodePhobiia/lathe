@@ -1,0 +1,9 @@
+{
+  "family_id": "vehicle_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Vehicle prop fixture (chassis volume, cabin panel, motion-system rails, front-orientation trim, payload-zone inset, access handle, light mounts, fasteners, marking decals, edge wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

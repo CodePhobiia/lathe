@@ -1,0 +1,9 @@
+{
+  "family_id": "portal_relic",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Portal relic fixture (plinth volume, portal frame, active-threshold material zone, power-node sockets, symmetry trim, rune decals, attachment mounts, energy-conduit rails, environment-contact mounts, age wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

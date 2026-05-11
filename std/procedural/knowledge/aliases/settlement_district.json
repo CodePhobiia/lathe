@@ -1,0 +1,9 @@
+{
+  "family_id": "settlement_district",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Settlement district fixture (footprint, path rails, plot-cell panels, landmark mount, threshold frames, activity material zone, height-marker volumes, boundary guards, wayfinding decals, traffic wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

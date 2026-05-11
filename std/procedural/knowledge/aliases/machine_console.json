@@ -1,0 +1,9 @@
+{
+  "family_id": "machine_console",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Machine console fixture (body volume, control-face panel, display material zone, input-control fasteners, service-access inset, ports, cooling guard, cable rails, warning decals, service wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

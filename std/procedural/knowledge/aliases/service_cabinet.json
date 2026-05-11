@@ -1,0 +1,9 @@
+{
+  "family_id": "service_cabinet",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Service cabinet fixture (shell volume, front panel, hinge stack, pull handle, latch-plate inset, vent trim, mounting brackets, fasteners, label decals, edge wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

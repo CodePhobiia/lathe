@@ -1,0 +1,9 @@
+{
+  "family_id": "set_dressing_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Set-dressing prop fixture (primary volume + decorative mounts + handle strap + lid inset + label decal + stitch fasteners + scattered mounts + material zone + handled wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}
