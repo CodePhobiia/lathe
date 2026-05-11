@@ -1,0 +1,14 @@
+{
+  "policy_id": "radial_mechanical_assembly",
+  "domain": "hard_surface",
+  "description": "Composition policy for radially-symmetric mechanical assemblies — gears, fans, turbines, wheels, valves. Pattern: central spindle (primary_volume) with a radially-arrayed feature ring (gear teeth / fan blades / cooling fins / spoke arms), optional rim/flange, optional bearing/hub feature. Expansions add a teeth_ring node when the brief declares a teeth-count, a rim node when a rim_width is set, and a hub node when bore_radius is set. All node additions are non-family-keyed — the policy applies to any asset whose authored intent contains a primary_volume tagged as 'radial_spindle'.",
+  "precondition": {
+    "requires_node_types": ["primary_volume"],
+    "forbids_node_types": [],
+    "requires_brief_fields": {},
+    "requires_parts_any": ["spindle", "radial_spindle", "hub", "wheel", "gear", "fan", "turbine"],
+    "forbids_parts_any": [],
+    "requires_intent_tags": []
+  },
+  "expansions": []
+}

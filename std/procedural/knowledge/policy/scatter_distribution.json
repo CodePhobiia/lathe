@@ -1,0 +1,14 @@
+{
+  "policy_id": "scatter_distribution",
+  "domain": "hard_surface",
+  "description": "Composition policy for scatter/distribution patterns — vegetation scatter, debris/rubble, urban prop scatter, surface_scatter operations. Pattern: host surface or volume (primary_volume tagged 'host_surface') + instance pool (asset references) + per-instance placement rules (density, jitter, slope/curvature filters, scale/rotation variation) + optional collision avoidance. Expansions add a scatter_instance node when the brief declares density/instance_pool and add a collision_filter node when collision_avoidance is set. Useful for any family whose recipe emits sop.copy_to_points or sop.scatter_on_surface — and per the migration inventory that is most of the 71 _RECIPES families.",
+  "precondition": {
+    "requires_node_types": ["primary_volume"],
+    "forbids_node_types": [],
+    "requires_brief_fields": {},
+    "requires_parts_any": ["host_surface", "scatter_host", "ground", "distribution_surface"],
+    "forbids_parts_any": [],
+    "requires_intent_tags": []
+  },
+  "expansions": []
+}
