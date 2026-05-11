@@ -53,9 +53,19 @@ from ._serialize import (
     _dict_metadata,
     _stable_unique_strings,
 )
+from ._capabilities import (
+    _SUPPORTED_BLEND_MODES,
+    _kernel_capabilities,
+    _require_capabilities,
+    _required_boolean_capabilities,
+    _validate_hull_operands,
+    _validate_minkowski_operands,
+    _validate_operands,
+    _validate_transform_operand,
+    _validated_transform_matrix,
+)
 
 KERNEL_PROGRAM_VERSION = "lathe.geometry.kernel_program_v1"
-_SUPPORTED_BLEND_MODES = frozenset({"union", "subtract", "intersect"})
 
 
 def semantic_metadata_from_primitive(primitive: Any) -> dict[str, Any]:
@@ -2571,99 +2581,6 @@ def build_instances_program_manifest(
         "matrices": _json_safe(matrices),
         "diagnostics": diagnostics,
     }
-
-
-def _kernel_capabilities(kernel: GeometryKernel) -> dict[str, bool]:
-    try:
-        probe = kernel.probe()
-    except (AttributeError, TypeError, ValueError, RuntimeError):
-        return {}
-    if not isinstance(probe, dict):
-        return {}
-    capabilities = probe.get("capabilities")
-    if isinstance(capabilities, dict):
-        return {
-            str(name): bool(value)
-            for name, value in capabilities.items()
-            if isinstance(name, str)
-        }
-    return {name: True for name in _capability_names(capabilities)}
-
-
-def _require_capabilities(
-    kernel: GeometryKernel,
-    capabilities: dict[str, bool],
-    required: set[str],
-) -> None:
-    missing = sorted(name for name in required if name not in capabilities)
-    unsupported = sorted(name for name in required if capabilities.get(name) is False)
-    if missing or unsupported:
-        raise KernelProgramCapabilityError(
-            kernel,
-            required=required,
-            advertised=capabilities,
-            missing=missing,
-            unsupported=unsupported,
-        )
-
-
-def _required_boolean_capabilities(
-    operands: list[KernelOperand],
-    *,
-    batch_union_available: bool = False,
-) -> set[str]:
-    union_count = sum(1 for operand in operands if operand.blend_mode == "union")
-    subtract_count = sum(1 for operand in operands if operand.blend_mode == "subtract")
-    intersect_count = sum(1 for operand in operands if operand.blend_mode == "intersect")
-    required: set[str] = {"to_trimesh"}
-    if union_count > 1:
-        required.add("batch_union" if batch_union_available else "union")
-    if subtract_count:
-        required.add("difference")
-    if intersect_count:
-        required.add("intersection")
-    return required
-
-
-def _validate_operands(operands: list[KernelOperand]) -> None:
-    if not operands:
-        raise ValueError("kernel program requires at least one operand")
-    for operand in operands:
-        if operand.blend_mode not in _SUPPORTED_BLEND_MODES:
-            raise ValueError(
-                "kernel program operand "
-                f"{operand.operand_id!r} has unsupported blend_mode={operand.blend_mode!r}"
-            )
-
-
-def _validate_hull_operands(operands: list[KernelOperand]) -> None:
-    if not operands:
-        raise ValueError("kernel hull program requires at least one operand")
-    for operand in operands:
-        if operand.handle is None:
-            raise ValueError(f"kernel hull operand {operand.operand_id!r} has no handle")
-
-
-def _validate_minkowski_operands(source: KernelOperand, structuring: KernelOperand) -> None:
-    for role, operand in (("source", source), ("structuring", structuring)):
-        if operand.handle is None:
-            raise ValueError(f"kernel minkowski {role} operand {operand.operand_id!r} has no handle")
-
-
-def _validate_transform_operand(source: KernelOperand) -> None:
-    if source.handle is None:
-        raise ValueError(f"kernel transform source operand {source.operand_id!r} has no handle")
-
-
-def _validated_transform_matrix(matrix: list[list[float]]) -> list[list[float]]:
-    if not isinstance(matrix, list) or len(matrix) != 4:
-        raise ValueError("kernel transform matrix must be a 4x4 row-major numeric matrix")
-    out: list[list[float]] = []
-    for row in matrix:
-        if not isinstance(row, list) or len(row) != 4:
-            raise ValueError("kernel transform matrix must be a 4x4 row-major numeric matrix")
-        out.append([float(value) for value in row])
-    return out
 
 
 def _validated_transform_matrices(matrices: list[list[list[float]]]) -> list[list[list[float]]]:
