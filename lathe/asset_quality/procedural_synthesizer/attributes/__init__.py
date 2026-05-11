@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Mapping
 
+from .frame import FrameAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
 
@@ -26,6 +27,7 @@ from .primary_volume import PrimaryVolumeAttributes
 ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "primary_volume": PrimaryVolumeAttributes.from_dict,
     "panel": PanelAttributes.from_dict,
+    "frame": FrameAttributes.from_dict,
 }
 
 
@@ -44,6 +46,7 @@ def validate_attributes(node_type: str, raw_attributes: dict[str, Any]) -> Any:
 
 __all__ = [
     "ATTRIBUTE_SCHEMAS",
+    "FrameAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
     "validate_attributes",

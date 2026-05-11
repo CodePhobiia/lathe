@@ -9,6 +9,7 @@ typed attribute schema in ``..attributes``.
 
 from __future__ import annotations
 
+from ...attributes.frame import FrameAttributes
 from ...attributes.panel import PanelAttributes
 from ...attributes.primary_volume import PrimaryVolumeAttributes
 from ...domain_extension import (
@@ -16,7 +17,7 @@ from ...domain_extension import (
     DomainExtensionRegistration,
 )
 from ...registry import REGISTRY
-from . import panel, primary_volume
+from . import frame, panel, primary_volume
 
 
 HARD_SURFACE_DOMAIN_ID = "hard_surface"
@@ -25,6 +26,7 @@ HARD_SURFACE_DOMAIN_ID = "hard_surface"
 HARD_SURFACE_NODE_SCHEMAS: dict[str, type] = {
     "primary_volume": PrimaryVolumeAttributes,
     "panel": PanelAttributes,
+    "frame": FrameAttributes,
 }
 
 
@@ -36,6 +38,7 @@ HARD_SURFACE_EDGE_SCHEMAS: dict[str, type] = {
 HARD_SURFACE_GENERATORS = (
     primary_volume.GENERATOR,
     panel.GENERATOR,
+    frame.GENERATOR,
 )
 
 
