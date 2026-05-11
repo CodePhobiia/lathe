@@ -17,7 +17,7 @@ of "procedural, not family-recipes-in-data."
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -46,7 +46,7 @@ class PolicyPrecondition:
 
     requires_node_types: tuple[str, ...] = ()
     forbids_node_types: tuple[str, ...] = ()
-    requires_brief_fields: Mapping[str, Any] = ()  # type: ignore[assignment]
+    requires_brief_fields: Mapping[str, Any] = field(default_factory=dict)
     requires_parts_any: tuple[str, ...] = ()
     forbids_parts_any: tuple[str, ...] = ()
     requires_intent_tags: tuple[str, ...] = ()
@@ -70,7 +70,7 @@ class EdgeTemplate:
 
     target_node_type: str
     edge_type: str
-    attributes: Mapping[str, Any] = ()  # type: ignore[assignment]
+    attributes: Mapping[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> "EdgeTemplate":
@@ -92,8 +92,8 @@ class PolicyExpansion:
 
     add_node_type: str
     count: Any = 1  # int OR {"from_brief_field": str, "default": int}
-    placement: Mapping[str, Any] = ()  # type: ignore[assignment]
-    attributes_template: Mapping[str, Any] = ()  # type: ignore[assignment]
+    placement: Mapping[str, Any] = field(default_factory=dict)
+    attributes_template: Mapping[str, Any] = field(default_factory=dict)
     edges_to_existing: tuple[EdgeTemplate, ...] = ()
 
     @classmethod

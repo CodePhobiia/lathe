@@ -134,13 +134,19 @@ def _regions_from_primitives(primitives: list[ShapePrimitive]) -> list[ShapeRegi
     for index, primitive in enumerate(primitives):
         if primitive.blend_mode == "subtract":
             continue
+        # Use placeholder center/extents — downstream surface/UV stages
+        # consume the primitive's own bounds for material zoning, not
+        # the region's stored bounds. The region exists to give the
+        # primitive a stable name/component label for the topology /
+        # surface stages.
         regions.append(
             ShapeRegion(
                 name=f"procedural.region.{index}",
                 part=str(primitive.part or "body"),
                 component=str(primitive.primitive_type or "primitive"),
-                role="procedural",
-                material_zone=str(primitive.part or "body"),
+                center=tuple(primitive.center) if primitive.center else (0.0, 0.0, 0.0),
+                extents=(1.0, 1.0, 1.0),
+                tags=["procedural"],
             )
         )
     return regions
