@@ -87,6 +87,12 @@ HARD_SURFACE_NODE_SCHEMAS: dict[str, type] = {
 
 HARD_SURFACE_EDGE_SCHEMAS: dict[str, type] = {
     "attached_to": dict,  # raw dict — no typed edge schema yet
+    "inset_into": dict,
+    "wraps_around": dict,
+    "mirrors": dict,
+    "aligned_with": dict,
+    "supports": dict,
+    "cuts": dict,
 }
 
 
@@ -119,8 +125,24 @@ HARD_SURFACE_GENERATORS = (
 # attached_to decorator here for the manifest's emitted-op-kinds
 # inventory.
 def _load_decorators():
-    from ...decorators.hard_surface import attached_to as attached_to_module
-    return (attached_to_module.DECORATOR,)
+    from ...decorators.hard_surface import (
+        aligned_with as aligned_with_module,
+        attached_to as attached_to_module,
+        cuts as cuts_module,
+        inset_into as inset_into_module,
+        mirrors as mirrors_module,
+        supports as supports_module,
+        wraps_around as wraps_around_module,
+    )
+    return (
+        attached_to_module.DECORATOR,
+        inset_into_module.DECORATOR,
+        wraps_around_module.DECORATOR,
+        mirrors_module.DECORATOR,
+        aligned_with_module.DECORATOR,
+        supports_module.DECORATOR,
+        cuts_module.DECORATOR,
+    )
 
 
 _MANIFEST = DomainExtensionManifest(
