@@ -32,6 +32,61 @@ _LOGGER = logging.getLogger(__name__)
 MANIFOLD_KERNEL_ID = "lathe.geometry.manifold_v1"
 REFERENCE_KERNEL_ID = "lathe.geometry.reference_v1"
 
+STRICT_GEOMETRY_ENV_VAR = "LATHE_STRICT_GEOMETRY"
+_STRICT_TRUTHY_VALUES: frozenset[str] = frozenset({"1", "true", "yes", "on"})
+
+
+class StrictGeometryModeError(RuntimeError):
+    """Raised when strict geometry mode is on and Manifold cannot be selected.
+
+    Strict mode is opt-in via ``LATHE_STRICT_GEOMETRY=1`` env var or
+    ``runtime_config["runtime"]["geometry"]["strict_mode"] = True``.
+    When on, the resolver refuses to silently fall back from Manifold
+    to the reference kernel — certification of a hero-quality claim
+    cannot be trusted when the watertight-by-construction backend has
+    been swapped out.
+    """
+
+    def __init__(
+        self,
+        *,
+        attempted: str,
+        fallback: str,
+        reason: str,
+        source: str,
+    ) -> None:
+        """Build a strict-mode failure message naming attempted/fallback paths."""
+        super().__init__(
+            f"strict geometry mode (source={source}) refused fallback: "
+            f"attempted kernel={attempted!r} unavailable ({reason}); "
+            f"reference fallback={fallback!r} would have been used. "
+            "Set strict_mode=false or install the manifold3d dependency."
+        )
+        self.attempted = attempted
+        self.fallback = fallback
+        self.reason = reason
+        self.source = source
+
+
+def _strict_geometry_enabled(runtime_config: dict[str, Any] | None) -> tuple[bool, str]:
+    """Return (enabled, source) for strict geometry mode.
+
+    Precedence: env var > runtime_config. ``source`` names which channel
+    enabled the flag, used in error messages so the failure points at
+    the right knob.
+    """
+    env_raw = os.environ.get(STRICT_GEOMETRY_ENV_VAR)
+    if env_raw is not None and env_raw.strip().lower() in _STRICT_TRUTHY_VALUES:
+        return True, f"env:{STRICT_GEOMETRY_ENV_VAR}"
+    if runtime_config:
+        geo_cfg = (runtime_config.get("runtime") or {}).get("geometry") or {}
+        flag = geo_cfg.get("strict_mode")
+        if isinstance(flag, bool) and flag:
+            return True, "runtime_config.runtime.geometry.strict_mode"
+        if isinstance(flag, str) and flag.strip().lower() in _STRICT_TRUTHY_VALUES:
+            return True, "runtime_config.runtime.geometry.strict_mode"
+    return False, ""
+
 
 class GeometryKernelUnavailableError(RuntimeError):
     """Raised when a named kernel cannot be instantiated (deps missing)."""
@@ -309,6 +364,14 @@ def resolve_geometry_kernel(
     preferred = _instantiate(MANIFOLD_KERNEL_ID)
     if preferred is not None:
         return preferred
+    strict_enabled, strict_source = _strict_geometry_enabled(runtime_config)
+    if strict_enabled:
+        raise StrictGeometryModeError(
+            attempted=MANIFOLD_KERNEL_ID,
+            fallback=REFERENCE_KERNEL_ID,
+            reason="manifold3d not importable",
+            source=strict_source,
+        )
     log_info(
         log,
         "lathe.geometry.kernel.default_fallback",
