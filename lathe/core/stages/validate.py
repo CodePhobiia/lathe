@@ -304,7 +304,11 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                     }
                 )
 
-    cert_bundle = _PIPELINE.run(executor.runtime, executor.asset, artifacts={})
+    cert_bundle = _PIPELINE.run(
+        executor.runtime,
+        executor.asset,
+        artifacts={"validate_progress_path": str(stage_dir / "validate_progress.jsonl")},
+    )
     semantic_entry = cert_bundle["validators"]["semantic_quality"]
     visual_entry = cert_bundle["validators"]["visual_quality"]
     flow_entry = cert_bundle["validators"]["flow_quality"]

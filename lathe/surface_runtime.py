@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import fields
+import json
 from pathlib import Path
+import time
 from typing import Any
 
 import numpy as np
@@ -24,6 +26,7 @@ from .bake_runtime import (
     bake_normal_map,
     bake_roughness_map,
     bake_wear_mask,
+    build_highlow_projection_map,
     enhance_normal_map,
     pad_low_coverage_atlas_maps,
     renormalize_tangent_normal_map,
@@ -90,6 +93,18 @@ _HIGH_SOURCE_DETAIL_PRIMITIVES = {
     "sdf_mesh",
     "heightfield",
 }
+
+
+def _surface_progress(out_dir: Path, event: str, **payload: Any) -> None:
+    record = {"event": event, "time": time.time(), **payload}
+    out_dir.mkdir(parents=True, exist_ok=True)
+    line = json.dumps(record, sort_keys=True)
+    with (out_dir / "surface_progress.jsonl").open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
+    (out_dir / "surface_progress_latest.json").write_text(
+        json.dumps(record, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
 
 
 def _hero_surface_enabled(shape_bundle: dict[str, Any]) -> bool:
@@ -689,6 +704,7 @@ def _shape_ir_high_source_mesh(
     mesh: trimesh.Trimesh,
     shape_bundle: dict[str, Any],
     shape_cfg: dict[str, Any],
+    precompiled_shape_mesh: trimesh.Trimesh | None = None,
 ) -> tuple[trimesh.Trimesh, dict[str, Any]]:
     shape_ir, selection_report = _selected_shape_ir(shape_bundle)
     if shape_ir is None:
@@ -701,6 +717,48 @@ def _shape_ir_high_source_mesh(
 
     detail_report = _shape_ir_detail_report(shape_ir)
     fidelity = _surface_high_source_fidelity(shape_cfg)
+    if precompiled_shape_mesh is not None and len(precompiled_shape_mesh.faces) > 0:
+        high_mesh = precompiled_shape_mesh.copy()
+        high_mesh.remove_infinite_values()
+        high_mesh.remove_unreferenced_vertices()
+        high_mesh.merge_vertices()
+        high_mesh.fix_normals()
+        base_faces = len(high_mesh.faces)
+        target_faces = _procedural_high_target_faces(shape_cfg, len(mesh.faces))
+        target_edge_length = _edge_length_target_for_face_budget(high_mesh, target_faces)
+        method_parts = ["shape_stage_selected_candidate_reuse"]
+        if target_edge_length is not None:
+            vertices, faces = trimesh.remesh.subdivide_to_size(
+                high_mesh.vertices,
+                high_mesh.faces,
+                max_edge=target_edge_length,
+                max_iter=6,
+                return_index=False,
+            )
+            high_mesh = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
+            method_parts.append("target_edge_subdivide")
+        if len(high_mesh.faces) <= base_faces and target_faces > len(high_mesh.faces):
+            high_mesh = high_mesh.subdivide()
+            method_parts.append("uniform_subdivide")
+        high_mesh.remove_infinite_values()
+        high_mesh.remove_unreferenced_vertices()
+        high_mesh.merge_vertices()
+        high_mesh.fix_normals()
+        return high_mesh, {
+            "source": "surface_shape_stage_selected_candidate_high_source_v1",
+            "attempted_source": "surface_shape_ir_primitive_high_source_v1",
+            "actual_source": "surface_shape_stage_selected_candidate_high_source_v1",
+            "method": "+".join(method_parts),
+            "target_faces": target_faces,
+            "target_edge_length_cm": round(float(target_edge_length or 0.0), 6),
+            "input_faces": len(mesh.faces),
+            "shape_ir_base_faces": base_faces,
+            "output_faces": len(high_mesh.faces),
+            "shape_ir_compile_reused": True,
+            **selection_report,
+            **detail_report,
+        }
+
     try:
         high_mesh, face_parts, compile_report = compile_explicit_surface_mesh(
             shape_ir,
@@ -1454,6 +1512,35 @@ def _material_zones_from_topology(
                 zone["previous_material"] = previous_material
         zone["material_zone_source"] = "topology_mesh_ir"
     return zones
+
+
+def _material_id_color(index: int) -> list[int]:
+    return [
+        53 + ((index * 97) % 181),
+        53 + ((index * 57 + 89) % 181),
+        53 + ((index * 131 + 37) % 181),
+    ]
+
+
+def _assign_material_id_colors(material_zones: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    used = {(8, 8, 8), (128, 128, 128)}
+    assigned: list[dict[str, Any]] = []
+    for index, zone in enumerate(material_zones):
+        item = dict(zone)
+        raw_color = item.get("id_color") or item.get("material_id_color")
+        if isinstance(raw_color, list | tuple) and len(raw_color) >= 3:
+            color = tuple(int(value) for value in raw_color[:3])
+        else:
+            probe = index
+            color = tuple(_material_id_color(probe))
+            while color in used:
+                probe += 1
+                color = tuple(_material_id_color(probe))
+        used.add(color)
+        item["id_color"] = [int(color[0]), int(color[1]), int(color[2])]
+        item["material_id_color"] = list(item["id_color"])
+        assigned.append(item)
+    return assigned
 
 
 def _material_wear_graph_hooks(
@@ -2458,7 +2545,7 @@ def build_surface_bundle(
     if pattern_decals:
         surface_cfg["decals"] = list(dict.fromkeys([*surface_cfg.get("decals", []), *pattern_decals]))
     uv_bundle = uv_bundle if isinstance(uv_bundle, dict) else {}
-    material_zones = _material_zones_from_topology(asset, topology_bundle)
+    material_zones = _assign_material_id_colors(_material_zones_from_topology(asset, topology_bundle))
     uv_organization = (
         dict(uv_bundle.get("uv_organization", {}))
         if isinstance(uv_bundle.get("uv_organization"), dict)
@@ -2665,6 +2752,14 @@ def build_surface_bundle(
     mesh = uv_runtime_mesh.mesh
     maps_dir = out_dir / "maps"
     shape_cfg = asset.get("build", {}).get("shape", {})
+    _surface_progress(
+        out_dir,
+        "surface_start",
+        size=size,
+        low_face_count=int(len(mesh.faces)),
+        low_vertex_count=int(len(mesh.vertices)),
+        hero_mode=hero_mode,
+    )
     bake_cage_offset_cm = _level(shape_cfg.get("highlow_bake_cage_offset_cm"), 1.25)
     bake_max_ray_distance_cm = _optional_level(shape_cfg.get("highlow_bake_max_ray_distance_cm"))
     bake_bidirectional = _flag(shape_cfg.get("highlow_bake_bidirectional"), False)
@@ -2677,7 +2772,16 @@ def build_surface_bundle(
     # vents, and cutters rather than a subdivided copy of the low mesh.
     # Non-hero builds keep the original ``highlow_mode`` gate.
     if (hero_mode or _highlow_requested(shape_cfg)) and len(mesh.faces) > 0:
-        high_mesh, high_source_report = _shape_ir_high_source_mesh(mesh, shape_bundle, shape_cfg)
+        _surface_progress(out_dir, "high_source_start")
+        shape_stage_mesh = getattr(shape_runtime_mesh, "mesh", None)
+        high_mesh, high_source_report = _shape_ir_high_source_mesh(
+            mesh,
+            shape_bundle,
+            shape_cfg,
+            precompiled_shape_mesh=shape_stage_mesh
+            if isinstance(shape_stage_mesh, trimesh.Trimesh)
+            else None,
+        )
         if hero_mode and len(high_mesh.faces) <= len(mesh.faces):
             # Force a denser high source on hero builds when the
             # ShapeIR/procedural target collapsed to a copy. One
@@ -2695,7 +2799,35 @@ def build_surface_bundle(
         high_source_path = out_dir / "high_source.glb"
         export_glb(high_mesh, high_source_path)
         high_source_uri = str(high_source_path.relative_to(out_dir)).replace("/", "\\")
+        _surface_progress(
+            out_dir,
+            "high_source_end",
+            high_face_count=int(len(high_mesh.faces)),
+            high_vertex_count=int(len(high_mesh.vertices)),
+            high_source=high_source_report.get("actual_source", ""),
+        )
+    highlow_projection_faces: np.ndarray | None = None
+    highlow_projection_stats: dict[str, Any] = {}
+    if high_mesh is not None:
+        _surface_progress(out_dir, "highlow_projection_start")
+        highlow_projection_faces, highlow_projection_stats = build_highlow_projection_map(
+            mesh,
+            high_mesh,
+            bake_cage_offset_cm=bake_cage_offset_cm,
+            max_ray_distance_cm=bake_max_ray_distance_cm,
+            bidirectional=bake_bidirectional,
+        )
+        _surface_progress(
+            out_dir,
+            "highlow_projection_end",
+            projected_face_count=int(len(highlow_projection_faces)),
+            ray_hit_count=int(highlow_projection_stats.get("ray_hit_count", 0)),
+            fallback_count=int(highlow_projection_stats.get("fallback_count", 0)),
+        )
+    _surface_progress(out_dir, "ao_start")
     ao = bake_ao_map(mesh, size)
+    _surface_progress(out_dir, "ao_end")
+    _surface_progress(out_dir, "curvature_start")
     curvature = (
         bake_highlow_curvature_transfer_map(
             mesh,
@@ -2706,10 +2838,13 @@ def build_surface_bundle(
             bidirectional=bake_bidirectional,
             transfer_stats=bake_transfer_stats,
             transfer_channel="curvature",
+            projected_high_faces=highlow_projection_faces,
+            projection_stats_payload=highlow_projection_stats,
         )
         if high_mesh is not None
         else bake_curvature_map(mesh, size)
     )
+    _surface_progress(out_dir, "curvature_end")
     curvature_projection_quality = _projection_quality(
         {"curvature": bake_transfer_stats.get("curvature", {})}
     )
@@ -2717,16 +2852,31 @@ def build_surface_bundle(
         curvature,
         curvature_projection_quality,
     )
+    _surface_progress(out_dir, "id_map_start")
     id_map = bake_id_map(mesh, face_parts, material_zones, size)
-    wear_mask = (
-        bake_wear_mask(id_map, material_zones, curvature, ao) if authored_material_maps else None
+    _surface_progress(out_dir, "id_map_end")
+    wear_mask = None
+    if authored_material_maps:
+        _surface_progress(out_dir, "wear_mask_start")
+        wear_mask = bake_wear_mask(id_map, material_zones, curvature, ao)
+        _surface_progress(out_dir, "wear_mask_end")
+
+    material_layer_mask = None
+    if authored_material_maps and surface_story["material_layers"]:
+        _surface_progress(out_dir, "material_layer_mask_start")
+        material_layer_mask = bake_material_layer_mask(id_map, material_zones, curvature, ao)
+        _surface_progress(out_dir, "material_layer_mask_end")
+    _surface_progress(out_dir, "basecolor_start")
+    basecolor = bake_basecolor_map(
+        id_map,
+        material_zones,
+        curvature,
+        ao,
+        wear_mask=wear_mask,
+        material_layer_mask=material_layer_mask,
     )
-    material_layer_mask = (
-        bake_material_layer_mask(id_map, material_zones, curvature, ao)
-        if authored_material_maps and surface_story["material_layers"]
-        else None
-    )
-    basecolor = bake_basecolor_map(id_map, material_zones, curvature, ao)
+    _surface_progress(out_dir, "basecolor_end")
+    _surface_progress(out_dir, "normal_start")
     base_normal = (
         bake_highlow_normal_transfer_map(
             mesh,
@@ -2737,10 +2887,13 @@ def build_surface_bundle(
             bidirectional=bake_bidirectional,
             transfer_stats=bake_transfer_stats,
             transfer_channel="normal",
+            projected_high_faces=highlow_projection_faces,
+            projection_stats_payload=highlow_projection_stats,
         )
         if high_mesh is not None
         else bake_normal_map(mesh, size)
     )
+    _surface_progress(out_dir, "normal_end")
     normal_map_report = {
         "schema": "lathe.surface.normal_map_report.v1",
         "normal_space": "tangent",
@@ -2753,10 +2906,33 @@ def build_surface_bundle(
     if face_operation_summary:
         normal_map_report["face_operation_summary"] = face_operation_summary
     manifest["normal_map_report"] = dict(normal_map_report)
-    normal = enhance_normal_map(base_normal, id_map, material_zones, curvature)
-    roughness = bake_roughness_map(id_map, material_zones, curvature, ao)
+    _surface_progress(out_dir, "normal_enhance_start")
+    normal = enhance_normal_map(
+        base_normal,
+        id_map,
+        material_zones,
+        curvature,
+        wear_mask=wear_mask,
+        material_layer_mask=material_layer_mask,
+    )
+    _surface_progress(out_dir, "normal_enhance_end")
+    _surface_progress(out_dir, "roughness_start")
+    roughness = bake_roughness_map(
+        id_map,
+        material_zones,
+        curvature,
+        ao,
+        wear_mask=wear_mask,
+        material_layer_mask=material_layer_mask,
+    )
+    _surface_progress(out_dir, "roughness_end")
+    _surface_progress(out_dir, "metallic_start")
     metallic = bake_metallic_map(id_map, material_zones)
+    _surface_progress(out_dir, "metallic_end")
+    _surface_progress(out_dir, "emissive_start")
     emissive = bake_emissive_map(id_map, material_zones)
+    _surface_progress(out_dir, "emissive_end")
+    _surface_progress(out_dir, "surface_graph_buffers_start")
     basecolor, normal, roughness, ao, curvature, surface_graph_buffer_report = _apply_surface_graph_runtime_buffers(
         surface_graph_handoff=surface_graph_handoff,
         size=size,
@@ -2767,6 +2943,7 @@ def build_surface_bundle(
         ao=ao,
         curvature=curvature,
     )
+    _surface_progress(out_dir, "surface_graph_buffers_end")
     if surface_graph_buffer_report.get("applied"):
         backend_report["surface_graph_buffers_applied"] = True
         backend_report["surface_graph_buffer_channels"] = list(surface_graph_buffer_report.get("applied_channels", []))
@@ -2779,6 +2956,7 @@ def build_surface_bundle(
     normal_map_report["surface_graph_buffers_applied"] = "normal" in surface_graph_buffer_report.get("applied_channels", [])
     manifest["normal_map_report"] = dict(normal_map_report)
     manifest["surface_graph_buffer_report"] = dict(surface_graph_buffer_report)
+    _surface_progress(out_dir, "pad_atlas_start")
     basecolor, normal, roughness, ao, curvature, emissive = pad_low_coverage_atlas_maps(
         id_map=id_map,
         material_zones=material_zones,
@@ -2789,6 +2967,8 @@ def build_surface_bundle(
         curvature=curvature,
         emissive=emissive,
     )
+    _surface_progress(out_dir, "pad_atlas_end")
+    _surface_progress(out_dir, "decal_overlay_start")
     basecolor, roughness, emissive = apply_decal_overlays(
         basecolor,
         roughness,
@@ -2796,11 +2976,15 @@ def build_surface_bundle(
         list(surface_cfg.get("decals", [])),
         placements=surface_story_placement_plan.get("placements", []),
     )
+    _surface_progress(out_dir, "decal_overlay_end")
     if repair_mode == "surface_enhance_v1":
         basecolor, normal, roughness, emissive = _enhance_surface_maps_for_repair(
             basecolor, normal, roughness, emissive
         )
+    _surface_progress(out_dir, "orm_start")
     orm = derive_orm_map(ao, roughness, metallic)
+    _surface_progress(out_dir, "orm_end")
+    _surface_progress(out_dir, "control_pack_start")
     control_pack = _write_surface_control_pack(
         out_dir=out_dir,
         size=size,
@@ -2819,6 +3003,7 @@ def build_surface_bundle(
         generated_surface_charts=generated_surface_charts,
         surface_story_placement_plan=surface_story_placement_plan,
     )
+    _surface_progress(out_dir, "control_pack_end")
     manifest["generated_surface_chart_maps"] = dict(
         control_pack.get("generated_surface_chart_maps", {})
     )
@@ -2853,6 +3038,7 @@ def build_surface_bundle(
             backend_report["fallback_backend_id"] = ""
             backend_report["fallback_reason"] = ""
 
+    _surface_progress(out_dir, "write_maps_start")
     outputs = {
         "basecolor": _write_image(basecolor, maps_dir / "basecolor.png"),
         "normal": _write_image(normal, maps_dir / "normal.png"),
@@ -2867,6 +3053,7 @@ def build_surface_bundle(
         outputs["wear_mask"] = _write_image(wear_mask, maps_dir / "wear_mask.png")
     if material_layer_mask is not None:
         outputs["material_layer_mask"] = _write_image(material_layer_mask, maps_dir / "material_layer_mask.png")
+    _surface_progress(out_dir, "write_maps_end", output_count=len(outputs))
 
     shape_selected_id = shape_bundle.get("selected_candidate_id")
     high_mesh_uri = next(

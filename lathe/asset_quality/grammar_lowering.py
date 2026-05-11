@@ -13956,30 +13956,21 @@ def _runtime_config_for_geometry_kernel(runtime: dict[str, Any]) -> dict[str, An
 
 
 def _resolve_v1_lowering_geometry_kernel(runtime: dict[str, Any]) -> tuple[Any | None, dict[str, Any]]:
-    from ..geometry.kernel import (
-        GeometryKernelUnavailableError,
-        UnknownGeometryKernelError,
-        resolve_geometry_kernel,
-    )
-
     runtime_config = _runtime_config_for_geometry_kernel(runtime)
     if runtime_config is None:
         return None, {
             "geometry_kernel_selection": "not_configured",
             "geometry_kernel": None,
         }
-    try:
-        kernel = resolve_geometry_kernel(runtime_config)
-    except (GeometryKernelUnavailableError, UnknownGeometryKernelError) as exc:
-        return None, {
-            "geometry_kernel_selection": "unavailable",
-            "geometry_kernel": None,
-            "geometry_kernel_failure_type": type(exc).__name__,
-            "geometry_kernel_failure_reason": str(exc),
-        }
-    return kernel, {
-        "geometry_kernel_selection": "resolved",
-        "geometry_kernel": getattr(kernel, "name", None),
+    # The live validate stage is informational for grammar lowering. Replaying
+    # the geometry kernel here duplicates the shape-stage kernel work and can
+    # dominate end-to-end builds for dense assets. Keep lowering semantic and
+    # report the skipped replay honestly; direct lower_to_v1(...) callers can
+    # still pass a geometry kernel when materialized adapter output is desired.
+    return None, {
+        "geometry_kernel_selection": "skipped_validator_kernel_replay",
+        "geometry_kernel": None,
+        "geometry_kernel_materialization_skipped": True,
     }
 
 

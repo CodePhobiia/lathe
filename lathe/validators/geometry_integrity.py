@@ -34,6 +34,7 @@ _TRIANGLE_VERTICES = 2
 _GEOMETRY_EPS = 1e-12
 _INCONSISTENT_NORMAL_DOT = -0.5
 _MAX_SELF_INTERSECTION_PAIRS = 25_000
+_MAX_SELF_INTERSECTION_FACE_SCAN = 2048
 _DIRECT_MODIFIER_RECORD_LIMIT = 32
 
 
@@ -52,8 +53,11 @@ def _get_runtime_mesh(runtime: dict[str, Any]) -> trimesh.Trimesh | None:
     return mesh
 
 
-def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int, bool]:
-    """Return ``(rate, intersecting_pair_count, tested_pair_count, scan_limited)``.
+def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int, bool, int, int]:
+    """Return bounded self-intersection evidence.
+
+    The tuple is ``(rate, intersecting_pair_count, tested_pair_count,
+    scan_limited, scanned_face_rows, total_face_rows)``.
 
     Broad phase is AABB overlap; narrow phase is a SAT + segment-pierces-
     triangle test. Adjacent faces are excluded — adjacency is taken as
@@ -68,12 +72,12 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int, boo
     faces = mesh.faces
     n_faces = len(faces)
     if n_faces < _MIN_TRIANGLE_PAIR_FACES:
-        return 0.0, 0, 0, False
+        return 0.0, 0, 0, False, 0, int(n_faces)
 
     try:
         tri_verts = mesh.vertices[faces]
     except (IndexError, ValueError):
-        return 0.0, 0, 0, False
+        return 0.0, 0, 0, False, 0, int(n_faces)
 
     # Position-based vertex keys: snap each coordinate to a coarse grid so
     # duplicated seam vertices at the same physical location fold into one
@@ -113,7 +117,18 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int, boo
     scan_limited = False
     intersecting = 0
     tested = 0
-    for i in range(n_faces - 1):
+    max_face_rows = max(1, int(_MAX_SELF_INTERSECTION_FACE_SCAN))
+    if n_faces - 1 > max_face_rows:
+        scan_indices = np.unique(np.linspace(0, n_faces - 2, max_face_rows, dtype=np.int64))
+        scan_limited = True
+    else:
+        scan_indices = np.arange(n_faces - 1, dtype=np.int64)
+    scanned_face_rows = 0
+    for raw_i in scan_indices:
+        i = int(raw_i)
+        if i < 0 or i >= n_faces - 1:
+            continue
+        scanned_face_rows += 1
         if tested >= max_pairs_to_scan:
             scan_limited = True
             break
@@ -134,10 +149,10 @@ def _self_intersection_rate(mesh: trimesh.Trimesh) -> tuple[float, int, int, boo
 
     total_pairs = n_faces * (n_faces - 1) // 2
     if total_pairs <= 0 or tested <= 0:
-        return 0.0, intersecting, tested, scan_limited
+        return 0.0, intersecting, tested, scan_limited, scanned_face_rows, int(n_faces)
     denominator = tested if scan_limited else total_pairs
     rate = intersecting / float(max(1, denominator))
-    return float(rate), int(intersecting), int(tested), bool(scan_limited)
+    return float(rate), int(intersecting), int(tested), bool(scan_limited), scanned_face_rows, int(n_faces)
 
 
 def _triangles_intersect(a: np.ndarray, b: np.ndarray) -> bool:
@@ -445,7 +460,14 @@ def evaluate_geometry_integrity(
     geometry_strict = bool(shape_cfg.get("geometry_strict", False))
     body_count_stability_check = bool(shape_cfg.get("body_count_stability_check", False))
 
-    intersection_rate, intersecting_pairs, tested_pairs, intersection_scan_limited = _self_intersection_rate(mesh)
+    (
+        intersection_rate,
+        intersecting_pairs,
+        tested_pairs,
+        intersection_scan_limited,
+        intersection_scanned_face_rows,
+        intersection_total_face_rows,
+    ) = _self_intersection_rate(mesh)
     normal_score, winding_ok, bad_edges, edge_pairs = _normal_consistency(mesh)
 
     if body_count_stability_check:
@@ -478,6 +500,9 @@ def evaluate_geometry_integrity(
                     "tested_pairs": tested_pairs,
                     "scan_limited": intersection_scan_limited,
                     "pair_budget": _MAX_SELF_INTERSECTION_PAIRS,
+                    "face_scan_budget": _MAX_SELF_INTERSECTION_FACE_SCAN,
+                    "scanned_face_rows": intersection_scanned_face_rows,
+                    "total_face_rows": intersection_total_face_rows,
                     "rate": intersection_rate,
                 },
                 "suggested_repairs": ["repair_self_intersections"],
@@ -594,6 +619,9 @@ def evaluate_geometry_integrity(
         "tested_pairs": tested_pairs,
         "self_intersection_scan_limited": bool(intersection_scan_limited),
         "self_intersection_pair_budget": int(_MAX_SELF_INTERSECTION_PAIRS),
+        "self_intersection_face_scan_budget": int(_MAX_SELF_INTERSECTION_FACE_SCAN),
+        "self_intersection_scanned_face_rows": int(intersection_scanned_face_rows),
+        "self_intersection_total_face_rows": int(intersection_total_face_rows),
         "is_winding_consistent": bool(winding_ok),
         "inconsistent_edge_adjacencies": int(bad_edges),
         "edge_adjacencies": int(edge_pairs),

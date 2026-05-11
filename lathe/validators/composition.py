@@ -19,7 +19,10 @@ authoritative runtime mesh — not a shape-stage hook).
 
 from __future__ import annotations
 
+import json
+import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, Protocol, TypedDict, runtime_checkable
 
 from ..selector_manifest import GAMEPLAY_TAG_CATALOG
@@ -273,16 +276,38 @@ class ValidatorPipeline:
         with stage-level gating (e.g. ``score >= threshold``) by
         inspecting the returned bundle.
         """
+        progress_path_value = artifacts.get("validate_progress_path")
+        progress_path = Path(str(progress_path_value)) if progress_path_value else None
+
+        def _progress(event: str, **payload: Any) -> None:
+            if progress_path is None:
+                return
+            record = {
+                "event": event,
+                "time": time.time(),
+                **payload,
+            }
+            progress_path.parent.mkdir(parents=True, exist_ok=True)
+            with progress_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(record, sort_keys=True) + "\n")
+
         reports: dict[str, ValidatorReport] = {}
         all_pass = True
         total_weight = 0.0
         weighted_sum = 0.0
         for validator in self._validators:
+            _progress("validator_start", validator=validator.name)
             missing_deps = _missing_stage_dependencies(validator, runtime, reports)
             if missing_deps:
                 report = _dependency_failure_report(validator, missing_deps, asset)
             else:
                 report = validator.evaluate(runtime, asset, artifacts)
+            _progress(
+                "validator_end",
+                validator=validator.name,
+                passes=bool(report.get("passes", False)),
+                diagnostic_count=len(report.get("diagnostics", []) or []),
+            )
             reports[validator.name] = report
             # Publish this validator's evidence into runtime under its name so
             # downstream validators (flow reads semantic+visual, visual reads

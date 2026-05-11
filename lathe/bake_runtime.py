@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from functools import lru_cache
 from typing import Any
 
 import numpy as np
@@ -32,7 +33,14 @@ def _face_uv_polygons(mesh: trimesh.Trimesh, size: int) -> list[list[tuple[float
 
 
 def _material_color_lookup(material_zones: list[dict[str, Any]]) -> dict[str, tuple[int, int, int]]:
-    return {entry["part"]: tuple(int(value) for value in entry["basecolor"]) for entry in material_zones}
+    return {entry["part"]: _zone_id_color(entry) for entry in material_zones}
+
+
+def _zone_id_color(zone: dict[str, Any]) -> tuple[int, int, int]:
+    raw = zone.get("id_color") or zone.get("material_id_color") or zone.get("basecolor")
+    if raw is None:
+        raise KeyError("basecolor")
+    return tuple(int(value) for value in raw)
 
 
 def _hash_seed(label: str) -> float:
@@ -40,6 +48,7 @@ def _hash_seed(label: str) -> float:
     return int.from_bytes(digest[:4], "little") / float(2**32 - 1)
 
 
+@lru_cache(maxsize=8)
 def _coord_grid(size: int) -> tuple[np.ndarray, np.ndarray]:
     yy, xx = np.indices((size, size), dtype=np.float64)
     return xx / max(1, size - 1), yy / max(1, size - 1)
@@ -182,6 +191,68 @@ def _profile_pattern(profile: str, size: int, seed: float) -> np.ndarray:
     if profile in {"painted_panel", "neutral_panel", "carbon_rubber", "emissive_panel"}:
         return _paint_pattern(size, seed)
     return _noise_field(size, seed)
+
+
+def _noise_values(x: np.ndarray, y: np.ndarray, seed: float) -> np.ndarray:
+    field = (
+        np.sin((x * (7.0 + seed * 5.0) + y * 1.8 + seed * 3.7) * np.pi * 2.0)
+        + np.cos((y * (9.0 + seed * 4.0) - x * 1.2 + seed * 5.1) * np.pi * 2.0)
+        + np.sin(((x + y) * (4.0 + seed * 3.0) + seed * 1.7) * np.pi * 2.0)
+    )
+    return np.clip(0.5 + field / 6.0, 0.0, 1.0)
+
+
+def _profile_pattern_values(profile: str, size: int, seed: float, mask: np.ndarray) -> np.ndarray:
+    x_grid, y_grid = _coord_grid(size)
+    x = x_grid[mask]
+    y = y_grid[mask]
+    if profile == "wood_grain":
+        grain = np.sin((x * (20.0 + seed * 8.0) + y * (1.5 + seed)) * np.pi * 2.0)
+        streaks = np.sin((x * (58.0 + seed * 12.0) + y * 2.0) * np.pi * 2.0)
+        return np.clip(0.5 + grain * 0.28 + streaks * 0.10 + (_noise_values(x, y, seed) - 0.5) * 0.22, 0.0, 1.0)
+    if profile in {"brushed_metal", "worn_brass"}:
+        brushed = np.sin((y * (34.0 + seed * 10.0) + seed * 6.1) * np.pi * 2.0)
+        brushed += np.sin((y * (87.0 + seed * 18.0) + x * 2.0) * np.pi * 2.0) * 0.35
+        return np.clip(0.5 + brushed * 0.20 + (_noise_values(x, y, seed) - 0.5) * 0.14, 0.0, 1.0)
+    if profile in {"fabric_lining", "woven_fabric"}:
+        weave = np.sin((x * (48.0 + seed * 6.0)) * np.pi * 2.0) * np.sin(
+            (y * (48.0 + seed * 5.0)) * np.pi * 2.0
+        )
+        return np.clip(0.5 + weave * 0.12 + (_noise_values(x, y, seed) - 0.5) * 0.08, 0.0, 1.0)
+    if profile == "screen_glass":
+        scanlines = np.sin((y * (64.0 + seed * 10.0) + seed * 2.0) * np.pi * 2.0)
+        glow = np.exp(-((x - 0.52) ** 2 + (y - 0.46) ** 2) / 0.08)
+        return np.clip(0.46 + scanlines * 0.08 + glow * 0.22 + (_noise_values(x, y, seed) - 0.5) * 0.04, 0.0, 1.0)
+    if profile in {"water_ripple", "foam_wash"}:
+        ripples = np.sin((x * (18.0 + seed * 4.0) + y * 3.2 + seed * 5.0) * np.pi * 2.0)
+        cross = np.sin((y * (22.0 + seed * 6.0) - x * 2.4 + seed * 2.1) * np.pi * 2.0)
+        return np.clip(0.52 + ripples * 0.18 + cross * 0.10 + (_noise_values(x, y, seed) - 0.5) * 0.10, 0.0, 1.0)
+    if profile in {"sand_ripple", "wind_streaks"}:
+        dunes = np.sin((x * (10.0 + seed * 3.0) + y * (2.2 + seed)) * np.pi * 2.0)
+        fine = np.sin((x * 82.0 + y * 17.0 + seed * 9.0) * np.pi * 2.0)
+        return np.clip(0.55 + dunes * 0.16 + fine * 0.06 + (_noise_values(x, y, seed) - 0.5) * 0.16, 0.0, 1.0)
+    if profile in {"grass_mottle", "leaf_litter"}:
+        tuft = np.sin((x * (38.0 + seed * 6.0) + seed) * np.pi * 2.0) * np.sin(
+            (y * (21.0 + seed * 4.0)) * np.pi * 2.0
+        )
+        return np.clip(0.46 + tuft * 0.10 + (_noise_values(x, y, seed + 0.19) - 0.5) * 0.38, 0.0, 1.0)
+    if profile in {"snow_drift", "ice_scratch"}:
+        drift = np.sin((x * (5.0 + seed * 2.0) + y * (8.0 + seed * 2.5)) * np.pi * 2.0)
+        sparkle = np.sin((x * 96.0 - y * 61.0 + seed * 13.0) * np.pi * 2.0)
+        return np.clip(0.68 + drift * 0.12 + sparkle * 0.035 + (_noise_values(x, y, seed) - 0.5) * 0.08, 0.0, 1.0)
+    if profile in {"cracked_stone", "stratified_stone", "basalt_crack", "lava_crack", "rock_scree"}:
+        strata = np.sin((y * (14.0 + seed * 5.0) + x * 1.6 + seed * 3.1) * np.pi * 2.0)
+        cracks = np.abs(np.sin((x * (17.0 + seed * 7.0) - y * 11.0 + seed * 5.2) * np.pi * 2.0))
+        cracks = np.where(cracks > 0.93, 0.0, 1.0)
+        return np.clip(0.50 + strata * 0.16 + (_noise_values(x, y, seed) - 0.5) * 0.18 - (1.0 - cracks) * 0.44, 0.0, 1.0)
+    if profile in {"mud_silt", "concrete_mottle"}:
+        clumps = _noise_values(x, y, seed + 0.41)
+        channels = np.sin((x * (13.0 + seed * 4.0) + y * (9.0 + seed * 3.0)) * np.pi * 2.0)
+        return np.clip(0.42 + (clumps - 0.5) * 0.42 + channels * 0.08, 0.0, 1.0)
+    if profile in {"painted_panel", "neutral_panel", "carbon_rubber", "emissive_panel"}:
+        panel = np.sin((x * (5.5 + seed * 2.0) + y * (5.0 + seed * 1.3)) * np.pi * 2.0)
+        return np.clip(0.5 + panel * 0.14 + (_noise_values(x, y, seed) - 0.5) * 0.18, 0.0, 1.0)
+    return _noise_values(x, y, seed)
 
 
 def _material_layer_color(name: str, fallback: np.ndarray) -> np.ndarray:
@@ -393,6 +464,94 @@ def _surface_wear_masks(
     }
 
 
+def _surface_wear_mask_values(
+    zone: dict[str, Any],
+    *,
+    size: int,
+    seed: float,
+    curvature: np.ndarray,
+    ao: np.ndarray,
+    mask: np.ndarray,
+) -> dict[str, np.ndarray]:
+    x_grid, y_grid = _coord_grid(size)
+    x = x_grid[mask]
+    y = y_grid[mask]
+    local_curvature = curvature[mask]
+    local_ao = ao[mask]
+    noise = _noise_values(x, y, seed + 0.391)
+    wear = float(zone.get("wear", 0.0))
+    kernel_bias = _zone_kernel_wear_bias(zone)
+    edge_intensity = max(wear, _wear_layer_intensity(zone, "edge_wear"), kernel_bias["edge_wear"])
+    scratch_intensity = max(
+        wear * 0.52,
+        _wear_layer_intensity(zone, "micro_scratches"),
+        kernel_bias["micro_scratches"],
+    )
+    grime_intensity = max(_wear_layer_intensity(zone, "dirt_grime"), kernel_bias["dirt_grime"])
+    chip_intensity = max(_wear_layer_intensity(zone, "paint_chips"), kernel_bias["paint_chips"])
+    patina_intensity = _wear_layer_intensity(zone, "patina")
+    dent_intensity = kernel_bias["dents"]
+
+    scratch_wave = np.sin((x * (96.0 + seed * 21.0) + y * (8.0 + seed * 3.0)) * np.pi * 2.0)
+    scratch_mask = np.clip((np.abs(scratch_wave) - 0.90) * 9.0, 0.0, 1.0) * scratch_intensity
+    edge_mask = np.clip((local_curvature - 0.44) * 2.7 + (noise - 0.62) * 0.55, 0.0, 1.0) * edge_intensity
+    grime_mask = np.clip((0.78 - local_ao) * 1.25 + (noise - 0.55) * 0.42, 0.0, 1.0) * grime_intensity
+    chip_mask = np.clip((noise - 0.61) * 2.0 + edge_mask * 0.90, 0.0, 1.0) * chip_intensity
+    patina_mask = np.clip((noise - 0.47) * 1.2 + (1.0 - local_curvature) * 0.25, 0.0, 1.0) * patina_intensity
+    dent_wave = np.sin((x * (9.0 + seed * 3.0) - y * (11.0 + seed * 2.0) + seed * 4.0) * np.pi * 2.0)
+    dent_mask = np.clip((0.82 - np.abs(dent_wave)) * 1.45 + (0.58 - local_curvature) * 0.34, 0.0, 1.0)
+    dent_mask *= dent_intensity
+    return {
+        "edge_wear": edge_mask,
+        "micro_scratches": scratch_mask,
+        "dirt_grime": grime_mask,
+        "paint_chips": chip_mask,
+        "patina": patina_mask,
+        "dents": dent_mask,
+    }
+
+
+def _surface_material_mask_values(
+    zone: dict[str, Any],
+    *,
+    size: int,
+    seed: float,
+    curvature: np.ndarray,
+    ao: np.ndarray,
+    mask: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    layers = [str(item) for item in zone.get("procedural_layers", []) or [] if str(item)]
+    count = int(np.count_nonzero(mask))
+    if not layers:
+        zero = np.zeros(count, dtype=np.float64)
+        return zero, zero
+    x_grid, y_grid = _coord_grid(size)
+    x = x_grid[mask]
+    y = y_grid[mask]
+    local_curvature = curvature[mask]
+    local_ao = ao[mask]
+    noise = _noise_values(x, y, seed + 0.173)
+    role = str(zone.get("material_layer_role", "base"))
+    layer_count = len(layers)
+    underlayer_strength = 0.18 if layer_count >= 2 else 0.0
+    if role == "secondary":
+        underlayer_strength += 0.10
+    elif role == "accent":
+        underlayer_strength += 0.06
+    wear = float(zone.get("wear", 0.0))
+    chip_bias = np.clip((local_curvature - 0.46) * (1.40 + wear) + (noise - 0.58) * 1.25, 0.0, 1.0)
+    underlayer_mask = np.clip(chip_bias * (underlayer_strength + wear * 0.36), 0.0, 1.0)
+    if layer_count < 3:
+        return underlayer_mask, np.zeros(count, dtype=np.float64)
+    stripe_phase = seed * 3.1
+    stripe_width = 0.36 if any("hazard" in item.lower() or "warning" in item.lower() for item in layers) else 0.18
+    stripe_wave = np.sin((x * (7.0 + seed * 1.7) + y * (2.4 + seed) + stripe_phase) * np.pi * 2.0)
+    edge_band = np.clip((local_curvature - 0.42) * 2.4 + (0.76 - local_ao) * 0.72, 0.0, 1.0)
+    accent_mask = np.where(stripe_wave > 1.0 - stripe_width, 1.0, 0.0)
+    accent_mask = np.clip(accent_mask * (0.40 + edge_band * 0.45), 0.0, 1.0)
+    return underlayer_mask, accent_mask
+
+
 def _color_mask(image: np.ndarray, color: tuple[int, int, int]) -> np.ndarray:
     return np.all(image == np.asarray(color, dtype=np.uint8), axis=-1)
 
@@ -507,74 +666,109 @@ def bake_id_map(
 
 
 def bake_basecolor_map(
-    id_map: Image.Image, material_zones: list[dict[str, Any]], curvature_map: Image.Image, ao_map: Image.Image
+    id_map: Image.Image,
+    material_zones: list[dict[str, Any]],
+    curvature_map: Image.Image,
+    ao_map: Image.Image,
+    *,
+    wear_mask: Image.Image | None = None,
+    material_layer_mask: Image.Image | None = None,
 ) -> Image.Image:
     source = np.asarray(id_map, dtype=np.uint8)
-    out = source.astype(np.float64).copy()
-    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float64) / 255.0
-    ao = np.asarray(ao_map.convert("L"), dtype=np.float64) / 255.0
+    out = source.astype(np.float32).copy()
+    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float32) / 255.0
+    ao = np.asarray(ao_map.convert("L"), dtype=np.float32) / 255.0
+    reused_wear = (
+        np.asarray(wear_mask.convert("L"), dtype=np.float32) / 255.0
+        if wear_mask is not None
+        else None
+    )
+    reused_layer = (
+        np.asarray(material_layer_mask.convert("L"), dtype=np.float32) / 255.0
+        if material_layer_mask is not None
+        else None
+    )
+    edge_wear = np.clip((curvature - 0.50), 0.0, 0.48)
+    cavity_darkening = np.clip((0.74 - ao) * 0.44, 0.0, 0.30)
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(source, color)
         if not np.any(mask):
             continue
         seed = _hash_seed(f"{zone['part']}:{zone['material']}")
-        pattern = _profile_pattern(str(zone.get("surface_profile", "neutral_panel")), source.shape[0], seed)
+        pattern_values = _profile_pattern_values(str(zone.get("surface_profile", "neutral_panel")), source.shape[0], seed, mask)
         wear = float(zone.get("wear", 0.0))
         pattern_strength = 0.24 + 0.30 * wear
-        base = np.asarray(zone["basecolor"], dtype=np.float64)
-        variation = (pattern - 0.5) * 255.0 * pattern_strength
-        edge_wear = np.clip((curvature - 0.50) * (0.72 + wear), 0.0, 0.48)
-        cavity_darkening = np.clip((0.74 - ao) * 0.44, 0.0, 0.30)
-        values = np.tile(base, (source.shape[0], source.shape[1], 1))
-        values += variation[..., None]
-        values += edge_wear[..., None] * np.asarray([46.0, 42.0, 38.0], dtype=np.float64)
-        values -= cavity_darkening[..., None] * np.asarray([38.0, 34.0, 28.0], dtype=np.float64)
-
-        layer_mask, accent_mask = _surface_material_masks(
-            zone,
-            size=source.shape[0],
-            seed=seed,
-            curvature=curvature,
-            ao=ao,
+        base = np.asarray(zone["basecolor"], dtype=np.float32)
+        variation = (pattern_values - 0.5) * 255.0 * pattern_strength
+        values = np.empty((int(np.count_nonzero(mask)), 3), dtype=np.float32)
+        values[:] = base
+        values += variation[:, None]
+        values += (edge_wear[mask, None] * (0.72 + wear)) * np.asarray(
+            [46.0, 42.0, 38.0],
+            dtype=np.float32,
         )
+        values -= cavity_darkening[mask, None] * np.asarray([38.0, 34.0, 28.0], dtype=np.float32)
+
         layers = [str(item) for item in zone.get("procedural_layers", []) or [] if str(item)]
+        if reused_layer is not None:
+            layer_values = reused_layer[mask, None] * 0.84
+            accent_values = reused_layer[mask, None] * 0.36
+        else:
+            layer_mask, accent_mask = _surface_material_masks(
+                zone,
+                size=source.shape[0],
+                seed=seed,
+                curvature=curvature,
+                ao=ao,
+            )
+            layer_values = layer_mask[mask, None] * 0.84
+            accent_values = accent_mask[mask, None] * 0.72
         if len(layers) >= 2:
             underlayer_color = _material_layer_color(layers[1], base)
-            values = values * (1.0 - layer_mask[..., None] * 0.84) + underlayer_color * (
-                layer_mask[..., None] * 0.84
-            )
+            values = values * (1.0 - layer_values) + underlayer_color * layer_values
         if len(layers) >= 3:
             accent_color = _material_layer_color(layers[2], base)
-            values = values * (1.0 - accent_mask[..., None] * 0.72) + accent_color * (
-                accent_mask[..., None] * 0.72
-            )
+            values = values * (1.0 - accent_values) + accent_color * accent_values
 
-        wear_masks = _surface_wear_masks(
-            zone,
-            size=source.shape[0],
-            seed=seed,
-            curvature=curvature,
-            ao=ao,
-        )
         chip_color = (
             _material_layer_color(layers[1], base)
             if len(layers) >= 2
-            else np.asarray([150.0, 150.0, 145.0], dtype=np.float64)
+            else np.asarray([150.0, 150.0, 145.0], dtype=np.float32)
         )
-        values = values * (1.0 - wear_masks["paint_chips"][..., None] * 0.88) + chip_color * (
-            wear_masks["paint_chips"][..., None] * 0.88
-        )
-        values += wear_masks["micro_scratches"][..., None] * np.asarray(
-            [42.0, 39.0, 35.0], dtype=np.float64
-        )
-        values -= wear_masks["dirt_grime"][..., None] * np.asarray([82.0, 72.0, 58.0], dtype=np.float64)
-        values -= wear_masks["dents"][..., None] * np.asarray([46.0, 40.0, 34.0], dtype=np.float64)
-        values += wear_masks["edge_wear"][..., None] * np.asarray([38.0, 34.0, 30.0], dtype=np.float64)
-        values = values * (1.0 - wear_masks["patina"][..., None] * 0.54) + np.asarray(
-            [72.0, 128.0, 106.0], dtype=np.float64
-        ) * (wear_masks["patina"][..., None] * 0.54)
-        out[mask] = np.clip(values[mask], 0.0, 255.0)
+        if reused_wear is not None:
+            wear_values = reused_wear[mask, None]
+            chip_values = np.clip(wear_values * (0.45 + wear * 0.55), 0.0, 0.88)
+            values = values * (1.0 - chip_values) + chip_color * chip_values
+            values += wear_values * np.asarray([30.0, 28.0, 24.0], dtype=np.float32)
+            values -= wear_values * np.asarray([42.0, 36.0, 28.0], dtype=np.float32)
+        else:
+            wear_masks = _surface_wear_masks(
+                zone,
+                size=source.shape[0],
+                seed=seed,
+                curvature=curvature,
+                ao=ao,
+            )
+            chip_values = wear_masks["paint_chips"][mask, None] * 0.88
+            values = values * (1.0 - chip_values) + chip_color * chip_values
+            values += wear_masks["micro_scratches"][mask, None] * np.asarray(
+                [42.0, 39.0, 35.0], dtype=np.float32
+            )
+            values -= wear_masks["dirt_grime"][mask, None] * np.asarray(
+                [82.0, 72.0, 58.0],
+                dtype=np.float32,
+            )
+            values -= wear_masks["dents"][mask, None] * np.asarray([46.0, 40.0, 34.0], dtype=np.float32)
+            values += wear_masks["edge_wear"][mask, None] * np.asarray(
+                [38.0, 34.0, 30.0],
+                dtype=np.float32,
+            )
+            patina_values = wear_masks["patina"][mask, None] * 0.54
+            values = values * (1.0 - patina_values) + np.asarray(
+                [72.0, 128.0, 106.0], dtype=np.float32
+            ) * patina_values
+        out[mask] = np.clip(values, 0.0, 255.0)
     return Image.fromarray(out.astype(np.uint8), mode="RGB")
 
 
@@ -688,6 +882,31 @@ def _ray_projected_high_faces(
         ray_source_indices = np.concatenate([ray_source_indices, ray_source_indices])
     ray_faces = np.full(len(low_mesh.faces), -1, dtype=np.int64)
     max_distance = None if max_ray_distance_cm is None else max(0.0, float(max_ray_distance_cm))
+    if max_distance is None and not bidirectional and hasattr(high_mesh.ray, "intersects_first"):
+        try:
+            first_hits = np.asarray(
+                high_mesh.ray.intersects_first(origins, directions),
+                dtype=np.int64,
+            )
+            if len(first_hits) == len(ray_faces):
+                hit_mask = first_hits >= 0
+                ray_faces[hit_mask] = first_hits[hit_mask]
+                missing = ray_faces < 0
+                if np.any(missing):
+                    nearest = _nearest_high_faces(
+                        low_mesh,
+                        high_mesh,
+                        bake_cage_offset_cm=bake_cage_offset_cm,
+                    )
+                    ray_faces[missing] = nearest[missing]
+                record_stats(
+                    ray_backend_available=True,
+                    ray_hit_count=int(np.count_nonzero(~missing)),
+                    fallback_count=int(np.count_nonzero(missing)),
+                )
+                return ray_faces
+        except (ImportError, ModuleNotFoundError, ValueError, RuntimeError, AttributeError, IndexError):
+            pass
     try:
         locations, ray_indices, triangle_indices = high_mesh.ray.intersects_location(
             origins,
@@ -730,6 +949,26 @@ def _ray_projected_high_faces(
         rejected_distance_count=rejected_distance_count,
     )
     return ray_faces
+
+
+def build_highlow_projection_map(
+    low_mesh: trimesh.Trimesh,
+    high_mesh: trimesh.Trimesh,
+    *,
+    bake_cage_offset_cm: float = 0.0,
+    max_ray_distance_cm: float | None = None,
+    bidirectional: bool = False,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    projection_stats: dict[str, Any] = {}
+    projected = _ray_projected_high_faces(
+        low_mesh,
+        high_mesh,
+        bake_cage_offset_cm=bake_cage_offset_cm,
+        max_ray_distance_cm=max_ray_distance_cm,
+        bidirectional=bidirectional,
+        projection_stats=projection_stats,
+    )
+    return projected, projection_stats
 
 
 def _low_face_tangent_frames(mesh: trimesh.Trimesh) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -808,6 +1047,8 @@ def bake_highlow_normal_transfer_map(
     bidirectional: bool = False,
     transfer_stats: dict[str, Any] | None = None,
     transfer_channel: str = "normal",
+    projected_high_faces: np.ndarray | None = None,
+    projection_stats_payload: dict[str, Any] | None = None,
 ) -> Image.Image:
     image = Image.new("RGB", (size, size), (128, 128, 255))
     draw = ImageDraw.Draw(image, "RGB")
@@ -818,15 +1059,22 @@ def bake_highlow_normal_transfer_map(
     if len(tangents) != len(polygons):
         return bake_normal_map(low_mesh, size)
     normals = np.asarray(high_mesh.face_normals, dtype=np.float64)
-    projection_stats: dict[str, Any] = {}
-    high_face_for_low_face = _ray_projected_high_faces(
-        low_mesh,
-        high_mesh,
-        bake_cage_offset_cm=bake_cage_offset_cm,
-        max_ray_distance_cm=max_ray_distance_cm,
-        bidirectional=bidirectional,
-        projection_stats=projection_stats,
-    )
+    if projected_high_faces is None:
+        projection_stats: dict[str, Any] = {}
+        high_face_for_low_face = _ray_projected_high_faces(
+            low_mesh,
+            high_mesh,
+            bake_cage_offset_cm=bake_cage_offset_cm,
+            max_ray_distance_cm=max_ray_distance_cm,
+            bidirectional=bidirectional,
+            projection_stats=projection_stats,
+        )
+    else:
+        high_face_for_low_face = np.asarray(projected_high_faces, dtype=np.int64)
+        projection_stats = dict(projection_stats_payload or {})
+        projection_stats["projection_reused"] = True
+    if len(high_face_for_low_face) != len(polygons):
+        return bake_normal_map(low_mesh, size)
     if transfer_stats is not None:
         transfer_stats[transfer_channel] = projection_stats
     for face_index, polygon in enumerate(polygons):
@@ -851,6 +1099,8 @@ def bake_highlow_curvature_transfer_map(
     bidirectional: bool = False,
     transfer_stats: dict[str, Any] | None = None,
     transfer_channel: str = "curvature",
+    projected_high_faces: np.ndarray | None = None,
+    projection_stats_payload: dict[str, Any] | None = None,
 ) -> Image.Image:
     image = Image.new("L", (size, size), 128)
     draw = ImageDraw.Draw(image, "L")
@@ -858,15 +1108,22 @@ def bake_highlow_curvature_transfer_map(
     if not polygons or len(high_mesh.faces) == 0:
         return bake_curvature_map(low_mesh, size)
     high_curvature = _face_curvature_values(high_mesh)
-    projection_stats: dict[str, Any] = {}
-    high_face_for_low_face = _ray_projected_high_faces(
-        low_mesh,
-        high_mesh,
-        bake_cage_offset_cm=bake_cage_offset_cm,
-        max_ray_distance_cm=max_ray_distance_cm,
-        bidirectional=bidirectional,
-        projection_stats=projection_stats,
-    )
+    if projected_high_faces is None:
+        projection_stats: dict[str, Any] = {}
+        high_face_for_low_face = _ray_projected_high_faces(
+            low_mesh,
+            high_mesh,
+            bake_cage_offset_cm=bake_cage_offset_cm,
+            max_ray_distance_cm=max_ray_distance_cm,
+            bidirectional=bidirectional,
+            projection_stats=projection_stats,
+        )
+    else:
+        high_face_for_low_face = np.asarray(projected_high_faces, dtype=np.int64)
+        projection_stats = dict(projection_stats_payload or {})
+        projection_stats["projection_reused"] = True
+    if len(high_face_for_low_face) != len(polygons):
+        return bake_curvature_map(low_mesh, size)
     if transfer_stats is not None:
         transfer_stats[transfer_channel] = projection_stats
     for face_index, polygon in enumerate(polygons):
@@ -880,52 +1137,75 @@ def enhance_normal_map(
     id_map: Image.Image,
     material_zones: list[dict[str, Any]],
     curvature_map: Image.Image,
+    *,
+    wear_mask: Image.Image | None = None,
+    material_layer_mask: Image.Image | None = None,
 ) -> Image.Image:
-    source = np.asarray(base_normal, dtype=np.float64)
+    source = np.asarray(base_normal, dtype=np.float32)
     out = source.copy()
     id_source = np.asarray(id_map, dtype=np.uint8)
-    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float64) / 255.0
+    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float32) / 255.0
+    reused_wear = (
+        np.asarray(wear_mask.convert("L"), dtype=np.float32) / 255.0
+        if wear_mask is not None
+        else None
+    )
+    reused_layer = (
+        np.asarray(material_layer_mask.convert("L"), dtype=np.float32) / 255.0
+        if material_layer_mask is not None
+        else None
+    )
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(id_source, color)
         if not np.any(mask):
             continue
         seed = _hash_seed(zone["part"])
-        pattern = _profile_pattern(
-            str(zone.get("surface_profile", "neutral_panel")), id_source.shape[0], seed
+        pattern_values = _profile_pattern_values(
+            str(zone.get("surface_profile", "neutral_panel")), id_source.shape[0], seed, mask
         )
         intensity = float(zone.get("normal_intensity", 0.05))
         wear = float(zone.get("wear", 0.0))
         detail_gain = 1.3 + min(2.0, intensity * 4.4 + wear * 1.25)
-        wear_masks = _surface_wear_masks(
-            zone,
-            size=id_source.shape[0],
-            seed=seed,
-            curvature=curvature,
-            ao=np.ones_like(curvature),
-        )
-        layer_mask, accent_mask = _surface_material_masks(
-            zone,
-            size=id_source.shape[0],
-            seed=seed,
-            curvature=curvature,
-            ao=np.ones_like(curvature),
-        )
-        x_detail = (pattern - 0.5) * (82.0 * intensity + 16.0) * detail_gain
+        x_detail = (pattern_values - 0.5) * (82.0 * intensity + 16.0) * detail_gain
         y_detail = (
-            (curvature - 0.5) + (pattern - 0.5) * 0.65
+            (curvature[mask] - 0.5) + (pattern_values - 0.5) * 0.65
         ) * (76.0 * intensity + 12.0) * detail_gain
-        x_detail += (
-            wear_masks["micro_scratches"] - wear_masks["dirt_grime"] * 0.28
-        ) * (50.0 + intensity * 168.0) * detail_gain
-        y_detail += (
-            wear_masks["paint_chips"] * 36.0
-            - wear_masks["dents"] * 58.0
-            - wear_masks["patina"] * 18.0
-            + (layer_mask + accent_mask) * 30.0
-        ) * detail_gain
-        out[..., 0][mask] = np.clip(source[..., 0][mask] + x_detail[mask], 0.0, 255.0)
-        out[..., 1][mask] = np.clip(source[..., 1][mask] + y_detail[mask], 0.0, 255.0)
+        if reused_wear is not None:
+            wear_values = reused_wear[mask]
+            x_detail += (wear_values - 0.18) * (42.0 + intensity * 130.0) * detail_gain
+            y_detail += (wear_values - 0.12) * (28.0 + wear * 48.0) * detail_gain
+        else:
+            wear_masks = _surface_wear_mask_values(
+                zone,
+                size=id_source.shape[0],
+                seed=seed,
+                curvature=curvature,
+                ao=np.ones_like(curvature),
+                mask=mask,
+            )
+            x_detail += (
+                wear_masks["micro_scratches"] - wear_masks["dirt_grime"] * 0.28
+            ) * (50.0 + intensity * 168.0) * detail_gain
+            y_detail += (
+                wear_masks["paint_chips"] * 36.0
+                - wear_masks["dents"] * 58.0
+                - wear_masks["patina"] * 18.0
+            ) * detail_gain
+        if reused_layer is not None:
+            y_detail += reused_layer[mask] * 30.0 * detail_gain
+        else:
+            layer_mask, accent_mask = _surface_material_mask_values(
+                zone,
+                size=id_source.shape[0],
+                seed=seed,
+                curvature=curvature,
+                ao=np.ones_like(curvature),
+                mask=mask,
+            )
+            y_detail += (layer_mask + accent_mask) * 30.0 * detail_gain
+        out[..., 0][mask] = np.clip(source[..., 0][mask] + x_detail, 0.0, 255.0)
+        out[..., 1][mask] = np.clip(source[..., 1][mask] + y_detail, 0.0, 255.0)
     out = _renormalize_tangent_normal_array(out)
     return Image.fromarray(out.astype(np.uint8), mode="RGB")
 
@@ -955,57 +1235,80 @@ def bake_ao_map(mesh: trimesh.Trimesh, size: int) -> Image.Image:
 
 
 def bake_roughness_map(
-    id_map: Image.Image, material_zones: list[dict[str, Any]], curvature_map: Image.Image, ao_map: Image.Image
+    id_map: Image.Image,
+    material_zones: list[dict[str, Any]],
+    curvature_map: Image.Image,
+    ao_map: Image.Image,
+    *,
+    wear_mask: Image.Image | None = None,
+    material_layer_mask: Image.Image | None = None,
 ) -> Image.Image:
     id_source = np.asarray(id_map, dtype=np.uint8)
-    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float64) / 255.0
-    ao = np.asarray(ao_map.convert("L"), dtype=np.float64) / 255.0
-    out = np.full(id_source.shape[:2], 148.0, dtype=np.float64)
+    curvature = np.asarray(curvature_map.convert("L"), dtype=np.float32) / 255.0
+    ao = np.asarray(ao_map.convert("L"), dtype=np.float32) / 255.0
+    reused_wear = (
+        np.asarray(wear_mask.convert("L"), dtype=np.float32) / 255.0
+        if wear_mask is not None
+        else None
+    )
+    reused_layer = (
+        np.asarray(material_layer_mask.convert("L"), dtype=np.float32) / 255.0
+        if material_layer_mask is not None
+        else None
+    )
+    out = np.full(id_source.shape[:2], 148.0, dtype=np.float32)
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(id_source, color)
         if not np.any(mask):
             continue
         seed = _hash_seed(f"roughness:{zone['part']}")
-        pattern = _profile_pattern(
-            str(zone.get("surface_profile", "neutral_panel")), id_source.shape[0], seed
+        pattern_values = _profile_pattern_values(
+            str(zone.get("surface_profile", "neutral_panel")), id_source.shape[0], seed, mask
         )
         roughness_min, roughness_max = zone.get(
             "roughness_range", [zone.get("roughness", 0.5), zone.get("roughness", 0.5)]
         )
-        values = roughness_min + (roughness_max - roughness_min) * np.clip(pattern * 1.08, 0.0, 1.0)
+        values = roughness_min + (roughness_max - roughness_min) * np.clip(pattern_values * 1.08, 0.0, 1.0)
         wear = float(zone.get("wear", 0.0))
-        wear_masks = _surface_wear_masks(
-            zone,
-            size=id_source.shape[0],
-            seed=seed,
-            curvature=curvature,
-            ao=ao,
-        )
-        layer_mask, accent_mask = _surface_material_masks(
-            zone,
-            size=id_source.shape[0],
-            seed=seed,
-            curvature=curvature,
-            ao=ao,
-        )
         values = np.clip(
-            values + (1.0 - ao) * 0.12 - np.clip(curvature - 0.48, 0.0, 0.42) * wear * 0.48, 0.02, 0.98
+            values + (1.0 - ao[mask]) * 0.12 - np.clip(curvature[mask] - 0.48, 0.0, 0.42) * wear * 0.48, 0.02, 0.98
         )
-        values = np.clip(
-            values
-            - wear_masks["edge_wear"] * 0.20
-            + wear_masks["micro_scratches"] * 0.10
-            + wear_masks["dirt_grime"] * 0.24
-            + wear_masks["paint_chips"] * 0.16
-            + wear_masks["patina"] * 0.18
-            + wear_masks["dents"] * 0.12
-            + layer_mask * 0.08
-            - accent_mask * 0.06,
-            0.02,
-            0.98,
-        )
-        out[mask] = values[mask] * 255.0
+        if reused_wear is not None:
+            values = np.clip(values + reused_wear[mask] * (0.10 + wear * 0.18), 0.02, 0.98)
+        else:
+            wear_masks = _surface_wear_mask_values(
+                zone,
+                size=id_source.shape[0],
+                seed=seed,
+                curvature=curvature,
+                ao=ao,
+                mask=mask,
+            )
+            values = np.clip(
+                values
+                - wear_masks["edge_wear"] * 0.20
+                + wear_masks["micro_scratches"] * 0.10
+                + wear_masks["dirt_grime"] * 0.24
+                + wear_masks["paint_chips"] * 0.16
+                + wear_masks["patina"] * 0.18
+                + wear_masks["dents"] * 0.12,
+                0.02,
+                0.98,
+            )
+        if reused_layer is not None:
+            values = np.clip(values + reused_layer[mask] * 0.02, 0.02, 0.98)
+        else:
+            layer_mask, accent_mask = _surface_material_mask_values(
+                zone,
+                size=id_source.shape[0],
+                seed=seed,
+                curvature=curvature,
+                ao=ao,
+                mask=mask,
+            )
+            values = np.clip(values + layer_mask * 0.08 - accent_mask * 0.06, 0.02, 0.98)
+        out[mask] = values * 255.0
     return Image.fromarray(out.astype(np.uint8), mode="L")
 
 
@@ -1017,20 +1320,21 @@ def bake_wear_mask(
     ao = np.asarray(ao_map.convert("L"), dtype=np.float64) / 255.0
     out = np.zeros(id_source.shape[:2], dtype=np.float64)
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(id_source, color)
         if not np.any(mask):
             continue
         seed = _hash_seed(f"wear-mask:{zone['part']}:{zone['material']}")
-        masks = _surface_wear_masks(
+        masks = _surface_wear_mask_values(
             zone,
             size=id_source.shape[0],
             seed=seed,
             curvature=curvature,
             ao=ao,
+            mask=mask,
         )
         combined = np.maximum.reduce(list(masks.values()))
-        out[mask] = np.maximum(out[mask], combined[mask] * 255.0)
+        out[mask] = np.maximum(out[mask], combined * 255.0)
     return Image.fromarray(np.clip(out, 0.0, 255.0).astype(np.uint8), mode="L")
 
 
@@ -1042,20 +1346,21 @@ def bake_material_layer_mask(
     ao = np.asarray(ao_map.convert("L"), dtype=np.float64) / 255.0
     out = np.zeros(id_source.shape[:2], dtype=np.float64)
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(id_source, color)
         if not np.any(mask):
             continue
         seed = _hash_seed(f"layer-mask:{zone['part']}:{zone['material']}")
-        layer_mask, accent_mask = _surface_material_masks(
+        layer_mask, accent_mask = _surface_material_mask_values(
             zone,
             size=id_source.shape[0],
             seed=seed,
             curvature=curvature,
             ao=ao,
+            mask=mask,
         )
         combined = np.maximum(layer_mask, accent_mask)
-        out[mask] = np.maximum(out[mask], combined[mask] * 255.0)
+        out[mask] = np.maximum(out[mask], combined * 255.0)
     return Image.fromarray(np.clip(out, 0.0, 255.0).astype(np.uint8), mode="L")
 
 
@@ -1063,7 +1368,7 @@ def bake_metallic_map(id_map: Image.Image, material_zones: list[dict[str, Any]])
     id_source = np.asarray(id_map, dtype=np.uint8)
     out = np.zeros(id_source.shape[:2], dtype=np.uint8)
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(id_source, color)
         if not np.any(mask):
             continue
@@ -1076,7 +1381,7 @@ def bake_emissive_map(id_map: Image.Image, material_zones: list[dict[str, Any]])
     id_source = np.asarray(id_map, dtype=np.uint8)
     _x, y = _coord_grid(id_source.shape[0])
     for zone in material_zones:
-        color = tuple(int(value) for value in zone["basecolor"])
+        color = _zone_id_color(zone)
         mask = _color_mask(id_source, color)
         if not np.any(mask):
             continue

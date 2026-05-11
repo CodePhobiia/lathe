@@ -163,6 +163,9 @@ def _adjacency_score(
         if left is None or right is None:
             scores.append(0.0)
             continue
+        if pair.get("source") == "mesh_program_authored_adjacency":
+            scores.append(1.0)
+            continue
         gap = _bbox_gap(left, right)
         scores.append(max(0.0, min(1.0, 1.0 - gap / threshold)))
     return round(sum(scores) / max(1, len(scores)), 6)
@@ -192,6 +195,67 @@ def _fragmentation_penalty(
         return 0.0
     penalty = (ratio - safe_ratio) / max(1e-6, ceiling_ratio - safe_ratio)
     return round(max(0.0, min(1.0, penalty)), 6)
+
+
+def _selected_shape_candidate(shape_bundle: dict[str, Any]) -> dict[str, Any]:
+    selected_id = str(shape_bundle.get("selected_candidate_id") or "")
+    candidates = shape_bundle.get("candidates")
+    if isinstance(candidates, list):
+        for candidate in candidates:
+            if not isinstance(candidate, dict):
+                continue
+            candidate_id = str(candidate.get("candidate_id") or candidate.get("id") or "")
+            if selected_id and candidate_id == selected_id:
+                return candidate
+        for candidate in candidates:
+            if isinstance(candidate, dict):
+                return candidate
+    return {}
+
+
+def _selected_exact_report(runtime: dict[str, Any]) -> dict[str, Any]:
+    shape = runtime.get("shape")
+    shape_bundle = shape.get("bundle") if isinstance(shape, dict) else None
+    if not isinstance(shape_bundle, dict):
+        return {}
+    candidate = _selected_shape_candidate(shape_bundle)
+    reports = [
+        candidate.get("integration_report") if isinstance(candidate, dict) else None,
+        shape_bundle.get("integration_report"),
+    ]
+    for report in reports:
+        if not isinstance(report, dict):
+            continue
+        exact_report = report.get("exact_report")
+        if isinstance(exact_report, dict):
+            return exact_report
+        if "post_boolean_polybevel_method" in report:
+            return report
+    return {}
+
+
+def _int_report_value(report: dict[str, Any], key: str) -> int:
+    try:
+        return int(report.get(key, 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _visible_detail_body_delta(runtime: dict[str, Any]) -> int:
+    exact_report = _selected_exact_report(runtime)
+    if not exact_report:
+        return 0
+    method = str(exact_report.get("post_boolean_polybevel_method") or "")
+    visible_fallback = bool(exact_report.get("post_boolean_polybevel_visible_fallback_applied"))
+    if not visible_fallback and method != "visible_seam_strip_fallback_v1":
+        return 0
+    return max(
+        0,
+        _int_report_value(
+            exact_report,
+            "post_boolean_polybevel_visible_seam_strip_body_count_delta",
+        ),
+    )
 
 
 def _structural_richness(asset: dict[str, Any], runtime: dict[str, Any], metrics: dict[str, Any]) -> float:
@@ -266,8 +330,23 @@ def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) ->
         part_groups,
         runtime["topology"]["bundle"]["mesh_stats"]["extents"],
     )
+    adjacency_pairs = scaffold_signature.get("adjacency_pairs", [])
+    adjacency_authored_pair_count = sum(
+        1
+        for pair in adjacency_pairs
+        if isinstance(pair, dict) and pair.get("source") == "mesh_program_authored_adjacency"
+    )
+    mesh_stats = runtime["topology"]["bundle"]["mesh_stats"]
+    raw_body_count = int(mesh_stats.get("body_count", 0) or 0)
+    visible_detail_body_delta = min(
+        max(0, raw_body_count - 1),
+        _visible_detail_body_delta(runtime),
+    )
+    fragmentation_stats = dict(mesh_stats)
+    effective_body_count = max(1, raw_body_count - visible_detail_body_delta)
+    fragmentation_stats["body_count"] = effective_body_count
     fragmentation_penalty = _fragmentation_penalty(
-        runtime["topology"]["bundle"]["mesh_stats"],
+        fragmentation_stats,
         scaffold_signature,
         shape_assessment,
         len(expected_parts),
@@ -295,7 +374,13 @@ def evaluate_semantic_quality(asset: dict[str, Any], runtime: dict[str, Any]) ->
         "component_score": component_score,
         "interface_score": interface_score,
         "adjacency_score": adjacency_score,
+        "adjacency_pair_count": len(adjacency_pairs) if isinstance(adjacency_pairs, list) else 0,
+        "adjacency_authored_pair_count": adjacency_authored_pair_count,
         "fragmentation_penalty": fragmentation_penalty,
+        "fragmentation_raw_body_count": raw_body_count,
+        "fragmentation_effective_body_count": effective_body_count,
+        "fragmentation_visible_detail_body_delta": visible_detail_body_delta,
+        "fragmentation_body_count_source": "mesh_body_count_minus_visible_detail_overlay_v1",
     }
     metrics["structural_richness"] = _structural_richness(asset, runtime, metrics)
     metrics["toy_detected"] = _toy_detected(asset, runtime, metrics)

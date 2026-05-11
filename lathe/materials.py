@@ -578,7 +578,9 @@ def assign_material_zones(asset: dict[str, Any], part_names: list[str]) -> list[
     surface_grammar = surface_grammar_for_asset(asset)
     surface = merge_surface_grammar(surface_with_style_pack_defaults(asset), surface_grammar)
     authored_zone_overrides, authored_zone_materials = _surface_material_zone_controls(surface)
-    materials = list(surface.get("materials", [])) or list(asset.get("intent", {}).get("materials", []))
+    intent_materials = [str(item) for item in _as_list(asset.get("intent", {}).get("materials"))]
+    surface_materials = [str(item) for item in _as_list(surface.get("materials"))]
+    materials = list(dict.fromkeys([*intent_materials, *surface_materials]))
     if authored_zone_materials:
         materials = (
             list(dict.fromkeys([*materials, *authored_zone_materials]))
@@ -777,6 +779,14 @@ def _semantic_zone_material(
     tertiary: str,
     materials: list[str],
 ) -> str:
+    if "brass" in part_name:
+        return _first_material_matching(materials, "brass", "metal", "iron", "steel") or secondary
+    if any(token in part_name for token in ("gem", "jewel", "crystal")):
+        return _first_material_matching(materials, "gem", "ruby", "crystal", "glass") or tertiary
+    if any(token in part_name for token in ("rivet", "fastener", "bolt", "washer", "trim_band")):
+        return _first_material_matching(materials, "brass", "metal", "iron", "steel") or secondary
+    if any(token in part_name for token in ("recess", "interior", "shadow")):
+        return _first_material_matching(materials, "shadow", "dark", "velvet", "lining") or primary
     if any(token in part_name for token in ("window", "glass", "screen", "lens", "windshield")):
         return _first_material_matching(materials, "glass") or tertiary
     if any(token in part_name for token in ("module_socket", "module_slot", "child_socket", "mount")):

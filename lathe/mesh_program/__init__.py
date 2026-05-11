@@ -56,6 +56,7 @@ import math
 from contextlib import suppress
 from copy import deepcopy
 from dataclasses import dataclass, fields
+from collections.abc import Callable
 from typing import Any
 
 from ..feature_ops.bevel_real import fillet_edge as _fillet_edge_helper
@@ -9149,13 +9150,13 @@ def _append_boolean_operand_primitives(
     if not body_primitives or not operand_primitives:
         raise MeshProgramError("boolean operands have no primitive payload")
     for body in body_primitives:
-        body.part = part
+        body.part = _authored_part_for_primitive(body, fallback=part)
         if str(body.blend_mode or "union") == "union":
             body.blend_mode = "union"
         if primitives is not None and body not in primitives:
             primitives.append(body)
     for operand in operand_primitives:
-        operand.part = part
+        operand.part = _authored_part_for_primitive(operand, fallback=part)
         if op == "union":
             if str(operand.blend_mode or "union") == "union":
                 operand.blend_mode = "union"
@@ -9165,12 +9166,91 @@ def _append_boolean_operand_primitives(
             tag_boolean_seam_group(operand, seam_group=seam_group, target_part=part)
         if primitives is not None and operand not in primitives:
             primitives.append(operand)
+    primary = _primary_primitive(body_primitives) or body_primitives[0]
     bevel_target = _primary_primitive(operand_primitives) or operand_primitives[-1]
     return _Value(
         kind="primitive",
-        primitive=bevel_target,
+        primitive=primary,
         bevel_target=bevel_target,
-        primitives=operand_primitives,
+        primitives=(*body_primitives, *operand_primitives),
+    )
+
+
+def _annotate_mesh_let_binding(value: _Value, binding_name: str) -> None:
+    binding_name = str(binding_name or "")
+    if not binding_name:
+        return
+    for primitive in _value_primitives(value):
+        metadata = dict(primitive.semantic_metadata or {})
+        metadata.setdefault("mesh_program_source_binding", binding_name)
+        v2_metadata = metadata.get("shape_ir_v2")
+        v2_metadata = dict(v2_metadata) if isinstance(v2_metadata, dict) else {}
+        v2_metadata.setdefault("mesh_program_source_binding", binding_name)
+        metadata["shape_ir_v2"] = v2_metadata
+        primitive.semantic_metadata = metadata
+
+
+def _authored_part_for_primitive(primitive: ShapePrimitive, *, fallback: str) -> str:
+    metadata = primitive.semantic_metadata if isinstance(primitive.semantic_metadata, dict) else {}
+    binding = str(metadata.get("mesh_program_source_binding") or "").strip()
+    if binding:
+        return binding
+    return str(primitive.part or fallback)
+
+
+def _apply_deferred_boolean_op(
+    op: str,
+    args: list[dict[str, Any]],
+    bindings: dict[str, _Value],
+    *,
+    primitives: list[ShapePrimitive] | None,
+    part: str,
+    where: str,
+) -> _Value:
+    """Record source-level boolean intent without eagerly fusing geometry.
+
+    ``mesh_program`` booleans are the authoring syntax for the canonical
+    ShapePrimitive chain consumed by ``compile_explicit_surface_mesh``. They
+    should append operands and seam-group metadata, then defer real kernel
+    fusion to output materialization / shape compilation. Eagerly fusing every
+    boolean during lowering makes chained hard-surface assets repeatedly
+    boolean mesh-backed outputs, which can stall on otherwise valid sources.
+    """
+    kw = _kwargs(args, where=where)
+    target_key = next((key for key in ("a", "target") if key in kw), "")
+    if not target_key:
+        raise MeshProgramError(f"{where}: boolean(...) requires 'a' or 'target'")
+    _target_name, body_value = _pop_value_parameter(
+        kw,
+        bindings,
+        name=target_key,
+        allowed_kinds=("primitive",),
+        part=part,
+        where=where,
+    )
+    _source_names, source_primitives = _pop_source_primitives_parameter(
+        kw,
+        bindings,
+        where=where,
+        part=part,
+    )
+    seam_group = kw.pop("seam_group", None)
+    if seam_group is not None:
+        seam_group = _string(seam_group, where=f"{where}.seam_group")
+    # ``blend_mode`` used to be accepted by the eager v2 path. The source
+    # boolean op itself remains authoritative, but keep this argument accepted
+    # so existing sources do not fail while we defer execution.
+    kw.pop("blend_mode", None)
+    if kw:
+        unknown = sorted(kw.keys())
+        raise MeshProgramError(f"{where}: unknown boolean(...) argument(s): {unknown}")
+    return _append_boolean_operand_primitives(
+        op=op,
+        body_value=body_value,
+        operand_value=_primitive_value(source_primitives),
+        primitives=primitives,
+        part=part,
+        seam_group=seam_group,
     )
 
 
@@ -9239,8 +9319,7 @@ def _apply_boolean_method(
     if seam_group is not None:
         rewritten_args.append({"name": "seam_group", "value": seam_group})
     rewritten_args.extend(passthrough_args)
-    return _apply_v2_boolean_op(
-        f"op.{op}",
+    return _apply_deferred_boolean_op(
         op,
         rewritten_args,
         local_bindings,
@@ -9321,6 +9400,23 @@ def _source_record_matches_seam_group(record: dict[str, Any], edge_class: str) -
                 if isinstance(group, dict) and str(group.get("name") or "") == edge_class:
                     return True
     return False
+
+
+def _primitive_matches_seam_group(primitive: ShapePrimitive, edge_class: str) -> bool:
+    return any(
+        isinstance(group, dict) and str(group.get("name") or "") == edge_class
+        for group in primitive.boolean_seam_groups
+    )
+
+
+def _bevel_target_for_edge_class(value: _Value, edge_class: str) -> ShapePrimitive | None:
+    preferred = value.bevel_target or value.primitive
+    if preferred is not None and _primitive_matches_seam_group(preferred, edge_class):
+        return preferred
+    for primitive in _value_primitives(value):
+        if _primitive_matches_seam_group(primitive, edge_class):
+            return primitive
+    return preferred
 
 
 def _propagate_edge_treatment_to_source_records(
@@ -9413,7 +9509,7 @@ def _apply_edge_treatment_method(
     if kw:
         unknown = sorted(kw.keys())
         raise MeshProgramError(f"{where}: unknown .{method}(...) argument(s): {unknown}")
-    target_primitive = receiver.bevel_target or receiver.primitive
+    target_primitive = _bevel_target_for_edge_class(receiver, edge_class)
     if target_primitive is None:
         raise MeshProgramError(f"{where}: receiver has no primitive to attach edge treatment to")
     declared_seam_groups = {
@@ -9675,49 +9771,10 @@ def _apply_boolean(
         raise MeshProgramError(
             f"{where}: boolean(op:) must be one of {sorted(_BOOLEAN_OPS)}, got {op!r}"
         )
-    target_key = next((key for key in ("a", "target") if key in kw), "")
-    if not target_key:
-        raise MeshProgramError(f"{where}: boolean(...) requires 'a' or 'target'")
-    _target_name, body_value = _pop_value_parameter(
-        kw,
-        bindings,
-        name=target_key,
-        allowed_kinds=("primitive",),
-        part=part,
-        where=where,
-    )
-    _source_names, source_primitives = _pop_source_primitives_parameter(
-        kw,
-        bindings,
-        where=where,
-        part=part,
-    )
-    seam_group = kw.pop("seam_group", None)
-    if seam_group is not None:
-        seam_group = _string(seam_group, where=f"{where}.seam_group")
-    if kw:
-        unknown = sorted(kw.keys())
-        raise MeshProgramError(f"{where}: unknown boolean(...) argument(s): {unknown}")
-    local_bindings = dict(bindings)
-    target_name = f"__boolean_target_{op}"
-    source_name = f"__boolean_source_{op}"
-    while target_name in local_bindings:
-        target_name = f"_{target_name}"
-    while source_name in local_bindings:
-        source_name = f"_{source_name}"
-    local_bindings[target_name] = body_value
-    local_bindings[source_name] = _primitive_value(source_primitives)
-    v2_args = [
-        {"name": "target", "value": target_name},
-        {"name": "source", "value": source_name},
-    ]
-    if seam_group is not None:
-        v2_args.append({"name": "seam_group", "value": seam_group})
-    return _apply_v2_boolean_op(
-        f"op.{op}",
+    return _apply_deferred_boolean_op(
         op,
-        v2_args,
-        local_bindings,
+        [{"name": key, "value": value} for key, value in kw.items()],
+        bindings,
         primitives=primitives,
         part=part,
         where=where,
@@ -9749,7 +9806,7 @@ def _apply_fillet_edge(
             f"{where}: fillet_edge(target:) references unknown identifier {target_name!r}"
         )
     binding = bindings[target_name]
-    target_primitive = binding.bevel_target or binding.primitive
+    target_primitive = _bevel_target_for_edge_class(binding, edge_class)
     if target_primitive is None:
         raise MeshProgramError(
             f"{where}: fillet_edge(target: {target_name!r}) has no primitive to attach to"
@@ -10076,6 +10133,96 @@ def _bbox_extents(primitive: ShapePrimitive) -> tuple[float, float, float]:
         if axis == "z":
             return (diameter, diameter, height)
         return (diameter, height, diameter)
+    if pt == "trim_band":
+        normal_axis = primitive.axis or "z"
+        length_axis = primitive.length_axis or _tangent_axis_defaults(normal_axis)[0]
+        width_axis = primitive.width_axis or next(
+            axis for axis in ("x", "y", "z") if axis not in {normal_axis, length_axis}
+        )
+        values = [0.0, 0.0, 0.0]
+        values[_axis_to_index(normal_axis)] = max(float(primitive.thickness or 0.0), 1e-6)
+        values[_axis_to_index(length_axis)] = max(float(primitive.length or 0.0), 1e-6)
+        values[_axis_to_index(width_axis)] = max(float(primitive.width or 0.0), 1e-6)
+        return (values[0], values[1], values[2])
+    if pt == "vent_slats":
+        normal_axis = primitive.axis or primitive.normal_axis or "z"
+        row_axis = primitive.row_axis or _tangent_axis_defaults(normal_axis)[0]
+        length_axis = primitive.length_axis or next(
+            axis for axis in ("x", "y", "z") if axis not in {normal_axis, row_axis}
+        )
+        length = max(float(primitive.length or 0.0), 1e-6)
+        height = max(float(primitive.height or primitive.width or 0.0), 1e-6)
+        thickness = max(
+            float(primitive.thickness or primitive.slat_depth or primitive.depth or 0.0),
+            1e-6,
+        )
+        if primitive.slat_centers:
+            extents = [thickness, thickness, thickness]
+            extents[_axis_to_index(length_axis)] = length
+            extents[_axis_to_index(row_axis)] = height
+            mins: list[tuple[float, float, float]] = []
+            maxs: list[tuple[float, float, float]] = []
+            half = (extents[0] * 0.5, extents[1] * 0.5, extents[2] * 0.5)
+            for center in primitive.slat_centers:
+                mins.append((center[0] - half[0], center[1] - half[1], center[2] - half[2]))
+                maxs.append((center[0] + half[0], center[1] + half[1], center[2] + half[2]))
+            return tuple(
+                max(max(point[axis] for point in maxs) - min(point[axis] for point in mins), 1e-6)
+                for axis in range(3)
+            )
+        count = max(int(primitive.slat_count or 1), 1)
+        spacing = max(float(primitive.slat_spacing or 0.0), height)
+        values = [thickness, thickness, thickness]
+        values[_axis_to_index(normal_axis)] = thickness
+        values[_axis_to_index(row_axis)] = max(height, (count - 1) * spacing + height)
+        values[_axis_to_index(length_axis)] = length
+        return (values[0], values[1], values[2])
+    if pt == "fastener_grid":
+        normal_axis = primitive.axis or primitive.normal_axis or "z"
+        row_axis = primitive.row_axis or _tangent_axis_defaults(normal_axis)[0]
+        column_axis = primitive.column_axis or next(
+            axis for axis in ("x", "y", "z") if axis not in {normal_axis, row_axis}
+        )
+        radius = max(
+            float(
+                primitive.washer_radius
+                or primitive.radius
+                or primitive.outer_radius
+                or 0.0
+            ),
+            1e-6,
+        )
+        height = max(
+            float(
+                primitive.washer_height
+                or primitive.head_height
+                or primitive.height
+                or 0.0
+            ),
+            1e-6,
+        )
+        diameter = radius * 2.0
+        if primitive.fastener_centers:
+            extents = [diameter, diameter, diameter]
+            extents[_axis_to_index(normal_axis)] = height
+            half = (extents[0] * 0.5, extents[1] * 0.5, extents[2] * 0.5)
+            mins: list[tuple[float, float, float]] = []
+            maxs: list[tuple[float, float, float]] = []
+            for center in primitive.fastener_centers:
+                mins.append((center[0] - half[0], center[1] - half[1], center[2] - half[2]))
+                maxs.append((center[0] + half[0], center[1] + half[1], center[2] + half[2]))
+            return tuple(
+                max(max(point[axis] for point in maxs) - min(point[axis] for point in mins), 1e-6)
+                for axis in range(3)
+            )
+        rows = max(int(primitive.fastener_rows or 1), 1)
+        columns = max(int(primitive.fastener_columns or 1), 1)
+        spacing = max(float(primitive.fastener_spacing or 0.0), diameter)
+        values = [diameter, diameter, diameter]
+        values[_axis_to_index(normal_axis)] = height
+        values[_axis_to_index(row_axis)] = max(diameter, (rows - 1) * spacing + diameter)
+        values[_axis_to_index(column_axis)] = max(diameter, (columns - 1) * spacing + diameter)
+        return (values[0], values[1], values[2])
     bounds = _mesh_vertex_bounds(primitive)
     if bounds is not None:
         bounds_min, bounds_max = bounds
@@ -10171,6 +10318,75 @@ def _pop_bound_single_target_primitive(
     return target_name, target
 
 
+def _aggregate_bbox_target_primitive(
+    target_name: str,
+    target_primitives: tuple[ShapePrimitive, ...],
+    *,
+    part: str,
+) -> ShapePrimitive:
+    bbox_sources = [
+        primitive
+        for primitive in target_primitives
+        if str(primitive.blend_mode or "union") != "subtract"
+    ] or list(target_primitives)
+    mins: list[tuple[float, float, float]] = []
+    maxs: list[tuple[float, float, float]] = []
+    for primitive in bbox_sources:
+        center = _bbox_center(primitive)
+        extents = _bbox_extents(primitive)
+        half = (extents[0] * 0.5, extents[1] * 0.5, extents[2] * 0.5)
+        mins.append((center[0] - half[0], center[1] - half[1], center[2] - half[2]))
+        maxs.append((center[0] + half[0], center[1] + half[1], center[2] + half[2]))
+    bounds_min = tuple(min(point[axis] for point in mins) for axis in range(3))
+    bounds_max = tuple(max(point[axis] for point in maxs) for axis in range(3))
+    center = tuple((bounds_min[axis] + bounds_max[axis]) * 0.5 for axis in range(3))
+    extents = tuple(max(bounds_max[axis] - bounds_min[axis], 1e-6) for axis in range(3))
+    return ShapePrimitive(
+        primitive_type="box",
+        part=part,
+        center=(center[0], center[1], center[2]),
+        extents=(extents[0], extents[1], extents[2]),
+        tags=[
+            "mesh_program_aggregate_target",
+            f"mesh_program_aggregate_target_{target_name}",
+        ],
+        blend_mode="union",
+    )
+
+
+def _pop_bound_target_surface_primitives(
+    kw: dict[str, Any],
+    bindings: dict[str, _Value],
+    *,
+    primitives: list[ShapePrimitive],
+    part: str,
+    where: str,
+) -> tuple[str, tuple[ShapePrimitive, ...], ShapePrimitive]:
+    present = [name for name in ("target", "source") if name in kw]
+    if len(present) != 1:
+        raise MeshProgramError(f"{where}: requires exactly one of 'target' or 'source'")
+    key = present[0]
+    target_name = _ident(kw.pop(key, None), where=f"{where}.{key}")
+    if target_name not in bindings or bindings[target_name].kind != "primitive":
+        raise MeshProgramError(
+            f"{where}: '{key}' must reference a primitive let-binding, "
+            f"got {target_name!r}"
+        )
+    target_primitives = _value_primitives(bindings[target_name])
+    if not target_primitives:
+        raise MeshProgramError(f"{where}: {key} {target_name!r} has no primitives")
+    for primitive in target_primitives:
+        if primitive not in primitives:
+            primitives.append(primitive)
+    if len(target_primitives) == 1:
+        return target_name, target_primitives, target_primitives[0]
+    return (
+        target_name,
+        target_primitives,
+        _aggregate_bbox_target_primitive(target_name, target_primitives, part=part),
+    )
+
+
 def _pop_surface_normal_axis_alias(
     kw: dict[str, Any],
     *,
@@ -10221,10 +10437,11 @@ def _apply_fastener_grid(
     where: str,
 ) -> _Value:
     kw = _kwargs(args, where=where)
-    target_name, target = _pop_bound_single_target_primitive(
+    target_name, target_primitives, target = _pop_bound_target_surface_primitives(
         kw,
         bindings,
         primitives=primitives,
+        part=part,
         where=where,
     )
     face_value = kw.pop("face", None)
@@ -10267,6 +10484,12 @@ def _apply_fastener_grid(
         required=True,
     )
     seam_group = _pop_string_alias(kw, where=where, names=("seam_group", "seam"))
+    output_part = _pop_string_alias(
+        kw,
+        where=where,
+        names=("part", "output_part", "component_part"),
+    )
+    feature_part = output_part or part
     requested_row_axis = _pop_string_alias(
         kw,
         where=where,
@@ -10374,23 +10597,28 @@ def _apply_fastener_grid(
             "row_axis": row_axis,
             "column_axis": col_axis,
             "normal_sign": sign,
+            **({"target_surface_scope": "aggregate"} if len(target_primitives) > 1 else {}),
             **({"face": face} if face is not None else {}),
             **({"seam_group": seam_group} if seam_group is not None else {}),
         }
     )
-    source_history = _mesh_program_operation_history_from_primitive(target)
+    aggregate_target = len(target_primitives) > 1
+    source_history = _mesh_program_operation_history_from_primitives(target_primitives)
     result = _lower_v2_source_op(
         "op.fastener_grid",
-        source_primitives=(target,),
+        source_primitives=target_primitives,
         parameters=parameters,
         primitives=primitives,
-        part=part,
+        part=feature_part,
         where=where,
-        use_geometry_kernel=True,
-        replace_source_primitives=True,
+        use_geometry_kernel=not aggregate_target,
+        replace_source_primitives=not aggregate_target,
+        aggregate_source_primitives=aggregate_target,
     )
     result_primitives = _value_primitives(result)
     for primitive in result_primitives:
+        if seam_group is not None:
+            tag_boolean_seam_group(primitive, seam_group=seam_group, target_part=feature_part)
         _attach_mesh_program_operation_history(
             primitive,
             source=target,
@@ -10400,10 +10628,15 @@ def _apply_fastener_grid(
             feature_primitive_count=rows * cols,
             source_history=source_history,
             component="fastener_grid",
-            region=f"{part}.fastener_grid",
+            region=f"{feature_part}.fastener_grid",
         )
     if target_name in bindings:
-        _replace_value_primitives(bindings[target_name], result_primitives)
+        _replace_value_primitives(
+            bindings[target_name],
+            (*target_primitives, *result_primitives)
+            if aggregate_target
+            else result_primitives,
+        )
     return _Value(
         kind="primitive",
         primitive=result.primitive,
@@ -10421,10 +10654,11 @@ def _apply_vent_slats(
     where: str,
 ) -> _Value:
     kw = _kwargs(args, where=where)
-    target_name, target = _pop_bound_single_target_primitive(
+    target_name, target_primitives, target = _pop_bound_target_surface_primitives(
         kw,
         bindings,
         primitives=primitives,
+        part=part,
         where=where,
     )
     face_value = kw.pop("face", None)
@@ -10471,6 +10705,12 @@ def _apply_vent_slats(
         allowed=_AXIS_VALUES,
     )
     seam_group = _pop_string_alias(kw, where=where, names=("seam_group", "seam"))
+    output_part = _pop_string_alias(
+        kw,
+        where=where,
+        names=("part", "output_part", "component_part"),
+    )
+    feature_part = output_part or part
     parameters: dict[str, Any] = {
         "count": count,
         "spacing_cm": spacing,
@@ -10559,23 +10799,28 @@ def _apply_vent_slats(
             "axis": normal_axis,
             "row_axis": array_axis,
             "normal_sign": sign,
+            **({"target_surface_scope": "aggregate"} if len(target_primitives) > 1 else {}),
             **({"face": face} if face is not None else {}),
             **({"seam_group": seam_group} if seam_group is not None else {}),
         }
     )
-    source_history = _mesh_program_operation_history_from_primitive(target)
+    aggregate_target = len(target_primitives) > 1
+    source_history = _mesh_program_operation_history_from_primitives(target_primitives)
     result = _lower_v2_source_op(
         "op.vent_slats",
-        source_primitives=(target,),
+        source_primitives=target_primitives,
         parameters=parameters,
         primitives=primitives,
-        part=part,
+        part=feature_part,
         where=where,
-        use_geometry_kernel=True,
-        replace_source_primitives=True,
+        use_geometry_kernel=not aggregate_target,
+        replace_source_primitives=not aggregate_target,
+        aggregate_source_primitives=aggregate_target,
     )
     result_primitives = _value_primitives(result)
     for primitive in result_primitives:
+        if seam_group is not None:
+            tag_boolean_seam_group(primitive, seam_group=seam_group, target_part=feature_part)
         _attach_mesh_program_operation_history(
             primitive,
             source=target,
@@ -10585,9 +10830,14 @@ def _apply_vent_slats(
             feature_primitive_count=count,
             source_history=source_history,
             component="vent_slats",
-            region=f"{part}.vent_slats",
+            region=f"{feature_part}.vent_slats",
         )
-    _replace_value_primitives(bindings[target_name], result_primitives)
+    _replace_value_primitives(
+        bindings[target_name],
+        (*target_primitives, *result_primitives)
+        if aggregate_target
+        else result_primitives,
+    )
     return _Value(
         kind="primitive",
         primitive=result.primitive,
@@ -10605,10 +10855,11 @@ def _apply_trim_band(
     where: str,
 ) -> _Value:
     kw = _kwargs(args, where=where)
-    target_name, target = _pop_bound_single_target_primitive(
+    target_name, target_primitives, target = _pop_bound_target_surface_primitives(
         kw,
         bindings,
         primitives=primitives,
+        part=part,
         where=where,
     )
     face_value = kw.pop("face", None)
@@ -10652,6 +10903,12 @@ def _apply_trim_band(
         names=("offset", "offset_cm"),
     )
     seam_group = _pop_string_alias(kw, where=where, names=("seam_group", "seam"))
+    output_part = _pop_string_alias(
+        kw,
+        where=where,
+        names=("part", "output_part", "component_part"),
+    )
+    feature_part = output_part or part
     parameters: dict[str, Any] = {
         "width_cm": width,
     }
@@ -10741,22 +10998,27 @@ def _apply_trim_band(
             "depth_cm": depth,
             "band_depth_cm": depth,
             "offset_cm": offset_along_axis,
+            **({"target_surface_scope": "aggregate"} if len(target_primitives) > 1 else {}),
             **({"seam_group": seam_group} if seam_group is not None else {}),
         }
     )
-    source_history = _mesh_program_operation_history_from_primitive(target)
+    aggregate_target = len(target_primitives) > 1
+    source_history = _mesh_program_operation_history_from_primitives(target_primitives)
     result = _lower_v2_source_op(
         "op.trim_band",
-        source_primitives=(target,),
+        source_primitives=target_primitives,
         parameters=parameters,
         primitives=primitives,
-        part=part,
+        part=feature_part,
         where=where,
-        use_geometry_kernel=True,
-        replace_source_primitives=True,
+        use_geometry_kernel=not aggregate_target,
+        replace_source_primitives=not aggregate_target,
+        aggregate_source_primitives=aggregate_target,
     )
     result_primitives = _value_primitives(result)
     for primitive in result_primitives:
+        if seam_group is not None:
+            tag_boolean_seam_group(primitive, seam_group=seam_group, target_part=feature_part)
         _attach_mesh_program_operation_history(
             primitive,
             source=target,
@@ -10766,9 +11028,14 @@ def _apply_trim_band(
             feature_primitive_count=1,
             source_history=source_history,
             component="trim_band",
-            region=f"{part}.trim_band",
+            region=f"{feature_part}.trim_band",
         )
-    _replace_value_primitives(bindings[target_name], result_primitives)
+    _replace_value_primitives(
+        bindings[target_name],
+        (*target_primitives, *result_primitives)
+        if aggregate_target
+        else result_primitives,
+    )
     return _Value(
         kind="primitive",
         primitive=result.primitive,
@@ -11629,6 +11896,12 @@ def _apply_scatter(
     seam_group = kw.pop("seam_group", None)
     if seam_group is not None:
         seam_group = _string(seam_group, where=f"{where}.seam_group")
+    output_part = _pop_string_alias(
+        kw,
+        where=where,
+        names=("part", "output_part", "component_part"),
+    )
+    feature_part = output_part or part
     if kw:
         unknown = sorted(kw.keys())
         raise MeshProgramError(
@@ -11682,12 +11955,12 @@ def _apply_scatter(
             source_primitives=_value_primitives(primitive_binding),
             parameters=parameters,
             primitives=primitives,
-            part=part,
+            part=feature_part,
             where=where,
             modifier_name="v2_copy_to_points_modifier",
             feature_primitive_count=len(placed_points),
             component="scatter",
-            region=f"{part}.scatter",
+            region=f"{feature_part}.scatter",
         )
         for output in _value_primitives(value):
             _append_unique_tags(
@@ -11716,7 +11989,7 @@ def _apply_scatter(
             }
             if seam_group is not None:
                 scatter_payload["seam_group"] = seam_group
-                tag_boolean_seam_group(output, seam_group=seam_group, target_part=part)
+                tag_boolean_seam_group(output, seam_group=seam_group, target_part=feature_part)
             metadata["mesh_program_scatter"] = scatter_payload
             metadata.setdefault("operation", "mesh_program.scatter")
             output.semantic_metadata = metadata
@@ -12582,6 +12855,13 @@ def _materialize_mesh_program_output_primitives(
 ) -> list[ShapePrimitive]:
     if not primitives:
         return primitives
+    if len(primitives) > 1:
+        # The shape stage already compiles the complete ShapeIR primitive
+        # program through the exact-surface path. Running a second whole-program
+        # CSG solve here duplicates that work and can stall large authored
+        # aggregates before the backend gets a chance to apply its bounded
+        # fallback/diagnostic path.
+        return primitives
     if all(_primitive_kernel_semantic_handoff(primitive) for primitive in primitives) and not any(
         _primitive_has_pending_output_modifier(primitive) for primitive in primitives
     ):
@@ -12755,6 +13035,7 @@ def _lower_v2_source_op(
     include_source_primitives: bool = False,
     use_geometry_kernel: bool = False,
     replace_source_primitives: bool = False,
+    aggregate_source_primitives: bool = False,
 ) -> _Value:
     lowered: list[ShapePrimitive] = []
     geometry_kernel = None
@@ -12767,19 +13048,36 @@ def _lower_v2_source_op(
             if source_primitive not in primitives:
                 primitives.append(source_primitive)
             lowered.append(source_primitive)
-    for index, source_primitive in enumerate(source_primitives):
+    if aggregate_source_primitives:
         lowered.extend(
             _v2_primitives_from_op(
                 op_name,
                 target=part,
                 parameters={
                     **parameters,
-                    "source": _source_record_for_primitive(source_primitive),
+                    "source": [
+                        _source_record_for_primitive(source_primitive)
+                        for source_primitive in source_primitives
+                    ],
                 },
-                where=f"{where}[{index}]",
+                where=f"{where}[aggregate]",
                 geometry_kernel=geometry_kernel,
             )
         )
+    else:
+        for index, source_primitive in enumerate(source_primitives):
+            lowered.extend(
+                _v2_primitives_from_op(
+                    op_name,
+                    target=part,
+                    parameters={
+                        **parameters,
+                        "source": _source_record_for_primitive(source_primitive),
+                    },
+                    where=f"{where}[{index}]",
+                    geometry_kernel=geometry_kernel,
+                )
+            )
     for primitive in lowered:
         _apply_mesh_vertex_bounds(primitive)
     if replace_source_primitives:
@@ -16022,6 +16320,7 @@ def lower_mesh_program(
     program: dict[str, Any],
     *,
     part: str = "body",
+    progress: Callable[[dict[str, Any]], None] | None = None,
 ) -> list[ShapePrimitive]:
     """Lower a parsed ``mesh_program{}`` AST to ``ShapePrimitive`` records.
 
@@ -16042,12 +16341,49 @@ def lower_mesh_program(
             "lower_mesh_program: expected a parsed mesh_program AST node"
         )
     statements = program.get("statements") or []
+    def _statement_summary(index: int, stmt: dict[str, Any]) -> dict[str, Any]:
+        expr = stmt.get("expr")
+        summary: dict[str, Any] = {
+            "index": index,
+            "node_type": stmt.get("node_type"),
+        }
+        if stmt.get("node_type") == "mesh_let":
+            summary["target"] = stmt.get("target")
+        if isinstance(expr, dict):
+            expr_type = expr.get("type")
+            summary["expr_type"] = expr_type
+            if expr_type == "call":
+                summary["callee"] = expr.get("name")
+            elif expr_type == "method_call":
+                summary["method"] = expr.get("method")
+                receiver = expr.get("receiver")
+                if isinstance(receiver, dict):
+                    summary["receiver_type"] = receiver.get("type")
+                    if receiver.get("type") == "call":
+                        summary["receiver_callee"] = receiver.get("name")
+        return summary
+
+    def _emit_progress(event: str, **payload: Any) -> None:
+        if progress is None:
+            return
+        progress({"event": event, **payload})
+
     bindings: dict[str, _Value] = {}
     primitives: list[ShapePrimitive] = []
+    _emit_progress("lower_start", statement_count=len(statements), part=part)
     for index, stmt in enumerate(statements):
         where = f"mesh_program statement #{index}"
         node_type = stmt.get("node_type")
         expr = stmt.get("expr")
+        statement_payload = _statement_summary(index, stmt)
+        _emit_progress(
+            "statement_start",
+            **statement_payload,
+            primitive_count=len(primitives),
+            binding_count=len(bindings),
+        )
+        result_kind = ""
+        result_primitive_count = 0
         if node_type == "mesh_let":
             target = _ident(stmt.get("target"), where=f"{where}.target")
             if target in bindings:
@@ -16086,7 +16422,10 @@ def lower_mesh_program(
                     where=where,
                     primitives=primitives,
                 )
+            _annotate_mesh_let_binding(value, target)
             bindings[target] = value
+            result_kind = value.kind
+            result_primitive_count = len(_value_primitives(value))
         elif node_type == "mesh_call":
             if (
                 not isinstance(expr, dict)
@@ -16110,6 +16449,16 @@ def lower_mesh_program(
                     primitive.part = part
                     if primitive not in primitives:
                         primitives.append(primitive)
+                result_kind = value.kind
+                result_primitive_count = len(_value_primitives(value))
+                _emit_progress(
+                    "statement_end",
+                    **statement_payload,
+                    primitive_count=len(primitives),
+                    binding_count=len(bindings),
+                    result_kind=result_kind,
+                    result_primitive_count=result_primitive_count,
+                )
                 continue
             callee = expr.get("name")
             if callee == "emit":
@@ -16137,8 +16486,17 @@ def lower_mesh_program(
                     f"{where}: unsupported bare call {callee!r} "
                     f"(supported: emit, fillet_edge, {sorted(_COMPOUND_OPS)})"
                 )
+            result_kind = "call"
         else:
             raise MeshProgramError(f"{where}: unsupported statement {node_type!r}")
+        _emit_progress(
+            "statement_end",
+            **statement_payload,
+            primitive_count=len(primitives),
+            binding_count=len(bindings),
+            result_kind=result_kind,
+            result_primitive_count=result_primitive_count,
+        )
     if not primitives and bindings and all(value.kind == "primitive" for value in bindings.values()):
         seen: set[int] = set()
         for value in bindings.values():
@@ -16148,8 +16506,11 @@ def lower_mesh_program(
                     continue
                 primitives.append(primitive)
                 seen.add(identity)
-    return _materialize_mesh_program_output_primitives(
+    _emit_progress("materialize_start", primitive_count=len(primitives))
+    result = _materialize_mesh_program_output_primitives(
         primitives,
         part=part,
         where="lower_mesh_program.output",
     )
+    _emit_progress("materialize_end", primitive_count=len(result))
+    return result

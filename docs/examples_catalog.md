@@ -103,6 +103,7 @@ detail zones, material layering, modular sockets, and game-pipeline hints.
 | `examples/geometry_wave2_layered_material_crate.lth` | geometry capability | T2 | procedural material layers and battle-worn wear | varies | x |
 | `examples/geometry_wave2_modular_socket_drone_pylon.lth` | geometry capability | T2 | swappable module sockets and radial connector detail | varies | x |
 | `examples/geometry_wave2_wave_a_edge_array_tool.lth` | geometry capability | T2 | Wave A edge, array, trim, inset/outset operators | varies | x |
+| `examples/treasure_chest.lth` | geometry capability | T2 | mesh_program treasure chest using rounded solids, booleans, seam bevels, trim bands, fastener grids, plank grooves, and scatter gems | varies | x |
 | `examples/geometry_wave3_cabled_console_bank.lth` | geometry capability | T2 | generic cable, handle, rail, and vent attachment motifs | varies | x |
 | `examples/geometry_wave3_finned_reactor_pylon.lth` | geometry capability | T2 | fins, vent stacks, rails, and cable routes | varies | x |
 | `examples/geometry_wave3_ornamented_relic_panel.lth` | geometry capability | T2 | ornaments, straps, and guard bars | varies | x |

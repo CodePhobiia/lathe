@@ -90,6 +90,7 @@ def run_shape_backend(
             mode=mode,
             conditioning=conditioning,
             runtime_config=runtime_config,
+            work_dir=work_dir,
         )
     else:
         scaffold_result = compile_scaffold_candidates(
