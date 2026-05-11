@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.procedural/schemas/style.v1.json",
+  "title": "StyleKnowledge",
+  "description": "Declarative parameter bias for generators. Never adds structure. Loaded from std/procedural/knowledge/style/*.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["style_id", "style_band"],
+  "properties": {
+    "style_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable unique identifier. Examples: 'industrial_pbr_v1', 'natural_organic_v1', 'stylized_lowpoly_v1'."
+    },
+    "style_band": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Style band routing for downstream surface defaults. Examples: 'industrial_pbr_hard_surface', 'stylized_lowpoly', 'natural_organic'."
+    },
+    "proportion_priors": {
+      "type": "object",
+      "description": "node_type -> axis weights. Influences generator proportion defaults.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    },
+    "silhouette_priors": {
+      "type": "object",
+      "description": "Named dominance ratios (e.g., 'primary_volume_dominance': 0.6).",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "density_priors": {
+      "type": "object",
+      "description": "node_type -> density hints (counts, spacings).",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    },
+    "parameter_priors": {
+      "type": "object",
+      "description": "node_type -> field -> default value. Generators consume these as second-class defaults.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable summary. Audit-only; pipeline ignores."
+    }
+  }
+}

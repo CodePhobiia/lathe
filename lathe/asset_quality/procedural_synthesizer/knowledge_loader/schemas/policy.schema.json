@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.procedural/schemas/policy.v1.json",
+  "title": "CompositionPolicy",
+  "description": "Reusable graph-composition rule. Never keyed by family. Matched by authored-intent precondition. Loaded from std/procedural/knowledge/policy/*.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["policy_id", "domain", "precondition", "expansions"],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable unique identifier. Examples: 'panelized_hard_surface_object', 'radial_mechanical_assembly', 'l_system_branching'."
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Domain this policy targets. Must match a registered DomainExtensionManifest.domain_id."
+    },
+    "precondition": {
+      "type": "object",
+      "description": "When this policy applies. Pure-data predicate over authored intent. No family-name checks.",
+      "additionalProperties": false,
+      "properties": {
+        "requires_node_types": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Graph must contain at least one node of each listed NODE_TYPE."
+        },
+        "forbids_node_types": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Graph must NOT contain any node of these NODE_TYPEs."
+        },
+        "requires_brief_fields": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Brief must have these exact field=value pairs."
+        },
+        "requires_parts_any": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Asset parts list must contain at least one of these names."
+        },
+        "forbids_parts_any": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Asset parts list must contain none of these names."
+        },
+        "requires_intent_tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Asset.intent must list all these tags."
+        }
+      }
+    },
+    "expansions": {
+      "type": "array",
+      "description": "Ordered list of structural additions this policy makes when its precondition matches. Each expansion adds a NODE_TYPE (never a family name).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["add_node_type"],
+        "properties": {
+          "add_node_type": {
+            "type": "string",
+            "description": "NODE_TYPE to add. Must be registered in some DomainExtensionManifest."
+          },
+          "count": {
+            "oneOf": [
+              {"type": "integer", "minimum": 0},
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["from_brief_field"],
+                "properties": {
+                  "from_brief_field": {"type": "string"},
+                  "default": {"type": "integer", "minimum": 0}
+                }
+              }
+            ],
+            "description": "Number of nodes of this type to add. May resolve from a brief field."
+          },
+          "placement": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Pure-data placement rule consumed by the generator."
+          },
+          "attributes_template": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Default attributes for the added node(s)."
+          },
+          "edges_to_existing": {
+            "type": "array",
+            "description": "Edges this expansion creates to pre-existing nodes.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["target_node_type", "edge_type"],
+              "properties": {
+                "target_node_type": {"type": "string"},
+                "edge_type": {"type": "string"},
+                "attributes": {"type": "object", "additionalProperties": true}
+              }
+            }
+          }
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable summary. Audit-only."
+    }
+  }
+}

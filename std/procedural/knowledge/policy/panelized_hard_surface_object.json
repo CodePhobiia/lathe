@@ -1,0 +1,14 @@
+{
+  "policy_id": "panelized_hard_surface_object",
+  "domain": "hard_surface",
+  "description": "Composition policy for any asset whose authored construction graph contains a primary_volume. Currently a no-op expansion: it serves as the smoke-test policy that proves the pipeline matches preconditions and applies policies correctly. Future revisions add structural expansions (e.g., panel-on-major-face, fastener-on-corners). The policy is non-family-keyed by design — it applies to any hard-surface asset with a primary_volume, regardless of whether that asset is a crate, door, terminal, cabinet, or anything else.",
+  "precondition": {
+    "requires_node_types": ["primary_volume"],
+    "forbids_node_types": [],
+    "requires_brief_fields": {},
+    "requires_parts_any": [],
+    "forbids_parts_any": [],
+    "requires_intent_tags": []
+  },
+  "expansions": []
+}

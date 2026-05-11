@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.procedural/schemas/alias.v1.json",
+  "title": "FamilyAlias",
+  "description": "Pure metadata pointer from a family name to (style_id, policy_ids[], domain). Cannot add structure. Loaded from std/procedural/knowledge/aliases/*.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["family_id", "style_id", "policy_ids", "domain"],
+  "properties": {
+    "family_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Family name this alias resolves. The ONLY place a family name appears in knowledge data — and it carries no behavior, only a pointer."
+    },
+    "style_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "References a StyleKnowledge pack's style_id."
+    },
+    "policy_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "description": "References CompositionPolicy pack policy_ids. Empty array means no policy expansions; the synthesizer runs on the construction graph as authored."
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Domain routing. Must match a registered DomainExtensionManifest.domain_id."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable summary. Audit-only."
+    }
+  }
+}

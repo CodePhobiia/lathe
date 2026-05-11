@@ -1,0 +1,31 @@
+{
+  "style_id": "industrial_pbr_v1",
+  "style_band": "industrial_pbr_hard_surface",
+  "description": "Industrial PBR hard-surface defaults. Suitable for crates, doors, cabinets, terminals, machinery. Biases toward subtle corner rounding and panel inset depths consistent with cast/machined manufacturing.",
+  "proportion_priors": {
+    "primary_volume": {
+      "x": 1.0,
+      "y": 1.0,
+      "z": 1.0
+    }
+  },
+  "silhouette_priors": {
+    "primary_volume_dominance": 0.6
+  },
+  "density_priors": {
+    "fastener": {
+      "count": 8,
+      "spacing_cm": 6.0
+    }
+  },
+  "parameter_priors": {
+    "primary_volume": {
+      "rounding_cm": 0.4
+    },
+    "panel": {
+      "inset_depth_cm": 0.4,
+      "thickness_cm": 0.8,
+      "border_policy": "beveled"
+    }
+  }
+}
