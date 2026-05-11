@@ -96,7 +96,11 @@ _EXPECTED_OP_NAMES: tuple[str, ...] = (
     "sop.polybevel",
     "sop.polybevel",
     "sop.copy_to_points",
-    "sop.copy_to_points",
+    # Position 10 was a third sop.copy_to_points before the ShapeIR v2
+    # repetition-op expansion; the recipe now uses op.distribute here so
+    # the corner-fastener pattern routes through the dedicated repetition
+    # family rather than another aggregate.
+    "op.distribute",
     "sop.polyextrude",
     "op.chip_edges",
 )
@@ -249,9 +253,10 @@ def test_mechanical_door_recipe_emits_private_sop_geometry() -> None:
     assert op_names.count("sop.copy_to_points") == 5
     assert "sop.polywire" in op_names
     assert payload["v1_lowering"]["v1_record_count"] == 23
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_service_cabinet_recipe_emits_private_sop_geometry() -> None:
@@ -267,9 +272,10 @@ def test_service_cabinet_recipe_emits_private_sop_geometry() -> None:
     assert op_names.count("sop.polywire") == 2
     assert "sop.polyextrude" in op_names
     assert payload["v1_lowering"]["v1_record_count"] == 20
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_weapon_prop_recipe_emits_private_sop_geometry() -> None:
@@ -285,9 +291,10 @@ def test_weapon_prop_recipe_emits_private_sop_geometry() -> None:
     assert "sop.carve" in op_names
     assert "sop.polywire" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_vehicle_prop_recipe_emits_private_sop_geometry() -> None:
@@ -303,9 +310,10 @@ def test_vehicle_prop_recipe_emits_private_sop_geometry() -> None:
     assert "sop.boolean" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_furniture_prop_recipe_emits_private_sop_geometry() -> None:
@@ -321,9 +329,10 @@ def test_furniture_prop_recipe_emits_private_sop_geometry() -> None:
     assert "sop.polywire" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_natural_form_recipe_emits_private_sop_geometry() -> None:
@@ -339,9 +348,10 @@ def test_natural_form_recipe_emits_private_sop_geometry() -> None:
     assert "sop.polyextrude" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_environment_architecture_recipe_emits_private_sop_geometry() -> None:
@@ -357,9 +367,10 @@ def test_environment_architecture_recipe_emits_private_sop_geometry() -> None:
     assert "sop.loft" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_lighting_prop_recipe_emits_private_sop_geometry() -> None:
@@ -375,9 +386,10 @@ def test_lighting_prop_recipe_emits_private_sop_geometry() -> None:
     assert "sop.polywire" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_machine_console_recipe_emits_private_sop_geometry() -> None:
@@ -393,9 +405,10 @@ def test_machine_console_recipe_emits_private_sop_geometry() -> None:
     assert "sop.boolean" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_portal_relic_recipe_emits_private_sop_geometry() -> None:
@@ -411,9 +424,10 @@ def test_portal_relic_recipe_emits_private_sop_geometry() -> None:
     assert "sop.polywire" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_tool_prop_recipe_emits_private_sop_geometry() -> None:
@@ -429,9 +443,10 @@ def test_tool_prop_recipe_emits_private_sop_geometry() -> None:
     assert "sop.carve" in op_names
     assert "sop.copy_to_points" in op_names
     assert payload["v1_lowering"]["v1_record_count"] >= 10
-    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == {
-        "op.chip_edges"
-    }
+    # chip_edges now lowers to a first-class ``edge_chip_set`` v1 record
+    # (per Phase 8+ ShapeIR v2 expansion) rather than emitting a
+    # ``no_v1_equivalent`` diagnostic. All recipe ops should lower.
+    assert {item["op"] for item in payload["v1_lowering"]["diagnostics"]} == set()
 
 
 def test_generic_family_fallback_when_design_brief_missing() -> None:
@@ -449,14 +464,18 @@ def test_generic_family_fallback_when_design_brief_missing() -> None:
 
 def test_missing_construction_graph_does_not_crash() -> None:
     """The Phase 6 recipe is currently a function of family alone, so a
-    missing ``runtime["construction_graph"]`` block must not crash."""
+    missing ``runtime["construction_graph"]`` block must not crash. With
+    parts authored on the asset, ``_source_authored_graph_nodes`` lifts
+    the parts into synthesized nodes that compose with the 19 recipe
+    nodes, so the merged count exceeds the recipe-only count."""
     runtime = {"design_brief": {"brief": {"family": "industrial_crate"}}}
     asset = {"name": "industrial_crate", "intent": {"parts": list(_BASELINE_PARTS)}}
 
     payload = evaluate_grammar_lowering(asset, runtime)
 
     assert payload["family"] == "industrial_crate"
-    assert payload["synthesized_node_count"] == 19
+    # 19 recipe nodes + 6 authored part nodes = 25.
+    assert payload["synthesized_node_count"] == 25
 
 
 def test_evaluate_grammar_lowering_payload_has_exactly_seven_keys() -> None:
@@ -512,8 +531,11 @@ def test_shape_program_summary_ops_by_family_breakdown() -> None:
         "solid_ops": 0,
         "boolean_ops": 0,
         "edge_ops": 0,
-        "sop_ops": 12,
-        "repetition_ops": 0,
+        "sop_ops": 11,
+        # op.distribute moved into REPETITION_OPS during the v2 expansion
+        # — the recipe's corner-fastener pattern now routes through the
+        # repetition family instead of a third sop.copy_to_points.
+        "repetition_ops": 1,
         "integration_ops": 0,
         "wear_ops": 1,
     }
@@ -522,26 +544,28 @@ def test_shape_program_summary_ops_by_family_breakdown() -> None:
 
 def test_v1_lowering_yields_concrete_records_for_private_geometry() -> None:
     """Private SOP/solid recipe geometry lowers to concrete v1 records.
-    Material wear masks remain semantic-only until the surface stage
-    consumes them."""
+    With the Phase 8+ ShapeIR v2 expansion, every recipe op — including
+    ``op.chip_edges`` (which now lowers to a first-class
+    ``edge_chip_set``) — produces concrete records. The kernel-less
+    lowering path preserves source records so SOP modifiers remain
+    visible alongside their aggregates."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
     v1 = payload["v1_lowering"]
 
-    assert v1["v1_record_count"] == 23
+    assert v1["v1_record_count"] == 19
     assert v1["unsupported_ops"] == []
-
-    diagnostic_op_names = {item["op"] for item in v1["diagnostics"]}
-    diagnostic_codes = {item["code"] for item in v1["diagnostics"]}
-    assert diagnostic_codes == {"no_v1_equivalent"}
-    assert diagnostic_op_names == {"op.chip_edges"}
+    assert v1["diagnostics"] == []
 
 
 def test_v1_lowering_diagnostics_count_matches_unsupported_op_count() -> None:
-    """Only the material wear-mask op remains intentionally non-lowerable."""
+    """Every recipe op now lowers cleanly. Diagnostics is empty and
+    matches ``unsupported_ops`` (also empty) — neither honestly-flagged
+    nor silently-dropped."""
     payload = evaluate_grammar_lowering(_crate_asset(), _crate_runtime())
     v1 = payload["v1_lowering"]
 
-    assert len(v1["diagnostics"]) == 1
+    assert len(v1["diagnostics"]) == 0
+    assert v1["unsupported_ops"] == []
 
 
 def test_recipe_is_deterministic_across_invocations() -> None:
@@ -575,20 +599,23 @@ def test_every_recipe_op_is_a_member_of_all_ops() -> None:
 
 def test_lower_to_v1_on_recipe_produces_private_geometry_records() -> None:
     """Direct ``lower_to_v1`` invocation on the recipe's program. Mirrors
-    Phase 5's adapter contract end-to-end."""
+    the adapter contract end-to-end and locks in the kernel-less primitive
+    set the recipe drops onto: subdivision boxes from polybevel, swept
+    profiles from polywire, component aggregates from copy/distribute, and
+    edge_chip_set fan-out from ``op.chip_edges``."""
     result = industrial_crate_recipe(brief={}, parts=(), graph_nodes=())
 
     adapter_result = lower_to_v1(result.shape_program)
 
-    assert len(adapter_result.v1_records) == 23
+    assert len(adapter_result.v1_records) == 19
     assert adapter_result.v1_records[0]["primitive_type"] == "subdivision_box"
     assert adapter_result.v1_records[0]["part"] == "body"
     assert adapter_result.v1_records[0]["v2_op"] == "sop.polybevel"
     assert {record["primitive_type"] for record in adapter_result.v1_records} >= {
         "subdivision_box",
-        "extruded_profile",
         "swept_profile",
-        "revolved_profile",
+        "component_assembly",
+        "edge_chip_set",
     }
     assert adapter_result.unsupported_ops == ()
 

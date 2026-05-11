@@ -91,35 +91,63 @@ def test_solid_ops_membership() -> None:
     assert SOLID_OPS == frozenset(
         {
             "solid.box",
-            "solid.rounded_box",
+            "solid.branching_tree",
+            "solid.capsule",
+            "solid.cga_facade",
+            "solid.curve_extruded_profile",
+            "solid.curve_lofted_solid",
+            "solid.curve_revolved_profile",
+            "solid.curve_swept_profile",
+            "solid.curved_tube",
             "solid.cylinder",
-            "solid.sphere",
-            "solid.torus",
-            "solid.revolved_profile",
             "solid.extruded_profile",
-            "solid.swept_profile",
-            "solid.subdivision_box",
+            "solid.flange",
+            "solid.gear",
+            "solid.handle",
+            "solid.hinge",
+            "solid.ladder_frame",
+            "solid.louver_panel",
+            "solid.panel",
+            "solid.perforated_panel",
             "solid.prism",
             "solid.rail",
-            "solid.panel",
+            "solid.revolved_profile",
+            "solid.ribbed_panel",
+            "solid.rounded_box",
+            "solid.sdf_metaball_cluster",
+            "solid.sphere",
+            "solid.spring",
+            "solid.structural_beam",
+            "solid.subdivision_box",
+            "solid.swept_profile",
+            "solid.terrain_patch",
+            "solid.threaded_cylinder",
+            "solid.torus",
+            "solid.truss_frame",
+            "solid.tube",
+            "solid.wfc_modular_assembly",
         }
     )
-    assert len(SOLID_OPS) == 12
+    assert len(SOLID_OPS) == 36
 
 
 def test_boolean_ops_membership() -> None:
     assert BOOLEAN_OPS == frozenset(
         {
-            "op.union",
-            "op.subtract",
-            "op.intersect",
-            "op.inset",
-            "op.extrude",
-            "op.shell",
+            "op.countersunk_hole",
             "op.cut_panel_line",
+            "op.extrude",
+            "op.hull",
+            "op.inset",
+            "op.intersect",
+            "op.minkowski",
+            "op.rounded_slot",
+            "op.shell",
+            "op.subtract",
+            "op.union",
         }
     )
-    assert len(BOOLEAN_OPS) == 7
+    assert len(BOOLEAN_OPS) == 11
 
 
 def test_edge_ops_membership() -> None:
@@ -137,32 +165,41 @@ def test_edge_ops_membership() -> None:
 def test_sop_ops_membership() -> None:
     assert SOP_OPS == frozenset(
         {
+            "sop.bend",
             "sop.boolean",
-            "sop.polybevel",
-            "sop.sweep",
-            "sop.polyextrude",
-            "sop.loft",
-            "sop.copy_to_points",
-            "sop.subdivide",
-            "sop.remesh",
             "sop.carve",
+            "sop.copy_to_points",
+            "sop.helical_sweep",
+            "sop.loft",
+            "sop.polybevel",
+            "sop.polyextrude",
             "sop.polywire",
+            "sop.remesh",
+            "sop.scatter_on_surface",
+            "sop.subdivide",
+            "sop.sweep",
+            "sop.taper",
+            "sop.transform",
+            "sop.twist",
         }
     )
-    assert len(SOP_OPS) == 10
+    assert len(SOP_OPS) == 16
 
 
 def test_repetition_ops_membership() -> None:
     assert REPETITION_OPS == frozenset(
         {
-            "op.repeat",
-            "op.fastener_grid",
-            "op.vent_slats",
-            "op.trim_band",
             "op.corner_guard_set",
+            "op.distribute",
+            "op.fastener_grid",
+            "op.mirror",
+            "op.panel_frame",
+            "op.repeat",
+            "op.trim_band",
+            "op.vent_slats",
         }
     )
-    assert len(REPETITION_OPS) == 5
+    assert len(REPETITION_OPS) == 8
 
 
 def test_integration_ops_membership() -> None:
@@ -199,7 +236,7 @@ def test_all_ops_is_union_of_families_with_current_count() -> None:
         | INTEGRATION_OPS
         | WEAR_OPS
     )
-    assert len(ALL_OPS) == 46
+    assert len(ALL_OPS) == 83
 
 
 def test_op_families_are_disjoint() -> None:
@@ -304,18 +341,23 @@ def test_lower_to_v1_lowers_solid_rounded_box_with_rounding() -> None:
     assert result.diagnostics == ()
 
 
-def test_lower_to_v1_emits_no_v1_equivalent_for_op_bevel() -> None:
+def test_lower_to_v1_requires_source_for_op_bevel() -> None:
+    # ``op.bevel`` lowers by piercing through to its source primitive and
+    # tagging the result with bevel intent. Without a ``source`` parameter
+    # the lowering cannot resolve a primitive to bevel, so it emits a
+    # parameter validation diagnostic rather than producing a record.
     program = _program(ops=(_bevel_op(),))
     result = lower_to_v1(program)
     assert result.v1_records == ()
     assert len(result.diagnostics) == 1
     diagnostic = result.diagnostics[0]
-    assert diagnostic["code"] == "no_v1_equivalent"
+    assert diagnostic["code"] == "parameter_type_mismatch"
     assert diagnostic["op"] == "op.bevel"
+    assert "source" in diagnostic["reason"]
     assert result.unsupported_ops == ()
 
 
-def test_lower_to_v1_lowers_solid_rail_as_extruded_profile() -> None:
+def test_lower_to_v1_lowers_solid_rail_as_first_class_rail() -> None:
     op = ShapeOp(
         op="solid.rail",
         target="body.bottom_front",
@@ -326,22 +368,20 @@ def test_lower_to_v1_lowers_solid_rail_as_extruded_profile() -> None:
 
     assert len(result.v1_records) == 1
     record = result.v1_records[0]
-    assert record["primitive_type"] == "extruded_profile"
+    assert record["primitive_type"] == "rail"
     assert record["part"] == "body.bottom_front"
     assert record["axis"] == "x"
-    assert record["extrude_height"] == 60.0
-    assert record["profile_polygon"] == (
-        (-2.0, -2.0),
-        (2.0, -2.0),
-        (2.0, 2.0),
-        (-2.0, 2.0),
-    )
+    assert record["length"] == 60.0
+    assert record["profile"] == 4.0
+    assert record["profile_height"] == 4.0
+    assert record["profile_shape"] == "square"
     assert record["tags"] == ["solid_rail", "rail_profile"]
     assert record["v2_op"] == "solid.rail"
+    assert record["v2_rail_modifier"]["method"] == "extruded_mechanical_rail_profile_v1"
     assert result.diagnostics == ()
 
 
-def test_lower_to_v1_lowers_solid_panel_as_extruded_profile() -> None:
+def test_lower_to_v1_lowers_solid_panel_as_first_class_panel() -> None:
     op = ShapeOp(
         op="solid.panel",
         target="body.front_panel",
@@ -352,18 +392,16 @@ def test_lower_to_v1_lowers_solid_panel_as_extruded_profile() -> None:
 
     assert len(result.v1_records) == 1
     record = result.v1_records[0]
-    assert record["primitive_type"] == "extruded_profile"
+    assert record["primitive_type"] == "panel"
     assert record["part"] == "body.front_panel"
     assert record["axis"] == "z"
-    assert record["extrude_height"] == 1.5
-    assert record["profile_polygon"] == (
-        (-16.0, -10.0),
-        (16.0, -10.0),
-        (16.0, 10.0),
-        (-16.0, 10.0),
-    )
+    assert record["width"] == 32.0
+    assert record["height"] == 20.0
+    assert record["thickness"] == 1.5
+    assert record["component"] == "panel"
     assert record["tags"] == ["solid_panel", "panel_profile"]
     assert record["v2_op"] == "solid.panel"
+    assert record["v2_panel_modifier"]["method"] == "rect_panel_profile_v1"
     assert result.diagnostics == ()
 
 
@@ -410,7 +448,10 @@ def test_lower_to_v1_lowers_sop_boolean_source_with_blend_mode() -> None:
 
     assert len(result.v1_records) == 1
     record = result.v1_records[0]
-    assert record["primitive_type"] == "extruded_profile"
+    # The inner ``solid.panel`` source lowers to a first-class ``panel``
+    # primitive (v1 ShapeIR carries solid.panel through directly rather
+    # than collapsing it to a generic extruded_profile).
+    assert record["primitive_type"] == "panel"
     assert record["part"] == "body.cut"
     assert record["blend_mode"] == "subtract"
     assert "sop_boolean" in record["tags"]
@@ -478,17 +519,26 @@ def test_lower_to_v1_lowers_sop_carve_swept_source_path() -> None:
     assert result.diagnostics == ()
 
 
-def test_lower_to_v1_emits_no_v1_equivalent_for_op_weld_seam() -> None:
+def test_lower_to_v1_lowers_op_weld_seam_as_first_class_weld_seam() -> None:
+    # ``op.weld_seam`` is a first-class v1 primitive — lowering emits a
+    # ``weld_seam`` record with a circular cross-section, axis routing,
+    # and an attached polybevel modifier targeting the seam edge group.
     op = ShapeOp(
         op="op.weld_seam",
         target="body.lid_seam",
         parameters={"width_cm": 0.4},
     )
     result = lower_to_v1(_program(ops=(op,)))
-    assert result.v1_records == ()
-    assert len(result.diagnostics) == 1
-    assert result.diagnostics[0]["code"] == "no_v1_equivalent"
-    assert result.diagnostics[0]["op"] == "op.weld_seam"
+    assert len(result.v1_records) == 1
+    record = result.v1_records[0]
+    assert record["primitive_type"] == "weld_seam"
+    assert record["part"] == "body.lid_seam"
+    assert record["weld_mode"] == "axis"
+    assert record["width"] == 0.4
+    assert record["v2_op"] == "op.weld_seam"
+    assert record["v2_weld_seam_modifier"]["seam_group"] == "body.lid_seam_weld_edge"
+    assert record["bevel_seam_groups"][0]["target_seam_groups"] == ["body.lid_seam_weld_edge"]
+    assert result.diagnostics == ()
 
 
 def test_lower_to_v1_is_deterministic() -> None:

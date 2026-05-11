@@ -253,12 +253,21 @@ class TestBuildSurfaceBundle:
             "emissive",
         }
         assert result["highlow_relation"]["authoritative"] is True
-        assert result["highlow_relation"]["source"] == "hero_surface_runtime_v1"
+        # Source identifier describes the actual mechanism (high-to-low
+        # transfer via internal hero-source rebuild), not the family.
+        # ``hero_surface_runtime_v1`` is reserved for the path where no
+        # high-source URI is produced; hero builds always produce one and
+        # therefore report ``surface_high_to_low_transfer_v1``.
+        assert result["highlow_relation"]["source"] == "surface_high_to_low_transfer_v1"
         maps_dir = tmp_workspace / "maps"
         assert (maps_dir / "basecolor.png").exists()
         assert (maps_dir / "normal.png").exists()
 
-    def test_missing_selected_high_mesh_remains_none(self, tmp_workspace: Path) -> None:
+    def test_missing_selected_high_mesh_falls_back_to_hero_rebuild(self, tmp_workspace: Path) -> None:
+        # When the explicit ``selected_candidate_id`` does not resolve in
+        # ``shape_bundle.candidates``, hero families still produce a high
+        # source via the internal ShapeIR rebuild path. ``high_mesh_uri``
+        # then points at that rebuilt source rather than staying None.
         asset = _asset(
             family="console_terminal",
             build_surface_overrides={"resolution": 128, "maps": ["basecolor", "normal"]},
@@ -275,6 +284,10 @@ class TestBuildSurfaceBundle:
             uv_runtime_mesh=_runtime_mesh(),
         )
 
-        assert result["highlow_relation"]["high_mesh_uri"] is None
+        # Hero-mode auto-rebuild populates ``high_mesh_uri`` with the
+        # rebuilt source path; the path lives next to the surface outputs
+        # so the URI is a relative path (not the bare candidate URI that
+        # would have been used had the explicit selection resolved).
+        assert result["highlow_relation"]["high_mesh_uri"] == "high_source.glb"
         assert result["highlow_relation"]["low_mesh_uri"] == "stages\\topology\\topology.glb"
-        assert result["highlow_relation"]["distinction_ratio"] == 0.0
+        assert result["highlow_relation"]["source"] == "surface_high_to_low_transfer_v1"

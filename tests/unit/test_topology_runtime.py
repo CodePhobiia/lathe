@@ -89,13 +89,24 @@ class TestDeriveTopologySemantics:
 
     def test_empty_shape_ir_returns_empty_scaffolding(self) -> None:
         result = derive_topology_semantics({"shape_ir": []})
-        assert result == {
-            "hard_edge_groups": [],
-            "panel_seams": [],
-            "bake_groups": [],
-            "feature_semantics": {},
-            "generated_uv_semantics": {},
-        }
+        # Original v1 contract: these five keys must always be present
+        # and empty so downstream UV / surface stages can rely on the
+        # shape regardless of upstream state.
+        assert result["hard_edge_groups"] == []
+        assert result["panel_seams"] == []
+        assert result["bake_groups"] == []
+        assert result["feature_semantics"] == {}
+        assert result["generated_uv_semantics"] == {}
+        # Expanded contract (kernel-program flow-through): every default
+        # value must be a typed-empty container so semantic carriers get a
+        # consistent shape even when shape_ir is empty.
+        for key, value in result.items():
+            if isinstance(value, list):
+                assert value == [], f"{key!r} should be []"
+            elif isinstance(value, dict):
+                assert value == {}, f"{key!r} should be {{}}"
+            elif isinstance(value, int):
+                assert value == 0, f"{key!r} should be 0"
 
     def test_malformed_shape_bundle_missing_region_keys_raises(self) -> None:
         bad = {"shape_ir": [{"regions": [{"component": "panel"}]}]}
