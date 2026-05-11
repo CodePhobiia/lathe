@@ -9,19 +9,37 @@ typed attribute schema in ``..attributes``.
 
 from __future__ import annotations
 
+from ...attributes.decal_zone import DecalZoneAttributes
 from ...attributes.fastener import FastenerAttributes
 from ...attributes.frame import FrameAttributes
 from ...attributes.handle import HandleAttributes
+from ...attributes.inset import InsetAttributes
 from ...attributes.material_zone import MaterialZoneAttributes
 from ...attributes.panel import PanelAttributes
 from ...attributes.primary_volume import PrimaryVolumeAttributes
+from ...attributes.rail import RailAttributes
+from ...attributes.socket import SocketAttributes
 from ...attributes.trim import TrimAttributes
+from ...attributes.wear_zone import WearZoneAttributes
 from ...domain_extension import (
     DomainExtensionManifest,
     DomainExtensionRegistration,
 )
 from ...registry import REGISTRY
-from . import fastener, frame, handle, material_zone, panel, primary_volume, trim
+from . import (
+    decal_zone,
+    fastener,
+    frame,
+    handle,
+    inset,
+    material_zone,
+    panel,
+    primary_volume,
+    rail,
+    socket,
+    trim,
+    wear_zone,
+)
 
 
 HARD_SURFACE_DOMAIN_ID = "hard_surface"
@@ -35,6 +53,11 @@ HARD_SURFACE_NODE_SCHEMAS: dict[str, type] = {
     "fastener": FastenerAttributes,
     "handle": HandleAttributes,
     "material_zone": MaterialZoneAttributes,
+    "decal_zone": DecalZoneAttributes,
+    "wear_zone": WearZoneAttributes,
+    "inset": InsetAttributes,
+    "rail": RailAttributes,
+    "socket": SocketAttributes,
 }
 
 
@@ -51,6 +74,11 @@ HARD_SURFACE_GENERATORS = (
     fastener.GENERATOR,
     handle.GENERATOR,
     material_zone.GENERATOR,
+    decal_zone.GENERATOR,
+    wear_zone.GENERATOR,
+    inset.GENERATOR,
+    rail.GENERATOR,
+    socket.GENERATOR,
 )
 
 

@@ -15,13 +15,18 @@ from __future__ import annotations
 
 from typing import Any, Callable, Mapping
 
+from .decal_zone import DecalZoneAttributes
 from .fastener import FastenerAttributes
 from .frame import FrameAttributes
 from .handle import HandleAttributes
+from .inset import InsetAttributes
 from .material_zone import MaterialZoneAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
+from .rail import RailAttributes
+from .socket import SocketAttributes
 from .trim import TrimAttributes
+from .wear_zone import WearZoneAttributes
 
 
 # Per-NODE_TYPE schema registry. Adding a new NODE_TYPE attribute
@@ -36,6 +41,11 @@ ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "fastener": FastenerAttributes.from_dict,
     "handle": HandleAttributes.from_dict,
     "material_zone": MaterialZoneAttributes.from_dict,
+    "decal_zone": DecalZoneAttributes.from_dict,
+    "wear_zone": WearZoneAttributes.from_dict,
+    "inset": InsetAttributes.from_dict,
+    "rail": RailAttributes.from_dict,
+    "socket": SocketAttributes.from_dict,
 }
 
 
@@ -54,12 +64,17 @@ def validate_attributes(node_type: str, raw_attributes: dict[str, Any]) -> Any:
 
 __all__ = [
     "ATTRIBUTE_SCHEMAS",
+    "DecalZoneAttributes",
     "FastenerAttributes",
     "FrameAttributes",
     "HandleAttributes",
+    "InsetAttributes",
     "MaterialZoneAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
+    "RailAttributes",
+    "SocketAttributes",
     "TrimAttributes",
+    "WearZoneAttributes",
     "validate_attributes",
 ]
