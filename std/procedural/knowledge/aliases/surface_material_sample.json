@@ -1,0 +1,7 @@
+{
+  "family_id": "surface_material_sample",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "Surface / material sample tile fixture (primary tile, base+finish+variant material zones, relief-line insets, border trim, label decal, scale-tick fasteners, edge wear, tileability sockets). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

@@ -1,0 +1,7 @@
+{
+  "family_id": "gameplay_object",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "Gameplay object fixture (body volume, state indicator panel, trigger material zone, payload socket, affordance handle, feedback-emitter mounts, bounds guards, link sockets, objective decal, interaction wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

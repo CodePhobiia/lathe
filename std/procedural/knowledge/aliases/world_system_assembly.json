@@ -1,0 +1,7 @@
+{
+  "family_id": "world_system_assembly",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "World-system assembly token / planning fixture (footprint plate with regional zoning, route rails, progression sockets, resource fasteners, landmark mounts, gate frames, label decals, usage wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

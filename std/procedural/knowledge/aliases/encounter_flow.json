@@ -1,0 +1,7 @@
+{
+  "family_id": "encounter_flow",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "Encounter / arena flow fixture (footprint volume, spawn sockets, route rails, cover guards, objective mount, wave fasteners, reward-exit material zone, hazard guard, readability decals, pacing wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

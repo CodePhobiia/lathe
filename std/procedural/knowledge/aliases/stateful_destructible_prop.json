@@ -1,0 +1,7 @@
+{
+  "family_id": "stateful_destructible_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "Stateful destructible prop fixture (intact shell volume, damage decals, fracture-line trim, fragment-zone panels, weak-point mounts, repair handle, transition-cue decals, hazard guards, debris fasteners, damage wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}

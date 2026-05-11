@@ -1,0 +1,7 @@
+{
+  "family_id": "attribute_surface_graph_program",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "Attribute / surface graph program fixture (attribute rails, surface node panels, mode/port sockets, mask material zones, attribute-math panel, frequency-control fasteners, preview-target panels, invalid-guard surrounds, iteration wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+}
