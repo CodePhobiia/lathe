@@ -20,10 +20,13 @@ from .conduit import ConduitAttributes
 from .decal_zone import DecalZoneAttributes
 from .fastener import FastenerAttributes
 from .frame import FrameAttributes
+from .guard import GuardAttributes
 from .handle import HandleAttributes
+from .hinge import HingeAttributes
 from .inset import InsetAttributes
 from .latch import LatchAttributes
 from .material_zone import MaterialZoneAttributes
+from .mount import MountAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
 from .rail import RailAttributes
@@ -31,6 +34,7 @@ from .socket import SocketAttributes
 from .trim import TrimAttributes
 from .vent import VentAttributes
 from .wear_zone import WearZoneAttributes
+from .weld import WeldAttributes
 
 
 # Per-NODE_TYPE schema registry. Adding a new NODE_TYPE attribute
@@ -54,6 +58,10 @@ ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "vent": VentAttributes.from_dict,
     "conduit": ConduitAttributes.from_dict,
     "latch": LatchAttributes.from_dict,
+    "weld": WeldAttributes.from_dict,
+    "mount": MountAttributes.from_dict,
+    "hinge": HingeAttributes.from_dict,
+    "guard": GuardAttributes.from_dict,
 }
 
 
@@ -77,10 +85,13 @@ __all__ = [
     "DecalZoneAttributes",
     "FastenerAttributes",
     "FrameAttributes",
+    "GuardAttributes",
     "HandleAttributes",
+    "HingeAttributes",
     "InsetAttributes",
     "LatchAttributes",
     "MaterialZoneAttributes",
+    "MountAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
     "RailAttributes",
@@ -88,5 +99,6 @@ __all__ = [
     "TrimAttributes",
     "VentAttributes",
     "WearZoneAttributes",
+    "WeldAttributes",
     "validate_attributes",
 ]

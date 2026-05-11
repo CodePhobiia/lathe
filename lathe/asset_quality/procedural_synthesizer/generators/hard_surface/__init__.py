@@ -14,10 +14,13 @@ from ...attributes.conduit import ConduitAttributes
 from ...attributes.decal_zone import DecalZoneAttributes
 from ...attributes.fastener import FastenerAttributes
 from ...attributes.frame import FrameAttributes
+from ...attributes.guard import GuardAttributes
 from ...attributes.handle import HandleAttributes
+from ...attributes.hinge import HingeAttributes
 from ...attributes.inset import InsetAttributes
 from ...attributes.latch import LatchAttributes
 from ...attributes.material_zone import MaterialZoneAttributes
+from ...attributes.mount import MountAttributes
 from ...attributes.panel import PanelAttributes
 from ...attributes.primary_volume import PrimaryVolumeAttributes
 from ...attributes.rail import RailAttributes
@@ -25,6 +28,7 @@ from ...attributes.socket import SocketAttributes
 from ...attributes.trim import TrimAttributes
 from ...attributes.vent import VentAttributes
 from ...attributes.wear_zone import WearZoneAttributes
+from ...attributes.weld import WeldAttributes
 from ...domain_extension import (
     DomainExtensionManifest,
     DomainExtensionRegistration,
@@ -36,10 +40,13 @@ from . import (
     decal_zone,
     fastener,
     frame,
+    guard,
     handle,
+    hinge,
     inset,
     latch,
     material_zone,
+    mount,
     panel,
     primary_volume,
     rail,
@@ -47,6 +54,7 @@ from . import (
     trim,
     vent,
     wear_zone,
+    weld,
 )
 
 
@@ -70,6 +78,10 @@ HARD_SURFACE_NODE_SCHEMAS: dict[str, type] = {
     "vent": VentAttributes,
     "conduit": ConduitAttributes,
     "latch": LatchAttributes,
+    "weld": WeldAttributes,
+    "mount": MountAttributes,
+    "hinge": HingeAttributes,
+    "guard": GuardAttributes,
 }
 
 
@@ -95,6 +107,10 @@ HARD_SURFACE_GENERATORS = (
     vent.GENERATOR,
     conduit.GENERATOR,
     latch.GENERATOR,
+    weld.GENERATOR,
+    mount.GENERATOR,
+    hinge.GENERATOR,
+    guard.GENERATOR,
 )
 
 
