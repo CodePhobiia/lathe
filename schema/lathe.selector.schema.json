@@ -390,6 +390,12 @@
               "primitiveType": { "type": "string" },
               "blendMode": { "type": "string" },
               "source": { "type": "string" },
+              "target": { "type": "string" },
+              "meshFaceIndex": { "type": "integer", "minimum": 0 },
+              "sampleIndex": { "type": "integer", "minimum": 0 },
+              "instanceCount": { "type": "integer", "minimum": 0 },
+              "pointSet": { "type": "string" },
+              "pointIndex": { "type": "integer", "minimum": 0 },
               "semanticEquivalentOperationCount": { "type": "integer", "minimum": 0 }
             }
           }

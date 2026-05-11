@@ -77,9 +77,10 @@ def _support_plausibility(
 ) -> float:
     from .semantic_quality import _resolve_part_bboxes
 
+    bundle = runtime["topology"]["bundle"]
     supports = [
         group
-        for group in _resolve_part_bboxes(runtime["topology"]["bundle"])
+        for group in _resolve_part_bboxes(bundle)
         if any(token in group["name"].lower() for token in ("foot", "leg", "stand", "bracket"))
     ]
     if not supports:
@@ -87,11 +88,24 @@ def _support_plausibility(
     support_bonus = min(1.0, shape_assessment.get("support_feature_count", 0) / max(1, len(supports)))
     if any(int(group.get("face_count", 0)) <= _MIN_SUPPORT_FACE_COUNT for group in supports):
         return round(min(1.0, 0.58 + 0.18 * support_bonus), 6)
-    bmin = runtime["topology"]["bundle"]["mesh_stats"]["bounds_min"]
-    span_y = max(1e-6, runtime["topology"]["bundle"]["mesh_stats"]["extents"][1])
+    mesh_stats = bundle["mesh_stats"]
+    bmin = mesh_stats["bounds_min"]
+    extents = mesh_stats["extents"]
+    axis_scores: list[tuple[int, int, float]] = []
+    for axis in range(3):
+        span = max(1e-6, float(extents[axis]))
+        distances = [
+            abs(float(support["bounds_min"][axis]) - float(bmin[axis])) / span
+            for support in supports
+        ]
+        near_count = sum(distance <= 0.22 for distance in distances)
+        mean_distance = sum(distances) / max(1, len(distances))
+        axis_scores.append((near_count, -axis, mean_distance))
+    floor_axis = max(axis_scores, key=lambda item: (item[0], -item[2], item[1]))[1] * -1
+    span_floor = max(1e-6, float(extents[floor_axis]))
     scores = []
     for support in supports:
-        near_floor = abs(support["bounds_min"][1] - bmin[1]) <= span_y * 0.22
+        near_floor = abs(float(support["bounds_min"][floor_axis]) - float(bmin[floor_axis])) <= span_floor * 0.22
         scores.append(1.0 if near_floor else 0.4)
     return round(min(1.0, 0.75 * (sum(scores) / len(scores)) + 0.25 * support_bonus), 6)
 
@@ -845,6 +859,18 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
     geometry_integration_quality = geometry_metrics["geometry_integration_quality"]
     surface_authoring_quality = surface_metrics["surface_authoring_quality"]
     open_frame_family = asset_graph.get("family") == "courier_drone"
+    render_primitive_complexity_signal = max(
+        0.0,
+        min(
+            1.0,
+            max(
+                1.0 - render_metrics.get("render_primitive_penalty", 1.0),
+                render_metrics.get("render_silhouette_complexity", 0.0)
+                * detail_density
+                * shape_assessment.get("feature_coherence", 0.0),
+            ),
+        ),
+    )
     primitive_likeness_penalty = max(
         0.0,
         1.0
@@ -856,7 +882,7 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
             + (0.14 if open_frame_family else 0.10) * geometry_integration_quality
             + 0.10 * semantic.get("structural_richness", 0.0)
             + (0.06 if open_frame_family else 0.14)
-            * (1.0 - render_metrics.get("render_primitive_penalty", 1.0))
+            * render_primitive_complexity_signal
             + (0.08 if open_frame_family else 0.0) * attachment_integration_quality
         ),
     )
@@ -886,6 +912,7 @@ def evaluate_visual_quality(asset: dict[str, Any], runtime: dict[str, Any]) -> d
         "assembled_primitives_penalty": round(assembled_primitives_penalty, 6),
         "render_silhouette_complexity": render_metrics.get("render_silhouette_complexity", 0.0),
         "render_primitive_penalty": render_metrics.get("render_primitive_penalty", 1.0),
+        "render_primitive_complexity_signal": round(render_primitive_complexity_signal, 6),
         "render_assembly_artifact_penalty": render_metrics.get("render_assembly_artifact_penalty", 1.0),
         "render_shading_variance": render_metrics.get("render_shading_variance", 0.0),
         **geometry_metrics,

@@ -30,6 +30,7 @@ from .geometry.program import (
 from .shape_ir import ShapeIR, ShapePrimitive
 
 NUMERIC_EPSILON = 1e-6
+_POST_BOOLEAN_POLYBEVEL_CUTBACK_EDGE_LIMIT = 2048
 BOOLEAN_EXCEPTIONS = (ValueError, RuntimeError, AttributeError, IndexError, OSError)
 _SEMANTIC_MESH_BACKED_PRIMITIVE_TYPES = frozenset(
     {
@@ -12585,6 +12586,33 @@ def _vent_slat_instance_values(
     return values
 
 
+def _component_child_semantic_metadata(
+    parent: ShapePrimitive,
+    *,
+    role: str,
+    index: int | None = None,
+) -> dict[str, Any]:
+    metadata: dict[str, Any] = {
+        "lathe_exact_solids_component_child": True,
+        "component_child_role": role,
+        "parent_primitive_type": parent.primitive_type,
+        "parent_part": parent.part,
+    }
+    if index is not None:
+        metadata["component_child_index"] = int(index)
+
+    parent_metadata = parent.semantic_metadata if isinstance(parent.semantic_metadata, dict) else {}
+    parent_v2 = parent_metadata.get("shape_ir_v2")
+    if isinstance(parent_v2, dict):
+        source: dict[str, Any] = {}
+        for key in ("operation_id", "v2_op", "operation", "target", "method"):
+            if key in parent_v2:
+                source[key] = _metadata_safe_value(parent_v2[key])
+        if source:
+            metadata["source_shape_ir_v2_operation"] = source
+    return metadata
+
+
 def _vent_slats_bounds(primitive: ShapePrimitive) -> tuple[np.ndarray, np.ndarray]:
     if primitive.length is None or primitive.height is None or primitive.thickness is None:
         raise _missing_vent_slats_dimensions_error(primitive)
@@ -12694,6 +12722,11 @@ def _vent_slats_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
                 ),
                 extrude_height=length * instance_scale,
                 v2_polybevel_modifier=primitive.v2_polybevel_modifier,
+                semantic_metadata=_component_child_semantic_metadata(
+                    primitive,
+                    role="vent_slat",
+                    index=index,
+                ),
             )
             mesh = _primitive_mesh(slat_primitive)
         else:
@@ -12712,6 +12745,11 @@ def _vent_slats_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
                 center=center,
                 rounding=0.0,
                 v2_polybevel_modifier=primitive.v2_polybevel_modifier,
+                semantic_metadata=_component_child_semantic_metadata(
+                    primitive,
+                    role="vent_slat",
+                    index=index,
+                ),
             )
             mesh = _primitive_mesh(slat_primitive)
         if abs(float(roll_degrees)) > 1e-9:
@@ -13668,6 +13706,10 @@ def _trim_band_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             height=thickness,
         ),
         rounding=0.0,
+        semantic_metadata=_component_child_semantic_metadata(
+            primitive,
+            role="trim_band_box",
+        ),
     )
     mesh = _primitive_mesh(box_primitive) if _polybevel_width(primitive) > NUMERIC_EPSILON else _translated_box(
         box_primitive.extents or (length, width, thickness),
@@ -14025,6 +14067,11 @@ def _fastener_grid_stack_mesh(
         sections=_fastener_grid_revolve_sections(primitive),
         profile_points=profile,
         v2_polybevel_modifier=None,
+        semantic_metadata=_component_child_semantic_metadata(
+            primitive,
+            role="fastener_stack",
+            index=index,
+        ),
     )
     base_mesh = _revolved_profile_mesh(stack_primitive)
     if profile_bevel_metadata is not None:
@@ -16213,33 +16260,15 @@ def _post_boolean_visible_seam_strip_fallback(
 
     source_topology = topology_details.get("source_topology") or _mesh_edge_topology_stats(mesh)
     actual_method = "visible_seam_box_overlay_v1"
-    boolean_union_attempted = bool(strip_meshes)
+    boolean_union_skipped_reason = (
+        "truncated_visible_seam_strip_batch_uses_overlay_fallback"
+        if skipped_edge_count > 0
+        else ""
+    )
+    boolean_union_attempted = bool(strip_meshes) and not boolean_union_skipped_reason
     boolean_union_succeeded = False
     boolean_union_failure_reason = ""
-    try:
-        candidate = _boolean_union([mesh.copy(), *strip_meshes])
-        candidate.remove_infinite_values()
-        candidate.remove_unreferenced_vertices()
-        candidate.fix_normals()
-        candidate_topology = _mesh_edge_topology_stats(candidate)
-        if (
-            bool(source_topology.get("watertight", False))
-            and bool(candidate_topology.get("watertight", False))
-            and int(candidate_topology.get("boundary_edge_count", 0))
-            <= int(source_topology.get("boundary_edge_count", 0))
-            and int(candidate_topology.get("nonmanifold_edge_count", 0))
-            <= int(source_topology.get("nonmanifold_edge_count", 0))
-        ):
-            actual_method = "visible_seam_box_boolean_union_v1"
-            boolean_union_succeeded = True
-        else:
-            boolean_union_failure_reason = "visible seam box union failed topology acceptance"
-            candidate = trimesh.util.concatenate([mesh.copy(), *strip_meshes])
-            candidate.remove_infinite_values()
-            candidate.remove_unreferenced_vertices()
-            candidate.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError):
-        boolean_union_failure_reason = "visible seam box union operation failed"
+    if boolean_union_skipped_reason:
         try:
             candidate = trimesh.util.concatenate([mesh.copy(), *strip_meshes])
             candidate.remove_infinite_values()
@@ -16247,6 +16276,38 @@ def _post_boolean_visible_seam_strip_fallback(
             candidate.fix_normals()
         except (ValueError, RuntimeError, AttributeError, IndexError):
             return None, None
+    else:
+        try:
+            candidate = _boolean_union([mesh.copy(), *strip_meshes])
+            candidate.remove_infinite_values()
+            candidate.remove_unreferenced_vertices()
+            candidate.fix_normals()
+            candidate_topology = _mesh_edge_topology_stats(candidate)
+            if (
+                bool(source_topology.get("watertight", False))
+                and bool(candidate_topology.get("watertight", False))
+                and int(candidate_topology.get("boundary_edge_count", 0))
+                <= int(source_topology.get("boundary_edge_count", 0))
+                and int(candidate_topology.get("nonmanifold_edge_count", 0))
+                <= int(source_topology.get("nonmanifold_edge_count", 0))
+            ):
+                actual_method = "visible_seam_box_boolean_union_v1"
+                boolean_union_succeeded = True
+            else:
+                boolean_union_failure_reason = "visible seam box union failed topology acceptance"
+                candidate = trimesh.util.concatenate([mesh.copy(), *strip_meshes])
+                candidate.remove_infinite_values()
+                candidate.remove_unreferenced_vertices()
+                candidate.fix_normals()
+        except (ValueError, RuntimeError, AttributeError, IndexError):
+            boolean_union_failure_reason = "visible seam box union operation failed"
+            try:
+                candidate = trimesh.util.concatenate([mesh.copy(), *strip_meshes])
+                candidate.remove_infinite_values()
+                candidate.remove_unreferenced_vertices()
+                candidate.fix_normals()
+            except (ValueError, RuntimeError, AttributeError, IndexError):
+                return None, None
 
     fallback_topology = _mesh_edge_topology_stats(candidate)
     if bool(source_topology.get("watertight", False)) and not bool(fallback_topology.get("watertight", False)):
@@ -16279,6 +16340,11 @@ def _post_boolean_visible_seam_strip_fallback(
         "visible_fallback_applied": True,
         "visible_seam_strip_boolean_union_attempted": boolean_union_attempted,
         "visible_seam_strip_boolean_union_succeeded": boolean_union_succeeded,
+        **(
+            {"visible_seam_strip_boolean_union_skipped_reason": boolean_union_skipped_reason}
+            if boolean_union_skipped_reason
+            else {}
+        ),
         **(
             {"visible_seam_strip_boolean_union_failure_reason": boolean_union_failure_reason}
             if boolean_union_failure_reason
@@ -17069,6 +17135,39 @@ def _post_boolean_polybevel_cutback_mesh(
     }
 
 
+def _post_boolean_polybevel_request_stats(
+    mesh: trimesh.Trimesh,
+    *,
+    seam_groups: list[dict[str, Any]],
+    widths_by_name: dict[str, float],
+) -> dict[str, int]:
+    if not seam_groups or not widths_by_name or len(mesh.edges_unique) == 0:
+        return {"group_count": 0, "edge_count": 0}
+    unique_edge_count = len(mesh.edges_unique)
+    requested_edges: set[int] = set()
+    requested_groups = 0
+    for group in seam_groups:
+        width = widths_by_name.get(str(group.get("name", "")), 0.0)
+        if width <= NUMERIC_EPSILON:
+            continue
+        raw_indices = group.get("edge_indices") or []
+        if not isinstance(raw_indices, (list, tuple)):
+            continue
+        group_had_edge = False
+        for raw_index in raw_indices:
+            try:
+                edge_index = int(raw_index)
+            except (TypeError, ValueError):
+                continue
+            if edge_index < 0 or edge_index >= unique_edge_count:
+                continue
+            requested_edges.add(edge_index)
+            group_had_edge = True
+        if group_had_edge:
+            requested_groups += 1
+    return {"group_count": requested_groups, "edge_count": len(requested_edges)}
+
+
 def _apply_post_boolean_polybevel(
     mesh: trimesh.Trimesh,
     *,
@@ -17076,6 +17175,38 @@ def _apply_post_boolean_polybevel(
     primitives: list[ShapePrimitive],
 ) -> tuple[trimesh.Trimesh, dict[str, Any]]:
     widths_by_name = _post_boolean_polybevel_widths(primitives)
+    request_stats = _post_boolean_polybevel_request_stats(
+        mesh,
+        seam_groups=seam_groups,
+        widths_by_name=widths_by_name,
+    )
+    if request_stats["edge_count"] > _POST_BOOLEAN_POLYBEVEL_CUTBACK_EDGE_LIMIT:
+        skip_reason = "edge_loop_cutback_skipped_bounded_seam_overlay"
+        visible_fallback, visible_fallback_stats = _post_boolean_visible_seam_strip_fallback(
+            mesh,
+            seam_groups=seam_groups,
+            widths_by_name=widths_by_name,
+            attempted_stats={
+                "group_count": request_stats["group_count"],
+                "edge_count": request_stats["edge_count"],
+                "face_count": 0,
+                "bevel_face_count": 0,
+                "strip_count": 0,
+            },
+            reason=skip_reason,
+            topology_details={"source_topology": _mesh_edge_topology_stats(mesh), "candidate_topology": {}},
+        )
+        if visible_fallback is not None and visible_fallback_stats is not None:
+            visible_fallback_stats.update(
+                {
+                    "edge_loop_cutback_attempted": False,
+                    "edge_loop_cutback_accepted": False,
+                    "edge_loop_cutback_skipped_reason": skip_reason,
+                    "edge_loop_cutback_edge_limit": _POST_BOOLEAN_POLYBEVEL_CUTBACK_EDGE_LIMIT,
+                    "edge_loop_cutback_requested_edge_count": request_stats["edge_count"],
+                }
+            )
+            return visible_fallback, visible_fallback_stats
     cutback, stats = _post_boolean_polybevel_cutback_mesh(
         mesh,
         seam_groups=seam_groups,
@@ -17239,9 +17370,25 @@ def _post_boolean_finish_report(
         report["post_boolean_polybevel_edge_loop_cutback_rejected_reason"] = str(
             polybevel_stats["edge_loop_cutback_rejected_reason"]
         )
+    if polybevel_stats.get("edge_loop_cutback_skipped_reason"):
+        report["post_boolean_polybevel_edge_loop_cutback_skipped_reason"] = str(
+            polybevel_stats["edge_loop_cutback_skipped_reason"]
+        )
+    if polybevel_stats.get("edge_loop_cutback_edge_limit"):
+        report["post_boolean_polybevel_edge_loop_cutback_edge_limit"] = int(
+            polybevel_stats["edge_loop_cutback_edge_limit"]
+        )
+    if polybevel_stats.get("edge_loop_cutback_requested_edge_count"):
+        report["post_boolean_polybevel_edge_loop_cutback_requested_edge_count"] = int(
+            polybevel_stats["edge_loop_cutback_requested_edge_count"]
+        )
     if polybevel_stats.get("visible_seam_strip_boolean_union_failure_reason"):
         report["post_boolean_polybevel_visible_seam_strip_boolean_union_failure_reason"] = str(
             polybevel_stats["visible_seam_strip_boolean_union_failure_reason"]
+        )
+    if polybevel_stats.get("visible_seam_strip_boolean_union_skipped_reason"):
+        report["post_boolean_polybevel_visible_seam_strip_boolean_union_skipped_reason"] = str(
+            polybevel_stats["visible_seam_strip_boolean_union_skipped_reason"]
         )
     if "fallback_accepted" in polybevel_stats:
         report["post_boolean_polybevel_fallback_accepted"] = bool(
@@ -17904,8 +18051,17 @@ def _combine_explicit_meshes(
         )
 
     try:
+        positive_union_concatenated_for_cutters = False
         if union_meshes:
-            combined = _clustered_union_by_part(union_meshes, union_primitives)
+            if subtract_meshes or intersect_meshes:
+                combined = (
+                    trimesh.util.concatenate(union_meshes)
+                    if len(union_meshes) > 1
+                    else union_meshes[0].copy()
+                )
+                positive_union_concatenated_for_cutters = len(union_meshes) > 1
+            else:
+                combined = _clustered_union_by_part(union_meshes, union_primitives)
         elif intersect_meshes:
             combined = intersect_meshes[0].copy()
         else:
@@ -17943,11 +18099,30 @@ def _combine_explicit_meshes(
                         *list(kernel_program_attempt.get("boolean_backend_chain") or []),
                         _boolean_backend_chain_record(
                             backend="trimesh.boolean",
-                            route="exact_solids_explicit_mesh",
+                            route=(
+                                "exact_solids_explicit_mesh_positive_concat_then_cut"
+                                if positive_union_concatenated_for_cutters
+                                else "exact_solids_explicit_mesh"
+                            ),
                             succeeded=True,
+                            degraded=positive_union_concatenated_for_cutters,
+                            reason=(
+                                "positive union operands concatenated before cutter stage to avoid "
+                                "unbounded all-positive batch union"
+                                if positive_union_concatenated_for_cutters
+                                else None
+                            ),
                         ),
                     ],
                     final_backend="trimesh.boolean",
+                ),
+                **(
+                    {
+                        "positive_union_concatenated_for_cutters": True,
+                        "positive_union_concat_operand_count": len(union_meshes),
+                    }
+                    if positive_union_concatenated_for_cutters
+                    else {}
                 ),
             },
         )
@@ -19015,17 +19190,14 @@ def _restore_sdf_mesh_kernel_metadata(
             ]
 
 
-def _sdf_mesh_to_trimesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
-    """Build a trimesh from a sdf_mesh primitive.
-
-    The vertices already live in world-space cm — ``primitive.center`` is
-    applied as a final translation so authors can reposition the
-    extracted mesh without rebuilding the SDF.
-    """
+def _mesh_backed_primitive_to_trimesh(
+    primitive: ShapePrimitive, *, apply_center: bool
+) -> trimesh.Trimesh:
     vertices, faces = _sdf_mesh_arrays(primitive)
-    center = np.asarray(primitive.center, dtype=np.float64)
+    if apply_center:
+        vertices = vertices + np.asarray(primitive.center, dtype=np.float64)
     mesh = trimesh.Trimesh(
-        vertices=vertices + center,
+        vertices=vertices,
         faces=faces,
         process=False,
     )
@@ -19040,6 +19212,11 @@ def _sdf_mesh_to_trimesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         pass
     _restore_sdf_mesh_kernel_metadata(primitive, mesh)
     return mesh
+
+
+def _sdf_mesh_to_trimesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
+    """Build a trimesh from an sdf_mesh primitive."""
+    return _mesh_backed_primitive_to_trimesh(primitive, apply_center=True)
 
 
 def _v2_semantic_metadata(primitive: ShapePrimitive) -> dict[str, Any]:
@@ -19296,7 +19473,10 @@ def _semantic_mesh_backed_mesh(
 
 
 def _kernel_primitive_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
-    mesh = _sdf_mesh_to_trimesh(primitive)
+    # Kernel-program mesh vertices are already baked in world-space cm.  The
+    # primitive center is retained for provenance and placement diagnostics,
+    # but applying it here would translate authored parts a second time.
+    mesh = _mesh_backed_primitive_to_trimesh(primitive, apply_center=False)
     metadata = primitive.semantic_metadata if isinstance(primitive.semantic_metadata, dict) else {}
     source_shape = metadata.get("source_shape_primitive")
     source_shape = source_shape if isinstance(source_shape, dict) else {}
@@ -19324,6 +19504,8 @@ def _kernel_primitive_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Tri
         "result_face_count": int(len(mesh.faces)),
         "result_vertex_count": int(len(mesh.vertices)),
         "result_watertight": bool(mesh.is_watertight),
+        "mesh_vertices_space": "world_cm",
+        "center_translation_applied": False,
     }
     return mesh
 
@@ -19560,7 +19742,9 @@ def _boolean_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
 
 
 def _instance_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
-    mesh = _sdf_mesh_to_trimesh(primitive)
+    # Instance meshes are emitted after copy/distribution transforms have
+    # already baked each instance into world-space vertices.
+    mesh = _mesh_backed_primitive_to_trimesh(primitive, apply_center=False)
     metadata = primitive.semantic_metadata if isinstance(primitive.semantic_metadata, dict) else {}
     v2_metadata = metadata.get("shape_ir_v2")
     v2_metadata = v2_metadata if isinstance(v2_metadata, dict) else {}
@@ -19584,6 +19768,8 @@ def _instance_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "result_face_count": int(len(mesh.faces)),
         "result_vertex_count": int(len(mesh.vertices)),
         "result_watertight": bool(mesh.is_watertight),
+        "mesh_vertices_space": "world_cm",
+        "center_translation_applied": False,
     }
     return mesh
 
@@ -25312,9 +25498,25 @@ def compile_explicit_surface_mesh(
         report["post_boolean_polybevel_edge_loop_cutback_rejected_reason"] = str(
             post_boolean_polybevel_stats["edge_loop_cutback_rejected_reason"]
         )
+    if post_boolean_polybevel_stats.get("edge_loop_cutback_skipped_reason"):
+        report["post_boolean_polybevel_edge_loop_cutback_skipped_reason"] = str(
+            post_boolean_polybevel_stats["edge_loop_cutback_skipped_reason"]
+        )
+    if post_boolean_polybevel_stats.get("edge_loop_cutback_edge_limit"):
+        report["post_boolean_polybevel_edge_loop_cutback_edge_limit"] = int(
+            post_boolean_polybevel_stats["edge_loop_cutback_edge_limit"]
+        )
+    if post_boolean_polybevel_stats.get("edge_loop_cutback_requested_edge_count"):
+        report["post_boolean_polybevel_edge_loop_cutback_requested_edge_count"] = int(
+            post_boolean_polybevel_stats["edge_loop_cutback_requested_edge_count"]
+        )
     if post_boolean_polybevel_stats.get("visible_seam_strip_boolean_union_failure_reason"):
         report["post_boolean_polybevel_visible_seam_strip_boolean_union_failure_reason"] = str(
             post_boolean_polybevel_stats["visible_seam_strip_boolean_union_failure_reason"]
+        )
+    if post_boolean_polybevel_stats.get("visible_seam_strip_boolean_union_skipped_reason"):
+        report["post_boolean_polybevel_visible_seam_strip_boolean_union_skipped_reason"] = str(
+            post_boolean_polybevel_stats["visible_seam_strip_boolean_union_skipped_reason"]
         )
     if "fallback_accepted" in post_boolean_polybevel_stats:
         report["post_boolean_polybevel_fallback_accepted"] = bool(

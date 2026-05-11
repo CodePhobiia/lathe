@@ -66,7 +66,7 @@ from copy import deepcopy
 import math
 from collections.abc import Callable
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import Any, Mapping
 
 
 _V1Record = dict[str, Any]
@@ -553,6 +553,23 @@ _PRESERVE_CONTEXTUAL_SOURCE_WITHOUT_KERNEL_OPS = frozenset(
         "solid.louver_panel",
         "solid.perforated_panel",
         "solid.ribbed_panel",
+        # SOP ops that PRODUCE new visible geometry (vs modifying a
+        # source in place) preserve their sources in the no-kernel
+        # path so downstream stages see both the proto/source and the
+        # generated record. Without preservation here, ops that act on
+        # the source disappear with no diagnostic trace, since the
+        # kernel-less path cannot actually run the aggregation.
+        #
+        # Modifying SOP ops (transform/twist/taper/bend/carve/
+        # subdivide/remesh) are intentionally absent: their result
+        # semantically REPLACES the source (same geometry, modified),
+        # so consumption is correct even without a kernel and avoids
+        # source-context blowup with deep modifier chains.
+        "sop.boolean",
+        "sop.polybevel",
+        "sop.polyextrude",
+        "sop.copy_to_points",
+        "sop.scatter_on_surface",
     }
 )
 _TARGET_REPLACEMENT_OPS = frozenset({"sop.scatter_on_surface"}) | _CONTEXTUAL_BOOLEAN_OPS
@@ -2335,6 +2352,17 @@ def _record_center_tuple(record: _V1Record) -> tuple[float, float, float]:
     return (0.0, 0.0, 0.0)
 
 
+def _record_mesh_vertices_are_world_space(record: _V1Record) -> bool:
+    space = record.get("mesh_vertices_space")
+    if space is None:
+        metadata = record.get("semantic_metadata")
+        if isinstance(metadata, dict):
+            space = metadata.get("mesh_vertices_space")
+    if str(space or "").lower() == "world_cm":
+        return True
+    return str(record.get("primitive_type") or "") == "kernel_primitive_mesh"
+
+
 def _record_mesh_vertex_bounds(
     record: _V1Record,
 ) -> tuple[tuple[float, float, float], tuple[float, float, float]] | None:
@@ -2351,7 +2379,11 @@ def _record_mesh_vertex_bounds(
             return None
     if not points:
         return None
-    center = _record_center_tuple(record)
+    center = (
+        (0.0, 0.0, 0.0)
+        if _record_mesh_vertices_are_world_space(record)
+        else _record_center_tuple(record)
+    )
     mins = tuple(min(point[axis] for point in points) + center[axis] for axis in range(3))
     maxs = tuple(max(point[axis] for point in points) + center[axis] for axis in range(3))
     return mins, maxs
@@ -2994,7 +3026,12 @@ def _aggregate_context_record(root: str, records: tuple[_V1Record, ...]) -> _V1R
         "v2_context_primitive_types": sorted(
             {str(record.get("primitive_type") or "") for record in context_records if record.get("primitive_type")}
         ),
-        "v2_context_records": [deepcopy(record) for record in context_records],
+        # ``context_records`` already contains fresh top-level dicts
+        # produced by ``_context_records_for_aggregate``; storing those
+        # directly avoids exponential deepcopy blowup when an existing
+        # aggregate is re-merged with a new record (every prior merge
+        # would otherwise deep-clone the entire aggregate history).
+        "v2_context_records": list(context_records),
     }
 
 
@@ -3302,6 +3339,15 @@ def _source_context_target_surface_records(
         context_tag=context_tag,
         metadata_key="v2_target_surface_context",
     )
+
+
+def _use_aggregate_target_surface(parameters: Mapping[str, Any]) -> bool:
+    scope = str(
+        parameters.get("target_surface_scope")
+        or parameters.get("source_context_scope")
+        or ""
+    ).strip().lower()
+    return scope in {"aggregate", "logical_aggregate", "single_aggregate"}
 
 
 def _lower_source_context_target_surface_children(
@@ -6518,6 +6564,7 @@ def _kernel_mesh_record_for_result(
             [int(value) for value in face]
             for face in mesh.faces.tolist()
         ],
+        "mesh_vertices_space": "world_cm",
         "tags": tags,
         "blend_mode": blend_mode,
         "rounding": 0.0,
@@ -30027,7 +30074,11 @@ def _v1_record_for_op_trim_band(
         source_record,
         context_tag="source_context_trim_band_child",
     )
-    if len(source_context_records) > 1 and "center" not in parameters:
+    if (
+        len(source_context_records) > 1
+        and "center" not in parameters
+        and not _use_aggregate_target_surface(parameters)
+    ):
         return _lower_source_context_target_surface_children(
             op,
             source_records=source_context_records,
@@ -31723,7 +31774,11 @@ def _v1_records_for_op_fastener_grid(
         source_record,
         context_tag="source_context_fastener_grid_child",
     )
-    if len(source_context_records) > 1 and "center" not in parameters:
+    if (
+        len(source_context_records) > 1
+        and "center" not in parameters
+        and not _use_aggregate_target_surface(parameters)
+    ):
         return _lower_source_context_target_surface_children(
             op,
             source_records=source_context_records,
@@ -32457,7 +32512,11 @@ def _v1_records_for_op_vent_slats(
         source_record,
         context_tag="source_context_vent_slats_child",
     )
-    if len(source_context_records) > 1 and "center" not in parameters:
+    if (
+        len(source_context_records) > 1
+        and "center" not in parameters
+        and not _use_aggregate_target_surface(parameters)
+    ):
         return _lower_source_context_target_surface_children(
             op,
             source_records=source_context_records,

@@ -27,6 +27,7 @@ VERSION = "lathe.validate.curvature_distribution_v1"
 
 _HIST_BINS = 12
 _MIDRANGE_TARGET = 0.35
+_CURVED_VERTEX_TARGET = 0.22
 _WARN_THRESHOLD = 0.40
 
 
@@ -109,7 +110,21 @@ def evaluate_curvature_distribution(
     end_share = end_mass / total_mass if total_mass > 0 else 1.0
 
     peak_penalty = max(0.0, min(1.0, end_share - _MIDRANGE_TARGET))
-    score = round(max(0.0, min(1.0, midrange_share - 0.5 * peak_penalty + 0.25)), 6)
+    legacy_score = max(0.0, min(1.0, midrange_share - 0.5 * peak_penalty + 0.25))
+
+    flat_share = float(hist[0]) if n_bins >= 1 else 1.0
+    sharp_share = float(hist[-1]) if n_bins >= 2 else 0.0
+    curved_mass = max(0.0, min(1.0, midrange_mass + sharp_share))
+    curved_midrange_share = midrange_mass / curved_mass if curved_mass > 0.0 else 0.0
+    curved_support = min(1.0, curved_mass / _CURVED_VERTEX_TARGET)
+    curved_score = max(
+        0.0,
+        min(
+            1.0,
+            0.15 + 0.70 * curved_midrange_share * curved_support - 0.20 * sharp_share,
+        ),
+    )
+    score = round(max(legacy_score, curved_score), 6)
 
     if score < _WARN_THRESHOLD:
         status = "warn"
@@ -127,6 +142,13 @@ def evaluate_curvature_distribution(
             "histogram": [round(float(v), 6) for v in hist.tolist()],
             "midrange_share": round(midrange_share, 6),
             "end_share": round(end_share, 6),
+            "flat_share": round(flat_share, 6),
+            "sharp_share": round(sharp_share, 6),
+            "curved_mass": round(curved_mass, 6),
+            "curved_midrange_share": round(curved_midrange_share, 6),
+            "curved_vertex_target": _CURVED_VERTEX_TARGET,
+            "legacy_score": round(legacy_score, 6),
+            "curved_score": round(curved_score, 6),
             "peak_penalty": round(peak_penalty, 6),
             "warn_threshold": _WARN_THRESHOLD,
             "vertex_count": int(vertices.shape[0]),

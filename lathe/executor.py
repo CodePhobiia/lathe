@@ -102,6 +102,7 @@ BUILD_CACHE_VERSION = "v13_rc1"
 QUICK_CACHE_SUBDIR = "quick_builds"
 QUICK_CACHE_GLB_FILENAME = "preview.cached.glb"
 DEFAULT_BUILD_TIMEOUT_S = 300.0
+AUTO_BUILD_CACHE_MAX_BYTES = 64 * 1024 * 1024
 log = logging.getLogger(__name__)
 
 
@@ -144,6 +145,45 @@ def _build_cache_root() -> Path:
 def _quick_cache_root() -> Path:
     """Resolve the quick-preview cache root at use time so env overrides stay live."""
     return lathe_cache_dir() / QUICK_CACHE_SUBDIR
+
+
+def _cache_tree_footprint(root: Path) -> dict[str, Any]:
+    total_bytes = 0
+    file_count = 0
+    largest_file = ""
+    largest_bytes = 0
+    try:
+        iterator = root.rglob("*")
+        for path in iterator:
+            if not path.is_file():
+                continue
+            stat = path.stat()
+            size = int(stat.st_size)
+            total_bytes += size
+            file_count += 1
+            if size > largest_bytes:
+                largest_bytes = size
+                try:
+                    largest_file = relpath(root, path)
+                except ValueError:
+                    largest_file = str(path)
+    except OSError as exc:
+        return {
+            "ok": False,
+            "reason": "footprint_unreadable",
+            "message": str(exc),
+            "size_bytes": total_bytes,
+            "file_count": file_count,
+            "largest_file": largest_file,
+            "largest_bytes": largest_bytes,
+        }
+    return {
+        "ok": True,
+        "size_bytes": total_bytes,
+        "file_count": file_count,
+        "largest_file": largest_file,
+        "largest_bytes": largest_bytes,
+    }
 
 
 def clear_quick_cache() -> int:
@@ -596,9 +636,21 @@ class BuildExecutor:
                 "lods": optimize_bundle.get("lods"),
                 "collision": optimize_bundle.get("collision"),
             },
+            "cache": {
+                "hit": False,
+                "persisted": False,
+                "reason": "pending_auto_persist",
+            },
         }
         dump_json(self.out_dir / "build_report.json", report)
-        self._persist_build_cache()
+        cache_status = self._persist_build_cache()
+        report["cache"] = cache_status
+        dump_json(self.out_dir / "build_report.json", report)
+        if cache_status.get("persisted"):
+            try:
+                dump_json(self.cache_dir / "build_report.json", report)
+            except OSError:
+                pass
         return report
 
     def _prepare_dirs(self) -> None:
@@ -971,6 +1023,13 @@ class BuildExecutor:
             if report_path.exists():
                 # JSON ingress — internal controlled payload from our own cached build_report.json (copytree'd from a prior build out_dir); safe without schema validation.
                 report["out_dir"] = str(self.out_dir)
+                report["cache"] = {
+                    "hit": True,
+                    "persisted": True,
+                    "reason": "restored_from_build_cache",
+                    "cache_key": self.cache_key,
+                    "cache_dir": str(self.cache_dir),
+                }
                 report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
                 return report
         except (OSError, shutil.Error):
@@ -989,12 +1048,47 @@ class BuildExecutor:
                 shutil.rmtree(displaced_dir, ignore_errors=True)
         return None
 
-    def _persist_build_cache(self) -> None:
+    def _persist_build_cache(self) -> dict[str, Any]:
+        footprint = _cache_tree_footprint(self.out_dir)
+        status: dict[str, Any] = {
+            "hit": False,
+            "persisted": False,
+            "cache_key": self.cache_key,
+            "cache_dir": str(self.cache_dir),
+            "max_auto_persist_bytes": AUTO_BUILD_CACHE_MAX_BYTES,
+            **footprint,
+        }
+        if not footprint.get("ok", False):
+            status["reason"] = str(footprint.get("reason") or "footprint_unreadable")
+            log_debug(
+                log,
+                "lathe.executor.cache_persist_skipped",
+                "skipping build cache persist for {cache_dir}: {reason}",
+                cache_dir=self.cache_dir,
+                reason=status["reason"],
+            )
+            return status
+        if int(footprint.get("size_bytes", 0)) > AUTO_BUILD_CACHE_MAX_BYTES:
+            status["reason"] = "output_tree_exceeds_auto_cache_limit"
+            log_debug(
+                log,
+                "lathe.executor.cache_persist_skipped_large_output",
+                "skipping build cache persist for {cache_dir}: {size_bytes} bytes exceeds {limit_bytes}",
+                cache_dir=self.cache_dir,
+                size_bytes=footprint.get("size_bytes", 0),
+                limit_bytes=AUTO_BUILD_CACHE_MAX_BYTES,
+            )
+            return status
+
         staging_dir: Path | None = None
         try:
             self.cache_dir.parent.mkdir(parents=True, exist_ok=True)
             if self.cache_dir.exists():
-                return
+                complete = (self.cache_dir / "build_report.json").is_file() and (
+                    self.cache_dir / CACHE_MANIFEST_FILENAME
+                ).is_file()
+                status["reason"] = "cache_entry_already_exists" if complete else "incomplete_cache_entry_exists"
+                return status
             staging_dir = Path(
                 tempfile.mkdtemp(
                     prefix=f".{self.cache_key}.",
@@ -1007,9 +1101,14 @@ class BuildExecutor:
             dump_json(staging_dir / CACHE_MANIFEST_FILENAME, self._cache_manifest())
             staging_dir.rename(self.cache_dir)
             staging_dir = None
+            status["persisted"] = True
+            status["reason"] = "persisted"
+            return status
         except (OSError, shutil.Error) as exc:
             # Caching is best-effort; surface IO/permission/dest-exists failures
             # as debug diagnostics rather than aborting the build.
+            status["reason"] = "cache_persist_failed"
+            status["message"] = str(exc)
             log_debug(
                 log,
                 "lathe.executor.cache_persist_failed",
@@ -1020,6 +1119,7 @@ class BuildExecutor:
         finally:
             if staging_dir is not None:
                 shutil.rmtree(staging_dir, ignore_errors=True)
+        return status
 
     def _cache_manifest(self) -> dict[str, Any]:
         variant_name = None
