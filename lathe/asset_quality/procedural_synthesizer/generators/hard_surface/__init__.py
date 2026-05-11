@@ -9,17 +9,21 @@ typed attribute schema in ``..attributes``.
 
 from __future__ import annotations
 
+from ...attributes.bracket import BracketAttributes
+from ...attributes.conduit import ConduitAttributes
 from ...attributes.decal_zone import DecalZoneAttributes
 from ...attributes.fastener import FastenerAttributes
 from ...attributes.frame import FrameAttributes
 from ...attributes.handle import HandleAttributes
 from ...attributes.inset import InsetAttributes
+from ...attributes.latch import LatchAttributes
 from ...attributes.material_zone import MaterialZoneAttributes
 from ...attributes.panel import PanelAttributes
 from ...attributes.primary_volume import PrimaryVolumeAttributes
 from ...attributes.rail import RailAttributes
 from ...attributes.socket import SocketAttributes
 from ...attributes.trim import TrimAttributes
+from ...attributes.vent import VentAttributes
 from ...attributes.wear_zone import WearZoneAttributes
 from ...domain_extension import (
     DomainExtensionManifest,
@@ -27,17 +31,21 @@ from ...domain_extension import (
 )
 from ...registry import REGISTRY
 from . import (
+    bracket,
+    conduit,
     decal_zone,
     fastener,
     frame,
     handle,
     inset,
+    latch,
     material_zone,
     panel,
     primary_volume,
     rail,
     socket,
     trim,
+    vent,
     wear_zone,
 )
 
@@ -58,6 +66,10 @@ HARD_SURFACE_NODE_SCHEMAS: dict[str, type] = {
     "inset": InsetAttributes,
     "rail": RailAttributes,
     "socket": SocketAttributes,
+    "bracket": BracketAttributes,
+    "vent": VentAttributes,
+    "conduit": ConduitAttributes,
+    "latch": LatchAttributes,
 }
 
 
@@ -79,6 +91,10 @@ HARD_SURFACE_GENERATORS = (
     inset.GENERATOR,
     rail.GENERATOR,
     socket.GENERATOR,
+    bracket.GENERATOR,
+    vent.GENERATOR,
+    conduit.GENERATOR,
+    latch.GENERATOR,
 )
 
 
@@ -110,8 +126,12 @@ _MANIFEST = DomainExtensionManifest(
         "solid.sphere",
         "solid.extruded_profile",
         "solid.revolved_profile",
+        "solid.torus",
         "solid.panel",
         "op.union",
+        "op.material_zone",
+        "op.decal_zone",
+        "op.wear_zone",
     ),
     style_pack_compatibility=("*",),
     policy_pack_compatibility=("*",),

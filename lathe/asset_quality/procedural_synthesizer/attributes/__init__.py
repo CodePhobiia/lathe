@@ -15,17 +15,21 @@ from __future__ import annotations
 
 from typing import Any, Callable, Mapping
 
+from .bracket import BracketAttributes
+from .conduit import ConduitAttributes
 from .decal_zone import DecalZoneAttributes
 from .fastener import FastenerAttributes
 from .frame import FrameAttributes
 from .handle import HandleAttributes
 from .inset import InsetAttributes
+from .latch import LatchAttributes
 from .material_zone import MaterialZoneAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
 from .rail import RailAttributes
 from .socket import SocketAttributes
 from .trim import TrimAttributes
+from .vent import VentAttributes
 from .wear_zone import WearZoneAttributes
 
 
@@ -46,6 +50,10 @@ ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "inset": InsetAttributes.from_dict,
     "rail": RailAttributes.from_dict,
     "socket": SocketAttributes.from_dict,
+    "bracket": BracketAttributes.from_dict,
+    "vent": VentAttributes.from_dict,
+    "conduit": ConduitAttributes.from_dict,
+    "latch": LatchAttributes.from_dict,
 }
 
 
@@ -64,17 +72,21 @@ def validate_attributes(node_type: str, raw_attributes: dict[str, Any]) -> Any:
 
 __all__ = [
     "ATTRIBUTE_SCHEMAS",
+    "BracketAttributes",
+    "ConduitAttributes",
     "DecalZoneAttributes",
     "FastenerAttributes",
     "FrameAttributes",
     "HandleAttributes",
     "InsetAttributes",
+    "LatchAttributes",
     "MaterialZoneAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
     "RailAttributes",
     "SocketAttributes",
     "TrimAttributes",
+    "VentAttributes",
     "WearZoneAttributes",
     "validate_attributes",
 ]
