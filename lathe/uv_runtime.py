@@ -361,9 +361,11 @@ def derive_uv_semantics(topology_bundle: dict[str, Any], shape_bundle: dict[str,
     bake_groups = _dict_records(topology_bundle.get("bake_groups"))
     if not bake_groups and isinstance(topology_semantics, dict):
         bake_groups = _dict_records(topology_semantics.get("bake_groups"))
-    panel_seams = _string_list(topology_bundle.get("panel_seams"))
-    if not panel_seams and isinstance(topology_semantics, dict):
+    panel_seams: list[str] = []
+    if isinstance(topology_semantics, dict):
         panel_seams = _string_list(topology_semantics.get("panel_seams"))
+    if not panel_seams:
+        panel_seams = _string_list(topology_bundle.get("panel_seams"))
     material_boundaries = [
         str(group.get("name") or group.get("part") or "")
         for group in bake_groups
