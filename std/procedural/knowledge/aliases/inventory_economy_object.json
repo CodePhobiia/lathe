@@ -1,0 +1,7 @@
+{
+  "family_id": "inventory_economy_object",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": ["panelized_hard_surface_object"],
+  "domain": "hard_surface",
+  "description": "Inventory / currency / loot containers. A primary panel-bounded volume with raised label bands, distributed currency pips, paired access handles, slotted storage grid, side resource ports, and handled-wear masks. Pure metadata — structure comes from the construction graph + panelized_hard_surface_object policy. Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py and tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

@@ -703,6 +703,15 @@ WEAR_OPS: frozenset[str] = frozenset(
 )
 
 
+ZONE_OPS: frozenset[str] = frozenset(
+    {
+        "op.material_zone",
+        "op.decal_zone",
+        "op.wear_zone",
+    }
+)
+
+
 ALL_OPS: frozenset[str] = (
     SOLID_OPS
     | BOOLEAN_OPS
@@ -711,6 +720,7 @@ ALL_OPS: frozenset[str] = (
     | REPETITION_OPS
     | INTEGRATION_OPS
     | WEAR_OPS
+    | ZONE_OPS
 )
 
 

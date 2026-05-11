@@ -292,8 +292,8 @@ def test_all_ops_count_matches_pinned_value() -> None:
     This catches accidental op-set drift from migration / refactoring.
     Update the pinned count when intentionally adding/removing ops.
     """
-    assert len(ALL_OPS) == 83, (
-        f"ALL_OPS has {len(ALL_OPS)} members; pinned value is 83. If this is an "
+    assert len(ALL_OPS) == 86, (
+        f"ALL_OPS has {len(ALL_OPS)} members; pinned value is 86. If this is an "
         "intentional change, update the pinned value here and re-run the "
         "coverage assertion to confirm new ops have explicit states."
     )

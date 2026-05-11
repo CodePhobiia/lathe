@@ -62,17 +62,98 @@ from lathe.asset_quality.shape_ir_v2 import ShapeOp, ShapeProgram
 #   4. Run this test — the diff against the recipe baseline must pass.
 #   5. Delete _RECIPES[family].
 
+_INVENTORY_ECONOMY_OBJECT_GRAPH: dict[str, Any] = {
+    "nodes": [
+        {"node_id": "body", "node_type": "primary_volume", "domain": "hard_surface",
+         "attributes": {"shape": "rounded_box", "dimensions_cm": {"x": 28.0, "y": 38.0, "z": 28.0}, "rounding_cm": 2.0}},
+        {"node_id": "rarity_band", "node_type": "material_zone", "domain": "hard_surface",
+         "attributes": {"zone_id": "rarity_band", "material_hint": "painted_emblem"}},
+        {"node_id": "currency_pip", "node_type": "decal_zone", "domain": "hard_surface",
+         "attributes": {"zone_id": "currency_pip", "decal_intent": "currency_marker", "size_cm": [3.0, 3.0], "host_face_axis": "z"}},
+        {"node_id": "vendor_label", "node_type": "decal_zone", "domain": "hard_surface",
+         "attributes": {"zone_id": "vendor_label", "decal_intent": "vendor_brand", "size_cm": [13.0, 4.0], "host_face_axis": "z"}},
+        {"node_id": "handled_wear", "node_type": "wear_zone", "domain": "hard_surface",
+         "attributes": {"zone_id": "handled_wear", "wear_kind": "handled", "intensity": "moderate", "coverage_fraction": 0.4}},
+        {"node_id": "access_handle", "node_type": "handle", "domain": "hard_surface",
+         "attributes": {"style": "bar", "length_cm": 16.0, "grip_radius_cm": 0.75, "axis": "x"}},
+        {"node_id": "pickup_handle", "node_type": "handle", "domain": "hard_surface",
+         "attributes": {"style": "loop", "length_cm": 10.0, "grip_radius_cm": 0.9, "axis": "x"}},
+        {"node_id": "storage_slots", "node_type": "inset", "domain": "hard_surface",
+         "attributes": {"depth_axis": "z", "depth_cm": 0.3, "width_cm": 6.0, "height_cm": 4.0, "profile": "flat"}},
+        {"node_id": "stack_tick", "node_type": "fastener", "domain": "hard_surface",
+         "attributes": {"kind": "rivet", "head_radius_cm": 0.3, "head_height_cm": 0.4, "shaft_radius_cm": 0.15, "shaft_length_cm": 0.6}},
+        {"node_id": "resource_ports", "node_type": "socket", "domain": "hard_surface",
+         "attributes": {"depth_axis": "x", "depth_cm": 1.0, "radius_cm": 0.6, "profile": "round"}},
+    ],
+    "edges": [],
+}
+
+
 _MIGRATED_FAMILY_FIXTURES: tuple[dict[str, Any], ...] = (
-    # First migration goes here, e.g.:
-    # {
-    #     "family": "inventory_economy_object",
-    #     "brief": {},
-    #     "parts": (),
-    #     "graph_nodes": (),
-    #     "synthesizer_asset": {...},
-    #     "synthesizer_runtime": {...},
-    #     "allowed_op_diff": [],
-    # },
+    {
+        # inventory_economy_object: first family migrated to the procedural
+        # synthesizer. The recipe emits 10 high-level sop.* ops (polybevel,
+        # copy_to_points, polywire, polyextrude, chip_edges); the synthesizer
+        # emits 11 low-level ops from a 10-node construction graph driven by
+        # the panelized_hard_surface_object policy. ALL diffs are
+        # intent-driven: the synthesizer's lower-level decomposition is
+        # equivalent in visible structure (body, currency markers, stack
+        # ticks, rarity band, two handles, slots, vendor label, resource
+        # ports, handled wear) but expressed through the typed NODE_TYPE
+        # generator manifest rather than through opaque sop.* ops.
+        "family": "inventory_economy_object",
+        "brief": {},
+        "parts": (),
+        "graph_nodes": (),
+        "synthesizer_asset": {
+            "name": "inventory_economy_object",
+            "intent": {"construction_graph": _INVENTORY_ECONOMY_OBJECT_GRAPH},
+        },
+        "synthesizer_runtime": {
+            "design_brief": {"brief": {"family": "inventory_economy_object"}},
+            "construction_graph": _INVENTORY_ECONOMY_OBJECT_GRAPH,
+        },
+        "allowed_op_diff": [
+            # Recipe-only ops: high-level sop.* operations the synthesizer
+            # decomposes into per-NODE_TYPE typed primitives. Each is
+            # equivalent in visible-feature intent to the corresponding
+            # synthesizer-side ops noted in parentheses.
+            {"op": "sop.polybevel", "target": "inventory.body", "parameter_keys": ["source", "width_cm", "segments"]},
+            {"op": "sop.copy_to_points", "target": "inventory.value_markers", "parameter_keys": ["source", "points"]},
+            {"op": "sop.copy_to_points", "target": "inventory.quantity_ticks", "parameter_keys": ["source", "points"]},
+            {"op": "sop.polyextrude", "target": "inventory.rarity_band", "parameter_keys": ["profile_polygon", "extrude_height_cm", "axis", "center"]},
+            {"op": "sop.polywire", "target": "inventory.access_handle", "parameter_keys": ["radius_cm", "path"]},
+            {"op": "sop.copy_to_points", "target": "inventory.storage_slots", "parameter_keys": ["source", "points"]},
+            {"op": "sop.polywire", "target": "inventory.pickup_handle", "parameter_keys": ["radius_cm", "path"]},
+            {"op": "sop.polyextrude", "target": "inventory.vendor_label", "parameter_keys": ["profile_polygon", "extrude_height_cm", "axis", "center"]},
+            {"op": "sop.copy_to_points", "target": "inventory.resource_ports", "parameter_keys": ["source", "points"]},
+            {"op": "op.chip_edges", "target": "inventory.handled_wear", "parameter_keys": ["amount", "pickup_bias"]},
+            # Synthesizer-only ops: low-level primitives + zone metadata
+            # that together render the same visible features.
+            {"op": "solid.rounded_box", "target": "body",
+             "parameter_keys": ["width_cm", "height_cm", "depth_cm", "rounding_cm"]},
+            {"op": "op.material_zone", "target": "rarity_band",
+             "parameter_keys": ["zone_id", "material_hint", "priority"]},
+            {"op": "op.decal_zone", "target": "currency_pip",
+             "parameter_keys": ["zone_id", "decal_intent", "size_cm", "host_face_axis", "priority"]},
+            {"op": "op.decal_zone", "target": "vendor_label",
+             "parameter_keys": ["zone_id", "decal_intent", "size_cm", "host_face_axis", "priority"]},
+            {"op": "op.wear_zone", "target": "handled_wear",
+             "parameter_keys": ["zone_id", "wear_kind", "intensity", "coverage_fraction"]},
+            {"op": "solid.capsule", "target": "access_handle",
+             "parameter_keys": ["radius_cm", "length_cm", "axis", "handle_style"]},
+            {"op": "solid.capsule", "target": "pickup_handle",
+             "parameter_keys": ["radius_cm", "length_cm", "axis", "handle_style"]},
+            {"op": "solid.box", "target": "storage_slots",
+             "parameter_keys": ["width_cm", "height_cm", "depth_cm", "inset_depth_axis", "inset_bottom_style", "blend_mode"]},
+            {"op": "solid.cylinder", "target": "stack_tick.head",
+             "parameter_keys": ["radius_cm", "height_cm", "axis", "fastener_kind", "fastener_part"]},
+            {"op": "solid.cylinder", "target": "stack_tick.shaft",
+             "parameter_keys": ["radius_cm", "height_cm", "axis", "fastener_kind", "fastener_part"]},
+            {"op": "solid.cylinder", "target": "resource_ports",
+             "parameter_keys": ["radius_cm", "height_cm", "axis", "socket_profile", "blend_mode"]},
+        ],
+    },
 )
 
 
