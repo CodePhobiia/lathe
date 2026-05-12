@@ -127,7 +127,11 @@ class TestPipeline:
         ops_a = [op for op in result_a.shape_program.ops if op.op == "solid.rounded_box"]
         ops_b = [op for op in result_b.shape_program.ops if op.op == "solid.rounded_box"]
         assert ops_a and ops_b
-        assert ops_a[0].parameters["rounding_cm"] != ops_b[0].parameters["rounding_cm"]
+        # primary_volume generator emits the kernel-expected ``radius_cm``
+        # param name (not the attribute schema's ``rounding_cm``) so the
+        # v1 lowering finds it. The attribute → op param rename happens in
+        # the generator; verified here at the emit boundary.
+        assert ops_a[0].parameters["radius_cm"] != ops_b[0].parameters["radius_cm"]
 
     def test_attribute_schema_violation_surfaces_in_trace_not_crash(self) -> None:
         # Missing required dimension key — schema rejects the node, but

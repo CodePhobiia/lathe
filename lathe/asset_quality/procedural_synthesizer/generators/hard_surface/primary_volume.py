@@ -176,7 +176,16 @@ def _impl(
                 "width_cm": float(attrs.dimensions_cm["x"]),
                 "height_cm": float(attrs.dimensions_cm["y"]),
                 "depth_cm": float(attrs.dimensions_cm["z"]),
-                "rounding_cm": rounding,
+                # Kernel expects ``radius_cm`` for solid.rounded_box's
+                # corner radius. The aliases the kernel recognizes are
+                # ``radius`` / ``corner_radius_cm`` / ``corner_radius``;
+                # NOT ``rounding_cm`` (despite the attribute's own
+                # name, which matches the typed-attribute schema's
+                # ``PrimaryVolumeAttributes.rounding_cm`` field). Diagnosed
+                # 2026-05-12 as the silent body-drop bug — without this
+                # rename, every synthesizer-driven build loses its
+                # primary_volume primitive in the v1 lowering.
+                "radius_cm": rounding,
             },
             purpose=purpose,
         )
