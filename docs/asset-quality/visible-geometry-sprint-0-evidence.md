@@ -979,3 +979,97 @@ Not allowed:
 - The evidence-timeout runtime config is production schema-clean.
 - Every hard-surface family now certifies through this route.
 - The exact hard-surface path is production-ready for these fixtures.
+
+---
+
+## Phase B Baseline Refresh — 2026-05-12
+
+After Cycle 1/2/3 substrate landed (procedural synthesizer, generators, decorators, recipe decommission) and Cycle 4 Phase A (policy expansions, zone-op consumers, honest harness) closed all four PARTIAL acceptance criteria, the `industrial_crate` baseline was re-captured to ground Sprint 0 S0-3/S0-4/S0-5/S0-6 work.
+
+### Build command (re-run)
+
+```powershell
+python -m lathe.cli build examples/industrial_crate.lth industrial_crate `
+  --out .tmp_tests/baseline_industrial_crate --deterministic
+```
+
+Out dir: `.tmp_tests/baseline_industrial_crate/industrial_crate/`
+
+### Headline metrics
+
+- `certified`: **True**
+- `score`: **0.884666** (threshold: 0.84)
+- Repair rounds executed: 2 (round 1 `local_repair`, round 2 `reselect_candidate`)
+
+Round 2 jumped from 0.754 → 0.885 by replacing the original candidate with a better-scored one. The diagnostics it "resolved":
+- `toy_or_primitive_detected` ← *this is the northstar §8 "looks like procedural blockout" mode firing on the pre-repair candidate*
+- `semantic_silhouette_fidelity_failed`
+- `semantic_part_coverage_failed`
+- `semantic_adjacency_score_failed`
+- `visual_surface_authoring_quality_failed`
+
+The asset certifies, but the validators that fire pre-repair name exactly the failure mode S0-3/S0-5 must close.
+
+### Topology composition
+
+`stages/topology/bundle.json::part_groups`:
+
+| Part | Face count |
+|---|---:|
+| body | 321 |
+| foot_l | 107 |
+| foot_r | 105 |
+| handle_l | 819 |
+| handle_r | 818 |
+| latch_plate | 52 |
+| **Total** | **2,222** |
+
+`material_zones` count in topology bundle: **0** — no material zones bound from topology. (The Phase A.2 synthesizer-zone path is not exercised here because the .lth has no authored `construction_graph`; see "Routing observation" below.)
+
+### Visual evidence
+
+`stages/package/previews/turntable.png` and `stages/package/previews/material_ids.png`:
+
+- **Hard 90° edges everywhere.** Zero bevel/chamfer treatment.
+- **Body faces show hideous radial triangulation** — not quads, not edge loops.
+- **Two visible secondary features only:** a small green knot on the left face (per topology = `handle_l`, but reads as an artifact not a load-bearing handle); a small yellow rectangle on the right (warning decal carrier).
+- **No corner guards, no mid trim, no foot rails, no fastener grid, no lid seam visible** despite the family declaring `support_bracket`, `trim_band`, `cargo_bevel`, `fastener_strip`, `lid_break`.
+- **Silhouette is a near-perfect rectangular box.**
+
+`stages/package/previews/wireframe.png`: confirms the topology weakness — long thin triangles fanning across each body face. The handles are detail-dense knots punched through near-empty hosts.
+
+`stages/surface/maps/basecolor.png`: actually well-authored — gray painted steel, yellow warning stripes, white shipping labels. The texture is real; the geometry hosting it isn't.
+
+### Failure-mode scorecard against northstar §8 minimum-visible-improvement bar
+
+| Northstar bar | Baseline state |
+|---|---|
+| less primitive/blockout-looking | **FAILS** — `toy_or_primitive_detected` fired pre-repair |
+| clearer silhouette or hard-surface hierarchy | **FAILS** — rectangular box silhouette, no hierarchy |
+| visible bevel/chamfer, trim, fasteners, vents, panels | **FAILS** — zero of any of these visible |
+| coherent final materials (not debug colors) | **PARTIAL** — basecolor texture is good, but geometry zoning doesn't match the .lth's three declared materials |
+| evidence paths in report | **PASS** (this update) |
+
+### Routing observation (important for S0-3)
+
+The current baseline routes through the **legacy scaffold path**, not the procedural synthesizer:
+
+- `examples/industrial_crate.lth` has no `construction_graph` block.
+- `synthesizer_eligible(asset, runtime_config)` returns False.
+- Build dispatches to `compile_scaffold_candidates` (legacy) — Cycle 3 / Phase A policy expansions never run for this asset.
+
+This means S0-3 ("add one visible-geometry detail operation") has two parallel sub-paths:
+
+1. **Wire industrial_crate to drive through the synthesizer** — add a minimum `construction_graph` block to the .lth (just a `primary_volume`), then Phase A.1's policy expansion provides corner brackets, trim, etc. for free. All 71 alias-driven assets benefit from this wiring at once.
+2. **Add a real bevel/chamfer kernel op** — independent of dispatch path. Without it, even the synthesizer path produces sharp-edged boxes.
+
+Both are reusable beyond crate; that satisfies northstar's "must be reusable beyond one fixture" rule. The .lth wiring is the smaller change; the kernel op is the substantive one.
+
+### Done condition for S0-3 / S0-4 / S0-5 / S0-6 measurement
+
+- **S0-3 evidence:** the same turntable.png shows visibly chamfered edges; body face count rises from 321 → 600+ (bevel adds geometry); pre-repair score on the same seed improves.
+- **S0-4 evidence:** `material_zones` count in topology bundle goes from 0 → 3 (or 3+ via the synthesizer-zone merge if the .lth gets wired to the synthesizer). painted_steel binds to body, rubber_trim binds to a real trim band, warning_paint binds to a decal carrier.
+- **S0-5 evidence:** the new diagnostic catches the blockout state on the pre-repair candidate AND continues to fire if repair only "reselects" without adding bevels — i.e., reselect can't satisfy it.
+- **S0-6 evidence:** when the diagnostic fires, the repair planner emits a concrete bevel/chamfer or add-trim operation; re-build resolves it on the same seed (no reselect dependency).
+
+This is the falsifiable before-state. S0-3 work begins next.
