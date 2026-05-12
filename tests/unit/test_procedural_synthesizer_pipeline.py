@@ -257,6 +257,108 @@ class TestIndividualGenerators:
         assert op.parameters["height_cm"] == 20.0
         assert op.parameters["depth_cm"] == 30.0
 
+    def test_primary_volume_edge_treatment_attribute_emits_bevel_op(self) -> None:
+        """Sprint 0 S0-3: a primary_volume with edge_treatment='beveled' emits
+        an op.bevel op immediately after the primary solid, keyed to the same
+        target. This is the path that escapes the "looks like procedural
+        blockout" failure mode by adding visible chamfered edges to every
+        hard-surface body.
+        """
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "box",
+                "dimensions_cm": {"x": 10.0, "y": 10.0, "z": 10.0},
+                "edge_treatment": "beveled",
+                "edge_treatment_width_cm": 0.8,
+                "edge_treatment_segments": 3,
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        ops = result.shape_program.ops
+        body_ops = [op for op in ops if op.target == "body"]
+        assert len(body_ops) == 2, (
+            f"expected 2 body-targeted ops (solid.box + op.bevel), got {len(body_ops)}: "
+            f"{[(op.op, op.target) for op in body_ops]}"
+        )
+        primary, bevel = body_ops
+        assert primary.op == "solid.box"
+        assert bevel.op == "op.bevel"
+        assert bevel.target == "body"
+        assert bevel.parameters["width_cm"] == 0.8
+        assert bevel.parameters["segments"] == 3
+
+    def test_primary_volume_edge_treatment_chamfered_emits_chamfer_op(self) -> None:
+        """Mirror of the beveled test but for chamfered edge treatment.
+
+        op.chamfer emits a single 45° face (no segments parameter).
+        """
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "box",
+                "dimensions_cm": {"x": 10.0, "y": 10.0, "z": 10.0},
+                "edge_treatment": "chamfered",
+                "edge_treatment_width_cm": 0.5,
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        body_ops = [op for op in result.shape_program.ops if op.target == "body"]
+        chamfer_ops = [op for op in body_ops if op.op == "op.chamfer"]
+        assert len(chamfer_ops) == 1, (
+            f"expected exactly 1 op.chamfer keyed to body, got {len(chamfer_ops)}"
+        )
+        assert chamfer_ops[0].parameters["width_cm"] == 0.5
+
+    def test_primary_volume_sphere_skips_edge_treatment(self) -> None:
+        """Spheres have no straight edges; the generator must not emit a
+        bevel/chamfer op for them even when edge_treatment is requested."""
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "sphere",
+                "dimensions_cm": {"radius": 5.0},
+                "edge_treatment": "beveled",
+                "edge_treatment_width_cm": 0.3,
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        body_ops = [op for op in result.shape_program.ops if op.target == "body"]
+        assert len(body_ops) == 1, (
+            "sphere should emit exactly 1 op (solid.sphere) and skip edge treatment"
+        )
+        assert body_ops[0].op == "solid.sphere"
+
+    def test_primary_volume_sharp_attribute_emits_no_edge_op(self) -> None:
+        """Default 'sharp' edge_treatment must not emit op.bevel / op.chamfer."""
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "box",
+                "dimensions_cm": {"x": 10.0, "y": 10.0, "z": 10.0},
+                # edge_treatment omitted — defaults to "sharp"
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        body_ops = [op for op in result.shape_program.ops if op.target == "body"]
+        edge_ops = [op for op in body_ops if op.op in ("op.bevel", "op.chamfer")]
+        assert not edge_ops, (
+            f"sharp edge_treatment should emit no edge ops; got: "
+            f"{[(op.op, op.parameters) for op in edge_ops]}"
+        )
+
     def test_primary_volume_cylinder(self) -> None:
         node = {
             "node_id": "body",
