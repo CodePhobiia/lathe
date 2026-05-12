@@ -43,22 +43,82 @@ __all__ = [
 ]
 
 
+def _asset_family_token(asset: dict[str, Any]) -> str | None:
+    """Return the asset's resolved family name (or None).
+
+    Looks in priority order:
+      - asset.build.shape.procedural.brief.family
+      - asset.intent.family
+      - asset.family (top-level)
+    """
+    if not isinstance(asset, dict):
+        return None
+    shape_cfg = asset.get("build", {}).get("shape", {}) if isinstance(asset.get("build"), dict) else {}
+    procedural = shape_cfg.get("procedural") if isinstance(shape_cfg, dict) else None
+    if isinstance(procedural, dict):
+        brief = procedural.get("brief")
+        if isinstance(brief, dict):
+            family = brief.get("family")
+            if isinstance(family, str) and family:
+                return family
+    intent = asset.get("intent") if isinstance(asset, dict) else None
+    if isinstance(intent, dict):
+        family = intent.get("family")
+        if isinstance(family, str) and family:
+            return family
+    family = asset.get("family")
+    if isinstance(family, str) and family:
+        return family
+    return None
+
+
+def _family_alias_exists(family: str) -> bool:
+    """Return True iff a FamilyAlias JSON is registered for ``family``.
+
+    Loaded lazily — the procedural_synthesizer package caches the
+    alias pack mapping at import-time, so this is O(1) after first
+    call. Returns False when the alias directory is missing or no
+    matching family is registered.
+    """
+    from ..asset_quality.procedural_synthesizer.knowledge_loader import (
+        load_all_alias_packs,
+    )
+
+    try:
+        packs = load_all_alias_packs()
+    except Exception:
+        return False
+    return family in packs  # no-family-dispatch: membership check against the declarative FamilyAlias pack registry — this IS the metadata-only family-to-(style/policies/domain) lookup the procedural synthesizer was built to enable; no behavior is keyed on the family name itself, only on the alias's resolved style + policy + domain
+
+
+def _asset_has_authored_parts(asset: dict[str, Any]) -> bool:
+    """Return True iff asset.intent.parts is a non-empty list."""
+    intent = asset.get("intent") if isinstance(asset, dict) else None
+    if not isinstance(intent, dict):
+        return False
+    parts = intent.get("parts")
+    return isinstance(parts, list) and bool(parts)
+
+
 def synthesizer_eligible(
     asset: dict[str, Any], runtime_config: dict[str, Any] | None
 ) -> bool:
     """Return True iff the procedural synthesizer can produce a program.
 
-    Predicate is conservative: only true when the asset carries enough
-    authored intent for the synthesizer to compose something. The
-    fallback to legacy ``compile_scaffold_candidates`` covers everything
-    else.
+    Per Sprint 0 Phase B capstone (post-Phase A.1 + S0-3), eligibility
+    now widens beyond just-authored-construction-graph. The synthesizer
+    can compose a default skeleton from a FamilyAlias + authored parts
+    list. Auto-graph synthesis happens in ``runtime_from_asset``.
 
-    Eligibility requires:
-      - No ``mesh_program{}`` block in source (the mesh_program path
-        takes precedence — it is the explicit authored procedural path).
-      - Either ``asset["build"]["shape"]["procedural"]`` OR
-        ``asset["intent"]["construction_graph"]`` carries a graph with
-        at least one node.
+    Eligibility requires (in priority order):
+      1. No ``mesh_program{}`` block in source (mesh_program takes
+         precedence — it is the explicit authored procedural path).
+      2. EITHER an authored ``construction_graph`` with at least one
+         node (under ``asset.build.shape.procedural.construction_graph``
+         OR ``asset.intent.construction_graph``),
+         OR a registered FamilyAlias + authored ``asset.intent.parts``
+         list. The latter route triggers auto-graph synthesis from
+         parts in ``runtime_from_asset``.
     """
     shape_cfg = asset.get("build", {}).get("shape") if isinstance(asset, dict) else None
     if isinstance(shape_cfg, dict):
@@ -74,7 +134,7 @@ def synthesizer_eligible(
                 nodes = cg.get("nodes")
                 if isinstance(nodes, list) and nodes:
                     return True
-    # Fallback location: asset.intent.construction_graph.
+    # Authored construction_graph at asset.intent.construction_graph.
     intent = asset.get("intent") if isinstance(asset, dict) else None
     if isinstance(intent, dict):
         cg = intent.get("construction_graph")
@@ -82,7 +142,220 @@ def synthesizer_eligible(
             nodes = cg.get("nodes")
             if isinstance(nodes, list) and nodes:
                 return True
+    # Sprint 0 capstone: aliased family + authored parts → auto-graph
+    # synthesis. The asset enters the synthesizer with a default
+    # primary_volume derived from intent.parts.
+    family = _asset_family_token(asset)
+    if family and _family_alias_exists(family) and _asset_has_authored_parts(asset):
+        return True
     return False
+
+
+_DEFAULT_PRIMARY_VOLUME_DIMENSIONS_CM: dict[str, float] = {"x": 30.0, "y": 30.0, "z": 30.0}
+
+
+# Minimum defaults per NODE_TYPE so auto-graph nodes survive the
+# procedural synthesizer's Stage 4 typed-attribute validation. The
+# values here are deliberately conservative — they exist to let the
+# node survive validation and reach the generator stage; per-asset
+# refinement (specific widths, axes, styles) happens via explicit
+# construction_graph authoring or via policy expansion overrides.
+# Sphere isn't here because primary_volume's auto attributes already
+# pick rounded_box; node types with no entry here pass through with
+# empty attributes (and will be dropped at Stage 4 — that's fine, the
+# policy provides its own canonical nodes).
+_NODE_TYPE_AUTO_DEFAULTS: dict[str, dict[str, Any]] = {
+    "panel": {"plane": "xy", "width_cm": 14.0, "height_cm": 10.0, "thickness_cm": 0.4},
+    "frame": {
+        "plane": "xy",
+        "outer_width_cm": 14.0,
+        "outer_height_cm": 14.0,
+        "member_thickness_cm": 0.6,
+        "protrusion_cm": 0.4,
+    },
+    "trim": {
+        "edge_axis": "x",
+        "length_cm": 14.0,
+        "cross_section_width_cm": 1.0,
+        "cross_section_height_cm": 0.4,
+    },
+    "fastener": {
+        "kind": "rivet",
+        "head_radius_cm": 0.3,
+        "head_height_cm": 0.4,
+        "shaft_radius_cm": 0.15,
+        "shaft_length_cm": 0.6,
+    },
+    "handle": {"style": "bar", "length_cm": 14.0, "grip_radius_cm": 0.8, "axis": "x"},
+    "inset": {
+        "depth_axis": "z",
+        "depth_cm": 0.4,
+        "width_cm": 6.0,
+        "height_cm": 4.0,
+    },
+    "rail": {"axis": "x", "length_cm": 14.0, "radius_cm": 0.4, "cross_section": "round"},
+    "socket": {"depth_axis": "x", "depth_cm": 1.0, "radius_cm": 0.6, "profile": "round"},
+    "mount": {"style": "flat_pad", "width_cm": 4.0, "depth_cm": 4.0, "height_cm": 0.6},
+    "guard": {
+        "style": "perimeter_rail",
+        "width_cm": 16.0,
+        "height_cm": 6.0,
+        "depth_cm": 16.0,
+        "bar_radius_cm": 0.3,
+        "bar_count": 4,
+        "axis": "y",
+    },
+    "hinge": {
+        "style": "butt",
+        "leaf_width_cm": 3.0,
+        "leaf_height_cm": 6.0,
+        "leaf_thickness_cm": 0.3,
+        "barrel_radius_cm": 0.4,
+        "pin_axis": "y",
+    },
+    "latch": {
+        "style": "hasp",
+        "plate_width_cm": 4.0,
+        "plate_height_cm": 3.0,
+        "plate_thickness_cm": 0.3,
+        "arm_length_cm": 2.0,
+        "arm_radius_cm": 0.3,
+    },
+    "bracket": {
+        "profile": "l_bracket",
+        "leg_length_cm": 4.0,
+        "leg_width_cm": 2.0,
+        "thickness_cm": 0.4,
+    },
+    "vent": {"style": "horizontal_slat", "width_cm": 8.0, "height_cm": 6.0, "depth_cm": 1.0},
+    "conduit": {"kind": "cable", "radius_cm": 0.3, "length_cm": 10.0},
+    "weld": {"kind": "fillet", "bead_radius_cm": 0.2, "length_cm": 5.0},
+    "material_zone": {"material_hint": "painted_steel"},
+    "decal_zone": {
+        "decal_intent": "label",
+        "size_cm": [8.0, 4.0],
+        "host_face_axis": "z",
+    },
+    "wear_zone": {"wear_kind": "handled", "intensity": "moderate", "coverage_fraction": 0.3},
+}
+
+
+def _auto_attributes_for(node_type: str, node_id: str) -> dict[str, Any]:
+    """Return minimum default attributes for an auto-graph node.
+
+    Zone-typed nodes get their ``zone_id`` from the node's id so they
+    don't collide on the synthesizer's zone-merge pass. Everything else
+    is the per-NODE_TYPE default table above (or empty when no entry
+    is present — the node may then fail Stage 4 and be dropped, which
+    is fine because the policy supplies canonical equivalents).
+    """
+    base = _NODE_TYPE_AUTO_DEFAULTS.get(node_type)
+    if base is None:
+        return {}
+    attrs = dict(base)
+    if node_type in ("material_zone", "decal_zone", "wear_zone"):
+        attrs.setdefault("zone_id", node_id)
+    return attrs
+
+
+def _scale_to_dimensions(scale_value: Any) -> dict[str, float]:
+    """Translate an authored ``scale`` field into per-axis dimensions.
+
+    Accepts:
+      - bare numbers (treated as uniform cm)
+      - strings like ``"0.9m"`` (parsed to 90.0 cm)
+      - dicts already shaped as dimensions_cm
+    Returns the default 30cm cube when nothing parseable is present.
+    """
+    if isinstance(scale_value, dict):
+        return {
+            "x": float(scale_value.get("x") or scale_value.get("width_cm") or 30.0),
+            "y": float(scale_value.get("y") or scale_value.get("height_cm") or 30.0),
+            "z": float(scale_value.get("z") or scale_value.get("depth_cm") or 30.0),
+        }
+    if isinstance(scale_value, (int, float)):
+        # Treat the bare number as the major axis length in cm.
+        d = float(scale_value)
+        return {"x": d, "y": d * 0.7, "z": d * 0.7}
+    if isinstance(scale_value, str):
+        text = scale_value.strip().lower()
+        try:
+            if text.endswith("m"):
+                value_m = float(text[:-1])
+                d = value_m * 100.0
+                return {"x": d, "y": d * 0.7, "z": d * 0.7}
+            if text.endswith("cm"):
+                d = float(text[:-2])
+                return {"x": d, "y": d * 0.7, "z": d * 0.7}
+        except ValueError:
+            pass
+    return dict(_DEFAULT_PRIMARY_VOLUME_DIMENSIONS_CM)
+
+
+def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
+    """Synthesize a minimum construction_graph from authored intent.parts.
+
+    For each part name in ``asset.intent.parts``, classify it into a
+    NODE_TYPE via the existing ``construction_graph._classify_part``
+    substring rules. The first part classified as ``primary_volume``
+    (or, failing that, the first part listed) becomes the body
+    primary_volume node and carries the asset's scale-derived
+    dimensions. Other parts become NODE_TYPE nodes with minimum
+    attributes the synthesizer's policy expansion completes.
+
+    Returns an empty graph when no parts are authored. This is the
+    Phase B Sprint 0 capstone — it lets every .lth that lists parts
+    drive through the procedural synthesizer without grammar work.
+    """
+    intent = asset.get("intent") if isinstance(asset, dict) else None
+    if not isinstance(intent, dict):
+        return {"nodes": [], "edges": []}
+    parts = intent.get("parts") or []
+    if not isinstance(parts, list) or not parts:
+        return {"nodes": [], "edges": []}
+
+    # Lazy import to avoid cycles at module import time.
+    from ..asset_quality.construction_graph import _classify_part
+
+    dimensions = _scale_to_dimensions(intent.get("scale"))
+    nodes: list[dict[str, Any]] = []
+    has_primary_volume = False
+    for part_name in parts:
+        if not isinstance(part_name, str) or not part_name.strip():
+            continue
+        node_type = _classify_part(part_name)
+        if node_type == "primary_volume":
+            has_primary_volume = True
+        if node_type == "primary_volume":
+            attributes: dict[str, Any] = {
+                "shape": "rounded_box",
+                "dimensions_cm": dimensions,
+                "rounding_cm": 1.0,
+            }
+        else:
+            attributes = _auto_attributes_for(node_type, part_name)
+        nodes.append({
+            "node_id": part_name,
+            "node_type": node_type,
+            "domain": "hard_surface",
+            "attributes": attributes,
+        })
+
+    # The synthesizer policy precondition needs at least one
+    # primary_volume to fire. Promote the first listed part if no part
+    # classified as primary_volume — typical for parts lists like
+    # ["body", ...] where body classifies correctly, but also covers
+    # ["chassis", "..."] where chassis classifies as panel by default.
+    if not has_primary_volume and nodes:
+        first = nodes[0]
+        first["node_type"] = "primary_volume"
+        first["attributes"] = {
+            "shape": "rounded_box",
+            "dimensions_cm": dimensions,
+            "rounding_cm": 1.0,
+        }
+
+    return {"nodes": nodes, "edges": [], "auto_synthesized": True}
 
 
 def runtime_from_asset(asset: dict[str, Any]) -> dict[str, Any]:
@@ -95,8 +368,17 @@ def runtime_from_asset(asset: dict[str, Any]) -> dict[str, Any]:
 
       - design_brief.brief: from asset.build.shape.procedural.brief OR
         asset.intent.brief OR {}.
-      - construction_graph: from asset.build.shape.procedural.construction_graph
-        OR asset.intent.construction_graph.
+      - construction_graph (priority order):
+          1. asset.build.shape.procedural.construction_graph (explicit
+             authored override)
+          2. asset.intent.construction_graph (alternate authored
+             location)
+          3. Auto-synthesized graph from asset.intent.parts when neither
+             of the above is present. This is the Sprint 0 capstone
+             path — combined with the widened ``synthesizer_eligible``
+             predicate, it lets every .lth that lists parts drive
+             through the procedural synthesizer without per-asset
+             construction-graph authoring.
     """
     shape_cfg = asset.get("build", {}).get("shape", {}) or {}
     procedural = shape_cfg.get("procedural") if isinstance(shape_cfg, dict) else None
@@ -111,16 +393,26 @@ def runtime_from_asset(asset: dict[str, Any]) -> dict[str, Any]:
         b = intent.get("brief")
         if isinstance(b, dict):
             brief.update(b)
+    # Propagate the asset's family into the brief if not already
+    # there — the synthesizer's context resolver uses it for alias
+    # lookup.
+    if "family" not in brief:
+        family = _asset_family_token(asset)
+        if family:
+            brief["family"] = family
 
     construction_graph: dict[str, Any] = {}
     if isinstance(procedural, dict):
         cg = procedural.get("construction_graph")
-        if isinstance(cg, dict):
+        if isinstance(cg, dict) and cg.get("nodes"):
             construction_graph = cg
     if not construction_graph and isinstance(intent, dict):
         cg = intent.get("construction_graph")
-        if isinstance(cg, dict):
+        if isinstance(cg, dict) and cg.get("nodes"):
             construction_graph = cg
+    if not construction_graph:
+        # No authored graph — synthesize from intent.parts.
+        construction_graph = _auto_graph_from_parts(asset)
 
     return {
         "design_brief": {"brief": brief},

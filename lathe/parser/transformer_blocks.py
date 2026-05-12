@@ -258,6 +258,7 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
         """
         assignments: list[tuple[str, Any]] = []
         mesh_program: dict[str, Any] | None = None
+        procedural_block: dict[str, Any] | None = None
         for item in items:
             if isinstance(item, dict) and item.get("node_type") == "mesh_program":
                 if mesh_program is not None:
@@ -266,6 +267,13 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
                         "sub-block; merge the statements into a single block."
                     )
                 mesh_program = item
+            elif isinstance(item, dict) and item.get("node_type") == "procedural":
+                if procedural_block is not None:
+                    raise LatheParseError(
+                        "shape block declares more than one 'procedural {}' "
+                        "sub-block; merge the statements into a single block."
+                    )
+                procedural_block = item
             else:
                 assignments.append(item)
         values = self._assignments(assignments, "shape")
@@ -276,7 +284,26 @@ class _TransformerBlocksMixin(_TransformerExprMixin, Transformer):
                     "'mesh_program {}' sub-block; pick one form."
                 )
             values["mesh_program"] = mesh_program
+        if procedural_block is not None:
+            if "procedural" in values:
+                raise LatheParseError(
+                    "shape block sets both 'procedural = ...' and a "
+                    "'procedural {}' sub-block; pick one form."
+                )
+            values["procedural"] = procedural_block.get("values", {})
         return {"node_type": "shape", "values": values}
+
+    def procedural_block(self, *items: Any) -> dict[str, Any]:
+        """Sprint 0 Phase B ``procedural { ... }`` sub-block.
+
+        Plain assign_stmts whose values are lifted verbatim into
+        ``asset.build.shape.procedural``. The shape backend's
+        ``synthesizer_eligible`` / ``runtime_from_asset`` read from
+        that location.
+        """
+        assignments: list[tuple[str, Any]] = [item for item in items if item is not None]
+        values = self._assignments(assignments, "build.shape.procedural")
+        return {"node_type": "procedural", "values": values}
 
     def mesh_program_block(self, *statements: Any) -> dict[str, Any]:
         """V1.4 ordered ``mesh_program { ... }`` block.
