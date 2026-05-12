@@ -1538,27 +1538,56 @@ def _merge_synthesizer_zone_records(
         kind = str(record.get("kind") or "")
         if kind == "material_zone":
             matched = _match_zone(record)
+            hint = str(record.get("material_hint") or "").strip()
             if matched is not None:
-                hint = str(record.get("material_hint") or "").strip()
                 if hint:
                     hints = matched.setdefault("material_hints", [])
                     if hint not in hints:
                         hints.append(hint)
+                    # Sprint 0 S0-4: promote the synthesizer's
+                    # material_hint to the zone's actual ``material``
+                    # name + palette when the topology side did not
+                    # assign one (or assigned a generic fallback). The
+                    # authored material from the .lth still wins on
+                    # conflict — we only promote when the existing
+                    # material is empty / generic so we don't override
+                    # explicit author intent.
+                    existing_material = str(matched.get("material") or "").strip().lower()
+                    if not existing_material or existing_material in ("generic", "default", "panel"):
+                        matched["material"] = hint
+                        # Re-resolve the palette from the new material
+                        # name so basecolor / roughness / metallic /
+                        # surface_profile reflect the synthesizer's
+                        # intent instead of the generic fallback.
+                        palette = palette_for_material(hint)
+                        if isinstance(palette, dict):
+                            for palette_key, palette_value in palette.items():
+                                # Don't clobber any zone-level overrides
+                                # that the topology stage already wrote.
+                                matched.setdefault(palette_key, palette_value)
+                        matched["material_source"] = "shape_program.op.material_zone"
                 tags = record.get("tags") or ()
                 if tags:
                     matched.setdefault("synthesizer_material_zone_tags", []).extend(tags)
                 matched.setdefault("synthesizer_zone_source", "shape_program.op.material_zone")
                 continue
-            # No match — add it as its own evidence-only zone.
-            material_zones.append({
+            # No match — add it as its own evidence-only zone, with
+            # the resolved palette baked in.
+            material_name = hint or "painted_steel"
+            new_zone = {
                 "part": str(record.get("target") or record.get("zone_id") or "synthesizer_material_zone"),
                 "zone_id": str(record.get("zone_id") or ""),
-                "material": str(record.get("material_hint") or "painted_steel"),
-                "material_hints": [str(record.get("material_hint") or "")] if record.get("material_hint") else [],
+                "material": material_name,
+                "material_hints": [hint] if hint else [],
+                "material_source": "shape_program.op.material_zone",
                 "material_zone_source": "shape_program.op.material_zone",
                 "synthesizer_zone_source": "shape_program.op.material_zone",
                 "synthesizer_material_zone_tags": list(record.get("tags") or ()),
-            })
+            }
+            palette = palette_for_material(material_name)
+            if isinstance(palette, dict):
+                new_zone.update(palette)
+            material_zones.append(new_zone)
         elif kind in ("decal_zone", "wear_zone"):
             bucket_key = f"synthesizer_{kind}s"
             matched = _match_zone(record)
