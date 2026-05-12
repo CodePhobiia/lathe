@@ -28,6 +28,7 @@ from ...validators.composition import (
     build_gameplay_tag_validator,
     build_urdf_validator,
 )
+from ...validators.edge_treatment_coverage import evaluate_edge_treatment_coverage
 from ...validators.flow_quality import evaluate_flow_quality
 from ...validators.geometry_integrity import evaluate_geometry_integrity
 from ...validators.semantic_quality import evaluate_semantic_quality
@@ -76,6 +77,12 @@ _PIPELINE = ValidatorPipeline(
             name="visual_quality",
             fn=evaluate_visual_quality,
             stage_dependencies=["shape", "topology", "uv", "surface"],
+        ),
+        FunctionValidator(
+            name="edge_treatment_coverage",
+            fn=evaluate_edge_treatment_coverage,
+            stage_dependencies=["shape", "topology"],
+            weight=0.0,
         ),
         FunctionValidator(
             name="flow_quality",
