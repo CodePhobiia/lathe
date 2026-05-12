@@ -2071,13 +2071,32 @@ def _lowering_exception_diagnostic(op: ShapeOp, exc: Exception) -> dict[str, Any
     }
 
 
+_IMMUTABLE_LEAF_TYPES: tuple[type, ...] = (str, int, float, bool, type(None), bytes, frozenset)
+
+
 def _metadata_safe_value(value: Any) -> Any:
+    """Recursively safe-copy a metadata structure.
+
+    Recurses into dict / list / tuple to produce a fresh outer
+    container (so callers can mutate without affecting the source).
+    For leaves, returns immutable types AS-IS — ``deepcopy`` of a
+    string / int / float / bool / None is wasted work, and this
+    function was previously called ~22,500 times per v1 record on
+    the lower_to_v1 hot path, costing 89 % of build time on the
+    industrial_crate synthesizer path (188s of 189s total per
+    cProfile run). Mutable leaves still go through ``deepcopy`` to
+    preserve the original semantic.
+    """
     if isinstance(value, dict):
         return {str(key): _metadata_safe_value(item) for key, item in value.items()}
     if isinstance(value, tuple):
         return [_metadata_safe_value(item) for item in value]
     if isinstance(value, list):
         return [_metadata_safe_value(item) for item in value]
+    if isinstance(value, _IMMUTABLE_LEAF_TYPES):
+        # Immutable — sharing is safe.
+        return value
+    # Mutable / unknown leaf type — preserve the prior deepcopy semantics.
     return deepcopy(value)
 
 
