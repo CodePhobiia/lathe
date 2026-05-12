@@ -36,14 +36,12 @@ ALLOWLIST: tuple[tuple[str, str, str], ...] = (
     # capability/tag/role dispatch through the synthesizer.
     # ---------------------------------------------------------------
 
-    # Validate-stage reporter — lives in grammar_lowering.py. Migrated
-    # in Cycle 3b (report-path cleanup; the build-path migration in
-    # Cycle 3a handles the structural anti-pattern).
-    (
-        "lathe/asset_quality/grammar_lowering.py",
-        "_RECIPES.get(family)",
-        "CYCLE 3b: validate-stage reporter only; does not drive shape stage."
-    ),
+    # ---------------------------------------------------------------
+    # NOTE: ``_RECIPES.get(family)`` in grammar_lowering.py was
+    # decommissioned in Cycle 3 Round 6. The dispatch site now routes
+    # through ``synthesize_procedural_program(asset, runtime)`` — no
+    # family-keyed branching. No allowlist entry required.
+    # ---------------------------------------------------------------
 
     # Build-driving paths (Cycle 3a migration targets).
     # asset_graph.py — family-aware blueprint routing during AssetGraph

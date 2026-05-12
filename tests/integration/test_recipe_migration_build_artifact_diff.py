@@ -1,38 +1,28 @@
-"""Integration test: per-family build-artifact diff between recipe and synthesizer.
+"""Integration test: every FamilyAlias drives a valid synthesizer build.
 
-Per `docs/asset-quality/lathe-northstar-full-implementation-plan.md`
-v2 §6.4:
+Per ``docs/asset-quality/lathe-northstar-full-implementation-plan.md``
+v2 §6.4 (Cycle 3 post-decommission):
 
-> For each family migrated: a build-artifact diff test exists. At
-> minimum: face count parity within ±20%, material zone count
-> parity, package output count parity. Visible regressions block
-> the migration.
+> All families that existed in the registry at Cycle 3 start produce
+> ShapeProgram outputs through the procedural synthesizer.
+> For each family migrated: a build-artifact diff test exists.
 
-This is the parametrized integration harness. Each migrated family
-ships a fixture entry under ``_MIGRATED_FAMILY_FIXTURES`` with:
+After Cycle 3 Round 6 decommissioned ``_RECIPES``, the "diff" loses
+its recipe baseline — there is no recipe path left to compare
+against. What remains is the per-alias **build-artifact** check:
+every FamilyAlias under ``std/procedural/knowledge/aliases/*.json``
+must drive a full shape-backend build end-to-end and produce a
+non-empty Trimesh result plus a synthesizer trace proving the
+procedural pipeline ran.
 
-  - ``family``: the family name.
-  - ``recipe_asset``: asset dict that routes to the legacy recipe
-    path (no ``construction_graph``, so ``synthesizer_eligible``
-    returns False).
-  - ``synthesizer_asset``: asset dict that routes to the synthesizer
-    arm (populates ``construction_graph``).
-  - ``face_count_tolerance``: ±fraction tolerance for face-count
-    parity, defaulting to 0.20 (±20%) per the §6.4 acceptance
-    criterion.
-  - ``expected_material_zone_count_delta``: ±delta tolerated for
-    material zone count parity, defaulting to 0.
-
-The harness builds both paths through ``run_shape_backend`` and
-compares the resulting trimesh face counts, material-zone counts on
-the candidate mesh metadata, and runtime-candidate counts (the
-"package output count" proxy at the shape stage).
-
-Unmigrated families are not in the catalog; the harness skips them.
+This is the integration-level verification floor for the procedural
+synthesizer. A new family's alias adds a new parametrize ID; no test
+code changes.
 """
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -42,31 +32,153 @@ import trimesh
 from lathe.shape.backend import run_shape_backend
 
 
-# --- Fixture catalog ----------------------------------------------------
-#
-# Empty until a family migrates; each migration PR appends its entry.
-
-_MIGRATED_FAMILY_FIXTURES: tuple[dict[str, Any], ...] = (
-    # First migration goes here, e.g.:
-    # {
-    #     "family": "inventory_economy_object",
-    #     "recipe_asset": {...},   # no construction_graph
-    #     "synthesizer_asset": {...},   # carries construction_graph
-    #     "face_count_tolerance": 0.20,
-    #     "expected_material_zone_count_delta": 0,
-    # },
-)
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_ALIAS_ROOT = _REPO_ROOT / "std" / "procedural" / "knowledge" / "aliases"
 
 
-def _build_path(asset: dict[str, Any], tmp_path: Path) -> dict[str, Any]:
-    """Run ``run_shape_backend`` and return the first runtime candidate.
+# Per-NODE_TYPE attribute templates. Keep in sync with the canonical
+# 10-NODE_TYPE pattern emitted by procedural synthesizer generators.
+_ATTRS = {
+    "primary_volume": {
+        "shape": "rounded_box",
+        "dimensions_cm": {"x": 30.0, "y": 30.0, "z": 30.0},
+        "rounding_cm": 1.5,
+    },
+    "panel": {
+        "shape": "rectangular",
+        "width_cm": 14.0,
+        "height_cm": 10.0,
+        "thickness_cm": 0.4,
+        "host_face_axis": "z",
+    },
+    "frame": {
+        "plane": "xy",
+        "outer_width_cm": 14.0,
+        "outer_height_cm": 14.0,
+        "member_thickness_cm": 0.6,
+        "protrusion_cm": 0.4,
+    },
+    "trim": {
+        "profile": "flat_band",
+        "length_cm": 14.0,
+        "width_cm": 1.0,
+        "thickness_cm": 0.4,
+        "axis": "x",
+    },
+    "fastener": {
+        "kind": "rivet",
+        "head_radius_cm": 0.3,
+        "head_height_cm": 0.4,
+        "shaft_radius_cm": 0.15,
+        "shaft_length_cm": 0.6,
+    },
+    "handle": {"style": "bar", "length_cm": 14.0, "grip_radius_cm": 0.8, "axis": "x"},
+    "inset": {
+        "depth_axis": "z",
+        "depth_cm": 0.4,
+        "width_cm": 6.0,
+        "height_cm": 4.0,
+        "profile": "flat",
+    },
+    "rail": {"axis": "x", "length_cm": 14.0, "radius_cm": 0.4, "cross_section": "round"},
+    "socket": {"depth_axis": "x", "depth_cm": 1.0, "radius_cm": 0.6, "profile": "round"},
+    "mount": {"style": "flat_pad", "width_cm": 4.0, "depth_cm": 4.0, "height_cm": 0.6},
+    "guard": {
+        "style": "perimeter_rail",
+        "width_cm": 16.0,
+        "height_cm": 6.0,
+        "depth_cm": 16.0,
+        "bar_radius_cm": 0.3,
+        "bar_count": 4,
+        "axis": "y",
+    },
+    "hinge": {
+        "style": "butt",
+        "leaf_width_cm": 3.0,
+        "leaf_height_cm": 6.0,
+        "leaf_thickness_cm": 0.3,
+        "barrel_radius_cm": 0.4,
+        "pin_axis": "y",
+    },
+}
 
-    Both paths route through the same entry — the dispatch inside
-    backend.py picks recipe-vs-synthesizer based on whether the asset
-    has a construction_graph populated.
+
+def _alias_family_ids() -> tuple[str, ...]:
+    """Enumerate every FamilyAlias under std/procedural/knowledge/aliases/."""
+    if not _ALIAS_ROOT.exists():
+        return ()
+    families: list[str] = []
+    for entry in sorted(_ALIAS_ROOT.iterdir()):
+        if not entry.is_file() or entry.suffix.lower() != ".json":
+            continue
+        try:
+            data = json.loads(entry.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        fid = data.get("family_id")
+        if isinstance(fid, str) and fid:
+            families.append(fid)
+    return tuple(families)
+
+
+def _canonical_construction_graph(family: str) -> dict[str, Any]:
+    """Build a canonical 10-node hard-surface construction graph.
+
+    Every alias under ``std/procedural/knowledge/aliases/`` resolves to
+    the panelized_hard_surface_object policy + industrial_pbr_v1 style,
+    which the synthesizer's hard_surface generators consume. The graph
+    below exercises 9 NODE_TYPE generators so the build path is broad
+    enough to detect routing regressions per family.
     """
-    work_dir = tmp_path / "shape_work"
-    work_dir.mkdir(parents=True, exist_ok=True)
+    return {
+        "nodes": [
+            {"node_id": f"{family}.body", "node_type": "primary_volume",
+             "domain": "hard_surface", "attributes": _ATTRS["primary_volume"]},
+            {"node_id": f"{family}.material_zone", "node_type": "material_zone",
+             "domain": "hard_surface",
+             "attributes": {"zone_id": "primary_material", "material_hint": "painted_emblem"}},
+            {"node_id": f"{family}.decal_zone", "node_type": "decal_zone",
+             "domain": "hard_surface",
+             "attributes": {"zone_id": "primary_decal", "decal_intent": "label",
+                            "size_cm": [8.0, 4.0], "host_face_axis": "z"}},
+            {"node_id": f"{family}.wear_zone", "node_type": "wear_zone",
+             "domain": "hard_surface",
+             "attributes": {"zone_id": "primary_wear", "wear_kind": "handled",
+                            "intensity": "moderate", "coverage_fraction": 0.4}},
+            {"node_id": f"{family}.fastener", "node_type": "fastener",
+             "domain": "hard_surface", "attributes": _ATTRS["fastener"]},
+            {"node_id": f"{family}.handle", "node_type": "handle",
+             "domain": "hard_surface", "attributes": _ATTRS["handle"]},
+            {"node_id": f"{family}.inset", "node_type": "inset",
+             "domain": "hard_surface", "attributes": _ATTRS["inset"]},
+            {"node_id": f"{family}.rail", "node_type": "rail",
+             "domain": "hard_surface", "attributes": _ATTRS["rail"]},
+            {"node_id": f"{family}.socket", "node_type": "socket",
+             "domain": "hard_surface", "attributes": _ATTRS["socket"]},
+            {"node_id": f"{family}.mount", "node_type": "mount",
+             "domain": "hard_surface", "attributes": _ATTRS["mount"]},
+        ],
+        "edges": [],
+    }
+
+
+def _build_synth_path(family: str, tmp_path: Path) -> dict[str, Any]:
+    """Run the full shape backend with a canonical construction graph for ``family``."""
+    cg = _canonical_construction_graph(family)
+    asset = {
+        "name": family,
+        "intent": {"family": family, "construction_graph": cg},
+        "build": {
+            "shape": {
+                "procedural": {
+                    "construction_graph": cg,
+                    "brief": {"family": family},
+                },
+            },
+        },
+    }
+    work = tmp_path / "shape_work"
+    work.mkdir(parents=True, exist_ok=True)
     result = run_shape_backend(
         "lathe.shape.intent_mesh_handoff_v1",
         asset,
@@ -74,134 +186,70 @@ def _build_path(asset: dict[str, Any], tmp_path: Path) -> dict[str, Any]:
         seed=42,
         candidates_count=1,
         conditioning={},
-        work_dir=work_dir,
+        work_dir=work,
         runtime_config=None,
         backend_version=None,
     )
     candidates = result.get("runtime_candidates", [])
-    if not candidates:
-        raise AssertionError(
-            f"asset {asset.get('name')!r} produced no runtime candidates; "
-            "shape stage failed to build either the recipe or synthesizer "
-            "path."
-        )
+    assert candidates, (
+        f"family {family!r} produced no runtime candidates; shape stage "
+        f"failed to build through the synthesizer path."
+    )
     return candidates[0]
 
 
-def _material_zone_count(candidate: dict[str, Any]) -> int:
-    """Best-effort material-zone count from candidate metadata.
-
-    The shape stage attaches material-zone evidence to the candidate
-    in a few possible locations depending on the build path. This
-    helper checks each in order and returns the first non-empty
-    count it finds.
-    """
-    meta = candidate.get("meta", {}) or {}
-    # Direct count in shape_handoff
-    handoff = candidate.get("shape_handoff") or {}
-    zones = handoff.get("material_zones")
-    if isinstance(zones, list):
-        return len(zones)
-    # Mesh-metadata fallback
-    mesh = candidate.get("mesh")
-    if isinstance(mesh, trimesh.Trimesh):
-        mesh_meta = mesh.metadata if isinstance(mesh.metadata, dict) else {}
-        mat_zones = mesh_meta.get("material_zones") or mesh_meta.get("lathe_material_zones")
-        if isinstance(mat_zones, list):
-            return len(mat_zones)
-    # Conditioning fallback
-    cond = meta.get("conditioning") or {}
-    zones = cond.get("material_zones")
-    if isinstance(zones, list):
-        return len(zones)
-    return 0
+_FAMILY_IDS = _alias_family_ids()
 
 
-@pytest.mark.skipif(
-    not _MIGRATED_FAMILY_FIXTURES,
-    reason="no families have migrated yet; harness exercised by tests added per-family",
-)
-@pytest.mark.parametrize(
-    "fixture",
-    _MIGRATED_FAMILY_FIXTURES,
-    ids=[f["family"] for f in _MIGRATED_FAMILY_FIXTURES] if _MIGRATED_FAMILY_FIXTURES else [],
-)
-def test_migrated_family_build_artifact_diff(
-    fixture: dict[str, Any],
+@pytest.mark.skipif(not _FAMILY_IDS, reason="no aliases registered")
+@pytest.mark.parametrize("family", _FAMILY_IDS, ids=list(_FAMILY_IDS))
+def test_family_alias_drives_valid_synthesizer_build(
+    family: str,
     tmp_path: Path,
 ) -> None:
-    """Recipe vs synthesizer build artifacts are within tolerance.
+    """Each registered FamilyAlias produces a valid build artifact.
 
-    Per plan v2 §6.4:
-      - face count parity within ±20%
-      - material zone count parity
-      - package output count parity (proxy: runtime-candidate count
-        at the shape stage)
+    Per plan v2 §6.4 the build-artifact verifier checks:
+      - The shape backend produces at least one runtime candidate.
+      - The candidate carries a non-empty Trimesh mesh.
+      - The candidate carries a synthesizer_trace proving the
+        procedural pipeline ran (not silently falling back to a
+        scaffold path).
+
+    Face-count and material-zone parity against a recipe baseline is
+    no longer applicable — Cycle 3 Round 6 decommissioned ``_RECIPES``.
     """
-    family = fixture["family"]
-    face_tol = float(fixture.get("face_count_tolerance", 0.20))
-    zone_delta = int(fixture.get("expected_material_zone_count_delta", 0))
+    candidate = _build_synth_path(family, tmp_path)
 
-    recipe_candidate = _build_path(fixture["recipe_asset"], tmp_path / "recipe")
-    synth_candidate = _build_path(fixture["synthesizer_asset"], tmp_path / "synth")
-
-    recipe_mesh = recipe_candidate["mesh"]
-    synth_mesh = synth_candidate["mesh"]
-    assert isinstance(recipe_mesh, trimesh.Trimesh), (
-        f"family {family!r} recipe path produced a non-trimesh result"
+    mesh = candidate.get("mesh")
+    assert isinstance(mesh, trimesh.Trimesh), (
+        f"family {family!r}: build did not produce a Trimesh result; "
+        f"got {type(mesh).__name__}."
     )
-    assert isinstance(synth_mesh, trimesh.Trimesh), (
-        f"family {family!r} synthesizer path produced a non-trimesh result"
+    assert len(mesh.faces) > 0, (
+        f"family {family!r}: synthesizer-driven build produced an empty mesh."
     )
 
-    recipe_face_count = len(recipe_mesh.faces)
-    synth_face_count = len(synth_mesh.faces)
-    assert recipe_face_count > 0, (
-        f"family {family!r} recipe path produced an empty mesh"
-    )
-    assert synth_face_count > 0, (
-        f"family {family!r} synthesizer path produced an empty mesh"
-    )
-
-    # Face-count parity within ±tolerance.
-    face_ratio = abs(synth_face_count - recipe_face_count) / max(recipe_face_count, 1)
-    assert face_ratio <= face_tol, (
-        f"family {family!r} face-count parity outside tolerance: "
-        f"recipe={recipe_face_count}, synthesizer={synth_face_count}, "
-        f"delta_ratio={face_ratio:.3f}, tolerance={face_tol:.3f}. "
-        "Per §6.4 face count parity must be within ±20%; document an "
-        "intent-driven divergence in the migration notes if this is "
-        "acceptable, then bump face_count_tolerance in the fixture."
-    )
-
-    # Material-zone count parity within ±zone_delta.
-    recipe_zones = _material_zone_count(recipe_candidate)
-    synth_zones = _material_zone_count(synth_candidate)
-    zone_diff = abs(synth_zones - recipe_zones)
-    assert zone_diff <= zone_delta, (
-        f"family {family!r} material-zone count diverged: "
-        f"recipe={recipe_zones}, synthesizer={synth_zones}, "
-        f"diff={zone_diff}, tolerated={zone_delta}. Per §6.4 material "
-        "zone count parity is required; bump "
-        "expected_material_zone_count_delta in the fixture if the "
-        "divergence is intent-driven."
+    meta = candidate.get("meta") or {}
+    synth_trace = meta.get("synthesizer_trace") if isinstance(meta, dict) else None
+    assert synth_trace, (
+        f"family {family!r}: candidate meta has no synthesizer_trace — "
+        f"the build did not route through the procedural synthesizer."
     )
 
 
-def test_migrated_family_build_fixtures_have_required_keys() -> None:
-    """Each fixture must define the documented contract keys.
+def test_alias_directory_has_at_least_one_alias() -> None:
+    """Sanity invariant: the alias directory is non-empty.
 
-    Catches typos / missing keys at collection time rather than
-    halfway through a slow integration run.
+    Catches accidental directory deletion. The plan v2 §6.4 acceptance
+    says "all families that existed in the registry at Cycle 3 start
+    produce ShapeProgram outputs"; zero aliases would mean the
+    decommission removed the migration substrate too.
     """
-    required_keys = {"family", "recipe_asset", "synthesizer_asset"}
-    for fixture in _MIGRATED_FAMILY_FIXTURES:
-        missing = required_keys - set(fixture.keys())
-        assert not missing, (
-            f"fixture for family={fixture.get('family')!r} missing required "
-            f"keys: {sorted(missing)!r}. See module docstring for the "
-            "fixture contract."
-        )
+    assert _FAMILY_IDS, (
+        f"no FamilyAlias JSON files found under {_ALIAS_ROOT}. "
+        f"The procedural synthesizer's family routing is broken."
+    )
 
 
 if __name__ == "__main__":
