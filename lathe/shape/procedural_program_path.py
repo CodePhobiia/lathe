@@ -128,6 +128,50 @@ def runtime_from_asset(asset: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_ZONE_OP_NAMES: frozenset[str] = frozenset(
+    {"op.material_zone", "op.decal_zone", "op.wear_zone"}
+)
+
+
+def _extract_semantic_zone_records(shape_program) -> list[dict[str, Any]]:
+    """Pull op.material_zone / op.decal_zone / op.wear_zone records.
+
+    The procedural synthesizer's metadata-only ops carry the asset's
+    declared material zones, decal placements, and wear regions. They
+    have no v1-lowering equivalent (no geometry), but they ARE the
+    structural surface evidence downstream stages need. This helper
+    extracts them into a flat list so the surface stage can consume
+    them without re-walking the ShapeProgram.
+
+    Each record carries:
+      - kind: "material_zone" | "decal_zone" | "wear_zone"
+      - target: the op's target identifier (host volume / face / part)
+      - All op.parameters keys (zone_id, material_hint, decal_intent,
+        size_cm, wear_kind, intensity, coverage_fraction, etc.)
+      - purpose: the op's purpose string (provenance)
+    """
+    records: list[dict[str, Any]] = []
+    for op in getattr(shape_program, "ops", ()):
+        if op.op not in _ZONE_OP_NAMES:
+            continue
+        record: dict[str, Any] = {
+            "kind": op.op.split(".", 1)[1],  # "material_zone" / etc.
+            "target": str(op.target or ""),
+            "purpose": str(op.purpose or ""),
+        }
+        # op.parameters is a Mapping; flatten its keys into the record
+        # so the surface stage can read zone_id / material_hint / etc.
+        # without unwrapping a nested dict.
+        params = op.parameters if isinstance(op.parameters, dict) else {}
+        for key, value in params.items():
+            # Don't overwrite the structural keys.
+            if key in {"kind", "target", "purpose"}:
+                continue
+            record[key] = value
+        records.append(record)
+    return records
+
+
 def _regions_from_primitives(primitives: list[ShapePrimitive]) -> list[ShapeRegion]:
     """Build ShapeRegion records from primitives (mirror mesh_program path)."""
     regions: list[ShapeRegion] = []
@@ -333,6 +377,7 @@ def compile_procedural_program_candidate(
         f"fidelity={fidelity.tier}",
     ]
     candidate_score = 0.80
+    semantic_zone_records = _extract_semantic_zone_records(shape_program)
     runtime_candidate = {
         "mesh": mesh,
         "face_parts": list(face_parts),
@@ -372,6 +417,11 @@ def compile_procedural_program_candidate(
             "integration_report": integration_report,
             "mesh_ir": mesh_ir_payload,
             "synthesizer_trace": synthesis_result.trace.to_dict(),
+            # Surface-stage-consumable structural metadata. Captures the
+            # synthesizer's op.material_zone / op.decal_zone / op.wear_zone
+            # records so downstream stages don't have to crack open
+            # shape_program ops themselves.
+            "semantic_zone_records": semantic_zone_records,
         },
     }
 

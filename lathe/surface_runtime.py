@@ -1468,6 +1468,118 @@ def _topology_surface_treatment(
     }
 
 
+def _semantic_zone_records_from_shape_bundle(
+    shape_bundle: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Collect op.material_zone / op.decal_zone / op.wear_zone records.
+
+    The procedural synthesizer extracts its metadata-only zone ops into
+    ``runtime_candidate["meta"]["semantic_zone_records"]`` (see
+    ``lathe/shape/procedural_program_path.py``). Surface stage callers
+    that opt in by walking ``shape_bundle["runtime_candidates"]`` for
+    these records can incorporate them into material zoning, decal
+    placement, and wear graph assignment without having to crack open
+    ShapeProgram ops.
+
+    Returns an empty list when no synthesizer-driven candidate is
+    present (e.g. mesh_program or legacy scaffold path).
+    """
+    out: list[dict[str, Any]] = []
+    candidates = shape_bundle.get("runtime_candidates") if isinstance(shape_bundle, dict) else None
+    if not isinstance(candidates, list):
+        return out
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        meta = candidate.get("meta")
+        if not isinstance(meta, dict):
+            continue
+        records = meta.get("semantic_zone_records")
+        if not isinstance(records, list):
+            continue
+        for record in records:
+            if isinstance(record, dict):
+                out.append(dict(record))
+    return out
+
+
+def _merge_synthesizer_zone_records(
+    material_zones: list[dict[str, Any]],
+    semantic_zone_records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Fold synthesizer zone metadata into surface material zone entries.
+
+    For each ``op.material_zone`` record from the synthesizer, merge its
+    ``material_hint`` / ``zone_id`` / ``tags`` into the matching
+    topology-derived material zone (matched on ``region_id`` /
+    ``part`` / ``zone_id`` when present) OR append a new zone entry if
+    no topology-side match exists. ``op.decal_zone`` and
+    ``op.wear_zone`` records get a separate ``synthesizer_zones``
+    bucket on the matched material zone so downstream stages can read
+    them without re-walking the synthesizer trace.
+
+    The merge is additive — topology-side records are never deleted,
+    only enriched. When no matching zone exists for a metadata-only
+    decal/wear record, the record is appended as its own evidence-only
+    zone entry (no material assignment, just surface-feature payload).
+    """
+    if not semantic_zone_records:
+        return material_zones
+
+    def _match_zone(record: dict[str, Any]) -> dict[str, Any] | None:
+        zone_id = str(record.get("zone_id") or "").strip()
+        for existing in material_zones:
+            existing_zone_id = str(existing.get("zone_id") or existing.get("part") or "").strip()
+            if zone_id and existing_zone_id == zone_id:
+                return existing
+        return None
+
+    for record in semantic_zone_records:
+        kind = str(record.get("kind") or "")
+        if kind == "material_zone":
+            matched = _match_zone(record)
+            if matched is not None:
+                hint = str(record.get("material_hint") or "").strip()
+                if hint:
+                    hints = matched.setdefault("material_hints", [])
+                    if hint not in hints:
+                        hints.append(hint)
+                tags = record.get("tags") or ()
+                if tags:
+                    matched.setdefault("synthesizer_material_zone_tags", []).extend(tags)
+                matched.setdefault("synthesizer_zone_source", "shape_program.op.material_zone")
+                continue
+            # No match — add it as its own evidence-only zone.
+            material_zones.append({
+                "part": str(record.get("target") or record.get("zone_id") or "synthesizer_material_zone"),
+                "zone_id": str(record.get("zone_id") or ""),
+                "material": str(record.get("material_hint") or "painted_steel"),
+                "material_hints": [str(record.get("material_hint") or "")] if record.get("material_hint") else [],
+                "material_zone_source": "shape_program.op.material_zone",
+                "synthesizer_zone_source": "shape_program.op.material_zone",
+                "synthesizer_material_zone_tags": list(record.get("tags") or ()),
+            })
+        elif kind in ("decal_zone", "wear_zone"):
+            bucket_key = f"synthesizer_{kind}s"
+            matched = _match_zone(record)
+            if matched is None and material_zones:
+                # Drop the metadata onto the first zone as the default
+                # carrier so downstream stages can still see it.
+                matched = material_zones[0]
+            if matched is None:
+                # No material zone at all — synthesize a metadata-only
+                # zone entry so the record isn't lost.
+                material_zones.append({
+                    "part": str(record.get("target") or record.get("zone_id") or kind),
+                    "zone_id": str(record.get("zone_id") or ""),
+                    "material_zone_source": f"shape_program.op.{kind}",
+                    bucket_key: [dict(record)],
+                })
+                continue
+            matched.setdefault(bucket_key, []).append(dict(record))
+    return material_zones
+
+
 def _material_zones_from_topology(
     asset: dict[str, Any], topology_bundle: dict[str, Any]
 ) -> list[dict[str, Any]]:
@@ -2545,7 +2657,16 @@ def build_surface_bundle(
     if pattern_decals:
         surface_cfg["decals"] = list(dict.fromkeys([*surface_cfg.get("decals", []), *pattern_decals]))
     uv_bundle = uv_bundle if isinstance(uv_bundle, dict) else {}
-    material_zones = _assign_material_id_colors(_material_zones_from_topology(asset, topology_bundle))
+    # Topology-derived material zones (legacy path) merged with
+    # synthesizer-emitted op.material_zone / op.decal_zone / op.wear_zone
+    # records (Cycle 4 Phase A.2). The synthesizer records are
+    # additive — they enrich matched topology zones in-place or
+    # become evidence-only zone entries when no topology match exists.
+    _zones = _material_zones_from_topology(asset, topology_bundle)
+    _zones = _merge_synthesizer_zone_records(
+        _zones, _semantic_zone_records_from_shape_bundle(shape_bundle)
+    )
+    material_zones = _assign_material_id_colors(_zones)
     uv_organization = (
         dict(uv_bundle.get("uv_organization", {}))
         if isinstance(uv_bundle.get("uv_organization"), dict)
