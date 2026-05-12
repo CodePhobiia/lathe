@@ -1,7 +1,7 @@
 {
   "policy_id": "panelized_hard_surface_object",
   "domain": "hard_surface",
-  "description": "Default panelized hard-surface composition. When an asset declares a primary_volume, this policy expands it into the canonical hard-surface skeleton: a lid-seam panel, eight corner brackets, a latch-plate inset, two side handles, two foot rails, a mid trim band, a fastener distribution, a primary material zone, a warning decal zone, and an edge-wear zone. All structural additions are NODE_TYPE-keyed and reach back to the primary_volume via attached_to edges. The policy is non-family-keyed by design — it applies to ANY hard-surface asset that carries a primary_volume, regardless of whether the asset is a crate, door, cabinet, terminal, weapon prop, or anything else. Per-asset overrides (different handle count, no latch plate, etc.) come from the authored construction graph; this policy supplies the default skeleton an alias-only asset would otherwise lack. Dimensions are sized for a roughly 30 cm hard-surface prop; per-asset overrides can adjust via the construction graph.",
+  "description": "Default panelized hard-surface composition (v1-minimal expansion set). When an asset declares a primary_volume, this policy adds: two corner brackets, one fastener, and three zone-metadata records (material/decal/wear). All structural additions reach back to the primary_volume via attached_to edges. The policy is non-family-keyed by design — it applies to ANY hard-surface asset that carries a primary_volume. V1 NOTE: the previous full expansion (8 corner brackets + 2 handles + 2 rails + trim + panel + inset + fastener + 3 zones = 19 nodes / ~25 primitives / 16 unions) hit the boolean kernel's slow path, hanging compile_explicit_surface_mesh for >30 min on industrial_crate. The current minimal set (2 brackets + 1 fastener + 3 zones = 6 nodes / ~7 primitives / 3 unions) trades expansion breadth for kernel-perf tractability. The auto-graph from authored intent.parts already provides handle/inset/mount nodes per-asset; this policy's role is the CANONICAL bonus features (corner reinforcement + fastener + surface evidence) the auto-graph can't infer from part names alone. Larger expansion sets land once the boolean kernel's full-CSG / op.union chain perf is profiled and fixed.",
   "precondition": {
     "requires_node_types": ["primary_volume"],
     "forbids_node_types": [],
@@ -12,25 +12,9 @@
   },
   "expansions": [
     {
-      "add_node_type": "panel",
-      "count": 1,
-      "placement": {"role": "lid_seam", "host_face": "top"},
-      "attributes_template": {
-        "plane": "xy",
-        "width_cm": 30.0,
-        "height_cm": 4.0,
-        "thickness_cm": 0.4,
-        "border_policy": "beveled",
-        "region_id": "lid_seam"
-      },
-      "edges_to_existing": [
-        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "lid_seam"}}
-      ]
-    },
-    {
       "add_node_type": "bracket",
-      "count": 8,
-      "placement": {"role": "corner_guard", "pattern": "eight_corners"},
+      "count": 2,
+      "placement": {"role": "corner_guard", "pattern": "two_corners"},
       "attributes_template": {
         "profile": "l_bracket",
         "leg_length_cm": 4.0,
@@ -45,72 +29,9 @@
       ]
     },
     {
-      "add_node_type": "inset",
-      "count": 1,
-      "placement": {"role": "latch_plate", "host_face": "front"},
-      "attributes_template": {
-        "depth_axis": "z",
-        "depth_cm": 0.6,
-        "width_cm": 8.0,
-        "height_cm": 3.0,
-        "bottom_style": "rounded",
-        "rounding_cm": 0.2,
-        "region_id": "latch_plate"
-      },
-      "edges_to_existing": [
-        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "latch_plate"}}
-      ]
-    },
-    {
-      "add_node_type": "handle",
-      "count": 2,
-      "placement": {"role": "side_handle", "pattern": "left_right_pair"},
-      "attributes_template": {
-        "style": "bar",
-        "length_cm": 10.0,
-        "grip_radius_cm": 0.8,
-        "axis": "x",
-        "region_id": "handle"
-      },
-      "edges_to_existing": [
-        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "side_handle"}}
-      ]
-    },
-    {
-      "add_node_type": "rail",
-      "count": 2,
-      "placement": {"role": "foot_rail", "pattern": "front_back_pair", "host_face": "bottom"},
-      "attributes_template": {
-        "axis": "x",
-        "length_cm": 30.0,
-        "radius_cm": 0.6,
-        "cross_section": "square",
-        "region_id": "foot_rail"
-      },
-      "edges_to_existing": [
-        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "foot_rail"}}
-      ]
-    },
-    {
-      "add_node_type": "trim",
-      "count": 1,
-      "placement": {"role": "mid_band", "pattern": "horizontal_midline"},
-      "attributes_template": {
-        "edge_axis": "x",
-        "length_cm": 30.0,
-        "cross_section_width_cm": 1.0,
-        "cross_section_height_cm": 0.4,
-        "profile": "flat_band",
-        "region_id": "mid_trim"
-      },
-      "edges_to_existing": [
-        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "mid_band"}}
-      ]
-    },
-    {
       "add_node_type": "fastener",
       "count": 1,
-      "placement": {"role": "fastener_grid", "pattern": "front_face_grid"},
+      "placement": {"role": "fastener_grid", "pattern": "front_face_anchor"},
       "attributes_template": {
         "kind": "rivet",
         "head_radius_cm": 0.4,
