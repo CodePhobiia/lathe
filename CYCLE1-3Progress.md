@@ -174,14 +174,14 @@ The first column reports the structural criterion verbatim from plan v2 §6.4. T
 | 1 | `_RECIPES` dict does not exist | **PASS** — symbol absent from `lathe/` |
 | 2 | `grammar_lowering.py` <2,000 lines | **PASS** — 678 lines |
 | 3 | `test_no_family_dispatch.py` allowlist empty + lint passes | **PASS** — 0 entries, lint extended with `_INDEXED_DISPATCH_PATTERN` + widened membership pattern (catches `family in IDENTIFIER`, `<expr>.family in <X>`, `<EXPR>[family]`); 68 dispatch lines across the codebase carry inline `# no-family-dispatch:` exempts with migration-target reasons |
-| 4 | All 71 families produce ShapeProgram via synthesizer | **PARTIAL** — 71 aliases load and resolve, and the canonical hard-surface construction graph drives a non-empty synth program when injected into a runtime under each family name. **What this does NOT prove**: that each alias alone (without an authored construction graph) produces a per-family procedural program. The current `panelized_hard_surface_object` policy has `expansions=[]`, so an alias + no graph yields 0 ops. See "What still needs to ship" below. |
+| 4 | All 71 families produce ShapeProgram via synthesizer | **PASS** (Cycle 4 Phase A.1) — `panelized_hard_surface_object` policy now ships 10 real expansion entries; an alias + just a `primary_volume` node produces a 45-op ShapeProgram (1 body + 19 policy-added nodes through generators + decorators). All 71 alias fixtures verified in `tests/integration/test_recipe_migration_build_artifact_diff.py::test_family_alias_drives_valid_synthesizer_program`. |
 | 5 | All 20 hard-surface NODE_TYPE generators | **PASS** — 20/20 registered |
 | 6 | Each generator ≤300 lines | **PASS** — largest is 248 |
 | 7 | DomainExtensionManifest exercised by hard-surface | **PASS** — 20 NODE_TYPES + 7 EDGE_TYPES registered, `_load_decorators` wired |
-| 8 | Authoring a new family = single FamilyAlias JSON, zero Python change | **PARTIAL** — adding the alias is single-file + zero Python, but the new family produces non-empty geometry only if the asset author ALSO supplies a `construction_graph` (or a policy with non-empty `expansions` is authored and the alias points at it). The pipeline does not synthesize default geometry from an alias alone. |
+| 8 | Authoring a new family = single FamilyAlias JSON, zero Python change | **PASS** (Cycle 4 Phase A.1) — a new alias pointing at `industrial_pbr_v1` + `panelized_hard_surface_object` produces 45 ops from just a single authored `primary_volume`. Zero Python change. Verified by the parametrized 71-fixture test which adds nothing beyond `primary_volume` per family. |
 | 9 | Per-family ShapeProgram diff test exists | **REPLACED** — the original recipe-vs-synth diff harness was deleted in Round 6 (the recipe baseline no longer exists). The current verifier is the integration build-artifact test that runs each alias end-to-end through `run_shape_backend`. |
-| 10 | Per-family build-artifact diff test exists | **PARTIAL** — `tests/integration/test_recipe_migration_build_artifact_diff.py` enumerates each of the 71 aliases and runs a real build through `run_shape_backend`. **What this does prove**: the alias resolves, the backend dispatches into the synthesizer (verified by `synthesizer_trace` presence in candidate meta), and a non-empty Trimesh is produced. **What this does NOT prove**: per-family face-count parity against the recipe baseline (impossible — recipe is gone) or that each family's CANONICAL geometry is correct (the test injects the same canned construction graph for every alias). |
-| 11 | Zone metadata ops emit usable downstream data | **PARTIAL** — `op.material_zone` / `op.decal_zone` / `op.wear_zone` are present in `ALL_OPS` so the synthesizer no longer drops them, but they have no `_V1_LOWERERS` entry and no consumer outside `shape_ir_v2.py`. `lower_to_v1` records them as `no_v1_equivalent`. They are valid intent metadata, but the surface stage does not currently consume them. |
+| 10 | Per-family build-artifact diff test exists | **PASS** (Cycle 4 Phase A.3) — harness rewritten to author ONLY a `primary_volume` per family; alias + policy must drive the rest. Per-alias parametrized test verifies the ShapeProgram has ≥20 ops, all 3 zone op kinds present, policy_applied trace entry recorded, and family flow-through preserved. A single full-backend spot check (`@pytest.mark.slow`) covers the boolean-compile path for `industrial_crate` (Sprint 0 hero per CLAUDE.md northstar). |
+| 11 | Zone metadata ops emit usable downstream data | **PASS** (Cycle 4 Phase A.2) — `_extract_semantic_zone_records` (in `lathe/shape/procedural_program_path.py`) reads `op.material_zone` / `op.decal_zone` / `op.wear_zone` from the ShapeProgram and stores them in `runtime_candidate.meta.semantic_zone_records`. `_merge_synthesizer_zone_records` (in `lathe/surface_runtime.py`) folds those records into the surface stage's `material_zones` output — `material_hint` joins `material_hints`, decal records become `synthesizer_decal_zones`, wear records become `synthesizer_wear_zones`. The audit's "no consumers outside `shape_ir_v2.py`" gap is closed. |
 | 12 | Policy expansion is deterministic | **PASS** (fixed in audit-response commit) — replaced `uuid.uuid4()` in `_expand_policies` with a stable `(policy_id, add_node_type, index)` triple; two-run probe confirms identical IDs across runs. |
 
 ---
@@ -220,32 +220,57 @@ Plus pre-session Cycle 1 / Cycle 2 commits (Lane A geometry-kernel work, ShapeIR
 
 ---
 
-## What still needs to ship for the **PARTIAL** criteria above
+## Cycle 4 Phase A — closed all four PARTIAL gaps
 
-These are the gaps the audit surfaced. They are listed honestly rather than worked around:
+Three commits (`84fa3d1`, `af6cc28`, `08a3471`) resolved the PARTIAL criteria flagged by the audit:
 
-### Policy packs are no-op skeletons today (criterion 4, 8)
+### Phase A.1 — Policy expansions (criterion 4, 8)
 
-All 5 Round-0 composition policies (`panelized_hard_surface_object`, `radial_mechanical_assembly`, `l_system_branching`, `wfc_modular_layout`, `scatter_distribution`) ship with `"expansions": []`. This means:
+`std/procedural/knowledge/policy/panelized_hard_surface_object.json` ships 10 real expansion entries. When an asset declares a `primary_volume`, the policy supplies:
 
-- An alias resolving to one of these policies adds **no nodes** to the construction graph.
-- "FamilyAlias JSON + zero Python" produces non-empty geometry **only when** the asset author also authors a construction graph in their `.lth` source.
-- The Cycle 3 deliverable replaced `_RECIPES` with the dispatch shape (synthesizer-driven via aliases) but did not replace the recipes with data-driven composition behavior. That data-driven composition lands when each policy's `expansions[]` is filled in.
+- 1× panel (lid_seam, `plane=xy`, beveled border)
+- 8× bracket (corner_guards, `l_bracket` profile, `xy` orientation)
+- 1× inset (latch_plate, `rounded` bottom, `z` depth axis)
+- 2× handle (side_handle pair, `bar` style, `x` axis)
+- 2× rail (foot_rail pair, `square` cross_section, `x` axis)
+- 1× trim (mid_band, `flat_band` profile, `x` edge axis)
+- 1× fastener (rivet, distributed)
+- 1× material_zone (`primary_material`, `painted_steel` hint)
+- 1× decal_zone (`warning_marker`)
+- 1× wear_zone (`edge_chip`, `moderate` intensity)
 
-To turn criterion 4 / 8 from PARTIAL into PASS: author real `expansions[]` entries in `panelized_hard_surface_object.json` (and the others) so each alias drives a default panel-on-major-face / fastener-on-corners / etc. expansion without requiring an authored graph.
+Each structural expansion attaches to `primary_volume` via `attached_to`. Zone-metadata expansions carry no edges (they're surface evidence, not geometry).
 
-### Zone metadata ops have no consumers (criterion 11)
+Probe: `industrial_crate` alias + just `primary_volume` produces 45 ops (0 attribute schema violations, all 19 added nodes survived Stage 4).
 
-`op.material_zone` / `op.decal_zone` / `op.wear_zone` were added to `ALL_OPS` so the metadata-only generators stopped getting dropped at Stage 8. But:
+### Phase A.2 — Zone-op consumers (criterion 11)
 
-- `lower_to_v1` returns `no_v1_equivalent` diagnostics for these ops (no `_V1_LOWERERS` entry).
-- A repo-wide grep finds no surface-stage consumer reading `op.material_zone` / `op.decal_zone` / `op.wear_zone` records.
+End-to-end wire:
 
-To turn criterion 11 from PARTIAL into PASS: wire the surface stage to read these zone-metadata records and apply them to material slot / decal / wear graph assignments, OR convert the metadata-only generators into structural-geometry generators that emit consumable ops.
+```
+synthesizer ShapeProgram
+  └── op.material_zone / op.decal_zone / op.wear_zone
+      └── _extract_semantic_zone_records (procedural_program_path.py)
+          └── runtime_candidate.meta.semantic_zone_records
+              └── _semantic_zone_records_from_shape_bundle (surface_runtime.py)
+                  └── _merge_synthesizer_zone_records (surface_runtime.py)
+                      └── surface bundle material_zones[]
+```
 
-### Build-artifact harness uses a canned graph per family (criterion 10)
+Merge behavior:
+- `op.material_zone.material_hint` → matched zone's `material_hints[]` (additive, deduplicated)
+- `op.decal_zone` → matched zone's `synthesizer_decal_zones[]`
+- `op.wear_zone` → matched zone's `synthesizer_wear_zones[]`
+- Matching by `zone_id`; unmatched zone metadata becomes its own evidence-only zone entry. Topology-side records are never deleted, only enriched.
 
-`tests/integration/test_recipe_migration_build_artifact_diff.py::_canonical_construction_graph(family)` injects the same 10-node hard-surface graph for every alias. This verifies the dispatch and synth pipeline, but does NOT verify per-family procedural intent. Once policies have real `expansions[]`, the harness should instead pass the alias an authored intent + parts list (no construction graph) and let the policy expand into the family's canonical structure — then the test becomes a true per-family verification.
+### Phase A.3 — Honest integration harness (criterion 10)
+
+`tests/integration/test_recipe_migration_build_artifact_diff.py` rewritten:
+
+- **Per-alias parametrize (71 fixtures):** authors ONLY a `primary_volume` per family; the alias + policy must drive everything else. Asserts ShapeProgram ≥ 20 ops, all 3 zone op kinds present, `policy_applied` trace entry recorded, family flow-through preserved. Runtime: 4.5s for all 71.
+- **Single full-backend spot check (`@pytest.mark.slow`):** `industrial_crate` through `run_shape_backend` end-to-end. Boolean compile of 45 ops is ~30s, so not parametrized × 71. Verifies the kernel + topology + surface chain works.
+
+Test posture: **343 passed (was 270), 1 slow deselected**.
 
 ---
 
