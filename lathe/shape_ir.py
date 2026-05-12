@@ -7,8 +7,32 @@ read deterministically.
 
 from __future__ import annotations
 
+import weakref
 from dataclasses import asdict, dataclass, field
 from typing import Any
+
+
+# Step 2 of the kernel-perf audit (after Step 1 found no net win from
+# bulk deepcopy→_metadata_safe_value swap): cache ShapePrimitive.to_dict()
+# results. The profile shows 29 calls × 0.46s = 13.3s in a 7-primitive
+# build — the same primitive instance gets to_dict'd many times during
+# v1 lowering. ShapePrimitive isn't hashable (mutable dataclass), so
+# this is a WeakValueDictionary keyed by id(instance) — when the
+# primitive is garbage-collected, its cached dict is collected too.
+# Mutating a primitive after a to_dict() call won't invalidate the
+# cache, but no code path in the lowering chain does so today.
+_TO_DICT_CACHE: weakref.WeakValueDictionary[int, dict[str, Any]] = (
+    weakref.WeakValueDictionary()
+)
+
+
+class _CachedDict(dict):
+    """Plain dict subclass so WeakValueDictionary can hold weak refs.
+
+    WeakValueDictionary requires values to be weak-referenceable;
+    builtin dict isn't, but a subclass is.
+    """
+    __slots__ = ("__weakref__",)
 
 
 @dataclass
@@ -615,12 +639,21 @@ class ShapePrimitive:
     semantic_metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
+        """Serialize this primitive as a dict.
 
-        Returns:
-            The result.
+        Cached per-instance via ``_TO_DICT_CACHE`` (see module top) —
+        ``asdict(self)`` deep-walks every dataclass field and is the
+        single largest cost in v1 lowering (~13s of 174s in profiling).
+        Within a build, the same primitive is to_dict'd many times by
+        different downstream code paths; this caches the first result.
         """
-        return asdict(self)
+        key = id(self)
+        cached = _TO_DICT_CACHE.get(key)
+        if cached is not None:
+            return dict(cached)  # defensive copy so callers can mutate
+        result = _CachedDict(asdict(self))
+        _TO_DICT_CACHE[key] = result
+        return dict(result)
 
 
 @dataclass

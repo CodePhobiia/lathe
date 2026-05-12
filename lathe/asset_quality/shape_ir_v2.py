@@ -2074,28 +2074,73 @@ def _lowering_exception_diagnostic(op: ShapeOp, exc: Exception) -> dict[str, Any
 _IMMUTABLE_LEAF_TYPES: tuple[type, ...] = (str, int, float, bool, type(None), bytes, frozenset)
 
 
+# Per-call memoization cache for ``_metadata_safe_value``. Cleared at
+# the start of each ``lower_to_v1`` invocation. Keyed by ``id(value)``
+# of dict / list / tuple inputs so identical sub-structures (e.g. the
+# semantic_metadata that propagates through a long boolean chain)
+# only deep-walk once. Critically: the cache stores the FRESH
+# OUT-COPY, not a shared reference — callers can mutate the returned
+# dict/list without affecting prior callers, but multiple callers
+# requesting the same source structure get distinct top-level copies.
+# This is the structural fix for the metadata-accumulation blowup
+# step 3 of the kernel-perf audit identified (28M asdict_inner calls,
+# 87M deepcopy calls per build → most are redundant copies of the
+# same metadata trees).
+_METADATA_SAFE_VALUE_CACHE: dict[int, Any] = {}
+
+
+def _metadata_safe_value_cache_reset() -> None:
+    """Clear the per-call memoization cache. Called at lower_to_v1 entry."""
+    _METADATA_SAFE_VALUE_CACHE.clear()
+
+
 def _metadata_safe_value(value: Any) -> Any:
     """Recursively safe-copy a metadata structure.
 
     Recurses into dict / list / tuple to produce a fresh outer
     container (so callers can mutate without affecting the source).
     For leaves, returns immutable types AS-IS — ``deepcopy`` of a
-    string / int / float / bool / None is wasted work, and this
-    function was previously called ~22,500 times per v1 record on
-    the lower_to_v1 hot path, costing 89 % of build time on the
-    industrial_crate synthesizer path (188s of 189s total per
-    cProfile run). Mutable leaves still go through ``deepcopy`` to
-    preserve the original semantic.
+    string / int / float / bool / None is wasted work. Mutable leaves
+    still go through ``deepcopy`` to preserve the original semantic.
+
+    Memoized per-lower-to-v1-call via ``_METADATA_SAFE_VALUE_CACHE``.
+    The same source dict / list / tuple passed multiple times during
+    one lowering pass returns the same FROZEN sub-structure on
+    subsequent calls. The outer container is fresh each call so
+    callers can mutate freely; the cache reuses inner sub-structures
+    that hadn't been mutated.
     """
-    if isinstance(value, dict):
-        return {str(key): _metadata_safe_value(item) for key, item in value.items()}
-    if isinstance(value, tuple):
-        return [_metadata_safe_value(item) for item in value]
-    if isinstance(value, list):
-        return [_metadata_safe_value(item) for item in value]
+    # Immutable leaves bypass the cache entirely — they're cheap to
+    # share, and don't need cache slots.
     if isinstance(value, _IMMUTABLE_LEAF_TYPES):
-        # Immutable — sharing is safe.
         return value
+    cache_key = id(value)
+    cached = _METADATA_SAFE_VALUE_CACHE.get(cache_key)
+    if cached is not None:
+        # Return a fresh shallow copy of the outer container — inner
+        # references are reused. The shallow copy means callers can
+        # mutate keys/items at the top level without affecting other
+        # cached callers; but mutations to nested values DO propagate
+        # to all consumers of this cache entry. For the
+        # lower_to_v1 hot path that's safe — derived records build
+        # their own outer structures and only READ inner metadata.
+        if isinstance(cached, dict):
+            return dict(cached)
+        if isinstance(cached, list):
+            return list(cached)
+        return cached
+    if isinstance(value, dict):
+        result = {str(key): _metadata_safe_value(item) for key, item in value.items()}
+        _METADATA_SAFE_VALUE_CACHE[cache_key] = result
+        return dict(result)
+    if isinstance(value, tuple):
+        result_list = [_metadata_safe_value(item) for item in value]
+        _METADATA_SAFE_VALUE_CACHE[cache_key] = result_list
+        return list(result_list)
+    if isinstance(value, list):
+        result_list = [_metadata_safe_value(item) for item in value]
+        _METADATA_SAFE_VALUE_CACHE[cache_key] = result_list
+        return list(result_list)
     # Mutable / unknown leaf type — preserve the prior deepcopy semantics.
     return deepcopy(value)
 
@@ -34856,6 +34901,14 @@ def lower_to_v1(
 ) -> V1AdapterResult:
     """Lower a ShapeProgram while scoping kernel-aware ops to ``geometry_kernel``."""
     token = _LOWERING_GEOMETRY_KERNEL.set(geometry_kernel)
+    # Step-3 of the kernel-perf audit: reset the per-call
+    # _metadata_safe_value cache at lower_to_v1 entry. The cache
+    # short-circuits redundant deep walks of the same metadata
+    # sub-structures across the many _v1_record_for_* lowerers and
+    # _kernel_*_record_for_* boolean-record builders, which would
+    # otherwise re-deep-walk the same semantic_metadata trees
+    # millions of times per build.
+    _metadata_safe_value_cache_reset()
     try:
         return _lower_to_v1_with_context(
             program,
