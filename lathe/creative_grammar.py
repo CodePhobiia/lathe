@@ -305,45 +305,45 @@ def creative_grammar_for_tokens(
 
 def _family_defaults(family: str, tokens: set[str]) -> dict[str, Any]:
     defaults: dict[str, Any] = {}
-    if family == "procedural_building":
+    if family == "procedural_building":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"arcane", "royal", "gothic"}:
             defaults.update({"roof_style": "dome", "facade_style": "gothic", "tower_count": 2})
         elif tokens & {"industrial", "brutalist", "military"}:
             defaults.update({"roof_style": "flat", "facade_style": "fortified", "column_count": 4})
-    elif family == "procedural_road":
+    elif family == "procedural_road":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"urban", "corporate", "civic"}:
             defaults.update({"road_edge_count": 2, "crosswalk_count": 2, "structural_profile": "curbed"})
         if tokens & {"desert", "forest", "swamp"}:
             defaults.update({"landform": "path", "path_profile": "meander"})
-    elif family == "procedural_bridge":
+    elif family == "procedural_bridge":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"industrial", "military"}:
             defaults.update({"structural_profile": "truss", "support_count": 4})
         if tokens & {"arcane", "royal"}:
             defaults.update({"structural_profile": "covered", "route_structure": "covered"})
-    elif family == "procedural_access":
+    elif family == "procedural_access":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"industrial", "military", "workshop"}:
             defaults.update({"access_style": "industrial", "structural_profile": "gantry", "guardrail_count": 4})
         if tokens & {"cyberpunk", "sci_fi", "corporate"}:
             defaults.update({"access_style": "sleek", "structural_profile": "truss", "emissive_count": 2})
-    elif family == "procedural_infrastructure":
+    elif family == "procedural_infrastructure":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"industrial", "workshop"}:
             defaults.update({"service_type": "mixed", "support_count": 4, "route_structure": "service_trench"})
         if tokens & {"cyberpunk", "sci_fi", "corporate"}:
             defaults.update({"service_type": "data", "conduit_count": 3, "cable_tray_count": 2})
-    elif family == "procedural_terrain":
+    elif family == "procedural_terrain":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"forest", "swamp", "desert", "volcanic"}:
             defaults.update({"landform": "terrain_patch", "path_count": 1, "terrain_platforms": 1})
-    elif family == "procedural_furniture":
+    elif family == "procedural_furniture":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"royal", "arcane"}:
             defaults.update({"furniture_style": "ornate", "leg_count": 4, "cushion_count": 2})
         elif tokens & {"industrial", "workshop"}:
             defaults.update({"furniture_style": "utility", "shelf_count": 2, "drawer_count": 2})
-    elif family == "procedural_vehicle":
+    elif family == "procedural_vehicle":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"military", "battle_worn"}:
             defaults.update({"drive_type": "tracked", "turret_count": 1, "armor_panel_count": 4})
         elif tokens & {"sci_fi", "cyberpunk"}:
             defaults.update({"drive_type": "hover", "rotor_count": 4, "wing_count": 2})
-    elif family == "procedural_setpiece":
+    elif family == "procedural_setpiece":  # no-family-dispatch: per-family creative grammar templates; lift each into a StyleKnowledge + CompositionPolicy pair so the alias selects the right pair without explicit family branching
         if tokens & {"military", "battle_worn"}:
             defaults.update({"structural_profile": "fortified", "barrier_count": 6, "tower_count": 2})
         if tokens & {"industrial", "workshop"}:

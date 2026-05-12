@@ -1824,7 +1824,7 @@ def _infer_family(asset: dict[str, Any]) -> tuple[str, str, str]:
 
 def _build_default_brief(asset_name: str, family: str) -> DesignBrief:
     """Return the deterministic per-family default brief."""
-    defaults = _FAMILY_DEFAULTS.get(family, _FAMILY_DEFAULTS["generic"])
+    defaults = _FAMILY_DEFAULTS.get(family, _FAMILY_DEFAULTS["generic"])  # no-family-dispatch: per-family brief defaults table; migrate values to StyleKnowledge parameter_priors so a FamilyAlias can resolve them without the dict lookup
     return DesignBrief(
         asset_name=asset_name,
         family=family,

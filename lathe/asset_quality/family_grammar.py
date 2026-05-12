@@ -6819,7 +6819,7 @@ def _resolve_family(runtime: dict[str, Any]) -> str:
 
 
 def _grammar_for(family: str) -> FamilyGrammar:
-    return _GRAMMARS.get(family, _GRAMMARS["generic"])
+    return _GRAMMARS.get(family, _GRAMMARS["generic"])  # no-family-dispatch: family-grammar registry powering the family_grammar validator; migrate per-family rules to CompositionPolicy packs (Round 0 prototypes shipped: panelized_hard_surface_object, radial_mechanical_assembly, l_system_branching, wfc_modular_layout, scatter_distribution)
 
 
 def evaluate_family_grammar(

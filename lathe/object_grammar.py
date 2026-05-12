@@ -481,7 +481,7 @@ def object_grammar_for_tokens(
     derived_shape: dict[str, Any] = {}
     derived_surface: dict[str, Any] = {}
     systems: list[str] = []
-    if not matched and family == "procedural_setpiece":
+    if not matched and family == "procedural_setpiece":  # no-family-dispatch: terminal-fallback heuristic that lets `procedural_setpiece` resolve to the compound archetype when no archetype tokens matched; migrate to an intent-tag check on `setpiece` once intent tags become a stable surface
         matched = ["compound"]
         _merge_shape_defaults(derived_shape, _GENERIC_SETPIECE["shape"])
         _merge_surface_defaults(derived_surface, _GENERIC_SETPIECE["surface"])
@@ -500,7 +500,7 @@ def object_grammar_for_tokens(
         derived_shape.setdefault("setpiece_systems", _dedupe(systems))
         derived_shape.setdefault("archetype_system_count", len(_dedupe(systems)))
         derived_shape.setdefault("object_grammar", "_".join(matched[:4]))
-    if family == "procedural_setpiece":
+    if family == "procedural_setpiece":  # no-family-dispatch: same procedural_setpiece terminal-fallback as above; migrate to an intent-tag check together with the earlier site
         _merge_shape_defaults(derived_shape, _setpiece_family_defaults(token_set))
 
     base_shape = dict(shape_controls or {})

@@ -434,7 +434,7 @@ _FAMILY_DEFAULT_GRAPHS: dict[str, Any] = {
 
 
 def _select_default_graph(family: str) -> MaterialWearGraph:
-    factory = _FAMILY_DEFAULT_GRAPHS.get(family)
+    factory = _FAMILY_DEFAULT_GRAPHS.get(family)  # no-family-dispatch: per-family wear-graph factory map for the validator's default-graph fallback; migrate to a wear-graph CompositionPolicy keyed on intent tags / capability triggers
     if factory is None:
         return _generic_default_graph(family)
     return factory()

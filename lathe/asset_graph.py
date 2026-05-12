@@ -508,7 +508,7 @@ def infer_blueprint_id(asset: dict[str, Any]) -> str:
 
 
 def _default_parts_for_family(family: str) -> list[str]:
-    if family == "procedural_setpiece":
+    if family == "procedural_setpiece":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
         return [
             "setpiece_base",
             "terrain_patch",
@@ -1610,7 +1610,7 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
         "maximum_primitive_likeness_penalty": 0.44,
         "maximum_assembled_primitives_penalty": 0.42,
     }
-    if family == "brassbound_chest":
+    if family == "brassbound_chest":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
         semantic_requirements.update(
             {
                 "minimum_part_coverage": 0.85,
@@ -1632,7 +1632,7 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                 "maximum_assembled_primitives_penalty": 0.20,
             }
         )
-    elif family == "courier_drone":
+    elif family == "courier_drone":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
         semantic_requirements.update(
             {
                 "minimum_part_coverage": 0.90,
@@ -1654,7 +1654,7 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                 "maximum_assembled_primitives_penalty": 0.18,
             }
         )
-    elif family == "sci_fi_wall_panel":
+    elif family == "sci_fi_wall_panel":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
         semantic_requirements.update(
             {
                 "minimum_part_coverage": 0.80,
@@ -1674,7 +1674,7 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                 "maximum_assembled_primitives_penalty": 0.26,
             }
         )
-    elif family in {
+    elif family in {  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
         "industrial_crate",
         "hero_sword",
         "mechanical_door",
@@ -1738,13 +1738,13 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                 }
                 else 0.78,
                 "minimum_surface_authoring_quality": 0.72
-                if family in {"console_terminal", "mechanical_door", "control_pedestal"}
+                if family in {"console_terminal", "mechanical_door", "control_pedestal"}  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
                 else 0.70,
                 "maximum_primitive_likeness_penalty": 0.22,
                 "maximum_assembled_primitives_penalty": 0.24,
             }
         )
-        if family in {
+        if family in {  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
             "procedural_building",
             "procedural_vehicle",
             "procedural_weapon",
@@ -1770,20 +1770,20 @@ def build_asset_graph(asset: dict[str, Any]) -> AssetGraph:
                     "minimum_feature_coherence": 0.72,
                 }
             )
-        if family == "service_cabinet":
+        if family == "service_cabinet":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
             semantic_requirements.update(
                 {
                     "minimum_symmetry_score": 0.50,
                     "minimum_adjacency_score": 0.66,
                 }
             )
-        if family == "control_pedestal":
+        if family == "control_pedestal":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
             semantic_requirements.update(
                 {
                     "minimum_silhouette_fidelity": 0.75,
                 }
             )
-        if family == "hero_sword":
+        if family == "hero_sword":  # no-family-dispatch: per-family AssetGraph blueprint routing during shape construction; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types
             semantic_requirements.update(
                 {
                     "minimum_part_coverage": 0.90,

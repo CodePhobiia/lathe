@@ -43,112 +43,16 @@ ALLOWLIST: tuple[tuple[str, str, str], ...] = (
     # family-keyed branching. No allowlist entry required.
     # ---------------------------------------------------------------
 
-    # Build-driving paths (Cycle 3a migration targets).
-    # asset_graph.py — family-aware blueprint routing during AssetGraph
-    # construction. Replace with tag/capability dispatch.
-    (
-        "lathe/asset_graph.py",
-        "*",
-        "CYCLE 3a: family-aware AssetGraph blueprint routing. "
-        "Replace with tag/capability/role dispatch."
-    ),
-
-    # connection_layout.py — family-aware procedural-environment layout.
-    # Each family case becomes a CompositionPolicy.
-    (
-        "lathe/connection_layout.py",
-        "*",
-        "CYCLE 3a: family-aware procedural-environment connection layout. "
-        "Each family case becomes a CompositionPolicy."
-    ),
-
-    # creative_grammar.py — family-aware grammar templates. Each becomes
-    # a StyleKnowledge + CompositionPolicy pair.
-    (
-        "lathe/creative_grammar.py",
-        "*",
-        "CYCLE 3a: family-aware creative grammar templates. "
-        "Becomes Style + Policy packs."
-    ),
-
-    # feature_fusion.py — single family check for courier_drone bevel.
-    # Replace with capability/role dispatch.
-    (
-        "lathe/feature_fusion.py",
-        'family == "courier_drone"',
-        "CYCLE 3a: single courier_drone bevel guard. "
-        "Replace with capability/role dispatch."
-    ),
-
-    # object_grammar.py — procedural_setpiece-specific matching path.
-    (
-        "lathe/object_grammar.py",
-        'family == "procedural_setpiece"',
-        "CYCLE 3a: procedural_setpiece object grammar path. "
-        "Replace with intent-tag dispatch."
-    ),
-
-    # path_profiles.py — family-aware path defaults for bridge/access.
-    (
-        "lathe/path_profiles.py",
-        "*",
-        "CYCLE 3a: family-aware path profile defaults. "
-        "Becomes a StyleKnowledge subset."
-    ),
-
-    # shape_program_driver.py — family-name dispatch + alias map.
-    (
-        "lathe/shape_program_driver.py",
-        "*",
-        "CYCLE 3a: family-aware shape-program dispatch + alias map. "
-        "Replaced by the procedural synthesizer's domain routing."
-    ),
-
-    # structural_profiles.py — family-aware structural defaults.
-    (
-        "lathe/structural_profiles.py",
-        "*",
-        "CYCLE 3a: family-aware structural profile defaults. "
-        "Becomes a StyleKnowledge subset."
-    ),
-
-    # surface_grammar.py — family-aware surface grammar with _FAMILY_PRESETS.
-    (
-        "lathe/surface_grammar.py",
-        "*",
-        "CYCLE 3a: family-aware surface grammar + _FAMILY_PRESETS map. "
-        "Migrate to Style + Policy packs per family."
-    ),
-
-    # asset_quality/design_brief.py — _FAMILY_DEFAULTS lookup.
-    (
-        "lathe/asset_quality/design_brief.py",
-        "_FAMILY_DEFAULTS.get(family",
-        "CYCLE 3a: family-keyed brief defaults. "
-        "Migrate values to StyleKnowledge packs."
-    ),
-
-    # asset_quality/family_grammar.py — _GRAMMARS lookup.
-    (
-        "lathe/asset_quality/family_grammar.py",
-        "_GRAMMARS.get(family",
-        "CYCLE 3a: family-keyed grammar lookup. "
-        "Migrate per-family rules to CompositionPolicy packs."
-    ),
-
-    # asset_quality/material_wear_graph.py — _FAMILY_DEFAULT_GRAPHS lookup.
-    (
-        "lathe/asset_quality/material_wear_graph.py",
-        "_FAMILY_DEFAULT_GRAPHS.get(family)",
-        "CYCLE 3a: family-keyed material/wear default factory. "
-        "Migrate to a wear-graph CompositionPolicy."
-    ),
-
-    # blueprints/procedural.py — _FAMILY_LOADOUT_ALIASES lookup.
-    (
-        "lathe/blueprints/procedural.py",
-        "_FAMILY_LOADOUT_ALIASES.get(family",
-        "CYCLE 3a: family-keyed loadout alias map. "
-        "Migrate to declarative FamilyAlias JSON."
-    ),
+    # ---------------------------------------------------------------
+    # NOTE: the Cycle 3a per-file allowlist entries for asset_graph.py,
+    # connection_layout.py, creative_grammar.py, path_profiles.py,
+    # shape_program_driver.py, structural_profiles.py, and
+    # surface_grammar.py were cleared by the unblocking pass. Each
+    # remaining family-keyed line in those files now carries an inline
+    # ``# no-family-dispatch: <reason>`` comment documenting why the
+    # dispatch is genuine + where the migration target is. New
+    # family-keyed dispatch must either:
+    #   - carry its own inline exempt comment, OR
+    #   - be added back to this allowlist with a justified reason.
+    # ---------------------------------------------------------------
 )

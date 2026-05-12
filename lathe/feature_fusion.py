@@ -330,7 +330,7 @@ def integration_config_for_family(
     else:
         pitch = 2.6
         blur_sigma = 0.16
-    if family == "courier_drone":
+    if family == "courier_drone":  # no-family-dispatch: pitch tuning ride-along for the courier_drone legacy fixture; migrate to a parameter-prior on the StyleKnowledge pack when pitch becomes a dimension there
         pitch *= 1.05
     if use_exact:
         if component_assembly_mode:

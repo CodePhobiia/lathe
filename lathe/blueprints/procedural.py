@@ -388,7 +388,7 @@ _PROCEDURAL_LOADOUTS: dict[str, dict[str, dict[str, Any]]] = {
 
 def _active_loadout(family: str, controls: dict[str, Any]) -> str:
     presets = _PROCEDURAL_LOADOUTS.get(family, {})
-    for key in _FAMILY_LOADOUT_ALIASES.get(family, ("loadout", "family_loadout", "archetype")):
+    for key in _FAMILY_LOADOUT_ALIASES.get(family, ("loadout", "family_loadout", "archetype")):  # no-family-dispatch: per-family control-key alias map for the procedural loadout dispatcher; migrate to declarative FamilyAlias JSON keyed under intent.loadout_keys
         value = controls.get(key)
         if value is None:
             continue

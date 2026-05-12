@@ -395,7 +395,7 @@ def _recipe_family_for_asset_graph(asset_graph: AssetGraph) -> str:
         return "cga_building_grammar_system"
     text = _semantic_text(asset_graph)
     tokens = _semantic_tokens(asset_graph)
-    if family == "procedural_building":
+    if family == "procedural_building":  # no-family-dispatch: per-family shape-program dispatch + alias map (legacy driver); replaced by the procedural synthesizer's domain routing — this driver remains as a fallback for assets that pre-date the alias system
         return "cga_building_grammar_system"
     if tokens & {"cga", "facade"} or "building grammar" in text or "split repeat" in text:
         return "cga_building_grammar_system"
@@ -408,7 +408,7 @@ def _recipe_family_for_asset_graph(asset_graph: AssetGraph) -> str:
     if tokens & {"sdf", "metaball", "implicit", "blob"} or "f_rep" in text or "f rep" in text:
         return "f_rep_sdf_composition_system"
     if family in _RECIPE_FAMILY_ALIASES:
-        return _RECIPE_FAMILY_ALIASES[family]
+        return _RECIPE_FAMILY_ALIASES[family]  # no-family-dispatch: per-family shape-program dispatch + alias map (legacy driver); replaced by the procedural synthesizer's domain routing — this driver remains as a fallback for assets that pre-date the alias system
     if family and family not in _GENERIC_RECIPE_FAMILIES:
         return family
     return family or "generic"
