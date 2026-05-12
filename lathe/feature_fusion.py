@@ -292,7 +292,7 @@ def integration_config_for_family(
     if strategy not in VALID_MESHING_STRATEGIES:
         strategy = "auto"
 
-    legacy_hero = family in _LEGACY_EXACT_FAMILIES
+    legacy_hero = family in _LEGACY_EXACT_FAMILIES  # no-family-dispatch: legacy hero-family allowlist for the exact-meshing default path; migrate to a capability tag (e.g. ``intent.tags`` containing ``hero_exact_mesh``) once the StyleKnowledge pack carries that intent
     authoring_exact, authoring_exact_reason = _shape_authoring_requests_exact(
         primitives,
         shape_signature,

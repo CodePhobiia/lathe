@@ -504,7 +504,7 @@ def infer_blueprint_id(asset: dict[str, Any]) -> str:
         "env_module_generic": "lathe.blueprint.env_module_generic_v1",
         "mechanical_assembly_generic": "lathe.blueprint.mechanical_assembly_generic_v1",
         "hard_surface_prop_generic": "lathe.blueprint.hard_surface_prop_generic_v1",
-    }[family]
+    }[family]  # no-family-dispatch: inline dict mapping family name to AssetGraph blueprint ID; migrate to tag/capability/role dispatch keyed on intent tags + construction-graph node-types (companion to other inline-exempt sites in this file)
 
 
 def _default_parts_for_family(family: str) -> list[str]:

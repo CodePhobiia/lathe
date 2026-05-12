@@ -1,7 +1,9 @@
 {
   "family_id": "stateful_destructible_prop",
   "style_id": "industrial_pbr_v1",
-  "policy_ids": ["panelized_hard_surface_object"],
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
   "domain": "hard_surface",
-  "description": "Stateful destructible prop fixture (intact shell volume, damage decals, fracture-line trim, fragment-zone panels, weak-point mounts, repair handle, transition-cue decals, hazard guards, debris fasteners, damage wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+  "description": "Stateful destructible prop fixture (intact shell volume, damage decals, fracture-line trim, fragment-zone panels, weak-point mounts, repair handle, transition-cue decals, hazard guards, debris fasteners, damage wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
 }

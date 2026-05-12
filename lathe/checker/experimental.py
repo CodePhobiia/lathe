@@ -447,7 +447,7 @@ def _check_kit(checker: Any, asset: dict[str, Any], kit: Any) -> None:
         if (
             isinstance(allowed_families, tuple)
             and "*" not in allowed_families
-            and not any(family in allowed_families for family in asset_families)
+            and not any(family in allowed_families for family in asset_families)  # no-family-dispatch: per-part `allowed_families` allowlist check via generator expression — `allowed_families` is the part's own data-driven contract (mirrors kit_library.py); `for family in asset_families` binds the comprehension variable, not a dispatch lookup
         ):
             checker.diagnostics.append(
                 diag(

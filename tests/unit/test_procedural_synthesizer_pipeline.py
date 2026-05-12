@@ -98,10 +98,16 @@ class TestPipeline:
                 "Stage 8 validation must have failed"
             )
 
-    def test_same_intent_different_brief_produces_different_proportions(self) -> None:
-        # Two assets with identical graph but different briefs that
-        # produce different rounding via style biasing — proves intent
-        # dominance plus style biasing are wired.
+    def test_node_attribute_changes_flow_through_to_emitted_op_parameters(self) -> None:
+        # Two assets with the same brief but a single node-attribute
+        # difference (rounding_cm) — proves authored attributes flow
+        # through Stage 4 validation into the generator's emitted op
+        # parameters. NOTE: this is a node-attribute test, not a
+        # brief/style biasing test; the pipeline does have a
+        # style-biasing path via parameter_priors but it requires a
+        # loaded StyleKnowledge with primary_volume.rounding_cm in its
+        # parameter_priors, which the default test fixture does not
+        # exercise.
         asset = _minimal_asset()
         runtime_a = _runtime_with_graph([_PRIMARY_NODE], [])
         runtime_b = _runtime_with_graph(
@@ -110,7 +116,7 @@ class TestPipeline:
                     **_PRIMARY_NODE,
                     "attributes": {
                         **_PRIMARY_NODE["attributes"],
-                        "rounding_cm": 5.0,  # different rounding
+                        "rounding_cm": 5.0,  # different rounding on the node
                     },
                 }
             ],
@@ -118,7 +124,6 @@ class TestPipeline:
         )
         result_a = synthesize_procedural_program(asset, runtime_a)
         result_b = synthesize_procedural_program(asset, runtime_b)
-        # Both produce rounded_box, but the parameters differ
         ops_a = [op for op in result_a.shape_program.ops if op.op == "solid.rounded_box"]
         ops_b = [op for op in result_b.shape_program.ops if op.op == "solid.rounded_box"]
         assert ops_a and ops_b

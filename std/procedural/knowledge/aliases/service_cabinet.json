@@ -5,5 +5,5 @@
     "panelized_hard_surface_object"
   ],
   "domain": "hard_surface",
-  "description": "Service cabinet fixture (shell volume, front panel, hinge stack, pull handle, latch-plate inset, vent trim, mounting brackets, fasteners, label decals, edge wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+  "description": "Service cabinet fixture (shell volume, front panel, hinge stack, pull handle, latch-plate inset, vent trim, mounting brackets, fasteners, label decals, edge wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
 }

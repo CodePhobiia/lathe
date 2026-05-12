@@ -7320,7 +7320,7 @@ def _scene_modules_by_name(scene: Mapping[str, Any]) -> dict[str, Mapping[str, A
 
 def _scene_variant_families_by_name(scene: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
     families: dict[str, Mapping[str, Any]] = {}
-    for family in _mapping_list(scene.get("variant_families")):
+    for family in _mapping_list(scene.get("variant_families")):  # no-family-dispatch: `family` is the loop variable iterating over scene-level `variant_families` AST blocks to build a name→block lookup table; not a dispatch lookup
         name = _string(family.get("name"))
         if name:
             families[name] = family

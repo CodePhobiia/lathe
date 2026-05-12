@@ -208,7 +208,7 @@ def _surface_feature_repairs(asset_graph: AssetGraph, shape_ir: ShapeIR) -> list
         )
     if (
         assessment.get("panel_feature_count", 0) < MIN_PANEL_FEATURE_COUNT
-        and asset_graph.family in PANEL_DEPTH_FAMILIES
+        and asset_graph.family in PANEL_DEPTH_FAMILIES  # no-family-dispatch: per-family panel-depth repair gating; migrate to a panel-depth threshold parameter on the StyleKnowledge pack so the repair rule no longer depends on family identity
     ):
         repairs.append(
             _repair(

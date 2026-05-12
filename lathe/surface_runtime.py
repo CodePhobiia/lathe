@@ -110,7 +110,7 @@ def _surface_progress(out_dir: Path, event: str, **payload: Any) -> None:
 def _hero_surface_enabled(shape_bundle: dict[str, Any]) -> bool:
     asset_graph = shape_bundle.get("asset_graph", {})
     family = asset_graph.get("family")
-    return family in V09_HERO_FAMILIES or family in HERO_FAMILIES
+    return family in V09_HERO_FAMILIES or family in HERO_FAMILIES  # no-family-dispatch: hero-family gate enabling the V0.9 hero surface path; migrate to a capability flag on the asset (e.g. ``intent.tags`` containing ``hero_surface``) so the runtime no longer needs a hard-coded family allowlist
 
 
 def _token(value: Any) -> str:

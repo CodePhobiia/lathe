@@ -720,7 +720,7 @@ def kit_parts_for_family(library: KitLibrary, family: str) -> tuple[KitPart, ...
     matched: list[KitPart] = []
     for part in library.parts:
         families = part.allowed_families
-        if "*" in families or family in families:
+        if "*" in families or family in families:  # no-family-dispatch: per-part `allowed_families` allowlist is data, not code — each KitPart carries its own set of families it supports (or "*" for any); the family-membership check here is the part's own contract, not a centralized dispatch table
             matched.append(part)
     matched.sort(key=lambda candidate: (candidate.category, candidate.name))
     return tuple(matched)

@@ -5,5 +5,5 @@
     "panelized_hard_surface_object"
   ],
   "domain": "hard_surface",
-  "description": "Machine console fixture (body volume, control-face panel, display material zone, input-control fasteners, service-access inset, ports, cooling guard, cable rails, warning decals, service wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+  "description": "Machine console fixture (body volume, control-face panel, display material zone, input-control fasteners, service-access inset, ports, cooling guard, cable rails, warning decals, service wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
 }

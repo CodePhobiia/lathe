@@ -1757,7 +1757,7 @@ def _match_authored_content(value: Any) -> str:
 
 
 def _family_for_token(token: str) -> str:
-    return next(family for tok, family in _FAMILY_TOKENS if tok == token)
+    return next(family for tok, family in _FAMILY_TOKENS if tok == token)  # no-family-dispatch: `family` here is the comprehension's loop variable iterating over (token, family) tuples in `_FAMILY_TOKENS`, not a dispatch lookup — token→family inference for brief defaults
 
 
 def _canonical_family_alias(value: str) -> str:

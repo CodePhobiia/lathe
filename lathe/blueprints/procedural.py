@@ -402,7 +402,7 @@ def _with_loadout_controls(family: str, controls: dict[str, Any]) -> dict[str, A
     loadout = _active_loadout(family, controls)
     if not loadout:
         return controls
-    merged = dict(_PROCEDURAL_LOADOUTS[family][loadout])
+    merged = dict(_PROCEDURAL_LOADOUTS[family][loadout])  # no-family-dispatch: per-family procedural loadout lookup; migrate to declarative FamilyAlias JSON loadout_packs (companion to the _FAMILY_LOADOUT_ALIASES inline-exempt above)
     merged.update(controls)
     merged.setdefault("loadout", loadout)
     merged.setdefault("family_loadout", loadout)

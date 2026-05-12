@@ -18,7 +18,7 @@ def check_new_declarations(checker: Any) -> None:
     Args:
         checker: checker argument.
     """
-    for family in checker.program.get("families", []):
+    for family in checker.program.get("families", []):  # no-family-dispatch: `family` is the loop variable iterating over declared `family { ... }` AST blocks in the .lth program for component-reference validation; not a dispatch lookup
         for component_name in family.get("assembly", {}).get("components", []):
             if component_name not in checker.resolver.component_map:
                 checker.diagnostics.append(

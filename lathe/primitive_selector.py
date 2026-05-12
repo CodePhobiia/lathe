@@ -511,7 +511,7 @@ def _matches_selector_context(
     tokens = {str(item).lower() for item in style.get("tokens", set()) if item}
     style_pack = str(style.get("style_pack") or "").lower()
     return (
-        family in families
+        family in families  # no-family-dispatch: `families` is a per-selector configured set passed in by the caller, not a centralized dispatch table; this is the selector's data contract — match-when-family-in-allowed-set
         or bool(tokens & tokens_set)
         or any(token in style_pack for token in tokens_set)
     )

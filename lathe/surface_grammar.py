@@ -1240,7 +1240,7 @@ def surface_grammar_for_controls(
         landform = landform or "road_edge"
         grammar["landform"] = landform
 
-    if family in _FAMILY_PRESETS:
+    if family in _FAMILY_PRESETS:  # no-family-dispatch: membership pre-check on the per-family surface-preset map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         _merge_preset(grammar, _FAMILY_PRESETS[family])  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
     if landform in _LANDFORM_PRESETS:
         _merge_preset(grammar, _LANDFORM_PRESETS[landform])

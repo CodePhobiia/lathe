@@ -5,5 +5,5 @@
     "panelized_hard_surface_object"
   ],
   "domain": "hard_surface",
-  "description": "Weapon prop fixture (primary body volume, grip handle, hand guard, active-edge rail, centerline trim, end-cap mount, hardpoint sockets, fasteners, marking decals, edge wear). Recipe-equivalent op intent verified by tests/contract/test_recipe_migration_shape_program_diff.py."
+  "description": "Weapon prop fixture (primary body volume, grip handle, hand guard, active-edge rail, centerline trim, end-cap mount, hardpoint sockets, fasteners, marking decals, edge wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
 }

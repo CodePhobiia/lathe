@@ -17,7 +17,6 @@ Stages:
 
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass
 from typing import Any, Mapping
 
@@ -193,7 +192,13 @@ def _expand_policies(
         for expansion in policy.expansions:
             count = _resolve_count(expansion.count, ctx.brief)
             for index in range(count):
-                new_node_id = f"policy.{policy.policy_id}.{expansion.add_node_type}.{index}.{uuid.uuid4().hex[:6]}"
+                # Deterministic node ID: (policy_id, add_node_type, index)
+                # is unique within a single synthesize call because a
+                # given policy runs at most once per call and each
+                # expansion's per-index counter is monotonic. uuid was
+                # used here historically and broke compiler determinism
+                # — replaced with the stable triple.
+                new_node_id = f"policy.{policy.policy_id}.{expansion.add_node_type}.{index}"
                 attrs = dict(expansion.attributes_template)
                 # Placement hints become regular attributes — the
                 # generator decides how to interpret them.
@@ -216,9 +221,15 @@ def _expand_policies(
                 for edge_template in expansion.edges_to_existing:
                     # Connect the new node to every existing node whose
                     # type matches edge_template.target_node_type.
+                    # Slice ``nodes[:-1]`` excludes only the just-appended
+                    # node (the new one is always at the tail because
+                    # ``nodes.append(added_node)`` ran above). The
+                    # previous ``nodes[:-1-index]`` form excluded ``index``
+                    # extra nodes — wrongly hiding earlier policy
+                    # expansions of this loop from being valid targets.
                     targets = [
                         node["node_id"]
-                        for node in nodes[: -1 - index]
+                        for node in nodes[:-1]
                         if node["node_type"] == edge_template.target_node_type
                     ]
                     for target_id in targets:

@@ -842,7 +842,7 @@ def _summary(slots: Sequence[Mapping[str, Any]], connections: Sequence[Any] | No
             if template:
                 by_template[template] = by_template.get(template, 0) + 1
             if family:
-                by_family[family] = by_family.get(family, 0) + 1
+                by_family[family] = by_family.get(family, 0) + 1  # no-family-dispatch: aggregation counter, not behavior dispatch — `by_family` is a local histogram of seen family values for a report payload, with no per-family branching
     return {
         "slot_count": len(slots),
         "module_slot_count": len(slots),
