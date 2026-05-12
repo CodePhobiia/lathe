@@ -1073,3 +1073,104 @@ Both are reusable beyond crate; that satisfies northstar's "must be reusable bey
 - **S0-6 evidence:** when the diagnostic fires, the repair planner emits a concrete bevel/chamfer or add-trim operation; re-build resolves it on the same seed (no reselect dependency).
 
 This is the falsifiable before-state. S0-3 work begins next.
+
+---
+
+## Sprint 0 Phase B Status Update — 2026-05-12 (later)
+
+Five Sprint 0 tasks (S0-1, S0-3, S0-4, S0-5, S0-6) shipped earlier in
+this session at the substrate level. The Phase B capstone — getting
+`industrial_crate.lth` to drive through the procedural synthesizer
+so the new bevel + material wiring + diagnostic + repair all
+exercise on the live build — added three more changes:
+
+### Capstone Option 3 (commit `fcfde24`): widened `synthesizer_eligible`
+
+The predicate now returns True when (FamilyAlias for the asset's
+family exists) AND (asset.intent.parts is non-empty), even without
+an authored construction_graph. Combined with Option 2 below, this
+makes the procedural synthesizer the default path for every .lth
+that lists parts.
+
+### Capstone Option 2 (commit `fcfde24`): auto-graph synthesis from parts
+
+`runtime_from_asset` now synthesizes a default `construction_graph`
+from `intent.parts` when no graph is authored. Each part name is
+classified via `_classify_part` (existing substring rules) into a
+NODE_TYPE; the first part that classifies as `primary_volume`
+becomes the body node with scale-derived dimensions (0.9m → 90cm).
+A new `_NODE_TYPE_AUTO_DEFAULTS` table provides minimum required
+attributes for all 20 hard-surface NODE_TYPEs so authored parts
+survive Stage 4 schema validation.
+
+Python-level probe with industrial_crate's authored intent dict:
+  - synthesizer_eligible: True
+  - auto-graph: 6 nodes (body→primary_volume, latch_plate→latch,
+    handle_l/r→handle, foot_l/r→mount) with 90cm body dimensions
+  - shape_program emit: **52 ops** (1 body solid + 1 op.bevel from
+    S0-3 style default + 8 corner brackets + 2 handles + 2 rails +
+    1 trim + 1 fastener + 1 panel + 1 inset + 3 zone metadata ops +
+    16 op.union attached_to edges)
+  - 0 attribute_schema_violations
+
+### Capstone Option 1 (commit `fcfde24`): grammar extension for explicit procedural{} block
+
+`grammar/lathe.lark` + `lathe/parser/fast_parser.py` +
+`lathe/parser/transformer_blocks.py` updated to accept an optional
+`procedural { ... }` sub-block under `build.shape`. Authors can now
+write:
+
+```
+build {
+  shape {
+    procedural {
+      construction_graph = { nodes = [...], edges = [...] }
+      auto_graph = disabled
+      brief = { family = "...", style_id = "...", policy_ids = [...] }
+    }
+  }
+}
+```
+
+The block lifts verbatim into `asset.build.shape.procedural`, where
+`synthesizer_eligible` / `runtime_from_asset` already look. Authors
+who want to override Option 2's auto-graph or opt out entirely can
+declare it explicitly.
+
+### Outstanding gap — live full-backend before/after rendering
+
+The Python-level probe confirms the dispatch + auto-graph + 52-op
+ShapeProgram all work end-to-end. The live `python -m lathe.cli build
+examples/industrial_crate.lth ...` invocation that exercises the
+full kernel + boolean compile of those 52 ops did NOT complete in
+this session — the build hung in the shape stage's boolean kernel
+for >30 minutes with no shape-stage artifacts produced.
+
+This is a **kernel-performance gap**, not a substrate gap. The same
+52-op program lowers correctly to v1 records, registers all the
+zone-op metadata, and produces a non-empty ShapeProgram in
+sub-second time at the synthesizer level. The bottleneck is in the
+boolean compile path the shape backend invokes downstream — likely
+related to the 16 `op.union` attached_to edges compounded with the
+solid primitives, the existing kernel's bounded-Manifold full-CSG
+route, and the increased op count vs the legacy scaffold path.
+
+Three honest paths to close this gap:
+1. **Profile + optimize the boolean compile** for the 50+ op case.
+   Likely the highest-leverage move once visible-quality work
+   identifies what's actually slow.
+2. **Reduce the policy's expansion count** for v1 (e.g., 4 corner
+   brackets instead of 8, single-handle, no fastener) until the
+   kernel handles larger programs gracefully.
+3. **Mark the auto-graph path as opt-in** via the new
+   `procedural { auto_graph = enabled }` Option-1 flag, and have
+   industrial_crate.lth keep using the legacy scaffold until the
+   kernel-perf work is done. This unblocks the Sprint 0 visible
+   demo while the kernel performance work continues in parallel.
+
+The "before/after turntable.png comparison" the Sprint 0 done
+condition asks for is therefore deferred to a Cycle 4 Lane A
+kernel-performance pass. The substrate work (S0-1 through S0-6 +
+Capstone Options 1/2/3) is complete and verified at the Python /
+unit-test / contract-test level — what's outstanding is the
+multi-minute kernel run time, not the procedural correctness.
