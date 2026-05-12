@@ -1,23 +1,38 @@
-"""Integration test: every FamilyAlias drives a valid synthesizer build.
+"""Integration test: every FamilyAlias + policy produces a valid program.
 
 Per ``docs/asset-quality/lathe-northstar-full-implementation-plan.md``
-v2 §6.4 (Cycle 3 post-decommission):
+v2 §6.4 (Cycle 3 post-decommission, Cycle 4 Phase A.1 policy expansion):
 
 > All families that existed in the registry at Cycle 3 start produce
 > ShapeProgram outputs through the procedural synthesizer.
-> For each family migrated: a build-artifact diff test exists.
 
-After Cycle 3 Round 6 decommissioned ``_RECIPES``, the "diff" loses
-its recipe baseline — there is no recipe path left to compare
-against. What remains is the per-alias **build-artifact** check:
-every FamilyAlias under ``std/procedural/knowledge/aliases/*.json``
-must drive a full shape-backend build end-to-end and produce a
-non-empty Trimesh result plus a synthesizer trace proving the
-procedural pipeline ran.
+After Cycle 3 Round 6 decommissioned ``_RECIPES``, there is no recipe
+baseline to diff against. After Cycle 4 Phase A.1 wired real
+expansions into ``panelized_hard_surface_object``, the test bar moved
+up: every alias must drive a non-empty ShapeProgram from just its
+FamilyAlias + a **single** authored ``primary_volume`` node (the
+policy supplies the rest).
 
-This is the integration-level verification floor for the procedural
-synthesizer. A new family's alias adds a new parametrize ID; no test
-code changes.
+This module ships TWO test classes:
+
+  - ``test_family_alias_drives_valid_synthesizer_program``
+    (parametrized over all 71 aliases) — runs ``synthesize_procedural_program``
+    only, asserts the ShapeProgram has >= 20 ops + at least one each of
+    op.material_zone / op.decal_zone / op.wear_zone. Fast (<1s for all
+    71 fixtures combined). Catches per-alias regressions in alias
+    loading, policy resolution, generator/decorator dispatch.
+
+  - ``test_industrial_crate_drives_valid_build_artifact_via_full_backend``
+    (single fixture) — runs the full ``run_shape_backend`` for the
+    Sprint 0 hero. Slow (~30s+ due to boolean compile of 45 ops). Spot
+    check for end-to-end backend integration; not parametrized because
+    71 × 30s is impractical for CI.
+
+The previous canned 10-node graph was the audit's flagged failure
+mode: "same graph injected under each family name, proves the
+mechanic not per-family procedural intent." Minimum-authored-graph
++ policy expansion + per-alias synth pipeline test is the honest
+verification floor.
 """
 
 from __future__ import annotations
@@ -29,77 +44,22 @@ from typing import Any
 import pytest
 import trimesh
 
+from lathe.asset_quality.procedural_synthesizer import synthesize_procedural_program
 from lathe.shape.backend import run_shape_backend
+from lathe.shape.procedural_program_path import _extract_semantic_zone_records
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _ALIAS_ROOT = _REPO_ROOT / "std" / "procedural" / "knowledge" / "aliases"
 
 
-# Per-NODE_TYPE attribute templates. Keep in sync with the canonical
-# 10-NODE_TYPE pattern emitted by procedural synthesizer generators.
-_ATTRS = {
-    "primary_volume": {
-        "shape": "rounded_box",
-        "dimensions_cm": {"x": 30.0, "y": 30.0, "z": 30.0},
-        "rounding_cm": 1.5,
-    },
-    "panel": {
-        "shape": "rectangular",
-        "width_cm": 14.0,
-        "height_cm": 10.0,
-        "thickness_cm": 0.4,
-        "host_face_axis": "z",
-    },
-    "frame": {
-        "plane": "xy",
-        "outer_width_cm": 14.0,
-        "outer_height_cm": 14.0,
-        "member_thickness_cm": 0.6,
-        "protrusion_cm": 0.4,
-    },
-    "trim": {
-        "profile": "flat_band",
-        "length_cm": 14.0,
-        "width_cm": 1.0,
-        "thickness_cm": 0.4,
-        "axis": "x",
-    },
-    "fastener": {
-        "kind": "rivet",
-        "head_radius_cm": 0.3,
-        "head_height_cm": 0.4,
-        "shaft_radius_cm": 0.15,
-        "shaft_length_cm": 0.6,
-    },
-    "handle": {"style": "bar", "length_cm": 14.0, "grip_radius_cm": 0.8, "axis": "x"},
-    "inset": {
-        "depth_axis": "z",
-        "depth_cm": 0.4,
-        "width_cm": 6.0,
-        "height_cm": 4.0,
-        "profile": "flat",
-    },
-    "rail": {"axis": "x", "length_cm": 14.0, "radius_cm": 0.4, "cross_section": "round"},
-    "socket": {"depth_axis": "x", "depth_cm": 1.0, "radius_cm": 0.6, "profile": "round"},
-    "mount": {"style": "flat_pad", "width_cm": 4.0, "depth_cm": 4.0, "height_cm": 0.6},
-    "guard": {
-        "style": "perimeter_rail",
-        "width_cm": 16.0,
-        "height_cm": 6.0,
-        "depth_cm": 16.0,
-        "bar_radius_cm": 0.3,
-        "bar_count": 4,
-        "axis": "y",
-    },
-    "hinge": {
-        "style": "butt",
-        "leaf_width_cm": 3.0,
-        "leaf_height_cm": 6.0,
-        "leaf_thickness_cm": 0.3,
-        "barrel_radius_cm": 0.4,
-        "pin_axis": "y",
-    },
+# Minimum primary_volume attributes the policy needs to expand from.
+# Per Cycle 4 Phase A.1, every NODE_TYPE beyond primary_volume is
+# supplied by ``panelized_hard_surface_object`` policy expansions.
+_PRIMARY_VOLUME_ATTRS: dict[str, Any] = {
+    "shape": "rounded_box",
+    "dimensions_cm": {"x": 30.0, "y": 30.0, "z": 30.0},
+    "rounding_cm": 1.5,
 }
 
 
@@ -121,50 +81,24 @@ def _alias_family_ids() -> tuple[str, ...]:
     return tuple(families)
 
 
-def _canonical_construction_graph(family: str) -> dict[str, Any]:
-    """Build a canonical 10-node hard-surface construction graph.
-
-    Every alias under ``std/procedural/knowledge/aliases/`` resolves to
-    the panelized_hard_surface_object policy + industrial_pbr_v1 style,
-    which the synthesizer's hard_surface generators consume. The graph
-    below exercises 9 NODE_TYPE generators so the build path is broad
-    enough to detect routing regressions per family.
-    """
+def _minimal_authored_graph(family: str) -> dict[str, Any]:
+    """Build the MINIMUM authored graph the policy needs to drive geometry."""
     return {
         "nodes": [
-            {"node_id": f"{family}.body", "node_type": "primary_volume",
-             "domain": "hard_surface", "attributes": _ATTRS["primary_volume"]},
-            {"node_id": f"{family}.material_zone", "node_type": "material_zone",
-             "domain": "hard_surface",
-             "attributes": {"zone_id": "primary_material", "material_hint": "painted_emblem"}},
-            {"node_id": f"{family}.decal_zone", "node_type": "decal_zone",
-             "domain": "hard_surface",
-             "attributes": {"zone_id": "primary_decal", "decal_intent": "label",
-                            "size_cm": [8.0, 4.0], "host_face_axis": "z"}},
-            {"node_id": f"{family}.wear_zone", "node_type": "wear_zone",
-             "domain": "hard_surface",
-             "attributes": {"zone_id": "primary_wear", "wear_kind": "handled",
-                            "intensity": "moderate", "coverage_fraction": 0.4}},
-            {"node_id": f"{family}.fastener", "node_type": "fastener",
-             "domain": "hard_surface", "attributes": _ATTRS["fastener"]},
-            {"node_id": f"{family}.handle", "node_type": "handle",
-             "domain": "hard_surface", "attributes": _ATTRS["handle"]},
-            {"node_id": f"{family}.inset", "node_type": "inset",
-             "domain": "hard_surface", "attributes": _ATTRS["inset"]},
-            {"node_id": f"{family}.rail", "node_type": "rail",
-             "domain": "hard_surface", "attributes": _ATTRS["rail"]},
-            {"node_id": f"{family}.socket", "node_type": "socket",
-             "domain": "hard_surface", "attributes": _ATTRS["socket"]},
-            {"node_id": f"{family}.mount", "node_type": "mount",
-             "domain": "hard_surface", "attributes": _ATTRS["mount"]},
+            {
+                "node_id": f"{family}.body",
+                "node_type": "primary_volume",
+                "domain": "hard_surface",
+                "attributes": _PRIMARY_VOLUME_ATTRS,
+            },
         ],
         "edges": [],
     }
 
 
-def _build_synth_path(family: str, tmp_path: Path) -> dict[str, Any]:
-    """Run the full shape backend with a canonical construction graph for ``family``."""
-    cg = _canonical_construction_graph(family)
+def _minimal_asset_and_runtime(family: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build the (asset, runtime) tuple a minimum-authored alias build expects."""
+    cg = _minimal_authored_graph(family)
     asset = {
         "name": family,
         "intent": {"family": family, "construction_graph": cg},
@@ -177,6 +111,118 @@ def _build_synth_path(family: str, tmp_path: Path) -> dict[str, Any]:
             },
         },
     }
+    runtime = {
+        "design_brief": {"brief": {"family": family}},
+        "construction_graph": cg,
+    }
+    return asset, runtime
+
+
+_FAMILY_IDS = _alias_family_ids()
+
+
+@pytest.mark.skipif(not _FAMILY_IDS, reason="no aliases registered")
+@pytest.mark.parametrize("family", _FAMILY_IDS, ids=list(_FAMILY_IDS))
+def test_family_alias_drives_valid_synthesizer_program(family: str) -> None:
+    """Each FamilyAlias + policy produces a valid synthesized ShapeProgram.
+
+    Per plan v2 §6.4 the per-family verifier checks:
+      - The synthesizer pipeline runs to completion (Stage 1-8) with no
+        attribute_schema_violation entries.
+      - The emitted ShapeProgram has >= 20 ops (policy expansion adds
+        at least 19 nodes → at least 20 emit ops counting the body).
+      - At least one op.material_zone / op.decal_zone / op.wear_zone
+        record is emitted — the policy's metadata-only zones reach the
+        shape program.
+      - ``synthesizer_trace`` records ``policy_applied`` for
+        ``panelized_hard_surface_object``.
+
+    Pipeline-level only; the full shape backend boolean compile is
+    covered by the single-fixture spot check below (boolean kernel
+    work is ~30s per fixture and impractical to parametrize x71).
+    """
+    asset, runtime = _minimal_asset_and_runtime(family)
+    result = synthesize_procedural_program(asset, runtime)
+
+    program = result.shape_program
+    op_count = len(program.ops)
+    assert op_count >= 20, (
+        f"family {family!r}: synthesizer emitted only {op_count} ops "
+        f"(expected >= 20 — policy expansion alone should add >= 19 nodes)."
+    )
+
+    # Zone records flow through Phase A.2's extractor — verify the
+    # raw shape_program has them too (the surface-stage path consumes
+    # them via the extractor).
+    zone_records = _extract_semantic_zone_records(program)
+    record_kinds = {r["kind"] for r in zone_records}
+    assert "material_zone" in record_kinds, (
+        f"family {family!r}: no op.material_zone in ShapeProgram. "
+        f"panelized_hard_surface_object policy must emit one."
+    )
+    assert "decal_zone" in record_kinds, (
+        f"family {family!r}: no op.decal_zone in ShapeProgram. "
+        f"panelized_hard_surface_object policy must emit one."
+    )
+    assert "wear_zone" in record_kinds, (
+        f"family {family!r}: no op.wear_zone in ShapeProgram. "
+        f"panelized_hard_surface_object policy must emit one."
+    )
+
+    # Policy application is traced (catches a regression where the
+    # alias loads but the policy is silently skipped).
+    policy_applied_entries = [
+        e for e in result.trace.entries
+        if e.kind == "policy_applied"
+        and e.payload.get("policy_id") == "panelized_hard_surface_object"
+    ]
+    assert policy_applied_entries, (
+        f"family {family!r}: panelized_hard_surface_object policy not "
+        f"applied. Either the alias didn't resolve or the policy "
+        f"precondition failed."
+    )
+
+    # Family alias resolution is preserved in the ShapeProgram.
+    assert program.family == family, (
+        f"family {family!r}: ShapeProgram.family={program.family!r}. "
+        f"Family-alias flow-through is broken."
+    )
+
+
+def test_alias_directory_has_at_least_one_alias() -> None:
+    """Sanity invariant: the alias directory is non-empty."""
+    assert _FAMILY_IDS, (
+        f"no FamilyAlias JSON files found under {_ALIAS_ROOT}. "
+        f"The procedural synthesizer's family routing is broken."
+    )
+
+
+def test_alias_directory_carries_seventy_one_aliases() -> None:
+    """All 71 family aliases shipped in Cycle 3 must remain registered."""
+    assert len(_FAMILY_IDS) >= 71, (
+        f"expected >= 71 aliases (Cycle 3 baseline), found {len(_FAMILY_IDS)}."
+    )
+
+
+@pytest.mark.slow
+def test_industrial_crate_drives_valid_build_artifact_via_full_backend(
+    tmp_path: Path,
+) -> None:
+    """Spot check: industrial_crate runs end-to-end through ``run_shape_backend``.
+
+    Verifies that the alias + policy + synthesizer + boolean kernel
+    chain produces a real Trimesh artifact. The boolean compile is ~30s
+    so this is intentionally a single-fixture spot check, not a 71-way
+    parametrization. industrial_crate is the Sprint 0 hero per
+    CLAUDE.md northstar.
+
+    Run with ``pytest -m slow`` or ``pytest --no-skip-slow`` to include.
+    Skipped by default to keep the test loop fast — the parametrized
+    pipeline-level test above already covers per-alias regression for
+    all 71 families.
+    """
+    family = "industrial_crate"
+    asset, _ = _minimal_asset_and_runtime(family)
     work = tmp_path / "shape_work"
     work.mkdir(parents=True, exist_ok=True)
     result = run_shape_backend(
@@ -192,34 +238,9 @@ def _build_synth_path(family: str, tmp_path: Path) -> dict[str, Any]:
     )
     candidates = result.get("runtime_candidates", [])
     assert candidates, (
-        f"family {family!r} produced no runtime candidates; shape stage "
-        f"failed to build through the synthesizer path."
+        f"family {family!r} produced no runtime candidates; shape stage failed."
     )
-    return candidates[0]
-
-
-_FAMILY_IDS = _alias_family_ids()
-
-
-@pytest.mark.skipif(not _FAMILY_IDS, reason="no aliases registered")
-@pytest.mark.parametrize("family", _FAMILY_IDS, ids=list(_FAMILY_IDS))
-def test_family_alias_drives_valid_synthesizer_build(
-    family: str,
-    tmp_path: Path,
-) -> None:
-    """Each registered FamilyAlias produces a valid build artifact.
-
-    Per plan v2 §6.4 the build-artifact verifier checks:
-      - The shape backend produces at least one runtime candidate.
-      - The candidate carries a non-empty Trimesh mesh.
-      - The candidate carries a synthesizer_trace proving the
-        procedural pipeline ran (not silently falling back to a
-        scaffold path).
-
-    Face-count and material-zone parity against a recipe baseline is
-    no longer applicable — Cycle 3 Round 6 decommissioned ``_RECIPES``.
-    """
-    candidate = _build_synth_path(family, tmp_path)
+    candidate = candidates[0]
 
     mesh = candidate.get("mesh")
     assert isinstance(mesh, trimesh.Trimesh), (
@@ -237,18 +258,11 @@ def test_family_alias_drives_valid_synthesizer_build(
         f"the build did not route through the procedural synthesizer."
     )
 
-
-def test_alias_directory_has_at_least_one_alias() -> None:
-    """Sanity invariant: the alias directory is non-empty.
-
-    Catches accidental directory deletion. The plan v2 §6.4 acceptance
-    says "all families that existed in the registry at Cycle 3 start
-    produce ShapeProgram outputs"; zero aliases would mean the
-    decommission removed the migration substrate too.
-    """
-    assert _FAMILY_IDS, (
-        f"no FamilyAlias JSON files found under {_ALIAS_ROOT}. "
-        f"The procedural synthesizer's family routing is broken."
+    # Phase A.2: zone records reach the surface stage via candidate meta.
+    zone_records = meta.get("semantic_zone_records") if isinstance(meta, dict) else None
+    assert isinstance(zone_records, list) and zone_records, (
+        f"family {family!r}: candidate meta missing semantic_zone_records "
+        f"(Phase A.2 wiring broken)."
     )
 
 
