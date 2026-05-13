@@ -17,8 +17,9 @@ Stages:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from ..shape_ir_v2 import ALL_OPS, SHAPE_IR_V2_VERSION, ShapeOp, ShapeProgram
 from .attributes import ATTRIBUTE_SCHEMAS, validate_attributes
@@ -30,12 +31,11 @@ from .context import (
 )
 from .knowledge_loader import (
     CompositionPolicy,
-    PolicyExpansion,
-    StyleKnowledge,
     FamilyAlias,
+    StyleKnowledge,
     precondition_matches,
 )
-from .registry import GeneratorRegistry, OpResolver, REGISTRY
+from .registry import REGISTRY, GeneratorRegistry, OpResolver
 from .trace import SynthesizerTrace, TraceBuilder
 
 
@@ -423,7 +423,7 @@ class _NodeOpAccumulator:
     ops_by_node: dict[str, list[ShapeOp]]
 
     @classmethod
-    def empty(cls) -> "_NodeOpAccumulator":
+    def empty(cls) -> _NodeOpAccumulator:
         return cls(ops=[], ops_by_node={})
 
 
@@ -469,6 +469,27 @@ def _emit_node_ops(
                     f"generator for {node.node_type!r} emitted non-ShapeOp "
                     f"value {type(op).__name__}"
                 )
+            # Apply auto-graph positioning to primitive ops. The
+            # construction-graph node may carry ``position_cm`` in its
+            # raw attributes (see
+            # ``_auto_graph_from_parts`` /
+            # ``_infer_position_cm``). The kernel reads ``center`` on
+            # every primitive (cube, capsule, cylinder, etc.) so we
+            # thread the position through here — without touching
+            # generators individually. Skips ops that already set
+            # ``center`` (the generator's own placement wins) and
+            # non-primitive ops (op.union, op.bevel, etc.).
+            if op.op.startswith("solid.") and "center" not in op.parameters:
+                raw_attrs = getattr(node, "raw_attributes", None)
+                if isinstance(raw_attrs, Mapping):
+                    position = raw_attrs.get("position_cm")
+                    if position is not None:
+                        try:
+                            coords = tuple(float(v) for v in position)
+                            if len(coords) == 3:
+                                op.parameters["center"] = coords
+                        except (TypeError, ValueError):
+                            pass
             emitted.append(op)
             acc.ops.append(op)
             trace.emit(

@@ -309,6 +309,63 @@ def _scale_to_dimensions(scale_value: Any) -> dict[str, float]:
     return dict(_DEFAULT_PRIMARY_VOLUME_DIMENSIONS_CM)
 
 
+def _infer_position_cm(
+    part_name: str, dimensions: dict[str, float]
+) -> tuple[float, float, float] | None:
+    """Infer a part center position from name pattern + body dimensions.
+
+    Returns a (x, y, z) tuple placing the part outside the body's
+    bounding box (origin-centered ``dimensions_cm``) by ``+offset`` cm,
+    or None when the name carries no positional hint and the part
+    should remain at origin.
+
+    Patterns recognized (case-insensitive substring or suffix matches):
+
+      - ``_l`` / ``left_`` / ``_left`` → on -X face
+      - ``_r`` / ``right_`` / ``_right`` → on +X face
+      - ``_top`` / ``top_`` → on +Z face
+      - ``_bottom`` / ``bottom_`` → on -Z face
+      - ``foot`` / ``feet`` / ``leg`` (no L/R suffix) → centered on -Y face
+      - ``handle`` (no L/R suffix) → on +Z (top) face
+      - ``latch`` / ``lock`` / ``hasp`` → on +Y (front) face
+      - ``hinge`` → on +X face
+      - ``door_leaf`` / ``panel`` / ``leaf`` → on +Y face
+      - ``threshold`` → on -Y face
+
+    Heuristic only. Returns None when the name has no positional hint
+    so the generator falls back to origin.
+    """
+    half_x = float(dimensions.get("x", 30.0)) / 2.0
+    half_y = float(dimensions.get("y", 30.0)) / 2.0
+    half_z = float(dimensions.get("z", 30.0)) / 2.0
+    standoff = 3.0  # cm — push parts this far past the body bounding face
+
+    name = part_name.lower()
+
+    # Most specific patterns first.
+    if name.endswith("_l") or "_left" in name or name.startswith("left_"):
+        return (-half_x - standoff, 0.0, 0.0)
+    if name.endswith("_r") or "_right" in name or name.startswith("right_"):
+        return (half_x + standoff, 0.0, 0.0)
+    if name.endswith("_top") or name.startswith("top_") or "_top_" in name:
+        return (0.0, 0.0, half_z + standoff)
+    if name.endswith("_bottom") or name.startswith("bottom_") or "_bottom_" in name:
+        return (0.0, 0.0, -half_z - standoff)
+    if "foot" in name or "feet" in name or name.endswith("_leg"):
+        return (0.0, -half_y - standoff, 0.0)
+    if "threshold" in name:
+        return (0.0, -half_y - standoff, 0.0)
+    if "hinge" in name:
+        return (half_x + standoff, 0.0, 0.0)
+    if "latch" in name or "lock" in name or "hasp" in name:
+        return (0.0, half_y + standoff, 0.0)
+    if "door_leaf" in name or "leaf" in name or name.endswith("_panel"):
+        return (0.0, half_y + standoff, 0.0)
+    if "handle" in name:
+        return (0.0, 0.0, half_z + standoff)
+    return None
+
+
 def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
     """Synthesize a minimum construction_graph from authored intent.parts.
 
@@ -319,6 +376,12 @@ def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
     primary_volume node and carries the asset's scale-derived
     dimensions. Other parts become NODE_TYPE nodes with minimum
     attributes the synthesizer's policy expansion completes.
+
+    Secondary parts also receive a ``position_cm`` attribute inferred
+    from their name (see :func:`_infer_position_cm`). Generators that
+    honour ``position_cm`` translate the primitive's ``center`` into
+    that point, placing visible features around the body's bounding
+    box rather than buried inside it at origin.
 
     Returns an empty graph when no parts are authored. This is the
     Phase B Sprint 0 capstone — it lets every .lth that lists parts
@@ -351,6 +414,9 @@ def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
             }
         else:
             attributes = _auto_attributes_for(node_type, part_name)
+            position = _infer_position_cm(part_name, dimensions)
+            if position is not None:
+                attributes["position_cm"] = position
         nodes.append({
             "node_id": part_name,
             "node_type": node_type,
