@@ -652,6 +652,8 @@ recorded.
 
 ## 10. Verification commands (for an external auditor to re-run)
 
+### 10.1 Targeted gates on the host venv (Python 3.14 in this checkout)
+
 ```text
 .venv-win/Scripts/python.exe -m ruff check .
 .venv-win/Scripts/python.exe -m pytest -q tests/unit/test_docs_static_audit.py
@@ -665,16 +667,59 @@ recorded.
 .venv-win/Scripts/python.exe -m pytest -q tests/unit/test_public_surface.py \
     tests/unit/test_quality_gate_wiring.py \
     tests/unit/test_asset_quality_baseline_report_shape.py
+.venv-win/Scripts/python.exe -m pytest -q tests/unit/test_scene_materialize.py \
+    tests/unit/test_scatter_on_surface_ops.py
 .venv-win/Scripts/python.exe -m lathe.cli check examples/industrial_crate.lth
 .venv-win/Scripts/python.exe -m lathe.cli check examples/mechanical_door.lth
-.venv-311/Scripts/python.exe -m ruff check .
-.venv-311/Scripts/python.exe -m pytest -q <targeted-lane>
-.venv-312/Scripts/python.exe -m ruff check .
-.venv-312/Scripts/python.exe -m pytest -q <targeted-lane>
+.venv-win/Scripts/python.exe -m mkdocs build --strict
+.venv-win/Scripts/python.exe scripts/check_release_metadata.py
+.venv-win/Scripts/python.exe -m build --sdist --wheel
+.venv-win/Scripts/python.exe -m twine check dist/lathe-0.2.0rc1.tar.gz dist/lathe-0.2.0rc1-py3-none-any.whl
 ```
 
-All command transcripts above are reproducible against the current working
-tree at HEAD on branch `main`.
+### 10.2 Wedge asset builds (real artifacts under `.tmp_tests/`)
+
+```text
+.venv-win/Scripts/python.exe -m lathe.cli build \
+    examples/industrial_crate.lth industrial_crate \
+    --out .tmp_tests/audit_verify_crate --deterministic \
+    --runtime-config .tmp_tests/wedge_runtime_config.json
+
+.venv-win/Scripts/python.exe -m lathe.cli build \
+    examples/mechanical_door.lth mechanical_door \
+    --out .tmp_tests/audit_verify_door --deterministic \
+    --runtime-config .tmp_tests/wedge_runtime_config.json
+```
+
+Both runs complete through `validate/report.json` with real artifacts
+in every stage directory (see §4.1 / §4.2 inventories). Both exit
+non-zero with `code: lathe.cli.build.build_failed` because the
+authored quality threshold (0.84) is higher than the synthesizer's
+current score (~0.574). That CLI-emitted failure is the pipeline's
+honest reporting state; it is not a hang.
+
+### 10.3 Clean-worktree matrix (audit closure for High-2)
+
+```text
+git worktree add .worktrees/audit-verify audit-verify
+<uv-python-3.11-install>/python.exe -m venv .worktrees/audit-verify/.venv-311
+<uv-python-3.12-install>/python.exe -m venv .worktrees/audit-verify/.venv-312
+(cd .worktrees/audit-verify && .venv-311/Scripts/python.exe -m pip install -e .[dev] manifold3d)
+(cd .worktrees/audit-verify && .venv-312/Scripts/python.exe -m pip install -e .[dev] manifold3d)
+(cd .worktrees/audit-verify && .venv-311/Scripts/python.exe -m ruff check .)
+(cd .worktrees/audit-verify && .venv-312/Scripts/python.exe -m ruff check .)
+(cd .worktrees/audit-verify && .venv-311/Scripts/python.exe -m pytest -q \
+    tests/unit/test_docs_static_audit.py tests/unit/test_asset_quality_preview_evidence.py \
+    tests/unit/test_asset_quality_diagnostics.py tests/unit/test_asset_quality_generation_steering.py \
+    tests/unit/test_shape_ir_v2.py tests/unit/test_asset_quality_grammar_lowering.py \
+    tests/unit/test_geometry_kernel.py tests/contract/test_shape_handoff_v1.py \
+    tests/unit/test_scene_materialize.py tests/unit/test_scatter_on_surface_ops.py)
+(cd .worktrees/audit-verify && .venv-312/Scripts/python.exe -m pytest -q <same 10 files>)
+```
+
+All commands above are reproducible against the `stabilization-p0-p1`
+branch at commit `b112164` (or its descendant `4cfcc5a` which contains
+the report-only updates that record the verification results).
 
 ## 11. Non-edits and out-of-scope
 
