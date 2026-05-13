@@ -1,0 +1,43 @@
+{
+  "id": "terminal_v1",
+  "asset_class": "terminal",
+  "description": "Class-anchor rubric for terminal / kiosk / control-panel assets. Checks pedestal body + screen face + button panel + ports.",
+  "minimum_pass_fraction": 0.55,
+  "checks": [
+    {
+      "evidence_key": "pedestal_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "primary_volume"},
+      "severity": "required"
+    },
+    {
+      "evidence_key": "screen_face_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "panel"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "button_or_socket_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "socket"},
+      "severity": "soft"
+    },
+    {
+      "evidence_key": "material_separation",
+      "check_kind": "material_zone_count_at_least",
+      "parameters": {"min": 1},
+      "severity": "required"
+    },
+    {
+      "evidence_key": "scale_plausibility_terminal",
+      "check_kind": "bounding_volume_in_range",
+      "parameters": {
+        "x_range_cm": [30.0, 150.0],
+        "y_range_cm": [25.0, 100.0],
+        "z_range_cm": [80.0, 200.0]
+      },
+      "severity": "required"
+    }
+  ]
+}

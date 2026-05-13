@@ -29,6 +29,7 @@ from ...validators.composition import (
     build_urdf_validator,
 )
 from ...validators.edge_treatment_coverage import evaluate_edge_treatment_coverage
+from ...validators.class_anchor import evaluate_class_anchor
 from ...validators.featureless_silhouette import evaluate_featureless_silhouette
 from ...validators.named_part_preservation import evaluate_named_part_preservation
 from ...validators.flow_quality import evaluate_flow_quality
@@ -95,6 +96,12 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="named_part_preservation",
             fn=evaluate_named_part_preservation,
+            stage_dependencies=["shape", "topology"],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="class_anchor",
+            fn=evaluate_class_anchor,
             stage_dependencies=["shape", "topology"],
             weight=0.0,
         ),
