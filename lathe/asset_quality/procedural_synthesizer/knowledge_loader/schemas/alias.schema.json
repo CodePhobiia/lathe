@@ -30,6 +30,16 @@
     "description": {
       "type": "string",
       "description": "Human-readable summary. Audit-only."
+    },
+    "morphology_profile_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional — references a MorphologyProfile pack at std/procedural/knowledge/morphology/<id>.json. Carries typed body archetype, parts ladder, anchor emitters, default relations. Replaces _KIND_ASPECT hardcoded aspect maps."
+    },
+    "visual_language_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional — references a VisualLanguage pack at std/procedural/knowledge/visual_language/<id>.json. Carries silhouette bias, motifs, palette, materials, wear, feature weight overrides — orthogonal to morphology."
     }
   }
 }

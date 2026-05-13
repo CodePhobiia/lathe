@@ -317,8 +317,68 @@ def _aspect_for_kind(kind: Any) -> tuple[float, float, float]:
     return _DEFAULT_ASPECT
 
 
+def _aspect_for_morphology(profile_id: str | None) -> tuple[float, float, float] | None:
+    """Return aspect from a MorphologyProfile's body.expected_aspect.
+
+    Uses the midpoint of each axis range. Returns None when the
+    profile is missing or unknown — caller should fall back to kind
+    aspect. This is the contract surface for ``lathe.knowledge.
+    morphology_profile_v1``: morphology aspect takes priority over
+    the legacy ``_KIND_ASPECT`` map.
+    """
+    if not profile_id:
+        return None
+    try:
+        from ..asset_quality.procedural_synthesizer.knowledge_loader.morphology import (
+            load_all_morphology_profiles,
+        )
+    except Exception:
+        return None
+    try:
+        profiles = load_all_morphology_profiles()
+    except Exception:
+        return None
+    profile = profiles.get(profile_id)
+    if profile is None:
+        return None
+    bounds = profile.body.aspect_bounds
+    try:
+        x_mid = (bounds["x"][0] + bounds["x"][1]) / 2.0
+        y_mid = (bounds["y"][0] + bounds["y"][1]) / 2.0
+        z_mid = (bounds["z"][0] + bounds["z"][1]) / 2.0
+        return (x_mid, y_mid, z_mid)
+    except (KeyError, IndexError, TypeError):
+        return None
+
+
+def _morphology_profile_id_for_asset(asset: dict[str, Any]) -> str | None:
+    """Resolve the morphology profile id for an asset via its FamilyAlias."""
+    family = _asset_family_token(asset)
+    if not family:
+        return None
+    try:
+        from ..asset_quality.procedural_synthesizer.knowledge_loader import (
+            load_all_alias_packs,
+        )
+    except Exception:
+        return None
+    try:
+        packs = load_all_alias_packs()
+    except Exception:
+        return None
+    alias = packs.get(family)  # no-family-dispatch: alias-pack lookup
+    if alias is None and family.endswith("_family"):
+        stem = family[: -len("_family")]
+        alias = packs.get(stem)  # no-family-dispatch: stem fallback
+    if alias is None:
+        return None
+    return getattr(alias, "morphology_profile_id", None)
+
+
 def _scale_to_dimensions(
-    scale_value: Any, kind: Any = None
+    scale_value: Any,
+    kind: Any = None,
+    morphology_aspect: tuple[float, float, float] | None = None,
 ) -> dict[str, float]:
     """Translate an authored ``scale`` field into per-axis dimensions.
 
@@ -335,7 +395,8 @@ def _scale_to_dimensions(
 
     Returns the default 30cm cube when nothing parseable is present.
     """
-    aspect = _aspect_for_kind(kind)
+    # Morphology aspect takes priority over kind aspect.
+    aspect = morphology_aspect if morphology_aspect is not None else _aspect_for_kind(kind)
     if isinstance(scale_value, dict):
         # Two shapes accepted:
         #   1. explicit dimensions: {x, y, z} or {width_cm, height_cm, depth_cm}
@@ -468,7 +529,19 @@ def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
     # Lazy import to avoid cycles at module import time.
     from ..asset_quality.construction_graph import _classify_part
 
-    dimensions = _scale_to_dimensions(intent.get("scale"), kind=asset.get("kind"))
+    # Morphology profile aspect takes priority over _KIND_ASPECT.
+    # If the asset's family alias declares a morphology_profile_id and
+    # the profile exists, its body.expected_aspect midpoints become the
+    # axis ratios. Otherwise we fall back to the legacy kind map.
+    morphology_aspect = _aspect_for_morphology(
+        _morphology_profile_id_for_asset(asset)
+    )
+    if morphology_aspect is not None:
+        dimensions = _scale_to_dimensions(
+            intent.get("scale"), kind=asset.get("kind"), morphology_aspect=morphology_aspect
+        )
+    else:
+        dimensions = _scale_to_dimensions(intent.get("scale"), kind=asset.get("kind"))
     nodes: list[dict[str, Any]] = []
     has_primary_volume = False
     for part_name in parts:

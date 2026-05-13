@@ -5,5 +5,7 @@
     "panelized_hard_surface_object"
   ],
   "domain": "hard_surface",
-  "description": "Industrial crate fixture (Sprint 0 hero \u2014 body shell volume, lid seam panel, 8 corner guards, latch-plate inset, paired handles, foot rails, trim band, fastener grid, warning decal zone, edge wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+  "description": "Industrial crate fixture (Sprint 0 hero \u2014 body shell volume, lid seam panel, 8 corner guards, latch-plate inset, paired handles, foot rails, trim band, fastener grid, warning decal zone, edge wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py.",
+  "morphology_profile_id": "container_crate_morphology_v1",
+  "visual_language_id": "utility_industrial_v1"
 }

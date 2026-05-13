@@ -31,8 +31,14 @@ class FamilyAlias:
     """Pure metadata pointer from family name to (style, policies, domain).
 
     Cannot add structural nodes. Cannot reference code. Cannot influence
-    behavior beyond selecting which style and policy packs the
-    synthesizer loads.
+    behavior beyond selecting which style, policy, morphology, and
+    visual-language packs the synthesizer loads.
+
+    ``morphology_profile_id`` and ``visual_language_id`` were added with
+    the placement_binding / morphology contracts (newresearch §2 + §14).
+    Both are optional — aliases without them continue to function with
+    the legacy ``_KIND_ASPECT`` fallback and the previous style-only
+    visual handling.
     """
 
     family_id: str
@@ -40,6 +46,8 @@ class FamilyAlias:
     policy_ids: tuple[str, ...]
     domain: str
     description: str = ""
+    morphology_profile_id: str | None = None
+    visual_language_id: str | None = None
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> FamilyAlias:
@@ -49,6 +57,16 @@ class FamilyAlias:
             policy_ids=tuple(str(p) for p in raw.get("policy_ids") or ()),
             domain=str(raw["domain"]),
             description=str(raw.get("description") or ""),
+            morphology_profile_id=(
+                str(raw["morphology_profile_id"])
+                if raw.get("morphology_profile_id")
+                else None
+            ),
+            visual_language_id=(
+                str(raw["visual_language_id"])
+                if raw.get("visual_language_id")
+                else None
+            ),
         )
 
 

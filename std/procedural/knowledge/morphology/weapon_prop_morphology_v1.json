@@ -1,0 +1,35 @@
+{
+  "id": "weapon_prop_morphology_v1",
+  "description": "Hand-held weapon / tool prop morphology. Elongated body with grip + barrel/blade + mounting features.",
+  "domain": "hard_surface",
+  "body": {
+    "archetype": "elongated_body",
+    "long_axis": "X",
+    "expected_aspect": {
+      "x": [1.0, 1.0],
+      "y": [0.08, 0.25],
+      "z": [0.08, 0.25]
+    }
+  },
+  "parts_ladder": [
+    {"role": "primary_shaft", "required": true, "min_count": 1, "max_count": 1, "node_type": "primary_volume"},
+    {"role": "grip", "required": true, "min_count": 1, "max_count": 1, "node_type": "handle"},
+    {"role": "guard", "required": false, "min_count": 0, "max_count": 1, "node_type": "guard"},
+    {"role": "tip_or_head", "required": true, "min_count": 1, "max_count": 1, "node_type": "panel"},
+    {"role": "pommel_or_base", "required": false, "min_count": 0, "max_count": 1, "node_type": "mount"},
+    {"role": "decorative_trim", "required": false, "min_count": 0, "max_count": 3, "node_type": "trim"},
+    {"role": "primary_material", "required": true, "min_count": 1, "max_count": 1, "node_type": "material_zone"}
+  ],
+  "anchor_emitters": [
+    {"role": "grip_anchor", "selector": "rear_axis_face"},
+    {"role": "guard_anchor", "selector": "mid_shaft_collar"},
+    {"role": "tip_anchor", "selector": "front_axis_face"},
+    {"role": "pommel_anchor", "selector": "rear_axis_face"}
+  ],
+  "default_relations": [
+    {"source_role": "grip", "relation": "attached_to", "target_role": "grip_anchor"},
+    {"source_role": "guard", "relation": "attached_to", "target_role": "guard_anchor"},
+    {"source_role": "tip_or_head", "relation": "attached_to", "target_role": "tip_anchor"},
+    {"source_role": "pommel_or_base", "relation": "attached_to", "target_role": "pommel_anchor"}
+  ]
+}
