@@ -223,6 +223,7 @@ convention = "google"
 # annotations. RUF002/RUF003 catch ambiguity between `×` and `x`, which is not a
 # realistic ambiguity in this codebase's geometry context.
 "lathe/shape_ir.py" = ["RUF002", "RUF003"]
+"lathe/shape/procedural_program_path.py" = ["RUF002"]
 "lathe/std/terrain/heightfield.py" = ["RUF002"]
 "lathe/std/vegetation/imposter.py" = ["RUF002"]
 "lathe/std/vegetation/lod.py" = ["RUF002"]
