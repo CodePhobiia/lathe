@@ -91,6 +91,63 @@ from .runtime_cook import (
     RuntimeArtifactManifest,
     cook_runtime_artifact,
 )
+from .strict_geometry_mode import (
+    STRICT_GEOMETRY_MODE_VERSION,
+    StrictGeometryDiagnostic,
+    StrictGeometryReport,
+    evaluate_strict_geometry,
+    strict_mode_enabled,
+)
+from .mesh_levelset_repair import (
+    MESH_LEVELSET_REPAIR_VERSION,
+    LevelsetRepairReport,
+    LevelsetRepairRequest,
+    perform_levelset_repair,
+)
+from .oklab import (
+    OKLAB_VERSION,
+    OklabColor,
+    oklab_mix,
+    oklab_ramp,
+    oklab_to_srgb_hex,
+    srgb_hex_to_oklab,
+)
+from .materialx_lowering import (
+    MATERIALX_LOWERING_VERSION,
+    MaterialxDocument,
+    MaterialxMaterial,
+    TextureMapSidecar,
+    build_colorspace_sidecars,
+    lower_material_zone_manifest_to_materialx,
+)
+from .constrained_packing import (
+    CONSTRAINED_PACKING_VERSION,
+    PackingReport,
+    UvChartPlacement,
+    UvChartRequest,
+    pack_uv_charts,
+)
+from .distribution import (
+    DISTRIBUTION_VERSION,
+    DistributionParameters,
+    DistributionPlacement,
+    DistributionReport,
+    distribute_along_path,
+    distribute_arc,
+)
+from .repair_rollback import (
+    REPAIR_ROLLBACK_VERSION,
+    RepairLoopResult,
+    RepairRoundResult,
+    RepairSnapshot,
+    run_repair_with_rollback,
+)
+from .style_bands import (
+    ALL_BANDS,
+    STYLE_BANDS_VERSION,
+    StyleBand,
+    lookup_style_band,
+)
 from .style_pack import (
     STYLE_PACK_VERSION,
     LowPolyFantasyPalette,
@@ -153,4 +210,51 @@ __all__ = [
     "LowPolyFantasyPalette",
     "StylePack",
     "lowpoly_fantasy_sunset_crystal",
+    # Lane A additions
+    "STRICT_GEOMETRY_MODE_VERSION",
+    "StrictGeometryDiagnostic",
+    "StrictGeometryReport",
+    "evaluate_strict_geometry",
+    "strict_mode_enabled",
+    "MESH_LEVELSET_REPAIR_VERSION",
+    "LevelsetRepairReport",
+    "LevelsetRepairRequest",
+    "perform_levelset_repair",
+    # Lane C additions
+    "DISTRIBUTION_VERSION",
+    "DistributionParameters",
+    "DistributionPlacement",
+    "DistributionReport",
+    "distribute_along_path",
+    "distribute_arc",
+    # Lane D additions
+    "OKLAB_VERSION",
+    "OklabColor",
+    "oklab_mix",
+    "oklab_ramp",
+    "oklab_to_srgb_hex",
+    "srgb_hex_to_oklab",
+    "MATERIALX_LOWERING_VERSION",
+    "MaterialxDocument",
+    "MaterialxMaterial",
+    "TextureMapSidecar",
+    "build_colorspace_sidecars",
+    "lower_material_zone_manifest_to_materialx",
+    # Lane F additions
+    "CONSTRAINED_PACKING_VERSION",
+    "PackingReport",
+    "UvChartPlacement",
+    "UvChartRequest",
+    "pack_uv_charts",
+    # Lane H additions
+    "REPAIR_ROLLBACK_VERSION",
+    "RepairLoopResult",
+    "RepairRoundResult",
+    "RepairSnapshot",
+    "run_repair_with_rollback",
+    # Style bands
+    "STYLE_BANDS_VERSION",
+    "StyleBand",
+    "ALL_BANDS",
+    "lookup_style_band",
 ]
