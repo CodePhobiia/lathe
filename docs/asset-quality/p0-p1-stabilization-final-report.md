@@ -420,11 +420,47 @@ Plan §10 done criterion #7 is now satisfied without the
 
 ### 6.3 Full-suite results
 
-Both `python -m pytest -q --tb=no` invocations were attempted twice in
-this pass plus a parallel host-venv run for comparison. All three runs
-spent the majority of their wall-clock time inside the same test family
-that hits the documented kernel-performance gap, and were terminated
-manually after exceeding the session's time budget.
+A fourth attempt was launched after the audit-pass corrections landed
+(commit `b112164` + `4cfcc5a` + `7adbbcc` on the
+`stabilization-p0-p1` branch). It used the host `.venv-win` venv with
+all P0/P1 fixes in place. Result:
+
+```text
+.venv-win/Scripts/python.exe -m pytest -q --tb=no
+  → 59 min wall, ~66 CPU min, reached approximately [12%] before
+    being terminated manually. Captured progress dots show the same
+    alphabetical failure cluster at the ~11% mark that the previous
+    three full-suite runs hit:
+      ...................................................F.................... [  2%]
+      ........................................................................ [  4%]
+      ........................................................................ [  7%]
+      ..................................................................... [  9%]
+      ...FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 11%]
+      FF...........................
+```
+
+The cluster of `F`s at 11% is the same alphabetical position that
+showed up on every prior full-suite run in this session: the
+`tests/integration/test_recipe_migration_build_artifact_diff.py
+::test_family_alias_drives_valid_synthesizer_program[<family>]` parametrized
+test family. Each parameter case does a real lathe build of one family,
+and many families currently emit fewer ops than the test asserts (the
+`accessibility_ux_affordance_bundle` case the audit specifically
+flagged is one of those). This is a synthesizer op-count gap, not the
+kernel-perf gap that the manifold engine pin fixed. The earlier `git
+stash` baseline run confirmed at least the
+`accessibility_ux_affordance_bundle` case was failing on the
+**untouched** baseline, so it predates this pass's edits.
+
+Three previous attempts (one before audit-fixes on the dirty worktree,
+one matrix attempt across .venv-311 / .venv-312 / host before
+manifold3d was installed in the matrix venvs, and one after) all hit
+this same cluster. The full-suite is therefore **partially blocked**
+by a known synthesizer / op-count drift that the rest of this audit-pass
+deliberately did not attempt to close (it is in the synthesizer layer,
+not in P0 stabilization scope). The targeted lane runs in §6.1 / §6.2
+already cover every test the audit's done-criteria call out, and they
+all pass.
 
 **First matrix attempt (02:17–03:35 local).** Run against `.venv-311`
 and `.venv-312` which had only `[dev]` extras installed (no `geometry`
