@@ -35,7 +35,6 @@ from ..mesh_finalize import finalize_mesh_ir
 from ..scaffold_compiler import _game_pipeline_hints, _make_color
 from ..shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
 
-
 __all__ = [
     "compile_procedural_program_candidate",
     "runtime_from_asset",
@@ -47,9 +46,10 @@ def _asset_family_token(asset: dict[str, Any]) -> str | None:
     """Return the asset's resolved family name (or None).
 
     Looks in priority order:
-      - asset.build.shape.procedural.brief.family
-      - asset.intent.family
-      - asset.family (top-level)
+      - asset.build.shape.procedural.brief.family   (procedural brief override)
+      - asset.intent.family                          (intent declaration)
+      - asset.family                                 (legacy top-level)
+      - asset.from                                   (canonical ``from <family>`` declaration)
     """
     if not isinstance(asset, dict):
         return None
@@ -69,11 +69,19 @@ def _asset_family_token(asset: dict[str, Any]) -> str | None:
     family = asset.get("family")
     if isinstance(family, str) and family:
         return family
+    from_family = asset.get("from")
+    if isinstance(from_family, str) and from_family:
+        return from_family
     return None
 
 
 def _family_alias_exists(family: str) -> bool:
     """Return True iff a FamilyAlias JSON is registered for ``family``.
+
+    Accepts either the canonical family stem (``industrial_crate``) or
+    the ``from``-clause form (``industrial_crate_family``); the latter
+    is the .lth source convention. The alias registry is keyed by the
+    stem (``family_id`` in the JSON), so we try both forms.
 
     Loaded lazily — the procedural_synthesizer package caches the
     alias pack mapping at import-time, so this is O(1) after first
@@ -88,7 +96,16 @@ def _family_alias_exists(family: str) -> bool:
         packs = load_all_alias_packs()
     except Exception:
         return False
-    return family in packs  # no-family-dispatch: membership check against the declarative FamilyAlias pack registry — this IS the metadata-only family-to-(style/policies/domain) lookup the procedural synthesizer was built to enable; no behavior is keyed on the family name itself, only on the alias's resolved style + policy + domain
+    if family in packs:  # no-family-dispatch: membership check against the declarative FamilyAlias pack registry — this IS the metadata-only family-to-(style/policies/domain) lookup the procedural synthesizer was built to enable; no behavior is keyed on the family name itself, only on the alias's resolved style + policy + domain
+        return True
+    # Source convention strips the ``_family`` suffix when declaring an
+    # alias JSON; accept the stem form too so ``from foo_family`` hits
+    # the ``foo`` alias.
+    if family.endswith("_family"):
+        stem = family[: -len("_family")]
+        if stem in packs:  # no-family-dispatch: same registry, stem form
+            return True
+    return False
 
 
 def _asset_has_authored_parts(asset: dict[str, Any]) -> bool:
@@ -578,10 +595,9 @@ def compile_procedural_program_candidate(
         # Empty primitive list — synthesizer ran but produced nothing
         # the kernel can build. Caller falls through to scaffold compiler.
         raise RuntimeError(
-            "procedural synthesizer produced no convertible primitives "
-            "(shape_program.ops=%d, v1_records=%d). Construction graph "
-            "may be empty or generators unsupported."
-            % (len(shape_program.ops), len(adapter.v1_records))
+            f"procedural synthesizer produced no convertible primitives "
+            f"(shape_program.ops={len(shape_program.ops)}, v1_records={len(adapter.v1_records)}). "
+            f"Construction graph may be empty or generators unsupported."
         )
 
     primitives_used = sorted({primitive.primitive_type for primitive in primitives})
