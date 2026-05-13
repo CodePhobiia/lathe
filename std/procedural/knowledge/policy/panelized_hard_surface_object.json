@@ -13,15 +13,15 @@
   "expansions": [
     {
       "add_node_type": "bracket",
-      "count": 2,
-      "placement": {"role": "corner_guard", "pattern": "two_corners"},
+      "count": 4,
+      "placement": {"role": "corner_guard", "pattern": "four_corners"},
       "attributes_template": {
         "profile": "l_bracket",
-        "leg_length_cm": 4.0,
-        "leg_width_cm": 2.0,
-        "thickness_cm": 0.4,
+        "leg_length_cm": 5.0,
+        "leg_width_cm": 2.5,
+        "thickness_cm": 0.5,
         "orientation": "xy",
-        "fillet_cm": 0.2,
+        "fillet_cm": 0.3,
         "region_id": "corner_guard"
       },
       "edges_to_existing": [
@@ -30,15 +30,15 @@
     },
     {
       "add_node_type": "fastener",
-      "count": 1,
-      "placement": {"role": "fastener_grid", "pattern": "front_face_anchor"},
+      "count": 6,
+      "placement": {"role": "fastener_grid", "pattern": "front_face_grid"},
       "attributes_template": {
         "kind": "rivet",
-        "head_radius_cm": 0.4,
-        "head_height_cm": 0.5,
-        "shaft_radius_cm": 0.2,
-        "shaft_length_cm": 0.8,
-        "axis": "z",
+        "head_radius_cm": 0.5,
+        "head_height_cm": 0.6,
+        "shaft_radius_cm": 0.25,
+        "shaft_length_cm": 1.0,
+        "axis": "y",
         "region_id": "fastener_grid"
       },
       "edges_to_existing": [

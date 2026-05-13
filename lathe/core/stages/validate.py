@@ -29,6 +29,7 @@ from ...validators.composition import (
     build_urdf_validator,
 )
 from ...validators.edge_treatment_coverage import evaluate_edge_treatment_coverage
+from ...validators.featureless_silhouette import evaluate_featureless_silhouette
 from ...validators.flow_quality import evaluate_flow_quality
 from ...validators.geometry_integrity import evaluate_geometry_integrity
 from ...validators.semantic_quality import evaluate_semantic_quality
@@ -81,6 +82,12 @@ _PIPELINE = ValidatorPipeline(
         FunctionValidator(
             name="edge_treatment_coverage",
             fn=evaluate_edge_treatment_coverage,
+            stage_dependencies=["shape", "topology"],
+            weight=0.0,
+        ),
+        FunctionValidator(
+            name="featureless_silhouette",
+            fn=evaluate_featureless_silhouette,
             stage_dependencies=["shape", "topology"],
             weight=0.0,
         ),

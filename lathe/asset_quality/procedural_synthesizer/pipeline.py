@@ -151,17 +151,48 @@ def _normalize_graph(ctx: SynthesizerContext, trace: TraceBuilder) -> _Normalize
 
 
 def _resolve_count(raw_count: Any, brief: Mapping[str, Any]) -> int:
+    """Resolve a policy-expansion count, applying ``brief.density`` as a multiplier.
+
+    Density is a non-family knob: 1.0 is the canonical base, >1 produces
+    more secondary features (more fasteners, more brackets), <1 produces
+    fewer. Used so the same policy JSON can produce sparse "factory new"
+    or dense "industrial heavy duty" outputs without per-policy variants.
+    The multiplier rounds half-up; a base count of 1 with density 0.5
+    stays at 1 to keep the minimum-canonical feature present.
+    """
+    raw_density = brief.get("density")
+    try:
+        density = float(raw_density) if raw_density is not None else 1.0
+    except (TypeError, ValueError):
+        density = 1.0
+    if density <= 0:
+        density = 1.0
+
     if isinstance(raw_count, int):
-        return max(0, raw_count)
-    if isinstance(raw_count, Mapping):
+        base = max(0, raw_count)
+    elif isinstance(raw_count, Mapping):
         field_name = raw_count.get("from_brief_field")
         default = int(raw_count.get("default") or 0)
         if isinstance(field_name, str):
             value = brief.get(field_name)
             if isinstance(value, int):
-                return max(0, value)
-        return default
-    return 1
+                base = max(0, value)
+            else:
+                base = default
+        else:
+            base = default
+    else:
+        base = 1
+
+    if base == 0:
+        return 0
+    scaled = int(round(base * density))
+    # Minimum-canonical preservation: if the base authored count is 1+
+    # and density tries to round it to 0, keep 1 so the canonical feature
+    # is at least present.
+    if base >= 1 and scaled <= 0:
+        return 1
+    return scaled
 
 
 def _body_dimensions_from_graph(

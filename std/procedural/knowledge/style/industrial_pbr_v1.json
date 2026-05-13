@@ -20,10 +20,10 @@
   },
   "parameter_priors": {
     "primary_volume": {
-      "rounding_cm": 0.4,
+      "rounding_cm": 1.2,
       "edge_treatment": "beveled",
-      "edge_treatment_width_cm": 0.6,
-      "edge_treatment_segments": 3
+      "edge_treatment_width_cm": 1.5,
+      "edge_treatment_segments": 5
     },
     "panel": {
       "inset_depth_cm": 0.4,
