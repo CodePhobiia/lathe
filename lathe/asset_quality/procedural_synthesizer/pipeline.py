@@ -186,7 +186,7 @@ def _resolve_count(raw_count: Any, brief: Mapping[str, Any]) -> int:
 
     if base == 0:
         return 0
-    scaled = int(round(base * density))
+    scaled = round(base * density)
     # Minimum-canonical preservation: if the base authored count is 1+
     # and density tries to round it to 0, keep 1 so the canonical feature
     # is at least present.
@@ -287,6 +287,11 @@ def _position_for_policy_pattern(
         z_step = body_dims["z"] / (count + 1)
         z = -half_z + z_step * (index + 1)
         return (0.0, half_y + standoff, z)
+    if pattern == "front_face_belt":
+        # Single horizontal trim wrapping the front face at mid-height.
+        return (0.0, half_y + standoff, 0.0)
+    if pattern == "back_face_belt":
+        return (0.0, -half_y - standoff, 0.0)
     return None
 
 
@@ -338,8 +343,8 @@ def _expand_policies(
                 # at origin and gets buried inside the body. Recognized
                 # patterns include two_corners, four_corners,
                 # eight_corners, front/back/top/bottom/left/right
-                # face anchors, and front_face_grid. Unrecognized
-                # patterns fall through (node stays at origin).
+                # face anchors, front_face_grid, and front/back_face_belt.
+                # Unrecognized patterns fall through (node stays at origin).
                 if body_dims is not None and "position_cm" not in attrs:
                     pattern_value = expansion.placement.get("pattern")
                     if isinstance(pattern_value, str):
@@ -348,6 +353,16 @@ def _expand_policies(
                         )
                         if pos is not None:
                             attrs["position_cm"] = pos
+                # Body-aware length resolution: policies declare
+                # ``length_from_body: "x" | "y" | "z"`` to mark
+                # length-like attributes that should match a body
+                # axis at expansion time. Without this, a trim band
+                # with hard-coded ``length_cm: 30.0`` clips to 30cm
+                # on every asset regardless of body size.
+                if body_dims is not None:
+                    length_axis = expansion.placement.get("length_from_body")
+                    if isinstance(length_axis, str) and length_axis in body_dims:
+                        attrs["length_cm"] = float(body_dims[length_axis])
                 added_node = {
                     "node_id": new_node_id,
                     "node_type": expansion.add_node_type,
