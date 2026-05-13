@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
+from collections.abc import Mapping
 from typing import Any
 
 from ..asset_graph import AssetGraph
@@ -511,6 +512,100 @@ def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
     return {"nodes": nodes, "edges": [], "auto_synthesized": True}
 
 
+# Region-id → (r, g, b) palette for material-aware part colouring.
+# Used when face_parts attribution carries a known region_id token.
+# Mirrors the ``palette_for_material`` colors in ``lathe/materials.py``
+# but flattened to RGB tuples (the quick path doesn't bake full PBR).
+# Keys are matched as case-insensitive substrings against part / region
+# names, so ``policy.panelized_hard_surface_object.bracket.0.leg_a``
+# matches on ``bracket`` and gets the brass corner-guard colour.
+_REGION_COLOUR_PALETTE: tuple[tuple[str, tuple[int, int, int]], ...] = (
+    # Specific region IDs from policy expansions.
+    ("corner_guard", (165, 138, 92)),       # warm brass
+    ("fastener_grid", (78, 84, 96)),        # dark gunmetal rivet
+    ("mid_belt", (92, 110, 122)),           # mid blue-grey trim
+    ("trim_band", (92, 110, 122)),
+    ("warning_marker", (218, 168, 60)),     # caution yellow
+    ("edge_wear", (110, 92, 70)),           # worn brown patina
+    ("primary_material", (132, 140, 124)),  # painted steel sage
+    ("material_zone", (132, 140, 124)),     # same as primary_material — zone ops fall through here when face-attributed
+    # NODE_TYPE substring matches (lower priority).
+    ("bracket", (165, 138, 92)),
+    ("fastener", (78, 84, 96)),
+    ("rivet", (78, 84, 96)),
+    ("handle", (148, 134, 118)),            # warm steel
+    ("hinge", (94, 100, 108)),              # cold steel
+    ("latch", (148, 134, 118)),
+    ("foot", (52, 56, 60)),                 # rubber black
+    ("mount", (140, 140, 132)),
+    ("panel", (138, 144, 130)),
+    ("door_leaf", (138, 144, 130)),
+    ("threshold", (88, 88, 84)),
+    ("trim", (92, 110, 122)),
+)
+
+
+def _colour_for_region(name: str) -> tuple[int, int, int] | None:
+    """Resolve a region/part name to a palette colour, or None.
+
+    Performs a case-insensitive substring scan against the palette in
+    declaration order — earlier entries are more specific (concrete
+    region ids) and win over later entries (generic NODE_TYPE matches).
+    """
+    if not isinstance(name, str):
+        return None
+    lower = name.lower()
+    for token, rgb in _REGION_COLOUR_PALETTE:
+        if token in lower:
+            return rgb
+    return None
+
+
+def _resolve_part_colors(
+    asset_graph: AssetGraph,
+    synthesis_result: Any,
+    target_part: str,
+) -> dict[str, tuple[int, int, int]]:
+    """Build the part-name → RGB map for GLB export.
+
+    Order:
+      1. Authored parts (asset_graph.parts) — resolve by name token
+         (handle / foot / latch / etc.) so authored "handle_l" gets
+         the warm steel colour.
+      2. Synthesized policy nodes — resolve by ``region_id`` (the
+         policy template's region_id) or by node_type substring.
+      3. Target part if not yet covered.
+      4. Fallback: ``_make_color`` hash for anything still uncovered.
+
+    The downstream ``export_runtime_scene_glb`` applies these as
+    per-submesh face_colors so the GLB carries material-aware colour
+    even before the full PBR bake.
+    """
+    colours: dict[str, tuple[int, int, int]] = {}
+
+    for part in asset_graph.parts:
+        c = _colour_for_region(part.name)
+        colours[part.name] = c if c is not None else _make_color(part.name)
+
+    synth_nodes = getattr(synthesis_result, "synthesized_graph_nodes", ())
+    for node in synth_nodes:
+        if not isinstance(node, Mapping):
+            continue
+        node_id = str(node.get("node_id") or "")
+        if not node_id:
+            continue
+        attrs = node.get("attributes") if isinstance(node.get("attributes"), Mapping) else {}
+        region_id = attrs.get("region_id") if isinstance(attrs, Mapping) else None
+        # Prefer region_id match (more specific) over node_id token match.
+        c = _colour_for_region(str(region_id) if region_id else node_id)
+        colours[node_id] = c if c is not None else _make_color(node_id)
+
+    if target_part not in colours:
+        c = _colour_for_region(target_part)
+        colours[target_part] = c if c is not None else _make_color(target_part)
+    return colours
+
+
 def runtime_from_asset(asset: dict[str, Any]) -> dict[str, Any]:
     """Construct a synthesizer runtime from authored asset fields.
 
@@ -553,6 +648,28 @@ def runtime_from_asset(asset: dict[str, Any]) -> dict[str, Any]:
         family = _asset_family_token(asset)
         if family:
             brief["family"] = family
+    # B1 — wire authored intent.density into the brief so the
+    # density multiplier in _resolve_count picks it up. Without
+    # this, every asset defaults to density=1.0 regardless of
+    # authored intent.
+    if "density" not in brief and isinstance(intent, dict):
+        for source in (intent.get("density"), intent.get("feature_density")):
+            if isinstance(source, (int, float)) and source > 0:
+                brief["density"] = float(source)
+                break
+    # B1 — surface authored features.allow into the brief so the
+    # synthesizer's policy preconditions and (future) generator
+    # gates can read it. ``features.allow`` is a stable .lth field
+    # listing feature names the asset opts into; ``features.forbid``
+    # is the negative form.
+    features = asset.get("features") if isinstance(asset, dict) else None
+    if isinstance(features, dict):
+        allow_list = features.get("allow")
+        if isinstance(allow_list, list):
+            brief.setdefault("features_allow", [str(x) for x in allow_list if isinstance(x, str)])
+        forbid_list = features.get("forbid")
+        if isinstance(forbid_list, list):
+            brief.setdefault("features_forbid", [str(x) for x in forbid_list if isinstance(x, str)])
 
     construction_graph: dict[str, Any] = {}
     if isinstance(procedural, dict):
@@ -792,9 +909,12 @@ def compile_procedural_program_candidate(
     if not face_parts:
         face_parts = [target_part] * len(mesh.faces)
 
-    part_colors = {part.name: _make_color(part.name) for part in asset_graph.parts}
-    if target_part not in part_colors:
-        part_colors[target_part] = _make_color(target_part)
+    # Part colors: prefer material-zone / region-id derived palettes so
+    # the quick-path GLB carries a coherent material story (painted
+    # steel body, brass corner guards, dark steel rivets) instead of
+    # the previous SHA-derived random muted greys. Falls back to
+    # ``_make_color(part.name)`` when no material context is known.
+    part_colors = _resolve_part_colors(asset_graph, synthesis_result, target_part)
 
     game_pipeline_hints = _game_pipeline_hints(asset_graph, shape_ir)
     integration_report = {
