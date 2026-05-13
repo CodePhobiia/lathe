@@ -200,6 +200,27 @@ def clear_quick_cache() -> int:
     return removed
 
 
+def _zone_atlas_summary(topology_runtime: dict[str, Any]) -> dict[str, Any]:
+    """Surface ZoneAtlas evidence at build_report top level (M3)."""
+    bundle = topology_runtime.get("bundle") if isinstance(topology_runtime, dict) else None
+    if not isinstance(bundle, dict):
+        return {"available": False, "reason": "topology_bundle_missing"}
+    atlas = bundle.get("zone_atlas")
+    if not isinstance(atlas, dict) or not atlas:
+        return {"available": False, "reason": "zone_atlas_absent"}
+    return {
+        "available": True,
+        "version": atlas.get("version", "lathe.surface.zone_binding_v1"),
+        "zone_count": len(atlas.get("zones", [])),
+        "face_count": atlas.get("face_count", 0),
+        "material_classes": sorted({
+            z.get("material_class", "unspecified")
+            for z in atlas.get("zones", [])
+            if isinstance(z, dict)
+        }),
+    }
+
+
 def _uv_evidence_summary(uv_runtime: dict[str, Any]) -> dict[str, Any]:
     """Surface UV / texel-density evidence at build_report top level (B9).
 
@@ -687,6 +708,12 @@ class BuildExecutor:
             # the texel-density audit is buried in stage bundles and
             # invisible to anyone judging the build at a glance.
             "uv_evidence": _uv_evidence_summary(self.runtime.get("uv", {})),
+            # M3 — surface ZoneAtlas evidence at the build_report
+            # top level. Reads from the topology bundle's zone_atlas
+            # (populated by the procedural_program_path lowering).
+            "zone_atlas_summary": _zone_atlas_summary(
+                self.runtime.get("topology", {})
+            ),
             "cache": {
                 "hit": False,
                 "persisted": False,

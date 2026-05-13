@@ -1015,6 +1015,66 @@ def compile_procedural_program_candidate(
     ]
     candidate_score = 0.80
     semantic_zone_records = _extract_semantic_zone_records(shape_program)
+
+    # M3 — ZoneAtlas attribution. Build a ZoneAtlas from face_parts +
+    # the synthesizer's region_ids so the topology / surface / package
+    # stages can group faces by zone for material slot emission, UV
+    # policy, decal placement, wear-mask attribution. The atlas is the
+    # contract surface lathe.surface.zone_binding_v1 defines.
+    zone_atlas_payload: dict[str, Any] = {}
+    try:
+        from ..surface_graph.zone_binding import atlas_from_face_parts
+
+        # Build region/material maps from the synthesized graph nodes.
+        region_id_by_part: dict[str, str] = {}
+        material_by_region: dict[str, str] = {}
+        for node in synthesis_result.synthesized_graph_nodes:
+            if not isinstance(node, Mapping):
+                continue
+            node_id = str(node.get("node_id") or "")
+            attrs = node.get("attributes") if isinstance(node.get("attributes"), Mapping) else {}
+            region_id = str(attrs.get("region_id") or node_id)
+            if node_id:
+                region_id_by_part[node_id] = region_id
+            material_hint = attrs.get("material_hint")
+            if isinstance(material_hint, str) and material_hint:
+                material_by_region[region_id] = material_hint
+        # Also seed material_zone op contributions.
+        for op in shape_program.ops:
+            if op.op != "op.material_zone":
+                continue
+            target = str(op.target or "")
+            params = op.parameters or {}
+            material_hint = params.get("material_hint")
+            if isinstance(material_hint, str) and target:
+                material_by_region[target] = material_hint
+
+        atlas = atlas_from_face_parts(
+            face_parts,
+            region_id_by_part=region_id_by_part,
+            material_by_region=material_by_region,
+        )
+        zone_atlas_payload = {
+            "version": "lathe.surface.zone_binding_v1",
+            "zones": [
+                {
+                    "zone_id": z.zone_id,
+                    "material_class": z.material_class,
+                    "uv_policy": z.uv_policy,
+                    "decal_allowed": z.decal_allowed,
+                    "source_node_id": z.source_node_id,
+                    "feature_id": z.feature_id,
+                }
+                for z in atlas.zones
+            ],
+            "face_count": atlas.face_count(),
+            "zone_face_counts": {
+                z.zone_id: len(atlas.faces_for_zone(z.zone_id)) for z in atlas.zones
+            },
+        }
+    except Exception as exc:  # pragma: no cover - additive evidence
+        zone_atlas_payload = {"available": False, "error": str(exc)}
+
     runtime_candidate = {
         "mesh": mesh,
         "face_parts": list(face_parts),
@@ -1059,6 +1119,9 @@ def compile_procedural_program_candidate(
             # records so downstream stages don't have to crack open
             # shape_program ops themselves.
             "semantic_zone_records": semantic_zone_records,
+            # ZoneAtlas (lathe.surface.zone_binding_v1) for material
+            # subset emission + UV policy routing + decal placement.
+            "zone_atlas": zone_atlas_payload,
         },
     }
 

@@ -796,6 +796,24 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
         topology_semantics,
         multi_part_scene.part_names(),
     )
+    # M3 — surface the shape stage's ZoneAtlas at the topology bundle
+    # level. ``executor.runtime["shape"]["runtime_candidates"]`` is a
+    # dict keyed by candidate_id; each value carries the in-memory
+    # candidate record with ``meta.zone_atlas`` populated by the
+    # procedural_program_path lowering.
+    shape_runtime = executor.runtime.get("shape", {}) if isinstance(executor.runtime, dict) else {}
+    candidates_runtime = shape_runtime.get("runtime_candidates", {}) if isinstance(shape_runtime, dict) else {}
+    zone_atlas_payload: dict[str, Any] = {}
+    if isinstance(candidates_runtime, dict) and candidates_runtime:
+        # Take the first candidate's atlas.
+        for cand in candidates_runtime.values():
+            if isinstance(cand, dict):
+                meta = cand.get("meta") if isinstance(cand.get("meta"), dict) else {}
+                atlas_raw = meta.get("zone_atlas") if isinstance(meta, dict) else None
+                if isinstance(atlas_raw, dict):
+                    zone_atlas_payload = atlas_raw
+                    break
+
     bundle = {
         "backend_id": backend["id"],
         "backend_version": backend["version"],
@@ -811,6 +829,8 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
         "adapter_report": {**adapter_report, "actual_adapter": actual_adapter, "execution": execution},
         "style_routing": style_routing,
         "subdivision_finishing": subdivision_report,
+        # M3 — zone_binding_v1 evidence at topology level.
+        "zone_atlas": zone_atlas_payload,
         "provenance": {
             "backend_id": backend["id"],
             "backend_version": backend["version"],
