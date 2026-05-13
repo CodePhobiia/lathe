@@ -275,35 +275,105 @@ def _auto_attributes_for(node_type: str, node_id: str) -> dict[str, Any]:
     return attrs
 
 
-def _scale_to_dimensions(scale_value: Any) -> dict[str, float]:
+# Kind→aspect ratios for the bare-scalar ``scale`` interpretation. The
+# bare number is treated as the LONGEST dimension (in cm); the aspect
+# tuple maps that into (x, y, z) by relative size. Kind is a generic
+# asset-class taxonomy (not family) — env_module covers doors, walls,
+# fences, gates; hard_surface_prop covers crates, containers, boxes;
+# etc. Without this, every asset becomes a near-cube and doors look
+# like crates.
+#
+# Convention: ``+Z is up`` (so the longest axis of a door is Z, height).
+_KIND_ASPECT: dict[str, tuple[float, float, float]] = {
+    # Doors / walls / panels — flat in Y (depth), tall in Z, mid in X.
+    "env_module": (0.45, 0.04, 1.0),
+    # Wall-mounted / mounted modules — flat plate.
+    "wall_module": (1.0, 0.04, 0.6),
+    # Crates / containers / shipping props — rectangular box.
+    "hard_surface_prop": (1.0, 0.65, 0.55),
+    "shipping_prop": (1.0, 0.65, 0.55),
+    # Gameplay objects (pickups, tools) — squarish.
+    "gameplay_object": (1.0, 0.7, 0.6),
+    "interactable": (1.0, 0.7, 0.6),
+    # Vehicles / machinery — long in X, lower in Z.
+    "vehicle": (1.0, 0.55, 0.45),
+    "machinery": (1.0, 0.7, 0.75),
+    # Furniture / fixtures — squarish with some depth.
+    "furniture": (1.0, 0.7, 0.85),
+    "fixture": (0.7, 0.7, 1.0),
+}
+_DEFAULT_ASPECT: tuple[float, float, float] = (1.0, 0.7, 0.7)
+
+
+def _aspect_for_kind(kind: Any) -> tuple[float, float, float]:
+    """Return per-axis aspect ratios for a bare-scalar ``scale``.
+
+    Falls back to a generic mildly-rectangular default when ``kind`` is
+    missing or unknown.
+    """
+    if isinstance(kind, str) and kind in _KIND_ASPECT:
+        return _KIND_ASPECT[kind]
+    return _DEFAULT_ASPECT
+
+
+def _scale_to_dimensions(
+    scale_value: Any, kind: Any = None
+) -> dict[str, float]:
     """Translate an authored ``scale`` field into per-axis dimensions.
 
     Accepts:
-      - bare numbers (treated as uniform cm)
-      - strings like ``"0.9m"`` (parsed to 90.0 cm)
-      - dicts already shaped as dimensions_cm
+      - bare numbers (treated as uniform cm) — uses ``kind``-based aspect
+      - strings like ``"0.9m"`` (parsed to 90.0 cm) — uses ``kind`` aspect
+      - dicts already shaped as dimensions_cm — used directly
+
+    When ``kind`` is provided and matches an entry in ``_KIND_ASPECT``,
+    the bare scalar is interpreted as the longest dimension and split
+    into (x, y, z) via the kind's aspect ratio. This is how doors stop
+    being cubes: ``kind="env_module"`` + ``scale="2.1m"`` becomes
+    95 × 8 × 210 cm rather than the previous 210 × 147 × 147 cm cube.
+
     Returns the default 30cm cube when nothing parseable is present.
     """
+    aspect = _aspect_for_kind(kind)
     if isinstance(scale_value, dict):
-        return {
-            "x": float(scale_value.get("x") or scale_value.get("width_cm") or 30.0),
-            "y": float(scale_value.get("y") or scale_value.get("height_cm") or 30.0),
-            "z": float(scale_value.get("z") or scale_value.get("depth_cm") or 30.0),
-        }
+        # Two shapes accepted:
+        #   1. explicit dimensions: {x, y, z} or {width_cm, height_cm, depth_cm}
+        #   2. normalized unit form: {type: "unit", value: N, unit: "m"|"cm"}
+        if any(k in scale_value for k in ("x", "y", "z", "width_cm", "height_cm", "depth_cm")):
+            return {
+                "x": float(scale_value.get("x") or scale_value.get("width_cm") or 30.0),
+                "y": float(scale_value.get("y") or scale_value.get("height_cm") or 30.0),
+                "z": float(scale_value.get("z") or scale_value.get("depth_cm") or 30.0),
+            }
+        if scale_value.get("type") == "unit":
+            try:
+                value = float(scale_value.get("value", 0.0))
+                unit = str(scale_value.get("unit", "cm")).lower()
+                if unit == "m":
+                    d = value * 100.0
+                elif unit == "cm":
+                    d = value
+                elif unit == "mm":
+                    d = value / 10.0
+                else:
+                    d = value  # unknown unit — treat as cm
+                if d > 0:
+                    return {"x": d * aspect[0], "y": d * aspect[1], "z": d * aspect[2]}
+            except (TypeError, ValueError):
+                pass
     if isinstance(scale_value, (int, float)):
-        # Treat the bare number as the major axis length in cm.
         d = float(scale_value)
-        return {"x": d, "y": d * 0.7, "z": d * 0.7}
+        return {"x": d * aspect[0], "y": d * aspect[1], "z": d * aspect[2]}
     if isinstance(scale_value, str):
         text = scale_value.strip().lower()
         try:
             if text.endswith("m"):
                 value_m = float(text[:-1])
                 d = value_m * 100.0
-                return {"x": d, "y": d * 0.7, "z": d * 0.7}
+                return {"x": d * aspect[0], "y": d * aspect[1], "z": d * aspect[2]}
             if text.endswith("cm"):
                 d = float(text[:-2])
-                return {"x": d, "y": d * 0.7, "z": d * 0.7}
+                return {"x": d * aspect[0], "y": d * aspect[1], "z": d * aspect[2]}
         except ValueError:
             pass
     return dict(_DEFAULT_PRIMARY_VOLUME_DIMENSIONS_CM)
@@ -397,7 +467,7 @@ def _auto_graph_from_parts(asset: dict[str, Any]) -> dict[str, Any]:
     # Lazy import to avoid cycles at module import time.
     from ..asset_quality.construction_graph import _classify_part
 
-    dimensions = _scale_to_dimensions(intent.get("scale"))
+    dimensions = _scale_to_dimensions(intent.get("scale"), kind=asset.get("kind"))
     nodes: list[dict[str, Any]] = []
     has_primary_volume = False
     for part_name in parts:

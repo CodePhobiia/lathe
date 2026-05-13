@@ -164,6 +164,101 @@ def _resolve_count(raw_count: Any, brief: Mapping[str, Any]) -> int:
     return 1
 
 
+def _body_dimensions_from_graph(
+    nodes: list[dict[str, Any]],
+) -> dict[str, float] | None:
+    """Find the primary_volume node and return its ``dimensions_cm``.
+
+    Used by policy expansion to compute corner / face positions for
+    policy-added nodes (brackets, fasteners) that the policy JSON
+    declares via ``placement.pattern``.
+    """
+    for node in nodes:
+        if node.get("node_type") != "primary_volume":
+            continue
+        attrs = node.get("attributes") or {}
+        if not isinstance(attrs, Mapping):
+            continue
+        dims = attrs.get("dimensions_cm")
+        if isinstance(dims, Mapping):
+            try:
+                return {
+                    "x": float(dims.get("x", 30.0)),
+                    "y": float(dims.get("y", 30.0)),
+                    "z": float(dims.get("z", 30.0)),
+                }
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
+def _position_for_policy_pattern(
+    pattern: str,
+    index: int,
+    count: int,
+    body_dims: dict[str, float],
+) -> tuple[float, float, float] | None:
+    """Map a policy.placement.pattern + index into a (x, y, z) position.
+
+    Convention: ``+Z is up``, ``+Y is the "front" face``. Standoff is
+    minimal (0.5cm) so the part sits flush against the body face.
+    Returns None for unrecognized patterns — the policy node then
+    falls back to origin (preserving prior behavior).
+    """
+    half_x = body_dims["x"] / 2.0
+    half_y = body_dims["y"] / 2.0
+    half_z = body_dims["z"] / 2.0
+    standoff = 0.5
+
+    if pattern in ("two_corners", "top_corners"):
+        # Top-front-left, then top-front-right (or back if back-corner pair).
+        if index == 0:
+            return (-half_x - standoff, half_y, half_z)
+        if index == 1:
+            return (half_x + standoff, half_y, half_z)
+    if pattern in ("four_corners", "top_face_corners"):
+        # Four top corners (TL, TR, BL, BR on top face).
+        signs = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
+        if 0 <= index < 4:
+            sx, sy = signs[index]
+            return (sx * (half_x + standoff), sy * (half_y + standoff), half_z)
+    if pattern in ("eight_corners", "all_corners"):
+        # 8 corners of the bounding box.
+        signs = [
+            (-1, -1, -1), (1, -1, -1), (-1, 1, -1), (1, 1, -1),
+            (-1, -1, 1), (1, -1, 1), (-1, 1, 1), (1, 1, 1),
+        ]
+        if 0 <= index < 8:
+            sx, sy, sz = signs[index]
+            return (
+                sx * (half_x + standoff),
+                sy * (half_y + standoff),
+                sz * (half_z + standoff),
+            )
+    if pattern == "front_face_anchor":
+        return (0.0, half_y + standoff, 0.0)
+    if pattern == "back_face_anchor":
+        return (0.0, -half_y - standoff, 0.0)
+    if pattern in ("top_face_anchor", "top_anchor"):
+        return (0.0, 0.0, half_z + standoff)
+    if pattern in ("bottom_face_anchor", "bottom_anchor"):
+        return (0.0, 0.0, -half_z - standoff)
+    if pattern in ("left_face_anchor", "left_anchor"):
+        return (-half_x - standoff, 0.0, 0.0)
+    if pattern in ("right_face_anchor", "right_anchor"):
+        return (half_x + standoff, 0.0, 0.0)
+    if pattern == "front_face_grid":
+        # Distribute ``count`` items across the front face. Single
+        # column for now — produces a vertical row of fasteners.
+        if count == 1:
+            return (0.0, half_y + standoff, 0.0)
+        # Even distribution along Z.
+        z_step = body_dims["z"] / (count + 1)
+        z = -half_z + z_step * (index + 1)
+        return (0.0, half_y + standoff, z)
+    return None
+
+
 def _expand_policies(
     graph: _NormalizedGraph,
     ctx: SynthesizerContext,
@@ -172,6 +267,7 @@ def _expand_policies(
     trace.emit("stage_start", stage=3)
     nodes = list(graph.nodes)
     edges = list(graph.edges)
+    body_dims = _body_dimensions_from_graph(nodes)
     for policy in ctx.policies:
         node_types_present = {node["node_type"] for node in nodes}
         if not precondition_matches(
@@ -204,6 +300,23 @@ def _expand_policies(
                 # generator decides how to interpret them.
                 for placement_key, placement_value in expansion.placement.items():
                     attrs.setdefault(str(placement_key), placement_value)
+                # Pattern-aware positioning: thread a position_cm into
+                # the attrs from the policy's placement.pattern when
+                # we know the body dimensions. Without this, every
+                # policy-added node (corner bracket, fastener) stacks
+                # at origin and gets buried inside the body. Recognized
+                # patterns include two_corners, four_corners,
+                # eight_corners, front/back/top/bottom/left/right
+                # face anchors, and front_face_grid. Unrecognized
+                # patterns fall through (node stays at origin).
+                if body_dims is not None and "position_cm" not in attrs:
+                    pattern_value = expansion.placement.get("pattern")
+                    if isinstance(pattern_value, str):
+                        pos = _position_for_policy_pattern(
+                            pattern_value, index, count, body_dims
+                        )
+                        if pos is not None:
+                            attrs["position_cm"] = pos
                 added_node = {
                     "node_id": new_node_id,
                     "node_type": expansion.add_node_type,
