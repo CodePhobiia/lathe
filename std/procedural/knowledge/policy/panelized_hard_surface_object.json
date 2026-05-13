@@ -46,6 +46,22 @@
       ]
     },
     {
+      "add_node_type": "trim",
+      "count": 1,
+      "placement": {"role": "mid_belt", "pattern": "front_face_belt", "length_from_body": "x"},
+      "attributes_template": {
+        "edge_axis": "x",
+        "length_cm": 30.0,
+        "cross_section_width_cm": 2.0,
+        "cross_section_height_cm": 0.8,
+        "profile": "flat_band",
+        "region_id": "mid_belt"
+      },
+      "edges_to_existing": [
+        {"target_node_type": "primary_volume", "edge_type": "wraps_around", "attributes": {"role": "mid_belt"}}
+      ]
+    },
+    {
       "add_node_type": "material_zone",
       "count": 1,
       "placement": {"role": "primary_material", "coverage": "body"},

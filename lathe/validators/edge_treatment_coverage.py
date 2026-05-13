@@ -199,6 +199,10 @@ def evaluate_edge_treatment_coverage(
                     "apply_bevel_to_hard_edges",
                     "switch_style_pack_to_beveled_default",
                 ],
+                # repair_actions is the field the repair_loop reads
+                # for diagnostic-driven routing. restore_edge_treatment
+                # is in repair_loop's _SHAPE_REPAIR_ROUTE_ACTIONS.
+                "repair_actions": ["restore_edge_treatment"],
             }
         )
 

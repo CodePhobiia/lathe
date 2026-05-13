@@ -272,6 +272,12 @@ def evaluate_featureless_silhouette(
                     "expand_policy_density",
                     "widen_auto_graph_part_materialization",
                 ],
+                # repair_actions is the field the repair_loop reads.
+                # add_secondary_features is in repair_loop's
+                # _SHAPE_REPAIR_ROUTE_ACTIONS — it routes to the
+                # repair_executor's add_secondary_features handler
+                # via the regenerate_with_patch action class.
+                "repair_actions": ["add_secondary_features"],
             }
         )
 
