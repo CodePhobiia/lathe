@@ -41,6 +41,14 @@ _TRACE_KINDS: frozenset[str] = frozenset(
         # Stage 5: topo_order
         "topo_order_resolved",
         "cycle_in_construction_graph",
+        # Stage 5b: placement bindings (anchor-driven placement, M1)
+        "placement_binding_start",
+        "placement_binding_end",
+        "placement_binding_resolved",
+        "placement_binding_unresolved",
+        "placement_binding_import_failed",
+        "anchor_emit_failed",
+        "relation_resolve_failed",
         # Stage 6: emit_node_ops
         "generator_resolved",
         "no_generator_for_node",

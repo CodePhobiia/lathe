@@ -200,15 +200,20 @@ def emit_latch_anchors(node: dict[str, Any], _: dict[str, float]) -> list[Anchor
 
 
 def emit_bracket_anchors(node: dict[str, Any], _: dict[str, float]) -> list[Anchor]:
-    """Brackets wrap around an exterior corner."""
+    """Brackets wrap around an exterior corner (and can also attach).
+
+    Affordances cover both ``wraps_around`` and ``attached_to`` edges
+    since brackets are used as both corner guards (wraps) and bolt-on
+    reinforcements (attaches).
+    """
     node_id = str(node.get("node_id") or "")
     return [
         Anchor(
             anchor_id=f"{node_id}.wrap",
             role="bracket_wrap_origin",
-            frame=Frame(origin_cm=(0.0, 0.0, 0.0)),
+            frame=Frame(origin_cm=(0.0, 0.0, 0.0), z_axis=(0.0, 0.0, -1.0)),
             bounds_cm=(6.0, 6.0, 6.0),
-            affordances=("wraps",),
+            affordances=("wraps", "attaches"),
             capacity=1,
             host_node_id=node_id,
         )

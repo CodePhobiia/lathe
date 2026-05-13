@@ -567,6 +567,160 @@ def _topological_order(
     return ordered_nodes, ordered_edges
 
 
+# ---------- Stage 5b: resolve_placement_bindings ----------
+
+
+def _body_dims_from_typed_nodes(nodes: tuple[ConstructionNodeTyped, ...]) -> dict[str, float]:
+    """Find primary_volume node and extract its dimensions_cm."""
+    for node in nodes:
+        if node.node_type != "primary_volume":
+            continue
+        raw = node.raw_attributes if isinstance(node.raw_attributes, Mapping) else {}
+        dims = raw.get("dimensions_cm")
+        if isinstance(dims, Mapping):
+            try:
+                return {
+                    "x": float(dims.get("x", 30.0)),
+                    "y": float(dims.get("y", 30.0)),
+                    "z": float(dims.get("z", 30.0)),
+                }
+            except (TypeError, ValueError):
+                pass
+    return {"x": 30.0, "y": 30.0, "z": 30.0}
+
+
+def _resolve_placement_bindings(
+    nodes: tuple[ConstructionNodeTyped, ...],
+    edges: tuple[ConstructionEdgeTyped, ...],
+    trace: TraceBuilder,
+) -> dict[str, tuple[float, float, float]]:
+    """Anchor-driven placement resolution (research Milestone 1).
+
+    For each construction edge whose ``edge_type`` matches a registered
+    ``RelationSpec``, emit anchors for source and target nodes, invoke
+    ``RelationResolver``, and return ``{node_id: position_cm}`` for the
+    source node. Stage 6 reads this dict to override
+    ``raw_attributes.position_cm`` with the anchor-resolved transform.
+
+    Soft-fail by design — if any step errors (missing anchor emitter,
+    unknown relation, no valid candidate), the node falls back to its
+    existing heuristic position_cm. Anchor resolution is additive, not
+    a hard gate.
+    """
+    trace.emit("placement_binding_start", stage=5)
+    try:
+        from ...shape.placement import RelationResolver
+        from .anchors import emit_anchors_for_node
+    except Exception as exc:  # pragma: no cover - import path safety
+        trace.emit("placement_binding_import_failed", stage=5, error=str(exc))
+        return {}
+
+    body_dims = _body_dims_from_typed_nodes(nodes)
+    resolver = RelationResolver()
+    resolved: dict[str, tuple[float, float, float]] = {}
+    anchor_cache: dict[str, list[Any]] = {}
+
+    def anchors_for(node: ConstructionNodeTyped) -> list[Any]:
+        if node.node_id in anchor_cache:
+            return anchor_cache[node.node_id]
+        raw_dict = dict(node.raw_attributes) if isinstance(node.raw_attributes, Mapping) else {}
+        raw_dict["node_id"] = node.node_id
+        try:
+            anchors = emit_anchors_for_node(node.node_type, raw_dict, body_dims)
+        except Exception as exc:  # pragma: no cover - emitter safety
+            trace.emit(
+                "anchor_emit_failed",
+                stage=5,
+                node_id=node.node_id,
+                node_type=node.node_type,
+                error=str(exc),
+            )
+            anchors = []
+        anchor_cache[node.node_id] = anchors
+        return anchors
+
+    by_id = {n.node_id: n for n in nodes}
+    # Track per-target-anchor usage so multiple sources docking with
+    # the same host distribute across distinct anchors (capacity-aware).
+    # Maps target_anchor_id → number of source bindings already placed.
+    anchor_usage: dict[str, int] = {}
+    for edge in edges:
+        source = by_id.get(edge.source_id)
+        target = by_id.get(edge.target_id)
+        if source is None or target is None:
+            continue
+        source_anchors = anchors_for(source)
+        target_anchors_all = anchors_for(target)
+        if not source_anchors or not target_anchors_all:
+            continue
+        # Filter out target anchors that have reached capacity.
+        target_anchors = [
+            a for a in target_anchors_all
+            if anchor_usage.get(a.anchor_id, 0) < a.capacity
+        ]
+        if not target_anchors:
+            # Capacity exhausted on all known anchors — record + fall
+            # through to heuristic.
+            trace.emit(
+                "placement_binding_unresolved",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                proof="all_target_anchors_at_capacity",
+            )
+            continue
+        try:
+            binding = resolver.resolve(
+                edge_id=f"{edge.source_id}__{edge.edge_type}__{edge.target_id}",
+                relation=edge.edge_type,
+                source_node_id=edge.source_id,
+                target_node_id=edge.target_id,
+                source_anchors=source_anchors,
+                target_anchors=target_anchors,
+            )
+        except Exception as exc:  # pragma: no cover - resolver safety
+            trace.emit(
+                "relation_resolve_failed",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                error=str(exc),
+            )
+            continue
+        if binding.is_resolved() and binding.chosen is not None:
+            # First valid binding wins for each source node — subsequent
+            # edges on the same source are decorators, not primary
+            # placement. Mark the chosen target anchor as used.
+            resolved.setdefault(edge.source_id, binding.chosen.transform_world_cm)
+            anchor_usage[binding.chosen.target_anchor_id] = (
+                anchor_usage.get(binding.chosen.target_anchor_id, 0) + 1
+            )
+            trace.emit(
+                "placement_binding_resolved",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                source_anchor=binding.chosen.source_anchor_id,
+                target_anchor=binding.chosen.target_anchor_id,
+                transform_cm=list(binding.chosen.transform_world_cm),
+            )
+        else:
+            trace.emit(
+                "placement_binding_unresolved",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                proof=binding.proof,
+            )
+
+    trace.emit("placement_binding_end", stage=5, resolved_count=len(resolved))
+    return resolved
+
+
 # ---------- Stage 6: emit_node_ops ----------
 
 
@@ -580,10 +734,11 @@ class _NodeOpAccumulator:
 
     ops: list[ShapeOp]
     ops_by_node: dict[str, list[ShapeOp]]
+    anchor_resolved_positions: dict[str, tuple[float, float, float]]
 
     @classmethod
     def empty(cls) -> _NodeOpAccumulator:
-        return cls(ops=[], ops_by_node={})
+        return cls(ops=[], ops_by_node={}, anchor_resolved_positions={})
 
 
 class _OpResolverImpl:
@@ -599,9 +754,11 @@ def _emit_node_ops(
     ctx: SynthesizerContext,
     registry: GeneratorRegistry,
     trace: TraceBuilder,
+    anchor_positions: Mapping[str, tuple[float, float, float]] | None = None,
 ) -> _NodeOpAccumulator:
     trace.emit("stage_start", stage=6)
     acc = _NodeOpAccumulator.empty()
+    acc.anchor_resolved_positions.update(anchor_positions or {})
     for node in nodes:
         generator = registry.resolve_generator(node.domain, node.node_type)
         if generator is None:
@@ -639,16 +796,24 @@ def _emit_node_ops(
             # ``center`` (the generator's own placement wins) and
             # non-primitive ops (op.union, op.bevel, etc.).
             if op.op.startswith("solid.") and "center" not in op.parameters:
-                raw_attrs = getattr(node, "raw_attributes", None)
-                if isinstance(raw_attrs, Mapping):
-                    position = raw_attrs.get("position_cm")
-                    if position is not None:
-                        try:
-                            coords = tuple(float(v) for v in position)
-                            if len(coords) == 3:
-                                op.parameters["center"] = coords
-                        except (TypeError, ValueError):
-                            pass
+                # Priority: anchor-resolved position (M1 contract) →
+                # raw_attributes.position_cm (heuristic fallback).
+                resolved_position = acc.anchor_resolved_positions.get(node.node_id)
+                if resolved_position is not None:
+                    op.parameters["center"] = resolved_position
+                    op.parameters["_lathe_placement_source"] = "anchor_binding"
+                else:
+                    raw_attrs = getattr(node, "raw_attributes", None)
+                    if isinstance(raw_attrs, Mapping):
+                        position = raw_attrs.get("position_cm")
+                        if position is not None:
+                            try:
+                                coords = tuple(float(v) for v in position)
+                                if len(coords) == 3:
+                                    op.parameters["center"] = coords
+                                    op.parameters["_lathe_placement_source"] = "heuristic_position_cm"
+                            except (TypeError, ValueError):
+                                pass
             emitted.append(op)
             acc.ops.append(op)
             trace.emit(
@@ -812,8 +977,16 @@ def synthesize_procedural_program(
     # Stage 5
     ordered_nodes, ordered_edges = _topological_order(typed_nodes, typed_edges, trace)
 
+    # Stage 5b — Anchor-driven placement resolution (research M1).
+    # Pre-pass before Stage 6 so resolved transforms feed back into the
+    # raw_attributes ``position_cm`` channel that Stage 6's center
+    # post-process already honors.
+    anchor_positions = _resolve_placement_bindings(ordered_nodes, ordered_edges, trace)
+
     # Stage 6
-    accumulator = _emit_node_ops(ordered_nodes, ctx_typed, registry, trace)
+    accumulator = _emit_node_ops(
+        ordered_nodes, ctx_typed, registry, trace, anchor_positions=anchor_positions
+    )
 
     # Stage 7
     edge_ops = _emit_edge_ops(ordered_edges, ctx_typed, registry, accumulator, trace)
