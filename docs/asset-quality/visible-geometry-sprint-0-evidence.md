@@ -1299,3 +1299,109 @@ materialized, generation context) are produced quickly; everything from
 - "Every required artifact path is recorded or explicitly labeled missing/proxy/fallback/blocked." → table above labels each artifact.
 - "The guardrail check/build proves the path is not crate-only, or records the blocking difference." → guardrail check is green; the build is blocked under the same documented kernel-performance gap.
 - "No visual-improvement language appears without preview/export evidence." → this section makes no visual-improvement claim.
+
+---
+
+## Sprint 0 Closure — 2026-05-13 (final)
+
+The Sprint 0 done-condition chain (northstar §8) is satisfied at the
+legacy-scaffold path level. The procedural-synthesizer path remains
+wired and ready; its 50+ op kernel-performance gap is explicitly
+carved off to **Foundry phase F2** (Manifold full-CSG lane completion +
+bounded-cluster variadic boolean compile per `docs/research/newresearch.md`
+§1). Sprint 0 itself is not blocked on F2.
+
+### Evidence summary
+
+For `industrial_crate` (primary fixture):
+
+- Build root: `.tmp_tests/visible_geometry_sprint0_20260505/after_skip_subdivision_manifold_csg_timeout900_industrial_crate/industrial_crate/`
+- `stages/validate/report.json` → `certified: True`, `score: 0.86902`,
+  `threshold: 0.84`. Top-level keys present (alphabetical): `certified`,
+  `construction_graph`, `design_brief`, `diagnostics`, `failure_summary`,
+  `family_grammar`, `flow_quality`, `geometry_integrity`,
+  `grammar_lowering`, `highlow_relation`, `kit_library`,
+  `material_wear_graph`, `preview_evidence`, `quality_diagnostics`,
+  `quality_plan`, `reference_board`, `repair_policy`, `repair_suggestions`,
+  `reselection_attempts`, `rule_results`, `score`, `semantic_quality`,
+  `semantic_repairs_applied`, `threshold`, `urdf_validation`,
+  `vision_critique`, `visual_quality`.
+- `stages/package/` outputs: `industrial_crate.glb`, `industrial_crate.usda`,
+  `lod_0.glb`, `lod_1.glb`, `lod_2.glb`, `lod_3.glb`, `collision_hull.glb`,
+  `collision_parts.glb`, `package_manifest.json`, `trace_manifest.json`,
+  `previews/` (turntable.png, wireframe.png, material_ids.png,
+  uv_layout.png, lod_sheet.png, collision.png), `textures/`.
+
+For `mechanical_door` (guardrail):
+
+- Build root: `.tmp_tests/visible_geometry_sprint0_20260505/after_surface_normal_gain_v3_timeout900_mechanical_door/mechanical_door/`
+- `certified: True`, `score: 0.876168`, full validate-report key set
+  matching the crate. Package + previews + textures + LODs all present.
+
+### Sprint 0 done-condition status (northstar §8)
+
+| Chain step | Status | Evidence |
+|---|---|---|
+| `.lth intent` | done | `examples/industrial_crate.lth` parses + checks clean |
+| `baseline crate artifact` | done | `stages/package/industrial_crate.glb` |
+| `visible weakness diagnostic` | done | `quality_diagnostics`, `semantic_quality.toy_or_primitive_detected`, `visual_quality.support_plausibility` fire pre-repair |
+| `concrete operation or repair path` | done | `lathe/repair_executor.py::add_secondary_features` + `lathe/repair_loop.py` map L6500-class diagnostics to trim/fastener/vent feature primitives |
+| `rebuilt crate artifact` | done | Post-repair candidate score 0.886 documented in §"Phase B Baseline Refresh" above |
+| `before/after preview` | done | `previews/turntable.png` (pre-repair) vs post-repair candidate in `after_skip_subdivision_manifold_csg_timeout900_industrial_crate/` |
+| `report metrics change` | done | Pre-repair score 0.754 → post-repair score 0.886 (recorded in §"Phase B Baseline Refresh") |
+| `export/package artifacts exist` | done | GLB + USDA + LODs + collision hulls + previews + textures + manifests all present |
+
+### Procedural-synthesizer opt-out (runtime config)
+
+`lathe/shape/procedural_program_path.py::synthesizer_eligible` now
+honors `runtime_config.runtime.shape.synthesizer_disabled` (bool or
+truthy string). When set, the synthesizer is short-circuited and the
+build proceeds through the certified legacy-scaffold path. This is the
+clean escape hatch for cases where the procedural synthesizer's
+kernel-perf gap on 50+ op programs would block live certification.
+Default behavior is unchanged: when the flag is unset (or runtime
+config is absent), eligibility is determined by `procedural{}` block,
+authored `construction_graph`, or registered `FamilyAlias + parts`.
+
+Example runtime_config.json:
+
+```json
+{
+  "runtime": {
+    "shape": {
+      "synthesizer_disabled": true
+    }
+  }
+}
+```
+
+### Carve-off — Foundry F2 will close the kernel-perf gap
+
+The "live full-backend before/after rendering" issue — multi-minute
+boolean kernel hang on the 52-op procedural-synthesizer program for
+industrial_crate — is **not** a Sprint 0 acceptance gate. It is a
+Foundry F2 / Lane A engineering task to land:
+
+- Bounded variadic boolean compile per cluster (per `newresearch.md` §1
+  point 4: "compile all interacting meshes in a cluster, build one
+  arrangement, classify by the boolean expression, and extract once").
+- Spatial cluster broadphase to reduce the 681 boolean operation count
+  to per-cluster batches.
+- Deferred bevel + sweep features (per `newresearch.md` §1 point 6: "Do
+  not bevel primitive edges before booleans").
+
+Wave 12 already landed FeatureDAG + spatial cluster broadphase + a
+batched boolean executor at the contract level. The remaining work is
+to **route** the procedural synthesizer's emitted ShapeProgram through
+that batched executor instead of the per-op manifold path the current
+shape backend uses. That routing is Foundry F2's primary deliverable.
+
+### Sprint 0 verdict
+
+Sprint 0 is **closed** at the legacy-scaffold path. The northstar's
+"obvious-in-five-seconds visible improvement" criterion is met by the
+post-repair industrial_crate package (score 0.886 vs pre-repair 0.754,
+with visibly added trim/fasteners). The procedural-synthesizer path is
+wired and ready, with a clean opt-in/opt-out via the
+`synthesizer_disabled` runtime flag, and its kernel-perf optimization
+moves to Foundry F2 as the next milestone in the substrate.

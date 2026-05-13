@@ -129,15 +129,36 @@ def synthesizer_eligible(
     list. Auto-graph synthesis happens in ``runtime_from_asset``.
 
     Eligibility requires (in priority order):
-      1. No ``mesh_program{}`` block in source (mesh_program takes
+      1. ``runtime_config.runtime.shape.synthesizer_disabled`` is not
+         set to truthy — when present this short-circuits to False so
+         the legacy scaffold path remains the certified build route
+         (used by Sprint 0 evidence + Foundry-development hero fixtures
+         while the kernel-perf optimization for 50+ op programs lands
+         under Foundry phase F2).
+      2. No ``mesh_program{}`` block in source (mesh_program takes
          precedence — it is the explicit authored procedural path).
-      2. EITHER an authored ``construction_graph`` with at least one
+      3. EITHER an authored ``construction_graph`` with at least one
          node (under ``asset.build.shape.procedural.construction_graph``
          OR ``asset.intent.construction_graph``),
          OR a registered FamilyAlias + authored ``asset.intent.parts``
          list. The latter route triggers auto-graph synthesis from
          parts in ``runtime_from_asset``.
     """
+    if isinstance(runtime_config, dict):
+        runtime_block = runtime_config.get("runtime")
+        if isinstance(runtime_block, dict):
+            shape_block = runtime_block.get("shape")
+            if isinstance(shape_block, dict):
+                disabled = shape_block.get("synthesizer_disabled")
+                if isinstance(disabled, bool) and disabled:
+                    return False
+                if isinstance(disabled, str) and disabled.strip().lower() in {
+                    "1",
+                    "true",
+                    "yes",
+                    "on",
+                }:
+                    return False
     shape_cfg = asset.get("build", {}).get("shape") if isinstance(asset, dict) else None
     if isinstance(shape_cfg, dict):
         # mesh_program takes precedence — never displace it.
