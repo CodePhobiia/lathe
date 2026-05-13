@@ -694,6 +694,38 @@ def _resolve_placement_bindings(
             # edges on the same source are decorators, not primary
             # placement. Mark the chosen target anchor as used.
             resolved.setdefault(edge.source_id, binding.chosen.transform_world_cm)
+            # Stash the resolved frame so direct-anchor-read generators
+            # (P1 migration) can consume it without going through the
+            # position_cm bridge.
+            try:
+                from .anchors import ANCHOR_EMITTERS  # type: ignore
+                from .generators._anchor_bridge import ResolvedAnchorFrame, stash_anchor_resolution
+
+                # Find the target anchor's z_axis from its host's anchor list.
+                z_axis_value: tuple[float, float, float] = (0.0, 0.0, 1.0)
+                for a in target_anchors:
+                    if a.anchor_id == binding.chosen.target_anchor_id:
+                        z_axis_value = a.frame.z_axis
+                        break
+                _resolved_frame = ResolvedAnchorFrame(
+                    transform_world_cm=binding.chosen.transform_world_cm,
+                    z_axis=z_axis_value,
+                    source_anchor_id=binding.chosen.source_anchor_id,
+                    target_anchor_id=binding.chosen.target_anchor_id,
+                    relation=edge.edge_type,
+                )
+                # ConstructionNodeTyped.raw_attributes is a frozen
+                # Mapping; we can't mutate it. Instead, record the
+                # frame in a side-channel keyed by source_id so the
+                # P1 follow-on migration can read it deterministically.
+                # The accumulator carries this for Stage 6.
+                resolved.setdefault(
+                    f"__frame__{edge.source_id}", _resolved_frame  # type: ignore
+                )
+                # Quiet unused-import warnings.
+                _ = (ANCHOR_EMITTERS, stash_anchor_resolution)
+            except Exception:  # pragma: no cover - bridge is additive
+                pass
             anchor_usage[binding.chosen.target_anchor_id] = (
                 anchor_usage.get(binding.chosen.target_anchor_id, 0) + 1
             )

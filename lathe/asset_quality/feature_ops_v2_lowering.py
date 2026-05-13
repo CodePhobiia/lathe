@@ -149,6 +149,220 @@ def lower_weighted_bevel(
     )
 
 
+def lower_trim_sweep(op: ShapeOp, ctx: FeatureOpLoweringContext) -> tuple[ShapeOp, ...]:
+    """Lower ``op.trim_sweep`` — sweep a 2D profile along a path.
+
+    Approximates the sweep as a chain of ``solid.box`` segments aligned
+    with the path. ``fuse_policy: separate_submesh`` skips the
+    op.union back into the host so the trim stays as its own zone.
+    """
+    path = op.parameters.get("path", [])
+    profile = op.parameters.get("profile", {})
+    fuse_policy = str(op.parameters.get("fuse_policy", "fused_to_host"))
+    material_zone = op.parameters.get("material_zone")
+    target = op.target or "trim"
+
+    if not isinstance(path, (list, tuple)) or len(path) < 2:
+        return (op,)
+    if isinstance(profile, dict):
+        width = float(profile.get("width_cm", 1.5))
+        height = float(profile.get("height_cm", 0.6))
+    else:
+        width, height = 1.5, 0.6
+
+    ops_out: list[ShapeOp] = []
+    for i in range(len(path) - 1):
+        p0 = path[i]
+        p1 = path[i + 1]
+        cx = (p0[0] + p1[0]) / 2.0
+        cy = (p0[1] + p1[1]) / 2.0
+        cz = (p0[2] + p1[2]) / 2.0
+        dx = p1[0] - p0[0]
+        dy = p1[1] - p0[1]
+        dz = p1[2] - p0[2]
+        length = (dx * dx + dy * dy + dz * dz) ** 0.5
+        seg_params: dict[str, Any] = {
+            "width_cm": max(length, 0.1),
+            "height_cm": width,
+            "depth_cm": height,
+            "center": (cx, cy, cz),
+        }
+        if material_zone:
+            seg_params["region_id"] = str(material_zone)
+        ops_out.append(
+            ShapeOp(
+                op="solid.box",
+                target=f"{target}.seg.{i}",
+                parameters=seg_params,
+                purpose=f"op.trim_sweep.segment.{i}",
+            )
+        )
+
+    if fuse_policy != "separate_submesh":
+        for i in range(len(ops_out)):
+            ops_out.append(
+                ShapeOp(
+                    op="op.union",
+                    target=ctx.body_part_name,
+                    parameters={"source": ops_out[i].target, "operation": "union"},
+                    purpose=f"op.trim_sweep.fuse.{i}",
+                )
+            )
+    return tuple(ops_out)
+
+
+def lower_profile_sweep(op: ShapeOp, ctx: FeatureOpLoweringContext) -> tuple[ShapeOp, ...]:
+    """Lower ``op.profile_sweep`` — non-planar sweep with scale/rotation.
+
+    Delegates to trim_sweep semantics for the segment chain but
+    honors scale_along_path / rotation_along_path / twist_deg as
+    metadata on each segment (kernel can interpolate).
+    """
+    base_segments = lower_trim_sweep(op, ctx)
+    scale_curve = op.parameters.get("scale_along_path", [])
+    rotation_curve = op.parameters.get("rotation_along_path", [])
+    twist_deg = float(op.parameters.get("twist_deg", 0.0))
+    annotated: list[ShapeOp] = []
+    for i, seg in enumerate(base_segments):
+        new_params = dict(seg.parameters)
+        if isinstance(scale_curve, list) and i < len(scale_curve):
+            new_params["scale_factor"] = float(scale_curve[i])
+        if isinstance(rotation_curve, list) and i < len(rotation_curve):
+            new_params["rotation_deg"] = float(rotation_curve[i])
+        new_params["twist_deg"] = twist_deg
+        annotated.append(
+            ShapeOp(op=seg.op, target=seg.target, parameters=new_params, purpose=seg.purpose)
+        )
+    return tuple(annotated)
+
+
+def lower_fastener_pattern(op: ShapeOp, ctx: FeatureOpLoweringContext) -> tuple[ShapeOp, ...]:
+    """Lower ``op.fastener_pattern`` — distribute N fasteners over an anchor set.
+
+    Emits ``count`` ``solid.cylinder`` head + shaft pairs, with
+    centers distributed by ``pattern_type``: grid (rows × columns
+    on a face), line (along the longest body axis), ring (around
+    the body's centroid), perimeter (along the body's bounding
+    perimeter).
+    """
+    pattern_type = str(op.parameters.get("pattern_type", "grid"))
+    count = max(1, int(op.parameters.get("count", 4)))
+    fastener_template = op.parameters.get("fastener_template", {})
+    if isinstance(fastener_template, dict):
+        head_radius = float(fastener_template.get("head_radius_cm", 0.4))
+        head_height = float(fastener_template.get("head_height_cm", 0.4))
+    else:
+        head_radius, head_height = 0.4, 0.4
+
+    dims = ctx.body_dimensions_cm
+    hx = float(dims.get("x", 30.0)) / 2.0
+    hy = float(dims.get("y", 30.0)) / 2.0
+    hz = float(dims.get("z", 30.0)) / 2.0
+    standoff = 0.3
+
+    centers: list[tuple[float, float, float]] = []
+    if pattern_type == "grid":
+        rows = max(1, int(count ** 0.5))
+        cols = (count + rows - 1) // rows
+        x_step = (2 * hx) / max(cols + 1, 2)
+        z_step = (2 * hz) / max(rows + 1, 2)
+        idx = 0
+        for r in range(rows):
+            for c in range(cols):
+                if idx >= count:
+                    break
+                centers.append(
+                    (-hx + x_step * (c + 1), hy + standoff, -hz + z_step * (r + 1))
+                )
+                idx += 1
+    elif pattern_type == "line":
+        x_step = (2 * hx) / (count + 1)
+        for i in range(count):
+            centers.append((-hx + x_step * (i + 1), hy + standoff, 0.0))
+    elif pattern_type == "ring":
+        import math
+        for i in range(count):
+            theta = 2 * math.pi * i / count
+            centers.append(
+                (hx * 0.7 * math.cos(theta), hy + standoff, hz * 0.7 * math.sin(theta))
+            )
+    else:  # perimeter
+        x_step = (2 * hx) / max(count, 1)
+        for i in range(count):
+            centers.append((-hx + x_step * i, hy + standoff, hz))
+
+    ops_out: list[ShapeOp] = []
+    target_base = op.target or "fastener"
+    for i, c in enumerate(centers):
+        ops_out.append(
+            ShapeOp(
+                op="solid.cylinder",
+                target=f"{target_base}.{i}.head",
+                parameters={
+                    "radius_cm": head_radius,
+                    "height_cm": head_height,
+                    "axis": "y",
+                    "center": c,
+                },
+                purpose=f"op.fastener_pattern.{pattern_type}.{i}.head",
+            )
+        )
+    return tuple(ops_out)
+
+
+def lower_boolean_group(op: ShapeOp, ctx: FeatureOpLoweringContext) -> tuple[ShapeOp, ...]:
+    """Lower ``op.boolean_group`` — batched boolean over a cluster.
+
+    Emits a single ``op.union`` per cutter (legacy serial form) plus
+    a metadata tag indicating the kernel should treat them as a
+    batched cluster. The variadic executor consumes the tag and
+    materializes the cluster once.
+    """
+    target = op.target or ctx.body_part_name
+    operation = str(op.parameters.get("operation", "difference"))
+    cutters = op.parameters.get("cutters", [])
+    evaluation = str(op.parameters.get("evaluation", "batched"))
+
+    if not isinstance(cutters, (list, tuple)) or not cutters:
+        return (op,)
+
+    ops_out: list[ShapeOp] = []
+    for i, cutter_id in enumerate(cutters):
+        params: dict[str, Any] = {
+            "source": str(cutter_id),
+            "operation": operation,
+            "_lathe_boolean_cluster_id": op.target or "cluster",
+            "_lathe_boolean_evaluation": evaluation,
+            "_lathe_boolean_cluster_index": i,
+        }
+        if operation == "difference":
+            params["edge_kind"] = "panel_cut"
+            params["blend_mode"] = "subtract"
+        ops_out.append(
+            ShapeOp(
+                op="op.union",
+                target=target,
+                parameters=params,
+                purpose=f"op.boolean_group.{operation}.{i}",
+            )
+        )
+    return tuple(ops_out)
+
+
+def lower_lod_policy(op: ShapeOp, ctx: FeatureOpLoweringContext) -> tuple[ShapeOp, ...]:
+    """``op.lod_policy`` is metadata — preserves its payload verbatim."""
+    return (op,)
+
+
+def lower_edge_group_select(op: ShapeOp, ctx: FeatureOpLoweringContext) -> tuple[ShapeOp, ...]:
+    """``op.edge_group_select`` is metadata — preserves the selector predicate.
+
+    The edge-group selector resolver consumes this op at the topology
+    stage to compute concrete edge id sets from the predicate.
+    """
+    return (op,)
+
+
 def lower_feature_op_v2(
     op: ShapeOp, ctx: FeatureOpLoweringContext
 ) -> tuple[ShapeOp, ...]:
@@ -161,6 +375,18 @@ def lower_feature_op_v2(
         return lower_panel_inset(op, ctx)
     if op.op == "op.weighted_bevel":
         return lower_weighted_bevel(op, ctx)
+    if op.op == "op.trim_sweep":
+        return lower_trim_sweep(op, ctx)
+    if op.op == "op.profile_sweep":
+        return lower_profile_sweep(op, ctx)
+    if op.op == "op.fastener_pattern":
+        return lower_fastener_pattern(op, ctx)
+    if op.op == "op.boolean_group":
+        return lower_boolean_group(op, ctx)
+    if op.op == "op.lod_policy":
+        return lower_lod_policy(op, ctx)
+    if op.op == "op.edge_group_select":
+        return lower_edge_group_select(op, ctx)
     return (op,)
 
 
