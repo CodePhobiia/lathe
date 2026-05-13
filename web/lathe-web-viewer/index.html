@@ -112,6 +112,21 @@
         background: var(--accent);
         border-color: var(--accent);
       }
+      button.action-btn {
+        background: #1d222a;
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        padding: 5px 9px;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        font-size: 11px;
+        border-radius: 4px;
+      }
+      button.action-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
       #header {
         position: absolute;
         top: 8px;
@@ -165,6 +180,12 @@
           <button class="mode-btn" data-mode="wireframe">Wireframe</button>
           <button class="mode-btn" data-mode="material_ids">Material IDs</button>
           <button class="mode-btn" data-mode="normals">Normals</button>
+        </div>
+        <div class="panel-section">
+          <h3>Evidence</h3>
+          <button id="capture-screenshot" class="action-btn" disabled>Capture PNG</button>
+          <button id="export-repair-request" class="action-btn" disabled>Repair Request</button>
+          <div id="repair-actions" class="empty-state">No package loaded.</div>
         </div>
         <div class="panel-section">
           <h3>Semantic Parts</h3>

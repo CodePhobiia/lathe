@@ -20,6 +20,8 @@ export {
   LatheLoader,
   type LatheThreeResult,
   type LatheLoaderOptions,
+  type MinimalGltfLoader,
+  type MinimalObject3D,
 } from "./LatheLoader.js";
 
 export {

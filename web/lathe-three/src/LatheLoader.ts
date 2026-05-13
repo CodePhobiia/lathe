@@ -112,10 +112,20 @@ export class LatheLoader {
         "LatheLoader.load requires a fetch implementation; pass options.fetch in non-browser environments.",
       );
     }
-    const baseUrl = packageUrl.endsWith("/") ? packageUrl : `${packageUrl}/`;
+    const isManifestUrl = /(^|\/)manifest\.json(?:[?#].*)?$/.test(packageUrl);
+    const manifestUrl = isManifestUrl
+      ? packageUrl
+      : packageUrl.endsWith("/")
+        ? `${packageUrl}manifest.json`
+        : `${packageUrl}/manifest.json`;
+    const baseUrl = isManifestUrl
+      ? packageUrl.slice(0, packageUrl.lastIndexOf("/") + 1)
+      : packageUrl.endsWith("/")
+        ? packageUrl
+        : `${packageUrl}/`;
 
     // 1. Manifest.
-    const manifestRaw = await this._fetchJson(fetchImpl, `${baseUrl}manifest.json`);
+    const manifestRaw = await this._fetchJson(fetchImpl, manifestUrl);
     const manifest = parseLthpkgManifest(manifestRaw);
     const sidecars = manifest.sidecar_files;
 

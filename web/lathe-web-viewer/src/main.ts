@@ -13,7 +13,11 @@
  * northstar; they all hang off this same loader chain.
  */
 
-import { LatheLoader, type LatheThreeResult } from "@lathe/three";
+import {
+  LatheLoader,
+  type LatheThreeResult,
+  type MinimalObject3D,
+} from "@lathe/three";
 import {
   AmbientLight,
   AxesHelper,
@@ -36,6 +40,13 @@ const partsEl = document.getElementById("semantic-parts") as HTMLDivElement;
 const slotsEl = document.getElementById("material-slots") as HTMLDivElement;
 const diagEl = document.getElementById("diagnostics") as HTMLDivElement;
 const certEl = document.getElementById("certificate") as HTMLDivElement;
+const repairActionsEl = document.getElementById("repair-actions") as HTMLDivElement;
+const captureScreenshotBtn = document.getElementById(
+  "capture-screenshot",
+) as HTMLButtonElement;
+const exportRepairRequestBtn = document.getElementById(
+  "export-repair-request",
+) as HTMLButtonElement;
 
 const renderer = new WebGLRenderer({ canvas: viewportCanvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -86,10 +97,11 @@ const gltfLoader = new GLTFLoader();
 const loader = new LatheLoader({
   gltfLoader,
   proxyObject3DFactory: () => {
-    // A clearly-labeled proxy group for "unbuilt" mesh — empty.
+    // A clearly-labeled proxy group for "unbuilt" mesh; the side panel
+    // carries the reason so the viewer never silently invents geometry.
     const g = new Group();
     g.name = "lathe.proxy_unbuilt";
-    return g as unknown as ReturnType<typeof loader["options"]["proxyObject3DFactory"] & object>;
+    return g as unknown as MinimalObject3D;
   },
 });
 
@@ -103,6 +115,8 @@ async function loadFromUrl(url: string) {
     currentResult = result;
     renderSidepanel(result);
     loadedLabel.textContent = `${result.manifest.asset_id} · L${result.evidence.certificate.achieved_level}/${result.evidence.certificate.target_level}`;
+    captureScreenshotBtn.disabled = false;
+    exportRepairRequestBtn.disabled = false;
     dropOverlay.classList.add("hidden");
   } catch (err) {
     dropOverlay.classList.remove("hidden");
@@ -130,6 +144,38 @@ viewportHost.addEventListener("drop", async (e) => {
   if (text) {
     await loadFromUrl(text.trim());
   }
+});
+
+captureScreenshotBtn.addEventListener("click", () => {
+  if (!currentResult) return;
+  triggerDownload(
+    `${currentResult.manifest.asset_id}-viewer-evidence.png`,
+    renderer.domElement.toDataURL("image/png"),
+  );
+});
+
+exportRepairRequestBtn.addEventListener("click", () => {
+  if (!currentResult) return;
+  const findings = [
+    ...currentResult.diagnostics.generator_diagnostics,
+    ...currentResult.diagnostics.certificate_findings,
+  ];
+  const request = {
+    version: "lathe.web_viewer.repair_request_v1",
+    asset_id: currentResult.manifest.asset_id,
+    source_manifest: currentResult.manifest,
+    diagnostics: findings,
+    repair_recommendations:
+      currentResult.diagnostics.certificate_repair_recommendations,
+    rule_of_truth:
+      "Viewer emits a repair request only; Lathe CLI/service must execute the rebuild and package before-after evidence.",
+  };
+  triggerDownload(
+    `${currentResult.manifest.asset_id}-repair-request.json`,
+    `data:application/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(request, null, 2),
+    )}`,
+  );
 });
 
 // ---- View mode buttons ----
@@ -201,6 +247,18 @@ function renderSidepanel(result: LatheThreeResult) {
       .join("");
   }
 
+  const repairRecommendations =
+    result.diagnostics.certificate_repair_recommendations.filter(Boolean);
+  repairActionsEl.innerHTML =
+    repairRecommendations.length === 0
+      ? `<div class="empty-state">No repair recommendations.</div>`
+      : repairRecommendations
+          .map(
+            (r) =>
+              `<div class="meta-row"><span class="meta-val">${escapeHtml(r)}</span></div>`,
+          )
+          .join("");
+
   // Certificate.
   const cert = result.evidence.certificate;
   certEl.innerHTML = `
@@ -238,4 +296,14 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function triggerDownload(filename: string, href: string) {
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
