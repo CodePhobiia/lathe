@@ -12,12 +12,12 @@ import time. The synthesizer refuses to start with invalid packs.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from jsonschema import Draft202012Validator
-
 
 _SCHEMA_PATH = Path(__file__).parent / "schemas" / "style.schema.json"
 _KNOWLEDGE_ROOT = Path(__file__).resolve().parents[4] / "std" / "procedural" / "knowledge" / "style"
@@ -46,7 +46,7 @@ class StyleKnowledge:
     description: str = ""
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "StyleKnowledge":
+    def from_dict(cls, raw: Mapping[str, Any]) -> StyleKnowledge:
         return cls(
             style_id=str(raw["style_id"]),
             style_band=str(raw["style_band"]),

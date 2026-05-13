@@ -12,11 +12,10 @@ from typing import Any
 import numpy as np
 import trimesh
 
+from ..uv_organization import build_uv_organization
 from .common import unit_to_cm, unit_to_px_per_m
 from .geometry import derived_lightmap_uv
 from .mesh import RuntimeMesh
-from ..uv_organization import build_uv_organization
-
 
 _DEFAULT_PART_IMPORTANCE: tuple[tuple[str, float], ...] = (
     ("body", 0.40),
@@ -148,9 +147,9 @@ def _remap_xatlas_face_parts(
             "schema": "lathe.uv.xatlas_face_part_remap.v1",
             "method": "fallback_single_mesh_label",
             "reason": "source_face_parts_misaligned",
-            "source_face_count": int(len(source_faces)),
-            "source_face_part_count": int(len(source_face_parts)),
-            "mapped_face_count": int(len(mapped_faces)),
+            "source_face_count": len(source_faces),
+            "source_face_part_count": len(source_face_parts),
+            "mapped_face_count": len(mapped_faces),
             "preserved": False,
         }
     exact_by_vertices: dict[tuple[int, ...], str] = {}
@@ -197,8 +196,8 @@ def _remap_xatlas_face_parts(
     return out, {
         "schema": "lathe.uv.xatlas_face_part_remap.v1",
         "method": "vmapping_exact_or_majority_vertex_overlap_v1",
-        "source_face_count": int(len(source_faces)),
-        "mapped_face_count": int(len(mapped_faces)),
+        "source_face_count": len(source_faces),
+        "mapped_face_count": len(mapped_faces),
         "preserved": fallback_count == 0,
         "exact_face_count": int(exact_count),
         "overlap_face_count": int(overlap_count),
@@ -217,7 +216,7 @@ def _texel_density_audit(
     units: str | None,
     requested_px_per_m: float | None,
 ) -> dict[str, Any]:
-    face_count = int(len(faces))
+    face_count = len(faces)
     if face_count == 0 or len(uvs) == 0:
         return {
             "schema": "lathe.uv.texel_density_audit.v1",
@@ -459,8 +458,8 @@ def apply_xatlas_uv(
             "available": True,
             "source": "input_mesh_visual_uv",
             "preservation": "xatlas_vmapping_source_uv_sidecar_v1",
-            "source_vertex_count": int(len(source_uv)),
-            "mapped_vertex_count": int(len(mapped_source_uv)),
+            "source_vertex_count": len(source_uv),
+            "mapped_vertex_count": len(mapped_source_uv),
             "coverage": _uv_coverage(mapped_source_uv),
         }
 
@@ -685,7 +684,7 @@ def apply_xatlas_uv_per_part(
     pack_options.rotate_charts = bool(asset["build"]["uv"].get("pack_rotate", True))
     padding_px = asset["build"]["uv"].get("padding", {"type": "unit", "value": 8, "unit": "px"})
     padding_norm = min(0.1, float(unit_to_cm(padding_px)) / max(1.0, float(resolution)))
-    pack_options.padding = max(1, int(round(padding_norm * resolution)))
+    pack_options.padding = max(1, round(padding_norm * resolution))
     texel_density_request = asset.get("build", {}).get("uv", {}).get("texel_density")
     if texel_density_request is not None:
         try:
@@ -741,8 +740,8 @@ def apply_xatlas_uv_per_part(
             "raw_weight": round(raw_weights[index], 6),
             "semantic_weight_boost": round(semantic_boost, 6),
             "surface_area": round(surface_areas[index], 6),
-            "vertex_count": int(len(mapped_verts)),
-            "triangle_count": int(len(mapped_faces)),
+            "vertex_count": len(mapped_verts),
+            "triangle_count": len(mapped_faces),
             "uv_bounds": bounds,
             "uv_island_chart_count": int(atlas.get_mesh_chart_count(index)),
         }
@@ -832,7 +831,7 @@ def apply_xatlas_uv_per_part(
         "packing_report": {
             "chart_count": int(atlas.chart_count),
             "atlas_count": int(atlas.atlas_count),
-            "per_part_chart_count": int(len(parts)),
+            "per_part_chart_count": len(parts),
             "semantic_chart_count": organization["chart_count"],
             "semantic_grouping": organization["chart_grouping"],
             "resolution": resolution,

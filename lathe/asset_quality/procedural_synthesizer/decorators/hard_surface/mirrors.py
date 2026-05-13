@@ -10,12 +10,11 @@ The mirror_plane attribute (xy / xz / yz) names the reflection plane.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...context import ConstructionEdgeTyped, SynthesizerContext
 from ...registry import EdgeDecoratorCapabilityManifest, EdgeTypeDecorator, OpResolver
-
 
 _VALID_PLANES: frozenset[str] = frozenset({"xy", "xz", "yz"})
 

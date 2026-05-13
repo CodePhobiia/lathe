@@ -14,7 +14,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_PROFILES: frozenset[str] = frozenset(
     {"l_bracket", "t_bracket", "angle_plate", "gusset", "corner_brace"}
 )
@@ -74,7 +73,7 @@ class BracketAttributes:
             raise ValueError(f"bracket.fillet_cm={self.fillet_cm} must be >= 0")
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "BracketAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> BracketAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"bracket attributes must be dict, got {type(attrs).__name__}"

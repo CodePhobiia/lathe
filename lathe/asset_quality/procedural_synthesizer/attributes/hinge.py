@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_STYLES: frozenset[str] = frozenset(
     {"butt", "barrel", "piano", "strap", "concealed"}
 )
@@ -61,7 +60,7 @@ class HingeAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "HingeAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> HingeAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"hinge attributes must be dict, got {type(attrs).__name__}"

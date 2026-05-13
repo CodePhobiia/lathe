@@ -269,7 +269,7 @@ def _kernel_program_semantic_handoff(
         key
         for params in cga_param_records
         if params
-        for key in params.keys()
+        for key in params
     )
     context_record_count = 0
     for record in operand_records:

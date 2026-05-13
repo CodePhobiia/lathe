@@ -8,12 +8,11 @@ with the source as an additive child of the target's boolean tree.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...context import ConstructionEdgeTyped, SynthesizerContext
 from ...registry import EdgeDecoratorCapabilityManifest, EdgeTypeDecorator, OpResolver
-
 
 _MANIFEST = EdgeDecoratorCapabilityManifest(
     edge_type="wraps_around",

@@ -12,7 +12,6 @@ from typing import Any
 
 from .utils import diag
 
-
 _METALNESS_TOLERANCE = 0.05
 _DIELECTRIC_F0_RANGE = (0.02, 0.08)
 _METAL_F0_RANGE = (0.50, 1.00)

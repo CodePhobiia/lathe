@@ -20,10 +20,8 @@ metadata onto a trace.
 from __future__ import annotations
 
 from contextlib import suppress
-import math
 from typing import Any
 
-import numpy as np
 import trimesh
 
 from ..kernel import GeometryKernel
@@ -36,18 +34,16 @@ from ._capabilities import (
 from ._common import (
     _non_empty_mesh,
     _operation_id_fragment,
-    _record_operation_result,
     _record_result_probe,
 )
 from ._core import (
     KernelOperand,
     KernelProgramResult,
     boolean_kernel_call_count,
+    boolean_operation_count,
     component_assembly_operation_count,
 )
 from ._face_operation import (
-    _attach_direct_face_operation_metadata,
-    _attach_semantic_whole_result_face_metadata,
     _instance_face_operation_ids,
     _kernel_program_face_operation_summary,
 )
@@ -57,12 +53,12 @@ from ._records import (
     _shape_record_v2_metadata,
 )
 from ._semantic import (
-    _final_semantic_operation_record,
     _operation_counts,
     _semantic_operation_records_from_manifest,
 )
 from ._semantic_handoff import _attach_kernel_program_semantic_handoff
 from ._serialize import _dict_metadata, _json_safe, _stable_unique_strings
+from .boolean import execute_boolean_program
 
 KERNEL_PROGRAM_VERSION = "lathe.geometry.kernel_program_v1"
 
@@ -148,7 +144,7 @@ def _component_assembly_records_from_primitive(primitive: Any) -> list[dict[str,
     if not isinstance(raw_records, list):
         return []
     remaining = [_ASSEMBLY_RECORD_LIMIT]
-    records = [
+    return [
         compact
         for compact in (
             _compact_component_assembly_record(item, remaining=remaining)
@@ -156,7 +152,6 @@ def _component_assembly_records_from_primitive(primitive: Any) -> list[dict[str,
         )
         if compact
     ]
-    return records
 
 
 def _component_assembly_summary_from_records(
@@ -189,7 +184,7 @@ def _component_assembly_summary_from_records(
         "components": _stable_unique_strings(components),
         "regions": _stable_unique_strings(regions),
         "source_operations": _stable_unique_strings(operations),
-        "truncated": _ASSEMBLY_RECORD_LIMIT <= _flattened_assembly_record_count(records),
+        "truncated": _flattened_assembly_record_count(records) >= _ASSEMBLY_RECORD_LIMIT,
     }
 
 
@@ -426,7 +421,7 @@ def execute_component_assembly_program(
         result_body_count = kernel.body_count(result.handle)
         source_face_counts = [int(operand.source_mesh_face_count) for operand in operands]
         source_vertex_counts = [
-            int(len(operand.source_mesh.vertices))
+            len(operand.source_mesh.vertices)
             if isinstance(operand.source_mesh, trimesh.Trimesh)
             else 0
             for operand in operands
@@ -530,15 +525,13 @@ def execute_component_assembly_program(
         raise ValueError("kernel component_assembly program produced an empty mesh")
     combined.remove_infinite_values()
     combined.remove_unreferenced_vertices()
-    try:
+    with suppress(AttributeError, TypeError, ValueError, RuntimeError):
         combined.fix_normals()
-    except (AttributeError, TypeError, ValueError, RuntimeError):
-        pass
 
     source_body_counts: list[int] = []
     for mesh in source_meshes:
         try:
-            source_body_counts.append(int(len(mesh.split(only_watertight=False))))
+            source_body_counts.append(len(mesh.split(only_watertight=False)))
         except (AttributeError, TypeError, ValueError, RuntimeError):
             source_body_counts.append(0)
     source_face_counts = [len(mesh.faces) for mesh in source_meshes]
@@ -573,7 +566,7 @@ def execute_component_assembly_program(
         "result_face_count": len(combined.faces),
         "result_vertex_count": len(combined.vertices),
         "result_watertight": bool(combined.is_watertight),
-        "result_body_count": int(len(combined.split(only_watertight=False))),
+        "result_body_count": len(combined.split(only_watertight=False)),
     }
     combined.metadata["lathe_kernel_component_assembly"] = dict(component_assembly_metadata)
     current = kernel.from_trimesh(combined)

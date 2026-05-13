@@ -29,7 +29,6 @@ def dungeon_corridor_tileset() -> Tileset:
     Layout: 10x1x10, single-storey corridor. ``+X/-X`` is east/west,
     ``+Y/-Y`` is north/south, ``+Z/-Z`` is up/down.
     """
-
     return Tileset(
         name="dungeon_corridor",
         tiles=[
@@ -128,17 +127,16 @@ def run_dungeon_corridor(
     only with itself, so empty space outside the grid is implicitly
     treated as ``"void"``.
     """
-
     tileset = dungeon_corridor_tileset()
     adjacency = from_connectors(tileset)
     return solve_wfc(tileset, adjacency, grid_shape, seed=seed)
 
 
 __all__ = [
-    "dungeon_corridor_tileset",
-    "run_dungeon_corridor",
     "WFCResult",
     "WFCSolver",
+    "dungeon_corridor_tileset",
+    "run_dungeon_corridor",
     "to_blueprint_components",
     "to_scene_objects",
 ]

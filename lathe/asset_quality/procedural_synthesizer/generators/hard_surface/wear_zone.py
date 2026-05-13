@@ -7,13 +7,12 @@ during basecolor / roughness / normal authoring.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...attributes.wear_zone import WearZoneAttributes
 from ...context import ConstructionNodeTyped, SynthesizerContext
 from ...registry import GeneratorCapabilityManifest, NodeTypeGenerator
-
 
 _MANIFEST = GeneratorCapabilityManifest(
     node_type="wear_zone",

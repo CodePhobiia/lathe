@@ -198,8 +198,8 @@ def compile_photo_fit(values: dict[str, Any], *, asset_name: str = "asset") -> d
     if palette:
         derived_params["palette"] = palette
     if period and period[0] > 0:
-        derived_params.setdefault("cols", max(2, int(round(512 / max(1, period[0])))))
-        derived_params.setdefault("rows", max(2, int(round(512 / max(1, period[1])))))
+        derived_params.setdefault("cols", max(2, round(512 / max(1, period[0]))))
+        derived_params.setdefault("rows", max(2, round(512 / max(1, period[1]))))
         derived_params.setdefault("pattern", "tile")
     graph = DesignerGraph.from_recipe(derived_params)
     materialx_doc = compile_materialx(

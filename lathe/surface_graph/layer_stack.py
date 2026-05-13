@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 _VALID_BLEND_MODES = {"normal", "add", "multiply", "overlay", "screen", "subtract"}
 
 
@@ -31,7 +30,7 @@ class LayerStack:
         self.layers = list(layers)
 
     @classmethod
-    def from_values(cls, values: dict[str, Any]) -> "LayerStack":
+    def from_values(cls, values: dict[str, Any]) -> LayerStack:
         raw_layers = values.get("layers") or values.get("stack") or []
         layers: list[dict[str, Any]] = []
         for index, raw in enumerate(raw_layers):
@@ -68,7 +67,7 @@ class LayerStack:
         return {"kind": "layer_stack", "layers": list(self.layers)}
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "LayerStack":
+    def from_dict(cls, payload: dict[str, Any]) -> LayerStack:
         return cls(layers=list(payload.get("layers", [])))
 
 

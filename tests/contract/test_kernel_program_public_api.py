@@ -31,7 +31,6 @@ from typing import Any
 
 import pytest
 
-
 # Canonical public surface of ``lathe.geometry.kernel_program``. Listed
 # in groups matching the §5.3 decomposition layout — when boolean.py,
 # hull.py, etc. land, the symbol stays at the same import path so each

@@ -7,13 +7,12 @@ authoring time.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...attributes.decal_zone import DecalZoneAttributes
 from ...context import ConstructionNodeTyped, SynthesizerContext
 from ...registry import GeneratorCapabilityManifest, NodeTypeGenerator
-
 
 _MANIFEST = GeneratorCapabilityManifest(
     node_type="decal_zone",

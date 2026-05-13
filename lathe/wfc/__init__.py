@@ -43,19 +43,19 @@ from .solver import (
 from .tileset import DIRECTIONS, OPPOSITE, Direction, Tile, Tileset
 
 __all__ = [
-    "AdjacencyRules",
     "DIRECTIONS",
+    "OPPOSITE",
+    "AdjacencyRules",
     "Direction",
     "GridPos",
     "GridShape",
-    "OPPOSITE",
     "PlacedTile",
     "Tile",
     "Tileset",
-    "WFCModuleRef",
     "WFCContradiction",
-    "WFCRuleRef",
+    "WFCModuleRef",
     "WFCResult",
+    "WFCRuleRef",
     "WFCSolver",
     "build_solver_inputs",
     "expand_solved_grid",

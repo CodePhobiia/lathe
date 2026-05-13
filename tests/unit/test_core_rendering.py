@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import trimesh
-
 from lathe.core import rendering
 from lathe.core.mesh import RuntimeMesh
 

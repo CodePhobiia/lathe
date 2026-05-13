@@ -16,7 +16,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_AXES: frozenset[str] = frozenset({"x", "y", "z"})
 
 _VALID_KINDS: frozenset[str] = frozenset(
@@ -86,7 +85,7 @@ class FastenerAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "FastenerAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> FastenerAttributes:
         """Validate a raw attribute dict and produce a typed instance."""
         if not isinstance(attrs, dict):
             raise TypeError(

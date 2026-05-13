@@ -11,22 +11,14 @@ preservation fallbacks if the boolean fails.
 
 from __future__ import annotations
 
-from contextlib import suppress
-import math
 from typing import Any
 
-import numpy as np
 import trimesh
 
 from ..kernel import GeometryKernel
-from .boolean import (
-    _boolean_fallback_diagnostics,
-    _manifest_with_runtime_diagnostics,
-)
 from ._capabilities import (
     _kernel_capabilities,
     _require_capabilities,
-    _required_boolean_capabilities,
     _validate_transform_operand,
     _validated_transform_matrix,
 )
@@ -40,13 +32,9 @@ from ._common import (
 from ._core import (
     KernelOperand,
     KernelProgramResult,
-    _required_capability_list,
-    boolean_kernel_call_count,
     instances_operation_count,
 )
 from ._face_operation import (
-    _attach_direct_face_operation_metadata,
-    _attach_semantic_whole_result_face_metadata,
     _attach_whole_result_face_operation_metadata,
     _instance_face_operation_ids,
     _kernel_program_face_operation_summary,
@@ -57,7 +45,6 @@ from ._feature_detail import (
     _kernel_feature_detail_metadata,
     _kernel_modifier_payload,
 )
-from ._primitive_metadata import _validated_deform_axis
 from ._records import _operand_operation_records
 from ._semantic import (
     _final_semantic_operation_record,
@@ -66,6 +53,10 @@ from ._semantic import (
 )
 from ._semantic_handoff import _attach_kernel_program_semantic_handoff
 from ._serialize import _dict_metadata, _json_safe
+from .boolean import (
+    _boolean_fallback_diagnostics,
+    _manifest_with_runtime_diagnostics,
+)
 
 KERNEL_PROGRAM_VERSION = "lathe.geometry.kernel_program_v1"
 
@@ -323,7 +314,7 @@ def execute_instances_program(
     transformed_meshes = [_non_empty_mesh(kernel, handle) for handle in transformed_handles]
     instance_operands: list[KernelOperand] = []
     source_metadata = _dict_metadata(source.metadata)
-    for index, (handle, instance_mesh) in enumerate(zip(transformed_handles, transformed_meshes)):
+    for index, (handle, instance_mesh) in enumerate(zip(transformed_handles, transformed_meshes, strict=False)):
         try:
             instance_body_count = kernel.body_count(handle)
         except (AttributeError, TypeError, ValueError, RuntimeError):

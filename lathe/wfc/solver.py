@@ -21,8 +21,8 @@ listing nearby seed values for the caller to retry — this is the
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 import numpy as np
 
@@ -159,7 +159,6 @@ class WFCSolver:
 
     def step(self) -> GridPos | None:
         """Collapse the lowest-entropy cell. Returns the cell or None."""
-
         cell = self._lowest_entropy_cell()
         if cell is None:
             return None
@@ -211,7 +210,6 @@ class WFCSolver:
 
     def solve(self, *, max_steps: int | None = None) -> WFCResult:
         """Run step+propagate until done or contradiction."""
-
         # Initial pass to prune any pre-impossible options (e.g. a tile
         # whose only allowed neighbor doesn't exist in the tileset).
         self._propagate(set(self._cells.keys()))
@@ -248,7 +246,6 @@ def solve_wfc(
     cell_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
 ) -> WFCResult:
     """One-shot convenience wrapper around :class:`WFCSolver`."""
-
     solver = WFCSolver(
         tileset, adjacency, grid_shape, seed=seed, cell_size=cell_size
     )

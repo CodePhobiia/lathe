@@ -432,7 +432,6 @@ class _Parser:
 
     def _token_for(self, node: _ast.Node) -> _Token:
         """Return a synthetic token covering ``node.span`` for span chaining."""
-
         return _Token("SYNTH", "", node.span.start, node.span.end)
 
 
@@ -471,13 +470,11 @@ def parse(source: str) -> _ast.Program:
     bare expressions). Use :func:`parse_expression` when the caller knows
     the source is a single expression — its error messages are tighter.
     """
-
     tokens = _tokenize(source)
     return _Parser(source, tokens).parse_program()
 
 
 def parse_expression(source: str) -> _ast.Expr:
     """Parse a single expression. Raises :class:`ParseError` if more remains."""
-
     tokens = _tokenize(source)
     return _Parser(source, tokens).parse_expression()

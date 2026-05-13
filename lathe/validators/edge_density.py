@@ -72,7 +72,7 @@ def _bucketed_variance(
         bucket_variances.append(normalized_var)
         bucket_summary.append(
             {
-                "face_count": int(len(members)),
+                "face_count": len(members),
                 "mean_edge_length": round(mean_len, 6),
                 "edge_length_variance": round(var, 6),
                 "normalized_variance": round(normalized_var, 6),
@@ -124,6 +124,6 @@ def evaluate_edge_density_variance(
             "mean_normalized_variance": round(overall_norm_variance, 6),
             "buckets": bucket_summary,
             "warn_threshold": _WARN_THRESHOLD,
-            "face_count": int(len(faces)),
+            "face_count": len(faces),
         },
     }

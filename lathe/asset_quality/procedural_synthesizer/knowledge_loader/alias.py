@@ -13,14 +13,14 @@ It cannot reference custom code. It is metadata.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from .style import KnowledgePackInvalid
-
 
 _SCHEMA_PATH = Path(__file__).parent / "schemas" / "alias.schema.json"
 _KNOWLEDGE_ROOT = Path(__file__).resolve().parents[4] / "std" / "procedural" / "knowledge" / "aliases"
@@ -42,7 +42,7 @@ class FamilyAlias:
     description: str = ""
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "FamilyAlias":
+    def from_dict(cls, raw: Mapping[str, Any]) -> FamilyAlias:
         return cls(
             family_id=str(raw["family_id"]),
             style_id=str(raw["style_id"]),

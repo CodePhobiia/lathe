@@ -39,8 +39,7 @@ def _cube_with_bevel(size: float = 1.0, bevel: float = 0.05) -> trimesh.Trimesh:
     box = trimesh.creation.box(extents=(inner, inner, inner))
     # Subdivide once to get extra edge loops near corners (proxy for bevel
     # geometry; produces additional incident tris at corner-adjacent verts).
-    box = box.subdivide()
-    return box
+    return box.subdivide()
 
 
 def _cube_with_edge_loops(size: float = 1.0, loops: int = 3) -> trimesh.Trimesh:

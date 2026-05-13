@@ -13,8 +13,8 @@ boolean composition or kernel-side mutation.
 
 from __future__ import annotations
 
-from contextlib import suppress
 import math
+from contextlib import suppress
 from typing import Any
 
 import trimesh

@@ -891,8 +891,8 @@ Suggested files:
 
 - `lathe/geometry/kernel_program.py`
 - `lathe/geometry/shape_ir_lowering.py`
-- `tests/unit/test_geometry_kernel_program.py`
-- `tests/unit/test_shape_ir_kernel_lowering.py`
+- `tests/unit/test_geometry_kernel.py`
+- `tests/unit/test_shape_ir_v2.py`
 
 Requirements:
 
@@ -905,7 +905,7 @@ Requirements:
 Commands:
 
 ```powershell
-python -m pytest -q tests/unit/test_geometry_kernel_program.py tests/unit/test_shape_ir_kernel_lowering.py tests/contract/test_shape_handoff_v1.py
+python -m pytest -q tests/unit/test_geometry_kernel.py tests/unit/test_shape_ir_v2.py tests/contract/test_shape_handoff_v1.py
 ```
 
 Done when:

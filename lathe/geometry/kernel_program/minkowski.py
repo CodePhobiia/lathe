@@ -11,11 +11,9 @@ approximation explicitly in the trace.
 
 from __future__ import annotations
 
-from contextlib import suppress
 import math
 from typing import Any
 
-import numpy as np
 import trimesh
 
 from ..kernel import GeometryKernel
@@ -54,7 +52,7 @@ from ._semantic import (
     _semantic_operation_records_from_manifest,
 )
 from ._semantic_handoff import _attach_kernel_program_semantic_handoff
-from ._serialize import _dict_metadata, _json_safe
+from ._serialize import _json_safe
 
 KERNEL_PROGRAM_VERSION = "lathe.geometry.kernel_program_v1"
 

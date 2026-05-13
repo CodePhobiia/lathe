@@ -51,7 +51,6 @@ def from_connectors(tileset: Tileset, *, name: str | None = None) -> AdjacencyRu
     ``"void"`` connector still matches itself: this lets you tag the
     "outside" of the grid uniformly.
     """
-
     rules = AdjacencyRules(name=name or f"{tileset.name}_auto")
     tiles = tileset.tiles
     for direction in DIRECTIONS:

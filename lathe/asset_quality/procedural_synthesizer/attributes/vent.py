@@ -13,7 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_STYLES: frozenset[str] = frozenset(
     {"horizontal_slat", "vertical_slat", "circular_grille", "honeycomb"}
 )
@@ -65,7 +64,7 @@ class VentAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "VentAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> VentAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"vent attributes must be dict, got {type(attrs).__name__}"

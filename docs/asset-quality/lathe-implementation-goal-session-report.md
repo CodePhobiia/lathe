@@ -203,8 +203,8 @@ between semantic asset intent and geometry backends.
 Important files in the current implementation surface:
 
 ```text
-lathe/geometry/program.py
-lathe/geometry/shape_ir_program.py
+lathe/geometry/kernel_program.py
+lathe/geometry/shape_ir_lowering.py
 lathe/geometry_kernel.py
 lathe/exact_solids.py
 lathe/shape_backend.py
@@ -273,7 +273,7 @@ Important files in the current implementation surface:
 
 ```text
 lathe/exact_solids.py
-lathe/geometry/shape_ir_program.py
+lathe/geometry/shape_ir_lowering.py
 lathe/asset_quality/shape_ir_v2.py
 lathe/mesh_finalize.py
 lathe/topology_runtime.py

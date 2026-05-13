@@ -26,7 +26,7 @@ def _count(controls: dict[str, Any], *keys: str, default: int, minimum: int, max
         if isinstance(value, bool):
             return min(maximum, max(minimum, 1 if value else minimum))
         try:
-            return min(maximum, max(minimum, int(round(float(value)))))
+            return min(maximum, max(minimum, round(float(value))))
         except (TypeError, ValueError):
             continue
     return default
@@ -971,7 +971,7 @@ def _procedural_building_blueprint(
             )
         )
     for index in range(roof_equipment_count):
-        cols = max(1, int(round(roof_equipment_count**0.5)))
+        cols = max(1, round(roof_equipment_count**0.5))
         col = index % cols
         row = index // cols
         rows = max(1, (roof_equipment_count + cols - 1) // cols)
@@ -2871,7 +2871,7 @@ def _procedural_road_blueprint(
         minimum=0,
         maximum=32,
     )
-    segment_length = length / segment_count
+    length / segment_count
     route_profile = path_profile_from_controls(
         controls,
         family="procedural_road",
@@ -3202,7 +3202,7 @@ def _procedural_road_blueprint(
         )
     if assembly_member and assembly_mode in {"route_network", "chain", "loop", "ring"}:
         endpoints = [("start", -length * 0.50), ("end", length * 0.50)]
-        for index, (label, z) in enumerate(endpoints):
+        for _index, (label, z) in enumerate(endpoints):
             components.append(
                 _component(
                     f"route_network_{label}_coupler_region",
@@ -3459,7 +3459,7 @@ def _procedural_terrain_blueprint(
         )
     ]
     if patch_count > 1:
-        columns = max(1, int(round(patch_count**0.5)))
+        columns = max(1, round(patch_count**0.5))
         rows = max(1, (patch_count + columns - 1) // columns)
         tile_w = width / columns
         tile_d = depth / rows
@@ -3683,7 +3683,7 @@ def _procedural_city_block_blueprint(
         ),
     ]
 
-    columns = max(1, int(round(lot_count**0.5)))
+    columns = max(1, round(lot_count**0.5))
     rows = max(1, (lot_count + columns - 1) // columns)
     lot_w = (width - road_width * 1.4) / max(1, columns)
     lot_d = (depth - road_width * 1.4) / max(1, rows)
@@ -4003,7 +4003,7 @@ def _procedural_interior_blueprint(
             )
         )
     if room_count > 1:
-        columns = room_count if room_layout in {"linear", "hall"} else max(1, int(round(room_count**0.5)))
+        columns = room_count if room_layout in {"linear", "hall"} else max(1, round(room_count**0.5))
         rows = max(1, (room_count + columns - 1) // columns)
         cell_w = width / columns
         cell_d = depth / rows
@@ -4168,7 +4168,7 @@ def _procedural_interior_blueprint(
         )
 
     for index in range(light_count):
-        columns = max(1, int(round(light_count**0.5)))
+        columns = max(1, round(light_count**0.5))
         col = index % columns
         row = index // columns
         rows = max(1, (light_count + columns - 1) // columns)
@@ -4186,7 +4186,7 @@ def _procedural_interior_blueprint(
             )
         )
     for index in range(furniture_cluster_count):
-        columns = max(1, int(round(furniture_cluster_count**0.5)))
+        columns = max(1, round(furniture_cluster_count**0.5))
         col = index % columns
         row = index // columns
         rows = max(1, (furniture_cluster_count + columns - 1) // columns)
@@ -4204,7 +4204,7 @@ def _procedural_interior_blueprint(
             )
         )
     for index in range(table_count):
-        columns = max(1, int(round(table_count**0.5)))
+        columns = max(1, round(table_count**0.5))
         col = index % columns
         row = index // columns
         rows = max(1, (table_count + columns - 1) // columns)
@@ -4491,7 +4491,7 @@ def _procedural_furniture_blueprint(
         + lamp_count
         + loose_cushion_count,
     )
-    columns = max(1, int(round(group_count**0.5)))
+    columns = max(1, round(group_count**0.5))
     rows = max(1, (group_count + columns - 1) // columns)
     cell_w = width / max(1, columns)
     cell_d = depth / max(1, rows)
@@ -4919,7 +4919,7 @@ def _procedural_foliage_blueprint(
 
     positions: list[tuple[float, float]] = []
     feature_count = max(1, trunk_count + bush_count + grass_count + rock_count + mushroom_count + log_count + planter_count)
-    columns = max(1, int(round(feature_count**0.5)))
+    columns = max(1, round(feature_count**0.5))
     rows = max(1, (feature_count + columns - 1) // columns)
     cell_w = width / max(1, columns)
     cell_d = depth / max(1, rows)
@@ -5343,7 +5343,7 @@ def _procedural_urban_prop_blueprint(
         + crate_count
         + bollard_count,
     )
-    columns = max(2, int(round(feature_count**0.5)))
+    columns = max(2, round(feature_count**0.5))
     rows = max(1, (feature_count + columns - 1) // columns)
     cell_w = width / max(1, columns)
     cell_d = depth / max(1, rows)
@@ -5885,7 +5885,7 @@ def _procedural_infrastructure_blueprint(
         )
 
     feature_count = max(1, drain_count + hydrant_count + transformer_count + junction_box_count + valve_count + manhole_count)
-    columns = max(2, int(round(feature_count**0.5)))
+    columns = max(2, round(feature_count**0.5))
     rows = max(1, (feature_count + columns - 1) // columns)
     cell_w = width / max(1, columns)
     cell_d = depth / max(1, rows)
@@ -6021,7 +6021,7 @@ def _procedural_infrastructure_blueprint(
                 "terrain_cluster": ["terrain_anchor", "root_socket"],
             }.get(assembly_mode, ["assembly_slot"])
 
-        columns = 1 if assembly_mode == "rack" else max(1, int(round(assembly_slot_count**0.5)))
+        columns = 1 if assembly_mode == "rack" else max(1, round(assembly_slot_count**0.5))
         rows = max(1, (assembly_slot_count + columns - 1) // columns)
         cell_w = width * 0.82 / max(1, columns)
         cell_d = depth * 0.76 / max(1, rows)
@@ -6521,7 +6521,7 @@ def _procedural_access_blueprint(
     )
 
     feature_count = max(1, ladder_count + gantry_count + elevator_count + platform_count + scaffold_count + safety_gate_count)
-    columns = max(2, int(round(feature_count**0.5)))
+    columns = max(2, round(feature_count**0.5))
     rows = max(1, (feature_count + columns - 1) // columns)
     cell_w = width / max(1, columns)
     cell_d = depth / max(1, rows)
@@ -6649,7 +6649,7 @@ def _procedural_access_blueprint(
             )
         )
     if assembly_member and assembly_mode in {"access_chain", "chain", "loop", "ring"}:
-        for index, (label, z) in enumerate((("start", -depth * 0.48), ("end", depth * 0.48))):
+        for _index, (label, z) in enumerate((("start", -depth * 0.48), ("end", depth * 0.48))):
             components.append(
                 _component(
                     f"access_chain_{label}_coupler_region",
@@ -9031,7 +9031,7 @@ def _procedural_setpiece_blueprint(
         )
 
     if actor_marker_count:
-        columns = max(1, min(12, int(round(actor_marker_count**0.5))))
+        columns = max(1, min(12, round(actor_marker_count**0.5)))
         rows = max(1, (actor_marker_count + columns - 1) // columns)
         for index in range(actor_marker_count):
             column = index % columns

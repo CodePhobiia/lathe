@@ -11,13 +11,12 @@ Emits 2 solid.box ops (leaves) + 1 solid.cylinder op (barrel/pin).
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...attributes.hinge import HingeAttributes
 from ...context import ConstructionNodeTyped, SynthesizerContext
 from ...registry import GeneratorCapabilityManifest, NodeTypeGenerator
-
 
 _MANIFEST = GeneratorCapabilityManifest(
     node_type="hinge",
@@ -41,7 +40,8 @@ _MANIFEST = GeneratorCapabilityManifest(
 
 def _leaf_extents(pin_axis: str, w: float, h: float, t: float) -> dict[str, float]:
     """Pin axis controls h direction (leaf_height). The remaining axes
-    are width (longer) x thickness (thinner)."""
+    are width (longer) x thickness (thinner).
+    """
     if pin_axis == "x":
         return {"width_cm": h, "height_cm": w, "depth_cm": t}
     if pin_axis == "y":

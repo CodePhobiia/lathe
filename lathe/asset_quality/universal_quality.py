@@ -163,8 +163,8 @@ def _as_dict(value: Any) -> dict[str, Any]:
 
 
 __all__ = [
-    "UNIVERSAL_QUALITY_VERSION",
     "QUALITY_DIMENSIONS",
+    "UNIVERSAL_QUALITY_VERSION",
     "universal_quality_metrics",
     "universal_quality_results",
     "universal_quality_scores",

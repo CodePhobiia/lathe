@@ -14,13 +14,12 @@ governs the bar distribution pattern:
 from __future__ import annotations
 
 import math
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...attributes.guard import GuardAttributes
 from ...context import ConstructionNodeTyped, SynthesizerContext
 from ...registry import GeneratorCapabilityManifest, NodeTypeGenerator
-
 
 _MANIFEST = GeneratorCapabilityManifest(
     node_type="guard",

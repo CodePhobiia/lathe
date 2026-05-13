@@ -59,7 +59,16 @@ The validator returns this additive payload, which is exposed under
     "debug_material_preview_penalty": 0.332,
     "highlow_fake_detail_penalty": 0.55,
     "attachment_seating_quality": 0.992,
-    "primary_secondary_tertiary_balance": 0.978
+    "primary_secondary_tertiary_balance": 0.978,
+    "family_grammar_coverage": 1.0,
+    "box_stack_detector": 0.95,
+    "edge_density_variance": 0.88,
+    "curvature_distribution": 0.92,
+    "topology_class_compliance": 0.97,
+    "texel_density_consistency": 0.91,
+    "silhouette_multi_angle": 0.0,
+    "frequency_energy": 0.0,
+    "pbr_chart_compliance": 0.0
   },
   "warnings": [
     "hero asset lacks meaningful high-poly/low-poly distinction (highlow_fake_detail_penalty=0.550)"
@@ -72,19 +81,34 @@ The validator returns this additive payload, which is exposed under
       "metric": "highlow_fake_detail_penalty",
       "severity": "warning",
       "warning": "hero asset lacks meaningful high-poly/low-poly distinction (highlow_fake_detail_penalty=0.550)",
-      "recommendation": "Add a real high-poly source ..."
+      "recommendation": "Add a real high-poly source ...",
+      "repair_route": {"executor": "...", "target_ir": "...", "actions": [...], "status": "registered"},
+      "repair_actions": ["..."]
     }
-  ]
+  ],
+  "repair_routes": [
+    {"metric": "highlow_fake_detail_penalty", "executor": "...", "target_ir": "...", "actions": [...], "status": "registered"}
+  ],
+  "render_class_validators": {
+    "version": "lathe.validate.render_class_v1",
+    "validators": {"box_stack_detector": {"...": "..."}, "...": "..."},
+    "metrics": {"box_stack_detector": 0.95, "...": "..."},
+    "findings": []
+  }
 }
 ```
 
-The three result arrays are index-aligned. `warnings[i]`,
-`recommendations[i]`, and `findings[i]` refer to the same triggered
-metric. The simple-string `warnings` and `recommendations` arrays are
-preserved for backward compatibility with any consumer wired to Phase 1
-RC1; the `findings` array is the structured form intended for downstream
-classifiers (e.g. Phase 10's vision-critique loop) that need to map a
-warning back to its source metric without re-parsing the warning text.
+The simple-string `warnings` and `recommendations` arrays are
+index-aligned with the warning-severity findings. They list the
+Phase-1 deterministic-diagnostic warnings only: `warnings[i]`,
+`recommendations[i]`, and the i-th warning-severity `findings` entry
+refer to the same triggered metric. `findings` may also carry
+informational entries (e.g. `severity: "info"`,
+`status: "renderer_unavailable"`) emitted by render-class validators;
+those are deliberately excluded from `warnings`/`recommendations` so
+those streams stay actionable. The structured `findings` array is the
+form intended for downstream classifiers that need to map a finding
+back to its source metric without re-parsing warning text.
 
 ### 2.1 `findings` entry shape
 
@@ -92,16 +116,38 @@ Each `findings[i]` record contains:
 
 | Field | Type | Notes |
 |---|---|---|
-| `metric` | string | One of the five metric names listed in §3. |
-| `severity` | string | Always `"warning"` at Phase 1. Phase 7 strict mode may add `"error"`. |
-| `warning` | string | Identical to `warnings[i]` — verbatim copy for self-contained record. |
-| `recommendation` | string | Identical to `recommendations[i]` — verbatim copy. |
+| `metric` | string | Phase-1 metric (see §3) or a render-class validator name (`box_stack_detector`, `edge_density_variance`, `curvature_distribution`, `topology_class_compliance`, `texel_density_consistency`, `silhouette_multi_angle`, `frequency_energy`, `pbr_chart_compliance`). |
+| `severity` | string | `"warning"` for the Phase-1 deterministic warnings and any failing render-class validator; `"info"` for non-actionable signals such as renderer-unavailable findings. |
+| `status` | string | Optional render-class status field: `"pass"`, `"warn"`, `"fail"`, `"error"`, or `"renderer_unavailable"`. |
+| `warning` | string | Identical to `warnings[i]` for warning-severity findings — verbatim copy for self-contained record. |
+| `recommendation` | string | Identical to `recommendations[i]` for warning-severity findings — verbatim copy. |
+| `repair_route` | dict | (Phase-1 warnings) the registered repair route bound to this metric. |
+| `repair_actions` | list[string] | (Phase-1 warnings) flat list of repair-loop action identifiers. |
+| `score` | number | (Render-class findings) raw validator score in `[0, 1]`. |
 
-Because `severity` is always `"warning"` at Phase 1, the validator
-remains informational-only and never blocks certification. Phase 7's
-strict-mode opt-in is the first place a `severity: "error"` finding
-could appear; until then, downstream tools may safely treat all Phase 1
-findings as advisory.
+`severity` is `"warning"` for deterministic Phase-1 metrics that
+cross their threshold and for any render-class validator returning
+`warn`/`fail`/`error`. `severity` is `"info"` for render-class
+`renderer_unavailable` notes. The validator remains informational at
+Phase 1 and never blocks certification.
+
+### 2.2 Render-class validators block
+
+`render_class_validators` is a nested transparent payload from
+`lathe.validators.render_class.evaluate_render_class_validators`. It
+exposes the eight roadmap §5.9 child validators (5 mesh-only, 3
+renderer-dependent) and their per-child reports. Its `metrics` are
+merged into the top-level `metrics` dict so dashboards can surface
+every quality signal under a single namespace.
+
+### 2.3 Repair routes
+
+`repair_routes` is an index-aligned list of structured repair
+recommendations for the Phase-1 warning findings. Each entry names the
+executor (`lathe.repair_executor.execute_shape_repairs` or
+`lathe.repair_loop.run_repair_loop`), the target IR, and the registered
+action identifiers. When no repair action is registered for a metric,
+`status` is `"no_registered_repair_action"` and `actions` is empty.
 
 ---
 

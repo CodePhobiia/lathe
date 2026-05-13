@@ -28,7 +28,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.family_grammar import (
     FAMILY_GRAMMAR_VERSION,
     FamilyGrammar,
@@ -36,7 +35,6 @@ from lathe.asset_quality.family_grammar import (
     FamilyRequirement,
     evaluate_family_grammar,
 )
-
 
 _EXPECTED_PAYLOAD_KEYS: frozenset[str] = frozenset(
     {
@@ -286,10 +284,10 @@ def test_family_grammar_result_dataclass_is_frozen() -> None:
         recommendations=(),
     )
 
-    assert getattr(sample, "coverage") == 1.0
+    assert sample.coverage == 1.0
     assert sample.satisfied_count == 1
     with pytest.raises(FrozenInstanceError):
-        setattr(sample, "coverage", 0.0)
+        sample.coverage = 0.0
 
 
 def test_industrial_crate_grammar_has_ten_requirements_in_canonical_order() -> None:

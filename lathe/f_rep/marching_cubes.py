@@ -11,13 +11,11 @@ coordinates.
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 
 from .evaluator import sample_grid
 from .expressions import SDFExpr
-from .mc_tables import EDGE_TABLE, TRI_TABLE, EDGE_VERTEX_INDICES
+from .mc_tables import EDGE_TABLE, EDGE_VERTEX_INDICES, TRI_TABLE
 
 
 def _have_skimage() -> bool:
@@ -62,7 +60,7 @@ def _extract_skimage(
     *,
     iso: float,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """skimage path — convert (z, y, x) verts to world (x, y, z)."""
+    """Skimage path — convert (z, y, x) verts to world (x, y, z)."""
     import skimage.measure  # type: ignore
 
     # skimage expects spacing per axis matching the volume's index order.

@@ -22,6 +22,8 @@ a replacement for the entire legacy module.
 
 from __future__ import annotations
 
+import contextlib
+import itertools
 import math
 from collections.abc import Iterable
 from copy import deepcopy
@@ -372,7 +374,7 @@ def _sdf_batch_ultra_resolution(bounds_min: np.ndarray, bounds_max: np.ndarray) 
     high = _sdf_boolean_resolution(bounds_min, bounds_max, high_detail=True)
     rounded: list[int] = []
     for value in high:
-        scaled = max(64, int(round(float(value) * 1.5)))
+        scaled = max(64, round(float(value) * 1.5))
         multiple = int(round(float(scaled) / 32.0) * 32)
         rounded.append(int(max(64, min(192, multiple))))
     return tuple(rounded)
@@ -977,8 +979,8 @@ def _rectangular_extruded_profile_bounds(
             return None
     corner_keys = {
         (
-            int(round((point[0] - plane_min[0]) / max(spans[0], 1e-9))),
-            int(round((point[1] - plane_min[1]) / max(spans[1], 1e-9))),
+            round((point[0] - plane_min[0]) / max(spans[0], 1e-9)),
+            round((point[1] - plane_min[1]) / max(spans[1], 1e-9)),
         )
         for point in plane_points
     }
@@ -1157,10 +1159,8 @@ def _requested_profile_hole_count_from_shape_metadata(metadata: dict[str, Any]) 
         seen.add(marker)
         modifier = current.get("v2_mount_plate_modifier")
         if isinstance(modifier, dict):
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 max_count = max(max_count, int(modifier.get("hole_count") or 0))
-            except (TypeError, ValueError):
-                pass
         semantic_metadata = current.get("semantic_metadata")
         if isinstance(semantic_metadata, dict):
             shape_v2 = semantic_metadata.get("shape_ir_v2")
@@ -2525,7 +2525,7 @@ def _mesh_from_open_box_shell(
         coord[open_axis] = float(axial)
         coord[plane_axes[0]] = float(point[0])
         coord[plane_axes[1]] = float(point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -3859,7 +3859,6 @@ def _mesh_from_axis_extruded_polygon_union(
 ) -> tuple[trimesh.Trimesh, dict[str, Any]] | None:
     try:
         from shapely.geometry import LineString, Polygon
-        from shapely.errors import GEOSException
         from shapely.ops import triangulate, unary_union
     except (ImportError, ModuleNotFoundError):
         return None
@@ -3971,7 +3970,7 @@ def _mesh_from_axis_extruded_polygon_union(
         return split if not split.is_empty else polygon
 
     slabs: list[dict[str, Any]] = []
-    for left, right in zip(axis_values, axis_values[1:], strict=False):
+    for left, right in itertools.pairwise(axis_values):
         if right <= left + 1e-9:
             continue
         mid = (float(left) + float(right)) * 0.5
@@ -3999,7 +3998,7 @@ def _mesh_from_axis_extruded_polygon_union(
         coord[axis] = float(axial)
         coord[plane_axes[0]] = float(point[0])
         coord[plane_axes[1]] = float(point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -4179,8 +4178,8 @@ def _mesh_from_box_blind_profile_cuts_with_raised_details(
     sections: int = 48,
 ) -> tuple[trimesh.Trimesh, dict[str, Any]] | None:
     try:
-        from shapely.geometry import Polygon
         from shapely.errors import GEOSException
+        from shapely.geometry import Polygon
         from shapely.ops import unary_union
     except (ImportError, ModuleNotFoundError):
         return None
@@ -4351,7 +4350,7 @@ def _mesh_from_box_blind_profile_cuts_with_raised_details(
             open_side = 0
         for axial, _ in rings:
             levels.add(float(axial))
-        for (left_axial, left_radius), (right_axial, right_radius) in zip(rings, rings[1:], strict=False):
+        for (left_axial, left_radius), (right_axial, right_radius) in itertools.pairwise(rings):
             if abs(float(left_radius) - float(right_radius)) <= 1e-9:
                 continue
             segment_low = min(float(left_axial), float(right_axial))
@@ -4418,7 +4417,7 @@ def _mesh_from_box_blind_profile_cuts_with_raised_details(
                 return None
             if len(profile_rings) != len(rings) or any(len(ring) != len(profile_points) for ring in profile_rings):
                 return None
-            for (left_axial, _), (right_axial, _) in zip(rings, rings[1:], strict=False):
+            for (left_axial, _), (right_axial, _) in itertools.pairwise(rings):
                 segment_low = min(float(left_axial), float(right_axial))
                 segment_high = max(float(left_axial), float(right_axial))
                 for index in range(9):
@@ -4483,7 +4482,7 @@ def _mesh_from_box_blind_profile_cuts_with_raised_details(
         profile_rings = detail.get("profile_rings")
         points = detail["profile_points"]
         if profile_rings is not None:
-            for index, ((left_axial, _), (right_axial, _)) in enumerate(zip(rings, rings[1:], strict=False)):
+            for index, ((left_axial, _), (right_axial, _)) in enumerate(itertools.pairwise(rings)):
                 segment_low = min(float(left_axial), float(right_axial))
                 segment_high = max(float(left_axial), float(right_axial))
                 if axial < segment_low - 1e-9 or axial > segment_high + 1e-9:
@@ -4504,7 +4503,7 @@ def _mesh_from_box_blind_profile_cuts_with_raised_details(
 
     entries: list[dict[str, Any]] = []
     axis_levels = _axis_values(*levels)
-    for left, right in zip(axis_levels, axis_levels[1:], strict=False):
+    for left, right in itertools.pairwise(axis_levels):
         if right <= left + 1e-9:
             continue
         mid = (left + right) * 0.5
@@ -4910,7 +4909,7 @@ def _mesh_from_box_through_profile_cut(
     bevel_segments: int = 1,
 ) -> tuple[trimesh.Trimesh, dict[str, Any]] | None:
     try:
-        from shapely.geometry import LineString, Polygon
+        from shapely.geometry import Polygon
         from shapely.ops import triangulate
     except (ImportError, ModuleNotFoundError):
         return None
@@ -4971,7 +4970,7 @@ def _mesh_from_box_through_profile_cut(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -5210,7 +5209,7 @@ def _mesh_from_box_blind_profile_cut(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -5509,7 +5508,7 @@ def _mesh_from_box_blind_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -5825,7 +5824,7 @@ def _mesh_from_box_through_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -6624,11 +6623,7 @@ def _radius_at_profile_axial(
     profile: list[tuple[float, float]],
     axial: float,
 ) -> float | None:
-    for (left_axial, left_radius), (right_axial, right_radius) in zip(
-        profile,
-        profile[1:],
-        strict=False,
-    ):
+    for (left_axial, left_radius), (right_axial, right_radius) in itertools.pairwise(profile):
         if abs(right_axial - left_axial) <= 1e-9:
             continue
         low = min(left_axial, right_axial)
@@ -6959,7 +6954,7 @@ def _mesh_from_box_revolved_profile_cut(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -7105,7 +7100,7 @@ def _mesh_from_box_blind_revolved_profile_cut(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -7226,7 +7221,6 @@ def _mesh_from_box_blind_revolved_profile_cut(
         "shoulder_face_count": shoulder_face_count,
         "chamfer_face_count": chamfer_face_count,
         "bevel_face_count": rim_bevel_face_count,
-        "bevel_applied": bool(bevel_applied),
         "ring_count": len(rings),
         "radial_section_count": sections,
         "min_radius_cm": float(min(radius for _, radius in rings)),
@@ -7353,7 +7347,7 @@ def _mesh_from_box_blind_revolved_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -7652,7 +7646,7 @@ def _mesh_from_box_opposite_side_blind_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -8096,7 +8090,7 @@ def _mesh_from_box_sampled_layered_blind_profile_cut_cells(
             return None
         for axial, _ in rings:
             levels.add(float(axial))
-        for (left_axial, left_radius), (right_axial, right_radius) in zip(rings, rings[1:], strict=False):
+        for (left_axial, left_radius), (right_axial, right_radius) in itertools.pairwise(rings):
             if abs(float(left_radius) - float(right_radius)) <= 1e-9:
                 continue
             segment_low = min(float(left_axial), float(right_axial))
@@ -8111,7 +8105,7 @@ def _mesh_from_box_sampled_layered_blind_profile_cut_cells(
     axis_levels = _axis_values(*levels)
     entries: list[dict[str, Any]] = []
     slab_count = 0
-    for left, right in zip(axis_levels, axis_levels[1:], strict=False):
+    for left, right in itertools.pairwise(axis_levels):
         if right <= left + 1e-9:
             continue
         mid = (left + right) * 0.5
@@ -8360,7 +8354,7 @@ def _mesh_from_box_blind_mixed_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -8592,7 +8586,7 @@ def _mesh_from_box_blind_mixed_profile_cuts(
                     (open_side_ref >= 0 and axial >= floor_axial - 1e-9)
                     or (open_side_ref < 0 and axial <= floor_axial + 1e-9)
                 ):
-                    cutter = item.get("cap_cutter") if item["cut_kind"] != "extruded_blind" else item.get("cap_cutter")
+                    cutter = item.get("cap_cutter")
                     if cutter is not None and not cutter.is_empty:
                         active.append(cutter)
             if not active:
@@ -8621,7 +8615,7 @@ def _mesh_from_box_blind_mixed_profile_cuts(
             return face_count
 
         boundary_levels = sorted({low, high, *floor_levels})
-        for left, right in zip(boundary_levels, boundary_levels[1:], strict=False):
+        for left, right in itertools.pairwise(boundary_levels):
             if right <= left + 1e-9:
                 continue
             mid = (left + right) * 0.5
@@ -9005,7 +8999,11 @@ def _backend_assisted_blind_profile_difference(
     attempted_method: str,
 ) -> trimesh.Trimesh | None:
     try:
-        result = trimesh.boolean.difference([a, b])
+        # Import lazily to avoid a hard dependency on exact_solids from the
+        # reference kernel during stage-execution startup. See
+        # ``lathe.exact_solids._preferred_boolean_engine`` for the rationale.
+        from ..exact_solids import _TRIMESH_BOOLEAN_ENGINE
+        result = trimesh.boolean.difference([a, b], engine=_TRIMESH_BOOLEAN_ENGINE)
     except (ImportError, ValueError, RuntimeError, AttributeError, TypeError):
         return None
     if isinstance(result, list):
@@ -9132,7 +9130,7 @@ def _mesh_from_box_revolved_profile_cuts(
     sections: int = 48,
 ) -> tuple[trimesh.Trimesh, dict[str, Any]] | None:
     try:
-        from shapely.geometry import LineString, Polygon
+        from shapely.geometry import Polygon
         from shapely.ops import triangulate, unary_union
     except (ImportError, ModuleNotFoundError):
         return None
@@ -9247,7 +9245,7 @@ def _mesh_from_box_revolved_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -9571,7 +9569,7 @@ def _mesh_from_box_mixed_profile_cuts(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -9924,7 +9922,7 @@ def _mesh_from_box_profile_cuts_with_open_extruded_boundaries(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -10613,6 +10611,7 @@ def _mesh_from_box_cylinder_bosses(
     sections: int = 48,
 ) -> tuple[trimesh.Trimesh, dict[str, Any]] | None:
     try:
+        from shapely.errors import GEOSException
         from shapely.geometry import LineString, Polygon
         from shapely.ops import triangulate, unary_union
     except (ImportError, ModuleNotFoundError):
@@ -10699,7 +10698,7 @@ def _mesh_from_box_cylinder_bosses(
             or outer_axial >= boss_base_axial - 1e-9
         ):
             return None
-        for (left_axial, _), (right_axial, _) in zip(rings, rings[1:], strict=False):
+        for (left_axial, _), (right_axial, _) in itertools.pairwise(rings):
             if side > 0 and right_axial < left_axial - 1e-9:
                 return None
             if side < 0 and right_axial > left_axial + 1e-9:
@@ -11097,7 +11096,7 @@ def _mesh_from_box_cylinder_bosses(
         coord[cut_axis] = float(axial)
         coord[plane_axes[0]] = float(plane_point[0])
         coord[plane_axes[1]] = float(plane_point[1])
-        key = tuple(int(round(value * 1_000_000)) for value in coord)
+        key = tuple(round(value * 1_000_000) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -12105,7 +12104,7 @@ def _through_cuts_from_profile_cut_state(
             if len(profile_points) < 3:
                 return None
             cut["profile_points"] = profile_points
-            with suppress(TypeError, ValueError):
+            with contextlib.suppress(TypeError, ValueError):
                 cut["bevel_width"] = max(0.0, float(raw_cut.get("bevel_width") or 0.0))
         elif "rings" in raw_cut:
             try:
@@ -12383,7 +12382,7 @@ def _exact_axis_aligned_box_cylinder_boss_union_ordered(
         part = str(cylinder.get("part") or "cylinder")
         source_kind = "cylinder"
     else:
-        assert revolved_profile is not None
+        assert revolved_profile is not None  # noqa: S101 — exhaustive branch: cylinder/revolved_profile are the only kinds
         axis = str(revolved_profile["axis"])
         cut_axis = {"x": 0, "y": 1, "z": 2}[axis]
         plane_axes = tuple(index for index in range(3) if index != cut_axis)
@@ -12999,7 +12998,7 @@ def _boss_record_for_attachment_surface(
         part = str(cylinder.get("part") or "cylinder")
         source_kind = "cylinder"
     else:
-        assert revolved_profile is not None
+        assert revolved_profile is not None  # noqa: S101 — exhaustive branch: cylinder/revolved_profile are the only kinds
         axis = str(revolved_profile["axis"])
         if {"x": 0, "y": 1, "z": 2}[axis] != cut_axis:
             return None
@@ -13557,7 +13556,7 @@ def _block_mesh_from_voxel_indices(
     scale = float(pitch)
 
     def add_vertex(coord: tuple[float, float, float]) -> int:
-        key = tuple(int(round(value * 2.0)) for value in coord)
+        key = tuple(round(value * 2.0) for value in coord)
         existing = vertex_index.get(key)
         if existing is not None:
             return existing
@@ -14017,7 +14016,7 @@ def _sdf_circular_swept_profile_path_metadata(primitive: dict[str, Any]) -> dict
             path.append(parsed)
     except (TypeError, ValueError):
         return None
-    if any(float(np.linalg.norm(end - start)) <= 1e-9 for start, end in zip(path, path[1:])):
+    if any(float(np.linalg.norm(end - start)) <= 1e-9 for start, end in itertools.pairwise(path)):
         return None
     return {
         "radius": float(radius),
@@ -14091,7 +14090,18 @@ def _sdf_expr_from_sdf_boolean_metadata(metadata: dict[str, Any]) -> tuple[Any, 
 def _sdf_expr_from_primitive_metadata(primitive: dict[str, Any]) -> tuple[Any, dict[str, Any]] | None:
     primitive_type = str(primitive.get("primitive_type") or "")
     try:
-        from ..f_rep import Box, Capsule, Cylinder, Rotate, SmoothSubtract, SmoothUnion, Sphere, Subtract, Torus, Translate
+        from ..f_rep import (
+            Box,
+            Capsule,
+            Cylinder,
+            Rotate,
+            SmoothSubtract,
+            SmoothUnion,
+            Sphere,
+            Subtract,
+            Torus,
+            Translate,
+        )
     except (ImportError, ModuleNotFoundError):
         return None
     try:
@@ -14233,7 +14243,7 @@ def _sdf_expr_from_primitive_metadata(primitive: dict[str, Any]) -> tuple[Any, d
             primitive_center = np.asarray(center, dtype=np.float64)
             path = raw_path if bool(swept_path.get("world_path")) else [primitive_center + point for point in raw_path]
             expr: Any | None = None
-            for start, end in zip(path, path[1:]):
+            for start, end in itertools.pairwise(path):
                 direction = end - start
                 length = float(np.linalg.norm(direction))
                 member_expr = _align_y_to_direction(Capsule(half_height=length * 0.5, radius=radius), direction)
@@ -15435,7 +15445,7 @@ class ReferenceKernel:
                 "passthrough": False,
                 "source_face_count": int(source_face_count),
                 "largest_source_face_count": int(largest_source_face_count),
-                "result_face_count": int(len(current.faces)),
+                "result_face_count": len(current.faces),
             }
             return None
         if not bool(current.is_watertight) or body_count != 1:
@@ -15558,7 +15568,7 @@ class ReferenceKernel:
         exact = _exact_profile_cut_state_box_detail_batch_union(exact_inputs)
         if exact is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         exact,
                         original_operand_count=len(seq),
@@ -15566,12 +15576,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else exact
-                )
+
             )
         exact = _exact_axis_aligned_box_detail_boss_batch_union(exact_inputs)
         if exact is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         exact,
                         original_operand_count=len(seq),
@@ -15579,12 +15589,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else exact
-                )
+
             )
         disjoint = _disjoint_additive_batch_union(exact_inputs)
         if disjoint is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         disjoint,
                         original_operand_count=len(seq),
@@ -15592,12 +15602,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else disjoint
-                )
+
             )
         exact = _exact_axis_aligned_box_detail_boss_batch_union(exact_inputs)
         if exact is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         exact,
                         original_operand_count=len(seq),
@@ -15605,12 +15615,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else exact
-                )
+
             )
         exact = _exact_axis_aligned_box_extruded_profile_batch_union(exact_inputs)
         if exact is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         exact,
                         original_operand_count=len(seq),
@@ -15618,12 +15628,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else exact
-                )
+
             )
         exact = _exact_axis_aligned_box_batch_union(exact_inputs)
         if exact is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         exact,
                         original_operand_count=len(seq),
@@ -15631,12 +15641,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else exact
-                )
+
             )
         exact = _exact_axis_aligned_box_cylinder_boss_batch_union(exact_inputs)
         if exact is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         exact,
                         original_operand_count=len(seq),
@@ -15644,12 +15654,12 @@ class ReferenceKernel:
                     )
                     if expanded
                     else exact
-                )
+
             )
         profile_additive = _profile_cut_state_additive_batch_union(exact_inputs)
         if profile_additive is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         profile_additive,
                         original_operand_count=len(seq),
@@ -15657,7 +15667,7 @@ class ReferenceKernel:
                     )
                     if expanded
                     else profile_additive
-                )
+
             )
         graph_union = _circular_swept_profile_graph_batch_union(
             exact_inputs,
@@ -15666,7 +15676,7 @@ class ReferenceKernel:
         )
         if graph_union is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         graph_union,
                         original_operand_count=len(seq),
@@ -15674,7 +15684,7 @@ class ReferenceKernel:
                     )
                     if expanded
                     else graph_union
-                )
+
             )
         sdf_union = _sdf_primitive_batch_union(
             exact_inputs,
@@ -15683,7 +15693,7 @@ class ReferenceKernel:
         )
         if sdf_union is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         sdf_union,
                         original_operand_count=len(seq),
@@ -15691,7 +15701,7 @@ class ReferenceKernel:
                     )
                     if expanded
                     else sdf_union
-                )
+
             )
         sdf_union = _sdf_supported_primitive_batch_union(
             exact_inputs,
@@ -15700,7 +15710,7 @@ class ReferenceKernel:
         )
         if sdf_union is not None:
             return batch(
-                (
+
                     _mark_expanded_batch_union_result(
                         sdf_union,
                         original_operand_count=len(seq),
@@ -15708,7 +15718,7 @@ class ReferenceKernel:
                     )
                     if expanded
                     else sdf_union
-                )
+
             )
         if expanded:
             overlapping_additive = _overlapping_additive_batch_union(

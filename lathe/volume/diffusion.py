@@ -44,7 +44,7 @@ def simulate_diffusion(
 
 
 def _laplacian_step(field: np.ndarray, alpha: float) -> np.ndarray:
-    nx, ny, nz = field.shape
+    _nx, _ny, _nz = field.shape
     out = field * (1.0 - 6.0 * alpha)
 
     out[1:, :, :] += alpha * field[:-1, :, :]

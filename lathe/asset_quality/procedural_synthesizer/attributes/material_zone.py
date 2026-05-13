@@ -43,11 +43,11 @@ class MaterialZoneAttributes:
     def __post_init__(self) -> None:
         if not isinstance(self.zone_id, str) or not self.zone_id:
             raise ValueError(
-                f"material_zone.zone_id must be a non-empty string"
+                "material_zone.zone_id must be a non-empty string"
             )
         if not isinstance(self.material_hint, str) or not self.material_hint:
             raise ValueError(
-                f"material_zone.material_hint must be a non-empty string"
+                "material_zone.material_hint must be a non-empty string"
             )
         if not isinstance(self.priority, int):
             raise TypeError(
@@ -62,11 +62,11 @@ class MaterialZoneAttributes:
         for tag in self.tags:
             if not isinstance(tag, str) or not tag:
                 raise ValueError(
-                    f"material_zone.tags entries must be non-empty strings"
+                    "material_zone.tags entries must be non-empty strings"
                 )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "MaterialZoneAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> MaterialZoneAttributes:
         """Validate a raw attribute dict and produce a typed instance."""
         if not isinstance(attrs, dict):
             raise TypeError(

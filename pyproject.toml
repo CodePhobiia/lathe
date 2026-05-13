@@ -135,6 +135,9 @@ include = ["lathe*"]
 line-length = 110
 target-version = "py311"
 src = ["lathe"]
+# Exclude transient build/dist output. These are not source — they are
+# wheel/sdist build artifacts produced by `python -m build`.
+extend-exclude = ["build", "dist"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "SIM", "RET", "C90", "N", "D", "PL", "TRY", "BLE", "PTH", "RUF", "S"]
@@ -154,9 +157,11 @@ ignore = [
   "D102",
   "D103",
   "D104",
+  "D105",  # undocumented-magic-method (matches D100-D104, D107 already ignored)
   "D107",
   "D205",
   "D301",
+  "D417",  # undocumented-param (heuristic; google-style optional params noisy)
   "E402",
   "E501",
   "N801",
@@ -176,13 +181,16 @@ ignore = [
   "PLW0108",
   "PLW0602",
   "PLW0603",
+  "PLW2901",  # for-loop variable rebound — used pervasively across geometry/shape kernels for value normalisation (e.g. axial = float(axial)). Listed alongside the existing PLW0108/0602/0603 legacy-baseline ignores.
   "PTH100",
   "PTH102",
   "PTH112",
   "PTH118",
   "RUF005",
   "RUF012",
+  "S311",  # non-crypto random — every procedural-generation site (scatter, vegetation branches/leaves, CGA, mesh_program) deliberately uses `random` for deterministic-with-seed asset generation. `secrets`-module is wrong for these call-sites.
   "S603",
+  "SIM102",  # collapsible-if — used pervasively for readable guard chains. Listed alongside SIM103/108/112/117 legacy-baseline ignores.
   "SIM103",
   "SIM108",
   "SIM112",
@@ -202,6 +210,29 @@ convention = "google"
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "PLR2004", "S"]
 "grammar/*" = ["ALL"]
+# Aggregator facade — F401 unused-import is the file's job (package-level re-exports
+# from submodules such as `_capabilities`, `_common`, `_core`). External callers
+# import via this module path; the underscored names are intentional package-private
+# re-exports.
+"lathe/geometry/kernel_program/__init__.py" = ["F401"]
+# `import MaterialX as mx` is the official MaterialX-Python module convention; the
+# downstream library expects the `mx` alias. Single file.
+"lathe/surface_graph/materialx.py" = ["N813"]
+# The 16×16 / 32×32 / N×N notation in geometry comments and docstrings uses the
+# Unicode MULTIPLICATION SIGN (×) deliberately for readability of grid/dimension
+# annotations. RUF002/RUF003 catch ambiguity between `×` and `x`, which is not a
+# realistic ambiguity in this codebase's geometry context.
+"lathe/shape_ir.py" = ["RUF002", "RUF003"]
+"lathe/std/terrain/heightfield.py" = ["RUF002"]
+"lathe/std/vegetation/imposter.py" = ["RUF002"]
+"lathe/std/vegetation/lod.py" = ["RUF002"]
+"lathe/validators/silhouette_multi_angle.py" = ["RUF002"]
+# The `seed_token` argument names in feature_ops and instance_pattern are
+# procedural-generation seed identifiers (used by deterministic scatter / poisson-disk
+# sampling). S106 / S107 flag them only because the name contains "token". Each
+# call-site passes a literal seed name (e.g. "socket_point"), not a credential.
+"lathe/feature_ops/__init__.py" = ["S106"]
+"lathe/instance_pattern.py" = ["S107"]
 
 [tool.ruff.format]
 # Supersedes black/isort; single source of truth.

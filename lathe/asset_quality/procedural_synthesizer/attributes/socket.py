@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_AXES: frozenset[str] = frozenset({"x", "y", "z"})
 
 _VALID_PROFILES: frozenset[str] = frozenset(
@@ -57,7 +56,7 @@ class SocketAttributes:
             raise ValueError(f"socket.chamfer_cm={self.chamfer_cm} must be >= 0")
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "SocketAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> SocketAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"socket attributes must be dict, got {type(attrs).__name__}"

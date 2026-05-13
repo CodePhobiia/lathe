@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 from lathe.subproc import run_sandboxed
 
-
 PYTHON = str(Path(sys.executable).resolve())
 
 

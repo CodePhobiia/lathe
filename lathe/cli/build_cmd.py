@@ -93,7 +93,6 @@ def _emit_report(report: dict, out_dir: Path, fmt: str, *, deterministic: bool =
     """Render the resolved report format after a successful build."""
     from ..reports import (
         canonicalize_report,
-        render_html_report,
         render_terminal_report,
         write_report,
     )

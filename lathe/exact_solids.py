@@ -2,15 +2,36 @@
 
 from __future__ import annotations
 
+import itertools
+import math
 from collections.abc import Iterable
 from contextlib import suppress
 from dataclasses import replace as dataclass_replace
-import math
 from typing import Any
 
 import numpy as np
 import trimesh
 from scipy.spatial import cKDTree
+
+
+def _preferred_boolean_engine() -> str | None:
+    """Pick a fast deterministic boolean backend for trimesh.
+
+    Trimesh dispatches to whichever of ``manifold`` (manifold3d) or
+    ``blender`` it discovers. The Blender subprocess backend has been
+    observed to hang for tens of minutes on large hard-surface programs
+    when no UI-side timeout fires; manifold3d completes the same programs
+    in seconds. When manifold3d is importable we pin the engine to it
+    explicitly so trimesh cannot fall back to the slow path silently.
+    """
+    try:
+        import manifold3d  # noqa: F401 — capability probe only
+    except ImportError:
+        return None
+    return "manifold"
+
+
+_TRIMESH_BOOLEAN_ENGINE = _preferred_boolean_engine()
 
 from .errors import ContractViolation
 from .fidelity import FidelityProfile
@@ -1049,7 +1070,7 @@ def _revolved_profile_surface_point(point: np.ndarray, primitive: ShapePrimitive
         closest = profile[0]
     else:
         closest = min(
-            (_closest_point_on_segment_2d(query, left, right) for left, right in zip(profile, profile[1:], strict=False)),
+            (_closest_point_on_segment_2d(query, left, right) for left, right in itertools.pairwise(profile)),
             key=lambda candidate: float(np.linalg.norm(query - candidate)),
         )
     return _axis_local_to_world(primitive, float(closest[0]), radial_dir * max(0.0, float(closest[1])))
@@ -1144,7 +1165,7 @@ def _generalized_extruded_profile_surface_point(
 
 def _extruded_profile_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
     polygon = primitive.profile_polygon or []
-    if len(polygon) < 3:  # noqa: PLR2004
+    if len(polygon) < 3:
         raise _missing_extruded_profile_polygon_error(primitive)
     if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
         raise _missing_extruded_profile_height_error(primitive)
@@ -1262,7 +1283,7 @@ def _swept_profile_surface_point(point: np.ndarray, primitive: ShapePrimitive) -
     center = np.asarray(primitive.center, dtype=np.float64)
     path = [center + np.asarray([float(x), float(y), float(z)], dtype=np.float64) for x, y, z in sweep_path]
     closest = min(
-        (_closest_point_on_segment_3d(point, left, right) for left, right in zip(path, path[1:], strict=False)),
+        (_closest_point_on_segment_3d(point, left, right) for left, right in itertools.pairwise(path)),
         key=lambda candidate: float(np.linalg.norm(point - candidate)),
     )
     radius = max(_swept_profile_circumradius(primitive), NUMERIC_EPSILON)
@@ -1292,7 +1313,7 @@ def _lofted_solid_surface_point(point: np.ndarray, primitive: ShapePrimitive) ->
     closest = min(
         (
             _closest_point_on_segment_3d(point, left, right)
-            for left, right in zip(path, path[1:], strict=False)
+            for left, right in itertools.pairwise(path)
         ),
         key=lambda candidate: float(np.linalg.norm(point - candidate)),
     )
@@ -1726,7 +1747,7 @@ def _primitive_surface_point(point: np.ndarray, primitive: ShapePrimitive) -> np
     if primitive.primitive_type in {"heightfield", "terrain_patch"}:
         # Heightfields are 2.5D surfaces; for surface-snap purposes treat
         # the AABB of the lifted lattice as the safe envelope.
-        nx, ny, heights, (xmin, ymin, xmax, ymax), vertical_scale = (
+        _nx, _ny, heights, (xmin, ymin, xmax, ymax), vertical_scale = (
             _validate_heightfield_inputs(primitive)
         )
         cx = 0.5 * (xmin + xmax) + float(primitive.center[0])
@@ -1774,7 +1795,7 @@ def _extruded_profile_polygon_bbox(
 ) -> tuple[float, float, float, float]:
     """Return (umin, umax, vmin, vmax) of the cross-section polygon."""
     polygon = primitive.profile_polygon or []
-    if len(polygon) < 3:  # noqa: PLR2004
+    if len(polygon) < 3:
         raise _missing_extruded_profile_polygon_error(primitive)
     us = [float(u) for u, _ in polygon]
     vs = [float(v) for _, v in polygon]
@@ -1817,7 +1838,7 @@ def _subdivision_box_corner_radii(
     if primitive.extents is None:
         raise _missing_subdivision_box_extents_error(primitive)
     radii = primitive.corner_radii
-    if radii is None or len(tuple(radii)) != 8:  # noqa: PLR2004
+    if radii is None or len(tuple(radii)) != 8:
         raise _missing_subdivision_box_corner_radii_error(primitive)
     half = np.asarray(primitive.extents, dtype=np.float64) / 2.0
     cap = float(np.min(half)) * 0.92
@@ -1859,12 +1880,12 @@ def _validate_lofted_solid_inputs(primitive: ShapePrimitive) -> None:
     cross_sections = primitive.cross_sections or []
     section_centers = primitive.section_centers or []
     if (
-        len(cross_sections) < 2  # noqa: PLR2004
+        len(cross_sections) < 2
         or len(section_centers) != len(cross_sections)
     ):
         raise _missing_lofted_solid_inputs_error(primitive)
     vertex_count = len(cross_sections[0])
-    if vertex_count < 3:  # noqa: PLR2004
+    if vertex_count < 3:
         raise _missing_lofted_solid_inputs_error(primitive)
     for section in cross_sections:
         if len(section) != vertex_count:
@@ -1982,8 +2003,8 @@ def _polybeveled_revolved_profile_points(
         "method": "profile_corner_bevel_before_revolve_v1",
         "width_cm": float(bevel_width),
         "segments": int(bevel_segments),
-        "source_profile_point_count": int(len(points)),
-        "result_profile_point_count": int(len(deduped)),
+        "source_profile_point_count": len(points),
+        "result_profile_point_count": len(deduped),
         "beveled_corner_count": int(bevel_count),
     }
 
@@ -2232,8 +2253,8 @@ def _chamfered_cylinder_mesh(
         "width_cm": float(width),
         "segments": int(bevel_segments),
         "radial_section_count": int(sections),
-        "profile_ring_count": int(len(ring_specs)),
-        "result_face_count": int(len(mesh.faces)),
+        "profile_ring_count": len(ring_specs),
+        "result_face_count": len(mesh.faces),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -2357,7 +2378,7 @@ def _chamfered_box_mesh(
 
     unique: dict[tuple[int, int, int], np.ndarray] = {}
     for point in vertices:
-        key = tuple(int(round(float(coord) * 1_000_000)) for coord in point)
+        key = tuple(round(float(coord) * 1_000_000) for coord in point)
         unique[key] = point
     vertex_array = np.asarray(list(unique.values()), dtype=np.float64)
     faces: list[tuple[int, int, int]] = []
@@ -2432,10 +2453,10 @@ def _polybeveled_box_mesh(
         "method": method,
         "width_cm": float(width),
         "segments": int(resolved_segments),
-        "edge_pair_count": int(len(selected_edge_pairs)),
+        "edge_pair_count": len(selected_edge_pairs),
         "geometry_applied": True,
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "result_body_count": int(_mesh_body_count(mesh)),
     }
@@ -3078,7 +3099,7 @@ def _subdivide_mesh_for_deform(
         levels = max(0, min(6, int(levels_value)))
         source = "subdivision_levels"
     elif segments_value is not None:
-        levels = max(0, min(6, int(math.ceil(math.log2(max(1.0, float(segments_value)))))))
+        levels = max(0, min(6, math.ceil(math.log2(max(1.0, float(segments_value))))))
         source = "segments"
     else:
         levels = 0
@@ -3198,10 +3219,10 @@ def _execute_v2_deform_kernel_program(
             "kernel_program_semantic_operation_record_count"
         ),
         "kernel_deform": _metadata_safe_value(result.details.get("kernel_deform") or {}),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(result.mesh.faces)),
-        "result_vertex_count": int(len(result.mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(result.mesh.faces),
+        "result_vertex_count": len(result.mesh.vertices),
         "result_watertight": bool(result.mesh.is_watertight),
     }
     result.mesh.metadata["lathe_v2_deform_modifier"] = dict(details)
@@ -3265,8 +3286,8 @@ def _apply_v2_deform_modifiers(
             "origin_cm": [float(value) for value in origin.tolist()],
             "span_cm": float(span),
             "kernel_program_deform_failed": kernel_program_failure,
-            "source_face_count": int(len(deformed.faces)),
-            "source_vertex_count": int(len(deformed.vertices)),
+            "source_face_count": len(deformed.faces),
+            "source_vertex_count": len(deformed.vertices),
             **subdivision_details,
         }
         if operation == "sop.twist":
@@ -3327,8 +3348,8 @@ def _apply_v2_deform_modifiers(
             {
                 "geometry_application": application,
                 "geometry_applied": True,
-                "result_face_count": int(len(result.faces)),
-                "result_vertex_count": int(len(result.vertices)),
+                "result_face_count": len(result.faces),
+                "result_vertex_count": len(result.vertices),
                 "result_watertight": bool(result.is_watertight),
             }
         )
@@ -3360,7 +3381,7 @@ def _mesh_kernel_operand_for_modifier(
         part=primitive.part,
         primitive_type=primitive.primitive_type,
         tags=tuple(str(tag) for tag in primitive.tags),
-        source_mesh_face_count=int(len(mesh.faces)),
+        source_mesh_face_count=len(mesh.faces),
         source_mesh_watertight=bool(mesh.is_watertight),
         source_mesh_body_count=len(mesh.split(only_watertight=False)),
         metadata={
@@ -3715,10 +3736,10 @@ def _direct_v2_inset_modifier_mesh(
             "lowered_primitive_types": [child.primitive_type for child in child_primitives],
             "lowered_blend_modes": blend_modes,
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
             **combine_details,
@@ -3800,8 +3821,8 @@ def _direct_v2_inset_modifier_mesh(
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
         "exact_modifier": _metadata_safe_value(exact_modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
@@ -3847,10 +3868,10 @@ def _direct_v2_panel_line_modifier_mesh(
             "lowered_primitive_types": [child.primitive_type for child in child_primitives],
             "lowered_blend_modes": blend_modes,
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
             **combine_details,
@@ -3924,8 +3945,8 @@ def _direct_v2_panel_line_modifier_mesh(
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
         "exact_modifier": _metadata_safe_value(exact_modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
@@ -4014,10 +4035,10 @@ def _direct_v2_socket_modifier_mesh(
             "lowered_primitive_types": [child.primitive_type for child in child_primitives],
             "lowered_blend_modes": blend_modes,
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
             **combine_details,
@@ -4136,8 +4157,8 @@ def _direct_v2_socket_modifier_mesh(
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
         "exact_modifier": _metadata_safe_value(exact_modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
@@ -4183,10 +4204,10 @@ def _direct_v2_shell_modifier_mesh(
             "lowered_primitive_types": [child.primitive_type for child in child_primitives],
             "lowered_blend_modes": blend_modes,
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
             **combine_details,
@@ -4263,8 +4284,8 @@ def _direct_v2_shell_modifier_mesh(
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
         "exact_modifier": _metadata_safe_value(exact_modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
@@ -4318,8 +4339,8 @@ def _direct_attachment_concat_mesh(
     details = {
         **details,
         "attachment_metadata": _metadata_safe_value(attachment_metadata),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
         "result_body_count": _mesh_body_count(result),
     }
@@ -4400,10 +4421,10 @@ def _direct_rect_attachment_concatenated_mesh(
         "width_cm": width,
         "thickness_cm": thickness,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "attachment_face_count": int(len(attachment.faces)),
-        "attachment_vertex_count": int(len(attachment.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "attachment_face_count": len(attachment.faces),
+        "attachment_vertex_count": len(attachment.vertices),
     }
     return _direct_attachment_concat_mesh(mesh, attachment, name=name, details=details), details
 
@@ -4463,10 +4484,10 @@ def _direct_panel_frame_attachment_concatenated_mesh(
         "border_width_cm": border_width,
         "thickness_cm": thickness,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "attachment_face_count": int(len(attachment.faces)),
-        "attachment_vertex_count": int(len(attachment.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "attachment_face_count": len(attachment.faces),
+        "attachment_vertex_count": len(attachment.vertices),
     }
     return _direct_attachment_concat_mesh(mesh, attachment, name=name, details=details), details
 
@@ -4497,7 +4518,7 @@ def _modifier_positive_int(
     value = _deform_modifier_float(modifier, keys, None if default is None else float(default))
     if value is None or not math.isfinite(float(value)):
         return default
-    integer = int(round(float(value)))
+    integer = round(float(value))
     return integer if integer > 0 else None
 
 
@@ -4509,7 +4530,7 @@ def _modifier_nonnegative_int(
     value = _deform_modifier_float(modifier, keys, None if default is None else float(default))
     if value is None or not math.isfinite(float(value)):
         return default
-    integer = int(round(float(value)))
+    integer = round(float(value))
     return integer if integer >= 0 else None
 
 
@@ -4543,10 +4564,10 @@ def _direct_v2_fastener_grid_modifier_mesh(
             "lowered_primitive_types": [child.primitive_type for child in child_primitives],
             "lowered_blend_modes": blend_modes,
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
             **combine_details,
@@ -4673,10 +4694,10 @@ def _direct_v2_fastener_grid_modifier_mesh(
         "normal_sign": normal_sign,
         "seat_depth_cm": seat_depth,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "attachment_face_count": int(len(attachment.faces)),
-        "attachment_vertex_count": int(len(attachment.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "attachment_face_count": len(attachment.faces),
+        "attachment_vertex_count": len(attachment.vertices),
     }
     return _direct_attachment_concat_mesh(mesh, attachment, name=name, details=details), details
 
@@ -4711,10 +4732,10 @@ def _direct_v2_vent_slats_modifier_mesh(
             "lowered_primitive_types": [child.primitive_type for child in child_primitives],
             "lowered_blend_modes": blend_modes,
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
             **combine_details,
@@ -4836,10 +4857,10 @@ def _direct_v2_vent_slats_modifier_mesh(
         "normal_sign": normal_sign,
         "seat_depth_cm": seat_depth,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "attachment_face_count": int(len(attachment.faces)),
-        "attachment_vertex_count": int(len(attachment.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "attachment_face_count": len(attachment.faces),
+        "attachment_vertex_count": len(attachment.vertices),
     }
     return _direct_attachment_concat_mesh(mesh, attachment, name=name, details=details), details
 
@@ -4885,10 +4906,10 @@ def _direct_v2_surface_panel_modifier_mesh(
                 "lowered_primitive_types": [child.primitive_type for child in child_primitives],
                 "lowered_blend_modes": blend_modes,
                 "direct_modifier": _metadata_safe_value(modifier),
-                "source_face_count": int(len(mesh.faces)),
-                "source_vertex_count": int(len(mesh.vertices)),
-                "result_face_count": int(len(feature_mesh.faces)),
-                "result_vertex_count": int(len(feature_mesh.vertices)),
+                "source_face_count": len(mesh.faces),
+                "source_vertex_count": len(mesh.vertices),
+                "result_face_count": len(feature_mesh.faces),
+                "result_vertex_count": len(feature_mesh.vertices),
                 "result_watertight": bool(feature_mesh.is_watertight),
                 "result_body_count": _mesh_body_count(feature_mesh),
                 **combine_details,
@@ -5054,10 +5075,10 @@ def _direct_v2_surface_panel_modifier_mesh(
         "height_axis": height_axis,
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "attachment_face_count": int(len(attachment.faces)),
-        "attachment_vertex_count": int(len(attachment.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "attachment_face_count": len(attachment.faces),
+        "attachment_vertex_count": len(attachment.vertices),
     }
     return _direct_attachment_concat_mesh(mesh, attachment, name=name, details=details), details
 
@@ -5201,7 +5222,7 @@ def _direct_kernel_operand_from_record(
         primitive_type=str(record.get("primitive_type") or primitive.primitive_type),
         source_index=index,
         tags=tuple(str(tag) for tag in (record.get("tags") or primitive.tags or ()) if str(tag)),
-        source_mesh_face_count=int(len(mesh.faces)),
+        source_mesh_face_count=len(mesh.faces),
         source_mesh_watertight=bool(mesh.is_watertight),
         source_mesh_body_count=len(mesh.split(only_watertight=False)),
         metadata={"source_record": _metadata_safe_value(record), modifier_name: True},
@@ -5284,8 +5305,8 @@ def _direct_v2_hull_modifier_mesh(
         "explicit_operand_record_count": len(extra_records),
         "valid_extra_operand_count": len(extra_operands),
         "direct_modifier": _metadata_safe_value(modifier),
-        "result_face_count": int(len(result.mesh.faces)),
-        "result_vertex_count": int(len(result.mesh.vertices)),
+        "result_face_count": len(result.mesh.faces),
+        "result_vertex_count": len(result.mesh.vertices),
         "result_watertight": bool(result.mesh.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result.mesh, name=name, details=details), details
@@ -5403,8 +5424,8 @@ def _direct_v2_minkowski_modifier_mesh(
         "structuring_center": list(_direct_record_center(structuring_record)),
         "sample_limit": int(sample_limit),
         "direct_modifier": _metadata_safe_value(modifier),
-        "result_face_count": int(len(result.mesh.faces)),
-        "result_vertex_count": int(len(result.mesh.vertices)),
+        "result_face_count": len(result.mesh.faces),
+        "result_vertex_count": len(result.mesh.vertices),
         "result_watertight": bool(result.mesh.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result.mesh, name=name, details=details), details
@@ -5489,8 +5510,8 @@ def _direct_v2_refine_modifier_mesh(
         "kernel_program_route": result.details.get("kernel_program_route"),
         "kernel_program_operation_count": result.details.get("kernel_program_operation_count"),
         "direct_modifier": _metadata_safe_value(modifier),
-        "result_face_count": int(len(result.mesh.faces)),
-        "result_vertex_count": int(len(result.mesh.vertices)),
+        "result_face_count": len(result.mesh.faces),
+        "result_vertex_count": len(result.mesh.vertices),
         "result_watertight": bool(result.mesh.is_watertight),
         **parameter_details,
     }
@@ -5634,8 +5655,8 @@ def _direct_v2_profile_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
         "result_body_count": _mesh_body_count(result),
         **combine_details,
@@ -5895,10 +5916,8 @@ def _normalise_direct_construction_parameters(name: str, parameters: dict[str, A
         if "axes" not in parameters and "guard_axes" in parameters:
             parameters["axes"] = parameters["guard_axes"]
     if name == "v2_weld_seam_modifier" and "width_cm" not in parameters and "radius_cm" in parameters:
-        try:
+        with suppress(TypeError, ValueError):
             parameters["width_cm"] = max(float(parameters["radius_cm"]) * 2.0, NUMERIC_EPSILON)
-        except (TypeError, ValueError):
-            pass
     if name == "v2_trim_band_modifier":
         _copy_first_direct_parameter_alias(parameters, "width_cm", ("band_width_cm", "width"))
         _copy_first_direct_parameter_alias(parameters, "frame_height_cm", ("height_cm", "height"))
@@ -6170,10 +6189,10 @@ def _direct_v2_construction_lowerer_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "feature_face_count": int(len(feature_mesh.faces)),
-        "feature_vertex_count": int(len(feature_mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "feature_face_count": len(feature_mesh.faces),
+        "feature_vertex_count": len(feature_mesh.vertices),
         **combine_details,
     }
     if (
@@ -6187,8 +6206,8 @@ def _direct_v2_construction_lowerer_modifier_mesh(
             {
                 "geometry_application": "kernel_program_source_construction_lowering",
                 "kernel_program_source_result_reused": True,
-                "result_face_count": int(len(result.faces)),
-                "result_vertex_count": int(len(result.vertices)),
+                "result_face_count": len(result.faces),
+                "result_vertex_count": len(result.vertices),
                 "result_watertight": bool(result.is_watertight),
                 "result_body_count": _mesh_body_count(result),
             }
@@ -6199,8 +6218,8 @@ def _direct_v2_construction_lowerer_modifier_mesh(
             result = _direct_attachment_concat_mesh(mesh, feature_mesh, name=name, details=details)
             details.update(
                 {
-                    "result_face_count": int(len(result.faces)),
-                    "result_vertex_count": int(len(result.vertices)),
+                    "result_face_count": len(result.faces),
+                    "result_vertex_count": len(result.vertices),
                     "result_watertight": bool(result.is_watertight),
                     "result_body_count": _mesh_body_count(result),
                 }
@@ -6237,8 +6256,8 @@ def _direct_v2_construction_lowerer_modifier_mesh(
                 "post_boolean_seam_group_count": len(seam_groups),
                 "post_boolean_polybevel": _metadata_safe_value(polybevel_stats),
                 "boolean_details": _metadata_safe_value(boolean_details),
-                "result_face_count": int(len(result.faces)),
-                "result_vertex_count": int(len(result.vertices)),
+                "result_face_count": len(result.faces),
+                "result_vertex_count": len(result.vertices),
                 "result_watertight": bool(result.is_watertight),
                 "result_body_count": _mesh_body_count(result),
             }
@@ -6246,8 +6265,8 @@ def _direct_v2_construction_lowerer_modifier_mesh(
         return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
     details.update(
         {
-            "result_face_count": int(len(feature_mesh.faces)),
-            "result_vertex_count": int(len(feature_mesh.vertices)),
+            "result_face_count": len(feature_mesh.faces),
+            "result_vertex_count": len(feature_mesh.vertices),
             "result_watertight": bool(feature_mesh.is_watertight),
             "result_body_count": _mesh_body_count(feature_mesh),
         }
@@ -6353,10 +6372,10 @@ def _direct_v2_component_assembly_modifier_mesh(
             if isinstance(record.get("assembly_kind"), str) and str(record.get("assembly_kind")).strip()
         ],
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(feature_mesh.faces)),
-        "result_vertex_count": int(len(feature_mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(feature_mesh.faces),
+        "result_vertex_count": len(feature_mesh.vertices),
         "result_watertight": bool(feature_mesh.is_watertight),
         "result_body_count": _mesh_body_count(feature_mesh),
         **combine_details,
@@ -6533,12 +6552,12 @@ def _direct_v2_surface_damage_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
         "feature_face_count": int(sum(len(item.faces) for item in feature_meshes)),
         "feature_vertex_count": int(sum(len(item.vertices) for item in feature_meshes)),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
         "result_body_count": _mesh_body_count(result),
         **combine_details,
@@ -6731,10 +6750,10 @@ def _direct_v2_instance_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(feature_mesh.faces)),
-        "result_vertex_count": int(len(feature_mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(feature_mesh.faces),
+        "result_vertex_count": len(feature_mesh.vertices),
         "result_watertight": bool(feature_mesh.is_watertight),
         "result_body_count": _mesh_body_count(feature_mesh),
         **combine_details,
@@ -6835,10 +6854,10 @@ def _direct_v2_field_primitive_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(feature_mesh.faces)),
-        "result_vertex_count": int(len(feature_mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(feature_mesh.faces),
+        "result_vertex_count": len(feature_mesh.vertices),
         "result_watertight": bool(feature_mesh.is_watertight),
         "result_body_count": _mesh_body_count(feature_mesh),
         **combine_details,
@@ -6940,10 +6959,10 @@ def _direct_v2_edge_control_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(feature_mesh.faces)),
-        "result_vertex_count": int(len(feature_mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(feature_mesh.faces),
+        "result_vertex_count": len(feature_mesh.vertices),
         "result_watertight": bool(feature_mesh.is_watertight),
         "result_body_count": _mesh_body_count(feature_mesh),
         **combine_details,
@@ -7008,8 +7027,8 @@ def _direct_v2_polybevel_modifier_mesh(
             "geometry_applied": True,
             "direct_modifier": _metadata_safe_value(modifier),
             "applied_polybevel_metadata": _metadata_safe_value(already_applied),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": _mesh_body_count(mesh),
         }
@@ -7055,12 +7074,12 @@ def _direct_v2_polybevel_modifier_mesh(
             "direct_modifier": _metadata_safe_value(modifier),
             "fallback": True,
             "fallback_reason": rejected_reason,
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
             "source_body_count": int(source_body_count),
             "source_watertight": bool(mesh.is_watertight),
-            "candidate_face_count": int(len(candidate.faces)),
-            "candidate_vertex_count": int(len(candidate.vertices)),
+            "candidate_face_count": len(candidate.faces),
+            "candidate_vertex_count": len(candidate.vertices),
             "candidate_body_count": int(candidate_body_count),
             "candidate_watertight": bool(candidate.is_watertight),
             "general_mesh_bevel": _metadata_safe_value(bevel_metadata),
@@ -7129,12 +7148,12 @@ def _direct_v2_polybevel_modifier_mesh(
         "width_cm": float(width),
         "segments": int(segments),
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
         "source_body_count": int(source_body_count),
         "source_watertight": bool(mesh.is_watertight),
-        "result_face_count": int(len(candidate.faces)),
-        "result_vertex_count": int(len(candidate.vertices)),
+        "result_face_count": len(candidate.faces),
+        "result_vertex_count": len(candidate.vertices),
         "result_body_count": int(result_body_count),
         "result_watertight": bool(candidate.is_watertight),
         "general_mesh_bevel": _metadata_safe_value(bevel_metadata),
@@ -7225,10 +7244,10 @@ def _direct_v2_context_aggregate_modifier_mesh(
             "geometry_applied": False,
             "failure_reason": "v2_context_aggregate_modifier requires v2_context_records or source_shape_primitives",
             "direct_modifier": _metadata_safe_value(modifier),
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(result.faces)),
-            "result_vertex_count": int(len(result.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(result.faces),
+            "result_vertex_count": len(result.vertices),
             "result_watertight": bool(result.is_watertight),
             "result_body_count": _mesh_body_count(result),
         }
@@ -7283,10 +7302,10 @@ def _direct_v2_context_aggregate_modifier_mesh(
         "lowered_primitive_types": [child.primitive_type for child in child_primitives],
         "lowered_blend_modes": blend_modes,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
         "result_body_count": _mesh_body_count(result),
         "context_aggregate": _metadata_safe_value(context_metadata),
@@ -7307,8 +7326,8 @@ def _direct_downstream_metadata_modifier_mesh(
         "geometry_application": "direct_modifier_preserved_for_downstream_stage",
         "geometry_applied": False,
         "direct_modifier": _metadata_safe_value(modifier),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "result_body_count": _mesh_body_count(mesh),
     }
@@ -7390,10 +7409,10 @@ def _direct_v2_boolean_modifier_mesh(
         "post_boolean_polybevel": _metadata_safe_value(polybevel_stats),
         "boolean_details": _metadata_safe_value(boolean_details),
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
         "result_body_count": _mesh_body_count(result),
     }
@@ -7565,10 +7584,10 @@ def _direct_v2_feature_primitive_modifier_mesh(
             "post_boolean_polybevel": _metadata_safe_value(polybevel_stats),
             "boolean_details": _metadata_safe_value(boolean_details),
             "direct_modifier": _metadata_safe_value(modifier),
-            "feature_face_count": int(len(feature_mesh.faces)),
-            "feature_vertex_count": int(len(feature_mesh.vertices)),
-            "result_face_count": int(len(result.faces)),
-            "result_vertex_count": int(len(result.vertices)),
+            "feature_face_count": len(feature_mesh.faces),
+            "feature_vertex_count": len(feature_mesh.vertices),
+            "result_face_count": len(result.faces),
+            "result_vertex_count": len(result.vertices),
             "result_watertight": bool(result.is_watertight),
             "result_body_count": _mesh_body_count(result),
         }
@@ -7580,10 +7599,10 @@ def _direct_v2_feature_primitive_modifier_mesh(
         "primitive_type": primitive_type,
         "blend_mode": blend_mode,
         "direct_modifier": _metadata_safe_value(modifier),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "feature_face_count": int(len(feature_mesh.faces)),
-        "feature_vertex_count": int(len(feature_mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "feature_face_count": len(feature_mesh.faces),
+        "feature_vertex_count": len(feature_mesh.vertices),
     }
     return _direct_attachment_concat_mesh(mesh, feature_mesh, name=name, details=details), details
 
@@ -7623,10 +7642,10 @@ def _direct_v2_rect_attachment_modifier_mesh(
                 "lowered_primitive_types": [child.primitive_type for child in child_primitives],
                 "lowered_blend_modes": blend_modes,
                 "direct_modifier": _metadata_safe_value(modifier),
-                "source_face_count": int(len(mesh.faces)),
-                "source_vertex_count": int(len(mesh.vertices)),
-                "result_face_count": int(len(feature_mesh.faces)),
-                "result_vertex_count": int(len(feature_mesh.vertices)),
+                "source_face_count": len(mesh.faces),
+                "source_vertex_count": len(mesh.vertices),
+                "result_face_count": len(feature_mesh.faces),
+                "result_vertex_count": len(feature_mesh.vertices),
                 "result_watertight": bool(feature_mesh.is_watertight),
                 "result_body_count": _mesh_body_count(feature_mesh),
                 **combine_details,
@@ -7799,8 +7818,8 @@ def _direct_v2_rect_attachment_modifier_mesh(
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
         "exact_modifier": _metadata_safe_value(exact_modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
@@ -7840,10 +7859,10 @@ def _direct_v2_panel_frame_modifier_mesh(
                 "lowered_primitive_types": [child.primitive_type for child in child_primitives],
                 "lowered_blend_modes": blend_modes,
                 "direct_modifier": _metadata_safe_value(modifier),
-                "source_face_count": int(len(mesh.faces)),
-                "source_vertex_count": int(len(mesh.vertices)),
-                "result_face_count": int(len(feature_mesh.faces)),
-                "result_vertex_count": int(len(feature_mesh.vertices)),
+                "source_face_count": len(mesh.faces),
+                "source_vertex_count": len(mesh.vertices),
+                "result_face_count": len(feature_mesh.faces),
+                "result_vertex_count": len(feature_mesh.vertices),
                 "result_watertight": bool(feature_mesh.is_watertight),
                 "result_body_count": _mesh_body_count(feature_mesh),
                 **combine_details,
@@ -7962,8 +7981,8 @@ def _direct_v2_panel_frame_modifier_mesh(
         **kernel_details,
         "direct_modifier": _metadata_safe_value(modifier),
         "exact_modifier": _metadata_safe_value(exact_modifier),
-        "result_face_count": int(len(result.faces)),
-        "result_vertex_count": int(len(result.vertices)),
+        "result_face_count": len(result.faces),
+        "result_vertex_count": len(result.vertices),
         "result_watertight": bool(result.is_watertight),
     }
     return _merge_direct_modifier_mesh_metadata(mesh, result, name=name, details=details), details
@@ -8139,8 +8158,8 @@ def _apply_v2_kernel_modifier_programs(
             continue
         application: dict[str, Any] = {
             "name": name,
-            "source_face_count": int(len(current.faces)),
-            "source_vertex_count": int(len(current.vertices)),
+            "source_face_count": len(current.faces),
+            "source_vertex_count": len(current.vertices),
             "geometry_applied": False,
         }
         if _modifier_already_baked_or_applied(primitive, modifier, name):
@@ -8214,8 +8233,8 @@ def _apply_v2_kernel_modifier_programs(
                         "geometry_application": "kernel_program_modifier_execution",
                         "geometry_applied": True,
                         "kernel_program_route": result.details.get("kernel_program_route"),
-                        "result_face_count": int(len(current.faces)),
-                        "result_vertex_count": int(len(current.vertices)),
+                        "result_face_count": len(current.faces),
+                        "result_vertex_count": len(current.vertices),
                         "result_watertight": bool(current.is_watertight),
                     }
                 )
@@ -8233,8 +8252,8 @@ def _apply_v2_kernel_modifier_programs(
                 if direct_details.get("geometry_applied"):
                     application.update(
                         {
-                            "result_face_count": int(len(current.faces)),
-                            "result_vertex_count": int(len(current.vertices)),
+                            "result_face_count": len(current.faces),
+                            "result_vertex_count": len(current.vertices),
                             "result_watertight": bool(current.is_watertight),
                         }
                     )
@@ -8246,8 +8265,8 @@ def _apply_v2_kernel_modifier_programs(
                     "geometry_application": "kernel_program_modifier_execution",
                     "geometry_applied": True,
                     "kernel_program_route": result.details.get("kernel_program_route"),
-                    "result_face_count": int(len(current.faces)),
-                    "result_vertex_count": int(len(current.vertices)),
+                    "result_face_count": len(current.faces),
+                    "result_vertex_count": len(current.vertices),
                     "result_watertight": bool(current.is_watertight),
                 }
             )
@@ -8323,10 +8342,10 @@ def _execute_v2_transform_kernel_program(
         ),
         "kernel_transform": _metadata_safe_value(result.details.get("kernel_transform") or {}),
         **(dict(extra_details) if isinstance(extra_details, dict) else {}),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(result.mesh.faces)),
-        "result_vertex_count": int(len(result.mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(result.mesh.faces),
+        "result_vertex_count": len(result.mesh.vertices),
         "result_watertight": bool(result.mesh.is_watertight),
     }
     result.mesh.metadata[metadata_key] = dict(details)
@@ -8388,8 +8407,8 @@ def _apply_v2_transform_modifiers(
                 "geometry_applied": True,
                 "kernel_program_transform_failed": kernel_program_failure,
                 "matrix": [[float(value) for value in row] for row in matrix.tolist()],
-                "result_face_count": int(len(transformed.faces)),
-                "result_vertex_count": int(len(transformed.vertices)),
+                "result_face_count": len(transformed.faces),
+                "result_vertex_count": len(transformed.vertices),
                 "result_watertight": bool(transformed.is_watertight),
             }
         )
@@ -8568,8 +8587,8 @@ def _apply_v2_instance_transform_modifiers(
                 "geometry_applied": True,
                 "kernel_program_transform_failed": kernel_program_failure,
                 **instance_details,
-                "result_face_count": int(len(transformed.faces)),
-                "result_vertex_count": int(len(transformed.vertices)),
+                "result_face_count": len(transformed.faces),
+                "result_vertex_count": len(transformed.vertices),
                 "result_watertight": bool(transformed.is_watertight),
             }
         )
@@ -8971,11 +8990,7 @@ def _facet_inset_chamfer_bevel(
         facet_effective_widths: list[float] = []
         for loop_index, (loop, loop_2d, area) in enumerate(oriented_loops):
             is_outer = loop_index == outer_index
-            if is_outer and area < 0.0:
-                loop = list(reversed(loop))
-                loop_2d = list(reversed(loop_2d))
-                area = -area
-            elif not is_outer and area > 0.0:
+            if (is_outer and area < 0.0) or (not is_outer and area > 0.0):
                 loop = list(reversed(loop))
                 loop_2d = list(reversed(loop_2d))
                 area = -area
@@ -9054,9 +9069,15 @@ def _facet_inset_chamfer_bevel(
         current_vertices = np.asarray(vertices, dtype=np.float64)
         center = current_vertices[np.asarray(indices, dtype=np.int64)].mean(axis=0)
 
-        def angle_for(index: int) -> float:
-            relative = np.asarray(vertices[index], dtype=np.float64) - center
-            return math.atan2(float(np.dot(relative, v_axis)), float(np.dot(relative, u_axis)))
+        def angle_for(
+            index: int,
+            *,
+            _center: np.ndarray = center,
+            _v_axis: np.ndarray = v_axis,
+            _u_axis: np.ndarray = u_axis,
+        ) -> float:
+            relative = np.asarray(vertices[index], dtype=np.float64) - _center
+            return math.atan2(float(np.dot(relative, _v_axis)), float(np.dot(relative, _u_axis)))
 
         ordered = sorted(indices, key=angle_for)
         center_index = len(vertices)
@@ -9090,14 +9111,14 @@ def _facet_inset_chamfer_bevel(
         "segments": int(max(1, min(8, int(segments)))),
         "actual_segment_method": "single_facet_chamfer",
         "sharp_angle_deg": float(sharp_angle_deg),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
         "facet_count": int(facet_count),
         "facet_boundary_edge_count": int(edge_count),
-        "stitched_edge_count": int(len(edge_records)),
-        "corner_cap_count": int(len(vertex_records)),
-        "result_face_count": int(len(candidate.faces)),
-        "result_vertex_count": int(len(candidate.vertices)),
+        "stitched_edge_count": len(edge_records),
+        "corner_cap_count": len(vertex_records),
+        "result_face_count": len(candidate.faces),
+        "result_vertex_count": len(candidate.vertices),
         "result_watertight": bool(candidate.is_watertight),
         "result_body_count": int(body_count),
     }
@@ -9181,11 +9202,11 @@ def _sharp_edge_cutback_bevel(
         "segments": int(max(1, min(8, int(segments)))),
         "actual_segment_method": "single_strip_cutback",
         "sharp_angle_deg": float(sharp_angle_deg),
-        "sharp_edge_count": int(len(edge_indices)),
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(cutback.faces)),
-        "result_vertex_count": int(len(cutback.vertices)),
+        "sharp_edge_count": len(edge_indices),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(cutback.faces),
+        "result_vertex_count": len(cutback.vertices),
         "result_watertight": bool(cutback.is_watertight),
         "result_body_count": int(accepted_topology.get("body_count", 0) or 0),
         "cutback_group_count": int(stats.get("group_count", 0) or 0),
@@ -9215,8 +9236,8 @@ def _general_mesh_bevel(
     """
     if width <= NUMERIC_EPSILON or len(mesh.faces) == 0:
         return mesh
-    source_face_count = int(len(mesh.faces))
-    source_vertex_count = int(len(mesh.vertices))
+    source_face_count = len(mesh.faces)
+    source_vertex_count = len(mesh.vertices)
     resolved_segments = max(1, min(8, int(segments)))
     facet_candidate = _facet_inset_chamfer_bevel(
         mesh,
@@ -9239,7 +9260,7 @@ def _general_mesh_bevel(
     fallback_support_subdivision = resolved_segments > 1 or source_face_count <= 4096
     if fallback_support_subdivision:
         subdivision_levels = (
-            max(1, min(3, int(math.ceil(math.log2(float(resolved_segments))))))
+            max(1, min(3, math.ceil(math.log2(float(resolved_segments)))))
             if resolved_segments > 1
             else 1
         )
@@ -9319,14 +9340,14 @@ def _general_mesh_bevel(
         "width_cm": float(width),
         "segments": int(resolved_segments),
         "sharp_angle_deg": float(sharp_angle_deg),
-        "sharp_edge_count": int(len(sharp_edges)),
-        "sharp_vertex_count": int(len(sharp_vertices)),
+        "sharp_edge_count": len(sharp_edges),
+        "sharp_vertex_count": len(sharp_vertices),
         "iteration_count": int(iterations),
         "source_face_count": source_face_count,
         "source_vertex_count": source_vertex_count,
         "subdivision_levels": int(subdivision_levels),
-        "result_face_count": int(len(candidate.faces)),
-        "result_vertex_count": int(len(candidate.vertices)),
+        "result_face_count": len(candidate.faces),
+        "result_vertex_count": len(candidate.vertices),
         "result_watertight": bool(candidate.is_watertight),
     }
     return candidate
@@ -9411,17 +9432,17 @@ def _apply_pending_polybevel_to_mesh(
             "geometry_applied": False,
             "fallback": True,
             "fallback_reason": rejected_reason,
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
             "source_body_count": int(source_body_count),
             "source_watertight": bool(mesh.is_watertight),
-            "candidate_face_count": int(len(candidate.faces)),
-            "candidate_vertex_count": int(len(candidate.vertices)),
+            "candidate_face_count": len(candidate.faces),
+            "candidate_vertex_count": len(candidate.vertices),
             "candidate_body_count": int(candidate_body_count),
             "candidate_watertight": bool(candidate.is_watertight),
             "general_mesh_bevel": dict(bevel_metadata),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
         }
         return mesh
@@ -9434,10 +9455,10 @@ def _apply_pending_polybevel_to_mesh(
             "width_cm": float(width),
             "segments": int(_polybevel_segments(primitive)),
             "geometry_applied": True,
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
             "source_body_count": int(source_body_count),
             "result_body_count": int(candidate_body_count),
@@ -9454,10 +9475,10 @@ def _apply_pending_polybevel_to_mesh(
         "geometry_applied": False,
         "fallback": True,
         "fallback_reason": "general_mesh_bevel_returned_source_mesh",
-        "source_face_count": int(len(mesh.faces)),
-        "source_vertex_count": int(len(mesh.vertices)),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(mesh.faces),
+        "source_vertex_count": len(mesh.vertices),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     mesh.metadata["lathe_pending_polybevel_mesh"] = fallback_metadata
@@ -10273,8 +10294,8 @@ def _layered_flange_bolt_hole_mesh(
             "inner_bore_bevel_applied": True,
             "bolt_hole_bevel_applied": bolt_count > 0,
             "bolt_count": int(bolt_count),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": int(_mesh_body_count(mesh)),
         }
@@ -10361,8 +10382,8 @@ def _flange_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         if flange_bevel_metadata is not None:
             flange_bevel_metadata = {
                 **flange_bevel_metadata,
-                "result_face_count": int(len(mesh.faces)),
-                "result_vertex_count": int(len(mesh.vertices)),
+                "result_face_count": len(mesh.faces),
+                "result_vertex_count": len(mesh.vertices),
                 "result_watertight": bool(mesh.is_watertight),
                 "result_body_count": int(_mesh_body_count(mesh)),
             }
@@ -10454,7 +10475,7 @@ def _gear_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             raise ContractViolation("invariant violation: gear helix_angle_degrees must satisfy 0 <= value <= 65")
         hand_sign = -1.0 if handedness == "left" else 1.0
         twist_degrees = math.degrees(hand_sign * (thickness * math.tan(math.radians(helix_angle)) / pitch_radius))
-    twist_segments = int(primitive.extrude_segments or (max(4, int(math.ceil(abs(twist_degrees) / 8.0))) if abs(twist_degrees) > 1e-9 else 1))
+    twist_segments = int(primitive.extrude_segments or (max(4, math.ceil(abs(twist_degrees) / 8.0)) if abs(twist_degrees) > 1e-9 else 1))
     twist_segments = max(1, min(160, twist_segments))
 
     if bore_radius > NUMERIC_EPSILON:
@@ -10640,7 +10661,7 @@ def _helical_sweep_as_swept_profile_primitive(primitive: ShapePrimitive) -> Shap
     if segments_per_turn < 3:
         raise ContractViolation("invariant violation: helical_sweep segments_per_turn must be >= 3")
     segments_per_turn = min(128, segments_per_turn)
-    path_count = int(math.ceil(turns * segments_per_turn)) + 1
+    path_count = math.ceil(turns * segments_per_turn) + 1
     path_count = max(2, min(path_count, 4096))
     cross_section_segments = int(primitive.cross_section_segments or primitive.rings or 10)
     if cross_section_segments < 3:
@@ -10798,11 +10819,11 @@ def _threaded_cylinder_values(
         raise _missing_threaded_cylinder_dimensions_error(primitive)
 
     segments_per_turn = int(primitive.segments_per_turn or 28)
-    if segments_per_turn < 4:  # noqa: PLR2004
+    if segments_per_turn < 4:
         raise ContractViolation("invariant violation: threaded_cylinder segments_per_turn must be >= 4")
     segments_per_turn = min(160, segments_per_turn)
     angular_segments = int(primitive.sections or max(32, segments_per_turn * 2))
-    if angular_segments < 12:  # noqa: PLR2004
+    if angular_segments < 12:
         raise ContractViolation("invariant violation: threaded_cylinder sections must be >= 12")
     angular_segments = min(256, angular_segments)
 
@@ -10907,7 +10928,7 @@ def _threaded_cylinder_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         threaded_height,
         profile_shape,
     ) = _threaded_cylinder_values(primitive)
-    axial_segments = max(4, min(2048, int(math.ceil(turns * segments_per_turn))))
+    axial_segments = max(4, min(2048, math.ceil(turns * segments_per_turn)))
     start_axial = -height * 0.5 + float(primitive.thread_start_clearance or 0.0)
     end_axial = height * 0.5 - float(primitive.thread_end_clearance or 0.0)
     z_values: list[float] = []
@@ -11316,8 +11337,8 @@ def _countersunk_hole_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             mesh = _revolved_profile_mesh(revolved)
             profile_bevel_metadata = {
                 **profile_bevel_metadata,
-                "result_face_count": int(len(mesh.faces)),
-                "result_vertex_count": int(len(mesh.vertices)),
+                "result_face_count": len(mesh.faces),
+                "result_vertex_count": len(mesh.vertices),
                 "result_watertight": bool(mesh.is_watertight),
                 "result_body_count": int(_mesh_body_count(mesh)),
             }
@@ -11431,8 +11452,8 @@ def _countersunk_hole_set_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             "hole_count": len(profile_bevel_details),
             "width_cm": float(profile_bevel_details[0].get("width_cm", 0.0)),
             "requested_width_cm": float(profile_bevel_details[0].get("requested_width_cm", 0.0)),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": int(_mesh_body_count(mesh)),
         }
@@ -12944,8 +12965,8 @@ def _context_aggregate_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "child_parts": [child.part for child in children],
         "boolean_succeeded": bool(boolean_succeeded),
         "boolean_fallback_reason": boolean_fallback_reason,
-        "result_face_count": int(len(combined.faces)),
-        "result_vertex_count": int(len(combined.vertices)),
+        "result_face_count": len(combined.faces),
+        "result_vertex_count": len(combined.vertices),
         "result_watertight": bool(combined.is_watertight),
         **boolean_details,
     }
@@ -13298,8 +13319,8 @@ def _attach_semantic_component_bevel_metadata(
         "component_geometry_applied_count": int(applied_count),
         "component_geometry_applied_keys": list(component_geometry.get("component_geometry_applied_keys") or []),
         "component_geometry_applied_methods": list(component_geometry.get("component_geometry_applied_methods") or []),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "result_body_count": int(_mesh_body_count(mesh)),
     }
@@ -14081,8 +14102,8 @@ def _fastener_grid_stack_mesh(
             "source": "fastener_grid_stack_profile",
             "geometry_applied": True,
             "slot_edge_bevel_applied": False,
-            "result_face_count": int(len(base_mesh.faces)),
-            "result_vertex_count": int(len(base_mesh.vertices)),
+            "result_face_count": len(base_mesh.faces),
+            "result_vertex_count": len(base_mesh.vertices),
             "result_watertight": bool(base_mesh.is_watertight),
             "result_body_count": _mesh_body_count(base_mesh),
         }
@@ -14133,8 +14154,8 @@ def _fastener_grid_stack_mesh(
                 "geometry_applied": True,
                 "slot_edge_bevel_applied": False,
                 "slot_edge_bevel_reason": "slotted_drive_boolean_applied_after_profile_bevel",
-                "result_face_count": int(len(mesh.faces)),
-                "result_vertex_count": int(len(mesh.vertices)),
+                "result_face_count": len(mesh.faces),
+                "result_vertex_count": len(mesh.vertices),
                 "result_watertight": bool(mesh.is_watertight),
                 "result_body_count": _mesh_body_count(mesh),
             }
@@ -14341,8 +14362,8 @@ def _fastener_grid_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             "source_profile_point_count": int(profile_bevel_details[0].get("source_profile_point_count", 0)),
             "result_profile_point_count": int(profile_bevel_details[0].get("result_profile_point_count", 0)),
             "beveled_corner_count_per_fastener": int(profile_bevel_details[0].get("beveled_corner_count", 0)),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": _mesh_body_count(mesh),
         }
@@ -14356,8 +14377,8 @@ def _fastener_grid_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             "segments": profile_bevel_metadata["segments"],
             "geometry_applied": True,
             "geometry_applied_in_primitive_profile": True,
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": _mesh_body_count(mesh),
             "profile_bevel": dict(profile_bevel_metadata),
@@ -15215,7 +15236,7 @@ def _curved_tube_path_segment_count(primitive: ShapePrimitive, angle_degrees: fl
     elif primitive.sections is not None:
         path_segments = int(primitive.sections)
     else:
-        path_segments = max(8, int(math.ceil(abs(angle_degrees) / 10.0)))
+        path_segments = max(8, math.ceil(abs(angle_degrees) / 10.0))
     if path_segments < 3:
         raise ContractViolation("invariant violation: curved_tube path_segments must be >= 3")
     return min(path_segments, 512)
@@ -15726,7 +15747,7 @@ def _boolean_union(meshes: list[trimesh.Trimesh]) -> trimesh.Trimesh:
     if len(meshes) == 1:
         return meshes[0].copy()
     return _require_boolean_mesh(
-        trimesh.boolean.union(meshes, check_volume=False),
+        trimesh.boolean.union(meshes, engine=_TRIMESH_BOOLEAN_ENGINE, check_volume=False),
         "union",
     )
 
@@ -15735,7 +15756,7 @@ def _boolean_difference(base: trimesh.Trimesh, cutters: list[trimesh.Trimesh]) -
     current = base
     for cutter in cutters:
         current = _require_boolean_mesh(
-            trimesh.boolean.difference([current, cutter], check_volume=False),
+            trimesh.boolean.difference([current, cutter], engine=_TRIMESH_BOOLEAN_ENGINE, check_volume=False),
             "difference",
         )
     return current
@@ -15745,7 +15766,7 @@ def _boolean_intersection(base: trimesh.Trimesh, masks: list[trimesh.Trimesh]) -
     current = base
     for mask in masks:
         current = _require_boolean_mesh(
-            trimesh.boolean.intersection([current, mask], check_volume=False),
+            trimesh.boolean.intersection([current, mask], engine=_TRIMESH_BOOLEAN_ENGINE, check_volume=False),
             "intersection",
         )
     return current
@@ -16236,7 +16257,7 @@ def _post_boolean_visible_seam_strip_fallback(
             consumed_edges.add(edge_index)
             group_edge_count += 1
             group_span += edge_length
-            group_face_count += int(len(strip.faces))
+            group_face_count += len(strip.faces)
         if group_edge_count:
             used_groups += 1
             total_span += group_span
@@ -16326,7 +16347,7 @@ def _post_boolean_visible_seam_strip_fallback(
     attempted = dict(attempted_stats)
     stats = {
         "group_count": int(used_groups),
-        "edge_count": int(len(consumed_edges)),
+        "edge_count": len(consumed_edges),
         "face_count": fallback_faces,
         "method": (
             "visible_seam_strip_boolean_union_fallback_v1"
@@ -16359,10 +16380,10 @@ def _post_boolean_visible_seam_strip_fallback(
         "attempted_bevel_face_count": int(attempted.get("bevel_face_count", 0) or 0),
         "attempted_strip_count": int(attempted.get("strip_count", 0) or 0),
         "consumed_face_count": 0,
-        "strip_count": int(len(strip_meshes)),
+        "strip_count": len(strip_meshes),
         "largest_strip_edge_count": max((record["edge_count"] for record in strip_records), default=0),
         "reused_surface_face_count": 0,
-        "open_strip_count": int(len(strip_meshes)),
+        "open_strip_count": len(strip_meshes),
         "closed_strip_count": 0,
         "total_strip_uv_span_cm": round(total_span, 6),
         "largest_strip_uv_span_cm": round(largest_span, 6),
@@ -16518,7 +16539,7 @@ def _post_boolean_polybevel_cutback_mesh(
     )
 
     def vertex_key(point: np.ndarray) -> tuple[int, int, int]:
-        return tuple(int(round(float(value) / merge_tolerance)) for value in point)
+        return tuple(round(float(value) / merge_tolerance) for value in point)
 
     for vertex_index, point in enumerate(vertices):
         vertex_index_by_point.setdefault(vertex_key(point), int(vertex_index))
@@ -16934,24 +16955,22 @@ def _post_boolean_polybevel_cutback_mesh(
                 mid_lower_uv = np.asarray([mid_u, 0.0], dtype=np.float64)
                 mid_upper_uv = np.asarray([mid_u, 1.0], dtype=np.float64)
 
-                if usable_faces[0] not in multi_cut_face_indices:
-                    if append_generated_face(
-                        add_oriented_triangle(
-                            [left_a, right_a, opposite_a],
-                            face_normal_a,
-                            [left_a_uv, right_a_uv, mid_lower_uv],
-                        )
-                    ):
-                        cutback_face_count += 1
-                if usable_faces[1] not in multi_cut_face_indices:
-                    if append_generated_face(
-                        add_oriented_triangle(
-                            [right_b, left_b, opposite_b],
-                            face_normal_b,
-                            [right_b_uv, left_b_uv, mid_upper_uv],
-                        )
-                    ):
-                        cutback_face_count += 1
+                if usable_faces[0] not in multi_cut_face_indices and append_generated_face(
+                    add_oriented_triangle(
+                        [left_a, right_a, opposite_a],
+                        face_normal_a,
+                        [left_a_uv, right_a_uv, mid_lower_uv],
+                    )
+                ):
+                    cutback_face_count += 1
+                if usable_faces[1] not in multi_cut_face_indices and append_generated_face(
+                    add_oriented_triangle(
+                        [right_b, left_b, opposite_b],
+                        face_normal_b,
+                        [right_b_uv, left_b_uv, mid_upper_uv],
+                    )
+                ):
+                    cutback_face_count += 1
 
                 left_a_i = add_vertex(left_a, left_a_uv)
                 right_a_i = add_vertex(right_a, right_a_uv)
@@ -18437,8 +18456,8 @@ def _revolved_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             **polybevel_metadata,
             "geometry_applied": True,
             "revolve_section_count": int(sections),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": int(_mesh_body_count(mesh)),
         }
@@ -18870,9 +18889,9 @@ def _polybeveled_nonconvex_extruded_profile_mesh(
         "segments": int(bevel_segments),
         "geometry_applied": True,
         "profile_vertex_count": int(ring_size),
-        "profile_ring_count": int(len(ring_specs)),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "profile_ring_count": len(ring_specs),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "result_body_count": int(_mesh_body_count(mesh)),
     }
@@ -18960,8 +18979,8 @@ def _polybeveled_closed_2d_polygon_points(
         "method": method,
         "width_cm": float(bevel_width),
         "segments": int(bevel_segments),
-        "source_point_count": int(len(coords)),
-        "result_point_count": int(len(deduped)),
+        "source_point_count": len(coords),
+        "result_point_count": len(deduped),
         "beveled_corner_count": int(bevel_count),
     }
 
@@ -19060,9 +19079,9 @@ def _polybeveled_extruded_profile_mesh(
         "segments": int(bevel_segments),
         "geometry_applied": True,
         "profile_vertex_count": int(ring_size),
-        "profile_ring_count": int(len(ring_specs)),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "profile_ring_count": len(ring_specs),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "result_body_count": int(_mesh_body_count(mesh)),
     }
@@ -19079,7 +19098,7 @@ def _extruded_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
     watertight.
     """
     polygon = primitive.profile_polygon or []
-    if len(polygon) < 3:  # noqa: PLR2004
+    if len(polygon) < 3:
         raise _missing_extruded_profile_polygon_error(primitive)
     if primitive.extrude_height is None or float(primitive.extrude_height) <= 0.0:
         raise _missing_extruded_profile_height_error(primitive)
@@ -19184,8 +19203,8 @@ def _validate_heightfield_inputs(
         resolution is None
         or height_data is None
         or bounds_xy is None
-        or len(resolution) != 2  # noqa: PLR2004
-        or len(bounds_xy) != 4  # noqa: PLR2004
+        or len(resolution) != 2
+        or len(bounds_xy) != 4
     ):
         raise _missing_heightfield_inputs_error(primitive)
     nx, ny = int(resolution[0]), int(resolution[1])
@@ -19257,13 +19276,10 @@ def _mesh_backed_primitive_to_trimesh(
     )
     # Marching-cubes output is iso-aligned but normals can flip per-face;
     # let trimesh derive consistent vertex normals so downstream stages
-    # don't see seams.
-    try:
+    # don't see seams. fix_normals can fail on non-watertight slices —
+    # leave the original winding so the asset still ships.
+    with suppress(Exception):
         mesh.fix_normals()
-    except Exception:
-        # fix_normals can fail on non-watertight slices — leave the
-        # original winding so the asset still ships.
-        pass
     _restore_sdf_mesh_kernel_metadata(primitive, mesh)
     return mesh
 
@@ -19459,10 +19475,10 @@ def _sdf_metaball_cluster_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
             if has_explicit_mesh
             else "semantic_sdf_metaball_cluster_extraction_v1"
         ),
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     for key in (
@@ -19516,10 +19532,10 @@ def _semantic_mesh_backed_mesh(
         "method": method,
         "source_primitive_type": primitive.primitive_type,
         "operation": str(v2_metadata.get("v2_op") or ""),
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         modifier_name: modifier,
     }
@@ -19553,10 +19569,10 @@ def _kernel_primitive_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Tri
         "source_primitive_type": primitive.primitive_type,
         "original_primitive_type": original_type,
         "operation": str(v2_metadata.get("v2_op") or ""),
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "mesh_vertices_space": "world_cm",
         "center_translation_applied": False,
@@ -19627,14 +19643,14 @@ def _component_assembly_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.T
         "source_primitive_type": primitive.primitive_type,
         "original_primitive_type": original_type,
         "source_assembly_kind": str(source_shape.get("assembly_kind") or ""),
-        "source_component_count": int(len(assembly_primitives)),
+        "source_component_count": len(assembly_primitives),
         "operation": str(v2_metadata.get("v2_op") or ""),
         "assembly_modifier_names": sorted(assembly_modifiers),
         "assembly_modifiers": assembly_modifiers,
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -19671,10 +19687,10 @@ def _construction_feature_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh
         "operation": str(v2_metadata.get("v2_op") or ""),
         "feature_modifier_names": sorted(feature_modifiers),
         "feature_modifiers": feature_modifiers,
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -19711,10 +19727,10 @@ def _profile_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "operation": str(v2_metadata.get("v2_op") or ""),
         "profile_modifier_names": sorted(profile_modifiers),
         "profile_modifiers": profile_modifiers,
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -19751,10 +19767,10 @@ def _edge_control_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh
         "operation": str(v2_metadata.get("v2_op") or ""),
         "edge_modifier_names": sorted(edge_modifiers),
         "edge_modifiers": edge_modifiers,
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -19786,10 +19802,10 @@ def _boolean_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "operation": str(v2_metadata.get("v2_op") or ""),
         "boolean_modifier_names": sorted(boolean_modifiers),
         "boolean_modifiers": boolean_modifiers,
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -19817,10 +19833,10 @@ def _instance_mesh_backed_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "operation": str(v2_metadata.get("v2_op") or ""),
         "instance_modifier_names": sorted(instance_modifiers),
         "instance_modifiers": instance_modifiers,
-        "source_face_count": int(len(primitive.mesh_faces or ())),
-        "source_vertex_count": int(len(primitive.mesh_vertices or ())),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "source_face_count": len(primitive.mesh_faces or ()),
+        "source_vertex_count": len(primitive.mesh_vertices or ()),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "mesh_vertices_space": "world_cm",
         "center_translation_applied": False,
@@ -20009,7 +20025,7 @@ def _box_bounds_for_analytic_pocket(
             return None
         half = extents * 0.5
         return bounds_center - half, bounds_center + half
-    elif primitive.primitive_type != "box":
+    if primitive.primitive_type != "box":
         return None
     if primitive.extents is None:
         return None
@@ -20159,7 +20175,7 @@ def _analytic_box_pockets_chamfer_mesh(
         return world
 
     def vertex_key(point: np.ndarray) -> tuple[int, int, int]:
-        return tuple(int(round(float(value) / merge_tolerance)) for value in point)
+        return tuple(round(float(value) / merge_tolerance) for value in point)
 
     def add_vertex(point: tuple[float, float, float]) -> int:
         world = to_world(point)
@@ -20214,8 +20230,8 @@ def _analytic_box_pockets_chamfer_mesh(
             for spec in pocket_specs
         )
 
-    for u_left, u_right in zip(u_splits, u_splits[1:]):
-        for v_bottom, v_top in zip(v_splits, v_splits[1:]):
+    for u_left, u_right in itertools.pairwise(u_splits):
+        for v_bottom, v_top in itertools.pairwise(v_splits):
             if not cell_inside_opening(u_left, u_right, v_bottom, v_top, through_only=True):
                 add_quad(
                     (u_left, v_bottom, h_back),
@@ -20231,7 +20247,7 @@ def _analytic_box_pockets_chamfer_mesh(
                 (u_right, v_top, h_face),
                 (u_left, v_top, h_face),
             )
-    for u_left, u_right in zip(u_splits, u_splits[1:]):
+    for u_left, u_right in itertools.pairwise(u_splits):
         add_quad(
             (u_left, v0, h_back),
             (u_left, v0, h_face),
@@ -20244,7 +20260,7 @@ def _analytic_box_pockets_chamfer_mesh(
             (u_left, v1, h_face),
             (u_left, v1, h_back),
         )
-    for v_bottom, v_top in zip(v_splits, v_splits[1:]):
+    for v_bottom, v_top in itertools.pairwise(v_splits):
         add_quad(
             (u1, v_bottom, h_back),
             (u1, v_bottom, h_face),
@@ -20327,12 +20343,12 @@ def _analytic_box_pockets_chamfer_mesh(
         "axis": "xyz"[pocket_axis],
         "side": "positive" if pocket_sign > 0.0 else "negative",
         "width_cm": float(max(spec["width"] for spec in pocket_specs)),
-        "pocket_count": int(len(pocket_specs)),
+        "pocket_count": len(pocket_specs),
         "through_slot_count": int(through_count),
         "blind_pocket_count": int(len(pocket_specs) - through_count),
         "pocket_depth_cm": float(max(spec["pocket_depth"] for spec in pocket_specs)),
-        "face_count": int(len(mesh.faces)),
-        "vertex_count": int(len(mesh.vertices)),
+        "face_count": len(mesh.faces),
+        "vertex_count": len(mesh.vertices),
         "watertight": bool(mesh.is_watertight),
         "bevel_face_count": int(8 * (len(pocket_specs) + through_count)),
         "pocket_wall_face_count": int(8 * len(pocket_specs)),
@@ -20408,7 +20424,7 @@ def _axis_aligned_box_union_grid_mesh(
     merge_tolerance = max(NUMERIC_EPSILON * 10.0, scale * 1e-9)
 
     def vertex_key(point: tuple[float, float, float]) -> tuple[int, int, int]:
-        return tuple(int(round(float(value) / merge_tolerance)) for value in point)
+        return tuple(round(float(value) / merge_tolerance) for value in point)
 
     def add_vertex(point: tuple[float, float, float]) -> int:
         key = vertex_key(point)
@@ -20476,10 +20492,10 @@ def _axis_aligned_box_union_grid_mesh(
     stats = {
         "schema": "lathe.exact_solids.axis_aligned_box_union_grid.v1",
         "method": "axis_aligned_box_union_grid_v1",
-        "box_count": int(len(bounds)),
-        "split_x_count": int(len(xs)),
-        "split_y_count": int(len(ys)),
-        "split_z_count": int(len(zs)),
+        "box_count": len(bounds),
+        "split_x_count": len(xs),
+        "split_y_count": len(ys),
+        "split_z_count": len(zs),
         "occupied_cell_count": int(np.count_nonzero(inside)),
         "face_count": int(topology["face_count"]),
         "vertex_count": int(topology["vertex_count"]),
@@ -20566,7 +20582,7 @@ def _analytic_box_union_component_chamfer_mesh(
         "width_cm": float(max(applied_widths)),
         "min_width_cm": float(min(applied_widths)),
         "segments": max(1, int(segments)),
-        "component_count": int(len(component_primitives)),
+        "component_count": len(component_primitives),
         "component_fusion_method": str(fusion_details.get("component_fusion_method") or ""),
         "component_pre_fusion_body_count": int(fusion_details.get("component_pre_fusion_body_count") or 0),
         "component_geometry_applied_count": int(fusion_details.get("component_geometry_applied_count") or 0),
@@ -20777,7 +20793,7 @@ def _seat_interval_for_axis_aligned_box_union(
     )
 
     def containing_interval(coords: list[float], value: float) -> tuple[float, float] | None:
-        for left, right in zip(coords, coords[1:], strict=True):
+        for left, right in itertools.pairwise(coords):
             if (
                 left - eps <= value <= right + eps
                 and left + radius + eps < value < right - radius - eps
@@ -21041,10 +21057,10 @@ def _analytic_box_union_with_seated_cylinders_mesh(
             if sewn_count
             else "axis_aligned_box_union_with_seated_cylinders_v1"
         ),
-        "box_count": int(len(boxes)),
-        "cylinder_count": int(len(cylinders)),
+        "box_count": len(boxes),
+        "cylinder_count": len(cylinders),
         "sewn_cylinder_count": int(sewn_count),
-        "fallback_seated_cylinder_count": int(len(fallback_cylinder_meshes)),
+        "fallback_seated_cylinder_count": len(fallback_cylinder_meshes),
         "box_union_grid": box_stats,
         "seated_cylinders": cylinder_stats,
         "face_count": int(topology["face_count"]),
@@ -21099,11 +21115,11 @@ def _analytic_union_source_chamfer_mesh(
     metadata["lathe_analytic_union_source_chamfer"] = {
         "schema": "lathe.exact_solids.analytic_union_source_chamfer.v1",
         "method": "visible_union_source_chamfered_instances_v1",
-        "source_primitive_count": int(len(sources)),
+        "source_primitive_count": len(sources),
         "chamfered_source_primitive_count": int(chamfered_count),
         "source_primitive_types": sorted(set(primitive_types)),
-        "face_count": int(len(assembled.faces)),
-        "vertex_count": int(len(assembled.vertices)),
+        "face_count": len(assembled.faces),
+        "vertex_count": len(assembled.vertices),
         "watertight": bool(topology["watertight"]),
         "body_count": int(topology["body_count"]),
         "boundary_edge_count": int(topology["boundary_edge_count"]),
@@ -21384,7 +21400,7 @@ def _layered_rect_circular_through_holes_mesh(
         "geometry_applied": True,
         "width_cm": float(width),
         "layer_count": len(layers),
-        "hole_count": int(len(holes)),
+        "hole_count": len(holes),
         "radial_section_count": int(radial_sections),
         "result_face_count": int(topology["face_count"]),
         "result_vertex_count": int(topology["vertex_count"]),
@@ -21572,7 +21588,7 @@ def _layered_rect_profile_through_cuts_mesh(
         "geometry_applied": True,
         "width_cm": float(bevel_width),
         "layer_count": len(layers),
-        "cut_count": int(len(rings)),
+        "cut_count": len(rings),
         "result_face_count": int(topology["face_count"]),
         "result_vertex_count": int(topology["vertex_count"]),
         "result_watertight": bool(topology["watertight"]),
@@ -21708,7 +21724,7 @@ def _analytic_box_circular_through_holes_mesh(
         "schema": "lathe.exact_solids.analytic_box_circular_through_holes.v1",
         "method": "analytic_box_circular_through_holes_chamfer_v1" if bevel_metadata else "analytic_box_circular_through_holes_v1",
         "axis": axis,
-        "hole_count": int(len(holes)),
+        "hole_count": len(holes),
         "radial_section_count": int(radial_sections),
         "width_cm": float(bevel_width),
         "bevel_applied": bool(bevel_metadata),
@@ -21995,30 +22011,29 @@ def _analytic_box_circular_blind_pockets_mesh(
                         floor_ring[next_index],
                         floor_ring[index],
                     )
+            elif bevel_width > NUMERIC_EPSILON:
+                _add_local_quad(
+                    faces,
+                    bevel_ring[index],
+                    bevel_ring[next_index],
+                    entry_ring[next_index],
+                    entry_ring[index],
+                )
+                _add_local_quad(
+                    faces,
+                    floor_ring[index],
+                    floor_ring[next_index],
+                    bevel_ring[next_index],
+                    bevel_ring[index],
+                )
             else:
-                if bevel_width > NUMERIC_EPSILON:
-                    _add_local_quad(
-                        faces,
-                        bevel_ring[index],
-                        bevel_ring[next_index],
-                        entry_ring[next_index],
-                        entry_ring[index],
-                    )
-                    _add_local_quad(
-                        faces,
-                        floor_ring[index],
-                        floor_ring[next_index],
-                        bevel_ring[next_index],
-                        bevel_ring[index],
-                    )
-                else:
-                    _add_local_quad(
-                        faces,
-                        floor_ring[index],
-                        floor_ring[next_index],
-                        entry_ring[next_index],
-                        entry_ring[index],
-                    )
+                _add_local_quad(
+                    faces,
+                    floor_ring[index],
+                    floor_ring[next_index],
+                    entry_ring[next_index],
+                    entry_ring[index],
+                )
         center_index = _add_local_vertex(
             vertices,
             float(pocket["center"][0]) - float(target_center[u_axis]),
@@ -22056,7 +22071,7 @@ def _analytic_box_circular_blind_pockets_mesh(
             "geometry_applied": True,
             "width_cm": float(bevel_width),
             "layer_count": 3,
-            "pocket_count": int(len(pockets)),
+            "pocket_count": len(pockets),
             "radial_section_count": int(radial_sections),
             "result_face_count": int(topology["face_count"]),
             "result_vertex_count": int(topology["vertex_count"]),
@@ -22069,7 +22084,7 @@ def _analytic_box_circular_blind_pockets_mesh(
         "method": "analytic_box_circular_blind_pockets_chamfer_v1" if bevel_metadata else "analytic_box_circular_blind_pockets_v1",
         "axis": axis,
         "side": side,
-        "pocket_count": int(len(pockets)),
+        "pocket_count": len(pockets),
         "radial_section_count": int(radial_sections),
         "width_cm": float(bevel_width),
         "bevel_applied": bool(bevel_metadata),
@@ -22172,7 +22187,7 @@ def _extruded_profile_cut_info(
         "source_part": cutter.part,
         "source_type": cutter.primitive_type,
         "bevel_width_cm": _polybevel_width(cutter),
-        "profile_vertex_count": int(len(ring)),
+        "profile_vertex_count": len(ring),
     }
 
 
@@ -22266,7 +22281,7 @@ def _analytic_box_profile_through_cuts_mesh(
         "schema": "lathe.exact_solids.analytic_box_profile_through_cuts.v1",
         "method": "analytic_box_profile_through_cuts_chamfer_v1" if bevel_metadata else "analytic_box_profile_through_cuts_v1",
         "axis": axis,
-        "cut_count": int(len(cuts)),
+        "cut_count": len(cuts),
         "width_cm": float(bevel_width),
         "bevel_applied": bool(bevel_metadata),
         "profile_bevel": dict(bevel_metadata or {}),
@@ -22432,30 +22447,29 @@ def _analytic_box_profile_blind_pockets_mesh(
                             floor_ring[next_index],
                             floor_ring[index],
                         )
+                elif bevel_width > NUMERIC_EPSILON:
+                    _add_local_quad(
+                        faces,
+                        bevel_ring[index],
+                        bevel_ring[next_index],
+                        entry_ring[next_index],
+                        entry_ring[index],
+                    )
+                    _add_local_quad(
+                        faces,
+                        floor_ring[index],
+                        floor_ring[next_index],
+                        bevel_ring[next_index],
+                        bevel_ring[index],
+                    )
                 else:
-                    if bevel_width > NUMERIC_EPSILON:
-                        _add_local_quad(
-                            faces,
-                            bevel_ring[index],
-                            bevel_ring[next_index],
-                            entry_ring[next_index],
-                            entry_ring[index],
-                        )
-                        _add_local_quad(
-                            faces,
-                            floor_ring[index],
-                            floor_ring[next_index],
-                            bevel_ring[next_index],
-                            bevel_ring[index],
-                        )
-                    else:
-                        _add_local_quad(
-                            faces,
-                            floor_ring[index],
-                            floor_ring[next_index],
-                            entry_ring[next_index],
-                            entry_ring[index],
-                        )
+                    _add_local_quad(
+                        faces,
+                        floor_ring[index],
+                        floor_ring[next_index],
+                        entry_ring[next_index],
+                        entry_ring[index],
+                    )
             floor_polygon = Polygon(ring)
             if not floor_polygon.is_valid:
                 floor_polygon = floor_polygon.buffer(0)
@@ -22496,7 +22510,7 @@ def _analytic_box_profile_blind_pockets_mesh(
             "geometry_applied": True,
             "width_cm": float(bevel_width),
             "layer_count": 3,
-            "pocket_count": int(len(pockets)),
+            "pocket_count": len(pockets),
             "result_face_count": int(topology["face_count"]),
             "result_vertex_count": int(topology["vertex_count"]),
             "result_watertight": bool(topology["watertight"]),
@@ -22508,7 +22522,7 @@ def _analytic_box_profile_blind_pockets_mesh(
         "method": "analytic_box_profile_blind_pockets_chamfer_v1" if bevel_metadata else "analytic_box_profile_blind_pockets_v1",
         "axis": axis,
         "side": side,
-        "pocket_count": int(len(pockets)),
+        "pocket_count": len(pockets),
         "width_cm": float(bevel_width),
         "bevel_applied": bool(bevel_metadata),
         "profile_bevel": dict(bevel_metadata or {}),
@@ -22590,7 +22604,7 @@ def _revolved_profile_cut_info(
             return
         rings.append((float(axial), float(radius)))
 
-    for (left_axial, left_radius), (right_axial, right_radius) in zip(profile, profile[1:], strict=False):
+    for (left_axial, left_radius), (right_axial, right_radius) in itertools.pairwise(profile):
         seg_min = min(left_axial, right_axial)
         seg_max = max(left_axial, right_axial)
         if seg_max < lower - eps or seg_min > upper + eps:
@@ -22633,7 +22647,7 @@ def _revolved_profile_cut_info(
         "source_part": cutter.part,
         "source_type": cutter.primitive_type,
         "bevel_width_cm": _polybevel_width(cutter),
-        "profile_point_count": int(len(points)),
+        "profile_point_count": len(points),
     }
 
 
@@ -22765,7 +22779,7 @@ def _analytic_box_revolved_profile_cuts_mesh(
             return ordered[0][1]
         if axial >= ordered[-1][0]:
             return ordered[-1][1]
-        for (left_a, left_r), (right_a, right_r) in zip(ordered, ordered[1:], strict=False):
+        for (left_a, left_r), (right_a, right_r) in itertools.pairwise(ordered):
             if left_a <= axial <= right_a:
                 span = right_a - left_a
                 if abs(span) <= NUMERIC_EPSILON:
@@ -22906,7 +22920,7 @@ def _analytic_box_revolved_profile_cuts_mesh(
                 sections=radial_sections,
             )
             ring_indices.append([_add_local_vertex(vertices, u, v, local_axial) for u, v, local_axial in ring])
-        for lower_ring, upper_ring in zip(ring_indices, ring_indices[1:], strict=False):
+        for lower_ring, upper_ring in itertools.pairwise(ring_indices):
             for index in range(radial_sections):
                 next_index = (index + 1) % radial_sections
                 _add_local_quad(
@@ -22972,7 +22986,7 @@ def _analytic_box_revolved_profile_cuts_mesh(
             "geometry_applied": True,
             "width_cm": float(bevel_width),
             "side": side,
-            "cut_count": int(len(cuts)),
+            "cut_count": len(cuts),
             "radial_section_count": int(radial_sections),
             "result_face_count": int(topology["face_count"]),
             "result_vertex_count": int(topology["vertex_count"]),
@@ -22985,7 +22999,7 @@ def _analytic_box_revolved_profile_cuts_mesh(
         "method": "analytic_box_revolved_profile_cuts_chamfer_v1" if bevel_metadata else "analytic_box_revolved_profile_cuts_v1",
         "axis": axis,
         "side": side,
-        "cut_count": int(len(cuts)),
+        "cut_count": len(cuts),
         "radial_section_count": int(radial_sections),
         "width_cm": float(bevel_width),
         "bevel_applied": bool(bevel_metadata),
@@ -23088,10 +23102,10 @@ def _analytic_mount_plate_circular_holes_assembly_mesh(
             if plate_hole_kind == "revolved_profile"
             else "visible_mount_plate_circular_holes_assembly_v1"
         ),
-        "source_primitive_count": int(len(sources)),
+        "source_primitive_count": len(sources),
         "passthrough_union_source_count": int(passthrough_count),
         "plate_source_count": 1,
-        "hole_count": int(len(hole_sources)),
+        "hole_count": len(hole_sources),
         "hole_profile_kind": plate_hole_kind,
         "axis": axis,
         "plate": plate_stats,
@@ -23170,7 +23184,7 @@ def _finish_sdf_mesh_boolean_seams(
                     "seam_group_count": len(primitive.boolean_seam_groups),
                     "group_count": len(primitive.boolean_seam_groups),
                     "edge_count": int(analytic_stats.get("box_union_grid", {}).get("occupied_cell_count", 0)),
-                    "face_count": int(len(analytic.faces)),
+                    "face_count": len(analytic.faces),
                     "method": analytic_method,
                     "accepted": True,
                     "actual_method": analytic_method,
@@ -23179,7 +23193,7 @@ def _finish_sdf_mesh_boolean_seams(
                     "bevel_face_count": int(
                         max(0, len(analytic.faces) - int((analytic_stats.get("box_union_grid") or {}).get("face_count", len(analytic.faces))))
                     ),
-                    "cutback_face_count": int(len(analytic.faces)),
+                    "cutback_face_count": len(analytic.faces),
                     "source_boundary_edge_count": int(
                         (topology_details.get("source_topology") or {}).get("boundary_edge_count", 0)
                     ),
@@ -23233,14 +23247,14 @@ def _finish_sdf_mesh_boolean_seams(
                     "seam_group_count": len(primitive.boolean_seam_groups),
                     "group_count": len(primitive.boolean_seam_groups),
                     "edge_count": int(candidate_topology.get("unique_edge_count", 0)),
-                    "face_count": int(len(analytic.faces)),
+                    "face_count": len(analytic.faces),
                     "method": analytic_method,
                     "accepted": True,
                     "actual_method": analytic_method,
                     "edge_loop_cutback_attempted": False,
                     "edge_loop_cutback_accepted": False,
                     "bevel_face_count": 0,
-                    "cutback_face_count": int(len(analytic.faces)),
+                    "cutback_face_count": len(analytic.faces),
                     "source_boundary_edge_count": int(source_topology.get("boundary_edge_count", 0)),
                     "candidate_boundary_edge_count": int(candidate_topology.get("boundary_edge_count", 0)),
                     "source_nonmanifold_edge_count": int(source_topology.get("nonmanifold_edge_count", 0)),
@@ -23273,7 +23287,7 @@ def _finish_sdf_mesh_boolean_seams(
                     "seam_group_count": len(primitive.boolean_seam_groups),
                     "group_count": len(primitive.boolean_seam_groups),
                     "edge_count": int(analytic_stats.get("chamfered_source_primitive_count", 0)),
-                    "face_count": int(len(analytic.faces)),
+                    "face_count": len(analytic.faces),
                     "method": str(analytic_stats.get("method") or "visible_union_source_chamfered_instances_v1"),
                     "accepted": False,
                     "actual_method": "kernel_boolean_result_preserved",
@@ -23297,14 +23311,14 @@ def _finish_sdf_mesh_boolean_seams(
                 "seam_group_count": len(primitive.boolean_seam_groups),
                 "group_count": len(primitive.boolean_seam_groups),
                 "edge_count": int(analytic_stats.get("chamfered_source_primitive_count", 0)),
-                "face_count": int(len(analytic.faces)),
+                "face_count": len(analytic.faces),
                 "method": str(analytic_stats.get("method") or "visible_union_source_chamfered_instances_v1"),
                 "accepted": True,
                 "actual_method": str(analytic_stats.get("method") or "visible_union_source_chamfered_instances_v1"),
                 "edge_loop_cutback_attempted": False,
                 "edge_loop_cutback_accepted": False,
                 "bevel_face_count": int(analytic_stats.get("chamfered_source_primitive_count", 0)),
-                "cutback_face_count": int(len(analytic.faces)),
+                "cutback_face_count": len(analytic.faces),
                 "source_boundary_edge_count": int(source_topology.get("boundary_edge_count", 0)),
                 "candidate_boundary_edge_count": int(analytic_stats.get("boundary_edge_count", 0)),
                 "source_nonmanifold_edge_count": int(source_topology.get("nonmanifold_edge_count", 0)),
@@ -23334,7 +23348,7 @@ def _finish_sdf_mesh_boolean_seams(
             "seam_group_count": len(primitive.boolean_seam_groups),
             "group_count": len(primitive.boolean_seam_groups),
             "edge_count": int(mount_plate_stats.get("hole_count", 0)),
-            "face_count": int(len(mount_plate_analytic.faces)),
+            "face_count": len(mount_plate_analytic.faces),
             "method": str(mount_plate_stats.get("method") or "visible_mount_plate_circular_holes_assembly_v1"),
             "accepted": True,
             "actual_method": str(mount_plate_stats.get("method") or "visible_mount_plate_circular_holes_assembly_v1"),
@@ -23347,7 +23361,7 @@ def _finish_sdf_mesh_boolean_seams(
                     - int((mount_plate_stats.get("plate") or {}).get("base_face_count", 0)),
                 )
             ),
-            "cutback_face_count": int(len(mount_plate_analytic.faces)),
+            "cutback_face_count": len(mount_plate_analytic.faces),
             "source_boundary_edge_count": int(source_topology.get("boundary_edge_count", 0)),
             "candidate_boundary_edge_count": int(mount_plate_stats.get("boundary_edge_count", 0)),
             "source_nonmanifold_edge_count": int(source_topology.get("nonmanifold_edge_count", 0)),
@@ -23426,7 +23440,7 @@ def _finish_sdf_mesh_boolean_seams(
                             circular_stats.get("pocket_count", circular_stats.get("cut_count", 0)),
                         )
                     ),
-                    "face_count": int(len(circular_analytic.faces)),
+                    "face_count": len(circular_analytic.faces),
                     "method": circular_method,
                     "accepted": True,
                     "actual_method": circular_method,
@@ -23439,7 +23453,7 @@ def _finish_sdf_mesh_boolean_seams(
                             - int(circular_stats.get("base_face_count", len(circular_analytic.faces))),
                         )
                     ),
-                    "cutback_face_count": int(len(circular_analytic.faces)),
+                    "cutback_face_count": len(circular_analytic.faces),
                     "source_boundary_edge_count": int(
                         (topology_details.get("source_topology") or {}).get("boundary_edge_count", 0)
                     ),
@@ -23483,7 +23497,7 @@ def _finish_sdf_mesh_boolean_seams(
                     "seam_group_count": len(primitive.boolean_seam_groups),
                     "group_count": len(primitive.boolean_seam_groups),
                     "edge_count": int(4 * max(int(analytic_stats.get("pocket_count", 1)), 1)),
-                    "face_count": int(len(analytic.faces)),
+                    "face_count": len(analytic.faces),
                     "method": analytic_method,
                     "accepted": True,
                     "actual_method": analytic_method,
@@ -23702,8 +23716,8 @@ def _heightfield_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "base_z": float(base_z + center[2]),
         "top_face_count": int(len(tri_a) + len(tri_b)),
         "bottom_face_count": int(len(bottom_tri_a) + len(bottom_tri_b)),
-        "side_face_count": int(len(side_faces)),
-        "result_face_count": int(len(mesh.faces)),
+        "side_face_count": len(side_faces),
+        "result_face_count": len(mesh.faces),
         "result_watertight": bool(mesh.is_watertight),
     }
     return mesh
@@ -23788,9 +23802,9 @@ def _swept_profile_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         mesh.metadata["lathe_polybeveled_swept_profile"] = {
             **polybevel_metadata,
             "geometry_applied": True,
-            "path_point_count": int(len(sweep_path)),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "path_point_count": len(sweep_path),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
             "result_body_count": int(_mesh_body_count(mesh)),
         }
@@ -23918,8 +23932,8 @@ def _polybeveled_lofted_cross_sections(
         "method": "section_polygon_corner_bevel_before_loft_v1",
         "width_cm": float(max(0.0, width)),
         "segments": int(max(1, min(8, int(segments)))),
-        "source_section_count": int(len(cross_sections)),
-        "source_section_point_count": int(len(cross_sections[0])),
+        "source_section_count": len(cross_sections),
+        "source_section_point_count": len(cross_sections[0]),
         "result_section_point_count": int(expected_count),
         "beveled_corner_count": int(bevel_count),
     }
@@ -24031,15 +24045,15 @@ def _lofted_solid_mesh(primitive: ShapePrimitive) -> trimesh.Trimesh:
         "path_segment_count": int(max(0, section_count - 1)),
         "axis_source": "section_centers",
         "polybeveled_sections": bool(polybevel_metadata is not None),
-        "result_face_count": int(len(mesh.faces)),
-        "result_vertex_count": int(len(mesh.vertices)),
+        "result_face_count": len(mesh.faces),
+        "result_vertex_count": len(mesh.vertices),
         "result_watertight": bool(mesh.is_watertight),
         "result_body_count": int(_mesh_body_count(mesh)),
     }
     if polybevel_metadata is not None:
         mesh.metadata["lathe_polybeveled_lofted_solid"] = {
             **polybevel_metadata,
-            "result_face_count": int(len(mesh.faces)),
+            "result_face_count": len(mesh.faces),
             "result_watertight": bool(mesh.is_watertight),
         }
     return mesh
@@ -24316,7 +24330,7 @@ def _assign_boolean_face_primitive_indices_from_bounds(
     if len(mesh.faces) == 0:
         return []
     entries: list[tuple[int, np.ndarray, np.ndarray, np.ndarray, float, str]] = []
-    for index, (primitive, source_mesh, blend_mode) in enumerate(
+    for index, (_primitive, source_mesh, blend_mode) in enumerate(
         zip(primitives, source_meshes, blend_modes, strict=False)
     ):
         if len(source_mesh.faces) == 0:
@@ -24630,7 +24644,7 @@ def _attach_v2_modifier_metadata(
     for record in records:
         grouped.setdefault(str(record["name"]), []).append(record["payload"])
 
-    modifier_names = sorted(grouped)
+    sorted(grouped)
     v2_metadata = _v2_semantic_metadata(primitive)
     existing = mesh.metadata.get("lathe_shape_ir_v2_modifiers")
     existing = existing if isinstance(existing, dict) else {}

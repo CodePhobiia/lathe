@@ -11,12 +11,12 @@ from copy import deepcopy
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from ..asset_graph import build_asset_graph
 from ..checker import check_program
 from ..child_modules import child_module_layout_from_authoring
 from ..connection_layout import connection_layout_from_authoring
-from ..creative_grammar import creative_grammar_for_scene
-from ..asset_graph import build_asset_graph
 from ..core.errors import BuildError
+from ..creative_grammar import creative_grammar_for_scene
 from ..nested_assembly import nested_assembly_manifest
 from ..nested_assets import nested_asset_manifest_for_signature
 from ..object_grammar import object_grammar_for_scene
@@ -530,7 +530,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "facade_style": ("facade_style", "architecture_style"),
     "rooms": ("rooms", "room_count"),
     "room_count": ("room_count", "rooms"),
-    "corridors": ("corridors", "corridor_count"),
     "corridor_count": ("corridor_count", "corridors"),
     "partitions": ("partitions", "partition_count", "interior_partitions"),
     "partition_count": ("partition_count", "partitions", "interior_partitions"),
@@ -569,7 +568,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "fixture_count": ("fixture_count", "fixtures"),
     "workstations": ("workstation_count", "workstations", "desk_count"),
     "workstation_count": ("workstation_count", "workstations", "desk_count"),
-    "sinks": ("sink_count", "sinks"),
     "sink_count": ("sink_count", "sinks"),
     "toilets": ("toilet_count", "toilets"),
     "toilet_count": ("toilet_count", "toilets"),
@@ -769,10 +767,8 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "plant_type": ("plant_type", "foliage_type", "nature_type", "archetype"),
     "nature_type": ("nature_type", "foliage_type", "plant_type", "archetype"),
     "trunks": ("trunk_count", "trunks", "tree_count"),
-    "trunk_count": ("trunk_count", "trunks", "tree_count"),
     "tree_count": ("tree_count", "trunk_count", "trunks"),
     "branches": ("branch_count", "branches"),
-    "branch_count": ("branch_count", "branches"),
     "roots": ("root_count", "roots"),
     "root_count": ("root_count", "roots"),
     "canopies": ("canopy_count", "canopies", "leaf_cluster_count"),
@@ -894,7 +890,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "guardrail_count": ("guardrail_count", "guardrails"),
     "safety_gates": ("safety_gate_count", "safety_gates", "gate_count"),
     "safety_gate_count": ("safety_gate_count", "safety_gates", "gate_count"),
-    "lots": ("lot_count", "lots", "building_count"),
     "lot_count": ("lot_count", "lots", "building_count"),
     "bays": ("bays", "window_bays", "wall_bays", "interior_bays"),
     "bay_count": ("bays", "window_bays", "wall_bays", "interior_bays"),
@@ -1029,7 +1024,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "environment_pattern": ("environment_pattern", "terrain_pattern"),
     "environment_total_feature_count": ("environment_total_feature_count", "world_structure_count"),
     "environment_feature_kind_count": ("environment_feature_kind_count", "landform_kind_count"),
-    "terrain_patch_count": ("terrain_patch_count", "terrain_tile_count"),
     "ridge_count": ("ridge_count",),
     "cliff_count": ("cliff_count",),
     "clearing_count": ("clearing_count",),
@@ -1091,11 +1085,9 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "setpiece_layout": ("setpiece_layout",),
     "setpiece_density": ("setpiece_density", "density"),
     "structure_count": ("structure_count", "building_count"),
-    "building_count": ("building_count", "structure_count"),
     "road_segments": ("road_segment_count", "segments"),
     "road_segment_count": ("road_segment_count", "segments"),
     "access_count": ("access_count", "catwalk_count", "walkway_count"),
-    "infrastructure_count": ("infrastructure_count", "pipe_count", "conduit_count"),
     "prop_count": ("prop_count", "scatter_count", "street_crate_count"),
     "actor_count": ("actor_count", "npc_count", "agent_count", "prop_count"),
     "npc_count": ("npc_count", "actor_count", "agent_count", "prop_count"),
@@ -1259,7 +1251,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "culture_system_count": ("culture_system_count", "culture_count"),
     "culture_count": ("culture_count", "culture_system_count"),
     "law_code_count": ("law_code_count", "law_count", "policy_rule_count"),
-    "policy_rule_count": ("policy_rule_count", "policy_count", "law_code_count"),
     "economy_model_count": ("economy_model_count", "economy_count", "trade_policy_count"),
     "trade_policy_count": ("trade_policy_count", "trade_count", "economy_model_count"),
     "diplomacy_state_count": ("diplomacy_state_count", "diplomacy_count", "social_relation_count"),
@@ -1274,7 +1265,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "civic_institution_count": ("civic_institution_count", "institution_count", "civic_count"),
     "culture_type": ("culture_type", "culture"),
     "laws": ("laws", "law_codes"),
-    "policies": ("policies", "policy"),
     "economy_type": ("economy_type", "economy"),
     "trade_goods": ("trade_goods", "goods", "resources"),
     "partners": ("partners", "factions"),
@@ -1321,7 +1311,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "cycle_duration": ("cycle_duration", "duration"),
     "weather_sensitivity": ("weather_sensitivity", "sensitivity"),
     "pressure_type": ("pressure_type", "pressure"),
-    "pressure_sources": ("pressure_sources", "sources", "causes"),
     "land_use_plan_count": ("land_use_plan_count", "land_use_count"),
     "land_use_count": ("land_use_count", "land_use_plan_count"),
     "farm_plot_count": ("farm_plot_count", "farm_count", "crop_count"),
@@ -1688,7 +1677,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "upgrade_level": ("upgrade_level",),
     "construction_style": ("construction_style", "style"),
     "districts": ("districts", "zones", "expansion_zones"),
-    "buildings": ("buildings", "projects", "upgrades"),
     "city_blocks": ("city_blocks", "blocks"),
     "zoning_districts": ("zoning_districts", "zones", "districts"),
     "zoning": ("zoning", "zone_type"),
@@ -1777,7 +1765,6 @@ _PROCEDURAL_CONTROL_ALIASES: dict[str, tuple[str, ...]] = {
     "circulation_controls": ("circulation_controls",),
     "circulation_detail_controls": ("circulation_detail_controls",),
     "tread_count": ("tread_count", "treads"),
-    "riser_count": ("riser_count", "risers"),
     "landing_count": ("landing_count", "landings"),
     "handrail_count": ("handrail_count", "handrails"),
     "corridor_wall_count": ("corridor_wall_count", "wall_count"),

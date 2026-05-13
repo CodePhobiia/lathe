@@ -11,6 +11,7 @@ optional subdivision refinement.
 
 from __future__ import annotations
 
+import contextlib
 import math
 from typing import Any
 
@@ -108,10 +109,10 @@ def _subdivided_deform_mesh(
         if target_segments < 1:
             raise ValueError("kernel deform segments must be >= 1")
         target_segments = min(target_segments, 64)
-        levels = max(1, min(6, int(math.ceil(math.log2(float(target_segments))))))
+        levels = max(1, min(6, math.ceil(math.log2(float(target_segments)))))
     else:
         target_segments = 12
-        levels = max(1, min(6, int(math.ceil(math.log2(float(target_segments))))))
+        levels = max(1, min(6, math.ceil(math.log2(float(target_segments)))))
 
     axis_index = _axis_index(axis)
     _, _, span = _axis_span(np.asarray(mesh.vertices, dtype=np.float64), axis_index)
@@ -143,10 +144,8 @@ def _subdivided_deform_mesh(
     refined.metadata.update(dict(mesh.metadata))
     refined.remove_unreferenced_vertices()
     refined.merge_vertices()
-    try:
+    with contextlib.suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         refined.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     if len(refined.vertices) == 0 or len(refined.faces) == 0:
         raise ValueError("kernel deform subdivision produced an empty mesh")
     details.update(
@@ -221,7 +220,7 @@ def _exact_extruded_profile_deform_params(
         requested_segments = max(1, 2 ** int(subdivision_levels))
     twist_segments = max(existing_segments, 1)
     if operation == "sop.twist":
-        twist_segments = max(twist_segments, int(math.ceil(abs(result_twist) / 30.0)))
+        twist_segments = max(twist_segments, math.ceil(abs(result_twist) / 30.0))
     if requested_segments is not None:
         twist_segments = max(twist_segments, int(requested_segments))
     twist_segments = max(1, min(96, twist_segments))

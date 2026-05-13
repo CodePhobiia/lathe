@@ -18,6 +18,28 @@ import numpy as np
 import trimesh
 
 from ..kernel import GeometryKernel
+from ._capabilities import (
+    _SUPPORTED_BLEND_MODES,
+    _kernel_capabilities,
+    _require_capabilities,
+    _required_boolean_capabilities,
+    _validate_hull_operands,
+    _validate_minkowski_operands,
+    _validate_operands,
+    _validate_transform_operand,
+    _validated_transform_matrix,
+)
+from ._common import (
+    _attach_kernel_boolean_execution_metadata,
+    _copy_kernel_import_stats,
+    _finite_float,
+    _non_empty_mesh,
+    _operation_id_fragment,
+    _operation_record,
+    _record_operation_result,
+    _record_result_probe,
+    _sequence_count,
+)
 from ._core import (
     KernelOperand,
     KernelProgramCapabilityError,
@@ -41,41 +63,6 @@ from ._core import (
     terrain_field_operation_count,
     transform_operation_count,
 )
-from ._serialize import (
-    _compact_face_operation_ids,
-    _compact_kernel_handoff_value,
-    _compact_kernel_program_payload,
-    _compact_kernel_result_metadata,
-    _compact_kernel_semantic_handoff,
-    _compact_semantic_metadata_record,
-    _compact_shape_record_summary,
-    _compact_source_shape_record,
-    _dict_metadata,
-    _json_safe,
-    _stable_unique_strings,
-)
-from ._capabilities import (
-    _SUPPORTED_BLEND_MODES,
-    _kernel_capabilities,
-    _require_capabilities,
-    _required_boolean_capabilities,
-    _validate_hull_operands,
-    _validate_minkowski_operands,
-    _validate_operands,
-    _validate_transform_operand,
-    _validated_transform_matrix,
-)
-from ._common import (
-    _attach_kernel_boolean_execution_metadata,
-    _copy_kernel_import_stats,
-    _finite_float,
-    _non_empty_mesh,
-    _operation_id_fragment,
-    _operation_record,
-    _record_operation_result,
-    _record_result_probe,
-    _sequence_count,
-)
 from ._face_operation import (
     _attach_direct_face_operation_metadata,
     _attach_semantic_whole_result_face_metadata,
@@ -84,6 +71,26 @@ from ._face_operation import (
     _instance_face_operation_ids,
     _kernel_program_face_operation_summary,
     _metadata_list,
+)
+from ._feature_detail import (
+    _EDGE_TREATMENT_OPERATION_KINDS,
+    _FEATURE_DETAIL_MODIFIER_KINDS,
+    _FEATURE_DETAIL_OPERATION_KINDS,
+    _PATTERN_INSTANCE_MODIFIER_KINDS,
+    _PATTERN_INSTANCE_OPERATION_KINDS,
+    _SURFACE_DAMAGE_MODIFIER_KINDS,
+    _SURFACE_DAMAGE_OPERATION_KINDS,
+    _apply_import_edge_treatment_geometry,
+    _edge_treatment_geometry_parameters,
+    _import_edge_treatment_requires_reimport,
+    _kernel_edge_control_source_payload,
+    _kernel_edge_treatment_metadata,
+    _kernel_edge_treatment_payloads,
+    _kernel_feature_detail_metadata,
+    _kernel_feature_detail_payloads,
+    _kernel_modifier_payload,
+    _kernel_surface_damage_metadata,
+    _kernel_surface_damage_payloads,
 )
 from ._primitive_metadata import (
     _axis_aligned_box_metadata,
@@ -106,26 +113,6 @@ from ._primitive_metadata import (
     _sphere_metadata,
     _validated_deform_axis,
     _validated_origin,
-)
-from ._feature_detail import (
-    _EDGE_TREATMENT_OPERATION_KINDS,
-    _FEATURE_DETAIL_MODIFIER_KINDS,
-    _FEATURE_DETAIL_OPERATION_KINDS,
-    _PATTERN_INSTANCE_MODIFIER_KINDS,
-    _PATTERN_INSTANCE_OPERATION_KINDS,
-    _SURFACE_DAMAGE_MODIFIER_KINDS,
-    _SURFACE_DAMAGE_OPERATION_KINDS,
-    _apply_import_edge_treatment_geometry,
-    _edge_treatment_geometry_parameters,
-    _import_edge_treatment_requires_reimport,
-    _kernel_edge_control_source_payload,
-    _kernel_edge_treatment_metadata,
-    _kernel_edge_treatment_payloads,
-    _kernel_feature_detail_metadata,
-    _kernel_feature_detail_payloads,
-    _kernel_modifier_payload,
-    _kernel_surface_damage_metadata,
-    _kernel_surface_damage_payloads,
 )
 from ._records import (
     _MODIFIER_OPERATION_DEFAULTS,
@@ -152,6 +139,19 @@ from ._semantic_handoff import (
     _attach_kernel_program_semantic_handoff,
     _kernel_program_semantic_handoff,
     _sdf_lineage_stats,
+)
+from ._serialize import (
+    _compact_face_operation_ids,
+    _compact_kernel_handoff_value,
+    _compact_kernel_program_payload,
+    _compact_kernel_result_metadata,
+    _compact_kernel_semantic_handoff,
+    _compact_semantic_metadata_record,
+    _compact_shape_record_summary,
+    _compact_source_shape_record,
+    _dict_metadata,
+    _json_safe,
+    _stable_unique_strings,
 )
 from .boolean import (
     _MESH_TO_LEVELSET_METHODS,

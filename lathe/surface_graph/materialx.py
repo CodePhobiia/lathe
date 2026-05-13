@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
 
-
 MATERIALX_VERSION = "1.39"
 MATERIALX_NAMESPACE = "lathe_surface_v1"
 

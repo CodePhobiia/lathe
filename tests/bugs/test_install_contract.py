@@ -13,7 +13,6 @@ from __future__ import annotations
 import importlib
 
 import pytest
-
 from lathe.doctor import _BASE_REQUIRED_PACKAGES, _package_reports
 
 

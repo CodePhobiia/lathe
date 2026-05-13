@@ -26,14 +26,14 @@ The two helpers compose:
 """
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ..shape_ir import ShapePrimitive
 
 __all__ = [
-    "tag_boolean_seam_group",
-    "fillet_edge",
     "box_with_seam_group",
+    "fillet_edge",
+    "tag_boolean_seam_group",
 ]
 
 

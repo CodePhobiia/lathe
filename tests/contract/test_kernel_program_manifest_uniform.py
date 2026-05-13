@@ -28,10 +28,10 @@ real kernel; this manifest-shape test is the fast pre-runtime gate.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import pytest
-
 from lathe.geometry.kernel_program import (
     KernelOperand,
     build_boolean_program_manifest,
@@ -49,7 +49,6 @@ from lathe.geometry.kernel_program import (
     build_terrain_field_program_manifest,
     build_transform_program_manifest,
 )
-
 
 _CANONICAL_MANIFEST_KEYS: frozenset[str] = frozenset(
     {
@@ -283,7 +282,7 @@ def test_manifest_canonical_key_set_is_pinned() -> None:
     valid change but must be deliberate — this test prevents accidental
     silent additions. Update both the set and this test when adding.
     """
-    assert _CANONICAL_MANIFEST_KEYS == frozenset({
+    assert frozenset({
         "schema",
         "version",
         "program_kind",
@@ -299,7 +298,7 @@ def test_manifest_canonical_key_set_is_pinned() -> None:
         "semantic_operation_counts",
         "semantic_operation_records",
         "diagnostics",
-    }), "canonical manifest key set drift detected; intentional?"
+    }) == _CANONICAL_MANIFEST_KEYS, "canonical manifest key set drift detected; intentional?"
 
 
 if __name__ == "__main__":

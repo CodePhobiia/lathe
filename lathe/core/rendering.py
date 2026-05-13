@@ -69,7 +69,7 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
         return {
             "status": "empty_mesh_preview",
             "mode": mode,
-            "face_count": int(len(faces)),
+            "face_count": len(faces),
             "rendered_face_count": 0,
             "sampled": False,
         }
@@ -119,8 +119,8 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
     return {
         "status": "rendered_sampled_preview" if len(face_indices) < len(faces) else "rendered_preview",
         "mode": mode,
-        "face_count": int(len(faces)),
-        "rendered_face_count": int(len(face_indices)),
+        "face_count": len(faces),
+        "rendered_face_count": len(face_indices),
         "sampled": bool(len(face_indices) < len(faces)),
         "max_preview_faces": int(MAX_PREVIEW_FACES),
     }

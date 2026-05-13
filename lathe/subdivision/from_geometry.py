@@ -34,14 +34,14 @@ is present and ``build.topology.subdivision_finishing != "disabled"``.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Any
 
 from .boundary import BoundaryRule
 from .creases import CreaseTags
 from .mesh import SubdivMesh, mesh_from_arrays
 from .scheme import SubdivisionScheme, parse_scheme
-
 
 HERO_CLASS_DEFAULTS: dict[str, dict[str, Any]] = {
     "hard_surface_prop": {"scheme": "catmull_clark", "levels": 1, "boundary": "smooth"},
@@ -67,7 +67,7 @@ class SubdivisionFinishingSpec:
         block: Mapping[str, Any] | None,
         *,
         source: str = "explicit",
-    ) -> "SubdivisionFinishingSpec | None":
+    ) -> SubdivisionFinishingSpec | None:
         """Build a spec from a subdivision block, ``None`` if disabled."""
         if not block:
             return None

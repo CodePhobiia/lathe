@@ -18,9 +18,8 @@ _MESH_TO_LEVELSET_METHODS registry consumed by it.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
-
-import trimesh
 
 from ..kernel import GeometryKernel
 from ._capabilities import (
@@ -303,10 +302,8 @@ def _exact_profile_cut_record(
     ):
         value = exact_boolean.get(key)
         if value not in (None, "", (), [], {}):
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 record[key] = int(value)
-            except (TypeError, ValueError):
-                pass
     return record
 
 

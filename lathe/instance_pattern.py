@@ -147,7 +147,7 @@ def primary_face_frame(
         tangent_axis=tangent_axis,
         bitangent_axis=bitangent_axis,
         normal_axis=normal_axis,
-        normal_sign=int(1 if normal_sign >= 0 else -1),
+        normal_sign=(1 if normal_sign >= 0 else -1),
     )
 
 
@@ -234,8 +234,8 @@ def poisson_disk_sample_rect(
     min_distance = max(float(min_distance), 1e-3)
 
     cell = min_distance / math.sqrt(2.0)
-    cols = max(1, int(math.ceil((2.0 * half_u) / cell)))
-    rows = max(1, int(math.ceil((2.0 * half_v) / cell)))
+    cols = max(1, math.ceil((2.0 * half_u) / cell))
+    rows = max(1, math.ceil((2.0 * half_v) / cell))
     grid: dict[tuple[int, int], tuple[float, float]] = {}
 
     def _cell_index(u: float, v: float) -> tuple[int, int]:
@@ -292,7 +292,7 @@ def poisson_disk_sample_rect(
         # exact requested count (relaxes the disk constraint at the
         # tail rather than under-delivering greebles).
         deficit = target_count - len(points)
-        side = max(1, int(math.ceil(math.sqrt(deficit))))
+        side = max(1, math.ceil(math.sqrt(deficit)))
         step_u = (2.0 * half_u) / side
         step_v = (2.0 * half_v) / side
         emitted = 0

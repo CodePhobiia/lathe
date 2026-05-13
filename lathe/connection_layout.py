@@ -113,7 +113,7 @@ def _connection_summary(
 def _connection_sequence(value: Any) -> list[Any]:
     if value is None:
         return []
-    if isinstance(value, str) or isinstance(value, Mapping):
+    if isinstance(value, (str, Mapping)):
         return [value]
     if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
         return [item for item in value if item is not None and item != ""]
@@ -253,8 +253,8 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
         return {
             "segments": segment_count,
             "segment_count": segment_count,
-            "branches": max(branch_count, max(0, route_count - 1)),
-            "branch_count": max(branch_count, max(0, route_count - 1)),
+            "branches": max(branch_count, 0, route_count - 1),
+            "branch_count": max(branch_count, 0, route_count - 1),
             "junction_count": max(1 if branch_count or route_count > 1 else 0, min(6, branch_count)),
             "road_length": round(1.6 + 0.42 * segment_count, 6),
             "network_type": "connected_route" if route_count else "local_link",
@@ -334,7 +334,7 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
             "infrastructure_count": max(1 if external_count else 0, attach_count + support_count),
             "prop_count": max(2, branch_count + external_count),
             "terrain_platforms": max(1 if support_count else 0, min(4, support_count + attach_count)),
-            "branch_count": max(branch_count, max(0, route_count - 1)),
+            "branch_count": max(branch_count, 0, route_count - 1),
             "setpiece_depth": round(1.2 + 0.24 * segment_count, 6),
         }
     return {}

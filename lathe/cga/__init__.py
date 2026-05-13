@@ -29,14 +29,22 @@ Stable contract id: ``lathe.assembly.shape_grammar_v1``.
 
 from __future__ import annotations
 
+from .evaluator import (
+    AssemblyTree,
+    EvaluationDiagnostic,
+    EvaluationReport,
+    InitialShape,
+    ProductionNode,
+    evaluate_rule_tree,
+)
 from .productions import (
+    RHS,
     ChooseOne,
     Extrude,
     Grammar,
     NonTerminal,
     Production,
     Repeat,
-    RHS,
     Rotate,
     Scale,
     Split,
@@ -46,17 +54,8 @@ from .productions import (
     parse_production,
     parse_productions,
 )
-from .evaluator import (
-    AssemblyTree,
-    EvaluationDiagnostic,
-    EvaluationReport,
-    InitialShape,
-    ProductionNode,
-    evaluate_rule_tree,
-)
 from .terminals import TerminalRecord, terminate_to_primitives
 from .validator import GrammarDiagnostic, GrammarReport, validate_grammar
-
 
 CGA_CONTRACT_ID = "lathe.assembly.shape_grammar_v1"
 DEFAULT_RECURSION_BUDGET = 32
@@ -125,6 +124,7 @@ def compile_assembly_rules(
 __all__ = [
     "CGA_CONTRACT_ID",
     "DEFAULT_RECURSION_BUDGET",
+    "RHS",
     "AssemblyTree",
     "ChooseOne",
     "EvaluationDiagnostic",
@@ -138,7 +138,6 @@ __all__ = [
     "Production",
     "ProductionNode",
     "Repeat",
-    "RHS",
     "Rotate",
     "Scale",
     "Split",

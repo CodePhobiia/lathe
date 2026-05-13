@@ -25,7 +25,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 VERSION = "lathe.validate.edge_treatment_coverage_v1"
 
 

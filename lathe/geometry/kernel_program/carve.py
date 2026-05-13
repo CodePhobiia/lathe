@@ -15,6 +15,7 @@ attempted-vs-actual story.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 import numpy as np
@@ -112,10 +113,8 @@ def _carved_axis_interval_mesh(
         if isinstance(upper_clipped, trimesh.Trimesh) and len(upper_clipped.faces) > 0:
             upper_clipped.metadata.update(dict(mesh.metadata))
             upper_clipped.remove_unreferenced_vertices()
-            try:
+            with contextlib.suppress(AttributeError, TypeError, ValueError, RuntimeError):
                 upper_clipped.fix_normals()
-            except (AttributeError, TypeError, ValueError, RuntimeError):
-                pass
             exact_slice_mesh = upper_clipped
         else:
             exact_slice_failure = "empty_or_non_mesh_slice_result"
@@ -161,10 +160,8 @@ def _carved_axis_interval_mesh(
             candidate.apply_translation(center)
             candidate.metadata.update(dict(mesh.metadata))
             candidate.remove_unreferenced_vertices()
-            try:
+            with contextlib.suppress(AttributeError, TypeError, ValueError, RuntimeError):
                 candidate.fix_normals()
-            except (AttributeError, TypeError, ValueError, RuntimeError):
-                pass
             if len(candidate.faces) == 0:
                 measured_failure = "measured_bounds_axis_slab_result_empty"
             elif not bool(candidate.is_watertight):
@@ -192,10 +189,10 @@ def _carved_axis_interval_mesh(
             "carved_min_cm": carved_min,
             "carved_max_cm": carved_max,
             "carved_span_cm": carved_span,
-            "source_face_count": int(len(mesh.faces)),
-            "source_vertex_count": int(len(mesh.vertices)),
-            "result_face_count": int(len(measured_mesh.faces)),
-            "result_vertex_count": int(len(measured_mesh.vertices)),
+            "source_face_count": len(mesh.faces),
+            "source_vertex_count": len(mesh.vertices),
+            "result_face_count": len(measured_mesh.faces),
+            "result_vertex_count": len(measured_mesh.vertices),
             "result_watertight": bool(measured_mesh.is_watertight),
         }
 

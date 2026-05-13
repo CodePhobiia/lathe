@@ -16,6 +16,7 @@ reuse that class rather than defining a new one.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import subprocess
 from pathlib import Path
@@ -46,9 +47,8 @@ from ..geometry import (
     part_groups_from_face_parts,
     run_reference_topology_cleanup,
 )
-from ..io import export_glb, export_runtime_scene_glb
+from ..io import export_runtime_scene_glb
 from ..mesh import RuntimeMesh
-
 
 # Fidelity-tier defaults for the Subsurf+Bevel+Decimate stack.
 #
@@ -268,10 +268,8 @@ def _build_topology_adapter_config(
         else build_topology_cfg.get("bevel_width_cm")
     )
     if bevel_width_override is not None:
-        try:
+        with contextlib.suppress(TypeError, ValueError):
             config["bevel_width"] = float(bevel_width_override)
-        except (TypeError, ValueError):
-            pass
 
     instance_records = integration.get("instance_pattern_records") or []
     if isinstance(instance_records, list) and instance_records:
@@ -393,7 +391,7 @@ def run_blender_topology(
     ]
     if adapter_config:
         try:
-            with open(config_path, "w", encoding="utf-8") as handle:
+            with Path(config_path).open("w", encoding="utf-8") as handle:
                 json.dump(adapter_config, handle, indent=2)
             cli_args.extend(["--config", str(config_path)])
         except OSError:
@@ -482,8 +480,8 @@ def _multi_part_scene_from_runtime_mesh(
     for part_name, submesh in runtime_scene_parts(runtime_mesh):
         scene.add_geometry(submesh, geom_name=part_name, node_name=part_name)
         names.append(part_name)
-        face_counts.append(int(len(submesh.faces)))
-        vertex_counts.append(int(len(submesh.vertices)))
+        face_counts.append(len(submesh.faces))
+        vertex_counts.append(len(submesh.vertices))
     manifest = manifest_from_part_index(names, face_counts, vertex_counts, part_index)
     return MultiPartScene(scene=scene, manifest=manifest, units=runtime_mesh.units)
 
@@ -644,7 +642,7 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
             if len(names) > 1:
                 fused_meshes = [scene_payload.geometry[name] for name in names]
                 fused_face_parts: list[str] = []
-                for name, count in zip(names, face_counts):
+                for name, count in zip(names, face_counts, strict=False):
                     fused_face_parts.extend([name] * int(count))
                 if len(fused_meshes) == 1:
                     fused_mesh = fused_meshes[0].copy()
@@ -704,12 +702,12 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
     # refined output before exporting. ``geometry-strict`` builds with
     # ``build.topology.subdivision_finishing = "disabled"`` opt out.
     selected_integration_mode = str(
-        (
+
             executor.runtime.get("shape", {})
             .get("selected", {})
             .get("integration_report", {})
             .get("mode", "")
-        )
+
     )
     selected_integration_report = (
         executor.runtime.get("shape", {})
@@ -874,8 +872,8 @@ def _maybe_apply_subdivision_finishing(
         units=topology_runtime.units,
     )
     report["_runtime_mesh"] = refined_runtime
-    report["input_face_count"] = int(len(topology_runtime.mesh.faces))
-    report["output_face_count"] = int(len(refined_mesh.faces))
+    report["input_face_count"] = len(topology_runtime.mesh.faces)
+    report["output_face_count"] = len(refined_mesh.faces)
     return report
 
 
@@ -887,7 +885,7 @@ def _repair_face_parts(refined_mesh: Any, source: RuntimeMesh) -> list[str]:
     code that indexes ``face_parts[face_idx]`` does not blow up. Future
     work: thread through a per-face provenance table from the CC pass.
     """
-    target = int(len(refined_mesh.faces))
+    target = len(refined_mesh.faces)
     if not source.face_parts:
         return [""] * target
     if len(source.face_parts) == target:

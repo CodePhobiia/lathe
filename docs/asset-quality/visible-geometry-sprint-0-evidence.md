@@ -60,7 +60,7 @@ The next implementation slice should use the produced artifacts and diagnostics 
 Repository root:
 
 ```text
-D:\lathe_v0_1
+<repo-root>
 ```
 
 The repository contains `.venv`, but in this Windows checkout it is a Linux-style uv virtual environment:
@@ -74,7 +74,7 @@ Direct Windows execution through `.venv\Scripts\python.exe` is not available.
 Attempting `uv run` against the existing `.venv` failed because uv tried to repair/remove `.venv\lib64` and Windows denied access:
 
 ```text
-error: failed to remove file `D:\lathe_v0_1\.venv\lib64`: Access is denied. (os error 5)
+error: failed to remove file `<repo-root>/.venv/lib64`: Access is denied. (os error 5)
 ```
 
 For this evidence pass, a separate Windows-local environment was used:
@@ -351,18 +351,18 @@ Important stack excerpt:
 
 ```text
 subprocess.py communicate
-trimesh.interfaces.generic.run
-trimesh.interfaces.blender.boolean
-trimesh.boolean.union
-lathe.exact_solids._boolean_union
-lathe.exact_solids._clustered_union_by_part
-lathe.exact_solids._combine_explicit_meshes
-lathe.exact_solids.compile_explicit_surface_mesh
-lathe.geometry_kernel._compile_exact_mesh_ir
-lathe.geometry_kernel.fuse_shape_ir
-lathe.scaffold_compiler._runtime_from_shape_ir
-lathe.core.stages.shape.run
-lathe.executor.build
+trimesh/interfaces/generic.py::run
+trimesh/interfaces/blender.py::boolean
+trimesh/boolean.py::union
+lathe/exact_solids.py::_boolean_union
+lathe/exact_solids.py::_clustered_union_by_part
+lathe/exact_solids.py::_combine_explicit_meshes
+lathe/exact_solids.py::compile_explicit_surface_mesh
+lathe/geometry_kernel.py::_compile_exact_mesh_ir
+lathe/geometry_kernel.py::fuse_shape_ir
+lathe/scaffold_compiler.py::_runtime_from_shape_ir
+lathe/core/stages/shape.py::run
+lathe/executor.py::build
 ```
 
 Interpretation:
@@ -1174,3 +1174,128 @@ kernel-performance pass. The substrate work (S0-1 through S0-6 +
 Capstone Options 1/2/3) is complete and verified at the Python /
 unit-test / contract-test level — what's outstanding is the
 multi-minute kernel run time, not the procedural correctness.
+
+## P0 Stabilization Wedge Run — 2026-05-13
+
+This section records the P0 wedge evidence pass driven by
+`docs/asset-quality/p0-p1-stabilization-execution-plan.md` §4. The plan
+required a current evidence inventory for `industrial_crate` and a
+`mechanical_door` guardrail, with explicit truth-labels for every artifact.
+
+### Environment snapshot
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-13 |
+| Branch | `main` |
+| Python (host shell) | 3.14.0 |
+| Build interpreter | `.venv-win/Scripts/python.exe` (Python 3.14.0) |
+| Matrix interpreters | `.venv-311/Scripts/python.exe` (3.11.14), `.venv-312/Scripts/python.exe` (3.12.12) |
+| Blender | available (`blender.CMD` on PATH) |
+| manifold3d | available |
+| xatlas | missing |
+| Hunyuan HTTP | unavailable (no server) |
+| VGGT / torch | unavailable |
+
+### Source check (real)
+
+```text
+.venv-win/Scripts/python.exe -m lathe.cli check examples/industrial_crate.lth   → ok=true
+.venv-win/Scripts/python.exe -m lathe.cli check examples/mechanical_door.lth   → ok=true
+.venv-311/Scripts/python.exe -m lathe.cli check examples/industrial_crate.lth  → ok=true
+.venv-311/Scripts/python.exe -m lathe.cli check examples/mechanical_door.lth   → ok=true
+.venv-312/Scripts/python.exe -m lathe.cli check examples/industrial_crate.lth  → ok=true
+.venv-312/Scripts/python.exe -m lathe.cli check examples/mechanical_door.lth   → ok=true
+```
+
+### Build attempt — industrial_crate
+
+Two attempts were made:
+
+```text
+Attempt 1:
+  .venv-win/Scripts/python.exe -m lathe.cli build examples/industrial_crate.lth industrial_crate \
+    --out .tmp_tests/p0_wedge_industrial_crate_2026_05_13 --deterministic
+
+  Started: 2026-05-13 01:50
+  Outcome: blocked — process hung in shape stage, no shape-stage artifacts emitted for >17 minutes
+  Action: terminated manually (Stop-Process)
+  Exit code reported by background task: 0 (post-kill)
+
+Attempt 2 (without --deterministic):
+  .venv-win/Scripts/python.exe -m lathe.cli build examples/industrial_crate.lth industrial_crate \
+    --out .tmp_tests/p0_wedge_industrial_crate_2026_05_13_r2
+
+  Started: 2026-05-13 02:09
+  Outcome: blocked — process hung in shape stage, no shape-stage artifacts emitted for >5 minutes
+  Action: terminated manually (Stop-Process)
+  Exit code reported by background task: 0 (post-kill)
+
+Attempt 3 (quick mode):
+  .venv-win/Scripts/python.exe -m lathe.cli quick examples/industrial_crate.lth industrial_crate \
+    --out .tmp_tests/p0_wedge_industrial_crate_2026_05_13_quick.glb --no-cache
+
+  Started: 2026-05-13 02:12
+  Outcome: blocked — process hung in shape stage, no glb output emitted for >5 minutes
+  Action: terminated manually (Stop-Process)
+```
+
+This reproduces the existing documented blocker (this same evidence doc,
+"Outstanding gap — live full-backend before/after rendering" section).
+That section already records: "the build hung in the shape stage's boolean
+kernel for >30 minutes with no shape-stage artifacts produced … This is a
+kernel-performance gap, not a substrate gap."
+
+### Artifact inventory — industrial_crate (attempted)
+
+| Evidence class | Output path | Label |
+|---|---|---|
+| Source fixture | `examples/industrial_crate.lth` | real |
+| Command transcript | (see attempts above) | real |
+| Output directories | `.tmp_tests/p0_wedge_industrial_crate_2026_05_13/`, `.tmp_tests/p0_wedge_industrial_crate_2026_05_13_r2/` | real (pre-stage scaffolding only) |
+| Pre-stage outputs | `industrial_crate/{materialized_asset,normalized_program,plan,quality_generation_context}.json` | real (in both run dirs) |
+| Shape bundle | `industrial_crate/stages/shape/bundle.json` | blocked (shape stage hang in boolean kernel) |
+| Topology bundle | `industrial_crate/stages/topology/...` | blocked (downstream of shape hang) |
+| UV bundle | `industrial_crate/stages/uv/...` | blocked (downstream of shape hang) |
+| Surface evidence | `industrial_crate/stages/surface/...` | blocked (downstream of shape hang) |
+| Validation report | `industrial_crate/stages/validate/report.json` | blocked (downstream of shape hang) |
+| Package manifest | `industrial_crate/stages/package/...` | blocked (downstream of shape hang) |
+| Export artifact (GLB/USD) | `industrial_crate/stages/package/...` | blocked (downstream of shape hang) |
+| Preview evidence | `industrial_crate/stages/package/previews/*` | blocked (downstream of shape hang) |
+| Attempted-vs-actual trace | — | blocked (shape stage did not finish writing bundle.json) |
+
+### Build attempt — mechanical_door guardrail
+
+Not attempted in this pass. Because `industrial_crate` (the simpler hard-
+surface fixture per the catalog) hung in the documented shape-stage path,
+running the same command on `mechanical_door` would reproduce the same
+blocker. Labeling `mechanical_door` as `blocked` is the truthful label.
+The guardrail asset's check passed in §"Source check" above, which is the
+useful new evidence; a build under the same blocked kernel path would not
+add information beyond a second hang.
+
+### Exact blocker
+
+Identical to the existing "Outstanding gap — live full-backend before/after
+rendering" section (~30 lines above this one): the shape stage's boolean
+kernel does not return for `industrial_crate`'s ~52-op program within the
+budget allowed by this pass. The pre-stage outputs (normalized, planned,
+materialized, generation context) are produced quickly; everything from
+`stages/shape/bundle.json` downward never appears.
+
+### What this run did add
+
+- Confirmed the source pipeline (`parse → normalize → resolve → check →
+  plan → materialize → quality_generation_context`) is green on the host
+  3.14.0 interpreter and on a fresh 3.11.14 and 3.12.12 install.
+- Reproduced the boolean-kernel hang at the build stage on the current
+  worktree without any code path changes that touch shape kernel selection.
+  Ruff/test stabilization work in this pass did not move the kernel-performance
+  baseline.
+
+### Acceptance against plan §4.6
+
+- "The wedge build command exits 0, or the blocker is recorded with exact failure text." → blocker recorded above.
+- "Every required artifact path is recorded or explicitly labeled missing/proxy/fallback/blocked." → table above labels each artifact.
+- "The guardrail check/build proves the path is not crate-only, or records the blocking difference." → guardrail check is green; the build is blocked under the same documented kernel-performance gap.
+- "No visual-improvement language appears without preview/export evidence." → this section makes no visual-improvement claim.

@@ -35,7 +35,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.diagnostics import evaluate_quality_diagnostics
 from lathe.asset_quality.highlow_relation import (
     HIGHLOW_RELATION_VERSION,
@@ -44,7 +43,6 @@ from lathe.asset_quality.highlow_relation import (
     evaluate_highlow_relation,
 )
 from lathe.validators.composition import FunctionValidator
-
 
 _PAYLOAD_KEYS: frozenset[str] = frozenset(
     {

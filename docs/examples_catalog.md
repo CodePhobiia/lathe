@@ -190,6 +190,28 @@ lives under an independent registry path.
 | `examples/corpus/corpus_wall_panel.lth` | `sci_fi_wall_panel` | decoration / env | ~7s | o |
 | `examples/corpus/corpus_cabinet.lth` | `service_cabinet` | container (wall-mount) | ~30s | o |
 
+## Imagination-to-life demos (top-level `examples/`)
+
+One-paradigm-per-file demos exercising the imagination-to-life feature lanes
+(vegetation, terrain, SDF/F-Rep, scatter, WFC tiling, parametric, volume,
+bevel). See also `docs/imagination_to_life_demos.md`. These are runnable
+demos, not certified hero assets, so `Cert` is `x`.
+
+| File | Asset or demo | Tier | Features | Build | Cert |
+|------|---------------|------|----------|-------|------|
+| `examples/alien_blob_demo.lth` | `alien_blob` | T2 | SDF/F-Rep blob primitive demo | varies | x |
+| `examples/alien_grove_showcase.lth` | `alien_grove` | T2 | CAPSTONE showcase combining hard-surface + vegetation + terrain + SDF + WFC | varies | x |
+| `examples/bevel_demo.lth` | `bevel_demo` | T2 | bevel operator demonstration | varies | x |
+| `examples/dungeon_corridor_demo.lth` | `dungeon_corridor` | T2 | Wave-Function-Collapse tiling demo | varies | x |
+| `examples/f_rep_alien_blob.lth` | `f_rep_alien_blob` | T2 | function-representation (F-Rep) alien blob | varies | x |
+| `examples/mech_prop_demo.lth` | `mech_prop` | T2 | hard-surface mech prop demonstration | varies | x |
+| `examples/oak_tree_demo.lth` | `oak_tree` | T2 | vegetation paradigm — oak species tree | varies | x |
+| `examples/parametric_facade.lth` | `parametric_facade` | T2 | parametric-grammar facade demo | varies | x |
+| `examples/rocky_hill_demo.lth` | `rocky_hill` | T2 | terrain paradigm — rocky hill heightfield | varies | x |
+| `examples/scatter_demo.lth` | `scatter_demo` | T2 | scatter paradigm — point distribution demo | varies | x |
+| `examples/scatter_on_surface_demo.lth` | `scatter_on_surface_demo` | T2 | scatter constrained to a surface | varies | x |
+| `examples/volume_smoke_cloud.lth` | `volume_smoke_cloud` | T2 | volume paradigm — smoke/cloud density field | varies | x |
+
 ## CI coverage
 
 `.github/workflows/examples.yml` has three jobs:

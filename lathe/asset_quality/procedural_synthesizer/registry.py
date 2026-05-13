@@ -18,11 +18,11 @@ touching the hard-surface tree.
 from __future__ import annotations
 
 import threading
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Mapping, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 from .domain_extension import DomainExtensionManifest, DomainExtensionRegistration
-
 
 if TYPE_CHECKING:
     from .context import ConstructionEdgeTyped, ConstructionNodeTyped, SynthesizerContext
@@ -72,7 +72,7 @@ class NodeTypeGenerator:
 
     manifest: GeneratorCapabilityManifest
     implementation: Callable[
-        ["ConstructionNodeTyped", "SynthesizerContext"],
+        [ConstructionNodeTyped, SynthesizerContext],
         Iterable[Any],  # iterable of ShapeOp
     ]
 
@@ -83,7 +83,7 @@ class EdgeTypeDecorator:
 
     manifest: EdgeDecoratorCapabilityManifest
     implementation: Callable[
-        ["ConstructionEdgeTyped", "SynthesizerContext", OpResolver],
+        [ConstructionEdgeTyped, SynthesizerContext, OpResolver],
         Iterable[Any],  # iterable of ShapeOp
     ]
 
@@ -194,7 +194,7 @@ class GeneratorRegistry:
         # in the manifest, AND the generator's declared domain must
         # match the manifest's domain.
         for gen in registration.generators:
-            if gen.manifest.domain != manifest.domain_id and gen.manifest.domain != "core":
+            if gen.manifest.domain not in (manifest.domain_id, "core"):
                 raise RuntimeError(
                     f"generator domain {gen.manifest.domain!r} does not "
                     f"match registration domain {manifest.domain_id!r}"
@@ -206,7 +206,7 @@ class GeneratorRegistry:
                     f"{manifest.domain_id!r}.node_type_schemas"
                 )
         for dec in registration.decorators:
-            if dec.manifest.domain != manifest.domain_id and dec.manifest.domain != "core":
+            if dec.manifest.domain not in (manifest.domain_id, "core"):
                 raise RuntimeError(
                     f"decorator domain {dec.manifest.domain!r} does not "
                     f"match registration domain {manifest.domain_id!r}"

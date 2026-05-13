@@ -20,7 +20,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
 from lathe.bridge import blender_plan
 from lathe.checker.language import check_critics
 from lathe.conformance import _ratio_signature as conformance_ratio_signature
@@ -30,7 +29,6 @@ from lathe.repair_planner import _ShapeRepairApplier
 from lathe.shape_ir import ShapeIR, ShapeRegion
 from lathe.validators.silhouette import _ratio_signature as silhouette_ratio_signature
 from lathe.validators.silhouette import compare_scaffold_signature
-
 
 # --- C5 -------------------------------------------------------------
 

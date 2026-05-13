@@ -31,8 +31,7 @@ from typing import Any
 from ..shape_ir import ShapePrimitive
 from .adjacency import AdjacencyRules
 from .solver import solve_wfc
-from .tileset import DIRECTIONS, OPPOSITE, Tile, Tileset
-
+from .tileset import DIRECTIONS, Tile, Tileset
 
 _DIRECTION_SHORTHANDS = {
     "x": ("+X", "-X"),

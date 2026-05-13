@@ -33,7 +33,6 @@ diagnostics is the "executed" classification per
 from __future__ import annotations
 
 import pytest
-
 from lathe.adapters.manifold_kernel import manifold_available
 from lathe.asset_quality.shape_ir_v2 import (
     ShapeOp,

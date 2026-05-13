@@ -52,8 +52,8 @@ That is the difference between a procedural asset generator and a true AI-native
 - `docs/geometry_kernel_eval.md`
 - `pyproject.toml`
 - `lathe/geometry/kernel.py`
-- `lathe/geometry/program.py`
-- `lathe/geometry/shape_ir_program.py`
+- `lathe/geometry/kernel_program.py`
+- `lathe/geometry/shape_ir_lowering.py`
 - `lathe/geometry/manifold_kernel.py`
 - `lathe/geometry/reference_kernel.py`
 - `lathe/adapters/manifold_kernel.py`
@@ -133,7 +133,7 @@ This is good. It means Lathe already has the beginning of a pluggable kernel arc
 
 ### 2.2 Existing kernel program layer
 
-`lathe/geometry/program.py` defines an executable kernel-program seam with:
+`lathe/geometry/kernel_program.py` defines an executable kernel-program seam with:
 
 - `KernelOperand`;
 - operation counts;
@@ -636,8 +636,8 @@ docs/asset-quality/kernel-capability-parity-matrix.md
 
 ```text
 lathe/geometry/kernel.py
-lathe/geometry/program.py
-lathe/geometry/shape_ir_program.py
+lathe/geometry/kernel_program.py
+lathe/geometry/shape_ir_lowering.py
 lathe/geometry/manifold_kernel.py
 lathe/adapters/manifold_kernel.py
 lathe/exact_solids.py
@@ -975,8 +975,8 @@ Read:
 - docs/asset-quality/lathe-frontier-geometry-kernel-roadmap.md
 - docs/geometry_kernel_eval.md
 - lathe/geometry/kernel.py
-- lathe/geometry/program.py
-- lathe/geometry/shape_ir_program.py
+- lathe/geometry/kernel_program.py
+- lathe/geometry/shape_ir_lowering.py
 - lathe/exact_solids.py
 - lathe/shape_ir.py
 - lathe/mesh_finalize.py

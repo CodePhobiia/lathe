@@ -92,7 +92,6 @@ def compile_expression(source: str) -> Callable[[EvalContext], Any]:
     Use this when the same expression will be evaluated against many
     contexts (e.g. a mask expression evaluated per surface element).
     """
-
     parsed = parse_expression(source)
 
     def _run(ctx: EvalContext) -> Any:
@@ -103,15 +102,17 @@ def compile_expression(source: str) -> Callable[[EvalContext], Any]:
 
 __all__ = [
     "AUTO_DERIVED_SIGNALS",
+    "CONSTANTS",
+    "DIRECTLY_CALLABLE_NAMESPACES",
+    "NAMESPACES",
+    "TOP_LEVEL_BUILTINS",
     "Assignment",
     "AttrLangError",
     "AttrRef",
     "BinOp",
     "BoolLiteral",
-    "CONSTANTS",
     "Call",
     "ColorLiteral",
-    "DIRECTLY_CALLABLE_NAMESPACES",
     "EvalContext",
     "EvalError",
     "Expr",
@@ -123,14 +124,12 @@ __all__ = [
     "KeywordArg",
     "ListLiteral",
     "MemberAccess",
-    "NAMESPACES",
     "Node",
     "ParseError",
     "Program",
     "SourceSpan",
     "Statement",
     "StringLiteral",
-    "TOP_LEVEL_BUILTINS",
     "TypeMismatchError",
     "UnaryOp",
     "UnknownBuiltinError",

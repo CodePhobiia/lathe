@@ -19,6 +19,7 @@ modules thin. Per-op modules import from ``_primitive_metadata``;
 
 from __future__ import annotations
 
+import contextlib
 import math
 from typing import Any
 
@@ -88,10 +89,8 @@ def _mesh_with_vertices(
     mesh.metadata.update(dict(source_mesh.metadata))
     mesh.remove_unreferenced_vertices()
     mesh.merge_vertices()
-    try:
+    with contextlib.suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         mesh.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     return mesh
 
 

@@ -43,14 +43,12 @@ from .shape_ir_v2 import (
     INTEGRATION_OPS,
     REPETITION_OPS,
     SHAPE_IR_V2_VERSION,
-    SOP_OPS,
     SOLID_OPS,
+    SOP_OPS,
     WEAR_OPS,
-    ShapeOp,
     ShapeProgram,
     lower_to_v1,
 )
-
 
 GRAMMAR_LOWERING_VERSION = "grammar_lowering_v1"
 
@@ -327,7 +325,8 @@ def _resolve_brief(runtime: dict[str, Any]) -> dict[str, Any]:
 
 def _resolve_family(brief: dict[str, Any]) -> str:
     """Return the family token from the (already-resolved) design brief,
-    or ``"generic"``."""
+    or ``"generic"``.
+    """
     family = brief.get("family")
     if isinstance(family, str) and family:
         return family
@@ -361,7 +360,8 @@ def _resolve_graph_edges(runtime: dict[str, Any]) -> tuple[dict[str, Any], ...]:
 
 def _resolve_asset_name(asset: dict[str, Any], brief: dict[str, Any]) -> str:
     """Return the asset name, falling back through the (already-resolved)
-    design brief."""
+    design brief.
+    """
     name = asset.get("name")
     if isinstance(name, str) and name:
         return name

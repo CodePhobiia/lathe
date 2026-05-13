@@ -12,12 +12,12 @@ python -m lathe.cli wonder generate-scene-plan `
 
 Input contracts:
 
-- Dream Brief: [schema/dream_brief.schema.json](../../schema/dream_brief.schema.json)
-- Scene Graph: [schema/scene_graph.schema.json](../../schema/scene_graph.schema.json)
+- Dream Brief: [schema/dream_brief.schema.json](../schema/dream_brief.schema.json)
+- Scene Graph: [schema/scene_graph.schema.json](../schema/scene_graph.schema.json)
 
 Output contract:
 
-- Scene Plan: [schema/scene_plan.schema.json](../../schema/scene_plan.schema.json)
+- Scene Plan: [schema/scene_plan.schema.json](../schema/scene_plan.schema.json)
 
 The command does not call an LLM, learned provider, Blender, Roblox Studio, or
 an external viewer. Asset tasks use existing deterministic/proxy planning

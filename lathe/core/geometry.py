@@ -388,7 +388,7 @@ def load_runtime_scene_from_glb(
         single_name = next(iter(source_runtime.part_colors), "mesh")
         scene = trimesh.Scene()
         scene.add_geometry(loaded.copy(), geom_name=single_name, node_name=single_name)
-        return scene, [single_name], [int(len(loaded.faces))]
+        return scene, [single_name], [len(loaded.faces)]
     if not isinstance(loaded, trimesh.Scene):
         return None
     new_scene = trimesh.Scene()
@@ -408,7 +408,7 @@ def load_runtime_scene_from_glb(
         seen.add(unique_name)
         new_scene.add_geometry(geom.copy(), geom_name=unique_name, node_name=unique_name)
         names.append(unique_name)
-        face_counts.append(int(len(geom.faces)))
+        face_counts.append(len(geom.faces))
     if not names:
         return None
     return new_scene, names, face_counts

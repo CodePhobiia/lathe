@@ -18,6 +18,7 @@ cascade and no hero-class diagnostic gates.
 
 from __future__ import annotations
 
+import contextlib
 from copy import deepcopy
 from typing import Any
 
@@ -241,15 +242,11 @@ def cascade_into_asset(
             budget_slot.setdefault(map_name, deepcopy(entry))
 
     if "lod_count" in body and "lods" not in optimize:
-        try:
+        with contextlib.suppress(TypeError, ValueError):
             optimize["lods"] = int(body["lod_count"])
-        except (TypeError, ValueError):
-            pass
 
     if "validator_threshold" in body and "threshold" not in validate:
-        try:
+        with contextlib.suppress(TypeError, ValueError):
             validate["threshold"] = float(body["validator_threshold"])
-        except (TypeError, ValueError):
-            pass
 
     return asset

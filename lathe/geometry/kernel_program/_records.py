@@ -44,7 +44,6 @@ from ._serialize import (
     _json_safe,
 )
 
-
 _MODIFIER_OPERATION_DEFAULTS: dict[str, str] = {
     "boolean": "op.boolean",
     "bracket": "op.support_bracket",

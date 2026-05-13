@@ -17,7 +17,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_KINDS: frozenset[str] = frozenset(
     {"cable", "pipe", "wire_loom", "armored_conduit", "hose"}
 )
@@ -66,7 +65,7 @@ class ConduitAttributes:
             raise ValueError(f"conduit.bend_count={self.bend_count} must be >= 0")
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "ConduitAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> ConduitAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"conduit attributes must be dict, got {type(attrs).__name__}"

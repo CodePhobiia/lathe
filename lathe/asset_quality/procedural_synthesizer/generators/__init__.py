@@ -11,5 +11,4 @@ from __future__ import annotations
 # Built-in domains register at import time via their __init__ modules.
 from . import hard_surface  # noqa: F401
 
-
 __all__: list[str] = []

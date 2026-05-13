@@ -24,7 +24,6 @@ if TYPE_CHECKING:  # pragma: no cover - imported only for type hints
 
 def to_scene_objects(result: WFCResult, tileset: Tileset) -> list[dict[str, Any]]:
     """Plain-dict scene-object list for IR-level consumers."""
-
     objects: list[dict[str, Any]] = []
     for placement in result.placements:
         tile = tileset.by_id(placement.tile_id)
@@ -45,7 +44,7 @@ def to_blueprint_components(
     tileset: Tileset,
     *,
     cell_extents: tuple[float, float, float] = (1.0, 1.0, 1.0),
-) -> list["BlueprintComponent"]:
+) -> list[BlueprintComponent]:
     """Bridge into the assembly_kernel via :class:`BlueprintComponent`.
 
     Each placed tile becomes one blueprint component centred at its
@@ -54,10 +53,9 @@ def to_blueprint_components(
     smuggled in via tags so downstream stages can read them without
     extending the dataclass.
     """
-
     from ..assembly_kernel import BlueprintComponent  # local import: avoid cycles
 
-    components: list["BlueprintComponent"] = []
+    components: list[BlueprintComponent] = []
     for placement in result.placements:
         tile = tileset.by_id(placement.tile_id)
         connector_tags = [f"connector:{d}={tile.connector(d)}" for d in tile.connectors]

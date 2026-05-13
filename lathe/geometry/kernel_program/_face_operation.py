@@ -126,7 +126,7 @@ def _instance_face_operation_ids(
     if method != "single_transform" and "mesh_concatenation" not in method:
         return []
     face_operation_ids: list[str] = []
-    for operand, instance_mesh in zip(instance_operands, instance_meshes):
+    for operand, instance_mesh in zip(instance_operands, instance_meshes, strict=False):
         if not isinstance(instance_mesh, trimesh.Trimesh):
             return []
         metadata = getattr(instance_mesh, "metadata", None)

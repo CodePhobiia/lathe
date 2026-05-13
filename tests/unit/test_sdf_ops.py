@@ -10,8 +10,7 @@ emitted ``mesh_vertices`` and ``mesh_faces`` directly.
 from __future__ import annotations
 
 import pytest
-
-from lathe.f_rep import Capsule, Sphere, SmoothUnion, Translate
+from lathe.f_rep import Capsule, SmoothUnion, Sphere, Translate
 from lathe.mesh_program import MeshProgramError, lower_mesh_program
 from lathe.parser.imports import parse_text
 

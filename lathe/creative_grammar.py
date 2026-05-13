@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-
 _STYLE_PRESETS: dict[str, dict[str, Any]] = {
     "industrial": {
         "shape": {

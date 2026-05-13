@@ -14,8 +14,8 @@ out of scope for the foundation slice.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Mapping
 
 Direction = str  # one of "+X", "-X", "+Y", "-Y", "+Z", "-Z"
 

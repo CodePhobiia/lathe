@@ -11,15 +11,12 @@ from __future__ import annotations
 
 from typing import Any
 
-import trimesh
-
 from ..kernel import GeometryKernel
 from ._capabilities import _kernel_capabilities, _require_capabilities
 from ._common import (
     _copy_kernel_import_stats,
     _non_empty_mesh,
     _operation_id_fragment,
-    _record_result_probe,
 )
 from ._core import (
     KernelOperand,

@@ -24,6 +24,7 @@ from ...fit_ir import FitIR
 from ...kit_ir import KitIR
 from ...reference_ir import ReferenceIR
 from ...repair_policy import RepairPolicyIR
+from ...shape.geometry.conditioning import merge_quality_generation_conditioning
 from ...shape_backend import (
     collect_shape_conditioning as _shape_collect_conditioning,
 )
@@ -32,7 +33,6 @@ from ...shape_backend import (
 )
 from ...surface_ir import SurfaceIR
 from ...transfer_ir import TransferIR
-from ...shape.geometry.conditioning import merge_quality_generation_conditioning
 from ..common import dump_json, relpath, resolve_seed
 from ..errors import BuildError, shape_handoff_contract_error
 from ..geometry import mesh_stats

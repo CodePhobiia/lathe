@@ -114,7 +114,7 @@ def build_surface_story_placement_plan(
                 "material_id": str(material_id_by_part.get(target, "")),
                 "anchor_uv": anchor,
                 "scale": round(0.22 + _hash01(f"scale:{decal}:{target}") * 0.18, 6),
-                "rotation_deg": int(round((_hash01(f"rot:{decal}:{target}") - 0.5) * 26.0)),
+                "rotation_deg": round((_hash01(f"rot:{decal}:{target}") - 0.5) * 26.0),
                 "layer": "story" if decal in _as_list(source_surface.get("story_decals")) else "surface",
                 "mask_id": f"story_{index + 1:02d}_{_token(decal, 'decal')}",
             }

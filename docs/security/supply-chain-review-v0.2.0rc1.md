@@ -224,8 +224,8 @@ implications.
 - [`docs/release/evidence-bundle-v0.2.0rc1/pip-audit-runtime.txt`](../release/evidence-bundle-v0.2.0rc1/pip-audit-runtime.txt) — runtime CVE check.
 - [`docs/release/evidence-bundle-v0.2.0rc1/pip-audit-dev.txt`](../release/evidence-bundle-v0.2.0rc1/pip-audit-dev.txt) — dev CVE check.
 - [`docs/release/evidence-bundle-v0.2.0rc1/lxml-investigation.txt`](../release/evidence-bundle-v0.2.0rc1/lxml-investigation.txt) — Phase 3 lxml triage.
-- [`.github/dependabot.yml`](../../.github/dependabot.yml) — automated update config.
-- [`pyproject.toml`](../../pyproject.toml) — declared deps + extras.
+- `.github/dependabot.yml` — automated update config.
+- `pyproject.toml` — declared deps + extras.
 - [`docs/release/decision-log-v0.2.0rc1.md`](../release/decision-log-v0.2.0rc1.md) — `EXC-PHASE3-SIGN-001`, `EXC-PHASE3-PYPI-TP-002`.
 - [`docs/legal/compliance-review-v0.2.0rc1.md`](../legal/compliance-review-v0.2.0rc1.md) — license compatibility.
 - [`docs/security/owasp-mapping-v0.2.0rc1.md`](owasp-mapping-v0.2.0rc1.md) — A06 + A08 mapping.

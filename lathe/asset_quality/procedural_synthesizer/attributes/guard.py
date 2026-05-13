@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_STYLES: frozenset[str] = frozenset(
     {"box_cage", "cylindrical_cage", "perimeter_rail", "blade_shroud", "fan_grille"}
 )
@@ -65,7 +64,7 @@ class GuardAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "GuardAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> GuardAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"guard attributes must be dict, got {type(attrs).__name__}"

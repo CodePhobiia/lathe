@@ -1532,8 +1532,7 @@ def _runtime_from_shape_ir(
                     "mesh_ir": mesh_ir_payload,
                 },
             }
-        else:
-            kernel_program_failure = kernel_program_details
+        kernel_program_failure = kernel_program_details
     if kernel_program_failure is not None and isinstance(integration_report, dict):
         integration_report = {
             **integration_report,

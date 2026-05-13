@@ -10,5 +10,4 @@ from __future__ import annotations
 # __init__ module in ``generators/<domain>``.
 from . import hard_surface  # noqa: F401
 
-
 __all__: list[str] = []

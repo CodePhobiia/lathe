@@ -9,7 +9,6 @@ from types import SimpleNamespace
 from typing import Any
 
 import trimesh
-
 from lathe.core.mesh import RuntimeMesh
 from lathe.core.stages.uv import run as run_uv_stage
 from lathe.core.uv_ops import apply_box_uv
@@ -17,7 +16,6 @@ from lathe.normalizer import normalize_program
 from lathe.parser import parse_file, parse_text
 from lathe.resolver import materialize_asset
 from lathe.surface_runtime import build_surface_bundle
-
 
 ROOT = Path(__file__).resolve().parents[2]
 

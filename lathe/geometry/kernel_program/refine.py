@@ -12,6 +12,7 @@ refined mesh back into the kernel for downstream composition.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 import numpy as np
@@ -99,10 +100,8 @@ def _subdivide_mesh(
     refined.metadata.update(dict(mesh.metadata))
     refined.remove_unreferenced_vertices()
     refined.merge_vertices()
-    try:
+    with contextlib.suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         refined.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     if len(refined.vertices) == 0 or len(refined.faces) == 0:
         raise ValueError("kernel refine subdivision produced an empty mesh")
     return refined
@@ -145,21 +144,17 @@ def _remesh_to_edge_length(
     remeshed = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
     remeshed.metadata.update(dict(mesh.metadata))
     if mode == "smooth":
-        try:
+        with contextlib.suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
             trimesh.smoothing.filter_laplacian(
                 remeshed,
                 lamb=0.35,
                 iterations=1,
                 volume_constraint=True,
             )
-        except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-            pass
     remeshed.remove_unreferenced_vertices()
     remeshed.merge_vertices()
-    try:
+    with contextlib.suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         remeshed.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     if len(remeshed.vertices) == 0 or len(remeshed.faces) == 0:
         raise ValueError("kernel refine remesh produced an empty mesh")
     return remeshed

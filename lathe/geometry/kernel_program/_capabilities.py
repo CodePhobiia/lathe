@@ -13,15 +13,12 @@ operation executors call before doing real work.
 
 from __future__ import annotations
 
-from typing import Any
-
 from ..kernel import GeometryKernel
 from ._core import (
     KernelOperand,
     KernelProgramCapabilityError,
     _capability_names,
 )
-
 
 # Supported blend modes for kernel program operands. The per-op
 # executors and operand validators consume this set.

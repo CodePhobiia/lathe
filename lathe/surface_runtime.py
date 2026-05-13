@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import fields
 import json
-from pathlib import Path
 import time
+from dataclasses import fields
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -125,9 +125,9 @@ def _count(value: Any, default: int = 0) -> int:
     if isinstance(value, int):
         return max(0, value)
     if isinstance(value, float):
-        return max(0, int(round(value)))
+        return max(0, round(value))
     try:
-        return max(0, int(round(float(str(value).strip()))))
+        return max(0, round(float(str(value).strip())))
     except ValueError:
         return default
 
@@ -2906,8 +2906,8 @@ def build_surface_bundle(
         out_dir,
         "surface_start",
         size=size,
-        low_face_count=int(len(mesh.faces)),
-        low_vertex_count=int(len(mesh.vertices)),
+        low_face_count=len(mesh.faces),
+        low_vertex_count=len(mesh.vertices),
         hero_mode=hero_mode,
     )
     bake_cage_offset_cm = _level(shape_cfg.get("highlow_bake_cage_offset_cm"), 1.25)
@@ -2952,8 +2952,8 @@ def build_surface_bundle(
         _surface_progress(
             out_dir,
             "high_source_end",
-            high_face_count=int(len(high_mesh.faces)),
-            high_vertex_count=int(len(high_mesh.vertices)),
+            high_face_count=len(high_mesh.faces),
+            high_vertex_count=len(high_mesh.vertices),
             high_source=high_source_report.get("actual_source", ""),
         )
     highlow_projection_faces: np.ndarray | None = None
@@ -2970,7 +2970,7 @@ def build_surface_bundle(
         _surface_progress(
             out_dir,
             "highlow_projection_end",
-            projected_face_count=int(len(highlow_projection_faces)),
+            projected_face_count=len(highlow_projection_faces),
             ray_hit_count=int(highlow_projection_stats.get("ray_hit_count", 0)),
             fallback_count=int(highlow_projection_stats.get("fallback_count", 0)),
         )

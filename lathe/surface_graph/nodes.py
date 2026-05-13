@@ -171,7 +171,7 @@ class Noise(SurfaceNode):
             phase_y = rng.uniform(0.0, 2.0 * np.pi)
             if flavour == "worley":
                 # Cheap deterministic worley: distance to nearest jittered grid point.
-                cells = max(2, int(round(f)))
+                cells = max(2, round(f))
                 cx = rng.uniform(0.0, 1.0, (cells, cells))
                 cy = rng.uniform(0.0, 1.0, (cells, cells))
                 dx = (xx[..., None, None] * cells - np.arange(cells)[None, None, :, None] - cx[None, None]) / cells
@@ -429,8 +429,7 @@ class AO(SurfaceNode):
             ) / 5.0
             smoothed = blurred
         gap = smoothed - source_height
-        ao = np.clip(1.0 - np.maximum(0.0, gap) * 2.5, 0.0, 1.0)
-        return ao
+        return np.clip(1.0 - np.maximum(0.0, gap) * 2.5, 0.0, 1.0)
 
 
 @dataclass
@@ -451,9 +450,7 @@ class SlopeBlur(SurfaceNode):
         dx = np.divide(dx, length, out=np.zeros_like(dx), where=length > 1e-8)
         dy = np.divide(dy, length, out=np.zeros_like(dy), where=length > 1e-8)
         yy, xx = np.indices((size, size), dtype=np.float64)
-        if mode in {"erode", "min"}:
-            out = source.copy()
-        elif mode in {"dilate", "max"}:
+        if mode in {"erode", "min"} or mode in {"dilate", "max"}:
             out = source.copy()
         else:
             out = source.copy()
@@ -654,7 +651,7 @@ class Mask(SurfaceNode):
         curvature = attribs.get("@curvature", ctx["buffers"].get(self.inputs.get("curvature", "")))
         ao = attribs.get("@ao", ctx["buffers"].get(self.inputs.get("ao", "")))
         normal = attribs.get("@N", ctx["buffers"].get(self.inputs.get("normal", "")))
-        position = attribs.get("@P", ctx["buffers"].get(self.inputs.get("position", "")))
+        attribs.get("@P", ctx["buffers"].get(self.inputs.get("position", "")))
         if curvature is None:
             curvature = np.full((size, size), 0.5, dtype=np.float64)
         if ao is None:

@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from .interface_entries import coerce_interface_entry, interface_constructor
+from .interface_entries import coerce_interface_entry
 
 CONNECTION_CONSTRUCTORS = {"connection", "connect", "attachment", "attach"}
 EXTERNAL_ENDPOINT_ROLE = "external"
@@ -155,7 +155,7 @@ def resolve_interface_connections(
 def _connection_sequence(value: Any) -> list[Any]:
     if value is None:
         return []
-    if isinstance(value, str) or isinstance(value, Mapping):
+    if isinstance(value, (str, Mapping)):
         return [value]
     if isinstance(value, Sequence) and not isinstance(value, bytes | bytearray):
         return [item for item in value if item is not None and item != ""]
@@ -217,7 +217,7 @@ def _endpoint_index(
 
 def _endpoint_record(role: str, entry: Mapping[str, Any]) -> dict[str, Any]:
     endpoint_id = str(entry.get("id") or entry.get("name") or "")
-    record = {
+    return {
         "id": endpoint_id,
         "name": str(entry.get("name") or endpoint_id),
         "role": role,
@@ -228,7 +228,6 @@ def _endpoint_record(role: str, entry: Mapping[str, Any]) -> dict[str, Any]:
         "position": entry.get("position") or entry.get("origin"),
         "transform": entry.get("transform"),
     }
-    return record
 
 
 def _endpoint_aliases(role: str, record: Mapping[str, Any]) -> set[str]:

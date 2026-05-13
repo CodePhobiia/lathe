@@ -54,7 +54,7 @@ After the redirect, every task shipped a new generic capability. The session's s
 
 ## Rules established (saved to user memory)
 
-These are persistent feedback rules that override default behavior in future sessions. Stored at `C:\Users\talme\.claude\projects\D--lathe-v0-1\memory\`.
+These are persistent feedback rules that override default behavior in future sessions. Stored under the assistant's per-project memory directory.
 
 ### 1. `feedback_imagination_to_life_product_focus.md` (NEW this session)
 > **All work going forward must build the imagination-to-life product, not polish chest.**

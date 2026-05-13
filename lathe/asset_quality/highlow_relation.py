@@ -82,7 +82,6 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-
 HIGHLOW_RELATION_VERSION = "highlow_relation_v1"
 
 _REALNESS_PASS_THRESHOLD = 0.80

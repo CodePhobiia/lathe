@@ -26,7 +26,7 @@ This module ships TWO test classes:
     (single fixture) — runs the full ``run_shape_backend`` for the
     Sprint 0 hero. Slow (~30s+ due to boolean compile of 45 ops). Spot
     check for end-to-end backend integration; not parametrized because
-    71 × 30s is impractical for CI.
+    71 x 30s is impractical for CI.
 
 The previous canned 10-node graph was the audit's flagged failure
 mode: "same graph injected under each family name, proves the
@@ -43,11 +43,9 @@ from typing import Any
 
 import pytest
 import trimesh
-
 from lathe.asset_quality.procedural_synthesizer import synthesize_procedural_program
 from lathe.shape.backend import run_shape_backend
 from lathe.shape.procedural_program_path import _extract_semantic_zone_records
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _ALIAS_ROOT = _REPO_ROOT / "std" / "procedural" / "knowledge" / "aliases"

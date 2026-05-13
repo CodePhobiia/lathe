@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_STYLES: frozenset[str] = frozenset(
     {"flat_pad", "raised_pad", "flange", "foot", "wall_anchor"}
 )
@@ -61,22 +60,21 @@ class MountAttributes:
             raise ValueError(
                 f"mount.anchor_hole_count={self.anchor_hole_count} must be >= 0"
             )
-        if self.anchor_hole_count > 0:
-            if (
-                not isinstance(self.anchor_hole_radius_cm, (int, float))
-                or float(self.anchor_hole_radius_cm) <= 0
-            ):
-                raise ValueError(
-                    f"mount.anchor_hole_radius_cm={self.anchor_hole_radius_cm} "
-                    "must be positive when anchor_hole_count>0"
-                )
+        if self.anchor_hole_count > 0 and (
+            not isinstance(self.anchor_hole_radius_cm, (int, float))
+            or float(self.anchor_hole_radius_cm) <= 0
+        ):
+            raise ValueError(
+                f"mount.anchor_hole_radius_cm={self.anchor_hole_radius_cm} "
+                "must be positive when anchor_hole_count>0"
+            )
         if self.host_face_axis not in _VALID_AXES:
             raise ValueError(
                 f"mount.host_face_axis={self.host_face_axis!r} not in {sorted(_VALID_AXES)}"
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "MountAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> MountAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"mount attributes must be dict, got {type(attrs).__name__}"

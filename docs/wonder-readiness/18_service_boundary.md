@@ -10,7 +10,7 @@ correlation IDs, job status, diagnostics, and artifact references.
 - API reference:
   [`docs/api/wonder_service_contracts.md`](../api/wonder_service_contracts.md)
 - Service schema:
-  [`schema/service_wonder_api.schema.json`](../../schema/service_wonder_api.schema.json)
+  [`schema/service_wonder_api.schema.json`](../schema/service_wonder_api.schema.json)
 - Boundary ADR:
   [`docs/adr/0012-wonder-service-boundary.md`](../adr/0012-wonder-service-boundary.md)
 - Contract tests:

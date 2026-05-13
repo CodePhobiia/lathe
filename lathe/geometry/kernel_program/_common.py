@@ -21,6 +21,7 @@ imports only from ``..kernel`` and ``trimesh``.
 
 from __future__ import annotations
 
+import contextlib
 import math
 from typing import Any
 
@@ -562,10 +563,8 @@ def _record_result_probe(
         if isinstance(boss_state, dict):
             record["kernel_boss_state"] = dict(boss_state)
         _attach_kernel_boolean_execution_metadata(record, mesh)
-    try:
+    with contextlib.suppress(AttributeError, TypeError, ValueError, RuntimeError):
         record["result_body_count"] = kernel.body_count(result_handle)
-    except (AttributeError, TypeError, ValueError, RuntimeError):
-        pass
 
 
 def _record_operation_result(

@@ -13,20 +13,17 @@ Exercises:
 from __future__ import annotations
 
 import pytest
-
 from lathe.asset_quality.procedural_synthesizer import (
     SynthesisResult,
     synthesize_procedural_program,
 )
 from lathe.asset_quality.procedural_synthesizer.knowledge_loader import (
     CompositionPolicy,
+    FamilyAlias,
     PolicyExpansion,
     PolicyPrecondition,
-    StyleKnowledge,
-    FamilyAlias,
 )
 from lathe.asset_quality.shape_ir_v2 import ALL_OPS
-
 
 _PRIMARY_NODE = {
     "node_id": "body",

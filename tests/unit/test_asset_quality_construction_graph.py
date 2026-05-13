@@ -32,7 +32,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.construction_graph import (
     CONSTRUCTION_GRAPH_VERSION,
     EDGE_TYPES,
@@ -43,7 +42,6 @@ from lathe.asset_quality.construction_graph import (
     evaluate_construction_graph,
     extract_construction_graph,
 )
-
 
 _EXPECTED_PAYLOAD_KEYS: frozenset[str] = frozenset(
     {
@@ -139,7 +137,7 @@ def test_edge_types_has_exactly_ten_members() -> None:
 def test_node_types_match_master_prompt() -> None:
     """Cycle 3 superset: original 15 + 5 added with the hard-surface
     generator stream (bracket, vent, conduit, latch, weld)."""
-    assert NODE_TYPES == frozenset(
+    assert frozenset(
         {
             "primary_volume",
             "frame",
@@ -162,11 +160,11 @@ def test_node_types_match_master_prompt() -> None:
             "latch",
             "weld",
         }
-    )
+    ) == NODE_TYPES
 
 
 def test_edge_types_match_master_prompt() -> None:
-    assert EDGE_TYPES == frozenset(
+    assert frozenset(
         {
             "attached_to",
             "inset_into",
@@ -179,7 +177,7 @@ def test_edge_types_match_master_prompt() -> None:
             "wears_on",
             "material_bound_to",
         }
-    )
+    ) == EDGE_TYPES
 
 
 def test_to_dict_round_trips_tuples_to_lists_and_preserves_dicts() -> None:

@@ -156,7 +156,7 @@ def test_voxel_fallback_diagnostic_count_one_per_record() -> None:
     ]
     diagnostics = _boolean_fallback_diagnostics(records)
 
-    # 3 records × 2 diagnostics each
+    # 3 records x 2 diagnostics each
     assert len(diagnostics) == 6
     levelset_diags = [
         d for d in diagnostics if d["code"] == "mesh_to_levelset_repair"

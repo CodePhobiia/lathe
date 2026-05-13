@@ -197,7 +197,7 @@ def _int_value(controls: Mapping[str, Any], *keys: str, default: int) -> int:
         if value is None or isinstance(value, bool):
             continue
         try:
-            return int(round(float(value)))
+            return round(float(value))
         except (TypeError, ValueError):
             continue
     return default

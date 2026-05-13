@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-
 _ARCHETYPE_ORDER = (
     "outpost",
     "market",
@@ -215,7 +214,6 @@ _ARCHETYPE_PRESETS: dict[str, dict[str, Any]] = {
             "cable_tray_count": 4,
             "junction_box_count": 4,
             "transformer_count": 2,
-            "machine_count": 4,
             "interior_module_count": 1,
             "child_socket_count": 7,
             "catwalk_count": 4,

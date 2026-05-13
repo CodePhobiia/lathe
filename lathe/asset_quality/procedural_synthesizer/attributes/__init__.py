@@ -13,7 +13,8 @@ it in ``ATTRIBUTE_SCHEMAS``. Schemas are frozen dataclasses with
 
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping
+from collections.abc import Callable, Mapping
+from typing import Any
 
 from .bracket import BracketAttributes
 from .conduit import ConduitAttributes
@@ -35,7 +36,6 @@ from .trim import TrimAttributes
 from .vent import VentAttributes
 from .wear_zone import WearZoneAttributes
 from .weld import WeldAttributes
-
 
 # Per-NODE_TYPE schema registry. Adding a new NODE_TYPE attribute
 # schema means adding it here. The pipeline consults this map in

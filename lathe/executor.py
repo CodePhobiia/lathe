@@ -14,6 +14,7 @@ emitted by the shape stage. See ``lathe/shape/`` for the contract bytes.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
@@ -647,10 +648,8 @@ class BuildExecutor:
         report["cache"] = cache_status
         dump_json(self.out_dir / "build_report.json", report)
         if cache_status.get("persisted"):
-            try:
+            with contextlib.suppress(OSError):
                 dump_json(self.cache_dir / "build_report.json", report)
-            except OSError:
-                pass
         return report
 
     def _prepare_dirs(self) -> None:
@@ -748,8 +747,8 @@ class BuildExecutor:
             "out_dir": str(self.out_dir),
             "glb_path": str(glb_path),
             "part_count": part_count,
-            "face_count": int(len(uv_runtime_mesh.mesh.faces)),
-            "vertex_count": int(len(uv_runtime_mesh.mesh.vertices)),
+            "face_count": len(uv_runtime_mesh.mesh.faces),
+            "vertex_count": len(uv_runtime_mesh.mesh.vertices),
             "stage_timings_s": {k: round(v, 3) for k, v in timings.items()},
             "cache_hit": False,
             "stage_bundles": {

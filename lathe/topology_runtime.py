@@ -253,9 +253,9 @@ def _semantic_operation_records_from_fields(
 ) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str, str]] = set()
-    for field, field_records in records_by_field.items():
+    for field_name, field_records in records_by_field.items():
         for record in field_records:
-            operation_record = _semantic_operation_record(field, record)
+            operation_record = _semantic_operation_record(field_name, record)
             if operation_record is None:
                 continue
             key = (
@@ -463,9 +463,9 @@ def _mesh_ir_semantic_handoff(
         elif isinstance(value, dict):
             handoff[key] = dict(value)
     records_by_field: dict[str, list[dict[str, Any]]] = {}
-    for field in _MESH_IR_SEMANTIC_FIELDS:
-        records_by_field[field] = _semantic_records(mesh_ir, field)
-        handoff[field] = records_by_field[field]
+    for field_name in _MESH_IR_SEMANTIC_FIELDS:
+        records_by_field[field_name] = _semantic_records(mesh_ir, field_name)
+        handoff[field_name] = records_by_field[field_name]
     modifier_records = _semantic_records(handoff, "shape_ir_v2_modifier_records")
     operation_source_fields = dict(records_by_field)
     if modifier_records:
@@ -483,8 +483,8 @@ def _mesh_ir_semantic_handoff(
 def _add_mesh_ir_semantics_to_part_index(
     index: dict[str, dict[str, Any]], mesh_ir: dict[str, Any]
 ) -> None:
-    for field in _MESH_IR_SEMANTIC_FIELDS:
-        for record in _semantic_records(mesh_ir, field):
+    for field_name in _MESH_IR_SEMANTIC_FIELDS:
+        for record in _semantic_records(mesh_ir, field_name):
             part = str(record.get("part") or "").strip()
             if not part:
                 continue
@@ -494,7 +494,7 @@ def _add_mesh_ir_semantics_to_part_index(
             )
             metadata = entry.setdefault("metadata", {})
             by_field = metadata.setdefault("mesh_ir_semantics", {})
-            by_field.setdefault(field, []).append(dict(record))
+            by_field.setdefault(field_name, []).append(dict(record))
             record_tags = [str(tag) for tag in record.get("tags", []) if str(tag)] if isinstance(record.get("tags"), list) else []
             if record_tags:
                 entry["tags"] = sorted(set(entry.get("tags", [])) | set(record_tags))
@@ -509,8 +509,8 @@ def _add_mesh_ir_semantics_to_part_index(
         )
         metadata = entry.setdefault("metadata", {})
         metadata.setdefault("operation_semantics", []).append(dict(operation))
-    for field in _KERNEL_PART_SEMANTIC_FIELDS:
-        for record in _semantic_records(handoff, field):
+    for field_name in _KERNEL_PART_SEMANTIC_FIELDS:
+        for record in _semantic_records(handoff, field_name):
             linked_parts = _record_link_parts(record)
             for part in linked_parts:
                 entry = index.setdefault(
@@ -519,7 +519,7 @@ def _add_mesh_ir_semantics_to_part_index(
                 )
                 metadata = entry.setdefault("metadata", {})
                 by_field = metadata.setdefault("kernel_semantics", {})
-                by_field.setdefault(field, []).append(dict(record))
+                by_field.setdefault(field_name, []).append(dict(record))
 
 
 def semantic_preservation_report(
@@ -532,8 +532,8 @@ def semantic_preservation_report(
         mesh_ir_semantics = {}
     fields: dict[str, Any] = {}
     all_preserved = True
-    for field in _MESH_IR_SEMANTIC_FIELDS:
-        records = _semantic_records(mesh_ir_semantics, field)
+    for field_name in _MESH_IR_SEMANTIC_FIELDS:
+        records = _semantic_records(mesh_ir_semantics, field_name)
         missing = [
             str(record.get("part") or "")
             for record in records
@@ -543,7 +543,7 @@ def semantic_preservation_report(
         preserved_count = len(records) - len(missing)
         field_preserved = len(missing_parts) == 0
         all_preserved = all_preserved and field_preserved
-        fields[field] = {
+        fields[field_name] = {
             "source_count": len(records),
             "preserved_count": preserved_count,
             "missing_part_count": len(missing_parts),
@@ -552,8 +552,8 @@ def semantic_preservation_report(
         }
     kernel_fields: dict[str, Any] = {}
     all_kernel_records_preserved = True
-    for field in _KERNEL_PART_SEMANTIC_FIELDS:
-        records = _semantic_records(mesh_ir_semantics, field)
+    for field_name in _KERNEL_PART_SEMANTIC_FIELDS:
+        records = _semantic_records(mesh_ir_semantics, field_name)
         linked_parts: list[str] = []
         missing_parts: list[str] = []
         for record in records:
@@ -565,7 +565,7 @@ def semantic_preservation_report(
         unique_missing_parts = sorted(set(missing_parts))
         field_preserved = not unique_missing_parts
         all_kernel_records_preserved = all_kernel_records_preserved and field_preserved
-        kernel_fields[field] = {
+        kernel_fields[field_name] = {
             "source_count": len(records),
             "linked_part_count": len(unique_linked_parts),
             "linked_parts": unique_linked_parts,
@@ -962,8 +962,8 @@ def load_multi_part_scene_glb(path: Any, units: str = "cm") -> MultiPartScene | 
             manifest = [
                 PartManifest(
                     name="mesh",
-                    face_count=int(len(loaded.faces)),
-                    vertex_count=int(len(loaded.vertices)),
+                    face_count=len(loaded.faces),
+                    vertex_count=len(loaded.vertices),
                 )
             ]
             return MultiPartScene(scene=scene, manifest=manifest, units=units)
@@ -977,8 +977,8 @@ def load_multi_part_scene_glb(path: Any, units: str = "cm") -> MultiPartScene | 
         manifest.append(
             PartManifest(
                 name=str(name),
-                face_count=int(len(geom.faces)),
-                vertex_count=int(len(geom.vertices)),
+                face_count=len(geom.faces),
+                vertex_count=len(geom.vertices),
             )
         )
     if not manifest:
@@ -1000,7 +1000,7 @@ def build_part_tag_index(shape_bundle: dict[str, Any]) -> dict[str, dict[str, An
     parts_iter: list[Any] = []
     if asset_graph is not None:
         if hasattr(asset_graph, "parts"):
-            parts_iter = list(getattr(asset_graph, "parts") or [])
+            parts_iter = list(asset_graph.parts or [])
         elif isinstance(asset_graph, dict):
             parts_iter = list(asset_graph.get("parts") or [])
 
@@ -1052,7 +1052,7 @@ def manifest_from_part_index(
 ) -> list[PartManifest]:
     """Combine part names + face/vertex counts + tag index into a manifest list."""
     manifest: list[PartManifest] = []
-    for name, faces, verts in zip(part_names, face_counts, vertex_counts):
+    for name, faces, verts in zip(part_names, face_counts, vertex_counts, strict=False):
         info = part_index.get(name, {})
         manifest.append(
             PartManifest(

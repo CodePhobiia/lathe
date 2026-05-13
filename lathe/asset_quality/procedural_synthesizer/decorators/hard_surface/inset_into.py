@@ -11,12 +11,11 @@ Works for any (source_node, target_node) pair regardless of node_type.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...context import ConstructionEdgeTyped, SynthesizerContext
 from ...registry import EdgeDecoratorCapabilityManifest, EdgeTypeDecorator, OpResolver
-
 
 _MANIFEST = EdgeDecoratorCapabilityManifest(
     edge_type="inset_into",

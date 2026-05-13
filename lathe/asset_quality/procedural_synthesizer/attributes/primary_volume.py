@@ -15,7 +15,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_SHAPES: frozenset[str] = frozenset(
     {
         "box",
@@ -133,16 +132,15 @@ class PrimaryVolumeAttributes:
                 f"primary_volume.edge_treatment={self.edge_treatment!r} not in "
                 f"{sorted(_VALID_EDGE_TREATMENTS)}"
             )
-        if self.edge_treatment != "sharp":
-            if (
-                not isinstance(self.edge_treatment_width_cm, (int, float))
-                or float(self.edge_treatment_width_cm) <= 0
-            ):
-                raise ValueError(
-                    f"primary_volume.edge_treatment={self.edge_treatment!r} requires "
-                    f"edge_treatment_width_cm > 0; got "
-                    f"{self.edge_treatment_width_cm}"
-                )
+        if self.edge_treatment != "sharp" and (
+            not isinstance(self.edge_treatment_width_cm, (int, float))
+            or float(self.edge_treatment_width_cm) <= 0
+        ):
+            raise ValueError(
+                f"primary_volume.edge_treatment={self.edge_treatment!r} requires "
+                f"edge_treatment_width_cm > 0; got "
+                f"{self.edge_treatment_width_cm}"
+            )
         if not isinstance(self.edge_treatment_segments, int) or self.edge_treatment_segments < 1:
             raise ValueError(
                 f"primary_volume.edge_treatment_segments={self.edge_treatment_segments} "
@@ -164,15 +162,14 @@ class PrimaryVolumeAttributes:
                         f"primary_volume.dimensions_cm missing required "
                         f"key {key!r} for shape 'cylinder'"
                     )
-        elif self.shape == "sphere":
-            if "radius" not in self.dimensions_cm:
-                raise ValueError(
-                    "primary_volume.dimensions_cm missing required "
-                    "key 'radius' for shape 'sphere'"
-                )
+        elif self.shape == "sphere" and "radius" not in self.dimensions_cm:
+            raise ValueError(
+                "primary_volume.dimensions_cm missing required "
+                "key 'radius' for shape 'sphere'"
+            )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "PrimaryVolumeAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> PrimaryVolumeAttributes:
         """Validate a raw attribute dict and produce a typed instance.
 
         Raises ValueError / TypeError on validation failure. The caller

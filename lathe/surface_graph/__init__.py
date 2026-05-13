@@ -17,8 +17,8 @@ surface DAG handoff to runtime/engine adapters.
 
 from __future__ import annotations
 
-from .designer_graph import compile_designer_graph, DesignerGraph
-from .layer_stack import compile_layer_stack, LayerStack
+from .designer_graph import DesignerGraph, compile_designer_graph
+from .layer_stack import LayerStack, compile_layer_stack
 from .materialx import compile_materialx, write_materialx
 from .nodes import (
     AO,

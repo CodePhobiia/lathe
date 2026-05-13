@@ -58,7 +58,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 CONSTRUCTION_GRAPH_VERSION = "construction_graph_v1"
 
 

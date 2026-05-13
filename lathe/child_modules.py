@@ -420,7 +420,7 @@ def _count(
         if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
             return min(maximum, max(minimum, len(value)))
         try:
-            return min(maximum, max(minimum, int(round(float(value)))))
+            return min(maximum, max(minimum, round(float(value))))
         except (TypeError, ValueError):
             continue
     return min(maximum, max(minimum, default))

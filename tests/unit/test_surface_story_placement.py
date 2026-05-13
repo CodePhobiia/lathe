@@ -8,13 +8,11 @@ from typing import Any
 
 import numpy as np
 import trimesh
-from PIL import Image
-
 from lathe.core.mesh import RuntimeMesh
 from lathe.parser import parse_file
 from lathe.resolver import materialize_asset
 from lathe.surface_runtime import build_surface_bundle
-
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 

@@ -7,7 +7,6 @@ the vendored ``<model-viewer>`` web component.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from ._common import _dump, _emit_error

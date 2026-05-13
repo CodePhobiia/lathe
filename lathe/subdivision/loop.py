@@ -45,7 +45,7 @@ def _lerp(a: Vec3, b: Vec3, t: float) -> Vec3:
 
 def _opposite_vertex(face: tuple[int, ...], a: int, b: int) -> int:
     for v in face:
-        if v != a and v != b:
+        if v not in (a, b):
             return v
     raise ValueError(f"face {face} has no opposite to edge ({a}, {b})")
 
@@ -164,7 +164,7 @@ def subdivide_loop(
     edge_offset = len(new_vertex_positions)
     new_positions: list[Vec3] = list(new_vertex_positions) + list(edge_points)
     new_faces: list[tuple[int, ...]] = []
-    for face_idx, face in enumerate(mesh.faces):
+    for _face_idx, face in enumerate(mesh.faces):
         v0, v1, v2 = face
         e01 = edge_offset + mesh.edge_lookup(v0, v1)  # type: ignore[operator]
         e12 = edge_offset + mesh.edge_lookup(v1, v2)  # type: ignore[operator]

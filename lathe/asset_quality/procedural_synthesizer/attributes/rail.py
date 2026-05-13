@@ -13,7 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_AXES: frozenset[str] = frozenset({"x", "y", "z"})
 
 _VALID_CROSS_SECTIONS: frozenset[str] = frozenset(
@@ -62,7 +61,7 @@ class RailAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "RailAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> RailAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"rail attributes must be dict, got {type(attrs).__name__}"

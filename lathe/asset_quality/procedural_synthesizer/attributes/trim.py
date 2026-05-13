@@ -15,7 +15,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_AXES: frozenset[str] = frozenset({"x", "y", "z"})
 
 _VALID_PROFILES: frozenset[str] = frozenset(
@@ -71,7 +70,7 @@ class TrimAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "TrimAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> TrimAttributes:
         """Validate a raw attribute dict and produce a typed instance."""
         if not isinstance(attrs, dict):
             raise TypeError(

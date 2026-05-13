@@ -29,13 +29,12 @@ and the source that enabled strict mode.
 from __future__ import annotations
 
 import pytest
-
 from lathe.geometry.kernel import (
+    _REGISTRY,
     MANIFOLD_KERNEL_ID,
     REFERENCE_KERNEL_ID,
     STRICT_GEOMETRY_ENV_VAR,
     StrictGeometryModeError,
-    _REGISTRY,
     resolve_geometry_kernel,
 )
 

@@ -24,7 +24,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.grammar_lowering import (
     GRAMMAR_LOWERING_VERSION,
     RecipeResult,
@@ -36,7 +35,6 @@ from lathe.asset_quality.shape_ir_v2 import (
     SHAPE_IR_V2_VERSION,
     ShapeProgram,
 )
-
 
 _EXPECTED_PAYLOAD_KEYS: frozenset[str] = frozenset(
     {

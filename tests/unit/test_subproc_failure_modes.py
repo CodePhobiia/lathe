@@ -9,7 +9,6 @@ import pytest
 from lathe.sandbox.blender import _apply_rlimits
 from lathe.subproc import run_sandboxed
 
-
 PYTHON = str(Path(sys.executable).resolve())
 
 

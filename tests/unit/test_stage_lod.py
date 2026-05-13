@@ -10,7 +10,8 @@ from types import SimpleNamespace
 import pytest
 import trimesh
 from lathe.core.mesh import RuntimeMesh
-from lathe.core.stages.optimize import _resolve_lod_ratios, run as run_optimize_stage
+from lathe.core.stages.optimize import _resolve_lod_ratios
+from lathe.core.stages.optimize import run as run_optimize_stage
 from lathe.stages import lod as lod_mod
 
 

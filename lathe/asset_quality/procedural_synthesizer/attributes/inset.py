@@ -14,7 +14,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_AXES: frozenset[str] = frozenset({"x", "y", "z"})
 
 _VALID_BOTTOM_STYLES: frozenset[str] = frozenset(
@@ -80,7 +79,7 @@ class InsetAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "InsetAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> InsetAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"inset attributes must be dict, got {type(attrs).__name__}"

@@ -15,6 +15,7 @@ attempted-vs-actual story.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 import numpy as np
@@ -291,10 +292,8 @@ def _polyextruded_axis_mesh(
                     )
                     candidate.metadata.update(dict(mesh.metadata))
                     candidate.remove_unreferenced_vertices()
-                    try:
+                    with contextlib.suppress(AttributeError, TypeError, ValueError, RuntimeError):
                         candidate.fix_normals()
-                    except (AttributeError, TypeError, ValueError, RuntimeError):
-                        pass
                     if len(candidate.faces) == 0:
                         exact_failure = "planar_cap_extend_result_empty"
                     elif not bool(candidate.is_watertight):
@@ -303,9 +302,9 @@ def _polyextruded_axis_mesh(
                         exact_mesh = candidate
                         exact_details = {
                             "cap_coordinate_cm": cap_coord,
-                            "cap_face_count": int(len(cap_face_indices)),
-                            "cap_vertex_count": int(len(cap_vertices)),
-                            "cap_boundary_edge_count": int(len(boundary_edges)),
+                            "cap_face_count": len(cap_face_indices),
+                            "cap_vertex_count": len(cap_vertices),
+                            "cap_boundary_edge_count": len(boundary_edges),
                         }
     except (
         AttributeError,
@@ -377,10 +376,8 @@ def _polyextruded_axis_mesh(
             else:
                 candidate.metadata.update(dict(mesh.metadata))
                 candidate.remove_unreferenced_vertices()
-                try:
+                with contextlib.suppress(AttributeError, TypeError, ValueError, RuntimeError):
                     candidate.fix_normals()
-                except (AttributeError, TypeError, ValueError, RuntimeError):
-                    pass
                 measured_mesh = candidate
                 measured_details = {
                     "cap_coordinate_cm": cap_coord,
@@ -412,10 +409,10 @@ def _polyextruded_axis_mesh(
             "result_min_cm": result_min,
             "result_max_cm": result_max,
             "result_extent_cm": result_extent,
-            "source_vertex_count": int(len(source_vertices)),
-            "source_face_count": int(len(mesh.faces)),
-            "result_face_count": int(len(measured_mesh.faces)),
-            "result_vertex_count": int(len(measured_mesh.vertices)),
+            "source_vertex_count": len(source_vertices),
+            "source_face_count": len(mesh.faces),
+            "result_face_count": len(measured_mesh.faces),
+            "result_vertex_count": len(measured_mesh.vertices),
             "result_watertight": bool(measured_mesh.is_watertight),
             **measured_details,
         }

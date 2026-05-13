@@ -16,7 +16,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_PLANES: frozenset[str] = frozenset({"xy", "xz", "yz"})
 
 _VALID_CORNER_STYLES: frozenset[str] = frozenset(
@@ -108,7 +107,7 @@ class FrameAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "FrameAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> FrameAttributes:
         """Validate a raw attribute dict and produce a typed instance."""
         if not isinstance(attrs, dict):
             raise TypeError(

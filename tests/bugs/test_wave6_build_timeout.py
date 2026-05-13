@@ -13,7 +13,6 @@ import time
 from unittest.mock import patch
 
 import pytest
-
 from lathe import executor
 from lathe.errors import BuildError
 

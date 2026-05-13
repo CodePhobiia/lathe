@@ -52,8 +52,7 @@ def opensubdiv_availability() -> OpenSubDivAvailability:
     for module_name in ("pyopensubdiv", "OpenSubdiv"):
         try:
             module = __import__(module_name)
-        except Exception as exc:  # pragma: no cover - defensive
-            last_reason = f"{module_name}: {exc}"
+        except Exception:  # noqa: S112 — pragma: no cover - probe optional opensubdiv binding
             continue
         version = getattr(module, "__version__", None) or getattr(
             module, "version", None
@@ -73,13 +72,13 @@ def opensubdiv_availability() -> OpenSubDivAvailability:
 
 
 def subdivide_via_opensubdiv(
-    mesh: "SubdivMesh",
+    mesh: SubdivMesh,
     *,
     scheme: SubdivisionScheme,
     levels: int,
     creases: CreaseTags,
     boundary: BoundaryRule,
-) -> "SubdivMesh":
+) -> SubdivMesh:
     """Refine ``mesh`` via OpenSubDiv when the native binding is present.
 
     The current implementation is a deterministic *passthrough*: when

@@ -57,7 +57,6 @@ from . import (
     weld,
 )
 
-
 HARD_SURFACE_DOMAIN_ID = "hard_surface"
 
 
@@ -127,11 +126,23 @@ HARD_SURFACE_GENERATORS = (
 def _load_decorators():
     from ...decorators.hard_surface import (
         aligned_with as aligned_with_module,
+    )
+    from ...decorators.hard_surface import (
         attached_to as attached_to_module,
+    )
+    from ...decorators.hard_surface import (
         cuts as cuts_module,
+    )
+    from ...decorators.hard_surface import (
         inset_into as inset_into_module,
+    )
+    from ...decorators.hard_surface import (
         mirrors as mirrors_module,
+    )
+    from ...decorators.hard_surface import (
         supports as supports_module,
+    )
+    from ...decorators.hard_surface import (
         wraps_around as wraps_around_module,
     )
     return (

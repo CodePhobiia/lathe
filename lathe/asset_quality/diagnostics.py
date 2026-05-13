@@ -30,7 +30,6 @@ from ..repair_planner import suggest_repairs_for_metric
 from ..validators.render_class import evaluate_render_class_validators
 from .highlow_relation import is_highlow_required
 
-
 VERSION = "asset_quality_diagnostics_v1"
 
 _RANDOM_TRI_WARN = 0.30
@@ -355,6 +354,14 @@ def evaluate_quality_diagnostics(
         metrics[child_name] = round(float(child_score), 6)
     for finding in render_class.get("findings", []):
         findings.append(dict(finding))
+        severity = str(finding.get("severity", "info"))
+        status = str(finding.get("status", ""))
+        # Renderer-unavailable findings are informational signals about the
+        # build environment, not actionable warnings. Keep them visible in
+        # ``findings`` (severity=info) but do not promote them into the
+        # warning / recommendation streams that gate certification reviews.
+        if severity != "warning" or status == "renderer_unavailable":
+            continue
         warning_text = finding.get("warning")
         recommendation_text = finding.get("recommendation")
         if isinstance(warning_text, str) and warning_text:

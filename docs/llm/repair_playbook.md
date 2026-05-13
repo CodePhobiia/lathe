@@ -17,7 +17,7 @@ Accepted diagnostic inputs:
 
 Output contract:
 
-- LLM Repair Playbook: [schema/llm_repair_playbook.schema.json](../../schema/llm_repair_playbook.schema.json)
+- LLM Repair Playbook: [schema/llm_repair_playbook.schema.json](../schema/llm_repair_playbook.schema.json)
 
 Each step includes the diagnostic code/name, JSON pointer, source span when the
 upstream diagnostic provided one, allowed values when available, and a concrete

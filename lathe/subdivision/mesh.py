@@ -8,8 +8,8 @@ helper, :func:`mesh_to_arrays`, converts results back into the flat
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 Vec3 = tuple[float, float, float]
 Edge = tuple[int, int]
@@ -45,7 +45,7 @@ class SubdivMesh:
         cls,
         positions: Iterable[Sequence[float]],
         faces: Iterable[Sequence[int]],
-    ) -> "SubdivMesh":
+    ) -> SubdivMesh:
         """Build a :class:`SubdivMesh` from raw ``positions``/``faces``."""
         pos_list: list[Vec3] = []
         for p in positions:
@@ -65,7 +65,7 @@ class SubdivMesh:
         mesh._rebuild_topology()
         return mesh
 
-    def copy(self) -> "SubdivMesh":
+    def copy(self) -> SubdivMesh:
         """Return a structural copy of the mesh."""
         return SubdivMesh.from_indexed(self.positions, self.faces)
 

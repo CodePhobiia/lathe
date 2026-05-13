@@ -13,7 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_KINDS: frozenset[str] = frozenset(
     {"fillet", "butt", "spot", "seam", "tack"}
 )
@@ -61,7 +60,7 @@ class WeldAttributes:
             raise ValueError(f"weld.spot_count={self.spot_count} must be >= 1")
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "WeldAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> WeldAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"weld attributes must be dict, got {type(attrs).__name__}"

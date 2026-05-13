@@ -49,9 +49,9 @@ class DecalZoneAttributes:
             raise ValueError("decal_zone.decal_intent must be a non-empty string")
         if not isinstance(self.size_cm, (tuple, list)) or len(self.size_cm) != 2:
             raise ValueError(
-                f"decal_zone.size_cm must be a (width_cm, height_cm) pair"
+                "decal_zone.size_cm must be a (width_cm, height_cm) pair"
             )
-        for label, value in zip(("width", "height"), self.size_cm):
+        for label, value in zip(("width", "height"), self.size_cm, strict=False):
             if not isinstance(value, (int, float)) or float(value) <= 0:
                 raise ValueError(
                     f"decal_zone.size_cm {label} must be a positive number"
@@ -69,7 +69,7 @@ class DecalZoneAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "DecalZoneAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> DecalZoneAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"decal_zone attributes must be dict, got "

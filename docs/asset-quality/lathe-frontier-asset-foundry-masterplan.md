@@ -324,14 +324,14 @@ Lathe already has important foundation pieces:
   - environment/runtime config backend selection;
   - probe/capability metadata surface.
 
-- `lathe/geometry/program.py`
+- `lathe/geometry/kernel_program.py`
   - `KernelProgram` seam;
   - `KernelOperand` provenance;
   - boolean/hull/minkowski/transform/import/instances operation counting;
   - semantic metadata extraction from primitives;
   - capability errors.
 
-- `lathe/geometry/shape_ir_program.py`
+- `lathe/geometry/shape_ir_lowering.py`
   - ShapeIR primitive lowering into kernel primitives;
   - supported primitive kinds: box, cylinder, sphere, revolved/extruded profiles, torus, subdivision box, swept profile, lofted solid, heightfield, sdf_mesh;
   - heightfield solidification;

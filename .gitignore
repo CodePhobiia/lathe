@@ -24,7 +24,9 @@ coverage.lcov
 coverage.xml
 htmlcov/
 
-# Transient build dirs (per CLAUDE.md: dist_*, tmp_*, warm_*, v05_*, cache_probe_*)
+# Transient build dirs (per CLAUDE.md: dist_*, tmp_*, warm_*, v05_*, cache_probe_*).
+# `build/` is the wheel/sdist staging directory `python -m build` produces.
+build/
 dist/
 dist_*/
 tmp_*/

@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _LEVELS = {
     "off": 0.0,
     "none": 0.0,
@@ -642,7 +641,7 @@ def _style_pack_defaults(style_packs: tuple[str, ...], style_intensity: float) -
             elif field in _STYLE_PACK_LEVEL_FIELDS:
                 merged[field] = max(float(merged.get(field, 0.0)), float(value) * style_intensity)
             elif field in _STYLE_PACK_COUNT_FIELDS:
-                scaled = max(0, int(round(float(value) * style_intensity)))
+                scaled = max(0, round(float(value) * style_intensity))
                 merged[field] = max(int(merged.get(field, 0)), scaled)
             else:
                 merged.setdefault(field, value)
@@ -685,13 +684,13 @@ def _count(value: Any, default: int) -> int:
     if isinstance(value, int):
         return max(0, value)
     if isinstance(value, float):
-        return max(0, int(round(value)))
+        return max(0, round(value))
     if isinstance(value, str):
         lowered = value.lower().replace("-", "_").strip()
         if lowered in _LEVELS:
-            return max(0, int(round(_LEVELS[lowered] * 2.0)))
+            return max(0, round(_LEVELS[lowered] * 2.0))
         try:
-            return max(0, int(round(float(lowered))))
+            return max(0, round(float(lowered)))
         except ValueError:
             return int(default)
     return int(default)

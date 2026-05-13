@@ -29,7 +29,6 @@ from __future__ import annotations
 from dataclasses import FrozenInstanceError
 
 import pytest
-
 from lathe.asset_quality.shape_ir_v2 import (
     ALL_OPS,
     BOOLEAN_OPS,
@@ -39,10 +38,11 @@ from lathe.asset_quality.shape_ir_v2 import (
     SHAPE_IR_V2_VERSION,
     SOLID_OPS,
     SOP_OPS,
+    WEAR_OPS,
+    ZONE_OPS,
     ShapeOp,
     ShapeProgram,
     V1AdapterResult,
-    WEAR_OPS,
     lower_to_v1,
     validate_op,
 )
@@ -88,7 +88,7 @@ def test_shape_program_dataclass_is_frozen() -> None:
 
 
 def test_solid_ops_membership() -> None:
-    assert SOLID_OPS == frozenset(
+    assert frozenset(
         {
             "solid.box",
             "solid.branching_tree",
@@ -127,12 +127,12 @@ def test_solid_ops_membership() -> None:
             "solid.tube",
             "solid.wfc_modular_assembly",
         }
-    )
+    ) == SOLID_OPS
     assert len(SOLID_OPS) == 36
 
 
 def test_boolean_ops_membership() -> None:
-    assert BOOLEAN_OPS == frozenset(
+    assert frozenset(
         {
             "op.countersunk_hole",
             "op.cut_panel_line",
@@ -146,24 +146,24 @@ def test_boolean_ops_membership() -> None:
             "op.subtract",
             "op.union",
         }
-    )
+    ) == BOOLEAN_OPS
     assert len(BOOLEAN_OPS) == 11
 
 
 def test_edge_ops_membership() -> None:
-    assert EDGE_OPS == frozenset(
+    assert frozenset(
         {
             "op.bevel",
             "op.chamfer",
             "op.weighted_normals",
             "op.mark_hard_edge",
         }
-    )
+    ) == EDGE_OPS
     assert len(EDGE_OPS) == 4
 
 
 def test_sop_ops_membership() -> None:
-    assert SOP_OPS == frozenset(
+    assert frozenset(
         {
             "sop.bend",
             "sop.boolean",
@@ -182,12 +182,12 @@ def test_sop_ops_membership() -> None:
             "sop.transform",
             "sop.twist",
         }
-    )
+    ) == SOP_OPS
     assert len(SOP_OPS) == 16
 
 
 def test_repetition_ops_membership() -> None:
-    assert REPETITION_OPS == frozenset(
+    assert frozenset(
         {
             "op.corner_guard_set",
             "op.distribute",
@@ -198,31 +198,31 @@ def test_repetition_ops_membership() -> None:
             "op.trim_band",
             "op.vent_slats",
         }
-    )
+    ) == REPETITION_OPS
     assert len(REPETITION_OPS) == 8
 
 
 def test_integration_ops_membership() -> None:
-    assert INTEGRATION_OPS == frozenset(
+    assert frozenset(
         {
             "op.socket",
             "op.bracket",
             "op.mount_plate",
             "op.weld_seam",
         }
-    )
+    ) == INTEGRATION_OPS
     assert len(INTEGRATION_OPS) == 4
 
 
 def test_wear_ops_membership() -> None:
-    assert WEAR_OPS == frozenset(
+    assert frozenset(
         {
             "op.chip_edges",
             "op.scratch_mask",
             "op.dent_mask",
             "op.grime_mask",
         }
-    )
+    ) == WEAR_OPS
     assert len(WEAR_OPS) == 4
 
 
@@ -235,8 +235,20 @@ def test_all_ops_is_union_of_families_with_current_count() -> None:
         | REPETITION_OPS
         | INTEGRATION_OPS
         | WEAR_OPS
+        | ZONE_OPS
     )
-    assert len(ALL_OPS) == 83
+    assert len(ALL_OPS) == 86
+
+
+def test_zone_ops_exact_members() -> None:
+    assert frozenset(
+        {
+            "op.material_zone",
+            "op.decal_zone",
+            "op.wear_zone",
+        }
+    ) == ZONE_OPS
+    assert len(ZONE_OPS) == 3
 
 
 def test_op_families_are_disjoint() -> None:
@@ -248,6 +260,7 @@ def test_op_families_are_disjoint() -> None:
         REPETITION_OPS,
         INTEGRATION_OPS,
         WEAR_OPS,
+        ZONE_OPS,
     )
     seen: set[str] = set()
     for family in families:

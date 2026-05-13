@@ -11,7 +11,6 @@ import weakref
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-
 # Step 2 of the kernel-perf audit (after Step 1 found no net win from
 # bulk deepcopy→_metadata_safe_value swap): cache ShapePrimitive.to_dict()
 # results. The profile shows 29 calls × 0.46s = 13.3s in a 7-primitive

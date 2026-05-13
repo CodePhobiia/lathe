@@ -10,7 +10,6 @@ from .creative_grammar import creative_grammar_from_asset
 from .fidelity import _tier_multipliers
 from .object_grammar import object_grammar_from_asset
 
-
 _ROUGHNESS_DELTA_CAP = 0.5
 _NORMAL_DELTA_CAP = 0.45
 
@@ -23,7 +22,6 @@ def _scaled_delta(base: float, fidelity_tier: str, kind: str = "normal") -> floa
     cinematic tiers. Sign of base is preserved; magnitude is capped at the
     physical clamp for the channel (roughness within [0,1], normal map clip).
     """
-
     if not base:
         return 0.0
     try:
@@ -41,7 +39,6 @@ def _scaled_delta(base: float, fidelity_tier: str, kind: str = "normal") -> floa
 
 def _scale_feature_deltas(feature: dict[str, Any], fidelity_tier: str) -> None:
     """In-place scale roughness/normal deltas of a feature dict by tier."""
-
     rough = float(feature.get("roughness_delta", 0.0) or 0.0)
     normal = float(feature.get("normal_delta", 0.0) or 0.0)
     if rough:
@@ -56,7 +53,6 @@ def _infer_fidelity_tier_from_asset(asset: dict[str, Any]) -> str:
     The presets here run in the surface stage where the materialized asset is
     the only context available; this avoids importing AssetGraph circularly.
     """
-
     validate = asset.get("validate", {}) if isinstance(asset.get("validate"), dict) else {}
     critic_name = str(validate.get("score") or "").lower()
     threshold = _number(validate.get("threshold"), 0.80)
@@ -98,7 +94,7 @@ def _dedupe(values: list[str]) -> list[str]:
 
 
 def _present(value: Any) -> bool:
-    return value not in ("", None) and value != [] and value != {}
+    return value not in ("", None) and value not in ([], {})
 
 
 def _feature(
@@ -1804,7 +1800,7 @@ def _mix_color(base: list[Any], target: list[Any], amount: float) -> list[int]:
     for index in range(3):
         base_value = float(base[index]) if index < len(base) else 0.0
         target_value = float(target[index]) if index < len(target) else base_value
-        out.append(int(round(max(0.0, min(255.0, base_value * (1.0 - amount) + target_value * amount)))))
+        out.append(round(max(0.0, min(255.0, base_value * (1.0 - amount) + target_value * amount))))
     return out
 
 

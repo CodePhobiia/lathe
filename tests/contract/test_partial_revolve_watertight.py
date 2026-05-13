@@ -20,7 +20,6 @@ watertight result by construction. This test pins:
 from __future__ import annotations
 
 import pytest
-
 from lathe.adapters.manifold_kernel import manifold_available
 from lathe.geometry import resolve_geometry_kernel
 from lathe.geometry.kernel import MANIFOLD_KERNEL_ID

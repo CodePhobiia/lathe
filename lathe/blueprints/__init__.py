@@ -21,11 +21,11 @@ from .panels import (
 from .procedural import (
     _procedural_access_blueprint,
     _procedural_boat_blueprint,
-    _procedural_building_blueprint,
     _procedural_bridge_blueprint,
+    _procedural_building_blueprint,
     _procedural_city_block_blueprint,
-    _procedural_furniture_blueprint,
     _procedural_foliage_blueprint,
+    _procedural_furniture_blueprint,
     _procedural_infrastructure_blueprint,
     _procedural_interior_blueprint,
     _procedural_machine_blueprint,

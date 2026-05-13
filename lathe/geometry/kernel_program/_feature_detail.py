@@ -54,7 +54,6 @@ from ._records import (
 )
 from ._serialize import _dict_metadata, _json_safe
 
-
 _FEATURE_DETAIL_MODIFIER_KINDS: dict[str, str] = {
     "v2_boolean_modifier": "boolean",
     "v2_bracket_modifier": "support_bracket",

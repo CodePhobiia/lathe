@@ -21,7 +21,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.design_brief import evaluate_design_brief
 from lathe.asset_quality.kit_library import (
     evaluate_kit_library,
@@ -33,7 +32,6 @@ from lathe.asset_quality.reference_board import (
 )
 from lathe.executor import build_asset
 from lathe.parser import parse_file
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _FIXTURE_PATH = _REPO_ROOT / "examples" / "refs" / "asset_quality" / "industrial_crate"

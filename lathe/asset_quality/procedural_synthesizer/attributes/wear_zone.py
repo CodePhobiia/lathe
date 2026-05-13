@@ -14,7 +14,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-
 _VALID_INTENSITY: frozenset[str] = frozenset(
     {"light", "moderate", "heavy", "extreme"}
 )
@@ -73,7 +72,7 @@ class WearZoneAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "WearZoneAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> WearZoneAttributes:
         if not isinstance(attrs, dict):
             raise TypeError(
                 f"wear_zone attributes must be dict, got "

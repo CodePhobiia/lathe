@@ -9,32 +9,32 @@ contract.
 
 from __future__ import annotations
 
+import contextlib
 import math
+from collections.abc import Sequence
 from dataclasses import fields, replace
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
 from .asset_graph import AssetGraph
+from .asset_quality.construction_graph import evaluate_construction_graph
 from .asset_quality.grammar_lowering import (
     GRAMMAR_LOWERING_VERSION,
     evaluate_grammar_lowering,
-)
-from .asset_quality.construction_graph import evaluate_construction_graph
-from .asset_quality.shape_ir_v2 import (
-    ShapeOp,
-    ShapeProgram,
-    lower_to_v1,
-    materialize_v1_records_with_kernel_imports,
 )
 from .asset_quality.shape_ir_v2 import (
     BOOLEAN_OPS,
     EDGE_OPS,
     INTEGRATION_OPS,
     REPETITION_OPS,
-    SOP_OPS,
     SOLID_OPS,
+    SOP_OPS,
     WEAR_OPS,
+    ShapeOp,
+    ShapeProgram,
+    lower_to_v1,
+    materialize_v1_records_with_kernel_imports,
 )
 from .shape_authoring_context import ShapeAuthoringContext, authoring_context_from_asset_graph
 from .shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
@@ -3600,10 +3600,8 @@ def _operation_instance_evidence(op: ShapeOp, *, op_index: int) -> dict[str, Any
             evidence[key] = value
     center = parameters.get("center")
     if isinstance(center, (list, tuple)) and len(center) == 3:
-        try:
+        with contextlib.suppress(TypeError, ValueError):
             evidence["center"] = [float(value) for value in center]
-        except (TypeError, ValueError):
-            pass
     return evidence
 
 
@@ -4093,7 +4091,7 @@ def _style_pack_adjust_parameter_tree(
             _scale_present_numeric_keys(adjusted, ("thickness_cm",), _style_factor(0.76, intensity))
             count = _positive_int(adjusted.get("count"))
             if count is not None:
-                adjusted["count"] = min(128, count + max(1, int(round(2.0 * intensity))))
+                adjusted["count"] = min(128, count + max(1, round(2.0 * intensity)))
     elif mode == "sleek":
         if feature_tokens & structural_tokens:
             _scale_present_numeric_keys(
@@ -4906,7 +4904,7 @@ def _template_bounds_from_primitives(
         try:
             mesh = primitive_mesh(primitive)
             raw_bounds = np.asarray(mesh.bounds, dtype=np.float64)
-        except Exception:
+        except Exception:  # noqa: S112 — best-effort: skip primitives whose mesh cannot be built
             continue
         if raw_bounds.shape == (2, 3):
             bounds.append(
@@ -4934,7 +4932,7 @@ def _primary_body_record_from_program(program: ShapeProgram) -> dict[str, Any] |
         )
         try:
             result = lower_to_v1(body_program, materialize_output=False)
-        except Exception:
+        except Exception:  # noqa: S112 — best-effort: skip op whose v1 lowering raises during probing
             continue
         for record in result.v1_records:
             candidate = dict(record)
@@ -5093,13 +5091,13 @@ def _density_cap_for_requirement(requirement: str, context: ShapeAuthoringContex
     if multiplier >= 1.0:
         return None
     if any(token in lowered for token in ("fastener", "bolt", "rivet")):
-        return max(1, int(round(8 * multiplier)))
+        return max(1, round(8 * multiplier))
     if any(token in lowered for token in ("vent", "slat", "groove")):
-        return max(1, int(round(5 * multiplier)))
+        return max(1, round(5 * multiplier))
     if any(token in lowered for token in ("corner", "guard", "bracket")):
-        return max(2, int(round(6 * multiplier)))
+        return max(2, round(6 * multiplier))
     if any(token in lowered for token in ("trim", "rail", "band")):
-        return max(1, int(round(4 * multiplier)))
+        return max(1, round(4 * multiplier))
     return None
 
 
@@ -5815,7 +5813,7 @@ def compile_grammar_program_candidate(
         if diagnostic is not None:
             diagnostics.append(diagnostic)
             continue
-        assert primitive is not None
+        assert primitive is not None  # noqa: S101 — invariant: when diagnostic is None primitive is set
         primitives.append(primitive)
         regions.append(_region_from_primitive(primitive, len(regions)))
 

@@ -32,15 +32,13 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.shape_ir_v2 import (
+    _REQUIRED_PARAMS,
     ALL_OPS,
     ShapeOp,
     ShapeProgram,
-    _REQUIRED_PARAMS,
     lower_to_v1,
 )
-
 
 _VALID_STATES: frozenset[str] = frozenset(
     {"executed", "approximated", "unsupported", "provisional"}
@@ -123,7 +121,6 @@ _PARAM_STUBS: dict[str, Any] = {
     "u_start": 0.0,
     "u_end": 1.0,
     "scale": 1.2,
-    "angle_degrees": 45.0,
     "density": 1.0,
     "angle_degrees": 30.0,
     # tuples / lists — minimal viable shapes

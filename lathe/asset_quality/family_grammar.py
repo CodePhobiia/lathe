@@ -98,7 +98,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 FAMILY_GRAMMAR_VERSION = "family_grammar_v1"
 
 

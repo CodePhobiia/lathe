@@ -137,7 +137,7 @@ def test_per_part_xatlas_falls_back_for_single_part() -> None:
         }
     }
 
-    _, meta, execution = apply_xatlas_uv_per_part(
+    _, _meta, execution = apply_xatlas_uv_per_part(
         runtime, asset, {"uv": {"xatlas": {"resolution": 512}}}
     )
     # Single-part input degrades to the merged-mesh xatlas execution mode.
@@ -188,7 +188,7 @@ def test_per_part_xatlas_uniform_texel_density_across_disparate_areas() -> None:
         }
     }
 
-    uv_runtime, meta, execution = apply_xatlas_uv_per_part(
+    uv_runtime, _meta, execution = apply_xatlas_uv_per_part(
         runtime, asset, {"uv": {"xatlas": {"resolution": 4096}}}
     )
 
@@ -233,8 +233,8 @@ def test_per_part_xatlas_consumes_multi_part_scene_manifest_tags() -> None:
         manifest.append(
             PartManifest(
                 name=name,
-                face_count=int(len(box.faces)),
-                vertex_count=int(len(box.vertices)),
+                face_count=len(box.faces),
+                vertex_count=len(box.vertices),
                 tags=["plank_displacement", "oak_planks"] if name == "body" else ["chest"],
                 parent_blueprint_component=f"chest_{name}",
             )
@@ -258,7 +258,7 @@ def test_per_part_xatlas_consumes_multi_part_scene_manifest_tags() -> None:
         }
     }
 
-    uv_runtime, meta, execution = apply_xatlas_uv_per_part(
+    _uv_runtime, meta, execution = apply_xatlas_uv_per_part(
         runtime,
         asset,
         {"uv": {"xatlas": {"resolution": 1024}}},

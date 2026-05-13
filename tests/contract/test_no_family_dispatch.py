@@ -31,7 +31,6 @@ import pytest
 
 from ._family_dispatch_allowlist import ALLOWLIST
 
-
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _LATHE_ROOT = _REPO_ROOT / "lathe"
 

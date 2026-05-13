@@ -26,6 +26,7 @@ auditable in a single place.
 from __future__ import annotations
 
 import atexit
+import contextlib
 import logging
 import sys
 from collections.abc import Sequence
@@ -108,7 +109,7 @@ _WINDOWS_JOB_HANDLES: list[int] = []
 
 
 def _close_windows_job_handles() -> None:
-    """atexit hook: close every Job Object handle accumulated this session.
+    """Atexit hook: close every Job Object handle accumulated this session.
 
     The job objects must outlive the Blender child (closing earlier would
     trigger ``JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE``), but they do not need
@@ -126,10 +127,8 @@ def _close_windows_job_handles() -> None:
     except (ImportError, OSError):  # pragma: no cover - defensive
         return
     for handle in list(_WINDOWS_JOB_HANDLES):
-        try:
+        with contextlib.suppress(OSError):  # pragma: no cover - best-effort cleanup
             kernel32.CloseHandle(handle)
-        except OSError:  # pragma: no cover - best-effort cleanup
-            pass
     _WINDOWS_JOB_HANDLES.clear()
 
 

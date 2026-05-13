@@ -16,11 +16,11 @@ Priority order (highest wins):
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from .context import SynthesizerContext
 from .trace import TraceBuilder
-
 
 _MISSING = object()
 
@@ -75,20 +75,19 @@ def resolve_hint(
         return typed_attr_value
 
     # Priority 2: brief field
-    if brief_field is not None:
-        if brief_field in context.brief:
-            value = context.brief[brief_field]
-            trace.emit(
-                "hint_resolved",
-                stage=0,
-                field=field_name,
-                node_id=node_id,
-                node_type=node_type,
-                source="brief_field",
-                source_key=brief_field,
-                value=_jsonable(value),
-            )
-            return value
+    if brief_field is not None and brief_field in context.brief:
+        value = context.brief[brief_field]
+        trace.emit(
+            "hint_resolved",
+            stage=0,
+            field=field_name,
+            node_id=node_id,
+            node_type=node_type,
+            source="brief_field",
+            source_key=brief_field,
+            value=_jsonable(value),
+        )
+        return value
 
     # Priority 4/5: style priors
     if style_prior_path is not None and context.style is not None:
