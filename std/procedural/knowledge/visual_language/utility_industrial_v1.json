@@ -1,0 +1,38 @@
+{
+  "id": "utility_industrial_v1",
+  "description": "Utility/industrial functional language. Blocky rectangular forms, functional protrusions, low ornament, visible fasteners, painted-steel + raw-metal palette, hazard accents.",
+  "silhouette_bias": {
+    "forms": ["blocky", "rectangular", "functional_protrusions", "panelized"],
+    "avoid": ["organic", "ornate", "flowing"]
+  },
+  "motifs": {
+    "preferred": ["bolts", "rivets", "warning_decals", "stamped_labels", "warning_stripes", "latches", "handles", "corner_guards"],
+    "rare": ["emissive_strips"],
+    "forbidden": ["holographic_panels", "organic_growth"]
+  },
+  "palette": {
+    "body": ["#84876C", "#3D4045", "#525258", "#6A6E70"],
+    "accent": ["#D6A53A", "#A8845C", "#C75D2B"],
+    "emissive": []
+  },
+  "materials": {
+    "body_panel": "painted_steel.utility_industrial",
+    "corner_guard": "raw_steel.abandoned_rusty",
+    "fastener": "raw_steel.abandoned_rusty",
+    "decal": "decal_warning.utility_industrial",
+    "handle_grip": "rubber_grip.utility_industrial"
+  },
+  "wear": {
+    "edge_polish": 0.4,
+    "dust_in_seams": 0.5,
+    "paint_chipping": 0.35,
+    "oil_staining": 0.3,
+    "rust_probability": 0.3
+  },
+  "feature_weight_overrides": {
+    "visible_fasteners": 1.4,
+    "warning_decals": 1.3,
+    "corner_reinforcement": 1.3,
+    "clean_inset_panels": 0.7
+  }
+}

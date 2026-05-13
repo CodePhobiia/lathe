@@ -1,0 +1,38 @@
+{
+  "id": "clean_sci_fi_v1",
+  "description": "Clean sci-fi language. Inset panels, emissive strips, beveled plates, hex/torx fasteners, minimal warning decals, cool desaturated palette.",
+  "silhouette_bias": {
+    "forms": ["inset_panels", "beveled_plates", "modular", "hex_geometry"],
+    "avoid": ["rounded_decorative", "ornate"]
+  },
+  "motifs": {
+    "preferred": ["inset_panels", "emissive_strip", "hex_fasteners", "modular_seams", "tech_decals"],
+    "rare": ["ornate_trim"],
+    "forbidden": ["wood_grain", "brass_decorative"]
+  },
+  "palette": {
+    "body": ["#B4BCC8", "#8A9098", "#5C6068"],
+    "accent": ["#3A8AC2", "#48C0E0", "#0C90D0"],
+    "emissive": ["#48C0E0", "#FF8030"]
+  },
+  "materials": {
+    "body_panel": "painted_steel.sci_fi_clean",
+    "panel_inset": "painted_steel.sci_fi_clean",
+    "fastener": "raw_steel.abandoned_rusty",
+    "emissive_strip": "decal_warning.utility_industrial"
+  },
+  "wear": {
+    "edge_polish": 0.6,
+    "dust_in_seams": 0.15,
+    "paint_chipping": 0.05,
+    "oil_staining": 0.05,
+    "rust_probability": 0.02
+  },
+  "feature_weight_overrides": {
+    "clean_inset_panels": 1.5,
+    "emissive_strips": 1.3,
+    "visible_fasteners": 0.7,
+    "warning_decals": 0.5,
+    "decorative_trim": 0.3
+  }
+}
