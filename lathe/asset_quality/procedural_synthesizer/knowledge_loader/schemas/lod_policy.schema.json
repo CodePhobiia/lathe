@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.procedural/schemas/lod_policy.v1.json",
+  "title": "LODPolicy",
+  "description": "Per-class LOD policy: per-LOD bevel segments, fastener/panel/trim/secondary representation, target tris.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["levels"],
+  "properties": {
+    "rationale": {"type": "string"},
+    "levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["lod_id", "target_tris", "screen_size_threshold"],
+        "properties": {
+          "lod_id": {"type": "string", "pattern": "^LOD[0-9]+$"},
+          "target_tris": {"type": "integer", "minimum": 1},
+          "screen_size_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+          "bevel_segments": {"type": "integer", "minimum": 0},
+          "fastener_representation": {
+            "type": "string",
+            "enum": ["geometry", "normal_stamp", "texture_only", "removed"]
+          },
+          "panel_groove_representation": {
+            "type": "string",
+            "enum": ["geometry", "normal_stamp", "texture_only", "removed"]
+          },
+          "trim_representation": {
+            "type": "string",
+            "enum": ["geometry", "normal_stamp", "texture_only", "removed"]
+          },
+          "secondary_part_representation": {
+            "type": "string",
+            "enum": ["geometry", "normal_stamp", "texture_only", "removed"]
+          },
+          "impostor": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

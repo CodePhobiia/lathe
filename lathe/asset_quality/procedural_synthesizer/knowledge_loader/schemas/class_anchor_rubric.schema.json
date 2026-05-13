@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.procedural/schemas/class_anchor_rubric.v1.json",
+  "title": "ClassAnchorRubric",
+  "description": "Category-conditioned visual quality rubric. Drives the class_anchor validator.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "asset_class", "checks"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "asset_class": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "minimum_pass_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["evidence_key", "check_kind"],
+        "properties": {
+          "evidence_key": {"type": "string", "minLength": 1},
+          "check_kind": {
+            "type": "string",
+            "enum": [
+              "synthesized_role_present",
+              "face_count_at_least",
+              "bounding_volume_in_range",
+              "material_zone_count_at_least",
+              "mesh_extents_exceed_intent",
+              "clip_similarity_to_class",
+              "silhouette_iou_to_archetype"
+            ]
+          },
+          "parameters": {"type": "object"},
+          "severity": {"type": "string", "enum": ["required", "soft"]},
+          "repair_action": {"type": "string"}
+        }
+      }
+    }
+  }
+}
