@@ -30,7 +30,7 @@ jobs:
       - name: Run gitleaks (full history)
         id: gitleaks
         continue-on-error: true
-        uses: gitleaks/gitleaks-action@v2.3.9
+        uses: gitleaks/gitleaks-action@v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
