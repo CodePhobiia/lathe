@@ -701,21 +701,24 @@ def run(executor: Any, shape_bundle: dict[str, Any]) -> dict[str, Any]:
     # class default, we replace the topology runtime mesh with the
     # refined output before exporting. ``geometry-strict`` builds with
     # ``build.topology.subdivision_finishing = "disabled"`` opt out.
-    selected_integration_mode = str(
-
-            executor.runtime.get("shape", {})
-            .get("selected", {})
-            .get("integration_report", {})
-            .get("mode", "")
-
-    )
+    shape_runtime = executor.runtime.get("shape", {})
     selected_integration_report = (
-        executor.runtime.get("shape", {})
-        .get("selected", {})
-        .get("integration_report", {})
+        shape_runtime.get("selected", {}).get("integration_report", {})
+        if isinstance(shape_runtime, dict)
+        else {}
+    )
+    if not selected_integration_report and isinstance(shape_runtime, dict):
+        selected_integration_report = shape_runtime.get("bundle", {}).get(
+            "integration_report", {}
+        )
+    selected_integration_mode = str(
+        selected_integration_report.get("mode", "")
+        if isinstance(selected_integration_report, dict)
+        else ""
     )
     if (
-        selected_integration_mode == "mesh_program_explicit_surface"
+        selected_integration_mode
+        in {"mesh_program_explicit_surface", "procedural_synthesizer_explicit_surface"}
         and isinstance(selected_integration_report, dict)
         and isinstance(selected_integration_report.get("exact_report"), dict)
     ):

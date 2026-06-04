@@ -26,6 +26,13 @@
       "repair_action": "add_secondary_features"
     },
     {
+      "evidence_key": "panel_breakup_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "panel"},
+      "severity": "required",
+      "repair_action": "increase_panel_depth"
+    },
+    {
       "evidence_key": "handles_or_latch_present",
       "check_kind": "synthesized_role_present",
       "parameters": {"role": "handle"},

@@ -224,6 +224,87 @@ def _report_section_with_diagnostics(entry: dict[str, Any]) -> dict[str, Any]:
     return evidence
 
 
+def _dict_value(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _int_value(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _visual_quality_gate_report(
+    *,
+    certified: bool,
+    preview_evidence_report: dict[str, Any],
+    quality_diagnostics_report: dict[str, Any],
+    class_anchor_report: dict[str, Any],
+) -> dict[str, Any]:
+    """Separate pipeline certification from human-visible approval."""
+    preview_summary = _dict_value(preview_evidence_report.get("preview_summary"))
+    quality_warnings = list(quality_diagnostics_report.get("warnings") or [])
+    quality_findings = [
+        item
+        for item in quality_diagnostics_report.get("findings") or []
+        if isinstance(item, dict) and item.get("severity") == "warning"
+    ]
+    class_anchor_metrics = _dict_value(class_anchor_report.get("metrics"))
+    class_anchor_diagnostics = [
+        item
+        for item in class_anchor_report.get("diagnostics") or []
+        if isinstance(item, dict)
+    ]
+
+    blockers: list[str] = []
+    if not certified:
+        blockers.append("pipeline_not_certified")
+    if not preview_summary.get("final_beauty_present", False):
+        blockers.append("final_beauty_preview_not_present")
+    if not preview_summary.get("distinct_final_from_material_ids", False):
+        blockers.append("final_beauty_not_distinct_from_debug_preview")
+    class_anchor_failed_required = _int_value(class_anchor_metrics.get("failed_required_count"))
+    if class_anchor_failed_required > 0:
+        blockers.append("class_anchor_required_evidence_missing")
+    if class_anchor_diagnostics:
+        blockers.append("class_anchor_diagnostics_present")
+    if quality_warnings or quality_findings:
+        blockers.append("quality_diagnostics_require_review")
+
+    if not certified:
+        visual_quality_gate = "not_approved"
+        visual_claim_level = "pipeline_failed"
+    elif "final_beauty_preview_not_present" in blockers:
+        visual_quality_gate = "not_verified"
+        visual_claim_level = "not_verified"
+    elif blockers:
+        visual_quality_gate = "review_required"
+        visual_claim_level = "pipeline_certified_only"
+    else:
+        visual_quality_gate = "approved"
+        visual_claim_level = "visual_approved"
+
+    return {
+        "version": "lathe.visual_quality_gate_v1",
+        "pipeline_certified": certified,
+        "visual_quality_gate": visual_quality_gate,
+        "human_review_required": visual_quality_gate != "approved",
+        "visual_claim_level": visual_claim_level,
+        "blockers": sorted(set(blockers)),
+        "signals": {
+            "final_beauty_present": bool(preview_summary.get("final_beauty_present", False)),
+            "final_beauty_declared": bool(preview_summary.get("final_beauty_declared", False)),
+            "distinct_final_from_material_ids": bool(
+                preview_summary.get("distinct_final_from_material_ids", False)
+            ),
+            "quality_warning_count": len(quality_warnings),
+            "quality_finding_warning_count": len(quality_findings),
+            "class_anchor_failed_required_count": class_anchor_failed_required,
+        },
+    }
+
+
 def _shape_program_validate_diagnostics(executor: Any) -> list[dict[str, Any]]:
     shape_bundle = executor.runtime.get("shape", {}).get("bundle", {})
     if not isinstance(shape_bundle, dict):
@@ -368,6 +449,25 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                 "warnings": [],
                 "recommendations": [],
                 "findings": [],
+            },
+            "diagnostics": [],
+            "passes": True,
+            "score": 1.0,
+        },
+    )
+    class_anchor_entry = cert_bundle["validators"].get(
+        "class_anchor",
+        {
+            "evidence": {
+                "version": "lathe.validate.class_anchor_v1",
+                "metrics": {
+                    "asset_kind": "",
+                    "rubric_id": None,
+                    "evidence": {},
+                    "pass_fraction": 1.0,
+                    "minimum_pass_fraction": 0.0,
+                    "failed_required_count": 0,
+                },
             },
             "diagnostics": [],
             "passes": True,
@@ -584,6 +684,12 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
                     "distinct_final_from_material_ids": False,
                     "total_preview_count": 0,
                 },
+                "render_evidence_schema": {
+                    "version": "lathe.render_evidence_schema_v1",
+                    "status_tokens": ["real", "proxy", "missing", "blocked"],
+                    "validate_stage_preview_status": "missing",
+                    "reason": "validate_runs_before_package",
+                },
                 "report_links": [],
                 "skipped_reasons": [],
                 "warnings": [],
@@ -732,6 +838,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     integrity_report = integrity_entry["evidence"]
     urdf_report = urdf_entry.get("evidence", {})
     quality_diagnostics_report = _report_section_with_diagnostics(quality_diagnostics_entry)
+    class_anchor_report = _report_section_with_diagnostics(class_anchor_entry)
     design_brief_report = _report_section_with_diagnostics(design_brief_entry)
     family_grammar_report = _report_section_with_diagnostics(family_grammar_entry)
     construction_graph_report = _report_section_with_diagnostics(construction_graph_entry)
@@ -749,6 +856,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     executor.runtime["geometry_integrity"] = integrity_report
     executor.runtime["urdf_validation"] = urdf_report
     executor.runtime["quality_diagnostics"] = quality_diagnostics_report
+    executor.runtime["class_anchor"] = class_anchor_report
     executor.runtime["design_brief"] = design_brief_report
     executor.runtime["construction_graph"] = construction_graph_report
     executor.runtime["family_grammar"] = family_grammar_report
@@ -766,6 +874,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     diagnostics.extend(integrity_entry["diagnostics"])
     diagnostics.extend(urdf_entry.get("diagnostics", []))
     diagnostics.extend(gameplay_tag_entry.get("diagnostics", []))
+    diagnostics.extend(class_anchor_entry.get("diagnostics", []))
     diagnostics.extend(highlow_relation_entry.get("diagnostics", []))
     diagnostics.extend(executor.runtime.get("execution", {}).get("bundle", {}).get("diagnostics", []))
     diagnostics.extend(_shape_program_validate_diagnostics(executor))
@@ -815,6 +924,12 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
     repair_suggestions = sorted(
         {repair for diag in diagnostics for repair in diag.get("suggested_repairs", [])}
     )
+    visual_quality_gate = _visual_quality_gate_report(
+        certified=certified,
+        preview_evidence_report=preview_evidence_report,
+        quality_diagnostics_report=quality_diagnostics_report,
+        class_anchor_report=class_anchor_report,
+    )
     report = {
         "certified": certified,
         "threshold": threshold,
@@ -825,6 +940,8 @@ def run(executor: Any, optimize_bundle: dict[str, Any]) -> dict[str, Any]:
         "geometry_integrity": {**integrity_report, "diagnostics": integrity_entry["diagnostics"]},
         "urdf_validation": {**urdf_report, "diagnostics": urdf_entry.get("diagnostics", [])},
         "quality_diagnostics": quality_diagnostics_report,
+        "class_anchor": class_anchor_report,
+        "visual_quality_gate": visual_quality_gate,
         "design_brief": design_brief_report,
         "construction_graph": construction_graph_report,
         "family_grammar": family_grammar_report,

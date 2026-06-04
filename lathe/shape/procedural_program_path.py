@@ -788,6 +788,35 @@ _ZONE_OP_NAMES: frozenset[str] = frozenset(
     {"op.material_zone", "op.decal_zone", "op.wear_zone"}
 )
 
+_EDGE_DETAIL_TOKENS: tuple[str, ...] = (
+    "bevel",
+    "chamfer",
+    "edge",
+    "trim",
+    "seam",
+    "panel",
+    "bracket",
+    "guard",
+    "fastener",
+    "rivet",
+    "latch",
+    "handle",
+)
+
+_ATTACHMENT_TOKENS: tuple[str, ...] = (
+    "handle",
+    "latch",
+    "hinge",
+    "bracket",
+    "mount",
+    "socket",
+    "fastener",
+    "foot",
+    "leg",
+)
+
+_SUPPORT_TOKENS: tuple[str, ...] = ("foot", "leg", "stand", "support", "bracket")
+
 
 def _extract_semantic_zone_records(shape_program) -> list[dict[str, Any]]:
     """Pull op.material_zone / op.decal_zone / op.wear_zone records.
@@ -826,6 +855,324 @@ def _extract_semantic_zone_records(shape_program) -> list[dict[str, Any]]:
             record[key] = value
         records.append(record)
     return records
+
+
+def _authored_part_names(asset_graph: AssetGraph) -> set[str]:
+    return {
+        str(getattr(part, "name", "")).strip()
+        for part in asset_graph.parts
+        if str(getattr(part, "name", "")).strip()
+    }
+
+
+def _canonical_asset_part(asset_graph: AssetGraph, part_name: str | None) -> str:
+    """Map detail labels under authored parts back to the authored part.
+
+    The procedural lowering path often emits truthful detail labels such
+    as ``foot_l.pad`` or ``latch_plate.arm``. Downstream semantic
+    coverage, however, checks the authored ``intent.parts`` names. Keep
+    policy-generated labels intact, but fold dotted children under an
+    authored root so the validator sees the required part without
+    losing the original detail label in primitive metadata.
+    """
+    text = str(part_name or "").strip()
+    if not text:
+        return ""
+    authored = _authored_part_names(asset_graph)
+    if text in authored:
+        return text
+    root = text.split(".", 1)[0]
+    if root in authored:
+        return root
+    return text
+
+
+def _primitive_dimension_triplet(primitive: ShapePrimitive) -> tuple[float, float, float]:
+    if primitive.extents:
+        try:
+            return tuple(max(0.0, abs(float(v))) for v in primitive.extents[:3])  # type: ignore[index,return-value]
+        except (TypeError, ValueError):
+            pass
+    width = primitive.width if primitive.width is not None else primitive.radius
+    height = primitive.height if primitive.height is not None else primitive.length
+    depth = primitive.depth if primitive.depth is not None else primitive.radius
+    if width is not None or height is not None or depth is not None:
+        try:
+            return (
+                max(0.0, abs(float(width if width is not None else 1.0))),
+                max(0.0, abs(float(height if height is not None else 1.0))),
+                max(0.0, abs(float(depth if depth is not None else 1.0))),
+            )
+        except (TypeError, ValueError):
+            pass
+    radius = float(primitive.radius or primitive.tube_radius or primitive.minor_radius or 0.5)
+    span = float(
+        primitive.height
+        or primitive.length
+        or primitive.thickness
+        or primitive.extrude_height
+        or max(1.0, radius * 2.0)
+    )
+    diameter = max(0.1, radius * 2.0)
+    dims = [diameter, diameter, diameter]
+    axis = str(primitive.axis or "y").lower()
+    axis_index = {"x": 0, "y": 1, "z": 2}.get(axis, 1)
+    dims[axis_index] = max(diameter, abs(span))
+    return (dims[0], dims[1], dims[2])
+
+
+def _primitive_bounds(primitive: ShapePrimitive) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    center = tuple(float(v) for v in (primitive.center or (0.0, 0.0, 0.0))[:3])
+    dims = _primitive_dimension_triplet(primitive)
+    half = tuple(max(0.05, value * 0.5) for value in dims)
+    return (
+        (center[0] - half[0], center[1] - half[1], center[2] - half[2]),
+        (center[0] + half[0], center[1] + half[1], center[2] + half[2]),
+    )
+
+
+def _profile_bins(values: list[float]) -> list[float]:
+    if not values:
+        return [0.0, 0.0, 0.0]
+    lo = min(values)
+    hi = max(values)
+    span = max(1e-6, hi - lo)
+    bins = [0.0, 0.0, 0.0]
+    for value in values:
+        normalized = (value - lo) / span
+        index = max(0, min(2, int(normalized * 3.0)))
+        bins[index] += 1.0
+    total = max(1.0, sum(bins))
+    return [round(item / total, 6) for item in bins]
+
+
+def _signature_from_primitives(primitives: list[ShapePrimitive]) -> dict[str, Any]:
+    solid_primitives = [p for p in primitives if p.blend_mode != "subtract"]
+    if not solid_primitives:
+        return {}
+    bounds = [_primitive_bounds(primitive) for primitive in solid_primitives]
+    mins = [min(pair[0][axis] for pair in bounds) for axis in range(3)]
+    maxs = [max(pair[1][axis] for pair in bounds) for axis in range(3)]
+    extents = [max(1e-6, maxs[axis] - mins[axis]) for axis in range(3)]
+    largest = max(1e-6, *extents)
+    centers = [
+        tuple(float(v) for v in (primitive.center or (0.0, 0.0, 0.0))[:3])
+        for primitive in solid_primitives
+    ]
+    xs = [point[0] for point in centers]
+    ys = [point[1] for point in centers]
+    zs = [point[2] for point in centers]
+    return {
+        "projected_ratio": [round(value / largest, 6) for value in extents],
+        "region_spread": [
+            round((max(values) - min(values)) / largest, 6) if values else 0.0
+            for values in (xs, ys, zs)
+        ],
+        "width_profile": _profile_bins(xs),
+        "vertical_profile": _profile_bins(ys),
+        "depth_profile": _profile_bins(zs),
+        "expected_region_count": len({str(p.part or "") for p in solid_primitives if p.part}),
+        "signature_source": "procedural_visible_primitives_v1",
+    }
+
+
+def _text_tokens_from_shape_program(shape_program) -> list[str]:
+    tokens: list[str] = []
+    for op in getattr(shape_program, "ops", ()):
+        tokens.append(str(getattr(op, "op", "") or ""))
+        tokens.append(str(getattr(op, "target", "") or ""))
+        purpose = getattr(op, "purpose", None)
+        if purpose:
+            tokens.append(str(purpose))
+        parameters = getattr(op, "parameters", None)
+        if isinstance(parameters, Mapping):
+            for key, value in parameters.items():
+                tokens.append(str(key))
+                if isinstance(value, (str, int, float, bool)):
+                    tokens.append(str(value))
+    return tokens
+
+
+def _count_token_hits(values: list[str], tokens: tuple[str, ...]) -> int:
+    hits: set[str] = set()
+    for value in values:
+        lower = value.lower()
+        for token in tokens:
+            if token in lower:
+                hits.add(value)
+                break
+    return len(hits)
+
+
+def _procedural_shape_assessment(
+    asset_graph: AssetGraph,
+    synthesis_result: SynthesisResult,
+    shape_program,
+    primitives: list[ShapePrimitive],
+    regions: list[ShapeRegion],
+) -> dict[str, Any]:
+    solid_primitives = [p for p in primitives if p.blend_mode != "subtract"]
+    primitive_labels = [
+        value
+        for primitive in solid_primitives
+        for value in (
+            primitive.part,
+            primitive.region,
+            primitive.component,
+            primitive.primitive_type,
+        )
+        if isinstance(value, str) and value
+    ]
+    op_labels = _text_tokens_from_shape_program(shape_program)
+    synthesized_nodes = [
+        node for node in synthesis_result.synthesized_graph_nodes if isinstance(node, Mapping)
+    ]
+    node_roles = [
+        str(node.get("node_type") or node.get("role") or node.get("node_id") or "")
+        for node in synthesized_nodes
+    ]
+    labels = primitive_labels + op_labels + node_roles
+
+    authored_parts = _authored_part_names(asset_graph)
+    visible_authored_parts = {
+        str(primitive.part)
+        for primitive in solid_primitives
+        if str(primitive.part or "") in authored_parts
+    }
+    feature_primitives = [
+        primitive
+        for primitive in solid_primitives
+        if str(primitive.part or "") not in {"body", asset_graph.name}
+    ]
+    material_zone_count = sum(
+        1 for op in getattr(shape_program, "ops", ()) if getattr(op, "op", "") == "op.material_zone"
+    )
+    edge_treatment_count = max(
+        _count_token_hits(labels, _EDGE_DETAIL_TOKENS),
+        len(
+            {
+                str(primitive.part or primitive.region or primitive.component)
+                for primitive in feature_primitives
+                if any(
+                    token in " ".join(
+                        str(value or "")
+                        for value in (
+                            primitive.part,
+                            primitive.region,
+                            primitive.component,
+                            primitive.primitive_type,
+                        )
+                    ).lower()
+                    for token in _EDGE_DETAIL_TOKENS
+                )
+            }
+        ),
+    )
+    attachment_region_count = max(
+        _count_token_hits(labels, _ATTACHMENT_TOKENS),
+        len(
+            {
+                str(primitive.part or primitive.region or primitive.component)
+                for primitive in feature_primitives
+                if any(
+                    token in " ".join(
+                        str(value or "")
+                        for value in (
+                            primitive.part,
+                            primitive.region,
+                            primitive.component,
+                            primitive.primitive_type,
+                        )
+                    ).lower()
+                    for token in _ATTACHMENT_TOKENS
+                )
+            }
+        ),
+    )
+    support_feature_count = max(
+        _count_token_hits(labels, _SUPPORT_TOKENS),
+        len(
+            {
+                str(primitive.part or primitive.region or primitive.component)
+                for primitive in feature_primitives
+                if any(
+                    token in " ".join(
+                        str(value or "")
+                        for value in (
+                            primitive.part,
+                            primitive.region,
+                            primitive.component,
+                            primitive.primitive_type,
+                        )
+                    ).lower()
+                    for token in _SUPPORT_TOKENS
+                )
+            }
+        ),
+    )
+    role_groups = {
+        token
+        for token in (
+            "body",
+            "panel",
+            "trim",
+            "bracket",
+            "fastener",
+            "handle",
+            "latch",
+            "foot",
+            "material",
+        )
+        if any(token in label.lower() for label in labels)
+    }
+    expected_parts = max(1, len(asset_graph.parts))
+    feature_count = max(
+        len(feature_primitives),
+        edge_treatment_count,
+        attachment_region_count,
+        material_zone_count,
+    )
+    primitive_diversity = len({primitive.primitive_type for primitive in solid_primitives})
+    feature_density = min(1.0, feature_count / max(4.0, expected_parts * 2.0))
+    silhouette_complexity = min(
+        1.0,
+        0.42
+        + 0.23 * feature_density
+        + 0.08 * min(1.0, primitive_diversity / 3.0)
+        + 0.05 * min(1.0, len(visible_authored_parts) / expected_parts)
+        + 0.04 * min(1.0, len(role_groups) / 6.0),
+    )
+    feature_coherence = min(
+        1.0,
+        0.48
+        + 0.19 * min(1.0, len(role_groups) / 6.0)
+        + 0.13 * min(1.0, attachment_region_count / max(1.0, expected_parts / 2.0))
+        + 0.10 * min(1.0, edge_treatment_count / max(4.0, expected_parts))
+        + 0.05 * min(1.0, material_zone_count / 1.0)
+        + 0.05 * min(1.0, len(visible_authored_parts) / expected_parts),
+    )
+    return {
+        "shape_source": "procedural_synthesizer",
+        "family_dispatch_used": synthesis_result.trace.family_dispatch_used,
+        "attempted_via": synthesis_result.trace.attempted_via,
+        "assessment_source": "shape_program_and_visible_primitives_v1",
+        "feature_count": int(feature_count),
+        "geometry_detail_feature_count": int(feature_count),
+        "edge_treatment_count": int(edge_treatment_count),
+        "attachment_region_count": int(attachment_region_count),
+        "support_feature_count": int(support_feature_count),
+        "material_zone_count": int(material_zone_count),
+        "primitive_count": len(solid_primitives),
+        "primitive_diversity": primitive_diversity,
+        "region_count": max(len(regions), len({str(p.part or "") for p in solid_primitives})),
+        "visible_authored_part_count": len(visible_authored_parts),
+        "visible_authored_part_coverage": round(len(visible_authored_parts) / expected_parts, 6),
+        "feature_density": round(feature_density, 6),
+        "silhouette_complexity": round(silhouette_complexity, 6),
+        "feature_coherence": round(feature_coherence, 6),
+        "richness_floor": round(min(1.0, 0.60 + 0.40 * feature_density), 6),
+        "procedural_role_groups": sorted(role_groups),
+    }
 
 
 def _regions_from_primitives(primitives: list[ShapePrimitive]) -> list[ShapeRegion]:
@@ -904,9 +1251,34 @@ def compile_procedural_program_candidate(
     geometry_kernel = resolve_geometry_kernel(runtime_config)
     geometry_kernel_id = getattr(geometry_kernel, "name", None)
 
-    # Lower ShapeIR v2 ShapeProgram -> v1 records (dict form)
-    _trace({"event": "lower_to_v1_start", "op_count": len(shape_program.ops)})
-    adapter = lower_to_v1(shape_program, geometry_kernel=geometry_kernel)
+    # Lower ShapeIR v2 ShapeProgram -> v1 records (dict form).
+    #
+    # Keep materialization disabled by default for the live synthesizer
+    # path. Pre-materializing every op into one boolean_mesh record made
+    # dense hard-surface programs spend minutes inside lower_to_v1 before
+    # the shape stage could hand the records to the explicit surface
+    # compiler. The explicit surface compiler already accepts the v1
+    # primitive batch and records its kernel path, so this preserves the
+    # stable shape handoff while avoiding the serial materialization hot
+    # path.
+    shape_runtime_cfg = (runtime_config or {}).get("shape", {})
+    materialize_v2_output = bool(
+        shape_runtime_cfg.get("materialize_shape_ir_v2_output", False)
+    )
+    lowering_geometry_kernel = geometry_kernel if materialize_v2_output else None
+    _trace(
+        {
+            "event": "lower_to_v1_start",
+            "op_count": len(shape_program.ops),
+            "materialize_output": materialize_v2_output,
+            "geometry_kernel_during_lowering": getattr(lowering_geometry_kernel, "name", None),
+        }
+    )
+    adapter = lower_to_v1(
+        shape_program,
+        geometry_kernel=lowering_geometry_kernel,
+        materialize_output=materialize_v2_output,
+    )
     _trace(
         {
             "event": "lower_to_v1_end",
@@ -935,6 +1307,15 @@ def compile_procedural_program_candidate(
         # Ensure every primitive has a part assignment
         if not primitive.part:
             primitive.part = target_part
+        canonical_part = _canonical_asset_part(asset_graph, primitive.part)
+        if canonical_part and canonical_part != primitive.part:
+            metadata = dict(primitive.semantic_metadata or {})
+            metadata.setdefault("source_detail_part", primitive.part)
+            metadata.setdefault("part_canonicalization", "authored_root_part_v1")
+            primitive.semantic_metadata = metadata
+            if not primitive.region:
+                primitive.region = str(primitive.part)
+            primitive.part = canonical_part
         primitives.append(primitive)
 
     if not primitives:
@@ -949,18 +1330,33 @@ def compile_procedural_program_candidate(
 
     primitives_used = sorted({primitive.primitive_type for primitive in primitives})
     regions = _regions_from_primitives(primitives)
+    shape_program_payload = shape_program.to_dict()
+    shape_program_summary = {
+        "version": shape_program.version,
+        "asset_name": shape_program.asset_name,
+        "family": shape_program.family,
+        "op_count": len(shape_program.ops),
+        "lowered_v1_record_count": len(adapter.v1_records),
+        "diagnostic_count": len(adapter.diagnostics),
+        "material_zone_op_count": sum(
+            1 for op in shape_program.ops if op.op == "op.material_zone"
+        ),
+    }
 
     signature = {
         "shape_source": "procedural_synthesizer",
         "primitive_count": len(primitives),
         "primitives_used": primitives_used,
         "synthesized_node_count": len(synthesis_result.synthesized_graph_nodes),
+        **_signature_from_primitives(primitives),
     }
-    assessment = {
-        "shape_source": "procedural_synthesizer",
-        "family_dispatch_used": synthesis_result.trace.family_dispatch_used,
-        "attempted_via": synthesis_result.trace.attempted_via,
-    }
+    assessment = _procedural_shape_assessment(
+        asset_graph,
+        synthesis_result,
+        shape_program,
+        primitives,
+        regions,
+    )
 
     shape_ir = ShapeIR(
         asset_name=asset_graph.name,
@@ -1135,6 +1531,8 @@ def compile_procedural_program_candidate(
             "integration_report": integration_report,
             "mesh_ir": mesh_ir_payload,
             "synthesizer_trace": synthesis_result.trace.to_dict(),
+            "shape_program": shape_program_payload,
+            "shape_program_summary": shape_program_summary,
             # Surface-stage-consumable structural metadata. Captures the
             # synthesizer's op.material_zone / op.decal_zone / op.wear_zone
             # records so downstream stages don't have to crack open
@@ -1178,6 +1576,8 @@ def compile_procedural_program_candidate(
             "geometry_kernel": exact_report.get("boolean_kernel") or geometry_kernel_id,
             "game_pipeline_hints": game_pipeline_hints,
             "synthesizer_trace": synthesis_result.trace.to_dict(),
+            "shape_program": shape_program_payload,
+            "shape_program_summary": shape_program_summary,
             "synthesized_graph_nodes": [
                 dict(node) for node in synthesis_result.synthesized_graph_nodes
             ],

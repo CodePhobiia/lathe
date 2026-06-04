@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 MATERIALX_LOWERING_VERSION = "lathe.asset_foundry.materialx_lowering_v1"
+MATERIALX_SERIALIZATION_VERSION = "lathe.asset_foundry.materialx_serialization_v1"
 
 
 @dataclass(frozen=True)
@@ -354,8 +355,60 @@ def sidecars_to_dict(sidecars: Sequence[TextureMapSidecar]) -> dict[str, Any]:
     }
 
 
+def serialize_materialx_document(
+    doc: MaterialxDocument,
+    *,
+    output_path: str | None = None,
+    serializer: Any | None = None,
+) -> dict[str, Any]:
+    """Serialize MaterialX only through an explicit backend boundary.
+
+    Without a serializer backend, this returns an unsupported evidence record
+    and does not claim a file path. With a serializer, the returned status is
+    real only after the target file exists on disk.
+    """
+    if serializer is None:
+        return {
+            "version": MATERIALX_SERIALIZATION_VERSION,
+            "status": "unsupported",
+            "blocker": "materialx_serializer_not_configured",
+            "artifact_path": None,
+            "document_version": doc.version,
+        }
+    if not output_path:
+        return {
+            "version": MATERIALX_SERIALIZATION_VERSION,
+            "status": "unsupported",
+            "blocker": "materialx_output_path_required",
+            "artifact_path": None,
+            "document_version": doc.version,
+        }
+    from pathlib import Path
+
+    path = Path(output_path)
+    payload = serializer(doc)
+    if not isinstance(payload, str):
+        return {
+            "version": MATERIALX_SERIALIZATION_VERSION,
+            "status": "unsupported",
+            "blocker": "materialx_serializer_returned_non_text",
+            "artifact_path": None,
+            "document_version": doc.version,
+        }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(payload, encoding="utf-8")
+    return {
+        "version": MATERIALX_SERIALIZATION_VERSION,
+        "status": "real" if path.exists() else "unsupported",
+        "blocker": None if path.exists() else "materialx_file_write_failed",
+        "artifact_path": str(path) if path.exists() else None,
+        "document_version": doc.version,
+    }
+
+
 __all__ = [
     "MATERIALX_LOWERING_VERSION",
+    "MATERIALX_SERIALIZATION_VERSION",
     "MaterialxDocument",
     "MaterialxMaterial",
     "MaterialxNode",
@@ -364,5 +417,6 @@ __all__ = [
     "build_colorspace_sidecars",
     "document_to_dict",
     "lower_material_zone_manifest_to_materialx",
+    "serialize_materialx_document",
     "sidecars_to_dict",
 ]

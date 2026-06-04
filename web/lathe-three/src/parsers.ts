@@ -14,8 +14,13 @@ import type {
   LatheDiagnostics,
   LatheEvidence,
   LatheMaterialZone,
+  LatheRepairHistory,
   LatheRuntimeManifest,
   LatheSemanticIndex,
+  LatheMinimapEvidence,
+  LatheTraversalEvidence,
+  LatheWorldGraph,
+  LthworldManifest,
   LthpkgManifest,
 } from "./types.js";
 
@@ -159,9 +164,72 @@ export function parseEvidence(raw: unknown): LatheEvidence {
     asset_id: requireString(obj.asset_id, "evidence.json", "asset_id"),
     runtime_manifest: obj.runtime_manifest as LatheRuntimeManifest,
     certificate: obj.certificate as LatheEvidence["certificate"],
+    external_backend_evidence:
+      obj.external_backend_evidence as LatheEvidence["external_backend_evidence"],
+    visual_quality_gate: obj.visual_quality_gate as LatheEvidence["visual_quality_gate"],
     rule_of_truth: requireString(
       obj.rule_of_truth,
       "evidence.json",
+      "rule_of_truth",
+    ),
+  };
+}
+
+export function parseRepairHistory(raw: unknown): LatheRepairHistory {
+  const obj = requireObject(raw, "repair-history.json", "");
+  return {
+    version: requireString(obj.version, "repair-history.json", "version"),
+    asset_id: requireString(obj.asset_id, "repair-history.json", "asset_id"),
+    status: requireString(obj.status, "repair-history.json", "status"),
+    original_package: requireObject(
+      obj.original_package,
+      "repair-history.json",
+      "original_package",
+    ),
+    diagnostic_ids: requireArray<string>(
+      obj.diagnostic_ids,
+      "repair-history.json",
+      "diagnostic_ids",
+    ),
+    selected_repair_actions: requireArray<string>(
+      obj.selected_repair_actions,
+      "repair-history.json",
+      "selected_repair_actions",
+    ),
+    patched_intent_identifiers: requireArray<string>(
+      obj.patched_intent_identifiers,
+      "repair-history.json",
+      "patched_intent_identifiers",
+    ),
+    repair_target_layers: requireArray<string>(
+      obj.repair_target_layers,
+      "repair-history.json",
+      "repair_target_layers",
+    ),
+    attempted_vs_actual: requireArray<Record<string, unknown>>(
+      obj.attempted_vs_actual,
+      "repair-history.json",
+      "attempted_vs_actual",
+    ),
+    rebuilt_package: requireObject(
+      obj.rebuilt_package,
+      "repair-history.json",
+      "rebuilt_package",
+    ),
+    metric_deltas: requireObject(
+      obj.metric_deltas,
+      "repair-history.json",
+      "metric_deltas",
+    ),
+    preview_before_after: requireObject(
+      obj.preview_before_after,
+      "repair-history.json",
+      "preview_before_after",
+    ),
+    notes: requireArray<string>(obj.notes, "repair-history.json", "notes"),
+    rule_of_truth: requireString(
+      obj.rule_of_truth,
+      "repair-history.json",
       "rule_of_truth",
     ),
   };
@@ -234,5 +302,220 @@ export function parseRuntime(raw: unknown): LatheRuntimeManifest {
       string,
       "ready" | "proxy" | "unsupported"
     >,
+  };
+}
+
+export function parseLthworldManifest(raw: unknown): LthworldManifest {
+  const obj = requireObject(raw, "world_manifest.json", "");
+  return {
+    version: requireString(obj.version, "world_manifest.json", "version"),
+    world_id: requireString(obj.world_id, "world_manifest.json", "world_id"),
+    prompt: requireString(obj.prompt, "world_manifest.json", "prompt"),
+    seed: requireNumber(obj.seed, "world_manifest.json", "seed"),
+    mode: requireString(obj.mode, "world_manifest.json", "mode"),
+    style_pack_id: requireString(obj.style_pack_id, "world_manifest.json", "style_pack_id"),
+    kit_id: requireString(obj.kit_id, "world_manifest.json", "kit_id"),
+    asset_count: requireNumber(obj.asset_count, "world_manifest.json", "asset_count"),
+    role_counts: requireObject(
+      obj.role_counts,
+      "world_manifest.json",
+      "role_counts",
+    ) as Record<string, number>,
+    style_pack_ids: requireArray<string>(
+      obj.style_pack_ids,
+      "world_manifest.json",
+      "style_pack_ids",
+    ),
+    sidecar_files: requireObject(
+      obj.sidecar_files,
+      "world_manifest.json",
+      "sidecar_files",
+    ) as Record<string, string>,
+    world_graph_status: requireString(
+      obj.world_graph_status,
+      "world_manifest.json",
+      "world_graph_status",
+    ),
+    traversal_status: requireString(
+      obj.traversal_status,
+      "world_manifest.json",
+      "traversal_status",
+    ),
+    visual_claim_level: requireString(
+      obj.visual_claim_level,
+      "world_manifest.json",
+      "visual_claim_level",
+    ),
+    world_certificate: requireObject(
+      obj.world_certificate,
+      "world_manifest.json",
+      "world_certificate",
+    ) as unknown as LthworldManifest["world_certificate"],
+    style_compatibility: requireObject(
+      obj.style_compatibility,
+      "world_manifest.json",
+      "style_compatibility",
+    ) as unknown as LthworldManifest["style_compatibility"],
+    certified: Boolean(obj.certified),
+    asset_package_summary: requireObject(
+      obj.asset_package_summary,
+      "world_manifest.json",
+      "asset_package_summary",
+    ) as unknown as LthworldManifest["asset_package_summary"],
+    artifact_statuses: requireObject(
+      obj.artifact_statuses,
+      "world_manifest.json",
+      "artifact_statuses",
+    ) as LthworldManifest["artifact_statuses"],
+    diagnostics: requireArray<Record<string, unknown>>(
+      obj.diagnostics,
+      "world_manifest.json",
+      "diagnostics",
+    ),
+  };
+}
+
+export function parseWorldGraph(raw: unknown): LatheWorldGraph {
+  const obj = requireObject(raw, "world_graph.json", "");
+  return {
+    version: requireString(obj.version, "world_graph.json", "version"),
+    world_id: requireString(obj.world_id, "world_graph.json", "world_id"),
+    prompt: requireString(obj.prompt, "world_graph.json", "prompt"),
+    seed: requireNumber(obj.seed, "world_graph.json", "seed"),
+    style: requireObject(obj.style, "world_graph.json", "style") as LatheWorldGraph["style"],
+    asset_count: requireNumber(obj.asset_count, "world_graph.json", "asset_count"),
+    role_counts: requireObject(
+      obj.role_counts,
+      "world_graph.json",
+      "role_counts",
+    ) as Record<string, number>,
+    style_pack_ids: requireArray<string>(
+      obj.style_pack_ids,
+      "world_graph.json",
+      "style_pack_ids",
+    ),
+    assets: requireArray<LatheWorldGraph["assets"][number]>(
+      obj.assets,
+      "world_graph.json",
+      "assets",
+    ),
+    path_nodes: requireArray<LatheWorldGraph["path_nodes"][number]>(
+      obj.path_nodes,
+      "world_graph.json",
+      "path_nodes",
+    ),
+    path_edges: requireArray<LatheWorldGraph["path_edges"][number]>(
+      obj.path_edges,
+      "world_graph.json",
+      "path_edges",
+    ),
+    hazard_zones: requireArray<Record<string, unknown>>(
+      obj.hazard_zones,
+      "world_graph.json",
+      "hazard_zones",
+    ),
+    quest_anchors: requireArray<Record<string, unknown>>(
+      obj.quest_anchors,
+      "world_graph.json",
+      "quest_anchors",
+    ),
+    player_spawn_node_id: requireString(
+      obj.player_spawn_node_id,
+      "world_graph.json",
+      "player_spawn_node_id",
+    ),
+    diagnostics: requireArray<Record<string, unknown>>(
+      obj.diagnostics,
+      "world_graph.json",
+      "diagnostics",
+    ),
+  };
+}
+
+export function parseTraversalEvidence(raw: unknown): LatheTraversalEvidence {
+  const obj = requireObject(raw, "traversal_evidence.json", "");
+  return {
+    version: requireString(obj.version, "traversal_evidence.json", "version"),
+    world_id: requireString(obj.world_id, "traversal_evidence.json", "world_id"),
+    seed: requireNumber(obj.seed, "traversal_evidence.json", "seed"),
+    nav_status: requireString(obj.nav_status, "traversal_evidence.json", "nav_status"),
+    collision_status: requireString(
+      obj.collision_status,
+      "traversal_evidence.json",
+      "collision_status",
+    ),
+    hazard_blocking_status: requireString(
+      obj.hazard_blocking_status,
+      "traversal_evidence.json",
+      "hazard_blocking_status",
+    ),
+    walkable_surface_status: requireString(
+      obj.walkable_surface_status,
+      "traversal_evidence.json",
+      "walkable_surface_status",
+    ),
+    mesh_extraction_status: requireString(
+      obj.mesh_extraction_status,
+      "traversal_evidence.json",
+      "mesh_extraction_status",
+    ),
+    player_spawn: requireObject(
+      obj.player_spawn,
+      "traversal_evidence.json",
+      "player_spawn",
+    ),
+    path_nodes: requireArray<LatheTraversalEvidence["path_nodes"][number]>(
+      obj.path_nodes,
+      "traversal_evidence.json",
+      "path_nodes",
+    ),
+    path_edges: requireArray<LatheTraversalEvidence["path_edges"][number]>(
+      obj.path_edges,
+      "traversal_evidence.json",
+      "path_edges",
+    ),
+    hazard_zones: requireArray<Record<string, unknown>>(
+      obj.hazard_zones,
+      "traversal_evidence.json",
+      "hazard_zones",
+    ),
+    collision_compound: requireObject(
+      obj.collision_compound,
+      "traversal_evidence.json",
+      "collision_compound",
+    ),
+    connectivity: requireObject(
+      obj.connectivity,
+      "traversal_evidence.json",
+      "connectivity",
+    ),
+    spawn_safety_check: requireObject(
+      obj.spawn_safety_check,
+      "traversal_evidence.json",
+      "spawn_safety_check",
+    ),
+    quest_anchors: requireArray<Record<string, unknown>>(
+      obj.quest_anchors,
+      "traversal_evidence.json",
+      "quest_anchors",
+    ),
+    walkable_polygons: requireObject(
+      obj.walkable_polygons,
+      "traversal_evidence.json",
+      "walkable_polygons",
+    ) as LatheTraversalEvidence["walkable_polygons"],
+  };
+}
+
+export function parseMinimapEvidence(raw: unknown): LatheMinimapEvidence {
+  const obj = requireObject(raw, "minimap_evidence.json", "");
+  return {
+    version: requireString(obj.version, "minimap_evidence.json", "version"),
+    status: requireString(obj.status, "minimap_evidence.json", "status"),
+    path: requireString(obj.path, "minimap_evidence.json", "path"),
+    width: requireNumber(obj.width, "minimap_evidence.json", "width"),
+    height: requireNumber(obj.height, "minimap_evidence.json", "height"),
+    source: requireString(obj.source, "minimap_evidence.json", "source"),
+    sha256: requireString(obj.sha256, "minimap_evidence.json", "sha256"),
   };
 }

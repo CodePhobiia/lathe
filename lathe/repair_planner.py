@@ -44,6 +44,38 @@ METRIC_REPAIR_SUGGESTIONS = {
         "increase_panel_depth",
     ],
     "family_grammar_coverage": ["add_missing_required_part", "add_secondary_features"],
+    "hard_surface_class_anchor_score": ["add_secondary_features", "increase_panel_depth"],
+    "hard_surface_class_anchor_missing_required_count": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+    ],
+    "hard_surface_class_anchor_bounded_volume": ["refit_silhouette_region"],
+    "hard_surface_class_anchor_panel_breakup": [
+        "increase_panel_depth",
+        "add_secondary_features",
+    ],
+    "hard_surface_class_anchor_corner_reinforcement": [
+        "add_secondary_features",
+        "improve_attachment_integration",
+    ],
+    "hard_surface_class_anchor_access_seam": [
+        "increase_panel_depth",
+        "restore_edge_treatment",
+    ],
+    "hard_surface_class_anchor_material_separation": ["reauthor_surface_layer"],
+    "hard_surface_class_anchor_fastener_trim_detail": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+    ],
+    "hard_surface_class_anchor_scale_plausibility": ["refit_silhouette_region"],
+    "hard_surface_class_anchor_silhouette": [
+        "refit_silhouette_region",
+        "add_secondary_features",
+    ],
+    "hard_surface_class_anchor_face_count": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+    ],
 }
 
 

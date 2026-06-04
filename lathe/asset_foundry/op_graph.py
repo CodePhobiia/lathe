@@ -167,6 +167,9 @@ class GeometryOpNode:
     evidence_requirements: tuple[str, ...] = ()
     """Required evidence tokens (mirrored from CapabilityRecord)."""
 
+    bounds_cm: tuple[tuple[float, float, float], tuple[float, float, float]] | None = None
+    """Optional spatial bounds for broadphase clustering."""
+
 
 @dataclass(frozen=True)
 class GeometryOpGraph:
@@ -217,6 +220,31 @@ class GeometryOpGraph:
 
 
 @dataclass(frozen=True)
+class OpGraphCluster:
+    """Spatial broadphase cluster for lazy/batched planning."""
+
+    cluster_id: str
+    operation_ids: tuple[str, ...]
+    cluster_op_count: int
+    cluster_reason: str
+    bounds_cm: tuple[tuple[float, float, float], tuple[float, float, float]] | None = None
+
+
+@dataclass(frozen=True)
+class BooleanClusterPlan:
+    """Boolean operations planned as one cluster-level unit."""
+
+    cluster_id: str
+    operation_ids: tuple[str, ...]
+    boolean_ops: tuple[str, ...]
+    input_primitive_ids: tuple[str, ...]
+    boolean_expression: str
+    preferred_backend: str
+    actual_execution_mode: str
+    fallback_diagnostic: str | None = None
+
+
+@dataclass(frozen=True)
 class OpGraphPlan:
     """Result of planning a GeometryOpGraph against the capability matrix.
 
@@ -252,6 +280,12 @@ class OpGraphPlan:
 
     topo_order: tuple[str, ...]
     """Deterministic execution order."""
+
+    spatial_clusters: tuple[OpGraphCluster, ...] = ()
+    """Broadphase clusters. Execution may still run serially."""
+
+    boolean_clusters: tuple[BooleanClusterPlan, ...] = ()
+    """Cluster-level boolean plans with truthful execution mode."""
 
 
 def _lane_for_op(record: CapabilityRecord | None, default_family: str = "") -> BackendLane:
@@ -311,6 +345,9 @@ def plan_op_graph(
             # PARTIAL = fallback at execution time for some inputs.
             fallback.append(node.operation_id)
 
+    spatial_clusters = plan_spatial_clusters(graph)
+    boolean_clusters = plan_boolean_clusters(graph, spatial_clusters)
+
     return OpGraphPlan(
         asset_id=graph.asset_id,
         graph_version=OP_GRAPH_VERSION,
@@ -321,7 +358,156 @@ def plan_op_graph(
         not_started_ops=tuple(not_started),
         missing_from_matrix=tuple(missing),
         topo_order=graph.topological_order(),
+        spatial_clusters=spatial_clusters,
+        boolean_clusters=boolean_clusters,
     )
+
+
+def _bounds_from_value(
+    value: Any,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]] | None:
+    if not isinstance(value, (list, tuple)) or len(value) != 2:
+        return None
+    lo, hi = value
+    if not isinstance(lo, (list, tuple)) or not isinstance(hi, (list, tuple)):
+        return None
+    if len(lo) < 3 or len(hi) < 3:
+        return None
+    try:
+        return (
+            (float(lo[0]), float(lo[1]), float(lo[2])),
+            (float(hi[0]), float(hi[1]), float(hi[2])),
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def _node_bounds(node: GeometryOpNode) -> tuple[tuple[float, float, float], tuple[float, float, float]] | None:
+    if node.bounds_cm is not None:
+        return node.bounds_cm
+    for key in ("bounds_cm", "bbox_cm", "bounds"):
+        bounds = _bounds_from_value(node.params.get(key))
+        if bounds is not None:
+            return bounds
+    center = node.params.get("center_cm") or node.params.get("center")
+    extents = node.params.get("extents_cm") or node.params.get("extents")
+    if (
+        isinstance(center, (list, tuple))
+        and isinstance(extents, (list, tuple))
+        and len(center) >= 3
+        and len(extents) >= 3
+    ):
+        try:
+            cx, cy, cz = float(center[0]), float(center[1]), float(center[2])
+            ex, ey, ez = abs(float(extents[0])), abs(float(extents[1])), abs(float(extents[2]))
+            return ((cx - ex, cy - ey, cz - ez), (cx + ex, cy + ey, cz + ez))
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def _bounds_overlap(
+    a: tuple[tuple[float, float, float], tuple[float, float, float]],
+    b: tuple[tuple[float, float, float], tuple[float, float, float]],
+) -> bool:
+    return all(a[0][axis] <= b[1][axis] and b[0][axis] <= a[1][axis] for axis in range(3))
+
+
+def _merge_bounds(
+    a: tuple[tuple[float, float, float], tuple[float, float, float]],
+    b: tuple[tuple[float, float, float], tuple[float, float, float]],
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    return (
+        tuple(min(a[0][axis], b[0][axis]) for axis in range(3)),  # type: ignore[return-value]
+        tuple(max(a[1][axis], b[1][axis]) for axis in range(3)),  # type: ignore[return-value]
+    )
+
+
+def plan_spatial_clusters(graph: GeometryOpGraph) -> tuple[OpGraphCluster, ...]:
+    """Group graph nodes by overlapping bounds while preserving topo order."""
+    node_map = {node.operation_id: node for node in graph.nodes}
+    clusters: list[dict[str, Any]] = []
+    for node_id in graph.topological_order():
+        node = node_map.get(node_id)
+        if node is None:
+            continue
+        bounds = _node_bounds(node)
+        if bounds is None:
+            clusters.append(
+                {
+                    "operation_ids": [node.operation_id],
+                    "bounds_cm": None,
+                    "cluster_reason": "missing_bounds_singleton",
+                }
+            )
+            continue
+        placed = False
+        for cluster in clusters:
+            cluster_bounds = cluster.get("bounds_cm")
+            if cluster_bounds is None:
+                continue
+            if _bounds_overlap(cluster_bounds, bounds):
+                cluster["operation_ids"].append(node.operation_id)
+                cluster["bounds_cm"] = _merge_bounds(cluster_bounds, bounds)
+                cluster["cluster_reason"] = "overlapping_bounds"
+                placed = True
+                break
+        if not placed:
+            clusters.append(
+                {
+                    "operation_ids": [node.operation_id],
+                    "bounds_cm": bounds,
+                    "cluster_reason": "non_overlapping_bounds",
+                }
+            )
+    return tuple(
+        OpGraphCluster(
+            cluster_id=f"cluster_{index:03d}",
+            operation_ids=tuple(cluster["operation_ids"]),
+            cluster_op_count=len(cluster["operation_ids"]),
+            cluster_reason=str(cluster["cluster_reason"]),
+            bounds_cm=cluster["bounds_cm"],
+        )
+        for index, cluster in enumerate(clusters)
+    )
+
+
+_BOOLEAN_OPS = frozenset({"op.union", "op.subtract", "op.intersect", "op.hull", "op.minkowski"})
+
+
+def plan_boolean_clusters(
+    graph: GeometryOpGraph,
+    clusters: tuple[OpGraphCluster, ...],
+) -> tuple[BooleanClusterPlan, ...]:
+    """Collect boolean ops per spatial cluster without changing execution."""
+    node_map = {node.operation_id: node for node in graph.nodes}
+    plans: list[BooleanClusterPlan] = []
+    for cluster in clusters:
+        boolean_nodes = [
+            node_map[node_id]
+            for node_id in cluster.operation_ids
+            if node_id in node_map and node_map[node_id].op in _BOOLEAN_OPS
+        ]
+        if not boolean_nodes:
+            continue
+        ops = tuple(node.op for node in boolean_nodes)
+        input_ids: list[str] = []
+        for node in boolean_nodes:
+            input_ids.extend(node.inputs)
+        expression = " -> ".join(f"{node.operation_id}:{node.op}" for node in boolean_nodes)
+        plans.append(
+            BooleanClusterPlan(
+                cluster_id=cluster.cluster_id,
+                operation_ids=tuple(node.operation_id for node in boolean_nodes),
+                boolean_ops=ops,
+                input_primitive_ids=tuple(dict.fromkeys(input_ids)),
+                boolean_expression=expression,
+                preferred_backend="batched_arrangement_or_manifold",
+                actual_execution_mode="serial_reference_plan_only",
+                fallback_diagnostic="arrangement_backend_not_configured",
+            )
+        )
+    return tuple(plans)
 
 
 def graph_from_shape_program(
@@ -382,9 +568,13 @@ __all__ = [
     "OP_GRAPH_VERSION",
     "BackendLane",
     "AttributeMapping",
+    "BooleanClusterPlan",
     "GeometryOpNode",
     "GeometryOpGraph",
+    "OpGraphCluster",
     "OpGraphPlan",
     "graph_from_shape_program",
+    "plan_boolean_clusters",
     "plan_op_graph",
+    "plan_spatial_clusters",
 ]

@@ -1080,7 +1080,10 @@ def should_preserve_integrated_shape(
     integration = candidate.get("integration_report", {})
     mode = integration.get("mode")
     exact_report = integration.get("exact_report") if isinstance(integration, dict) else None
-    if mode == "mesh_program_explicit_surface" and isinstance(exact_report, dict):
+    if mode in {
+        "mesh_program_explicit_surface",
+        "procedural_synthesizer_explicit_surface",
+    } and isinstance(exact_report, dict):
         mode = exact_report.get("mode") or mode
     if mode in {"sdf_voxel_fusion", "exact_component_assembly", "exact_part_preserving_union"}:
         return True

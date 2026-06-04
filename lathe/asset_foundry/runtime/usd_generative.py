@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 USD_GENERATIVE_VERSION = "lathe.asset_foundry.usd_generative_v1"
+USD_WRITER_BOUNDARY_VERSION = "lathe.asset_foundry.usd_writer_boundary_v1"
 
 
 @dataclass(frozen=True)
@@ -123,9 +124,44 @@ def build_usd_generative_stage(
     )
 
 
+def write_usd_stage(
+    stage: UsdStageSpec,
+    *,
+    writer: Any | None = None,
+) -> dict[str, Any]:
+    """Write USD only when an explicit writer backend is configured."""
+    if writer is None:
+        return {
+            "version": USD_WRITER_BOUNDARY_VERSION,
+            "status": "unsupported",
+            "blocker": "usd_writer_not_configured",
+            "artifact_path": None,
+            "stage_path": stage.stage_path,
+        }
+    from pathlib import Path
+
+    result = writer(stage)
+    path = Path(stage.stage_path)
+    if isinstance(result, (str, bytes)) and not path.exists():
+        mode = "wb" if isinstance(result, bytes) else "w"
+        kwargs = {} if isinstance(result, bytes) else {"encoding": "utf-8"}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open(mode, **kwargs) as handle:
+            handle.write(result)
+    return {
+        "version": USD_WRITER_BOUNDARY_VERSION,
+        "status": "real" if path.exists() else "unsupported",
+        "blocker": None if path.exists() else "usd_file_write_failed",
+        "artifact_path": str(path) if path.exists() else None,
+        "stage_path": stage.stage_path,
+    }
+
+
 __all__ = [
     "USD_GENERATIVE_VERSION",
+    "USD_WRITER_BOUNDARY_VERSION",
     "UsdPrimSpec",
     "UsdStageSpec",
     "build_usd_generative_stage",
+    "write_usd_stage",
 ]

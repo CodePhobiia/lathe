@@ -37,6 +37,15 @@ class CapabilityStatus(str, Enum):
     NOT_STARTED = "not_started"
 
 
+class CapabilityClaimLevel(str, Enum):
+    """Truth tier for how far a capability claim can be promoted."""
+
+    TYPED_CONTRACT = "typed_contract"
+    EXECUTION_PARTIAL = "execution_partial"
+    ARTIFACT_REAL = "artifact_real"
+    PRODUCT_COMPLETE = "product_complete"
+
+
 @dataclass(frozen=True)
 class CapabilityRecord:
     """One row in the capability matrix.
@@ -71,6 +80,16 @@ class CapabilityRecord:
     """When status is ``fallback`` or ``partial``, the canonical reason
     token (``boolean_kernel_fallback``, ``no_v1_equivalent``, ...)."""
 
+    backend_required: str | None = None
+    """Optional backend/dependency needed before a partial row can promote."""
+
+    claim_level: CapabilityClaimLevel | None = None
+    """Highest static claim tier for this capability row.
+
+    ``product_complete`` is intentionally not inferred from a static
+    matrix row; it requires asset-specific generated evidence.
+    """
+
     notes: str = ""
     """Free-form notes (e.g. linking to the responsible Foundry phase
     if status is ``not_started``)."""
@@ -85,6 +104,7 @@ class FoundryCapabilityMatrix:
     record_count: int
     counts_by_status: Mapping[str, int]
     counts_by_family: Mapping[str, int]
+    counts_by_claim_level: Mapping[str, int]
 
     def filter_by_status(
         self, status: CapabilityStatus
@@ -360,11 +380,10 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
     CapabilityRecord(
         operation_id="op.distribute",
         op_family="repetition",
-        status=CapabilityStatus.PARTIAL,
+        status=CapabilityStatus.SUPPORTED,
         supporting_kernels=(),
-        evidence_requirements=("instance_count",),
-        fallback_reason="along_path_distribute_pending",
-        notes="Grid + line + ring + perimeter implemented; along_path pending.",
+        evidence_requirements=("visible_geometry", "instance_count", "placement_trace"),
+        notes="ShapeIR v2 lowers linear/grid/radial/arc/along_path/points/surface_grid distribution; Foundry distribution emits arc/along_path placement reports.",
     ),
     # ---- Integration / attachment ----
     CapabilityRecord(
@@ -391,11 +410,10 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
     CapabilityRecord(
         operation_id="op.weld_seam",
         op_family="integration",
-        status=CapabilityStatus.PARTIAL,
+        status=CapabilityStatus.SUPPORTED,
         supporting_kernels=(),
-        evidence_requirements=("seam_geometry",),
-        fallback_reason="weld_bead_modeling_pending",
-        notes="Currently emitted as a metadata-only seam record; bead geometry pending.",
+        evidence_requirements=("visible_geometry", "seam_geometry", "seam_group", "weld_bead"),
+        notes="ShapeIR v2 lowers path/axis weld seams to visible weld_seam records and records exact-mesh/boolean attachment fallback metadata when source-backed.",
     ),
     # ---- Wear / damage masks ----
     CapabilityRecord(
@@ -503,20 +521,23 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
     CapabilityRecord(
         operation_id="terrain.faceted_cliff_patch",
         op_family="stylized",
-        status=CapabilityStatus.NOT_STARTED,
+        status=CapabilityStatus.SUPPORTED,
         supporting_kernels=(),
-        evidence_requirements=(),
-        notes="Reserved for Foundry F8 (Floating Island generator).",
+        evidence_requirements=("facet_sample_count", "material_zone_manifest"),
+        notes="Foundry F8 floating_island generator uses facet_field.sample_facet_field_3d_radial for cliff rings.",
     ),
     # ---- Runtime cooking ----
     CapabilityRecord(
         operation_id="runtime.collision_proxy",
         op_family="runtime",
-        status=CapabilityStatus.PARTIAL,
+        status=CapabilityStatus.SUPPORTED,
         supporting_kernels=(),
-        evidence_requirements=("collision_glb",),
-        fallback_reason="hull_only_no_decomposition",
-        notes="Hull/concat collision works; convex decomposition pending.",
+        evidence_requirements=(
+            "collision_proxy_artifact",
+            "proxy_component_count",
+            "decomposition_strategy",
+        ),
+        notes="Runtime cooker records real proxy paths and component decomposition metadata; prismatic Golden Asset emits per-component convex AABB hulls.",
     ),
     CapabilityRecord(
         operation_id="runtime.nav_contribution",
@@ -684,7 +705,8 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
         status=CapabilityStatus.PARTIAL,
         supporting_kernels=(),
         evidence_requirements=("brep_face_count",),
-        fallback_reason="brep_scaffold_only_no_occt_in_tree",
+        fallback_reason="occt_backend_not_configured",
+        backend_required="occt_or_build123d",
         notes="Foundry kernel_ops.brep_ir — typed scaffold; OCCT/build123d integration deferred.",
     ),
     CapabilityRecord(
@@ -701,7 +723,8 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
         status=CapabilityStatus.PARTIAL,
         supporting_kernels=(),
         evidence_requirements=("levelset_status",),
-        fallback_reason="degraded_status_always_required",
+        fallback_reason="openvdb_backend_not_configured",
+        backend_required="openvdb_or_levelset_backend",
         notes="Foundry mesh_levelset_repair — last-resort fallback; output never claimed real.",
     ),
     # ---- Lane D additions ----
@@ -720,6 +743,16 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
         supporting_kernels=(),
         evidence_requirements=("materialx_document",),
         notes="Foundry materialx_lowering — stdlib lowering + colorspace sidecars.",
+    ),
+    CapabilityRecord(
+        operation_id="material.materialx_serialization",
+        op_family="surface",
+        status=CapabilityStatus.PARTIAL,
+        supporting_kernels=(),
+        evidence_requirements=("materialx_file_path",),
+        fallback_reason="materialx_serializer_not_configured",
+        backend_required="materialx_serializer",
+        notes="Typed MaterialX document generation exists; real .mtlx serialization is a backend boundary.",
     ),
     # ---- Lane F additions ----
     CapabilityRecord(
@@ -853,7 +886,8 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
         status=CapabilityStatus.PARTIAL,
         supporting_kernels=(),
         evidence_requirements=("subdivision_target_level",),
-        fallback_reason="opensubdiv_backend_not_in_tree",
+        fallback_reason="opensubdiv_backend_not_configured",
+        backend_required="opensubdiv",
         notes="Foundry domain.opensubdiv — typed contract; backend external.",
     ),
     CapabilityRecord(
@@ -878,7 +912,8 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
         status=CapabilityStatus.PARTIAL,
         supporting_kernels=(),
         evidence_requirements=("sdf_extraction_method",),
-        fallback_reason="extractor_backend_not_in_tree",
+        fallback_reason="openvdb_backend_not_configured",
+        backend_required="openvdb_or_dual_contouring_backend",
         notes="Foundry domain.sdf_extraction — typed contract for dual-contouring / DMC.",
     ),
     # ---- Phase 4 organic + animation ----
@@ -929,7 +964,8 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
         status=CapabilityStatus.PARTIAL,
         supporting_kernels=(),
         evidence_requirements=("usd_stage_spec",),
-        fallback_reason="usd_writer_external",
+        fallback_reason="usd_writer_not_configured",
+        backend_required="usd_writer",
         notes="Foundry runtime.usd_generative — typed stage spec; USD writer external.",
     ),
     CapabilityRecord(
@@ -960,6 +996,25 @@ _CAPABILITY_TABLE: tuple[CapabilityRecord, ...] = (
 )
 
 
+def _claim_level_for_record(record: CapabilityRecord) -> CapabilityClaimLevel:
+    """Return the static truth tier for a capability row.
+
+    The matrix is not asset evidence. A supported row can claim a real
+    artifact path is possible for valid inputs, but never
+    ``product_complete`` without generated package/render evidence.
+    """
+    if record.claim_level is not None:
+        return record.claim_level
+    if record.status == CapabilityStatus.SUPPORTED:
+        return CapabilityClaimLevel.ARTIFACT_REAL
+    if record.backend_required or record.status in {
+        CapabilityStatus.NOT_STARTED,
+        CapabilityStatus.UNSUPPORTED,
+    }:
+        return CapabilityClaimLevel.TYPED_CONTRACT
+    return CapabilityClaimLevel.EXECUTION_PARTIAL
+
+
 def build_capability_matrix() -> FoundryCapabilityMatrix:
     """Build the full Foundry capability matrix.
 
@@ -972,17 +1027,25 @@ def build_capability_matrix() -> FoundryCapabilityMatrix:
     """
     counts_by_status: dict[str, int] = {s.value: 0 for s in CapabilityStatus}
     counts_by_family: dict[str, int] = {}
+    counts_by_claim_level: dict[str, int] = {
+        level.value: 0 for level in CapabilityClaimLevel
+    }
     for record in _CAPABILITY_TABLE:
         counts_by_status[record.status.value] = (
             counts_by_status.get(record.status.value, 0) + 1
         )
         counts_by_family[record.op_family] = counts_by_family.get(record.op_family, 0) + 1
+        claim_level = _claim_level_for_record(record)
+        counts_by_claim_level[claim_level.value] = (
+            counts_by_claim_level.get(claim_level.value, 0) + 1
+        )
     return FoundryCapabilityMatrix(
         version=CAPABILITY_MATRIX_VERSION,
         records=_CAPABILITY_TABLE,
         record_count=len(_CAPABILITY_TABLE),
         counts_by_status=counts_by_status,
         counts_by_family=counts_by_family,
+        counts_by_claim_level=counts_by_claim_level,
     )
 
 
@@ -993,14 +1056,17 @@ def capability_matrix_to_dict(matrix: FoundryCapabilityMatrix) -> dict[str, Any]
         "record_count": matrix.record_count,
         "counts_by_status": dict(matrix.counts_by_status),
         "counts_by_family": dict(matrix.counts_by_family),
+        "counts_by_claim_level": dict(matrix.counts_by_claim_level),
         "records": [
             {
                 "operation_id": r.operation_id,
                 "op_family": r.op_family,
                 "status": r.status.value,
+                "claim_level": _claim_level_for_record(r).value,
                 "supporting_kernels": list(r.supporting_kernels),
                 "evidence_requirements": list(r.evidence_requirements),
                 "fallback_reason": r.fallback_reason,
+                "backend_required": r.backend_required,
                 "notes": r.notes,
             }
             for r in matrix.records
@@ -1010,6 +1076,7 @@ def capability_matrix_to_dict(matrix: FoundryCapabilityMatrix) -> dict[str, Any]
 
 __all__ = [
     "CAPABILITY_MATRIX_VERSION",
+    "CapabilityClaimLevel",
     "CapabilityStatus",
     "CapabilityRecord",
     "FoundryCapabilityMatrix",

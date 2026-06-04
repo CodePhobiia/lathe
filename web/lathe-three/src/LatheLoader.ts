@@ -36,6 +36,7 @@ import {
   parseLthpkgManifest,
   parseMaterials,
   parseOperations,
+  parseRepairHistory,
   parseRuntime,
   parseSemanticIndex,
   LthpkgParseError,
@@ -45,6 +46,7 @@ import type {
   LatheDiagnostics,
   LatheEvidence,
   LatheMaterialZone,
+  LatheRepairHistory,
   LatheRuntimeManifest,
   LatheSemanticIndex,
   LthpkgManifest,
@@ -83,6 +85,7 @@ export interface LatheThreeResult {
   diagnostics: LatheDiagnostics;
   provenance: LatheConstructionProvenance;
   evidence: LatheEvidence;
+  repairHistory: LatheRepairHistory | null;
   exportEvidence: LatheRuntimeManifest;
   /** True when mesh.glb was loaded as real geometry. */
   meshIsReal: boolean;
@@ -148,6 +151,11 @@ export class LatheLoader {
     const runtime = parseRuntime(
       await this._fetchJson(fetchImpl, `${baseUrl}${sidecars.runtime ?? "runtime.json"}`),
     );
+    const repairHistory = sidecars.repair_history
+      ? parseRepairHistory(
+          await this._fetchJson(fetchImpl, `${baseUrl}${sidecars.repair_history}`),
+        )
+      : null;
 
     // 3. Mesh.glb when present.
     let object3D: MinimalObject3D;
@@ -194,6 +202,7 @@ export class LatheLoader {
         provenance,
         diagnostics,
         evidence,
+        repairHistory,
         exportEvidence: runtime,
         meshIsReal,
         meshUnbuiltReason,
@@ -208,6 +217,7 @@ export class LatheLoader {
       diagnostics,
       provenance,
       evidence,
+      repairHistory,
       exportEvidence: runtime,
       meshIsReal,
       meshUnbuiltReason,

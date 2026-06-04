@@ -13,8 +13,9 @@ demand different topology characteristics:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 TOPOLOGY_CLASS_COMPLIANCE_VERSION = "lathe.asset_foundry.topology_class_compliance_v1"
 
@@ -81,6 +82,129 @@ class TopologyClassReport:
     diagnostics: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class CategoryAnchorComplianceReport:
+    version: str
+    asset_id: str
+    asset_family: str
+    anchor_rule_id: str
+    evidence_checked: int
+    evidence_passed: int
+    compliance_score: float
+    missing_evidence: tuple[str, ...]
+    repair_recommendations: tuple[str, ...]
+
+
+_CATEGORY_ANCHOR_RULES: Mapping[str, Mapping[str, Any]] = {
+    "industrial_crate": {
+        "required_part_tokens": ("body", "panel", "corner", "lid", "latch"),
+        "min_material_classes": 2,
+    },
+    "mechanical_door": {
+        "required_part_tokens": ("door", "hinge", "handle", "panel"),
+        "min_material_classes": 1,
+    },
+    "violet_crystal_cluster": {
+        "required_part_tokens": ("primary_crystal", "secondary_crystal"),
+        "required_payload_kind": "prismatic_cluster",
+        "required_material_tokens": ("crystal",),
+        "min_material_classes": 2,
+    },
+}
+
+
+def _category_anchor_rule_key(
+    *,
+    asset_id: str,
+    asset_family: str,
+    geometry_payload_kind: str,
+) -> str:
+    asset_id_l = asset_id.lower()
+    family_l = asset_family.lower()
+    payload_l = geometry_payload_kind.lower()
+    if payload_l == "prismatic_cluster" or "violet_crystal_cluster" in asset_id_l:
+        return "violet_crystal_cluster"
+    if "door" in asset_id_l or family_l == "door":
+        return "mechanical_door"
+    if (
+        "crate" in asset_id_l
+        or "container" in asset_id_l
+        or family_l in {"container", "hard_surface_prop"}
+    ):
+        return "industrial_crate"
+    return family_l
+
+
+def _has_token(values: Sequence[str], token: str) -> bool:
+    token = token.lower()
+    return any(token in value.lower() for value in values)
+
+
+def evaluate_category_anchor_compliance(
+    *,
+    asset_id: str,
+    asset_family: str,
+    semantic_parts: Sequence[str],
+    material_classes: Sequence[str],
+    geometry_payload_kind: str = "",
+) -> CategoryAnchorComplianceReport:
+    """Check class evidence before aesthetic/topology polish can promote."""
+    rule_key = _category_anchor_rule_key(
+        asset_id=asset_id,
+        asset_family=asset_family,
+        geometry_payload_kind=geometry_payload_kind,
+    )
+    rules = _CATEGORY_ANCHOR_RULES.get(rule_key)
+    if rules is None:
+        rules = {
+            "required_part_tokens": (),
+            "min_material_classes": 1,
+        }
+    missing: list[str] = []
+    checked = 0
+    passed = 0
+    for token in rules.get("required_part_tokens", ()):
+        checked += 1
+        if _has_token(semantic_parts, str(token)):
+            passed += 1
+        else:
+            missing.append(f"part_token:{token}")
+    required_payload_kind = rules.get("required_payload_kind")
+    if required_payload_kind:
+        checked += 1
+        if geometry_payload_kind == required_payload_kind:
+            passed += 1
+        else:
+            missing.append(f"geometry_payload_kind:{required_payload_kind}")
+    for token in rules.get("required_material_tokens", ()):
+        checked += 1
+        if _has_token(material_classes, str(token)):
+            passed += 1
+        else:
+            missing.append(f"material_token:{token}")
+    min_material_classes = int(rules.get("min_material_classes", 0))
+    if min_material_classes:
+        checked += 1
+        if len(set(material_classes)) >= min_material_classes:
+            passed += 1
+        else:
+            missing.append(f"material_class_count>={min_material_classes}")
+    score = passed / max(1, checked)
+    return CategoryAnchorComplianceReport(
+        version=TOPOLOGY_CLASS_COMPLIANCE_VERSION,
+        asset_id=asset_id,
+        asset_family=asset_family,
+        anchor_rule_id=f"class_anchor.{rule_key or 'generic'}_v1",
+        evidence_checked=checked,
+        evidence_passed=passed,
+        compliance_score=round(score, 6),
+        missing_evidence=tuple(missing),
+        repair_recommendations=tuple(
+            f"add category anchor evidence: {item}" for item in missing
+        ),
+    )
+
+
 def evaluate_topology_class_compliance(
     *,
     asset_id: str,
@@ -145,6 +269,8 @@ def evaluate_topology_class_compliance(
 
 __all__ = [
     "TOPOLOGY_CLASS_COMPLIANCE_VERSION",
+    "CategoryAnchorComplianceReport",
     "TopologyClassReport",
+    "evaluate_category_anchor_compliance",
     "evaluate_topology_class_compliance",
 ]

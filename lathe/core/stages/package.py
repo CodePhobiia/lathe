@@ -293,6 +293,73 @@ def _surface_texture_conventions(
         "surface_graph_buffer_report": graph_report,
     }
 
+
+def _package_visual_quality_gate(
+    validate_bundle: dict[str, Any],
+    previews: list[str],
+) -> dict[str, Any]:
+    """Carry visual approval separately from pipeline certification."""
+    gate = validate_bundle.get("visual_quality_gate")
+    if not isinstance(gate, dict):
+        return {
+            "version": "lathe.visual_quality_gate_v1",
+            "pipeline_certified": bool(validate_bundle.get("certified", False)),
+            "visual_quality_gate": "not_verified",
+            "human_review_required": True,
+            "visual_claim_level": "not_verified",
+            "blockers": ["visual_quality_gate_missing_from_validate_report"],
+            "signals": {
+                "package_final_beauty_present": any(path.endswith("turntable.png") for path in previews),
+                "package_preview_count": len(previews),
+            },
+        }
+    packaged_gate = dict(gate)
+    blockers = {
+        str(blocker)
+        for blocker in packaged_gate.get("blockers", [])
+        if blocker
+    }
+    final_beauty_paths = [path for path in previews if path.endswith("turntable.png")]
+    material_id_paths = [path for path in previews if path.endswith("material_ids.png")]
+    if final_beauty_paths:
+        blockers.discard("final_beauty_preview_not_present")
+    if final_beauty_paths and material_id_paths and set(final_beauty_paths).isdisjoint(material_id_paths):
+        blockers.discard("final_beauty_not_distinct_from_debug_preview")
+    signals = dict(packaged_gate.get("signals") or {})
+    signals.update(
+        {
+            "package_final_beauty_present": bool(final_beauty_paths),
+            "package_material_ids_present": bool(material_id_paths),
+            "package_preview_count": len(previews),
+            "package_preview_paths": list(previews),
+        }
+    )
+    pipeline_certified = bool(packaged_gate.get("pipeline_certified", validate_bundle.get("certified", False)))
+    if not pipeline_certified:
+        visual_quality_gate = "not_approved"
+        visual_claim_level = "pipeline_failed"
+    elif not final_beauty_paths:
+        visual_quality_gate = "not_verified"
+        visual_claim_level = "not_verified"
+        blockers.add("final_beauty_preview_not_present")
+    elif blockers:
+        visual_quality_gate = "review_required"
+        visual_claim_level = "pipeline_certified_only"
+    else:
+        visual_quality_gate = "approved"
+        visual_claim_level = "visual_approved"
+    packaged_gate.update(
+        {
+            "pipeline_certified": pipeline_certified,
+            "visual_quality_gate": visual_quality_gate,
+            "human_review_required": visual_quality_gate != "approved",
+            "visual_claim_level": visual_claim_level,
+            "blockers": sorted(blockers),
+            "signals": signals,
+        }
+    )
+    return packaged_gate
+
 _ENGINE_RUNTIME_IR_FIELDS: dict[str, tuple[str, tuple[str, ...]]] = {
     "behavior": ("behavior_ir", ("actions", "affordances", "triggers", "state_variables", "transitions")),
     "persistence": ("persistence_ir", ("persistent_variables", "restoration_hooks", "restorable_physics_bodies", "save_keys")),
@@ -1227,6 +1294,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         previews.append(relpath(executor.out_dir, path))
 
     construction_provenance = _construction_provenance(executor)
+    visual_quality_gate = _package_visual_quality_gate(validate_bundle, previews)
     manifest = {
         "asset_id": executor.asset_name,
         "kind": executor.asset["kind"],
@@ -1238,6 +1306,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         "output_hashes": {entry["uri"]: entry["sha256"] for entry in outputs},
         "textures": texture_outputs,
         "previews": previews,
+        "visual_quality_gate": visual_quality_gate,
         "trace_path": None,
         "normalized_source_path": relpath(executor.out_dir, executor.normalized_asset_path),
         "construction_provenance": construction_provenance,
@@ -1263,6 +1332,7 @@ def run(executor: Any, optimize_bundle: dict[str, Any], validate_bundle: dict[st
         "trace_path": relpath(executor.out_dir, trace_path) if trace_path else None,
         "normalized_source_path": relpath(executor.out_dir, executor.normalized_asset_path),
         "previews": previews,
+        "visual_quality_gate": visual_quality_gate,
         "textures": texture_outputs,
         "engine_manifests": engine_manifest_entries,
     }

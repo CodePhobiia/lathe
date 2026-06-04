@@ -136,6 +136,7 @@ def _runtime_assessment(runtime: dict[str, Any]) -> dict[str, Any]:
 def _runtime_synthesized_roles(runtime: dict[str, Any]) -> set[str]:
     shape = _as_dict(runtime.get("shape"))
     bundle = _as_dict(shape.get("bundle"))
+    scaffold_report = _as_dict(bundle.get("scaffold_report"))
     candidates = bundle.get("runtime_candidates") or []
     roles: set[str] = set()
     if isinstance(candidates, list) and candidates:
@@ -148,8 +149,18 @@ def _runtime_synthesized_roles(runtime: dict[str, Any]) -> set[str]:
                     role = node.get("node_type") or node.get("role")
                     if isinstance(role, str):
                         roles.add(role)
+    for node in (bundle.get("synthesized_graph_nodes") or scaffold_report.get("synthesized_graph_nodes") or []):
+        if isinstance(node, Mapping):
+            role = node.get("node_type") or node.get("role")
+            if isinstance(role, str):
+                roles.add(role)
+            node_id = node.get("node_id")
+            if isinstance(node_id, str):
+                for token in node_id.replace("_", ".").split("."):
+                    if token:
+                        roles.add(token)
     # Also scan the program ops for role mentions.
-    program = _as_dict(bundle.get("shape_program"))
+    program = _as_dict(bundle.get("shape_program") or scaffold_report.get("shape_program"))
     for op in program.get("ops") or []:
         if isinstance(op, Mapping):
             purpose = op.get("purpose")
@@ -186,7 +197,8 @@ def _runtime_mesh_extents(runtime: dict[str, Any]) -> dict[str, float] | None:
 def _runtime_material_zone_count(runtime: dict[str, Any]) -> int:
     shape = _as_dict(runtime.get("shape"))
     bundle = _as_dict(shape.get("bundle"))
-    program = _as_dict(bundle.get("shape_program"))
+    scaffold_report = _as_dict(bundle.get("scaffold_report"))
+    program = _as_dict(bundle.get("shape_program") or scaffold_report.get("shape_program"))
     zones = 0
     for op in program.get("ops") or []:
         if isinstance(op, Mapping) and op.get("op") == "op.material_zone":
@@ -291,10 +303,15 @@ def evaluate_class_anchor(asset: dict[str, Any], runtime: dict[str, Any]) -> dic
         return {"version": VERSION, "metrics": {"asset_kind": asset_kind, "rubric_id": rubric_id, "loaded": False}, "diagnostics": []}
 
     evidence: dict[str, bool] = {}
+    check_severity_by_evidence: dict[str, str] = {}
+    repair_actions_by_evidence: dict[str, str] = {}
     failed_required: list[RubricCheck] = []
     for check in rubric.checks:
         passed = _evaluate_check(check, asset, runtime)
         evidence[check.evidence_key] = passed
+        check_severity_by_evidence[check.evidence_key] = check.severity
+        if check.repair_action:
+            repair_actions_by_evidence[check.evidence_key] = check.repair_action
         if not passed and check.severity == "required":
             failed_required.append(check)
 
@@ -305,6 +322,9 @@ def evaluate_class_anchor(asset: dict[str, Any], runtime: dict[str, Any]) -> dic
         "asset_kind": asset_kind,
         "rubric_id": rubric_id,
         "evidence": evidence,
+        "check_severity_by_evidence": check_severity_by_evidence,
+        "failed_required_evidence": [check.evidence_key for check in failed_required],
+        "repair_actions_by_evidence": repair_actions_by_evidence,
         "pass_fraction": round(pass_fraction, 3),
         "minimum_pass_fraction": rubric.minimum_pass_fraction,
         "failed_required_count": len(failed_required),

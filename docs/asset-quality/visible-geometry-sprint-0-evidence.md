@@ -1,12 +1,119 @@
 # Visible Geometry Sprint 0 Evidence
 
 Date: 2026-05-05
-Status: Sprint 0 primary and guardrail acceptance achieved; industrial_crate and mechanical_door certify and package through bounded Manifold full-CSG path
+Status: Historical Sprint 0 primary and guardrail acceptance evidence; see Section 0 for the current 2026-05-14 dirty-checkout status.
 Northstar: `docs/asset-quality/lathe-implementation-northstar.md`
 
 This document is the evidence ledger for `visible-geometry-kernel-sprint-0`.
 
 The Sprint 0 objective is to make one existing hard-surface fixture visibly better while preserving public source compatibility and the stable shape handoff contract. Before changing behavior, the baseline must be truthful.
+
+Section 0 supersedes any older "current" wording below. Older pass/final-package claims in this ledger refer to the dated 2026-05-05 evidence roots, not to the current dirty checkout unless Section 0 explicitly says so.
+
+## 0. Current Evidence Refresh - 2026-05-14
+
+Inspection mode: no tests, no full asset builds, no screenshot/build loops. Evidence below comes from current checkout inspection, static file listings, and JSON sidecar parsing only.
+
+Current HEAD:
+
+```text
+75edfa3 feat(web): viewer evidence panel + manifest-url tolerance + MinimalObject3D type export
+```
+
+Dirty-state map recorded before remediation edits:
+
+| Category | Paths |
+| --- | --- |
+| Tracked source changes | `lathe/asset_foundry/__init__.py`, `lathe/asset_foundry/capability_matrix.py`, `lathe/asset_foundry/runtime_cook.py` |
+| Untracked source/docs | `docs/asset-quality/icarus-audit-remediation-tasklist-2026-05-14.md`, `docs/asset-quality/icarus-full-audit-2026-05-14.md`, `docs/research/newresearch.md`, `examples/treasure_chest.lth`, `lathe/geometry/program.py`, `lathe/geometry/shape_ir_program.py`, `scripts/direct_synth_evidence.py`, `scripts/inspect_session_evidence.py`, `web/package.json`, `web/pnpm-workspace.yaml` |
+| Generated evidence roots and previews | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/`, `.tmp_tests/p0_wedge_door_2026_05_13_v3/`, `.tmp_tests/visible_geometry_sprint0_20260505/`, `.tmp_*`, `.p0_wedge_*`, `tmp_industrial_crate_*.glb`, `tmp_industrial_crate_*.png`, `tmp_mechanical_door_*.glb`, `tmp_mechanical_door_*.png` |
+
+No unrelated generated artifacts were deleted or rewritten during this refresh.
+
+Remediation-source expansion after the tasklist pass:
+
+- Validation/report truth wiring now touches `lathe/validators/class_anchor.py`, `lathe/asset_quality/diagnostics.py`, `lathe/asset_quality/preview_evidence.py`, `lathe/core/stages/validate.py`, and `lathe/core/stages/package.py`.
+- Foundry truth/runtime/product surfaces now touch `lathe/asset_foundry/capability_matrix.py`, `certificates.py`, `op_graph.py`, `package_writer.py`, `runtime_cook.py`, `materialx_lowering.py`, `runtime/usd_generative.py`, `generators/crystal_cluster.py`, and `validators/topology_class_compliance.py`.
+- Repair and web evidence surfaces now touch `lathe/repair_executor.py`, `lathe/repair_planner.py`, `web/lathe-three/src/*`, and `web/lathe-web-viewer/src/main.ts`.
+- Web build verification generated `web/pnpm-lock.yaml` and build outputs under `web/lathe-three/dist/` and `web/lathe-web-viewer/dist/`; installed `node_modules` is local dependency state, not source evidence.
+- Rubric updates are limited to `std/procedural/knowledge/rubric/crate_v1.json` and `std/procedural/knowledge/rubric/door_v1.json`.
+
+### Current Industrial Crate Evidence
+
+Fixture: `examples/industrial_crate.lth`
+
+Newest inspected full-stage root:
+
+```text
+.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/
+```
+
+| Evidence type | Claim label | Path/status |
+| --- | --- | --- |
+| Shape candidate | `real` | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/shape/candidate_00.glb`; `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/shape/candidate_00.png` |
+| Topology | `real` | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/topology/topology.glb` |
+| UV | `real` | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/uv/uv.glb` |
+| Surface maps/control pack | `real` | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/surface/` |
+| Optimize/LOD/collision | `real` | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/optimize/` |
+| Validate report | `real`, failing | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/validate/report.json`: `certified=false`, `score=0.573285`, `threshold=0.84`, `preview_evidence=true`, `quality_diagnostics=true` |
+| Package manifest/export | `real`, bounded package-stage snapshot | `.tmp_tests/p0_wedge_crate_2026_05_13_v3/industrial_crate/stages/package/package_manifest.json`; outputs include `industrial_crate.usda`, `industrial_crate.glb`, `lod_0.glb` through `lod_3.glb`, collision hull/parts, and packaged texture maps. Snapshot was generated from existing stage artifacts with previews/trace disabled; `pipeline_certified=false`, `visual_claim_level=not_verified`, `human_review_required=true`. |
+| Quick preview artifacts | `real`, partial | `tmp_industrial_crate_quick.glb`, `tmp_industrial_crate_quick.png`, `tmp_industrial_crate_3q.png`, `tmp_industrial_crate_3q_final.png` |
+
+Current crate status: WARN. The current root proves stage artifacts through package/export via a bounded package-stage-only snapshot, but validation remains failing and visual approval remains `not_verified`. This is package evidence, not a successful full fresh build pipeline claim.
+
+### Current Mechanical Door Guardrail Evidence
+
+Fixture: `examples/mechanical_door.lth`
+
+Newest inspected full-stage root:
+
+```text
+.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/
+```
+
+| Evidence type | Claim label | Path/status |
+| --- | --- | --- |
+| Shape candidate | `real` | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/shape/candidate_00.glb`; `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/shape/candidate_00.png` |
+| Topology | `real` | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/topology/topology.glb` |
+| UV | `real` | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/uv/uv.glb` |
+| Surface maps/control pack | `real` | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/surface/` |
+| Optimize/LOD/collision | `real` | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/optimize/` |
+| Validate report | `real`, failing | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/validate/report.json`: `certified=false`, `score=0.573887`, `threshold=0.84`, `preview_evidence=true`, `quality_diagnostics=true` |
+| Package manifest/export | `real`, bounded package-stage snapshot | `.tmp_tests/p0_wedge_door_2026_05_13_v3/mechanical_door/stages/package/package_manifest.json`; outputs include `mechanical_door.usda`, `mechanical_door.glb`, `lod_0.glb` through `lod_2.glb`, collision hull/parts, and packaged texture maps. Snapshot was generated from existing stage artifacts with previews/trace disabled; `pipeline_certified=false`, `visual_claim_level=not_verified`, `human_review_required=true`. |
+| Quick preview artifacts | `real`, partial | `tmp_mechanical_door_quick.glb`, `tmp_mechanical_door_quick.png`, `tmp_mechanical_door_3q.png`, `tmp_mechanical_door_3q_final.png` |
+
+Current guardrail status: WARN. The door preserves the public fixture path and proves the same evidence shape as the crate through package/export via a bounded package-stage-only snapshot, but validation remains failing and visual approval remains `not_verified`.
+
+### Legacy Package Evidence Still Present
+
+Older Sprint 0 package roots remain on disk and still carry package/validate evidence:
+
+```text
+.tmp_tests/visible_geometry_sprint0_20260505/after_skip_subdivision_manifold_csg_timeout900_industrial_crate/industrial_crate/
+.tmp_tests/visible_geometry_sprint0_20260505/after_surface_normal_gain_v3_timeout900_mechanical_door/mechanical_door/
+```
+
+Parsed legacy validate status:
+
+| Fixture | Legacy validate status | Legacy package status |
+| --- | --- | --- |
+| `industrial_crate` | `certified=true`, `score=0.86902`, `threshold=0.84` | `stages/package/package_manifest.json` exists |
+| `mechanical_door` | `certified=true`, `score=0.876168`, `threshold=0.84` | `stages/package/package_manifest.json` exists |
+
+These legacy roots are useful historical evidence, but they are dated 2026-05-05 and are not a fresh proof that the current dirty checkout reaches package/export.
+
+### Claims Allowed Today
+
+- `industrial_crate` and `mechanical_door` have current inspected artifacts through shape, topology, UV, surface, optimize, validate, and bounded package/export snapshots.
+- The current inspected crate and door validate reports are real and failing, not silent successes.
+- The current package snapshots are real package-stage outputs generated from existing stage artifacts, with preview rendering disabled and visual claim level held at `not_verified`.
+- Older Sprint 0 roots prove that package/export evidence existed for a prior checkout state.
+
+### Claims Still Forbidden Today
+
+- Do not claim the current checkout has a successful full fresh build pipeline to package for the crate or door; only package-stage-only snapshots were generated from existing artifacts.
+- Do not claim the current crate or door is visually approved, product-complete, game-ready, or production-ready.
+- Do not use older package roots or the bounded package-stage-only snapshots as proof of a validation-passing build when the no-build constraint is lifted.
 
 ## 1. Baseline Verdict
 
@@ -30,10 +137,10 @@ Prior forbidden claim before the post-breakthrough implementation pass:
 Do not claim Sprint 0 has a passing crate package, passing guardrail package, before/after visual improvement, or export evidence yet.
 ```
 
-Current allowed claim after the post-breakthrough implementation pass:
+Historical allowed claim from the 2026-05-05 post-breakthrough implementation pass:
 
 ```text
-industrial_crate and mechanical_door parse/check successfully, execute high-count cutter booleans through a bounded Manifold full-CSG route, preserve watertight exact-boolean topology, pass validation, and produce package/export artifacts.
+industrial_crate and mechanical_door parse/check successfully in the 2026-05-05 evidence roots, execute high-count cutter booleans through a bounded Manifold full-CSG route, preserve watertight exact-boolean topology, pass validation, and produce package/export artifacts.
 ```
 
 The first implementation blocker was not a weak-looking crate. It was earlier and more structural:
@@ -953,7 +1060,7 @@ Important caveat:
 The runtime config used for these long evidence builds still emits a warning that /execution/timeout_s is an unknown key that will become an error in a future release. That config is evidence-only until the runtime-config schema accepts the timeout field.
 ```
 
-## 15. Allowed Claims After This Pass
+## 15. Allowed Claims After The 2026-05-05 Pass (Historical)
 
 Allowed:
 
@@ -961,14 +1068,14 @@ Allowed:
 - The original full and bounded baseline builds were blocked before visible output.
 - The original block occurred in shape-stage exact mesh / boolean fusion.
 - Missing or optional geometry dependencies materially affected the path.
-- Current bounded Manifold full-CSG builds produce shape, topology, UV, surface, optimize, validate, package, and execution artifacts.
-- Current bounded Manifold full-CSG builds pass validation and package/export for `industrial_crate` and `mechanical_door`.
+- The 2026-05-05 bounded Manifold full-CSG builds produce shape, topology, UV, surface, optimize, validate, package, and execution artifacts.
+- The 2026-05-05 bounded Manifold full-CSG builds pass validation and package/export for `industrial_crate` and `mechanical_door`.
 - The visible-union fallback removed semantic fragmentation / toy detection for both fixtures before the full-CSG route landed.
 - The full-CSG route executes subtract cutters instead of omitting them when `manifold3d` is available and the boolean operation count is within the bounded Manifold limit.
 - MeshIR now preserves welded topology at the authoritative handoff; hard-edge shading intent remains metadata.
 - Topology now preserves watertight exact-boolean output instead of reprocessing it through Blender in auto mode.
 - The self-intersection validator is now bounded and reports that bounded state.
-- Primary fixture and guardrail package/export artifacts exist at the evidence roots above.
+- Primary fixture and guardrail package/export artifacts exist at the 2026-05-05 evidence roots above.
 - No human before/after final beauty comparison has been written yet.
 - The next implementation target can move from "reach package/export" to visual comparison, import evidence, and broader fixture coverage.
 

@@ -34,6 +34,14 @@ warm_*/
 v05_*/
 cache_probe_*/
 
+# Leading-dot transient probe / quick-stage / scratch dirs and generated world packages.
+# These are throwaway build outputs (seed sweeps, treasure-chest build probes, wedge
+# quick-stages, Playwright MCP scratch, .lthworld packages) — never source.
+.tmp_*/
+.p0_*/
+.playwright-mcp/
+*.lthworld/
+
 # Git worktrees (used by Claude Code session isolation)
 .worktrees/
 .claude/worktrees/

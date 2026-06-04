@@ -25,7 +25,15 @@ export {
 } from "./LatheLoader.js";
 
 export {
+  LatheWorldLoader,
+  type LatheWorldLoaderOptions,
+  type LatheWorldMemberResult,
+  type LatheWorldResult,
+} from "./LatheWorldLoader.js";
+
+export {
   type LthpkgManifest,
+  type LthworldManifest,
   type LatheSemanticIndex,
   type LatheMaterialZone,
   type LatheConstructionProvenance,
@@ -33,11 +41,28 @@ export {
   type LatheDiagnostics,
   type LatheRuntimeManifest,
   type LatheQualityCertificate,
+  type LatheVisualQualityGate,
+  type LatheRepairHistory,
+  type LatheRepairRequest,
   type LatheSemanticSocket,
   type LatheMaterialSlot,
   type LatheCollisionSpec,
   type LatheLodSpec,
   type LatheNavSpec,
+  type LatheWorldAsset,
+  type LatheWorldAssetPackageLink,
+  type LatheWorldAssetPackageSummary,
+  type LatheWorldAssetPlacement,
+  type LatheWorldCertificate,
+  type LatheWorldGraph,
+  type LatheWorldPackageMemberMetadata,
+  type LatheWorldPathEdge,
+  type LatheWorldPathNode,
+  type LatheWorldStyleCompatibility,
+  type LatheTraversalEvidence,
+  type LatheMinimapEvidence,
+  type LatheWorldEvidence,
+  type LatheWonderCritiqueTrace,
 } from "./types.js";
 
 export {
@@ -45,9 +70,14 @@ export {
   parseSemanticIndex,
   parseDiagnostics,
   parseEvidence,
+  parseRepairHistory,
   parseMaterials,
   parseOperations,
   parseRuntime,
+  parseLthworldManifest,
+  parseWorldGraph,
+  parseTraversalEvidence,
+  parseMinimapEvidence,
 } from "./parsers.js";
 
 export {

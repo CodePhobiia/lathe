@@ -155,6 +155,8 @@ def run(executor: Any) -> dict[str, Any]:
             "game_pipeline_hints": meta.get("game_pipeline_hints", {}),
             "integration_report": meta.get("integration_report", {}),
             "mesh_ir": meta.get("mesh_ir") or {},
+            "shape_program": meta.get("shape_program") or {},
+            "shape_program_summary": meta.get("shape_program_summary") or {},
         }
         candidates.append(candidate)
         if (
@@ -217,6 +219,9 @@ def run(executor: Any) -> dict[str, Any]:
             "authoritative_candidate_reason", scaffold_report.get("authoritative_candidate_reason")
         ),
         "shape_assessment": scaffold_report.get("shape_assessment", {}),
+        "shape_program": scaffold_report.get("shape_program", {}),
+        "shape_program_summary": scaffold_report.get("shape_program_summary", {}),
+        "synthesized_graph_nodes": scaffold_report.get("synthesized_graph_nodes", []),
         "candidates": candidates,
         "provenance": {
             "backend_id": backend["id"],

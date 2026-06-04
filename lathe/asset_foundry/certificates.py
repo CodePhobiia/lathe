@@ -79,6 +79,16 @@ class AssetQualityCertificate:
     repair_recommendations: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class CategoryAnchorReport:
+    """Category-conditioned evidence that must pass before high polish."""
+
+    rule_id: str
+    score: float
+    missing_evidence: tuple[str, ...]
+    repair_recommendations: tuple[str, ...]
+
+
 def _semantic_socket_coverage(asset: FoundryAsset) -> float:
     """Score how well the asset's semantic sockets cover its family role.
 
@@ -283,6 +293,68 @@ def _collision_visual_deviation_score(
     return 0.6
 
 
+def _contains_token(values: tuple[str, ...], *tokens: str) -> bool:
+    haystack = " ".join(values).lower()
+    return any(token in haystack for token in tokens)
+
+
+def _category_anchor_report(asset: FoundryAsset) -> CategoryAnchorReport:
+    """Score required class evidence before aesthetic metrics can promote."""
+    generator_id = asset.spec.generator_id.lower()
+    asset_id = asset.asset_id.lower()
+    family = asset.spec.family.lower()
+    payload = asset.spec.geometry_payload
+    payload_kind = str(payload.get("kind") if isinstance(payload, Mapping) else "").lower()
+    parts = tuple(str(part).lower() for part in asset.spec.semantic_parts)
+    material_classes = tuple(slot.material_class.lower() for slot in asset.spec.material_slots)
+    socket_roles = tuple(socket.role.lower() for socket in asset.spec.sockets)
+
+    if "violet_crystal_cluster" in {generator_id, asset_id} or payload_kind == "prismatic_cluster":
+        rule_id = "class_anchor.violet_crystal_cluster_v1"
+        checks = {
+            "prismatic_cluster_payload": payload_kind == "prismatic_cluster",
+            "primary_and_secondary_crystals": len(parts) >= 3 and _contains_token(parts, "primary_crystal"),
+            "crystal_material_classes": _contains_token(material_classes, "crystal"),
+            "glow_or_ground_socket": _contains_token(socket_roles, "crystal_glow_source", "ground_anchor"),
+        }
+    elif "door" in generator_id or "door" in asset_id or family == "door":
+        rule_id = "class_anchor.door_v1"
+        checks = {
+            "door_or_panel_body": _contains_token(parts, "door", "panel", "body"),
+            "hinge_or_access_edge": _contains_token(parts, "hinge"),
+            "handle_or_latch": _contains_token(parts, "handle", "latch", "lock"),
+            "material_separation": len(set(material_classes)) >= 1,
+        }
+    elif "crate" in generator_id or "crate" in asset_id or family in {"container", "hard_surface_prop"}:
+        rule_id = "class_anchor.crate_v1"
+        checks = {
+            "bounded_volume": bool(parts) and _contains_token(parts, "body", "shell", "crate", "container"),
+            "panel_breakup": _contains_token(parts, "panel", "side", "slat", "rib"),
+            "corner_reinforcement": _contains_token(parts, "corner", "guard", "bracket", "reinforcement"),
+            "access_seam": _contains_token(parts, "lid", "door", "hinge", "latch", "seam"),
+            "material_separation": len(set(material_classes)) >= 2,
+        }
+    else:
+        rule_id = "class_anchor.generic_asset_v1"
+        checks = {
+            "semantic_parts_present": bool(parts),
+            "material_slots_present": bool(material_classes),
+            "runtime_family_declared": bool(family),
+        }
+
+    missing = tuple(key for key, passed in checks.items() if not passed)
+    score = (len(checks) - len(missing)) / max(1, len(checks))
+    recommendations = tuple(
+        f"add category anchor evidence: {key}" for key in missing
+    )
+    return CategoryAnchorReport(
+        rule_id=rule_id,
+        score=round(score, 6),
+        missing_evidence=missing,
+        repair_recommendations=recommendations,
+    )
+
+
 def _aggregate_score(metrics: Mapping[str, float]) -> float:
     """Weighted aggregate per masterplan §13 with runtime-readiness
     weighted heavily because game-readiness is the immediate target."""
@@ -299,6 +371,7 @@ def _aggregate_score(metrics: Mapping[str, float]) -> float:
         "variant_stability_score": 0.05,
         "style_pack_compliance": 0.07,
         "collision_visual_deviation_score": 0.03,
+        "category_anchor_score": 0.12,
     }
     total_weight = sum(weights.values())
     weighted = 0.0
@@ -308,9 +381,17 @@ def _aggregate_score(metrics: Mapping[str, float]) -> float:
 
 
 def quality_ladder_level_for_score(
-    score: float, manifest: RuntimeArtifactManifest, asset: FoundryAsset
+    score: float,
+    manifest: RuntimeArtifactManifest,
+    asset: FoundryAsset,
+    *,
+    category_anchor_score: float = 1.0,
 ) -> int:
     """Translate an overall score + runtime evidence into a ladder level."""
+    if category_anchor_score < 0.5:
+        return QualityLadderLevel.LEVEL_1_RECOGNIZABLE.value
+    if category_anchor_score < 0.75 and score >= 0.6:
+        return QualityLadderLevel.LEVEL_3_BEAUTIFUL.value
     if score < 0.3:
         return QualityLadderLevel.LEVEL_0_VALID_MESH.value
     if score < 0.45:
@@ -364,9 +445,16 @@ def compute_asset_certificate(
         "style_pack_compliance": _style_pack_compliance(asset),
         "collision_visual_deviation_score": _collision_visual_deviation_score(asset, manifest),
     }
+    category_anchor = _category_anchor_report(asset)
+    metrics["category_anchor_score"] = category_anchor.score
 
     overall = _aggregate_score(metrics)
-    achieved = quality_ladder_level_for_score(overall, manifest, asset)
+    achieved = quality_ladder_level_for_score(
+        overall,
+        manifest,
+        asset,
+        category_anchor_score=category_anchor.score,
+    )
 
     findings: list[str] = []
     recommendations: list[str] = []
@@ -398,6 +486,11 @@ def compute_asset_certificate(
         recommendations.append(
             "decompose the asset into more parts (e.g. add trim_band / fastener / decal_zone)"
         )
+    if category_anchor.score < 0.75:
+        findings.append(
+            f"{category_anchor.rule_id} score {category_anchor.score:.2f} below 0.75; missing {list(category_anchor.missing_evidence)}"
+        )
+        recommendations.extend(category_anchor.repair_recommendations)
     if achieved < asset.quality_ladder_target:
         findings.append(
             f"achieved Level {achieved} below target Level {asset.quality_ladder_target}"
@@ -434,6 +527,7 @@ def certificate_to_dict(certificate: AssetQualityCertificate) -> dict[str, Any]:
 __all__ = [
     "CERTIFICATE_VERSION",
     "AssetQualityCertificate",
+    "CategoryAnchorReport",
     "QualityLadderLevel",
     "certificate_to_dict",
     "compute_asset_certificate",

@@ -61,6 +61,15 @@ from .wonder_cli import (
     plan_wonder_build,
     quick_wonder_request_from_prompt,
 )
+from .prompt_parser import (
+    PROMPT_PARSER_VERSION,
+    ParsedWonderPrompt,
+    parse_wonder_prompt,
+)
+from .critique import (
+    WONDER_CRITIQUE_TRACE_VERSION,
+    run_world_wonder_critique_repair,
+)
 
 __all__ = [
     "CONTRACT_SPECS",
@@ -117,4 +126,9 @@ __all__ = [
     "WonderResult",
     "plan_wonder_build",
     "quick_wonder_request_from_prompt",
+    "PROMPT_PARSER_VERSION",
+    "ParsedWonderPrompt",
+    "parse_wonder_prompt",
+    "WONDER_CRITIQUE_TRACE_VERSION",
+    "run_world_wonder_critique_repair",
 ]

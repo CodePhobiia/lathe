@@ -74,6 +74,55 @@ _RECOMMENDATIONS: dict[str, str] = {
     ),
 }
 
+_CLASS_ANCHOR_METRIC_BY_EVIDENCE: dict[str, str] = {
+    "bounded_volume_present": "hard_surface_class_anchor_bounded_volume",
+    "vertical_panel_present": "hard_surface_class_anchor_bounded_volume",
+    "panel_breakup_present": "hard_surface_class_anchor_panel_breakup",
+    "frame_or_panel_breakup_present": "hard_surface_class_anchor_panel_breakup",
+    "corner_reinforcement_present": "hard_surface_class_anchor_corner_reinforcement",
+    "lid_seam_or_trim_present": "hard_surface_class_anchor_access_seam",
+    "hinge_present": "hard_surface_class_anchor_access_seam",
+    "handle_present": "hard_surface_class_anchor_fastener_trim_detail",
+    "handles_or_latch_present": "hard_surface_class_anchor_fastener_trim_detail",
+    "lock_plate_or_latch_present": "hard_surface_class_anchor_fastener_trim_detail",
+    "material_separation": "hard_surface_class_anchor_material_separation",
+    "scale_plausibility_crate": "hard_surface_class_anchor_scale_plausibility",
+    "scale_plausibility_door": "hard_surface_class_anchor_scale_plausibility",
+    "non_trivial_silhouette": "hard_surface_class_anchor_silhouette",
+    "face_count_sufficient": "hard_surface_class_anchor_face_count",
+}
+
+_CLASS_ANCHOR_RECOMMENDATIONS: dict[str, str] = {
+    "hard_surface_class_anchor_bounded_volume": (
+        "Refit the primary bounded volume so the asset has a readable hard-surface body "
+        "before detail scoring is trusted."
+    ),
+    "hard_surface_class_anchor_panel_breakup": (
+        "Add visible panel breakup, trim bands, or inset frames tied to semantic parts."
+    ),
+    "hard_surface_class_anchor_corner_reinforcement": (
+        "Add corner guards, brackets, or reinforced edge features so the container reads as built."
+    ),
+    "hard_surface_class_anchor_access_seam": (
+        "Add a visible lid, door, hinge, or access seam rather than leaving the shell monolithic."
+    ),
+    "hard_surface_class_anchor_material_separation": (
+        "Assign distinct body and trim material zones and make the separation visible in the surface bundle."
+    ),
+    "hard_surface_class_anchor_fastener_trim_detail": (
+        "Add handles, latches, fastener strips, or trim detail with semantic provenance."
+    ),
+    "hard_surface_class_anchor_scale_plausibility": (
+        "Refit proportions to the class rubric's expected physical scale envelope."
+    ),
+    "hard_surface_class_anchor_silhouette": (
+        "Add secondary features or silhouette breaks so the asset is not a featureless block."
+    ),
+    "hard_surface_class_anchor_face_count": (
+        "Add real geometric detail where the class rubric expects more than blockout density."
+    ),
+}
+
 
 def _as_dict(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
@@ -248,6 +297,61 @@ def _repair_route_for_metric(metric: str, metrics: dict[str, Any]) -> dict[str, 
     }
 
 
+def _class_anchor_metric_for_evidence(evidence_key: str) -> str:
+    return _CLASS_ANCHOR_METRIC_BY_EVIDENCE.get(
+        evidence_key,
+        f"hard_surface_class_anchor_{evidence_key}",
+    )
+
+
+def _class_anchor_warning_specs(
+    runtime: dict[str, Any],
+) -> tuple[dict[str, Any], list[tuple[str, str, str, dict[str, Any]]]]:
+    """Return metrics + missing-evidence warnings from class_anchor evidence."""
+    class_anchor = _as_dict(runtime.get("class_anchor"))
+    class_metrics = _as_dict(class_anchor.get("metrics"))
+    rubric_id = str(class_metrics.get("rubric_id") or "")
+    if not rubric_id:
+        return {}, []
+
+    evidence = _as_dict(class_metrics.get("evidence"))
+    severity_by_evidence = _as_dict(class_metrics.get("check_severity_by_evidence"))
+    repair_by_evidence = _as_dict(class_metrics.get("repair_actions_by_evidence"))
+    metrics: dict[str, Any] = {
+        "hard_surface_class_anchor_score": _as_float(class_metrics.get("pass_fraction"), 1.0),
+        "hard_surface_class_anchor_missing_required_count": int(
+            _as_float(class_metrics.get("failed_required_count"), 0.0)
+        ),
+    }
+
+    warning_specs: list[tuple[str, str, str, dict[str, Any]]] = []
+    for evidence_key, raw_passed in sorted(evidence.items()):
+        passed = bool(raw_passed)
+        metric = _class_anchor_metric_for_evidence(str(evidence_key))
+        metrics[metric] = 1.0 if passed else 0.0
+        if passed:
+            continue
+        severity = str(severity_by_evidence.get(evidence_key) or "required")
+        warning_text = (
+            f"class anchor {rubric_id} missing {evidence_key} "
+            f"(severity={severity})"
+        )
+        recommendation = _CLASS_ANCHOR_RECOMMENDATIONS.get(
+            metric,
+            "Add the missing class-anchor evidence through semantic construction, not mesh-only edits.",
+        )
+        details = {
+            "rubric_id": rubric_id,
+            "asset_kind": class_metrics.get("asset_kind"),
+            "evidence_key": evidence_key,
+            "required": severity == "required",
+            "repair_action": repair_by_evidence.get(evidence_key),
+            "source": "class_anchor",
+        }
+        warning_specs.append((metric, warning_text, recommendation, details))
+    return metrics, warning_specs
+
+
 def evaluate_quality_diagnostics(
     asset: dict[str, Any], runtime: dict[str, Any]
 ) -> dict[str, Any]:
@@ -285,6 +389,8 @@ def evaluate_quality_diagnostics(
         ),
         "family_grammar_coverage": round(family_grammar_coverage_value, 6),
     }
+    class_anchor_metrics, class_anchor_warning_specs = _class_anchor_warning_specs(runtime)
+    metrics.update(class_anchor_metrics)
 
     warning_specs: list[tuple[str, bool, str]] = [
         (
@@ -344,6 +450,22 @@ def evaluate_quality_diagnostics(
                 "severity": "warning",
                 "warning": warning_text,
                 "recommendation": recommendation,
+                "repair_route": repair_route,
+                "repair_actions": list(repair_route["actions"]),
+            }
+        )
+    for metric, warning_text, recommendation, details in class_anchor_warning_specs:
+        repair_route = _repair_route_for_metric(metric, metrics)
+        warnings.append(warning_text)
+        recommendations.append(recommendation)
+        repair_routes.append({"metric": metric, **repair_route})
+        findings.append(
+            {
+                "metric": metric,
+                "severity": "warning",
+                "warning": warning_text,
+                "recommendation": recommendation,
+                "details": details,
                 "repair_route": repair_route,
                 "repair_actions": list(repair_route["actions"]),
             }

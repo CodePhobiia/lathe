@@ -60,6 +60,9 @@ def build_violet_crystal_cluster(
                 "radius_cm": c.radius_cm,
                 "vertex_count": c.mesh.vertex_count(),
                 "face_count": c.mesh.face_count(),
+                "vertices": [list(v) for v in c.mesh.vertices],
+                "faces": [list(f) for f in c.mesh.faces],
+                "face_zone_ids": list(c.mesh.face_zone_ids),
                 "zone_id_prefix": c.crystal_id,
             }
             for c in cluster.crystals
@@ -97,7 +100,7 @@ def build_violet_crystal_cluster(
     collision = CollisionSpec(
         strategy="compound_hulls",
         walkable_zones=(),
-        blocking_zones=tuple(f"{asset_id}.primary",) + tuple(
+        blocking_zones=(f"{asset_id}.primary",) + tuple(
             f"{asset_id}.secondary_{i:02d}" for i in range(max(0, crystal_count - 1))
         ),
         hazard_zones=(),

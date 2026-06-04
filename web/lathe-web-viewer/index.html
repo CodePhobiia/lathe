@@ -139,6 +139,61 @@
         color: var(--text-muted);
         font-size: 11px;
       }
+      #package-loader {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        display: flex;
+        gap: 6px;
+        width: min(560px, calc(100% - 24px));
+        pointer-events: auto;
+      }
+      #package-url {
+        flex: 1;
+        min-width: 0;
+        background: #1d222a;
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      #playability-hud {
+        position: absolute;
+        left: 12px;
+        top: 36px;
+        display: none;
+        width: 220px;
+        padding: 8px;
+        background: rgba(29, 34, 42, 0.86);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        pointer-events: none;
+      }
+      #playability-hud.active { display: block; }
+      #minimap-hud {
+        display: block;
+        width: 100%;
+        height: 132px;
+        border: 1px solid var(--panel-border);
+        background: #11151b;
+        margin-bottom: 6px;
+      }
+      #playability-status {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3px 8px;
+        font-size: 11px;
+      }
+      #load-package-url {
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
       details.finding {
         margin: 4px 0;
         padding: 4px 8px;
@@ -165,7 +220,15 @@
           <div id="loaded-label"></div>
         </div>
         <canvas id="viewport"></canvas>
-        <div id="drop-overlay">Drop a .lthpkg directory (or its manifest.json) here</div>
+        <div id="playability-hud">
+          <canvas id="minimap-hud" width="204" height="132"></canvas>
+          <div id="playability-status"></div>
+        </div>
+        <div id="drop-overlay">Drop a .lthpkg/.lthworld URL or paste its manifest path</div>
+        <div id="package-loader">
+          <input id="package-url" type="url" placeholder="manifest.json, world_manifest.json, .lthpkg, or .lthworld URL" />
+          <button id="load-package-url" type="button">Load</button>
+        </div>
       </div>
       <aside id="sidepanel">
         <div class="panel-section">
@@ -177,6 +240,9 @@
         <div class="panel-section">
           <h3>View Mode</h3>
           <button class="mode-btn active" data-mode="render">Render</button>
+          <button class="mode-btn" data-mode="micro_scene">Micro-Scene</button>
+          <button class="mode-btn" data-mode="hero">Hero</button>
+          <button class="mode-btn" data-mode="playability">Playability</button>
           <button class="mode-btn" data-mode="wireframe">Wireframe</button>
           <button class="mode-btn" data-mode="material_ids">Material IDs</button>
           <button class="mode-btn" data-mode="normals">Normals</button>

@@ -53,6 +53,7 @@ from .facet_field import (
     FacetField3D,
     FacetSample,
     sample_facet_field,
+    sample_facet_field_3d_radial,
 )
 from .op_graph import (
     OP_GRAPH_VERSION,
@@ -66,7 +67,25 @@ from .op_graph import (
 from .package_writer import (
     LTHPKG_VERSION,
     LthpkgManifest,
+    build_repair_history_evidence,
     write_lthpkg,
+)
+from .world_writer import (
+    LTHWORLD_VERSION,
+    LthworldWriteResult,
+    write_lthworld,
+)
+from .world_member_packages import (
+    WORLD_MEMBER_PACKAGE_VERSION,
+    WorldMemberPackageResult,
+    build_foundry_asset_for_world_member,
+    package_world_members,
+)
+from .world_certificate import (
+    WORLD_CERTIFICATE_VERSION,
+    WorldCertificate,
+    compute_world_certificate,
+    evaluate_world_style_compatibility,
 )
 from .polyhedron import (
     POLYHEDRON_VERSION,
@@ -89,7 +108,9 @@ from .runtime_cook import (
     LodPolicySpec,
     NavContributionSpec,
     RuntimeArtifactManifest,
+    cook_generated_runtime_artifact,
     cook_runtime_artifact,
+    lower_foundry_asset_runtime_artifacts,
 )
 from .strict_geometry_mode import (
     STRICT_GEOMETRY_MODE_VERSION,
@@ -188,13 +209,16 @@ __all__ = [
     "build_half_space_polyhedron",
     "build_prism_mesh",
     "sample_facet_field",
+    "sample_facet_field_3d_radial",
     # F6
     "RUNTIME_COOK_VERSION",
     "CollisionProxySpec",
     "LodPolicySpec",
     "NavContributionSpec",
     "RuntimeArtifactManifest",
+    "cook_generated_runtime_artifact",
     "cook_runtime_artifact",
+    "lower_foundry_asset_runtime_artifacts",
     # F7
     "CERTIFICATE_VERSION",
     "AssetQualityCertificate",
@@ -204,7 +228,19 @@ __all__ = [
     # F9
     "LTHPKG_VERSION",
     "LthpkgManifest",
+    "build_repair_history_evidence",
     "write_lthpkg",
+    "LTHWORLD_VERSION",
+    "LthworldWriteResult",
+    "write_lthworld",
+    "WORLD_MEMBER_PACKAGE_VERSION",
+    "WorldMemberPackageResult",
+    "build_foundry_asset_for_world_member",
+    "package_world_members",
+    "WORLD_CERTIFICATE_VERSION",
+    "WorldCertificate",
+    "compute_world_certificate",
+    "evaluate_world_style_compatibility",
     # Style pack
     "STYLE_PACK_VERSION",
     "LowPolyFantasyPalette",

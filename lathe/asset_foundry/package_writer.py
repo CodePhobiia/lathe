@@ -13,6 +13,7 @@ asset_name.lthpkg/
   diagnostics.json           (capability matrix slice + generator diagnostics)
   materials.json             (material slot manifest)
   operations.json            (GeometryOpGraph plan + ShapeProgram if available)
+  repair-history.json        (optional before/after repair evidence)
   evidence.json              (runtime manifest + certificate)
   runtime.json               (runtime cook output)
   previews/                  (turntable.png, wireframe.png, etc. if available)
@@ -63,6 +64,7 @@ from .runtime_cook import (
 )
 
 LTHPKG_VERSION = "lathe.asset_foundry.lthpkg_v1"
+REPAIR_HISTORY_VERSION = "lathe.asset_foundry.repair_history_v1"
 
 
 @dataclass(frozen=True)
@@ -182,9 +184,11 @@ def _build_operations_json(
         else asset.spec.geometry_payload,
     }
     if op_graph is not None:
+        provenance_summary = _op_graph_provenance_summary(op_graph)
         payload["op_graph"] = {
             "version": "lathe.asset_foundry.op_graph_v1",
             "node_count": len(op_graph.nodes),
+            "provenance_summary": provenance_summary,
             "nodes": [
                 {
                     "operation_id": node.operation_id,
@@ -195,6 +199,9 @@ def _build_operations_json(
                     "required_capabilities": list(node.required_capabilities),
                     "fallback_policy": node.fallback_policy,
                     "evidence_requirements": list(node.evidence_requirements),
+                    "bounds_cm": [list(node.bounds_cm[0]), list(node.bounds_cm[1])]
+                    if node.bounds_cm is not None
+                    else None,
                     "attribute_mapping": {
                         "preserved": list(node.attribute_mapping.preserved),
                         "transformed": list(node.attribute_mapping.transformed),
@@ -218,8 +225,61 @@ def _build_operations_json(
             "not_started_ops": list(op_graph_plan.not_started_ops),
             "missing_from_matrix": list(op_graph_plan.missing_from_matrix),
             "topo_order": list(op_graph_plan.topo_order),
+            "spatial_clusters": [
+                {
+                    "cluster_id": cluster.cluster_id,
+                    "operation_ids": list(cluster.operation_ids),
+                    "cluster_op_count": cluster.cluster_op_count,
+                    "cluster_reason": cluster.cluster_reason,
+                    "bounds_cm": [list(cluster.bounds_cm[0]), list(cluster.bounds_cm[1])]
+                    if cluster.bounds_cm is not None
+                    else None,
+                }
+                for cluster in op_graph_plan.spatial_clusters
+            ],
+            "boolean_clusters": [
+                {
+                    "cluster_id": cluster.cluster_id,
+                    "operation_ids": list(cluster.operation_ids),
+                    "boolean_ops": list(cluster.boolean_ops),
+                    "input_primitive_ids": list(cluster.input_primitive_ids),
+                    "boolean_expression": cluster.boolean_expression,
+                    "preferred_backend": cluster.preferred_backend,
+                    "actual_execution_mode": cluster.actual_execution_mode,
+                    "fallback_diagnostic": cluster.fallback_diagnostic,
+                }
+                for cluster in op_graph_plan.boolean_clusters
+            ],
         }
     return payload
+
+
+def _op_graph_provenance_summary(op_graph: GeometryOpGraph) -> dict[str, Any]:
+    summary = {
+        "preserved": 0,
+        "transformed": 0,
+        "split": 0,
+        "merged": 0,
+        "generated": 0,
+        "dropped": 0,
+        "dropped_fields": {},
+    }
+    dropped_fields: dict[str, int] = {}
+    for node in op_graph.nodes:
+        mapping = node.attribute_mapping
+        summary["preserved"] += len(mapping.preserved)
+        summary["transformed"] += len(mapping.transformed)
+        summary["split"] += len(mapping.split)
+        summary["merged"] += len(mapping.merged)
+        summary["generated"] += len(mapping.generated)
+        summary["dropped"] += len(mapping.dropped)
+        for field_name in mapping.dropped:
+            dropped_fields[field_name] = dropped_fields.get(field_name, 0) + 1
+    summary["dropped_fields"] = dropped_fields
+    summary["provenance_loss_diagnostic"] = (
+        "provenance_fields_dropped" if dropped_fields else ""
+    )
+    return summary
 
 
 def _build_diagnostics_json(
@@ -248,6 +308,8 @@ def _build_evidence_json(
     asset: FoundryAsset,
     manifest: RuntimeArtifactManifest,
     certificate: AssetQualityCertificate,
+    capability_matrix: FoundryCapabilityMatrix,
+    external_artifacts: ExternalArtifacts | None = None,
 ) -> dict[str, Any]:
     """Build the evidence.json sidecar — top-level Foundry evidence."""
     return {
@@ -255,10 +317,289 @@ def _build_evidence_json(
         "asset_id": asset.asset_id,
         "runtime_manifest": runtime_manifest_to_dict(manifest),
         "certificate": certificate_to_dict(certificate),
+        "external_backend_evidence": _build_external_backend_evidence(
+            capability_matrix
+        ),
+        "visual_quality_gate": _foundry_visual_quality_gate(
+            asset,
+            manifest,
+            certificate,
+            external_artifacts,
+        ),
         "rule_of_truth": (
             "Every artifact in this package has a real path OR a status of "
             "'unbuilt'/'proxy' with a reason. Per Foundry §3, no fake-quality."
         ),
+    }
+
+
+def _build_external_backend_evidence(
+    capability_matrix: FoundryCapabilityMatrix,
+) -> list[dict[str, Any]]:
+    """Surface external backend blockers in package evidence."""
+    evidence: list[dict[str, Any]] = []
+    for record in capability_matrix.records:
+        if not record.backend_required:
+            continue
+        evidence.append(
+            {
+                "operation_id": record.operation_id,
+                "status": "blocked",
+                "blocker": record.fallback_reason or "backend_not_configured",
+                "backend_required": record.backend_required,
+                "artifact_path": None,
+                "rule_of_truth": (
+                    "No path is claimed until the backend writes an artifact."
+                ),
+            }
+        )
+    return evidence
+
+
+def _foundry_visual_quality_gate(
+    asset: FoundryAsset,
+    manifest: RuntimeArtifactManifest,
+    certificate: AssetQualityCertificate,
+    external_artifacts: ExternalArtifacts | None,
+) -> dict[str, Any]:
+    pipeline_certified = certificate.achieved_level >= asset.quality_ladder_target
+    render_mesh_status = manifest.render_mesh_status
+    render_mesh_real = render_mesh_status == "real"
+    preview_paths = []
+    if external_artifacts is not None:
+        preview_paths = [
+            str(path)
+            for path in external_artifacts.preview_paths
+            if Path(path).exists()
+        ]
+    blockers: list[str] = []
+    if not pipeline_certified:
+        blockers.append("pipeline_not_certified")
+    if not render_mesh_real:
+        blockers.append(f"render_mesh_status_{render_mesh_status}")
+    if not preview_paths:
+        blockers.append("preview_evidence_not_present")
+    if certificate.findings:
+        blockers.append("certificate_findings_require_review")
+    if not pipeline_certified:
+        visual_quality_gate = "not_approved"
+        visual_claim_level = "pipeline_failed"
+    elif not render_mesh_real or not preview_paths:
+        visual_quality_gate = "not_verified"
+        visual_claim_level = "not_verified"
+    elif blockers:
+        visual_quality_gate = "review_required"
+        visual_claim_level = "pipeline_certified_only"
+    else:
+        visual_quality_gate = "approved"
+        visual_claim_level = "visual_approved"
+    return {
+        "version": "lathe.visual_quality_gate_v1",
+        "pipeline_certified": pipeline_certified,
+        "visual_quality_gate": visual_quality_gate,
+        "human_review_required": visual_quality_gate != "approved",
+        "visual_claim_level": visual_claim_level,
+        "blockers": sorted(set(blockers)),
+        "signals": {
+            "render_mesh_real": render_mesh_real,
+            "preview_count": len(preview_paths),
+            "preview_paths": preview_paths,
+            "certificate_finding_count": len(certificate.findings),
+        },
+    }
+
+
+def _string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item) for item in value if isinstance(item, (str, int, float))]
+
+
+def _dict_payload(value: Any, *, missing_status: str) -> dict[str, Any]:
+    if isinstance(value, Mapping):
+        return dict(value)
+    return {"status": missing_status}
+
+
+def _build_repair_history_json(
+    asset: FoundryAsset,
+    repair_history: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build optional repair-history.json without inventing rebuild evidence."""
+    history = dict(repair_history)
+    return {
+        "version": REPAIR_HISTORY_VERSION,
+        "asset_id": asset.asset_id,
+        "status": str(history.get("status") or "not_verified"),
+        "original_package": _dict_payload(
+            history.get("original_package"),
+            missing_status="not_verified",
+        ),
+        "diagnostic_ids": _string_list(history.get("diagnostic_ids")),
+        "selected_repair_actions": _string_list(history.get("selected_repair_actions")),
+        "patched_intent_identifiers": _string_list(history.get("patched_intent_identifiers")),
+        "repair_target_layers": _string_list(history.get("repair_target_layers")),
+        "attempted_vs_actual": list(history.get("attempted_vs_actual") or [])
+        if isinstance(history.get("attempted_vs_actual"), list)
+        else [],
+        "rebuilt_package": _dict_payload(
+            history.get("rebuilt_package"),
+            missing_status="not_verified",
+        ),
+        "metric_deltas": _dict_payload(
+            history.get("metric_deltas"),
+            missing_status="not_verified",
+        ),
+        "preview_before_after": _dict_payload(
+            history.get("preview_before_after"),
+            missing_status="not_verified",
+        ),
+        "notes": _string_list(history.get("notes")),
+        "rule_of_truth": (
+            "Repair history records requested and applied semantic repairs. "
+            "Missing rebuild or preview paths remain not_verified."
+        ),
+    }
+
+
+def _package_reference(value: str | Path | Mapping[str, Any] | None) -> dict[str, Any]:
+    """Normalize a package reference without inventing availability."""
+    if isinstance(value, Mapping):
+        return dict(value)
+    if value is None:
+        return {"status": "not_verified"}
+    path = Path(value)
+    return {
+        "status": "real" if path.exists() else "not_verified",
+        "path": str(path).replace("\\", "/"),
+    }
+
+
+def _repair_trace_actions(repair_traces: list[Mapping[str, Any]]) -> list[str]:
+    actions: list[str] = []
+    for trace in repair_traces:
+        action = trace.get("action") or trace.get("attempted_operation")
+        if isinstance(action, (str, int, float)):
+            actions.append(str(action))
+    return sorted(set(actions))
+
+
+def _repair_trace_target_layers(repair_traces: list[Mapping[str, Any]]) -> list[str]:
+    layers: list[str] = []
+    for trace in repair_traces:
+        layer = trace.get("repair_target_layer")
+        if isinstance(layer, (str, int, float)):
+            layers.append(str(layer))
+        details = trace.get("details")
+        if isinstance(details, Mapping):
+            detail_layer = details.get("repair_target_layer")
+            if isinstance(detail_layer, (str, int, float)):
+                layers.append(str(detail_layer))
+            for operation in details.get("executed_operations") or []:
+                if isinstance(operation, Mapping):
+                    op_layer = operation.get("repair_target_layer")
+                    if isinstance(op_layer, (str, int, float)):
+                        layers.append(str(op_layer))
+    return sorted(set(layers))
+
+
+def _repair_trace_identifiers(repair_traces: list[Mapping[str, Any]]) -> list[str]:
+    identifiers: list[str] = []
+    for trace in repair_traces:
+        details = trace.get("details")
+        if not isinstance(details, Mapping):
+            continue
+        for operation in details.get("executed_operations") or []:
+            if isinstance(operation, Mapping):
+                operation_id = operation.get("operation_id")
+                if isinstance(operation_id, (str, int, float)):
+                    identifiers.append(str(operation_id))
+    return sorted(set(identifiers))
+
+
+def _repair_attempted_vs_actual(
+    repair_traces: list[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for trace in repair_traces:
+        row = {
+            "action": str(trace.get("action") or trace.get("attempted_operation") or ""),
+            "target": str(trace.get("target") or ""),
+            "repair_target_layer": str(trace.get("repair_target_layer") or "not_verified"),
+            "attempted_operation": str(trace.get("attempted_operation") or trace.get("action") or ""),
+            "actual_operation": str(trace.get("actual_operation") or "not_verified"),
+            "applied": bool(trace.get("applied", False)),
+        }
+        details = trace.get("details")
+        if isinstance(details, Mapping):
+            executed: list[dict[str, Any]] = []
+            for operation in details.get("executed_operations") or []:
+                if isinstance(operation, Mapping):
+                    executed.append(
+                        {
+                            "operation_id": str(operation.get("operation_id") or ""),
+                            "attempted_operation": str(
+                                operation.get("attempted_operation")
+                                or operation.get("operation")
+                                or ""
+                            ),
+                            "actual_operation": str(
+                                operation.get("actual_operation")
+                                or operation.get("operation")
+                                or "not_verified"
+                            ),
+                            "repair_target_layer": str(
+                                operation.get("repair_target_layer") or "not_verified"
+                            ),
+                            "primitive_type": str(operation.get("primitive_type") or ""),
+                            "part": str(operation.get("part") or ""),
+                            "component": str(operation.get("component") or ""),
+                        }
+                    )
+            if executed:
+                row["executed_operations"] = executed
+        rows.append(row)
+    return rows
+
+
+def build_repair_history_evidence(
+    *,
+    original_package: str | Path | Mapping[str, Any] | None,
+    diagnostic_ids: list[str] | tuple[str, ...],
+    repair_traces: list[Mapping[str, Any]],
+    rebuilt_package: str | Path | Mapping[str, Any] | None = None,
+    metric_deltas: Mapping[str, Any] | None = None,
+    preview_before_after: Mapping[str, Any] | None = None,
+    status: str | None = None,
+    notes: list[str] | tuple[str, ...] = (),
+) -> dict[str, Any]:
+    """Build a truthful repair-history payload from deterministic repair traces.
+
+    The payload is intentionally metadata-first: it can prove that a
+    diagnostic selected and applied graph/intent repair operations even
+    when a full rebuilt render/package is still unavailable. Rebuild and
+    preview references default to ``not_verified``.
+    """
+    rebuilt_ref = _package_reference(rebuilt_package)
+    return {
+        "status": status
+        or (
+            "repair_metadata_recorded"
+            if repair_traces
+            else "not_verified"
+        ),
+        "original_package": _package_reference(original_package),
+        "diagnostic_ids": [str(item) for item in diagnostic_ids],
+        "selected_repair_actions": _repair_trace_actions(repair_traces),
+        "patched_intent_identifiers": _repair_trace_identifiers(repair_traces),
+        "repair_target_layers": _repair_trace_target_layers(repair_traces),
+        "attempted_vs_actual": _repair_attempted_vs_actual(repair_traces),
+        "rebuilt_package": rebuilt_ref,
+        "metric_deltas": dict(metric_deltas) if metric_deltas is not None else {"status": "not_verified"},
+        "preview_before_after": dict(preview_before_after)
+        if preview_before_after is not None
+        else {"status": "not_verified"},
+        "notes": [str(item) for item in notes],
     }
 
 
@@ -310,6 +651,7 @@ def write_lthpkg(
     op_graph: GeometryOpGraph | None = None,
     capability_matrix: FoundryCapabilityMatrix | None = None,
     external_artifacts: ExternalArtifacts | None = None,
+    repair_history: Mapping[str, Any] | None = None,
 ) -> Path:
     """Write a .lthpkg directory.
 
@@ -327,6 +669,7 @@ def write_lthpkg(
             fresh build_capability_matrix() call.
         external_artifacts: optional filesystem paths to copy into the
             .lthpkg directory (mesh.glb, asset.lth, previews/).
+        repair_history: optional before/after repair evidence sidecar.
 
     Returns:
         Path to the created .lthpkg directory.
@@ -348,8 +691,19 @@ def write_lthpkg(
     materials_dict = _build_materials_json(asset)
     operations_dict = _build_operations_json(asset, op_graph, op_graph_plan)
     diagnostics_dict = _build_diagnostics_json(asset, matrix, certificate)
-    evidence_dict = _build_evidence_json(asset, manifest, certificate)
+    evidence_dict = _build_evidence_json(
+        asset,
+        manifest,
+        certificate,
+        matrix,
+        external_artifacts,
+    )
     runtime_dict = runtime_manifest_to_dict(manifest)
+    repair_history_dict = (
+        _build_repair_history_json(asset, repair_history)
+        if repair_history is not None
+        else None
+    )
 
     # Write sidecars.
     sidecars: tuple[tuple[str, str, dict[str, Any]], ...] = (
@@ -364,6 +718,12 @@ def write_lthpkg(
         sidecar_files[key] = filename
         (pkg_dir / filename).write_text(
             json.dumps(payload, indent=2, sort_keys=False),
+            encoding="utf-8",
+        )
+    if repair_history_dict is not None:
+        sidecar_files["repair_history"] = "repair-history.json"
+        (pkg_dir / "repair-history.json").write_text(
+            json.dumps(repair_history_dict, indent=2, sort_keys=False),
             encoding="utf-8",
         )
 
@@ -403,7 +763,9 @@ def write_lthpkg(
 
 __all__ = [
     "LTHPKG_VERSION",
+    "REPAIR_HISTORY_VERSION",
     "ExternalArtifacts",
     "LthpkgManifest",
+    "build_repair_history_evidence",
     "write_lthpkg",
 ]
