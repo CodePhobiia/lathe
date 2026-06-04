@@ -11,15 +11,15 @@ than copying them into prompts:
 
 - [Canonical schema links](schema_links.md)
 - [Good Scene Graph and generated source examples](good_outputs/README.md)
-- [Scene Graph v1](../../schema/scene_graph.schema.json)
-- [Scene Patch v1](../../schema/scene_patch.schema.json)
-- [Render Inspection v1](../../schema/render_inspection.schema.json)
-- [Scene Quality Report v1](../../schema/scene_quality_report.schema.json)
-- [Scene Repair Report v1](../../schema/scene_repair_report.schema.json)
-- [Scene Plan v1](../../schema/scene_plan.schema.json)
-- [Scene Assembly v1](../../schema/scene_assembly.schema.json)
-- [Scene Package Manifest v1](../../schema/scene_package_manifest.schema.json)
-- [LLM Repair Playbook v1](../../schema/llm_repair_playbook.schema.json)
+- [Scene Graph v1](../schema/scene_graph.schema.json)
+- [Scene Patch v1](../schema/scene_patch.schema.json)
+- [Render Inspection v1](../schema/render_inspection.schema.json)
+- [Scene Quality Report v1](../schema/scene_quality_report.schema.json)
+- [Scene Repair Report v1](../schema/scene_repair_report.schema.json)
+- [Scene Plan v1](../schema/scene_plan.schema.json)
+- [Scene Assembly v1](../schema/scene_assembly.schema.json)
+- [Scene Package Manifest v1](../schema/scene_package_manifest.schema.json)
+- [LLM Repair Playbook v1](../schema/llm_repair_playbook.schema.json)
 
 ## Helper APIs
 
@@ -40,7 +40,7 @@ Use `lathe.wonder.llm.semantic_patch_request_to_scene_patch(...)` to turn a
 semantic edit request into Scene Patch JSON. The helper supplies deterministic
 patch IDs, preserve constraints, allowed-change categories, continuity, and
 acceptance defaults. It validates the result against
-[Scene Patch v1](../../schema/scene_patch.schema.json) before returning it.
+[Scene Patch v1](../schema/scene_patch.schema.json) before returning it.
 
 Use `lathe.wonder.llm.generate_scene_plan(...)` or
 `python -m lathe.cli wonder generate-scene-plan` to create a deterministic

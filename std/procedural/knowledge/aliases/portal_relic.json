@@ -1,0 +1,9 @@
+{
+  "family_id": "portal_relic",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Portal relic fixture (plinth volume, portal frame, active-threshold material zone, power-node sockets, symmetry trim, rune decals, attachment mounts, energy-conduit rails, environment-contact mounts, age wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

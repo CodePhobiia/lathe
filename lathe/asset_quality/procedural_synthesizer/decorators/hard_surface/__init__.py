@@ -8,7 +8,14 @@ the domain extension.
 
 from __future__ import annotations
 
-from . import attached_to  # noqa: F401
-
+from . import (  # noqa: F401
+    aligned_with,
+    attached_to,
+    cuts,
+    inset_into,
+    mirrors,
+    supports,
+    wraps_around,
+)
 
 __all__: list[str] = []

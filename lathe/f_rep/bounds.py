@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import Any
 
 import numpy as np
 
@@ -32,11 +31,11 @@ from .expressions import (
     RoundedSlot,
     Scale,
     Scale3,
+    SDFExpr,
     SegmentBox,
     SegmentCapsule,
     SegmentExtrudedProfile,
     SegmentLoftedProfile,
-    SDFExpr,
     Shell,
     SmoothIntersect,
     SmoothSubtract,

@@ -18,7 +18,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from lathe.asset_quality import certification
 from lathe.checker.assets import check_materialized_asset
 from lathe.errors import (
@@ -29,7 +28,6 @@ from lathe.errors import (
 )
 from lathe.io_json import load_json_dict
 from lathe.normalizer import _normalize_assert, _normalize_rule
-
 
 # --- io_json --------------------------------------------------------
 

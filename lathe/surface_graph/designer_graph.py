@@ -54,7 +54,7 @@ class DesignerGraph:
         self.outputs = dict(outputs)
 
     @classmethod
-    def from_recipe(cls, params: dict[str, Any]) -> "DesignerGraph":
+    def from_recipe(cls, params: dict[str, Any]) -> DesignerGraph:
         seed = int(params.get("seed", 1337))
         base_palette = params.get("palette", [(190, 190, 190), (88, 88, 88), (32, 32, 32)])
         nodes: list[SurfaceNode] = []
@@ -189,7 +189,7 @@ class DesignerGraph:
         }
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "DesignerGraph":
+    def from_dict(cls, payload: dict[str, Any]) -> DesignerGraph:
         nodes = [node_from_dict(item) for item in payload.get("nodes", [])]
         outputs = dict(payload.get("outputs", {}))
         return cls(nodes=nodes, outputs=outputs)
@@ -213,7 +213,6 @@ def _constant_color_node(name: str, rgb: Any) -> SurfaceNode:
     to 1.0; downstream Layer eval handles 2D->3D broadcast. For simplicity
     we encode the literal in a Pattern node and post-multiply in Blend.
     """
-
     r, g, b = (float(rgb[0]) / 255.0, float(rgb[1]) / 255.0, float(rgb[2]) / 255.0)
 
     return ConstColor(name=name, params={"rgb": [r, g, b]})

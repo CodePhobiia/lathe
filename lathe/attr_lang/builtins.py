@@ -51,7 +51,7 @@ def _vec_op(a: Value, b: Value, fn: Callable[[float, float], float]) -> Value:
             raise TypeMismatchError(
                 f"vector size mismatch: len {len(a)} vs len {len(b)}"
             )
-        return tuple(fn(float(x), float(y)) for x, y in zip(a, b))
+        return tuple(fn(float(x), float(y)) for x, y in zip(a, b, strict=False))
     if _is_vec(a):
         bf = _to_float(b)
         return tuple(fn(float(x), bf) for x in a)
@@ -123,7 +123,7 @@ def _b_dot(_ctx, a: Value, b: Value) -> Value:
         raise TypeMismatchError("dot() expects two vectors")
     if len(a) != len(b):
         raise TypeMismatchError("dot() vector size mismatch")
-    return sum(float(x) * float(y) for x, y in zip(a, b))
+    return sum(float(x) * float(y) for x, y in zip(a, b, strict=False))
 
 
 def _b_length(_ctx, v: Value) -> Value:
@@ -180,12 +180,11 @@ def _b_sqrt(_ctx, x: Value) -> Value:
 
 def _hash_floats(*xs: float) -> float:
     """A tiny deterministic hash of floats into [0,1)."""
-
     s = 2654435761
     for x in xs:
         # Mix the bit pattern via integer trickery.
         bits = int.from_bytes(
-            int(round((x % 1024.0) * 1e6)).to_bytes(8, "little", signed=True),
+            round((x % 1024.0) * 1e6).to_bytes(8, "little", signed=True),
             "little",
             signed=True,
         )
@@ -318,7 +317,7 @@ def _ramp_linear(t: float, colors: Sequence[Value]) -> Value:
         return colors[-1]
     a, b = colors[i], colors[i + 1]
     if _is_vec(a) and _is_vec(b):
-        return tuple(float(x) + (float(y) - float(x)) * frac for x, y in zip(a, b))
+        return tuple(float(x) + (float(y) - float(x)) * frac for x, y in zip(a, b, strict=False))
     return _to_float(a) + (_to_float(b) - _to_float(a)) * frac
 
 
@@ -337,7 +336,7 @@ def _ramp_hermite(t: float, colors: Sequence[Value]) -> Value:
     a, b = colors[i], colors[i + 1]
     if _is_vec(a) and _is_vec(b):
         return tuple(
-            float(x) + (float(y) - float(x)) * smoothed for x, y in zip(a, b)
+            float(x) + (float(y) - float(x)) * smoothed for x, y in zip(a, b, strict=False)
         )
     return _to_float(a) + (_to_float(b) - _to_float(a)) * smoothed
 
@@ -435,7 +434,6 @@ def resolve_top_level(name: str) -> BuiltinFn | dict[str, BuiltinFn] | Value:
 
     Raises :class:`UnknownBuiltinError` if the name is not registered.
     """
-
     if name in TOP_LEVEL_BUILTINS:
         return TOP_LEVEL_BUILTINS[name]
     if name in NAMESPACES:

@@ -190,17 +190,17 @@ def _path_structure_style(
         if _present(value):
             return _slug(str(value))
     profile = _slug(str(path_profile.get("profile") or ""))
-    if family == "procedural_bridge":
+    if family == "procedural_bridge":  # no-family-dispatch: per-family structural defaults; migrate to StyleKnowledge parameter_priors and let the FamilyAlias resolve them
         return "truss"
-    if family == "procedural_road":
+    if family == "procedural_road":  # no-family-dispatch: per-family structural defaults; migrate to StyleKnowledge parameter_priors and let the FamilyAlias resolve them
         return "barrier" if profile in {"elevated", "bridge"} else "curbed"
-    if family == "procedural_access":
+    if family == "procedural_access":  # no-family-dispatch: per-family structural defaults; migrate to StyleKnowledge parameter_priors and let the FamilyAlias resolve them
         return "gantry" if profile in {"elevated", "bridge"} else "guarded"
-    if family == "procedural_infrastructure":
+    if family == "procedural_infrastructure":  # no-family-dispatch: per-family structural defaults; migrate to StyleKnowledge parameter_priors and let the FamilyAlias resolve them
         return "service_trench"
-    if family == "procedural_interior":
+    if family == "procedural_interior":  # no-family-dispatch: per-family structural defaults; migrate to StyleKnowledge parameter_priors and let the FamilyAlias resolve them
         return "corridor"
-    if family == "procedural_terrain":
+    if family == "procedural_terrain":  # no-family-dispatch: per-family structural defaults; migrate to StyleKnowledge parameter_priors and let the FamilyAlias resolve them
         return "road_edge"
     return "guarded"
 

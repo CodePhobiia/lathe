@@ -52,11 +52,12 @@ clear error rather than a silent geometry drop.
 
 from __future__ import annotations
 
+import itertools
 import math
+from collections.abc import Callable
 from contextlib import suppress
 from copy import deepcopy
 from dataclasses import dataclass, fields
-from collections.abc import Callable
 from typing import Any
 
 from ..feature_ops.bevel_real import fillet_edge as _fillet_edge_helper
@@ -3775,7 +3776,7 @@ def _eval_sdf_tube_path_call(args: list[dict[str, Any]], *, part: str, where: st
     if blend is None or blend < 0.0:
         raise MeshProgramError(f"{where}: blend_radius must be >= 0, got {blend!r}cm")
     segments: list[Any] = []
-    for index, (start, end) in enumerate(zip(points, points[1:], strict=False)):
+    for index, (start, end) in enumerate(itertools.pairwise(points)):
         dx = float(end[0]) - float(start[0])
         dy = float(end[1]) - float(start[1])
         dz = float(end[2]) - float(start[2])
@@ -3859,7 +3860,7 @@ def _eval_sdf_arc_tube_call(args: list[dict[str, Any]], *, part: str, where: str
             f"{where}: sweep_degrees must satisfy 0 < value <= 360, got {sweep_degrees!r}"
         )
     if segments is None:
-        segments = max(6, int(math.ceil(abs(float(sweep_degrees)) / 8.0)))
+        segments = max(6, math.ceil(abs(float(sweep_degrees)) / 8.0))
     if segments < 3:
         raise MeshProgramError(f"{where}: segments must be >= 3, got {segments}")
     segments = min(int(segments), 512)
@@ -3879,7 +3880,7 @@ def _eval_sdf_arc_tube_call(args: list[dict[str, Any]], *, part: str, where: str
         point[plane_axes[1]] += float(radius) * math.sin(angle)
         points.append((point[0], point[1], point[2]))
     accumulated: Any = None
-    for start, end in zip(points, points[1:], strict=False):
+    for start, end in itertools.pairwise(points):
         segment = SegmentCapsule(a=start, b=end, radius=float(tube_radius))
         if accumulated is None:
             accumulated = segment
@@ -4044,7 +4045,7 @@ def _eval_sdf_beam_path_call(args: list[dict[str, Any]], *, part: str, where: st
         unknown = sorted(kw.keys())
         raise MeshProgramError(f"{where}: unknown sdf_beam_path(...) argument(s): {unknown}")
     segments: list[Any] = []
-    for index, (start, end) in enumerate(zip(points, points[1:], strict=False)):
+    for index, (start, end) in enumerate(itertools.pairwise(points)):
         dx = float(end[0]) - float(start[0])
         dy = float(end[1]) - float(start[1])
         dz = float(end[2]) - float(start[2])
@@ -4230,7 +4231,7 @@ def _eval_sdf_swept_profile_path_call(args: list[dict[str, Any]], *, part: str, 
         raise MeshProgramError(f"{where}: profile must enclose non-zero area")
     profile = tuple((float(point[0]), float(point[1])) for point in profile_points)
     segments: list[Any] = []
-    for index, (start, end) in enumerate(zip(points, points[1:], strict=False)):
+    for index, (start, end) in enumerate(itertools.pairwise(points)):
         dx = float(end[0]) - float(start[0])
         dy = float(end[1]) - float(start[1])
         dz = float(end[2]) - float(start[2])
@@ -4960,7 +4961,7 @@ def _eval_sdf_threaded_cylinder_call(args: list[dict[str, Any]], *, part: str, w
     if samples_per_turn < 4:
         raise MeshProgramError(f"{where}: segments_per_turn must be >= 4, got {samples_per_turn}")
     samples_per_turn = min(samples_per_turn, 96)
-    sample_count = max(4, int(math.ceil(turns_value * samples_per_turn)) + 1)
+    sample_count = max(4, math.ceil(turns_value * samples_per_turn) + 1)
     sample_count = min(sample_count, 4096)
     handedness_sign = -1.0 if handedness == "left" else 1.0
     y0 = -0.5 * float(height) + float(start_clearance)
@@ -4978,7 +4979,7 @@ def _eval_sdf_threaded_cylinder_call(args: list[dict[str, Any]], *, part: str, w
             )
         )
     ridge: Any = None
-    for start, end in zip(path, path[1:], strict=False):
+    for start, end in itertools.pairwise(path):
         segment = SegmentCapsule(a=start, b=end, radius=ridge_radius)
         if ridge is None:
             ridge = segment
@@ -7054,12 +7055,12 @@ def _sdf_extract_scaled_resolution(
     if isinstance(resolution, int):
         return min(
             int(max_resolution),
-            max(int(resolution) + 1, int(math.ceil(resolution * scale))),
+            max(int(resolution) + 1, math.ceil(resolution * scale)),
         )
     return tuple(
         min(
             int(max_resolution),
-            max(int(value) + 1, int(math.ceil(int(value) * scale))),
+            max(int(value) + 1, math.ceil(int(value) * scale)),
         )
         for value in resolution
     )
@@ -7072,7 +7073,6 @@ def _sdf_expr_connected_intent(expr: Any) -> bool:
     intentionally produce separate bodies, while transforms and deformations of
     a connected primitive should remain connected after extraction.
     """
-
     primitive_names = {
         "Sphere",
         "Box",
@@ -7155,7 +7155,7 @@ def _sdf_extract_resolution_from_cell_size(
             raise MeshProgramError(
                 f"{where}: bounds extent {label} must be > 0, got {extent}cm"
             )
-        samples = max(8, int(math.ceil(extent / cell_size_cm)) + 1)
+        samples = max(8, math.ceil(extent / cell_size_cm) + 1)
         requested.append(samples)
         if samples > max_resolution:
             clamped = True
@@ -7211,9 +7211,9 @@ def _sdf_mesh_topology_metadata(vertices: Any, faces: Any) -> dict[str, Any]:
 
     return {
         "topology_method": "triangle_edge_incidence_v1",
-        "source_vertex_count": int(len(vertices)),
-        "source_face_count": int(len(face_rows)),
-        "source_unique_edge_count": int(len(edge_faces)),
+        "source_vertex_count": len(vertices),
+        "source_face_count": len(face_rows),
+        "source_unique_edge_count": len(edge_faces),
         "source_boundary_edge_count": int(boundary_edge_count),
         "source_nonmanifold_edge_count": int(nonmanifold_edge_count),
         "source_body_count": int(body_count),
@@ -7348,14 +7348,13 @@ def _apply_sdf_extract(
             )
         bounds_min, bounds_max = inferred_bounds
         bounds_source = "inferred_sdf_expression_bounds_v1"
+    elif bounds_padding_cm and float(bounds_padding_cm) > 0.0:
+        pad = float(bounds_padding_cm)
+        bounds_min = tuple(float(value) - pad for value in bounds_min)
+        bounds_max = tuple(float(value) + pad for value in bounds_max)
+        bounds_source = "explicit_author_bounds_with_padding"
     else:
-        if bounds_padding_cm and float(bounds_padding_cm) > 0.0:
-            pad = float(bounds_padding_cm)
-            bounds_min = tuple(float(value) - pad for value in bounds_min)
-            bounds_max = tuple(float(value) + pad for value in bounds_max)
-            bounds_source = "explicit_author_bounds_with_padding"
-        else:
-            bounds_source = "explicit_author_bounds"
+        bounds_source = "explicit_author_bounds"
     for axis in range(3):
         if bounds_max[axis] <= bounds_min[axis]:
             raise MeshProgramError(
@@ -8158,10 +8157,8 @@ def _baked_mesh_primitive(
     mesh = trimesh.Trimesh(vertices=verts_arr, faces=faces_arr, process=False)
     mesh.remove_infinite_values()
     mesh.remove_unreferenced_vertices()
-    try:
+    with suppress(Exception):
         mesh.fix_normals()
-    except Exception:
-        pass
 
     baked = ShapePrimitive(
         primitive_type="sdf_mesh",
@@ -10082,7 +10079,7 @@ def _bbox_extents(primitive: ShapePrimitive) -> tuple[float, float, float]:
     bbox-trivial primitives.
     """
     pt = primitive.primitive_type
-    if pt == "box" or pt == "subdivision_box":
+    if pt in {"box", "subdivision_box"}:
         if primitive.extents is None:
             raise MeshProgramError(
                 f"primitive of type {pt!r} is missing 'extents'"
@@ -11416,7 +11413,7 @@ def _apply_terrain_biome(
         # Gaussian peaks scattered over the field. Number of peaks scales
         # with peak_density and grid area; height scales with roughness.
         cell_count = nx * ny
-        n_peaks = max(1, int(round(peak_density * 0.02 * cell_count)))
+        n_peaks = max(1, round(peak_density * 0.02 * cell_count))
         # Cap peaks to keep the loop fast even at high resolutions.
         n_peaks = min(n_peaks, 64)
         ys, xs = np.indices(h.shape)
@@ -13084,7 +13081,7 @@ def _lower_v2_source_op(
         if len(lowered) == len(source_primitives):
             lowered = [
                 _copy_shape_primitive_payload(source_primitive, lowered_primitive)
-                for source_primitive, lowered_primitive in zip(source_primitives, lowered)
+                for source_primitive, lowered_primitive in zip(source_primitives, lowered, strict=False)
             ]
             for source_primitive in lowered:
                 if source_primitive not in primitives:
@@ -15558,7 +15555,7 @@ def _apply_op_weld_seam(
             where=where,
         )
         if explicit_normal_axis is not None:
-            if normal_axis != "z" and explicit_normal_axis != normal_axis:
+            if normal_axis not in ("z", explicit_normal_axis):
                 raise MeshProgramError(
                     f"{where}.{explicit_normal_axis_name}: axis {explicit_normal_axis!r} "
                     f"conflicts with face axis {normal_axis!r}"

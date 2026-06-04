@@ -1,0 +1,35 @@
+{
+  "id": "swing_door_morphology_v1",
+  "description": "Hinged swing door morphology. Tall flat panel with hinge line on one long vertical edge, handle at ergonomic height on the opposite face side, optional frame relation, optional lock plate.",
+  "domain": "hard_surface",
+  "body": {
+    "archetype": "vertical_panel",
+    "long_axis": "Z",
+    "expected_aspect": {
+      "x": [0.35, 0.55],
+      "y": [0.02, 0.08],
+      "z": [1.0, 1.0]
+    }
+  },
+  "parts_ladder": [
+    {"role": "primary_panel", "required": true, "min_count": 1, "max_count": 1, "node_type": "primary_volume"},
+    {"role": "hinge_line", "required": true, "min_count": 2, "max_count": 3, "node_type": "hinge"},
+    {"role": "handle", "required": true, "min_count": 1, "max_count": 2, "node_type": "handle"},
+    {"role": "frame", "required": false, "min_count": 0, "max_count": 1, "node_type": "frame"},
+    {"role": "lock_plate", "required": false, "min_count": 0, "max_count": 1, "node_type": "latch"},
+    {"role": "panel_inset", "required": false, "min_count": 0, "max_count": 4, "node_type": "panel"},
+    {"role": "primary_material", "required": true, "min_count": 1, "max_count": 1, "node_type": "material_zone"}
+  ],
+  "anchor_emitters": [
+    {"role": "hinge_anchor", "selector": "long_vertical_edge", "side_candidates": ["left", "right"]},
+    {"role": "handle_anchor", "selector": "front_face", "height_range_m": [0.85, 1.15]},
+    {"role": "lock_anchor", "selector": "front_face", "height_range_m": [0.85, 1.05]},
+    {"role": "panel_face", "selector": "front_face"}
+  ],
+  "default_relations": [
+    {"source_role": "hinge_line", "relation": "aligned_with", "target_role": "hinge_anchor"},
+    {"source_role": "handle", "relation": "attached_to", "target_role": "handle_anchor"},
+    {"source_role": "lock_plate", "relation": "attached_to", "target_role": "lock_anchor"},
+    {"source_role": "panel_inset", "relation": "inset_into", "target_role": "panel_face"}
+  ]
+}

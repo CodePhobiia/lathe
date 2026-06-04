@@ -25,7 +25,6 @@ from __future__ import annotations
 # Importing the generators package triggers domain registration.
 # This must happen before any synthesize_procedural_program call.
 from . import generators  # noqa: F401
-
 from .context import (
     ConstructionEdgeTyped,
     ConstructionNodeTyped,
@@ -55,8 +54,8 @@ from .registry import (
 )
 from .trace import SynthesizerTrace, TraceBuilder, TraceEntry
 
-
 __all__ = [
+    "REGISTRY",
     "CompositionPolicy",
     "ConstructionEdgeTyped",
     "ConstructionNodeTyped",
@@ -71,11 +70,10 @@ __all__ = [
     "NodeTypeGenerator",
     "PolicyExpansion",
     "PolicyPrecondition",
-    "REGISTRY",
     "StyleKnowledge",
+    "SynthesisResult",
     "SynthesizerContext",
     "SynthesizerTrace",
-    "SynthesisResult",
     "TraceBuilder",
     "TraceEntry",
     "resolve_context",

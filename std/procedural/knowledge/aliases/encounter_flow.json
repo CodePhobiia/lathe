@@ -1,0 +1,9 @@
+{
+  "family_id": "encounter_flow",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Encounter / arena flow fixture (footprint volume, spawn sockets, route rails, cover guards, objective mount, wave fasteners, reward-exit material zone, hazard guard, readability decals, pacing wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

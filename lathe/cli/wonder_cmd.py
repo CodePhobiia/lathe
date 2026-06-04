@@ -86,6 +86,29 @@ def register(sub) -> None:
     wonder_sub.add_parser("capabilities", help="Emit machine-readable Wonder capability flags")
     wonder_sub.add_parser("status", help="Emit machine-readable Wonder readiness status")
 
+    p_build_world = wonder_sub.add_parser(
+        "build",
+        help="Build a deterministic Wonder prompt into a .lthworld skeleton",
+    )
+    p_build_world.add_argument("prompt", help="Natural-language world prompt")
+    p_build_world.add_argument("--out", required=True, help="Output .lthworld directory")
+    p_build_world.add_argument("--seed", type=int, default=0, help="World seed")
+    p_build_world.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Resolve prompt and world graph without writing the package",
+    )
+    p_build_world.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Record deterministic build mode in evidence",
+    )
+    p_build_world.add_argument(
+        "--evidence-only",
+        action="store_true",
+        help="Write only current evidence sidecars; real asset packages remain planned",
+    )
+
     p_env_probe = wonder_sub.add_parser(
         "env-probe",
         help="Probe deterministic core and optional Wonder runtimes",
@@ -2064,10 +2087,67 @@ def _run_catalog_examples(args) -> None:
         raise SystemExit(1)
 
 
+def _run_build_world(args) -> None:
+    from ..asset_foundry.world_writer import write_lthworld
+    from ..forge import compose_world
+    from ..wonder.prompt_parser import parse_wonder_prompt
+
+    parsed = parse_wonder_prompt(args.prompt, seed=int(args.seed))
+    composition = compose_world(parsed.to_skyborne_intent(), seed=int(args.seed))
+    payload = {
+        "prompt_request": parsed.to_dict(),
+        "world_graph_summary": {
+            "world_id": composition.world_id,
+            "asset_count": composition.asset_count(),
+            "role_counts": composition.role_counts(),
+            "style_pack_ids": list(composition.style_pack_ids()),
+            "path_node_count": len(composition.path_nodes),
+            "path_edge_count": len(composition.path_edges),
+            "hazard_zone_count": len(composition.hazard_zones),
+            "quest_anchor_count": len(composition.quest_anchors),
+            "diagnostics": [dict(d) for d in composition.diagnostics],
+        },
+    }
+    if args.dry_run:
+        payload.update(
+            {
+                "written": False,
+                "certified": False,
+                "certification_status": "dry_run",
+            }
+        )
+        _dump(payload)
+        return
+
+    mode_bits = ["skeleton"]
+    if args.deterministic:
+        mode_bits.append("deterministic")
+    if args.evidence_only:
+        mode_bits.append("evidence_only")
+    result = write_lthworld(
+        composition,
+        Path(args.out),
+        package_members=not args.evidence_only,
+        mode="+".join(mode_bits),
+    )
+    payload.update(
+        {
+            "written": True,
+            "world_package": result.to_dict(),
+            "certified": result.certified,
+            "certification_status": result.certification_status,
+        }
+    )
+    _dump(payload)
+
+
 def run_wonder(args) -> None:
     """Dispatch ``lathe wonder`` subcommands."""
     from ..wonder import get_contract_schema, list_contract_summaries, wonder_capabilities, wonder_status
 
+    if args.wonder_cmd == "build":
+        _run_build_world(args)
+        return
     if args.wonder_cmd == "schemas":
         _dump({"contracts": list_contract_summaries()})
         return

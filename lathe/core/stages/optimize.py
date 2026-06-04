@@ -16,10 +16,11 @@ import numpy as np
 import trimesh
 
 from ...asset_class_profiles import resolve_asset_class_profile
+from ...highlow import HighLowRelation
 from ...stages import budgets as budgets_mod
 from ...stages import collision as collision_mod
 from ...stages import lod as lod_mod
-from ...highlow import HighLowRelation
+from ...topology_runtime import export_multi_part_scene_glb
 from ..common import dump_json, relpath
 from ..io import (
     export_glb,
@@ -27,7 +28,6 @@ from ..io import (
     export_scene_glb_from_named_meshes,
 )
 from ..mesh import RuntimeMesh
-from ...topology_runtime import export_multi_part_scene_glb
 
 DEFAULT_LOD_RATIOS: tuple[float, ...] = (1.0, 0.5, 0.25, 0.1)
 MAX_PROCEDURAL_HIGHLOW_FACES = 120_000
@@ -97,7 +97,7 @@ def _count_lod_levels(value: Any) -> int:
     if isinstance(value, int):
         return max(0, value)
     if isinstance(value, float):
-        return max(0, int(round(value)))
+        return max(0, round(value))
     token = str(value).lower().replace("-", "_").strip()
     levels = {
         "off": 0,
@@ -111,7 +111,7 @@ def _count_lod_levels(value: Any) -> int:
     if token in levels:
         return levels[token]
     try:
-        return max(0, int(round(float(token))))
+        return max(0, round(float(token)))
     except ValueError:
         return 0
 
@@ -185,9 +185,9 @@ def _count(value: Any, default: int = 0) -> int:
     if isinstance(value, int):
         return max(0, value)
     if isinstance(value, float):
-        return max(0, int(round(value)))
+        return max(0, round(value))
     try:
-        return max(0, int(round(float(str(value).strip()))))
+        return max(0, round(float(str(value).strip())))
     except ValueError:
         return default
 
@@ -277,10 +277,7 @@ def _is_hero_asset(asset: dict[str, Any]) -> bool:
         asset.get("family"),
         (asset.get("assembly") or {}).get("family") if isinstance(asset.get("assembly"), dict) else None,
     )
-    for candidate in candidates:
-        if _normalize_family_token(candidate) in _HERO_FAMILY_TOKENS:
-            return True
-    return False
+    return any(_normalize_family_token(candidate) in _HERO_FAMILY_TOKENS for candidate in candidates)
 
 
 def _resolve_target_quads(
@@ -510,7 +507,7 @@ def _apply_plank_displacement(
 
     report = {
         "applied": True,
-        "vertex_count": int(len(vertices)),
+        "vertex_count": len(vertices),
         "num_planks": int(num_planks),
         "seam_depth_cm": float(seam_depth_cm),
         "bow_depth_cm": float(bow_depth_cm),
@@ -949,7 +946,7 @@ def _decimate_per_part(
             )
             continue
         weight = weights.get(name, _DEFAULT_PART_WEIGHT)
-        target_faces = max(_min_part_faces(), int(round(target_total_faces * weight / weight_sum)))
+        target_faces = max(_min_part_faces(), round(target_total_faces * weight / weight_sum))
         if sub_face_count <= target_faces:
             decimated_parts.append((name, sub_mesh))
             part_reports.append(
@@ -1044,10 +1041,7 @@ def _part_is_displacement_target(
     component_type = metadata.get("component_type")
     if component_type and _normalize_token(component_type) in _DISPLACEMENT_PART_TOKENS:
         return True
-    for tag in tags:
-        if _normalize_token(tag) in _DISPLACEMENT_PART_TOKENS:
-            return True
-    return False
+    return any(_normalize_token(tag) in _DISPLACEMENT_PART_TOKENS for tag in tags)
 
 
 def _apply_plank_displacement_per_part(
@@ -1128,7 +1122,7 @@ def _apply_plank_displacement_per_part(
     return merged, {
         "applied": True,
         "mode": "per_part",
-        "vertex_count": int(len(merged.vertices)),
+        "vertex_count": len(merged.vertices),
         "parts": part_reports,
     }
 

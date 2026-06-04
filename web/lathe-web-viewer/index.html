@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lathe Web Viewer</title>
+    <style>
+      :root {
+        --bg: #1c1f25;
+        --panel-bg: #262a31;
+        --panel-border: #353a42;
+        --text: #e6e8ec;
+        --text-muted: #9099a5;
+        --accent: #7b3fd2;
+        --warn: #d99933;
+        --good: #3fa55a;
+        --bad: #c43f5a;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+      }
+      #app {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        height: 100vh;
+        width: 100vw;
+      }
+      #viewport-host {
+        position: relative;
+        background: #14171c;
+        overflow: hidden;
+      }
+      #viewport {
+        position: absolute;
+        inset: 0;
+      }
+      #drop-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(20, 23, 28, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      #drop-overlay.hidden { opacity: 0; }
+      #drop-overlay.active {
+        background: rgba(123, 63, 210, 0.25);
+        color: var(--text);
+      }
+      #sidepanel {
+        background: var(--panel-bg);
+        border-left: 1px solid var(--panel-border);
+        overflow-y: auto;
+        padding: 12px 14px;
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .panel-section h3 {
+        margin: 0 0 6px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+      }
+      .panel-section { border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
+      .panel-section:last-child { border-bottom: none; }
+      .pill {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        margin-right: 4px;
+      }
+      .pill.good { background: rgba(63, 165, 90, 0.2); color: var(--good); }
+      .pill.warn { background: rgba(217, 153, 51, 0.2); color: var(--warn); }
+      .pill.bad { background: rgba(196, 63, 90, 0.2); color: var(--bad); }
+      .pill.unbuilt { background: rgba(144, 153, 165, 0.2); color: var(--text-muted); }
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 3px 0;
+      }
+      .meta-key { color: var(--text-muted); font-size: 11px; }
+      .meta-val { font-size: 12px; }
+      .list { display: flex; flex-wrap: wrap; gap: 3px; }
+      button.mode-btn {
+        background: transparent;
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        padding: 4px 9px;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        font-size: 11px;
+        border-radius: 4px;
+      }
+      button.mode-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      button.action-btn {
+        background: #1d222a;
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        padding: 5px 9px;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        font-size: 11px;
+        border-radius: 4px;
+      }
+      button.action-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
+      #header {
+        position: absolute;
+        top: 8px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        pointer-events: none;
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+      #package-loader {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        display: flex;
+        gap: 6px;
+        width: min(560px, calc(100% - 24px));
+        pointer-events: auto;
+      }
+      #package-url {
+        flex: 1;
+        min-width: 0;
+        background: #1d222a;
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      #playability-hud {
+        position: absolute;
+        left: 12px;
+        top: 36px;
+        display: none;
+        width: 220px;
+        padding: 8px;
+        background: rgba(29, 34, 42, 0.86);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        pointer-events: none;
+      }
+      #playability-hud.active { display: block; }
+      #minimap-hud {
+        display: block;
+        width: 100%;
+        height: 132px;
+        border: 1px solid var(--panel-border);
+        background: #11151b;
+        margin-bottom: 6px;
+      }
+      #playability-status {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3px 8px;
+        font-size: 11px;
+      }
+      #load-package-url {
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      details.finding {
+        margin: 4px 0;
+        padding: 4px 8px;
+        background: rgba(217, 153, 51, 0.1);
+        border-radius: 4px;
+        font-size: 11px;
+      }
+      details.finding summary {
+        cursor: pointer;
+        color: var(--warn);
+      }
+      .empty-state {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="viewport-host">
+        <div id="header">
+          <div>Lathe Web Viewer</div>
+          <div id="loaded-label"></div>
+        </div>
+        <canvas id="viewport"></canvas>
+        <div id="playability-hud">
+          <canvas id="minimap-hud" width="204" height="132"></canvas>
+          <div id="playability-status"></div>
+        </div>
+        <div id="drop-overlay">Drop a .lthpkg/.lthworld URL or paste its manifest path</div>
+        <div id="package-loader">
+          <input id="package-url" type="url" placeholder="manifest.json, world_manifest.json, .lthpkg, or .lthworld URL" />
+          <button id="load-package-url" type="button">Load</button>
+        </div>
+      </div>
+      <aside id="sidepanel">
+        <div class="panel-section">
+          <h3>Asset</h3>
+          <div id="asset-meta">
+            <span class="empty-state">No package loaded.</span>
+          </div>
+        </div>
+        <div class="panel-section">
+          <h3>View Mode</h3>
+          <button class="mode-btn active" data-mode="render">Render</button>
+          <button class="mode-btn" data-mode="micro_scene">Micro-Scene</button>
+          <button class="mode-btn" data-mode="hero">Hero</button>
+          <button class="mode-btn" data-mode="playability">Playability</button>
+          <button class="mode-btn" data-mode="wireframe">Wireframe</button>
+          <button class="mode-btn" data-mode="material_ids">Material IDs</button>
+          <button class="mode-btn" data-mode="normals">Normals</button>
+        </div>
+        <div class="panel-section">
+          <h3>Evidence</h3>
+          <button id="capture-screenshot" class="action-btn" disabled>Capture PNG</button>
+          <button id="export-repair-request" class="action-btn" disabled>Repair Request</button>
+          <div id="repair-actions" class="empty-state">No package loaded.</div>
+        </div>
+        <div class="panel-section">
+          <h3>Semantic Parts</h3>
+          <div id="semantic-parts" class="list"></div>
+        </div>
+        <div class="panel-section">
+          <h3>Material Slots</h3>
+          <div id="material-slots"></div>
+        </div>
+        <div class="panel-section">
+          <h3>Diagnostics</h3>
+          <div id="diagnostics"></div>
+        </div>
+        <div class="panel-section">
+          <h3>Quality Certificate</h3>
+          <div id="certificate"></div>
+        </div>
+      </aside>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

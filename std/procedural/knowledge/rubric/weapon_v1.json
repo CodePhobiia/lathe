@@ -1,0 +1,50 @@
+{
+  "id": "weapon_v1",
+  "asset_class": "weapon",
+  "description": "Class-anchor rubric for hand-held weapon / tool props. Checks elongated body + grip + guard + tip/head + material separation.",
+  "minimum_pass_fraction": 0.55,
+  "checks": [
+    {
+      "evidence_key": "elongated_body_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "primary_volume"},
+      "severity": "required"
+    },
+    {
+      "evidence_key": "grip_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "handle"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "guard_or_collar_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "guard"},
+      "severity": "soft"
+    },
+    {
+      "evidence_key": "tip_or_head_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "panel"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "material_separation",
+      "check_kind": "material_zone_count_at_least",
+      "parameters": {"min": 1},
+      "severity": "required"
+    },
+    {
+      "evidence_key": "scale_plausibility_weapon",
+      "check_kind": "bounding_volume_in_range",
+      "parameters": {
+        "x_range_cm": [20.0, 200.0],
+        "y_range_cm": [2.0, 30.0],
+        "z_range_cm": [2.0, 30.0]
+      },
+      "severity": "required"
+    }
+  ]
+}

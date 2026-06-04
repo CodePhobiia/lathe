@@ -1,0 +1,64 @@
+{
+  "id": "door_v1",
+  "asset_class": "door",
+  "description": "Class-anchor rubric for swing-door / env-module assets. Checks vertical panel proportions + hinge + handle + frame relation + door-thin Y axis.",
+  "minimum_pass_fraction": 0.6,
+  "checks": [
+    {
+      "evidence_key": "vertical_panel_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "primary_volume"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "hinge_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "hinge"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "handle_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "handle"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "frame_or_panel_breakup_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "panel"},
+      "severity": "required",
+      "repair_action": "increase_panel_depth"
+    },
+    {
+      "evidence_key": "lock_plate_or_latch_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "latch"},
+      "severity": "soft"
+    },
+    {
+      "evidence_key": "scale_plausibility_door",
+      "check_kind": "bounding_volume_in_range",
+      "parameters": {
+        "x_range_cm": [40.0, 200.0],
+        "y_range_cm": [3.0, 25.0],
+        "z_range_cm": [120.0, 280.0]
+      },
+      "severity": "required"
+    },
+    {
+      "evidence_key": "material_separation",
+      "check_kind": "material_zone_count_at_least",
+      "parameters": {"min": 1},
+      "severity": "required"
+    },
+    {
+      "evidence_key": "non_trivial_silhouette",
+      "check_kind": "mesh_extents_exceed_intent",
+      "parameters": {"threshold_cm": 1.0},
+      "severity": "soft"
+    }
+  ]
+}

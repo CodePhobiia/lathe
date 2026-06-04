@@ -1,0 +1,14 @@
+{
+  "policy_id": "l_system_branching",
+  "domain": "vegetation_or_branching",
+  "description": "Composition policy for L-system / recursive branching structures — trees, branches, wiring harnesses, river networks, lightning, neurons. Pattern: trunk or main path (primary_volume tagged 'trunk') + recursive child branch nodes (attached_to parent, ratio-scaled by depth) + leaf/terminal decoration. Expansions add branch nodes when the brief declares depth/branching_factor and add leaf nodes at the recursion terminals. The policy lives under the hard_surface domain registration today because vegetation domain extension lands in Cycle 6; once that extension ships, this policy moves to vegetation_or_branching domain.",
+  "precondition": {
+    "requires_node_types": ["primary_volume"],
+    "forbids_node_types": [],
+    "requires_brief_fields": {},
+    "requires_parts_any": ["trunk", "main_branch", "branch", "tree", "branching_structure", "wiring_harness"],
+    "forbids_parts_any": [],
+    "requires_intent_tags": []
+  },
+  "expansions": []
+}

@@ -1,0 +1,45 @@
+{
+  "id": "panel_v1",
+  "asset_class": "panel",
+  "description": "Class-anchor rubric for wall-panel / cabinet / equipment-panel assets. Checks flat plate + inset breakup + perimeter fasteners + optional vent + trim border.",
+  "minimum_pass_fraction": 0.5,
+  "checks": [
+    {
+      "evidence_key": "primary_plate_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "primary_volume"},
+      "severity": "required",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "inset_panel_or_trim_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "trim"},
+      "severity": "soft",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "perimeter_fastener_present",
+      "check_kind": "synthesized_role_present",
+      "parameters": {"role": "fastener"},
+      "severity": "soft",
+      "repair_action": "add_secondary_features"
+    },
+    {
+      "evidence_key": "material_separation",
+      "check_kind": "material_zone_count_at_least",
+      "parameters": {"min": 1},
+      "severity": "required"
+    },
+    {
+      "evidence_key": "scale_plausibility_panel",
+      "check_kind": "bounding_volume_in_range",
+      "parameters": {
+        "x_range_cm": [30.0, 400.0],
+        "y_range_cm": [3.0, 40.0],
+        "z_range_cm": [30.0, 400.0]
+      },
+      "severity": "required"
+    }
+  ]
+}

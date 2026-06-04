@@ -17,9 +17,9 @@ A sharpness of ``0`` is equivalent to a smooth edge.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from math import inf, isfinite
-from typing import Iterable, Sequence
 
 Edge = tuple[int, int]
 
@@ -69,7 +69,7 @@ class CreaseTags:
     corners: dict[int, float]
 
     @classmethod
-    def empty(cls) -> "CreaseTags":
+    def empty(cls) -> CreaseTags:
         """Crease set with no tagged edges or corners."""
         return cls(edges={}, corners={})
 
@@ -78,7 +78,7 @@ class CreaseTags:
         cls,
         edge_records: Iterable[Sequence[object]] | None = None,
         corner_records: Iterable[Sequence[object]] | None = None,
-    ) -> "CreaseTags":
+    ) -> CreaseTags:
         """Build from ``[(va, vb, sharpness), ...]`` style records.
 
         Accepts dicts with ``vertices``/``edge``/``sharpness`` keys as
@@ -112,7 +112,7 @@ class CreaseTags:
         """Sharpness associated with vertex ``v``."""
         return self.corners.get(v, 0.0)
 
-    def attenuate(self) -> "CreaseTags":
+    def attenuate(self) -> CreaseTags:
         """Return creases for the next subdivision level (``s -> s - 1``).
 
         Infinite sharpness stays infinite. Finite sharpness >= 1 reduces
@@ -192,7 +192,7 @@ def _parse_corner_record(rec: object) -> tuple[int, float]:
 
 
 __all__ = [
-    "CreaseTags",
     "INFINITE_CREASE",
+    "CreaseTags",
     "normalise_crease_sharpness",
 ]

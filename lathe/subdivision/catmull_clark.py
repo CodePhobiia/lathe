@@ -31,7 +31,7 @@ arrangement.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from .boundary import BoundaryRule, classify_boundary_edges
 from .creases import INFINITE_CREASE, CreaseTags
@@ -90,7 +90,7 @@ def subdivide_catmull_clark(
     # 3. Edge points: smooth + sharp variants then crease-blend.
     # ------------------------------------------------------------------
     edge_points: list[Vec3] = []
-    for edge_idx, (a, b) in enumerate(mesh.edges):
+    for edge_idx, (_a, _b) in enumerate(mesh.edges):
         midpoint = mesh.edge_midpoint(edge_idx)
         adj_faces = mesh.edge_faces[edge_idx]
         sharp = edge_sharp[edge_idx]

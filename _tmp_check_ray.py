@@ -1,5 +1,5 @@
-import trimesh
 import numpy as np
+import trimesh
 
 print('has_embree:', trimesh.ray.has_embree)
 m = trimesh.creation.box(extents=(1, 1, 1))

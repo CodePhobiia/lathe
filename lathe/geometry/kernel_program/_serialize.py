@@ -35,6 +35,26 @@ def _stable_unique_strings(values: list[Any]) -> list[str]:
     return out
 
 
+def _json_safe(value: Any) -> Any:
+    """Recursively convert ``value`` to JSON-serializable primitives.
+
+    Dicts are key-sorted (string-keyed) for deterministic output;
+    lists/tuples are mapped element-wise; primitives pass through;
+    everything else falls back to ``str(value)``. The result is safe
+    to feed into ``json.dumps`` and produces a stable diff across runs.
+    """
+    if isinstance(value, dict):
+        return {
+            str(key): _json_safe(item)
+            for key, item in sorted(value.items(), key=lambda item: str(item[0]))
+        }
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
+
+
 def _compact_face_operation_ids(face_operation_ids: list[Any]) -> dict[str, Any]:
     ids = [str(item) for item in face_operation_ids]
     return {
@@ -405,5 +425,6 @@ __all__ = [
     "_compact_shape_record_summary",
     "_compact_source_shape_record",
     "_dict_metadata",
+    "_json_safe",
     "_stable_unique_strings",
 ]

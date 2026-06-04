@@ -382,7 +382,7 @@
       ],
       "pbr": {
         "basecolor": "#6f5b35",
-        "metallic": 0.9,
+        "metallic": 1,
         "roughness": 0.48
       }
     },
@@ -394,7 +394,7 @@
         "black glass"
       ],
       "pbr": {
-        "basecolor": "#07080b",
+        "basecolor": "#211f1f",
         "metallic": 0,
         "roughness": 0.12,
         "emissive": "#312018"
@@ -421,7 +421,7 @@
         "candle gold"
       ],
       "pbr": {
-        "basecolor": "#ffc36a",
+        "basecolor": "#eebd6a",
         "metallic": 0,
         "roughness": 0.2,
         "emissive": "#ffb347"

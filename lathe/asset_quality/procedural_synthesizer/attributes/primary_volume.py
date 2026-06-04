@@ -15,7 +15,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_SHAPES: frozenset[str] = frozenset(
     {
         "box",
@@ -31,6 +30,10 @@ _VALID_AXES: frozenset[str] = frozenset({"x", "y", "z"})
 
 _VALID_SCALE_INTENTS: frozenset[str] = frozenset(
     {"small_prop", "human_scale", "structure"}
+)
+
+_VALID_EDGE_TREATMENTS: frozenset[str] = frozenset(
+    {"sharp", "beveled", "chamfered"}
 )
 
 
@@ -58,6 +61,24 @@ class PrimaryVolumeAttributes:
         scale_intent: hints downstream stages about appropriate
             material defaults and topology resolution. Must be in
             ``_VALID_SCALE_INTENTS``.
+        edge_treatment: how the volume's edges are finished after the
+            primary solid is emitted. Must be in
+            ``_VALID_EDGE_TREATMENTS``:
+              - "sharp": no edge op emitted; raw primitive edges
+              - "beveled": an ``op.bevel`` op follows the primary solid
+              - "chamfered": an ``op.chamfer`` op follows the primary solid
+            Per Sprint 0 S0-3 (the visible-geometry detail-op work),
+            beveled/chamfered is the default-on path for any hard-surface
+            asset to escape the "looks like procedural blockout" failure
+            mode. Style packs can declare a default via
+            ``parameter_priors.primary_volume.edge_treatment``; per-node
+            ``edge_treatment`` overrides the style default.
+        edge_treatment_width_cm: width of the bevel/chamfer in cm
+            (positive when edge_treatment != "sharp"). Style packs can
+            declare a default via
+            ``parameter_priors.primary_volume.edge_treatment_width_cm``.
+        edge_treatment_segments: segment count for beveled rounding
+            (>= 1; ignored for chamfered which is always 1 segment).
     """
 
     shape: str
@@ -65,6 +86,9 @@ class PrimaryVolumeAttributes:
     symmetry: tuple[str, ...] = ()
     rounding_cm: float = 0.0
     scale_intent: str = "human_scale"
+    edge_treatment: str = "sharp"
+    edge_treatment_width_cm: float = 0.0
+    edge_treatment_segments: int = 2
 
     def __post_init__(self) -> None:
         if self.shape not in _VALID_SHAPES:
@@ -103,6 +127,25 @@ class PrimaryVolumeAttributes:
                 f"primary_volume.scale_intent={self.scale_intent!r} not in "
                 f"{sorted(_VALID_SCALE_INTENTS)}"
             )
+        if self.edge_treatment not in _VALID_EDGE_TREATMENTS:
+            raise ValueError(
+                f"primary_volume.edge_treatment={self.edge_treatment!r} not in "
+                f"{sorted(_VALID_EDGE_TREATMENTS)}"
+            )
+        if self.edge_treatment != "sharp" and (
+            not isinstance(self.edge_treatment_width_cm, (int, float))
+            or float(self.edge_treatment_width_cm) <= 0
+        ):
+            raise ValueError(
+                f"primary_volume.edge_treatment={self.edge_treatment!r} requires "
+                f"edge_treatment_width_cm > 0; got "
+                f"{self.edge_treatment_width_cm}"
+            )
+        if not isinstance(self.edge_treatment_segments, int) or self.edge_treatment_segments < 1:
+            raise ValueError(
+                f"primary_volume.edge_treatment_segments={self.edge_treatment_segments} "
+                f"must be int >= 1"
+            )
 
         # Per-shape dimension requirements
         if self.shape in {"box", "rounded_box"}:
@@ -119,15 +162,14 @@ class PrimaryVolumeAttributes:
                         f"primary_volume.dimensions_cm missing required "
                         f"key {key!r} for shape 'cylinder'"
                     )
-        elif self.shape == "sphere":
-            if "radius" not in self.dimensions_cm:
-                raise ValueError(
-                    "primary_volume.dimensions_cm missing required "
-                    "key 'radius' for shape 'sphere'"
-                )
+        elif self.shape == "sphere" and "radius" not in self.dimensions_cm:
+            raise ValueError(
+                "primary_volume.dimensions_cm missing required "
+                "key 'radius' for shape 'sphere'"
+            )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "PrimaryVolumeAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> PrimaryVolumeAttributes:
         """Validate a raw attribute dict and produce a typed instance.
 
         Raises ValueError / TypeError on validation failure. The caller
@@ -145,4 +187,7 @@ class PrimaryVolumeAttributes:
             symmetry=tuple(attrs.get("symmetry") or ()),
             rounding_cm=float(attrs.get("rounding_cm") or 0.0),
             scale_intent=str(attrs.get("scale_intent") or "human_scale"),
+            edge_treatment=str(attrs.get("edge_treatment") or "sharp"),
+            edge_treatment_width_cm=float(attrs.get("edge_treatment_width_cm") or 0.0),
+            edge_treatment_segments=int(attrs.get("edge_treatment_segments") or 2),
         )

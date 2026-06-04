@@ -106,7 +106,7 @@ class BooleanSeamGroupBevelTests(unittest.TestCase):
     def test_bevel_modifier_inserts_edge_loop_strip(self) -> None:
         """With seam_group + polybevel modifier the chain must emit bevel faces."""
         ir = _make_panel_cut_ir(with_bevel=True, width_cm=1.0, segments=4)
-        mesh, _parts, report = compile_explicit_surface_mesh(ir, _hero_fidelity())
+        _mesh, _parts, report = compile_explicit_surface_mesh(ir, _hero_fidelity())
         self.assertEqual(report["mode"], "exact_boolean_difference")
         # The seam-group extraction must find at least one group with edges.
         self.assertGreaterEqual(report["post_boolean_seam_group_count"], 1)

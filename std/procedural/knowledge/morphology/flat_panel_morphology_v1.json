@@ -1,0 +1,33 @@
+{
+  "id": "flat_panel_morphology_v1",
+  "description": "Wall / cabinet / equipment panel morphology. Flat plate with inset panels, fasteners around perimeter, optional vents and trim.",
+  "domain": "hard_surface",
+  "body": {
+    "archetype": "flat_plate",
+    "long_axis": "X",
+    "expected_aspect": {
+      "x": [0.7, 1.0],
+      "y": [0.04, 0.1],
+      "z": [0.4, 0.9]
+    }
+  },
+  "parts_ladder": [
+    {"role": "primary_plate", "required": true, "min_count": 1, "max_count": 1, "node_type": "primary_volume"},
+    {"role": "inset_panel", "required": false, "min_count": 0, "max_count": 6, "node_type": "panel"},
+    {"role": "perimeter_fastener", "required": false, "min_count": 0, "max_count": 16, "node_type": "fastener"},
+    {"role": "vent", "required": false, "min_count": 0, "max_count": 4, "node_type": "vent"},
+    {"role": "trim_border", "required": false, "min_count": 0, "max_count": 4, "node_type": "trim"},
+    {"role": "primary_material", "required": true, "min_count": 1, "max_count": 1, "node_type": "material_zone"}
+  ],
+  "anchor_emitters": [
+    {"role": "front_face", "selector": "front_face"},
+    {"role": "perimeter_path", "selector": "front_face_perimeter"},
+    {"role": "corner", "selector": "front_face_corners"}
+  ],
+  "default_relations": [
+    {"source_role": "inset_panel", "relation": "inset_into", "target_role": "front_face"},
+    {"source_role": "perimeter_fastener", "relation": "attached_to", "target_role": "corner"},
+    {"source_role": "vent", "relation": "inset_into", "target_role": "front_face"},
+    {"source_role": "trim_border", "relation": "wraps_around", "target_role": "perimeter_path"}
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "brutalist_bunker_v1",
+  "description": "Brutalist bunker language. Massive blocky forms, raw concrete and unpainted steel, heavy welded seams, monochrome palette.",
+  "silhouette_bias": {
+    "forms": ["massive_blocky", "raw_geometric", "thick_seams"],
+    "avoid": ["ornate", "delicate", "transparent"]
+  },
+  "motifs": {
+    "preferred": ["weld_seams", "thick_bolts", "raw_concrete", "heavy_handles", "blast_doors"],
+    "rare": ["decorative_trim"],
+    "forbidden": ["holographic_panel", "wood_grain", "ornate_brass"]
+  },
+  "palette": {
+    "body": ["#4A4A4A", "#3E3E3E", "#585858"],
+    "accent": ["#202020", "#707070"],
+    "emissive": []
+  },
+  "materials": {
+    "body_panel": "raw_steel.abandoned_rusty",
+    "concrete_panel": "painted_steel.utility_industrial",
+    "fastener": "raw_steel.abandoned_rusty",
+    "weld_seam": "raw_steel.abandoned_rusty"
+  },
+  "wear": {
+    "edge_polish": 0.2,
+    "dust_in_seams": 0.6,
+    "paint_chipping": 0.0,
+    "oil_staining": 0.2,
+    "rust_probability": 0.5
+  },
+  "feature_weight_overrides": {
+    "weld_seams": 1.5,
+    "visible_fasteners": 1.2,
+    "thick_brackets": 1.4,
+    "clean_inset_panels": 0.4,
+    "decorative_trim": 0.1
+  }
+}

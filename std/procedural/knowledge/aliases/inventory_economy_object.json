@@ -1,0 +1,9 @@
+{
+  "family_id": "inventory_economy_object",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Inventory / currency / loot containers. A primary panel-bounded volume with raised label bands, distributed currency pips, paired access handles, slotted storage grid, side resource ports, and handled-wear masks. Pure metadata \u2014 structure comes from the construction graph + panelized_hard_surface_object policy. Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

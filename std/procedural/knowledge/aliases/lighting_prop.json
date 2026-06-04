@@ -1,0 +1,9 @@
+{
+  "family_id": "lighting_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Lighting prop fixture (base mount, armature rail, emitter material zone, housing guard, power-route socket, service plate panel, signage decal, fasteners, protective guard, edge wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

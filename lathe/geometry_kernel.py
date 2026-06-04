@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 from contextlib import suppress
 from typing import Any
@@ -122,7 +123,7 @@ def _primitive_bounds(primitive: ShapePrimitive, rounding: float = 0.0) -> tuple
         # voxelization fallback is rarely invoked; manifold/exact paths
         # produce the accurate prismatic mesh.
         polygon = primitive.profile_polygon or []
-        if len(polygon) < 3:  # noqa: PLR2004
+        if len(polygon) < 3:
             raise _UnsupportedPrimitiveTypeError(
                 f"extruded_profile primitive missing profile_polygon (part={primitive.part!r})"
             )
@@ -273,7 +274,7 @@ def _clean_polygon_points(points: list[tuple[float, float]]) -> list[tuple[float
 
 def _signed_polygon_distance_2d(points_2d: np.ndarray, polygon: list[tuple[float, float]]) -> np.ndarray:
     vertices = np.asarray(_clean_polygon_points(polygon), dtype=np.float64)
-    if len(vertices) < 3:  # noqa: PLR2004
+    if len(vertices) < 3:
         raise _UnsupportedPrimitiveTypeError("signed polygon SDF requires at least 3 points")
 
     shape = points_2d.shape[:-1]
@@ -307,7 +308,7 @@ def _signed_polygon_distance_2d(points_2d: np.ndarray, polygon: list[tuple[float
 
 def _extruded_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
     polygon = primitive.profile_polygon or []
-    if len(polygon) < 3:  # noqa: PLR2004
+    if len(polygon) < 3:
         raise _UnsupportedPrimitiveTypeError(
             f"extruded_profile primitive missing profile_polygon (part={primitive.part!r})"
         )
@@ -359,7 +360,7 @@ def _revolved_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, roundin
     )
     profile.append((float(profile_points[-1][0]), 0.0))
     profile = _clean_polygon_points(profile)
-    if len(profile) < 3:  # noqa: PLR2004
+    if len(profile) < 3:
         from .exact_solids import _revolved_profile_extents
 
         radius, height = _revolved_profile_extents(primitive)
@@ -392,7 +393,7 @@ def _torus_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -
 
 def _distance_to_sweep_path(points: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
     sweep_path = primitive.sweep_path or []
-    if len(sweep_path) < 2:  # noqa: PLR2004
+    if len(sweep_path) < 2:
         raise _UnsupportedPrimitiveTypeError(
             f"swept_profile primitive missing sweep_path (part={primitive.part!r})"
         )
@@ -404,7 +405,7 @@ def _distance_to_sweep_path(points: np.ndarray, primitive: ShapePrimitive) -> np
     shape = points.shape[:-1]
     query = points.reshape(-1, 3)
     min_distance_sq = np.full(len(query), np.inf, dtype=np.float64)
-    for left, right in zip(path, path[1:], strict=True):
+    for left, right in itertools.pairwise(path):
         edge = right - left
         edge_len_sq = float(np.dot(edge, edge))
         if edge_len_sq <= 0.0:
@@ -418,7 +419,7 @@ def _distance_to_sweep_path(points: np.ndarray, primitive: ShapePrimitive) -> np
 
 def _swept_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
     cross_section = primitive.cross_section or []
-    if len(cross_section) < 3:  # noqa: PLR2004
+    if len(cross_section) < 3:
         raise _UnsupportedPrimitiveTypeError(
             f"swept_profile primitive missing cross_section (part={primitive.part!r})"
         )
@@ -429,7 +430,7 @@ def _swept_profile_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: 
 
 def _distance_to_section_path(points: np.ndarray, primitive: ShapePrimitive) -> np.ndarray:
     section_centers = primitive.section_centers or []
-    if len(section_centers) < 2:  # noqa: PLR2004
+    if len(section_centers) < 2:
         raise _UnsupportedPrimitiveTypeError(
             f"lofted_solid primitive missing section_centers (part={primitive.part!r})"
         )
@@ -441,7 +442,7 @@ def _distance_to_section_path(points: np.ndarray, primitive: ShapePrimitive) -> 
     shape = points.shape[:-1]
     query = points.reshape(-1, 3)
     min_distance_sq = np.full(len(query), np.inf, dtype=np.float64)
-    for left, right in zip(path, path[1:], strict=True):
+    for left, right in itertools.pairwise(path):
         edge = right - left
         edge_len_sq = float(np.dot(edge, edge))
         if edge_len_sq <= 0.0:
@@ -455,7 +456,7 @@ def _distance_to_section_path(points: np.ndarray, primitive: ShapePrimitive) -> 
 
 def _lofted_solid_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: float) -> np.ndarray:
     cross_sections = primitive.cross_sections or []
-    if len(cross_sections) < 2:  # noqa: PLR2004
+    if len(cross_sections) < 2:
         raise _UnsupportedPrimitiveTypeError(
             f"lofted_solid primitive missing cross_sections (part={primitive.part!r})"
         )
@@ -463,10 +464,7 @@ def _lofted_solid_sdf(points: np.ndarray, primitive: ShapePrimitive, rounding: f
     for section in cross_sections:
         if not section:
             continue
-        radius = max(
-            radius,
-            max(float(np.hypot(float(u), float(v))) for u, v in section),
-        )
+        radius = max(radius, *(float(np.hypot(float(u), float(v))) for u, v in section))
     inset = max(0.0, float(rounding))
     return _distance_to_section_path(points, primitive) - max(0.0, radius - inset) - inset
 
@@ -648,7 +646,7 @@ def _assign_face_parts_from_primitives(
     for centroid in centroids:
         inside: list[tuple[str, float]] = []
         nearest: list[tuple[str, float]] = []
-        for part, center, bmin, bmax, volume in entries:
+        for part, center, bmin, bmax, _volume in entries:
             inside_aabb = bool(
                 np.all(centroid >= bmin - pad) and np.all(centroid <= bmax + pad)
             )

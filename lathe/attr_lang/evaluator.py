@@ -15,9 +15,9 @@ This module has zero dependencies outside the standard library.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from . import ast as _ast
 from . import builtins as _builtins
@@ -91,7 +91,6 @@ class EvalContext:
 
 def evaluate(node: _ast.Expr, ctx: EvalContext) -> Value:
     """Evaluate a single expression node against ``ctx``."""
-
     return _Evaluator(ctx).visit(node)
 
 
@@ -103,7 +102,6 @@ def evaluate_program(program: _ast.Program, ctx: EvalContext) -> EvalContext:
     statements are evaluated for side-effect-free type-checking and their
     result is discarded.
     """
-
     ev = _Evaluator(ctx)
     for stmt in program.statements:
         if isinstance(stmt, _ast.Assignment):
@@ -229,7 +227,6 @@ class _Evaluator:
 
     def _resolve_callee(self, node: _ast.Expr) -> Value:
         """Resolve a callee expression — handle namespace-as-callable case."""
-
         if isinstance(node, _ast.Identifier):
             # ``ramp(...)`` — namespace + directly-callable shorthand.
             if node.name in _builtins.DIRECTLY_CALLABLE_NAMESPACES:
@@ -259,11 +256,11 @@ class _Evaluator:
         if n.op in ("&&", "||"):
             left = self.visit(n.left)
             right = self.visit(n.right)
-            l = _builtins._to_float(left)
-            r = _builtins._to_float(right)
+            lv = _builtins._to_float(left)
+            rv = _builtins._to_float(right)
             if n.op == "&&":
-                return 1.0 if (l >= 0.5 and r >= 0.5) else 0.0
-            return 1.0 if (l >= 0.5 or r >= 0.5) else 0.0
+                return 1.0 if (lv >= 0.5 and rv >= 0.5) else 0.0
+            return 1.0 if (lv >= 0.5 or rv >= 0.5) else 0.0
 
         left = self.visit(n.left)
         right = self.visit(n.right)
@@ -271,9 +268,9 @@ class _Evaluator:
         if n.op in ("+", "-", "*", "/", "%"):
             return _builtins._vec_op(left, right, _ARITH_OPS[n.op])
         if n.op in ("<", ">", "<=", ">=", "==", "!="):
-            l = _builtins._to_float(left)
-            r = _builtins._to_float(right)
-            return 1.0 if _CMP_OPS[n.op](l, r) else 0.0
+            lv = _builtins._to_float(left)
+            rv = _builtins._to_float(right)
+            return 1.0 if _CMP_OPS[n.op](lv, rv) else 0.0
         if n.op == "&":
             return _builtins._vec_op(left, right, min)
         if n.op == "|":

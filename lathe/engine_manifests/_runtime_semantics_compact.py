@@ -25,7 +25,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 SCHEMA_FALLBACK = "lathe.engine_runtime_semantics.v1"
 
 

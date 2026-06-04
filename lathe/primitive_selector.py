@@ -15,7 +15,6 @@ from typing import Any
 
 from .shape_ir import ShapePrimitive
 
-
 _ROUND_BAR_COMPONENTS = {
     "access_ladder",
     "guardrail",
@@ -389,7 +388,6 @@ def select_component_primitives(
     family: str = "",
 ) -> PrimitiveSelectionResult:
     """Upgrade component primitives according to semantic/style intent."""
-
     style = _style_context(creative_grammar or {}, family=family)
     selected: list[ShapePrimitive] = []
     applied: list[dict[str, Any]] = []
@@ -417,7 +415,6 @@ def select_component_primitives(
 
 def primitive_selection_summary(applied: list[dict[str, Any]]) -> dict[str, Any]:
     """Return deterministic aggregate metadata for ShapeIR signatures."""
-
     by_component: dict[str, int] = {}
     by_target: dict[str, int] = {}
     for item in applied:
@@ -511,7 +508,7 @@ def _matches_selector_context(
     tokens = {str(item).lower() for item in style.get("tokens", set()) if item}
     style_pack = str(style.get("style_pack") or "").lower()
     return (
-        family in families
+        family in families  # no-family-dispatch: `families` is a per-selector configured set passed in by the caller, not a centralized dispatch table; this is the selector's data contract — match-when-family-in-allowed-set
         or bool(tokens & tokens_set)
         or any(token in style_pack for token in tokens_set)
     )
@@ -728,9 +725,8 @@ def _select_replacement(
         if "left_nozzle" in primitive.tags or "right_nozzle" in primitive.tags:
             return _nozzle_profile_from_cylinder(primitive), "hydrant_nozzle_revolved_profile"
 
-    if component_type == "bollard" and primitive.primitive_type == "cylinder":
-        if "cap" in primitive.tags:
-            return _sphere_from_cylinder_cap(primitive), "bollard_rounded_cap_sphere"
+    if component_type == "bollard" and primitive.primitive_type == "cylinder" and "cap" in primitive.tags:
+        return _sphere_from_cylinder_cap(primitive), "bollard_rounded_cap_sphere"
 
     return None, ""
 

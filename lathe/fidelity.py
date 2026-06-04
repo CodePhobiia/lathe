@@ -66,7 +66,6 @@ def _tier_multipliers(tier: str) -> dict[str, float | int]:
     Public helper so downstream surface authoring (e.g. ``surface_grammar``)
     can read tier-driven multipliers without re-deriving them.
     """
-
     if tier not in _TIER_MULTIPLIERS:
         raise KeyError(f"unknown fidelity tier: {tier!r}")
     return dict(_TIER_MULTIPLIERS[tier])

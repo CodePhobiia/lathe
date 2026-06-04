@@ -88,7 +88,7 @@ def _split_hard_edges(
     # Vertices that touch any hard edge — these need per-face copies so
     # that no face contributes to a smooth-averaged normal across a seam.
     hard_vertices: set[int] = set()
-    for (fa, fb), (va, vb), angle in zip(face_adj, adj_edges, adj_angles):
+    for (fa, fb), (va, vb), angle in zip(face_adj, adj_edges, adj_angles, strict=False):
         if angle < threshold:
             continue
         pa = face_parts[int(fa)]

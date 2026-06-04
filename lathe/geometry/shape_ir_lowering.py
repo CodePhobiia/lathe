@@ -12,13 +12,13 @@ forms the seam called out as task S0-7 in
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 import numpy as np
 import trimesh
 
-from ..shape_ir import ShapeIR
-from ..shape_ir import ShapePrimitive
+from ..shape_ir import ShapeIR, ShapePrimitive
 from .kernel import GeometryKernel
 from .kernel_program import (
     KernelOperand,
@@ -40,7 +40,6 @@ from .kernel_program import (
     execute_transform_program,
     semantic_metadata_from_primitive,
 )
-
 
 _KERNEL_BUILD_PRIMITIVE_KINDS = frozenset(
     {
@@ -271,8 +270,8 @@ def _solidify_heightfield_mesh(mesh: trimesh.Trimesh) -> tuple[trimesh.Trimesh, 
         solid.metadata["lathe_terrain_patch"] = {
             **terrain_metadata,
             "solidification_method": "heightfield_flat_base_shell_v1",
-            "open_surface_face_count": int(len(faces)),
-            "result_face_count": int(len(solid.faces)),
+            "open_surface_face_count": len(faces),
+            "result_face_count": len(solid.faces),
             "result_watertight": bool(solid.is_watertight),
         }
     return solid, {
@@ -612,10 +611,8 @@ def _solid_kernel_mesh_for_primitive(
     repaired.remove_unreferenced_vertices()
     repaired.merge_vertices()
     repaired.fix_normals()
-    try:
+    with contextlib.suppress(AttributeError, ImportError, TypeError, ValueError):
         trimesh.repair.fill_holes(repaired)
-    except (AttributeError, ImportError, TypeError, ValueError):
-        pass
     if bool(repaired.is_watertight):
         return repaired, True
     raise ShapeIRKernelProgramError(
@@ -719,10 +716,8 @@ def operands_from_shape_ir(kernel: GeometryKernel, shape_ir: ShapeIR) -> list[Ke
                 source_index=index,
                 metadata=metadata,
             )
-            try:
+            with contextlib.suppress(AttributeError, TypeError, ValueError, RuntimeError, OSError):
                 handle = kernel.from_trimesh(mesh)
-            except (AttributeError, TypeError, ValueError, RuntimeError, OSError):
-                pass
         else:
             build_attempt = build_result[3] if build_result is not None else {}
             if exact_import_reason:
@@ -916,7 +911,7 @@ def _mesh_body_count(mesh: trimesh.Trimesh) -> int:
     if len(mesh.faces) == 0:
         return 0
     try:
-        return int(len(mesh.split(only_watertight=False)))
+        return len(mesh.split(only_watertight=False))
     except (AttributeError, TypeError, ValueError, RuntimeError):
         return 1
 

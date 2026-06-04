@@ -22,14 +22,14 @@ can branch without paying the per-edge dispatch cost.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .mesh import SubdivMesh
 
 
-class BoundaryRule(str, Enum):
+class BoundaryRule(StrEnum):
     """Boundary handling policy for subdivision."""
 
     SMOOTH = "smooth"
@@ -37,7 +37,7 @@ class BoundaryRule(str, Enum):
     CORNERS = "corners"
 
     @classmethod
-    def from_text(cls, text: str) -> "BoundaryRule":
+    def from_text(cls, text: str) -> BoundaryRule:
         """Parse a boundary rule from authored text."""
         normalised = text.lower().strip().replace("-", "_").replace(" ", "_")
         aliases = {
@@ -54,7 +54,7 @@ class BoundaryRule(str, Enum):
         return aliases[normalised]
 
 
-def classify_boundary_edges(mesh: "SubdivMesh") -> tuple[set[int], set[int]]:
+def classify_boundary_edges(mesh: SubdivMesh) -> tuple[set[int], set[int]]:
     """Return ``(boundary_edge_indices, boundary_vertex_indices)``."""
     boundary_edges: set[int] = set()
     boundary_vertices: set[int] = set()

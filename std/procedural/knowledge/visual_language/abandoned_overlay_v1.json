@@ -1,0 +1,36 @@
+{
+  "id": "abandoned_overlay_v1",
+  "description": "Abandoned/derelict overlay. Increases dust, rust, paint chipping, decal fading; lowers polish; introduces broken/missing fastener variants. Applied on top of any base visual language as a condition overlay.",
+  "silhouette_bias": {
+    "forms": ["broken_pieces", "missing_panels", "decayed_edges"],
+    "avoid": ["pristine_clean"]
+  },
+  "motifs": {
+    "preferred": ["rust_blooms", "vine_overgrowth", "dust_piles", "chipped_labels", "broken_fasteners"],
+    "rare": ["fresh_paint"],
+    "forbidden": ["clean_polish"]
+  },
+  "palette": {
+    "body": ["#5A4A38", "#3E3428", "#4E3E30"],
+    "accent": ["#A05530", "#704830", "#605040"],
+    "emissive": []
+  },
+  "materials": {
+    "body_panel": "raw_steel.abandoned_rusty",
+    "trim": "raw_steel.abandoned_rusty",
+    "fastener": "raw_steel.abandoned_rusty",
+    "decal": "decal_warning.utility_industrial"
+  },
+  "wear": {
+    "edge_polish": 0.05,
+    "dust_in_seams": 0.9,
+    "paint_chipping": 0.85,
+    "oil_staining": 0.6,
+    "rust_probability": 0.85
+  },
+  "feature_weight_overrides": {
+    "broken_fasteners": 1.5,
+    "rust_blooms": 1.7,
+    "clean_inset_panels": 0.2
+  }
+}

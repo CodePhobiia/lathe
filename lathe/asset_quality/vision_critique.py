@@ -119,13 +119,17 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import struct
+import zlib
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from .semantic_critique import critique_quality_plan
 
 VISION_CRITIQUE_VERSION = "vision_critique_v1"
+RENDERED_PIXEL_CRITIQUE_VERSION = "lathe.asset_quality.rendered_pixel_critique_v1"
 
 _DETERMINISTIC_STUB_NAME = "deterministic_stub"
 _DETERMINISTIC_STUB_VERSION = "v1"
@@ -1090,3 +1094,222 @@ def evaluate_vision_critique(
     if quality_plan:
         payload["quality_plan_critique"] = critique_quality_plan(quality_plan)
     return payload
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        while True:
+            chunk = f.read(65536)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _read_simple_rgb_png(path: Path) -> tuple[int, int, list[tuple[int, int, int]]]:
+    """Read the RGB PNGs emitted by Lathe's deterministic raster helpers."""
+
+    data = path.read_bytes()
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ValueError(f"not_a_png: {path}")
+    pos = 8
+    width = 0
+    height = 0
+    bit_depth = 0
+    color_type = 0
+    compressed = bytearray()
+    while pos < len(data):
+        if pos + 8 > len(data):
+            break
+        length = struct.unpack(">I", data[pos : pos + 4])[0]
+        chunk_type = data[pos + 4 : pos + 8]
+        chunk_data = data[pos + 8 : pos + 8 + length]
+        pos += 12 + length
+        if chunk_type == b"IHDR":
+            width, height, bit_depth, color_type, _, _, _ = struct.unpack(
+                ">IIBBBBB", chunk_data
+            )
+        elif chunk_type == b"IDAT":
+            compressed.extend(chunk_data)
+        elif chunk_type == b"IEND":
+            break
+    if width <= 0 or height <= 0 or bit_depth != 8 or color_type != 2:
+        raise ValueError(
+            f"unsupported_png_format: width={width} height={height} bit_depth={bit_depth} color_type={color_type}"
+        )
+    raw = zlib.decompress(bytes(compressed))
+    stride = width * 3
+    pixels: list[tuple[int, int, int]] = []
+    offset = 0
+    for _ in range(height):
+        filter_type = raw[offset]
+        offset += 1
+        if filter_type != 0:
+            raise ValueError(f"unsupported_png_filter: {filter_type}")
+        row = raw[offset : offset + stride]
+        offset += stride
+        for i in range(0, len(row), 3):
+            pixels.append((row[i], row[i + 1], row[i + 2]))
+    return width, height, pixels
+
+
+def _pixel_metrics(width: int, height: int, pixels: list[tuple[int, int, int]]) -> dict[str, float]:
+    if not pixels:
+        return {
+            "silhouette_readability_observed": 0.0,
+            "material_zone_clarity_observed": 0.0,
+            "debug_material_appearance_observed": 1.0,
+            "blockout_appearance_observed": 1.0,
+        }
+    bg = pixels[0]
+    foreground: list[tuple[int, int, int]] = []
+    min_x = width
+    min_y = height
+    max_x = 0
+    max_y = 0
+    for index, color in enumerate(pixels):
+        diff = abs(color[0] - bg[0]) + abs(color[1] - bg[1]) + abs(color[2] - bg[2])
+        if diff <= 18:
+            continue
+        foreground.append(color)
+        x = index % width
+        y = index // width
+        min_x = min(min_x, x)
+        min_y = min(min_y, y)
+        max_x = max(max_x, x)
+        max_y = max(max_y, y)
+    if not foreground:
+        return {
+            "silhouette_readability_observed": 0.0,
+            "material_zone_clarity_observed": 0.0,
+            "debug_material_appearance_observed": 1.0,
+            "blockout_appearance_observed": 1.0,
+        }
+    bbox_area = max(1, (max_x - min_x + 1) * (max_y - min_y + 1))
+    fill_ratio = len(foreground) / bbox_area
+    image_ratio = len(foreground) / max(1, width * height)
+    quantized = {
+        (r // 32, g // 32, b // 32)
+        for r, g, b in foreground
+    }
+    dominant_count = 0
+    counts: dict[tuple[int, int, int], int] = {}
+    for color in foreground:
+        token = (color[0] // 32, color[1] // 32, color[2] // 32)
+        counts[token] = counts.get(token, 0) + 1
+        dominant_count = max(dominant_count, counts[token])
+    dominant_ratio = dominant_count / max(1, len(foreground))
+    debugish = sum(
+        1
+        for r, g, b in foreground
+        if max(r, g, b) > 220 and min(r, g, b) < 45
+    ) / max(1, len(foreground))
+    return {
+        "silhouette_readability_observed": round(
+            max(0.0, min(1.0, 1.0 - abs(fill_ratio - 0.52) * 1.7 + image_ratio * 0.6)),
+            4,
+        ),
+        "material_zone_clarity_observed": round(max(0.0, min(1.0, len(quantized) / 7.0)), 4),
+        "debug_material_appearance_observed": round(max(0.0, min(1.0, debugish)), 4),
+        "blockout_appearance_observed": round(max(0.0, min(1.0, dominant_ratio)), 4),
+    }
+
+
+def critique_rendered_pixels(
+    *,
+    asset_id: str,
+    image_paths: list[str | Path] | tuple[str | Path, ...],
+    target_level: int = 5,
+) -> dict[str, Any]:
+    """Critique rendered image files using deterministic local pixel heuristics.
+
+    This function fails on missing images. It is intentionally small:
+    it proves that critique output came from rendered bytes and carries
+    image hashes, not invented metadata.
+    """
+
+    paths = [Path(path) for path in image_paths]
+    if not paths:
+        raise ValueError("no_image_paths_supplied")
+    image_records: list[dict[str, Any]] = []
+    aggregate = {
+        "silhouette_readability_observed": 0.0,
+        "material_zone_clarity_observed": 0.0,
+        "debug_material_appearance_observed": 0.0,
+        "blockout_appearance_observed": 0.0,
+    }
+    for path in paths:
+        if not path.is_file():
+            raise FileNotFoundError(f"critique_image_missing: {path}")
+        width, height, pixels = _read_simple_rgb_png(path)
+        metrics = _pixel_metrics(width, height, pixels)
+        for key, value in metrics.items():
+            aggregate[key] += float(value)
+        image_records.append(
+            {
+                "path": str(path).replace("\\", "/"),
+                "sha256": _sha256_file(path),
+                "width": width,
+                "height": height,
+                "metrics": metrics,
+            }
+        )
+    for key in aggregate:
+        aggregate[key] = round(aggregate[key] / len(paths), 4)
+    patches: list[dict[str, Any]] = []
+    if aggregate["material_zone_clarity_observed"] < 0.72:
+        patches.append(
+            {
+                "patch_id": "semantic_patch.material_zone_contrast",
+                "target": "design_brief",
+                "operation": "increase",
+                "field": "design_brief.material_zone_contrast",
+                "proposed_value": 0.78,
+                "repair_action": "increase_material_zone_contrast",
+            }
+        )
+    if aggregate["blockout_appearance_observed"] > 0.52:
+        patches.append(
+            {
+                "patch_id": "semantic_patch.add_secondary_detail",
+                "target": "shape_ir_v2",
+                "operation": "add",
+                "field": "shape_ir_v2.secondary_detail_ops",
+                "proposed_value": ["window_glow", "roof_trim", "door_frame"],
+                "repair_action": "add_secondary_features",
+            }
+        )
+    if aggregate["silhouette_readability_observed"] < 0.68:
+        patches.append(
+            {
+                "patch_id": "semantic_patch.improve_silhouette",
+                "target": "shape_ir_v2",
+                "operation": "increase",
+                "field": "shape_ir_v2.silhouette_breakup",
+                "proposed_value": 0.74,
+                "repair_action": "restore_edge_treatment",
+            }
+        )
+    fingerprint_body = {
+        "asset_id": asset_id,
+        "image_hashes": [record["sha256"] for record in image_records],
+        "metrics": aggregate,
+        "patches": patches,
+    }
+    fingerprint = hashlib.sha256(
+        json.dumps(fingerprint_body, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    observed_level = 5 if not patches else 4
+    return {
+        "version": RENDERED_PIXEL_CRITIQUE_VERSION,
+        "asset_id": asset_id,
+        "target_level": target_level,
+        "observed_level": observed_level,
+        "status": "pixel_critique_complete",
+        "deterministic_fingerprint": fingerprint,
+        "images": image_records,
+        "observed": aggregate,
+        "patches_proposed": patches,
+        "rule_of_truth": "Critique derived from PNG byte hashes and deterministic pixel metrics.",
+    }

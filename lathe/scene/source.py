@@ -8,11 +8,12 @@ an embedded Scene Graph JSON payload that remains the durable truth.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import math
 import re
-from copy import deepcopy
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -3423,7 +3424,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "sample_count",
     "samples",
     "tick_rate",
-    "radius",
     "gradient",
     "falloff",
     "intensity",
@@ -3451,7 +3451,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "sensor_type",
     "channels",
     "coverage",
-    "occlusion",
     "cover_score",
     "metric",
     "metric_value",
@@ -3612,7 +3611,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "resource_claims",
     "land_owner",
     "settlement",
-    "biome",
     "impact_type",
     "impact_score",
     "supply_chain_count",
@@ -3902,7 +3900,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "role_item_set_count",
     "preset_item_count",
     "role_preset_count",
-    "policy_rule_count",
     "building_envelope_count",
     "floor_stack_count",
     "facade_grid_count",
@@ -3952,7 +3949,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "objective_count",
     "front_count",
     "escalation_count",
-    "diplomacy_count",
     "sanctions_count",
     "espionage_count",
     "covert_count",
@@ -3961,7 +3957,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "ai_count",
     "doctrine_count",
     "goal_count",
-    "threat_model_count",
     "perception_count",
     "decision_count",
     "selector_count",
@@ -3972,15 +3967,12 @@ _SURFACE_OVERRIDE_KEYS = {
     "operational_count",
     "order_count",
     "queue_count",
-    "patrol_order_count",
     "convoy_count",
     "construction_count",
-    "repair_order_count",
     "relief_count",
     "assignment_count",
     "crew_count",
     "evolution_count",
-    "growth_count",
     "expansion_count",
     "stage_count",
     "upgrade_count",
@@ -3996,13 +3988,11 @@ _SURFACE_OVERRIDE_KEYS = {
     "expansion_zones",
     "projects",
     "upgrades",
-    "materials",
     "materials_required",
     "construction_materials",
     "staff_roles",
     "occupants",
     "occupancy",
-    "damage_level",
     "repair_priority",
     "demolition_reason",
     "renovation_theme",
@@ -4014,10 +4004,8 @@ _SURFACE_OVERRIDE_KEYS = {
     "districts",
     "buildings",
     "city_blocks",
-    "zones",
     "zoning_districts",
     "zoning",
-    "density",
     "allowed_uses",
     "parcel_count",
     "parcels",
@@ -4040,7 +4028,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "growth_limit",
     "dependencies",
     "dependency_rules",
-    "pressure_sources",
     "pressure_level",
     "district_site_plan",
     "street_crossing",
@@ -4070,7 +4057,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "access_transition_profile",
     "entry_points",
     "service_entry_points",
-    "thresholds",
     "lobby_zones",
     "checkpoint_nodes",
     "loading_routes",
@@ -4105,7 +4091,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "corridor_spines",
     "floor_transitions",
     "public_routes",
-    "service_routes",
     "circulation_controls",
     "circulation_detail_controls",
     "tread_count",
@@ -4171,7 +4156,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "circuits",
     "circuit_count",
     "risers",
-    "riser_count",
     "panels",
     "panel_count",
     "meters",
@@ -4409,8 +4393,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "site_utility_map",
     "site_compound_controls",
     "goods",
-    "inputs",
-    "outputs",
     "stages",
     "processors",
     "depots",
@@ -4420,19 +4402,14 @@ _SURFACE_OVERRIDE_KEYS = {
     "transport_modes",
     "mode",
     "inventory",
-    "capacity",
     "throughput",
     "throughput_rate",
     "latency",
     "loss_rate",
     "failure_rate",
     "recovery_time",
-    "priority",
     "batch_size",
     "recipe",
-    "recipes",
-    "source_nodes",
-    "sink_nodes",
     "from_node",
     "to_node",
     "priorities",
@@ -4476,12 +4453,9 @@ _SURFACE_OVERRIDE_KEYS = {
     "escalation_level",
     "deescalation",
     "casus_belli",
-    "doctrine",
     "goals",
     "threats",
     "signals",
-    "inputs",
-    "policies",
     "options",
     "response_modes",
     "risk_tolerance",
@@ -4494,7 +4468,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "policy_bias",
     "fallback_policy",
     "orders",
-    "tasks",
     "crews",
     "crew_size",
     "teams",
@@ -4512,7 +4485,6 @@ _SURFACE_OVERRIDE_KEYS = {
     "patrols",
     "convoys",
     "missions",
-    "routes",
     "resources_required",
     "supplies",
     "director_type",
@@ -4532,20 +4504,14 @@ _SURFACE_OVERRIDE_KEYS = {
     "max_active",
     "reserve",
     "phase",
-    "phases",
     "combat_phases",
     "stealth_phases",
     "difficulty",
     "min_difficulty",
     "max_difficulty",
     "escalation",
-    "cooldown",
     "relief",
-    "pressure",
-    "beats",
     "signal",
-    "signals",
-    "zones",
     "material_zones",
 }
 _CHILD_MODULE_KINDS = ("vehicle", "boat", "machine", "interior", "furniture", "foliage", "generic")
@@ -7176,9 +7142,7 @@ def _merge_style_payload(target: dict[str, Any], source: Mapping[str, Any], *, o
             tags = _string_list(target.get("semantic_tags") or target.get("tags"))
             tags.extend(_string_list(value))
             target["semantic_tags"] = _dedupe(tags)
-        elif key == "material_bindings" and key not in target:
-            target[key] = deepcopy(value)
-        elif key not in target:
+        elif (key == "material_bindings" and key not in target) or key not in target:
             target[key] = deepcopy(value)
 
 
@@ -7320,7 +7284,7 @@ def _scene_modules_by_name(scene: Mapping[str, Any]) -> dict[str, Mapping[str, A
 
 def _scene_variant_families_by_name(scene: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
     families: dict[str, Mapping[str, Any]] = {}
-    for family in _mapping_list(scene.get("variant_families")):
+    for family in _mapping_list(scene.get("variant_families")):  # no-family-dispatch: `family` is the loop variable iterating over scene-level `variant_families` AST blocks to build a name→block lookup table; not a dispatch lookup
         name = _string(family.get("name"))
         if name:
             families[name] = family
@@ -7874,7 +7838,7 @@ def _expand_kit_sockets(
 ) -> list[Mapping[str, Any]]:
     sockets: list[Mapping[str, Any]] = []
     fallback_targets = [_string(obj.get("name")) for obj in objects if _string(obj.get("name"))]
-    for index, socket in enumerate(_mapping_list(kit_values.get("_sockets"))):
+    for _index, socket in enumerate(_mapping_list(kit_values.get("_sockets"))):
         values = deepcopy(dict(_values(socket)))
         target_ref = _string(_composition_target(values, "on", "object", "target", "to", "parent"))
         targets = generated_by_part.get(target_ref, []) if target_ref else fallback_targets[:1]
@@ -7900,7 +7864,7 @@ def _expand_kit_attachments(
     generated_by_part: Mapping[str, list[str]],
 ) -> list[Mapping[str, Any]]:
     attachments: list[Mapping[str, Any]] = []
-    for index, attachment in enumerate(_mapping_list(kit_values.get("_attachments"))):
+    for _index, attachment in enumerate(_mapping_list(kit_values.get("_attachments"))):
         values = deepcopy(dict(_values(attachment)))
         source_ref = _string(_composition_target(values, "from", "source", "child", "object"))
         target_ref = _string(_composition_target(values, "to", "target", "parent", "on"))
@@ -8207,7 +8171,7 @@ def _environment_feature_object(
     if source_family:
         values["source_family"] = source_family
     values["source_kit"] = biome_ref or environment_name
-    values["variant"] = kind if not asset_ref else asset_ref
+    values["variant"] = asset_ref if asset_ref else kind
     values["transform"] = _environment_feature_transform(environment_values, biome_values, kind, feature_index, _positive_int(spec.get("count"), default=1), placement_zone)
     density = _number(environment_values.get("density") or biome_values.get("density"), default=0.0)
     state = dict(values.get("state", {})) if isinstance(values.get("state"), Mapping) else {}
@@ -8625,8 +8589,8 @@ def _scatter_count(
         if placement_zone:
             size = _vector3(placement_zone.get("size"), [12.0, 12.0, 4.0])
             area = max(1.0, abs(size[0] * size[1]))
-            return max(1, min(2048, int(round(area * density / 8.0))))
-        return max(1, min(2048, int(round(density * 24.0))))
+            return max(1, min(2048, round(area * density / 8.0)))
+        return max(1, min(2048, round(density * 24.0)))
     return max(1, min(2048, option_count))
 
 
@@ -10130,7 +10094,7 @@ def _assembly_chain_attachments(
     names = [_string(obj.get("name")) for obj in objects if _string(obj.get("name"))]
     if len(names) < 2:
         return []
-    pairs = list(zip(names, names[1:]))
+    pairs = list(itertools.pairwise(names))
     if mode in {"loop", "ring"}:
         pairs.append((names[-1], names[0]))
     attach_mode = _snake_id(
@@ -10343,7 +10307,7 @@ def _auto_generator_attachments(
     names = [_string(obj.get("name")) for obj in objects if _string(obj.get("name"))]
     if len(names) < 2:
         return []
-    pairs = list(zip(names, names[1:]))
+    pairs = list(itertools.pairwise(names))
     if mode in {"loop", "ring"}:
         pairs.append((names[-1], names[0]))
     attach_mode = _snake_id(generator_values.get("attach_mode") or generator_values.get("mode"), "snap")
@@ -12707,7 +12671,7 @@ def _expand_vehicle_yard_macro(
         objects.extend(service_objects)
         relationships.extend(service_relationships)
         relationships.append(_macro_relationship(name, core_name, f"{name}_services_service_core", "attached_to", f"Vehicle yard {name} is supplied by {name}_services_service_core."))
-        relationships.append(_macro_relationship(name, f"{name}_services_maintenance_access", bay_anchor_name if bay_count else surface_name, "routes_to", f"Service access reaches vehicle yard bays."))
+        relationships.append(_macro_relationship(name, f"{name}_services_maintenance_access", bay_anchor_name if bay_count else surface_name, "routes_to", "Service access reaches vehicle yard bays."))
 
     for index in range(access_count):
         access_name = f"{name}_approach_{index + 1:02d}"
@@ -13013,7 +12977,7 @@ def _expand_factory_complex_macro(node: Mapping[str, Any]) -> tuple[list[Mapping
         relationships.extend(service_relationships)
         relationships.append(_macro_relationship(name, core_name, f"{name}_services_service_core", "attached_to", f"Factory {name} is supplied by service core {name}_services_service_core."))
         if line_names:
-            relationships.append(_macro_relationship(name, f"{name}_services_service_core", f"{line_names[0]}_line_core", "connects_to", f"Factory services feed the production line system."))
+            relationships.append(_macro_relationship(name, f"{name}_services_service_core", f"{line_names[0]}_line_core", "connects_to", "Factory services feed the production line system."))
 
     for index in range(access_count):
         access_name = f"{name}_worker_access_{index + 1:02d}"
@@ -13060,7 +13024,7 @@ def _expand_factory_complex_macro(node: Mapping[str, Any]) -> tuple[list[Mapping
         relationships.extend(yard_relationships)
         relationships.append(_macro_relationship(name, core_name, f"{name}_vehicle_yard_yard_core", "contains", f"Factory {name} contains a connected vehicle yard."))
         if dock_count:
-            relationships.append(_macro_relationship(name, f"{name}_vehicle_yard_yard_core", f"{name}_loading_dock_01", "routes_to", f"Factory vehicle yard routes to loading docks."))
+            relationships.append(_macro_relationship(name, f"{name}_vehicle_yard_yard_core", f"{name}_loading_dock_01", "routes_to", "Factory vehicle yard routes to loading docks."))
 
     return objects, relationships
 
@@ -13604,7 +13568,7 @@ def _expand_industrial_district_macro(node: Mapping[str, Any]) -> tuple[list[Map
         relationships.extend(service_relationships)
         relationships.append(_macro_relationship(name, f"{name}_utility_spine_service_core", core_name, "connects_to", f"Utility spine feeds industrial district {name}."))
         if road_core_name:
-            relationships.append(_macro_relationship(name, f"{name}_utility_spine_maintenance_access", road_core_name, "routes_to", f"Utility maintenance access reaches the district road grid."))
+            relationships.append(_macro_relationship(name, f"{name}_utility_spine_maintenance_access", road_core_name, "routes_to", "Utility maintenance access reaches the district road grid."))
 
     for index in range(gate_count):
         gate_name = f"{name}_security_gate_{index + 1:02d}"
@@ -14372,9 +14336,9 @@ def _expand_resource_region_macro(node: Mapping[str, Any]) -> tuple[list[Mapping
             "landform": region_kind,
             "resource_count": len(resources),
             "ore_vein_count": len([item for item in resources if item in {"ore", "metal", "crystal", "stone"}]),
-            "water_count": 1 if any(item in resources for item in {"water", "fish", "salt"}) else 0,
-            "forest_count": 1 if any(item in resources for item in {"wood", "fiber", "herbs"}) else 0,
-            "field_count": 1 if any(item in resources for item in {"food", "grain", "herbs"}) else 0,
+            "water_count": 1 if any(item in resources for item in ("water", "fish", "salt")) else 0,
+            "forest_count": 1 if any(item in resources for item in ("wood", "fiber", "herbs")) else 0,
+            "field_count": 1 if any(item in resources for item in ("food", "grain", "herbs")) else 0,
             "hazard_count": hazard_count,
             "path_count": max(1, access_count),
         },
@@ -14908,11 +14872,11 @@ def _resource_region_resources(values: Mapping[str, Any], region_kind: str) -> l
 
 def _resource_region_services(region_kind: str, resources: Sequence[str]) -> list[str]:
     services = ["power", "data"]
-    if any(item in resources for item in {"water", "fish", "salt", "food", "grain", "herbs"}):
+    if any(item in resources for item in ("water", "fish", "salt", "food", "grain", "herbs")):
         services.extend(["water", "drain"])
-    if any(item in resources for item in {"fuel", "gas", "oil"}):
+    if any(item in resources for item in ("fuel", "gas", "oil")):
         services.extend(["fuel", "air"])
-    if any(item in resources for item in {"ore", "metal", "stone", "crystal", "scrap"}):
+    if any(item in resources for item in ("ore", "metal", "stone", "crystal", "scrap")):
         services.extend(["air", "water"])
     if region_kind in {"refinery", "chemical", "volcanic"}:
         services.extend(["fuel", "drain"])
@@ -17790,7 +17754,6 @@ def _expand_sequencer_macro(node: Mapping[str, Any]) -> tuple[list[Mapping[str, 
             "sequence_type": _snake_id(values.get("sequence_type") or values.get("type"), "event_action"),
             "step_count": len(steps),
             "events": events,
-            "event_count": len(events),
             "blocking": not _disabled(values.get("blocking", True)),
             "loop": not _disabled(values.get("loop", False)),
             "object_archetype": "sequencer",
@@ -21336,7 +21299,7 @@ def _conflict_diplomacy_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -21778,7 +21741,7 @@ def _faction_ai_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -22166,7 +22129,7 @@ def _operational_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -22536,7 +22499,7 @@ def _evolution_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -22990,7 +22953,7 @@ def _city_plan_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -23584,7 +23547,7 @@ def _access_transition_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -24087,7 +24050,7 @@ def _circulation_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -24628,7 +24591,7 @@ def _expand_circulation_egress_macro(node: Mapping[str, Any], *, construct: str)
         add_child("world_metric", "rail_count", {"metric": "handrail_count", "metric_value": values.get("handrail_count") or 1}, [center[0] + 0.24, center[1] + 0.22, center[2] + 0.04], relation="counts", description=f"Handrail run {name} exposes rail count.")
 
     elif construct == "corridor_shell":
-        for index, side in enumerate(["left", "right"]):
+        for _index, side in enumerate(["left", "right"]):
             add_child("wall_run", f"{side}_wall", {"wall_side": side, "corridor_width": values.get("corridor_width") or 1.4, "wall_length": values.get("corridor_length") or 8.0}, [center[0] + (-0.22 if side == "left" else 0.22), center[1] + 0.28, center[2] + 0.04], relation="bounds", description=f"Corridor shell {name} places {side} wall run.")
         add_child("door_rhythm", "door_rhythm", {"door_bay_count": door_bay_count, "room_route_targets": room_targets}, [center[0] - 0.24, center[1] - 0.06, center[2] + 0.04], relation="cuts", description=f"Corridor shell {name} cuts door rhythm.")
         add_child("ceiling_service_grid", "ceiling_grid", {"ceiling_grid_count": ceiling_grid_count, "services": values.get("services") or ["power", "data", "lighting"]}, [center[0], center[1] - 0.06, center[2] + 0.04], relation="routes_services", description=f"Corridor shell {name} routes ceiling services.")
@@ -24786,7 +24749,7 @@ def _infra_network_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -25210,7 +25173,7 @@ def _building_service_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -25281,7 +25244,7 @@ def _building_service_counts(values: Mapping[str, Any], construct: str, services
             "service_zone_count": len(zones),
             "service_connection_count": max(1, len(services)),
             "junction_box_count": max(counts.get("junction_box_count", 0), len(services)),
-            "support_count": max(counts.get("support_count", 0), max(2, floors)),
+            "support_count": max(counts.get("support_count", 0), 2, floors),
         }
     )
     if construct == "building_service_plan":
@@ -25293,15 +25256,15 @@ def _building_service_counts(values: Mapping[str, Any], construct: str, services
     elif construct == "mechanical_room":
         counts.update({"hvac_system_count": 1, "ventilation_duct_count": max(1, floors), "electrical_panel_count": 1, "plumbing_stack_count": 1, "duct_count": max(counts["duct_count"], floors * 2)})
     elif construct == "electrical_panel":
-        counts.update({"meter_bank_count": 1, "conduit_count": max(counts["conduit_count"], max(2, len(zones))), "circuit_count": max(1, _positive_int(values.get("circuits") or values.get("circuit_count"), default=max(4, len(zones))))})
+        counts.update({"meter_bank_count": 1, "conduit_count": max(counts["conduit_count"], 2, len(zones)), "circuit_count": max(1, _positive_int(values.get("circuits") or values.get("circuit_count"), default=max(4, len(zones))))})
     elif construct == "meter_bank":
-        counts.update({"junction_box_count": max(counts["junction_box_count"], max(2, len(services))), "meter_count": max(1, _positive_int(values.get("meters") or values.get("meter_count"), default=max(1, len(services))))})
+        counts.update({"junction_box_count": max(counts["junction_box_count"], 2, len(services)), "meter_count": max(1, _positive_int(values.get("meters") or values.get("meter_count"), default=max(1, len(services))))})
     elif construct == "plumbing_stack":
         counts.update({"pipe_count": max(counts["pipe_count"], floors * 2), "valve_count": max(counts["valve_count"], floors), "waste_chute_count": 1, "sprinkler_zone_count": 1})
     elif construct == "hvac_system":
         counts.update({"ventilation_duct_count": max(1, floors), "duct_count": max(counts["duct_count"], floors * 2), "hvac_count": max(1, _positive_int(values.get("hvac_count") or values.get("units"), default=1))})
     elif construct == "ventilation_duct":
-        counts.update({"duct_count": max(counts["duct_count"], max(1, floors)), "vent_count": max(1, _positive_int(values.get("vents") or values.get("vent_count"), default=max(2, len(zones))))})
+        counts.update({"duct_count": max(counts["duct_count"], 1, floors), "vent_count": max(1, _positive_int(values.get("vents") or values.get("vent_count"), default=max(2, len(zones))))})
     elif construct == "elevator_core":
         counts.update({"service_elevator_count": max(1, _positive_int(values.get("cars") or values.get("car_count"), default=1)), "service_shaft_count": 1, "elevator_count": max(1, _positive_int(values.get("cars") or values.get("car_count"), default=1)), "platform_count": floors, "safety_gate_count": floors})
     elif construct == "service_elevator":
@@ -25309,7 +25272,7 @@ def _building_service_counts(values: Mapping[str, Any], construct: str, services
     elif construct == "service_shaft":
         counts.update({"shaft_count": max(1, _positive_int(values.get("shafts") or values.get("shaft_count"), default=1)), "pipe_count": max(counts["pipe_count"], floors), "conduit_count": max(counts["conduit_count"], floors), "duct_count": max(counts["duct_count"], floors)})
     elif construct == "fire_suppression":
-        counts.update({"sprinkler_zone_count": max(1, len(zones)), "pipe_count": max(counts["pipe_count"], floors), "valve_count": max(counts["valve_count"], max(1, floors // 2)), "hazard_field_count": 1})
+        counts.update({"sprinkler_zone_count": max(1, len(zones)), "pipe_count": max(counts["pipe_count"], floors), "valve_count": max(counts["valve_count"], 1, floors // 2), "hazard_field_count": 1})
     elif construct == "sprinkler_zone":
         counts.update({"pipe_count": max(counts["pipe_count"], 1), "valve_count": max(counts["valve_count"], 1), "hazard_field_count": 1})
     elif construct == "waste_chute":
@@ -25662,7 +25625,7 @@ def _functional_interior_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -26091,7 +26054,7 @@ def _interior_composition_kind(values: Mapping[str, Any], construct: str) -> str
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -26402,7 +26365,7 @@ def _placement_constraint_kind(values: Mapping[str, Any], construct: str) -> str
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -26821,7 +26784,7 @@ def _auto_layout_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -26900,12 +26863,12 @@ def _auto_layout_counts(values: Mapping[str, Any], construct: str) -> dict[str, 
     wall_fixture_types = _auto_layout_wall_fixture_types(values, room_role)
     density = max(0.1, min(4.0, _number(values.get("layout_density") or values.get("density"), default=1.0)))
     zone_count = max(1, min(32, len(zones)))
-    default_slots = max(zone_count * 3, int(round((len(fixture_types) + len(furniture_types) + len(wall_fixture_types) + 2) * density)))
+    default_slots = max(zone_count * 3, round((len(fixture_types) + len(furniture_types) + len(wall_fixture_types) + 2) * density))
     layout_slots = max(1, min(256, _auto_layout_requested_count(values, ("layout_slots", "slots", "socket_count"), default_slots)))
-    fixture_count = max(0, min(128, _auto_layout_requested_count(values, ("fixture_layout_count", "fixture_placement_count", "fixture_count", "fixtures"), max(1, int(round(len(fixture_types) * density))))))
-    furniture_count = max(0, min(128, _auto_layout_requested_count(values, ("furniture_layout_count", "furniture_placement_count", "furniture_count", "furniture"), max(1, int(round(len(furniture_types) * density))))))
+    fixture_count = max(0, min(128, _auto_layout_requested_count(values, ("fixture_layout_count", "fixture_placement_count", "fixture_count", "fixtures"), max(1, round(len(fixture_types) * density)))))
+    furniture_count = max(0, min(128, _auto_layout_requested_count(values, ("furniture_layout_count", "furniture_placement_count", "furniture_count", "furniture"), max(1, round(len(furniture_types) * density)))))
     service_count = max(0, min(128, _auto_layout_requested_count(values, ("service_layout_count", "service_placement_count", "service_count", "services"), max(1, len(service_types)))))
-    wall_count = max(0, min(128, _auto_layout_requested_count(values, ("wall_fixture_layout_count", "wall_attachment_count", "wall_fixture_count", "wall_fixtures"), max(1, int(round(len(wall_fixture_types) * density))))))
+    wall_count = max(0, min(128, _auto_layout_requested_count(values, ("wall_fixture_layout_count", "wall_attachment_count", "wall_fixture_count", "wall_fixtures"), max(1, round(len(wall_fixture_types) * density)))))
     door_count = max(0, min(64, _auto_layout_requested_count(values, ("doorway_count", "door_opening_count", "door_count"), max(1, zone_count - 1))))
     auto_place = _auto_layout_policy_enabled(values, "auto_place", True)
     auto_fixtures = auto_place and _auto_layout_policy_enabled(values, "auto_place_fixtures", True)
@@ -27265,7 +27228,7 @@ def _layout_resolution_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -27312,7 +27275,7 @@ def _layout_resolution_slot_total(values: Mapping[str, Any]) -> int:
     width, depth, _ = _layout_resolution_bounds(values)
     spacing = max(0.25, min(8.0, _number(values.get("slot_spacing") or values.get("spacing"), default=1.0)))
     density = max(0.1, min(4.0, _number(values.get("layout_density") or values.get("density"), default=1.0)))
-    perimeter_slots = max(1, int(round(((width + depth) * 2.0 / spacing) * density)))
+    perimeter_slots = max(1, round(((width + depth) * 2.0 / spacing) * density))
     for key in ("layout_slot_count", "layout_slots", "slot_count", "slots", "socket_count"):
         if key in values:
             raw = values.get(key)
@@ -27763,7 +27726,7 @@ def _footprint_packing_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -27836,7 +27799,7 @@ def _footprint_pack_positions(values: Mapping[str, Any], center: Sequence[float]
     explicit_positions = values.get("packed_positions") or values.get("slot_positions")
     explicit_slots = values.get("packing_slots")
     axis = _surface_marker_value(values, "packing_axis", "layout_axis", "axis", fallback="row")
-    rows, columns, cell_size = _footprint_grid(values)
+    _rows, columns, cell_size = _footprint_grid(values)
     spacing = max(0.12, min(8.0, _number(values.get("packing_spacing") or values.get("slot_spacing"), default=cell_size)))
     origin = _packing_vector3(values.get("packing_origin") or values.get("origin"), center)
     column_count = max(1, min(columns, math.ceil(math.sqrt(total)) if axis not in {"line", "row"} else total))
@@ -28681,7 +28644,7 @@ def _role_pack_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -29071,7 +29034,7 @@ def _building_envelope_kind(values: Mapping[str, Any], construct: str) -> str:
     fallback = _BUILDING_ENVELOPE_KIND_DEFAULTS.get(construct, construct)
     for key in _BUILDING_ENVELOPE_KIND_KEYS.get(construct, ("type",)):
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -29399,7 +29362,7 @@ def _expand_building_envelope_macro(node: Mapping[str, Any], *, construct: str) 
 
     elif construct == "facade_grid":
         bay_map = list(_building_facade_bay_map(values, limit=48).items())
-        for index, (bay_id, bay) in enumerate(bay_map):
+        for _index, (bay_id, bay) in enumerate(bay_map):
             side = str(bay["side"])
             col = (int(bay["bay"]) - 1) - (bays - 1) / 2.0
             floor = int(bay["floor"]) - 1
@@ -29499,7 +29462,7 @@ def _site_compound_kind(values: Mapping[str, Any], construct: str) -> str:
     fallback = _SITE_COMPOUND_KIND_DEFAULTS.get(construct, construct)
     for key in _SITE_COMPOUND_KIND_KEYS.get(construct, ("type",)):
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -29934,7 +29897,7 @@ def _resilience_kind(values: Mapping[str, Any], construct: str) -> str:
         if key not in values:
             continue
         raw = values.get(key)
-        if raw is None or _disabled(raw) or isinstance(raw, Mapping | Sequence) and not isinstance(raw, str):
+        if raw is None or _disabled(raw) or (isinstance(raw, Mapping | Sequence) and not isinstance(raw, str)):
             continue
         if isinstance(raw, str) and not raw.strip():
             continue
@@ -31993,7 +31956,7 @@ def _expand_quest_macro(node: Mapping[str, Any]) -> tuple[list[Mapping[str, Any]
         reward_objects, reward_relationships = _expand_interactable_macro(reward_node)
         objects.extend(reward_objects)
         relationships.extend(reward_relationships)
-        relationships.append(_macro_relationship(name, f"{name}_reward_cache_interactable", core_name, "depends_on", f"Quest reward depends on quest completion."))
+        relationships.append(_macro_relationship(name, f"{name}_reward_cache_interactable", core_name, "depends_on", "Quest reward depends on quest completion."))
 
     return objects, relationships
 
@@ -32324,7 +32287,7 @@ def _expand_resource_economy_macro(node: Mapping[str, Any]) -> tuple[list[Mappin
 
     for producer_name in producer_names:
         if storage_names:
-            relationships.append(_macro_relationship(name, producer_name, storage_names[producer_names.index(producer_name) % len(storage_names)], "routes_to", f"Producer feeds economy storage."))
+            relationships.append(_macro_relationship(name, producer_name, storage_names[producer_names.index(producer_name) % len(storage_names)], "routes_to", "Producer feeds economy storage."))
 
     for index in range(route_count):
         route_values = deepcopy(values)
@@ -32501,7 +32464,7 @@ def _gameplay_name_list(values: Mapping[str, Any], keys: Sequence[str], *, defau
             if raw is None or (isinstance(raw, str) and raw == ""):
                 return []
             if isinstance(raw, Mapping):
-                return [_snake_id(item, "item") for item in raw.keys()]
+                return [_snake_id(item, "item") for item in raw]
             items = [_snake_id(item, "item") for item in _string_list(raw)]
             if items:
                 return _dedupe(items)
@@ -32518,7 +32481,7 @@ def _gameplay_label_list(values: Mapping[str, Any], keys: Sequence[str]) -> list
         if _disabled(raw):
             return []
         if isinstance(raw, Mapping):
-            return [_snake_id(item, "item") for item in raw.keys()]
+            return [_snake_id(item, "item") for item in raw]
         items = [_snake_id(item, "item") for item in _string_list(raw)]
         if items:
             return _dedupe(items)

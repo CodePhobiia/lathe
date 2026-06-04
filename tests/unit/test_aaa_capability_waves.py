@@ -7,19 +7,18 @@ from typing import Any
 
 import numpy as np
 import trimesh
-from PIL import Image
-
 from lathe.asset_graph import build_asset_graph
-from lathe.core.stages.physics import _collision_proxy_mesh, _resolve_collision_proxy_mode
-from lathe.core.stages.optimize import _resolve_lod_ratios
 from lathe.core.mesh import RuntimeMesh
+from lathe.core.stages.optimize import _resolve_lod_ratios
+from lathe.core.stages.physics import _collision_proxy_mesh, _resolve_collision_proxy_mode
 from lathe.geometry_detail import geometry_detail_controls_from_authoring
+from lathe.materials import surface_with_style_pack_defaults
 from lathe.parser import parse_text
 from lathe.resolver import materialize_asset
 from lathe.scaffold_compiler import compile_scaffold_candidates
-from lathe.materials import surface_with_style_pack_defaults
 from lathe.stages import lod as lod_mod
 from lathe.surface_runtime import build_surface_bundle
+from PIL import Image
 
 
 def _conditioning() -> dict[str, Any]:

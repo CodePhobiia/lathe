@@ -50,10 +50,9 @@ def subdiv_to_trimesh(refined: SubdivMesh) -> trimesh.Trimesh:
             for i in range(1, len(face) - 1):
                 triangles.append((anchor, face[i], face[i + 1]))
     faces = np.asarray(triangles, dtype=np.int64)
-    out = trimesh.Trimesh(
+    return trimesh.Trimesh(
         vertices=positions, faces=faces, process=False, validate=False
     )
-    return out
 
 
 def apply_finishing_to_trimesh(

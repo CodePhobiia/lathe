@@ -1,0 +1,9 @@
+{
+  "family_id": "attribute_surface_graph_program",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Attribute / surface graph program fixture (attribute rails, surface node panels, mode/port sockets, mask material zones, attribute-math panel, frequency-control fasteners, preview-target panels, invalid-guard surrounds, iteration wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

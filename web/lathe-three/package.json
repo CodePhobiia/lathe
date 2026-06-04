@@ -1,0 +1,47 @@
+{
+  "name": "@lathe/three",
+  "version": "0.1.0",
+  "description": "Lathe-native semantic 3D inspection layer over Three.js. Loads .lthpkg packages and exposes parts, materials, diagnostics, operation provenance, and repair evidence.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "lathe",
+    "three.js",
+    "3d",
+    "procedural",
+    "semantic",
+    "lthpkg",
+    "asset-foundry"
+  ],
+  "author": "Lathe authors",
+  "license": "MIT",
+  "peerDependencies": {
+    "three": ">=0.158.0"
+  },
+  "devDependencies": {
+    "@types/three": ">=0.158.0",
+    "typescript": ">=5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lathe-3d/lathe"
+  }
+}

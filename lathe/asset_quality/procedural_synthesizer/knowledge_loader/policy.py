@@ -17,14 +17,14 @@ of "procedural, not family-recipes-in-data."
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from .style import KnowledgePackInvalid
-
 
 _SCHEMA_PATH = Path(__file__).parent / "schemas" / "policy.schema.json"
 _KNOWLEDGE_ROOT = Path(__file__).resolve().parents[4] / "std" / "procedural" / "knowledge" / "policy"
@@ -52,7 +52,7 @@ class PolicyPrecondition:
     requires_intent_tags: tuple[str, ...] = ()
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any] | None) -> "PolicyPrecondition":
+    def from_dict(cls, raw: Mapping[str, Any] | None) -> PolicyPrecondition:
         raw = raw or {}
         return cls(
             requires_node_types=tuple(str(x) for x in raw.get("requires_node_types") or ()),
@@ -73,7 +73,7 @@ class EdgeTemplate:
     attributes: Mapping[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "EdgeTemplate":
+    def from_dict(cls, raw: Mapping[str, Any]) -> EdgeTemplate:
         return cls(
             target_node_type=str(raw["target_node_type"]),
             edge_type=str(raw["edge_type"]),
@@ -97,7 +97,7 @@ class PolicyExpansion:
     edges_to_existing: tuple[EdgeTemplate, ...] = ()
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "PolicyExpansion":
+    def from_dict(cls, raw: Mapping[str, Any]) -> PolicyExpansion:
         edges_raw = raw.get("edges_to_existing") or ()
         return cls(
             add_node_type=str(raw["add_node_type"]),
@@ -121,7 +121,7 @@ class CompositionPolicy:
     description: str = ""
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "CompositionPolicy":
+    def from_dict(cls, raw: Mapping[str, Any]) -> CompositionPolicy:
         return cls(
             policy_id=str(raw["policy_id"]),
             domain=str(raw["domain"]),
@@ -213,7 +213,4 @@ def precondition_matches(
     for forbidden_part in precondition.forbids_parts_any:
         if forbidden_part in parts:
             return False
-    for required_tag in precondition.requires_intent_tags:
-        if required_tag not in intent_tags:
-            return False
-    return True
+    return all(required_tag in intent_tags for required_tag in precondition.requires_intent_tags)

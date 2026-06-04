@@ -180,7 +180,7 @@ def sinusoidal_terrace(
     quantised = quantised * float(step_height)
     pattern = np.broadcast_to(
         quantised if axis == "x" else quantised[:, None],
-        (ny, nx) if axis == "x" else (ny, nx),
+        (ny, nx),
     ).copy()
     if add:
         heightfield.heights = heightfield.heights + pattern

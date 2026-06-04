@@ -275,11 +275,11 @@ def _trimesh_import_metadata(
         "actual_operation": "mesh_import",
         "fallback": False,
         "passthrough": False,
-        "input_face_count": int(len(original.faces)),
-        "input_vertex_count": int(len(original.vertices)),
+        "input_face_count": len(original.faces),
+        "input_vertex_count": len(original.vertices),
         "input_watertight": bool(original.is_watertight),
-        "candidate_face_count": int(len(candidate.faces)),
-        "candidate_vertex_count": int(len(candidate.vertices)),
+        "candidate_face_count": len(candidate.faces),
+        "candidate_vertex_count": len(candidate.vertices),
         "candidate_watertight": bool(candidate.is_watertight),
         **_manifold_result_counts(manifold),
     }
@@ -601,7 +601,7 @@ class ManifoldKernel:
 
         if kind == "extruded_profile":
             profile_polygon = params.get("profile_polygon")
-            if profile_polygon is None or len(tuple(profile_polygon)) < 3:  # noqa: PLR2004
+            if profile_polygon is None or len(tuple(profile_polygon)) < 3:
                 raise _ExtrudedProfilePolygonRequiredError
             extrude_height = params.get("extrude_height")
             if extrude_height is None or float(extrude_height) <= 0.0:
@@ -690,7 +690,7 @@ class ManifoldKernel:
             if extents is None:
                 raise _SubdivisionBoxExtentsRequiredError
             corner_radii = params.get("corner_radii")
-            if corner_radii is None or len(tuple(corner_radii)) != 8:  # noqa: PLR2004
+            if corner_radii is None or len(tuple(corner_radii)) != 8:
                 raise _SubdivisionBoxCornerRadiiRequiredError
             center = params.get("center", (0.0, 0.0, 0.0))
             segments = max(4, int(params.get("segments", 16)))

@@ -52,6 +52,7 @@ can see exactly what each step did to the mesh density.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
 from pathlib import Path
@@ -75,7 +76,7 @@ def _load_config(path: str | None) -> dict[str, Any]:
     if not path:
         return {}
     try:
-        with open(path, encoding="utf-8") as handle:
+        with Path(path).open(encoding="utf-8") as handle:
             data = json.load(handle)
     except (OSError, ValueError):
         return {}
@@ -120,7 +121,7 @@ def _coord_key(value: Any, scale: float = 100000.0) -> tuple[int, int, int] | No
     if not isinstance(value, (list, tuple)) or len(value) != 3:
         return None
     try:
-        return tuple(int(round(float(coord) * scale)) for coord in value)
+        return tuple(round(float(coord) * scale) for coord in value)
     except (TypeError, ValueError):
         return None
 
@@ -359,10 +360,8 @@ def _apply_named_modifier(obj: bpy.types.Object, name: str) -> dict[str, Any]:
         bpy.ops.object.modifier_apply(modifier=name)
     except RuntimeError as exc:
         # Best-effort: remove so the stack proceeds.
-        try:
+        with contextlib.suppress(RuntimeError, ReferenceError):
             obj.modifiers.remove(mod)
-        except (RuntimeError, ReferenceError):
-            pass
         return {"applied": False, "reason": f"runtime_error: {exc}"}
     polys_after = len(obj.data.polygons)
     return {
@@ -378,10 +377,8 @@ def _drop_remaining_modifiers(obj: bpy.types.Object) -> None:
         try:
             bpy.ops.object.modifier_apply(modifier=mod.name)
         except RuntimeError:
-            try:
+            with contextlib.suppress(RuntimeError, ReferenceError):
                 obj.modifiers.remove(mod)
-            except (RuntimeError, ReferenceError):
-                pass
 
 
 def _looks_like_terrain_heightfield(obj: bpy.types.Object) -> bool:
@@ -425,7 +422,7 @@ def _process_object(obj: bpy.types.Object, config: dict[str, Any]) -> dict[str, 
         _legacy_cleanup_mesh(obj)
         return {"mode": "legacy_cleanup"}
 
-    initial_polys = int(len(obj.data.polygons))
+    initial_polys = len(obj.data.polygons)
     _normalize_only(obj)
 
     subsurf_level = int(config.get("subsurf_level", 0) or 0)
@@ -542,7 +539,7 @@ def _process_object(obj: bpy.types.Object, config: dict[str, Any]) -> dict[str, 
     # split normals, blow up vertex_count and shatter the watertight test
     # downstream (a non-watertight Blender output triggers the reference
     # cleanup fallback and discards the modifier-stack work).
-    polys_before_triangulate = int(len(obj.data.polygons))
+    polys_before_triangulate = len(obj.data.polygons)
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
@@ -552,7 +549,7 @@ def _process_object(obj: bpy.types.Object, config: dict[str, Any]) -> dict[str, 
     bm.to_mesh(obj.data)
     bm.free()
     obj.data.update()
-    final_polys = int(len(obj.data.polygons))
+    final_polys = len(obj.data.polygons)
 
     obj.select_set(False)
     return {
@@ -615,18 +612,12 @@ def main() -> None:
     # normals layer here.
     for obj in mesh_objects:
         mesh = obj.data
-        try:
+        with contextlib.suppress(AttributeError):
             mesh.use_auto_smooth = False
-        except AttributeError:
-            pass
-        try:
+        with contextlib.suppress(AttributeError, RuntimeError):
             mesh.free_normals_split()
-        except (AttributeError, RuntimeError):
-            pass
-        try:
+        with contextlib.suppress(AttributeError, RuntimeError):
             mesh.calc_normals_split()
-        except (AttributeError, RuntimeError):
-            pass
 
     bpy.ops.export_scene.gltf(
         filepath=args.output,
@@ -644,7 +635,7 @@ def main() -> None:
     if args.config:
         sidecar_report = Path(args.config).with_suffix(".report.json")
         try:
-            with open(sidecar_report, "w", encoding="utf-8") as handle:
+            with sidecar_report.open("w", encoding="utf-8") as handle:
                 json.dump({"objects": reports}, handle, indent=2)
         except OSError:
             pass

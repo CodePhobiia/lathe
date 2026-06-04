@@ -1,0 +1,14 @@
+{
+  "policy_id": "wfc_modular_layout",
+  "domain": "hard_surface",
+  "description": "Composition policy for WFC / modular-tile layouts — dungeon/level layouts, modular city/facade layouts, modular kit assemblies. Pattern: grid-or-graph cell array (primary_volume tagged 'wfc_grid') + per-cell tile selection from a tile-pool with adjacency constraints + post-process boundary trim. Expansions add tile nodes by walking the grid, then add a boundary_trim node when the brief declares trim_style. Tile selection respects the brief's tile_pool reference (resolved by the synthesizer at expansion time). The policy is non-family-keyed; it applies to any asset whose construction graph carries a primary_volume tagged 'wfc_grid' or a part named 'grid' / 'tile_array'.",
+  "precondition": {
+    "requires_node_types": ["primary_volume"],
+    "forbids_node_types": [],
+    "requires_brief_fields": {},
+    "requires_parts_any": ["grid", "tile_array", "wfc_grid", "modular_kit", "modular_layout"],
+    "forbids_parts_any": [],
+    "requires_intent_tags": []
+  },
+  "expansions": []
+}

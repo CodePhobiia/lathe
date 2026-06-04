@@ -1,0 +1,9 @@
+{
+  "family_id": "set_dressing_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Set-dressing prop fixture (primary volume + decorative mounts + handle strap + lid inset + label decal + stitch fasteners + scattered mounts + material zone + handled wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

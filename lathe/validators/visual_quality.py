@@ -706,7 +706,7 @@ def _highlow_fake_detail_penalty_from_runtime(
             realness_score = float(evidence.get("realness_score") or 0.0)
             penalty = 1.0 - max(0.0, min(1.0, realness_score))
             return round(max(0.0, min(1.0, penalty)), 6)
-    except Exception:
+    except Exception:  # noqa: S110 — fall back to legacy metric when Phase-7 evidence is unavailable
         pass
     realness = float(metrics.get("surface_highlow_realness", 0.0))
     return round(max(0.0, min(1.0, 1.0 - realness)), 6)

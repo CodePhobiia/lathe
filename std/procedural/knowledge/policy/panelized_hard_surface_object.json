@@ -1,7 +1,7 @@
 {
   "policy_id": "panelized_hard_surface_object",
   "domain": "hard_surface",
-  "description": "Composition policy for any asset whose authored construction graph contains a primary_volume. Currently a no-op expansion: it serves as the smoke-test policy that proves the pipeline matches preconditions and applies policies correctly. Future revisions add structural expansions (e.g., panel-on-major-face, fastener-on-corners). The policy is non-family-keyed by design — it applies to any hard-surface asset with a primary_volume, regardless of whether that asset is a crate, door, terminal, cabinet, or anything else.",
+  "description": "Default panelized hard-surface composition (v1-minimal expansion set). When an asset declares a primary_volume, this policy adds: two corner brackets, one fastener, and three zone-metadata records (material/decal/wear). All structural additions reach back to the primary_volume via attached_to edges. The policy is non-family-keyed by design — it applies to ANY hard-surface asset that carries a primary_volume. V1 NOTE: the previous full expansion (8 corner brackets + 2 handles + 2 rails + trim + panel + inset + fastener + 3 zones = 19 nodes / ~25 primitives / 16 unions) hit the boolean kernel's slow path, hanging compile_explicit_surface_mesh for >30 min on industrial_crate. The current minimal set (2 brackets + 1 fastener + 3 zones = 6 nodes / ~7 primitives / 3 unions) trades expansion breadth for kernel-perf tractability. The auto-graph from authored intent.parts already provides handle/inset/mount nodes per-asset; this policy's role is the CANONICAL bonus features (corner reinforcement + fastener + surface evidence) the auto-graph can't infer from part names alone. Larger expansion sets land once the boolean kernel's full-CSG / op.union chain perf is profiled and fixed.",
   "precondition": {
     "requires_node_types": ["primary_volume"],
     "forbids_node_types": [],
@@ -10,5 +10,92 @@
     "forbids_parts_any": [],
     "requires_intent_tags": []
   },
-  "expansions": []
+  "expansions": [
+    {
+      "add_node_type": "bracket",
+      "count": 4,
+      "placement": {"role": "corner_guard", "pattern": "four_corners"},
+      "attributes_template": {
+        "profile": "l_bracket",
+        "leg_length_cm": 5.0,
+        "leg_width_cm": 2.5,
+        "thickness_cm": 0.5,
+        "orientation": "xy",
+        "fillet_cm": 0.3,
+        "region_id": "corner_guard"
+      },
+      "edges_to_existing": [
+        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "corner_guard"}}
+      ]
+    },
+    {
+      "add_node_type": "fastener",
+      "count": 6,
+      "placement": {"role": "fastener_grid", "pattern": "front_face_grid"},
+      "attributes_template": {
+        "kind": "rivet",
+        "head_radius_cm": 0.5,
+        "head_height_cm": 0.6,
+        "shaft_radius_cm": 0.25,
+        "shaft_length_cm": 1.0,
+        "axis": "y",
+        "region_id": "fastener_grid"
+      },
+      "edges_to_existing": [
+        {"target_node_type": "primary_volume", "edge_type": "attached_to", "attributes": {"role": "fastener_grid"}}
+      ]
+    },
+    {
+      "add_node_type": "trim",
+      "count": 1,
+      "placement": {"role": "mid_belt", "pattern": "front_face_belt", "length_from_body": "x"},
+      "attributes_template": {
+        "edge_axis": "x",
+        "length_cm": 30.0,
+        "cross_section_width_cm": 2.0,
+        "cross_section_height_cm": 0.8,
+        "profile": "flat_band",
+        "region_id": "mid_belt"
+      },
+      "edges_to_existing": [
+        {"target_node_type": "primary_volume", "edge_type": "wraps_around", "attributes": {"role": "mid_belt"}}
+      ]
+    },
+    {
+      "add_node_type": "material_zone",
+      "count": 1,
+      "placement": {"role": "primary_material", "coverage": "body"},
+      "attributes_template": {
+        "zone_id": "primary_material",
+        "material_hint": "painted_steel",
+        "tags": ["hard_surface", "primary"]
+      },
+      "edges_to_existing": []
+    },
+    {
+      "add_node_type": "decal_zone",
+      "count": 1,
+      "placement": {"role": "warning_marker", "host_face": "front"},
+      "attributes_template": {
+        "zone_id": "warning_marker",
+        "decal_intent": "warning",
+        "size_cm": [8.0, 4.0],
+        "host_face_axis": "z",
+        "priority": 0
+      },
+      "edges_to_existing": []
+    },
+    {
+      "add_node_type": "wear_zone",
+      "count": 1,
+      "placement": {"role": "edge_wear", "coverage": "outer_edges"},
+      "attributes_template": {
+        "zone_id": "edge_wear",
+        "wear_kind": "edge_chip",
+        "intensity": "moderate",
+        "coverage_fraction": 0.3
+      },
+      "edges_to_existing": []
+    }
+  ]
 }

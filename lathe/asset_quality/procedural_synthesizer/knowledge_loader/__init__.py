@@ -29,7 +29,6 @@ from .style import (
     load_style_pack,
 )
 
-
 __all__ = [
     "CompositionPolicy",
     "EdgeTemplate",

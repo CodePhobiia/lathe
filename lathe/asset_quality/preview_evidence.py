@@ -193,6 +193,7 @@ class PreviewEntry:
     name: str
     path: str
     status: str
+    status_reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -201,6 +202,7 @@ class PreviewEntry:
             "name": self.name,
             "path": self.path,
             "status": self.status,
+            "status_reason": self.status_reason,
         }
 
 
@@ -432,7 +434,8 @@ def _categorize_previews(
                 mode=mode,
                 name=name,
                 path=_preview_path(name),
-                status="declared",
+                status="missing",
+                status_reason="validate_runs_before_package",
             )
         )
 
@@ -477,10 +480,10 @@ def _categorize_bake_maps(
         uri = _resolve_bake_map_uri(outputs, map_name)
         declared = map_name in declared_maps or uri is not None
         if uri is not None:
-            entries.append(BakeMapEntry(role=role, uri=uri, status="declared"))
+            entries.append(BakeMapEntry(role=role, uri=uri, status="real"))
             continue
         if declared:
-            entries.append(BakeMapEntry(role=role, uri=None, status="declared"))
+            entries.append(BakeMapEntry(role=role, uri=None, status="missing"))
             skipped.append(
                 SkippedReason(category=role, reason="bake_map_not_produced")
             )
@@ -712,6 +715,12 @@ def evaluate_preview_evidence(
         "version": PREVIEW_EVIDENCE_VERSION,
         "asset_name": asset_name,
         "previews": previews_payload,
+        "render_evidence_schema": {
+            "version": "lathe.render_evidence_schema_v1",
+            "status_tokens": ["real", "proxy", "missing", "blocked"],
+            "validate_stage_preview_status": "missing",
+            "reason": "validate_runs_before_package",
+        },
         "preview_summary": summary,
         "report_links": report_links,
         "skipped_reasons": [record.to_dict() for record in skipped_records],

@@ -14,8 +14,8 @@ from __future__ import annotations
 from typing import Any
 
 from lathe.asset_quality.diagnostics import (
-    VERSION,
     _RECOMMENDATIONS,
+    VERSION,
     evaluate_quality_diagnostics,
 )
 
@@ -97,11 +97,15 @@ def test_payload_shape_and_version() -> None:
         "warnings",
         "recommendations",
         "findings",
+        "repair_routes",
+        "render_class_validators",
     }
     assert isinstance(report["metrics"], dict)
     assert isinstance(report["warnings"], list)
     assert isinstance(report["recommendations"], list)
     assert isinstance(report["findings"], list)
+    assert isinstance(report["repair_routes"], list)
+    assert isinstance(report["render_class_validators"], dict)
     assert "diagnostics" not in report
 
 
@@ -109,7 +113,7 @@ def test_metrics_are_numeric_floats() -> None:
     asset, runtime = _runtime()
     report = evaluate_quality_diagnostics(asset, runtime)
 
-    expected = {
+    expected_phase1 = {
         "random_triangulation_penalty",
         "debug_material_preview_penalty",
         "highlow_fake_detail_penalty",
@@ -117,7 +121,20 @@ def test_metrics_are_numeric_floats() -> None:
         "primary_secondary_tertiary_balance",
         "family_grammar_coverage",
     }
-    assert set(report["metrics"].keys()) == expected
+    # Render-class validators (`lathe.validators.render_class`) merge their
+    # per-validator scores into the diagnostics metrics dict so dashboards
+    # surface every quality signal under one namespace.
+    expected_render_class = {
+        "box_stack_detector",
+        "edge_density_variance",
+        "curvature_distribution",
+        "topology_class_compliance",
+        "texel_density_consistency",
+        "silhouette_multi_angle",
+        "frequency_energy",
+        "pbr_chart_compliance",
+    }
+    assert set(report["metrics"].keys()) == expected_phase1 | expected_render_class
     for key, value in report["metrics"].items():
         assert isinstance(value, int | float), f"{key!r} should be numeric"
         assert 0.0 <= float(value) <= 1.0, f"{key!r} out of [0,1]: {value}"
@@ -296,7 +313,12 @@ def test_findings_pair_metric_to_recommendation_for_multiple_warnings() -> None:
     )
     report = evaluate_quality_diagnostics(asset, runtime)
 
-    assert {f["metric"] for f in report["findings"]} == {
+    # ``findings`` now also carries render-class informational findings
+    # (e.g. renderer-unavailable info notes). The pairing contract guarded
+    # by this test applies to the Phase-1 warning-severity findings only.
+    warning_findings = [f for f in report["findings"] if f.get("severity") == "warning"]
+
+    assert {f["metric"] for f in warning_findings} == {
         "random_triangulation_penalty",
         "debug_material_preview_penalty",
         "highlow_fake_detail_penalty",
@@ -304,14 +326,14 @@ def test_findings_pair_metric_to_recommendation_for_multiple_warnings() -> None:
         "primary_secondary_tertiary_balance",
     }
 
-    for finding in report["findings"]:
+    for finding in warning_findings:
         assert finding["severity"] == "warning"
         assert finding["recommendation"] == _RECOMMENDATIONS[finding["metric"]]
         assert finding["metric"] in finding["warning"]
 
-    assert len(report["warnings"]) == len(report["findings"])
-    assert len(report["recommendations"]) == len(report["findings"])
-    for i, finding in enumerate(report["findings"]):
+    assert len(report["warnings"]) == len(warning_findings)
+    assert len(report["recommendations"]) == len(warning_findings)
+    for i, finding in enumerate(warning_findings):
         assert report["warnings"][i] == finding["warning"]
         assert report["recommendations"][i] == finding["recommendation"]
 

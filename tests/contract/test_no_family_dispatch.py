@@ -31,22 +31,37 @@ import pytest
 
 from ._family_dispatch_allowlist import ALLOWLIST
 
-
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _LATHE_ROOT = _REPO_ROOT / "lathe"
 
 # Pattern 1: _RECIPES.get(family) / _RECIPES[family]
 _RECIPES_PATTERN = re.compile(r"_RECIPES\s*(\.get\s*\(\s*family\b|\[\s*family\b)")
 
-# Pattern 2: _FAMILY_*[family] / _GRAMMARS[family] / similar
+# Pattern 2: _FAMILY_*[family] / _GRAMMARS[family] / similar named family
+# behavior maps. Kept as a separate, named-prefix pattern so the
+# violation message points at the convention.
 _FAMILY_DICT_PATTERN = re.compile(
     r"(_FAMILY_[A-Z_]+|_GRAMMARS|_FAMILIES)\s*(\.get\s*\(\s*family\b|\[\s*family\b)"
 )
 
-# Pattern 3: family == "..." / family in {...} / family in (...) /
-# family in [...]
+# Pattern 3: family == "..."
 _FAMILY_EQUALITY_PATTERN = re.compile(r"\bfamily\s*==\s*[\"']")
-_FAMILY_MEMBERSHIP_PATTERN = re.compile(r"\bfamily\s+in\s+[\(\{\[]")
+
+# Pattern 4: family in <anything> — catches both:
+#   - family in {literal} / family in (a, b) / family in [a, b]
+#   - family in IDENTIFIER (e.g. ``family in _LEGACY_EXACT_FAMILIES``)
+#   - <expr>.family in <anything> (e.g.
+#     ``asset_graph.family in PANEL_DEPTH_FAMILIES``)
+# Requires the ``in`` token followed by at least one non-space character
+# so trivial whitespace-only continuations are still rejected.
+_FAMILY_MEMBERSHIP_PATTERN = re.compile(r"(?:\b|\.)family\s+in\s+\S")
+
+# Pattern 5: generalized indexed dispatch ``<EXPR>[family]``. Catches
+# ``_PROCEDURAL_LOADOUTS[family]``, ``}[family]`` (inline dict literal
+# indexed by family), and any other ``<thing>[family]`` form not
+# already named by pattern 1/2. Family-name indexing for behavior is
+# the same anti-pattern regardless of the dispatch container.
+_INDEXED_DISPATCH_PATTERN = re.compile(r"\[\s*family\s*\]")
 
 
 _PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
@@ -54,6 +69,7 @@ _PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (_FAMILY_DICT_PATTERN, "family_behavior_dict_dispatch"),
     (_FAMILY_EQUALITY_PATTERN, "family_equality_check"),
     (_FAMILY_MEMBERSHIP_PATTERN, "family_membership_check"),
+    (_INDEXED_DISPATCH_PATTERN, "family_indexed_dispatch"),
 )
 
 

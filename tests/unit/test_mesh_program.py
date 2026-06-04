@@ -13,13 +13,11 @@ Covers:
 from __future__ import annotations
 
 import pytest
-
 from lathe.exact_solids import compile_explicit_surface_mesh
 from lathe.fidelity import _profile_from_tier
 from lathe.mesh_program import MeshProgramError, lower_mesh_program
 from lathe.parser.imports import parse_text
 from lathe.shape_ir import ShapeIR
-
 
 _SOURCE = """
 module demo.bevel

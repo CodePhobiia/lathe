@@ -63,14 +63,14 @@ class ColorLiteral(Node):
 class VectorLiteral(Node):
     """A parenthesized tuple literal: ``(u, v)``, ``(x, y, z)``, ``(r,g,b,a)``."""
 
-    components: tuple["Expr", ...]
+    components: tuple[Expr, ...]
 
 
 @dataclass(frozen=True)
 class ListLiteral(Node):
     """A bracketed list — used for ramp colors, palette swatches, etc."""
 
-    items: tuple["Expr", ...]
+    items: tuple[Expr, ...]
 
 
 @dataclass(frozen=True)
@@ -89,42 +89,42 @@ class AttrRef(Node):
 
 @dataclass(frozen=True)
 class MemberAccess(Node):
-    target: "Expr"
+    target: Expr
     member: str
 
 
 @dataclass(frozen=True)
 class Index(Node):
-    target: "Expr"
-    index: "Expr"
+    target: Expr
+    index: Expr
 
 
 @dataclass(frozen=True)
 class KeywordArg(Node):
     name: str
-    value: "Expr"
+    value: Expr
 
 
 @dataclass(frozen=True)
 class Call(Node):
     """A call: positional args + keyword args. Callee is any expression."""
 
-    callee: "Expr"
-    positional: tuple["Expr", ...]
+    callee: Expr
+    positional: tuple[Expr, ...]
     keywords: tuple[KeywordArg, ...]
 
 
 @dataclass(frozen=True)
 class UnaryOp(Node):
     op: str  # one of: '-', '+', '!', '~'
-    operand: "Expr"
+    operand: Expr
 
 
 @dataclass(frozen=True)
 class BinOp(Node):
     op: str  # arithmetic, comparison, logical/mask
-    left: "Expr"
-    right: "Expr"
+    left: Expr
+    right: Expr
 
 
 # ----------------------------------------------------------------------
@@ -138,14 +138,14 @@ class Assignment(Node):
 
     target_name: str
     target_is_attr: bool
-    value: "Expr"
+    value: Expr
 
 
 @dataclass(frozen=True)
 class Program(Node):
     """A parsed source unit — zero or more statements (assignments / exprs)."""
 
-    statements: tuple["Statement", ...]
+    statements: tuple[Statement, ...]
 
 
 # Type aliases used throughout the codebase.

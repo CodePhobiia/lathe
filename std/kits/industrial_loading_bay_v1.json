@@ -1,0 +1,26 @@
+{
+  "id": "industrial_loading_bay_v1",
+  "description": "Reference kit composing industrial loading bay props — crates, mechanical doors, wall panels, terminals — sharing the utility_industrial_v1 visual language and a single texel-density target.",
+  "visual_language_id": "utility_industrial_v1",
+  "material_palette_id": "warehouse_yellow_gray_v1",
+  "texel_density_px_per_m": 512.0,
+  "archetypes": [
+    {
+      "role": "crate",
+      "source_lth": "examples/industrial_crate.lth",
+      "asset_name": "industrial_crate",
+      "seed_strategy": "stratified",
+      "repetition_limit": 3,
+      "condition_distribution": [0.15, 0.7]
+    },
+    {
+      "role": "door",
+      "source_lth": "examples/mechanical_door.lth",
+      "asset_name": "mechanical_door",
+      "seed_strategy": "stratified",
+      "repetition_limit": 4,
+      "condition_distribution": [0.1, 0.55]
+    }
+  ],
+  "variation_seed": 192331
+}

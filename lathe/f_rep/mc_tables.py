@@ -14,7 +14,6 @@ Used by the pure-numpy fallback in ``marching_cubes.py`` when
 
 from __future__ import annotations
 
-
 # Cube edge -> the two corner indices it connects.
 EDGE_VERTEX_INDICES: tuple[tuple[int, int], ...] = (
     (0, 1),

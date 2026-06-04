@@ -654,6 +654,7 @@ class _FastParser(_FastParserExprMixin):
         """
         assignments: list[tuple[str, Any]] = []
         mesh_program: dict[str, Any] | None = None
+        procedural_block: dict[str, Any] | None = None
         self.ts.pop("{")
         while not self.ts.peek("}"):
             ident = self.ts.pop_ident()
@@ -664,6 +665,13 @@ class _FastParser(_FastParserExprMixin):
                         "sub-block; merge the statements into a single block."
                     )
                 mesh_program = self._mesh_program_block()
+            elif ident == "procedural" and self.ts.peek("{"):
+                if procedural_block is not None:
+                    raise LatheParseError(
+                        "shape block declares more than one 'procedural {}' "
+                        "sub-block; merge the statements into a single block."
+                    )
+                procedural_block = self._procedural_block()
             else:
                 assignments.append((self._finish_path(ident), self._assign_value()))
         self.ts.pop("}")
@@ -675,7 +683,41 @@ class _FastParser(_FastParserExprMixin):
                     "'mesh_program {}' sub-block; pick one form."
                 )
             values["mesh_program"] = mesh_program
+        if procedural_block is not None:
+            if "procedural" in values:
+                raise LatheParseError(
+                    "shape block sets both 'procedural = ...' and a "
+                    "'procedural {}' sub-block; pick one form."
+                )
+            values["procedural"] = procedural_block
         return values
+
+    def _procedural_block(self) -> dict[str, Any]:
+        """Parse the Sprint 0 Phase B ``procedural { ... }`` sub-block.
+
+        The block carries plain assign_stmts whose values are lifted
+        verbatim into ``asset.build.shape.procedural``. The shape
+        backend's ``synthesizer_eligible`` / ``runtime_from_asset``
+        helpers read from that location.
+
+        Typical contents an author would set here:
+          - ``construction_graph = { nodes = [...], edges = [...] }``
+            (explicit override of the parts-derived auto-graph)
+          - ``brief = { family = "...", style_id = "...",
+            policy_ids = [...] }``
+          - ``auto_graph = disabled`` (opt out of auto-graph
+            synthesis; require an explicit construction_graph above)
+
+        Unknown keys flow through unchanged so future synthesizer
+        extensions don't need grammar updates.
+        """
+        assignments: list[tuple[str, Any]] = []
+        self.ts.pop("{")
+        while not self.ts.peek("}"):
+            ident = self.ts.pop_ident()
+            assignments.append((self._finish_path(ident), self._assign_value()))
+        self.ts.pop("}")
+        return self._assignments(assignments, "build.shape.procedural")
 
     def _mesh_program_block(self) -> dict[str, Any]:
         """Parse the V1.4 ``mesh_program { ... }`` ordered statement block.

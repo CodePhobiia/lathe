@@ -15,9 +15,10 @@ callsite shares one defense.
 from __future__ import annotations
 
 import warnings
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Iterator
+from typing import IO
 
 from PIL import Image
 

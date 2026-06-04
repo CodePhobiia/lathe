@@ -1,0 +1,9 @@
+{
+  "family_id": "world_system_assembly",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "World-system assembly token / planning fixture (footprint plate with regional zoning, route rails, progression sockets, resource fasteners, landmark mounts, gate frames, label decals, usage wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

@@ -1350,10 +1350,22 @@ build_block: "build" "{" shape_block? topology_block? uv_block? build_surface_bl
 // op calls) lowered to ``ShapePrimitive`` records before the shape stage
 // runs. The block sits alongside (not instead of) the existing assignment
 // fields like ``mode = generate``, ``candidates = N``, etc.
-shape_block: "shape" "{" assign_stmt* mesh_program_block? assign_stmt* "}"
+shape_block: "shape" "{" assign_stmt* mesh_program_block? assign_stmt* procedural_block? assign_stmt* "}"
 // Ordered statement-style sub-block. Statements run top-to-bottom and may
 // reference identifiers introduced by earlier ``let`` statements.
 mesh_program_block: "mesh_program" "{" mesh_stmt* "}"
+// V0.9 Sprint 0 Phase B capstone: opt-in / opt-out flags for the
+// procedural synthesizer. When absent, the legacy default behavior
+// applies (synthesizer_eligible decides via auto-graph from authored
+// parts + FamilyAlias presence). The block carries free-form
+// assign_stmt values so authors can override the auto-graph by
+// declaring ``construction_graph = { ... }``, request specific
+// policies via ``policy_ids = [...]``, or opt out with
+// ``auto_graph = disabled``. The normalizer lifts whatever the author
+// declares into ``asset.build.shape.procedural``; the shape backend
+// reads it from that location via ``synthesizer_eligible`` /
+// ``runtime_from_asset``.
+procedural_block: "procedural" "{" assign_stmt* "}"
 ?mesh_stmt: mesh_let_stmt | mesh_call_stmt
 mesh_let_stmt: "let" IDENT "=" mesh_expr
 mesh_call_stmt: mesh_expr

@@ -90,7 +90,7 @@ def main() -> None:
     fid = _profile_from_tier("hero")
     out_dir = Path(__file__).parent
 
-    sharp_mesh, _, sharp_report = compile_explicit_surface_mesh(
+    sharp_mesh, _, _sharp_report = compile_explicit_surface_mesh(
         _wrap_in_ir([body, cutout_sharp]), fid
     )
     beveled_mesh, _, beveled_report = compile_explicit_surface_mesh(

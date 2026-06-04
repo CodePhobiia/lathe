@@ -10,8 +10,6 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
-from .errors import NormalizationError
-from .style_presets import resolve_style_target
 from .defaults import (
     ASSET_DEFAULTS,
     ASSET_REPAIR_POLICY_DEFAULTS,
@@ -30,6 +28,8 @@ from .defaults import (
     VALIDATE_REPAIR_DEFAULTS,
     VARIANT_DEFAULTS,
 )
+from .errors import NormalizationError
+from .style_presets import resolve_style_target
 
 # re-export — authoritative definition lives in lathe/errors.py
 from .utils import dedupe_keep_first, deep_fill_missing

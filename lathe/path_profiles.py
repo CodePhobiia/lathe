@@ -86,9 +86,9 @@ def _path_profile_name(controls: Mapping[str, Any], *, family: str, default: str
     layout_mode = _slug(str(controls.get("connection_layout_mode") or ""))
     if layout_mode == "network":
         return "network"
-    if family == "procedural_bridge":
+    if family == "procedural_bridge":  # no-family-dispatch: per-family path defaults (bridge/access); migrate values to a StyleKnowledge parameter_priors subset and resolve via the FamilyAlias style_id
         return "bridge"
-    if family == "procedural_access" and int(controls.get("support_count") or 0) > 0:
+    if family == "procedural_access" and int(controls.get("support_count") or 0) > 0:  # no-family-dispatch: per-family path defaults (bridge/access); migrate values to a StyleKnowledge parameter_priors subset and resolve via the FamilyAlias style_id
         return "elevated"
     if layout_mode == "linear_route" and float(controls.get("connection_path_complexity") or 0.0) > 0.30:
         return "s_curve"
@@ -197,7 +197,7 @@ def _int_value(controls: Mapping[str, Any], *keys: str, default: int) -> int:
         if value is None or isinstance(value, bool):
             continue
         try:
-            return int(round(float(value)))
+            return round(float(value))
         except (TypeError, ValueError):
             continue
     return default

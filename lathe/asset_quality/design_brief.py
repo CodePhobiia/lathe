@@ -131,7 +131,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 VERSION = "design_brief_v1"
 
 
@@ -1757,7 +1756,7 @@ def _match_authored_content(value: Any) -> str:
 
 
 def _family_for_token(token: str) -> str:
-    return next(family for tok, family in _FAMILY_TOKENS if tok == token)
+    return next(family for tok, family in _FAMILY_TOKENS if tok == token)  # no-family-dispatch: `family` here is the comprehension's loop variable iterating over (token, family) tuples in `_FAMILY_TOKENS`, not a dispatch lookup — token→family inference for brief defaults
 
 
 def _canonical_family_alias(value: str) -> str:
@@ -1824,7 +1823,7 @@ def _infer_family(asset: dict[str, Any]) -> tuple[str, str, str]:
 
 def _build_default_brief(asset_name: str, family: str) -> DesignBrief:
     """Return the deterministic per-family default brief."""
-    defaults = _FAMILY_DEFAULTS.get(family, _FAMILY_DEFAULTS["generic"])
+    defaults = _FAMILY_DEFAULTS.get(family, _FAMILY_DEFAULTS["generic"])  # no-family-dispatch: per-family brief defaults table; migrate values to StyleKnowledge parameter_priors so a FamilyAlias can resolve them without the dict lookup
     return DesignBrief(
         asset_name=asset_name,
         family=family,

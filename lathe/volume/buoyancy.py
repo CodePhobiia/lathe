@@ -22,7 +22,6 @@ from typing import Any
 
 import numpy as np
 
-
 _DEFAULT_GRAVITY = (0.0, 0.0, -9.8)
 
 

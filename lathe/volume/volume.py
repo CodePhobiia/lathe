@@ -15,11 +15,11 @@ mapping for downstream stages to consume.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
-
 
 _VEC3_LEN = 3
 _BOUNDS_LEN = 6

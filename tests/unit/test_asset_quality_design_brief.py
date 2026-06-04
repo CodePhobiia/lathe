@@ -25,7 +25,6 @@ from lathe.asset_quality.design_brief import (
     evaluate_design_brief,
 )
 
-
 _EXPECTED_BRIEF_FIELDS: frozenset[str] = frozenset(
     {
         "asset_name",

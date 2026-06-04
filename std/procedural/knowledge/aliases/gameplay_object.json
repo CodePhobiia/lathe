@@ -1,0 +1,9 @@
+{
+  "family_id": "gameplay_object",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Gameplay object fixture (body volume, state indicator panel, trigger material zone, payload socket, affordance handle, feedback-emitter mounts, bounds guards, link sockets, objective decal, interaction wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

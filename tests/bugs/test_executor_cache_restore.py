@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from lathe.cache_paths import CACHE_MANIFEST_FILENAME
 from lathe.executor import BUILD_CACHE_VERSION, BuildExecutor
 

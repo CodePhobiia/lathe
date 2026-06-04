@@ -1,0 +1,21 @@
+{
+  "name": "lathe-web-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser inspector for Lathe .lthpkg packages. Drag/drop a package, see geometry + semantic parts + diagnostics overlay + repair evidence.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@lathe/three": "workspace:*",
+    "three": "^0.158.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.158.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}

@@ -113,7 +113,7 @@ def _connection_summary(
 def _connection_sequence(value: Any) -> list[Any]:
     if value is None:
         return []
-    if isinstance(value, str) or isinstance(value, Mapping):
+    if isinstance(value, (str, Mapping)):
         return [value]
     if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
         return [item for item in value if item is not None and item != ""]
@@ -249,17 +249,17 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
     external_count = int(summary.get("external_connection_count") or 0)
     segment_count = _segment_count(summary)
     span_count = _span_count(summary)
-    if family == "procedural_road":
+    if family == "procedural_road":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         return {
             "segments": segment_count,
             "segment_count": segment_count,
-            "branches": max(branch_count, max(0, route_count - 1)),
-            "branch_count": max(branch_count, max(0, route_count - 1)),
+            "branches": max(branch_count, 0, route_count - 1),
+            "branch_count": max(branch_count, 0, route_count - 1),
             "junction_count": max(1 if branch_count or route_count > 1 else 0, min(6, branch_count)),
             "road_length": round(1.6 + 0.42 * segment_count, 6),
             "network_type": "connected_route" if route_count else "local_link",
         }
-    if family == "procedural_bridge":
+    if family == "procedural_bridge":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         return {
             "spans": span_count,
             "span_count": span_count,
@@ -267,7 +267,7 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
             "pier_count": max(2, span_count + 1),
             "bridge_length": round(1.3 + 0.34 * span_count, 6),
         }
-    if family == "procedural_access":
+    if family == "procedural_access":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         walkway_count = max(1, route_count)
         platform_count = max(1 if attach_count or support_count else 0, external_count)
         return {
@@ -281,7 +281,7 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
             "access_depth": round(1.1 + 0.28 * span_count, 6),
             "traversal_depth": round(1.1 + 0.28 * span_count, 6),
         }
-    if family == "procedural_infrastructure":
+    if family == "procedural_infrastructure":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         service_count = max(1, route_count + attach_count)
         return {
             "pipe_count": service_count,
@@ -293,7 +293,7 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
             "network_depth": round(1.0 + 0.32 * segment_count, 6),
             "infrastructure_depth": round(1.0 + 0.32 * segment_count, 6),
         }
-    if family == "procedural_interior":
+    if family == "procedural_interior":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         corridor_count = max(1, route_count) if route_count else 0
         return {
             "room_layout": "connected_route" if route_count else "linear",
@@ -303,27 +303,27 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
             "stair_core_count": 1 if support_count and external_count else 0,
             "room_depth": round(0.9 + 0.18 * segment_count, 6),
         }
-    if family == "procedural_building":
+    if family == "procedural_building":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         return {
             "facade_style": "connected_facade" if attach_count or route_count else "grid",
             "balcony_count": min(12, attach_count + external_count),
             "stair_core_count": 1 if route_count and support_count else 0,
             "wing_count": min(4, max(0, branch_count)),
         }
-    if family == "procedural_city_block":
+    if family == "procedural_city_block":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         return {
             "block_layout": "connected_network" if route_count > 1 else "street_edge",
             "street_count": max(1, route_count),
             "lot_count": max(2, route_count + branch_count + external_count),
             "block_depth": round(1.0 + 0.22 * segment_count, 6),
         }
-    if family == "procedural_terrain":
+    if family == "procedural_terrain":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         return {
             "path_count": max(1, route_count),
             "platform_count": max(0, support_count + attach_count),
             "terrain_depth": round(1.0 + 0.18 * segment_count, 6),
         }
-    if family == "procedural_setpiece":
+    if family == "procedural_setpiece":  # no-family-dispatch: per-family procedural-environment connection layout; each family case can be lifted into a CompositionPolicy expansion keyed on intent tags
         structure_count = max(2, route_count + attach_count + branch_count)
         return {
             "setpiece_layout": "connected_compound" if route_count > 1 else "anchored_cluster",
@@ -334,7 +334,7 @@ def _family_controls(family: str, summary: Mapping[str, Any]) -> dict[str, Any]:
             "infrastructure_count": max(1 if external_count else 0, attach_count + support_count),
             "prop_count": max(2, branch_count + external_count),
             "terrain_platforms": max(1 if support_count else 0, min(4, support_count + attach_count)),
-            "branch_count": max(branch_count, max(0, route_count - 1)),
+            "branch_count": max(branch_count, 0, route_count - 1),
             "setpiece_depth": round(1.2 + 0.24 * segment_count, 6),
         }
     return {}

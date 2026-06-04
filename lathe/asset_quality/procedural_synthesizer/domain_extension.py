@@ -90,5 +90,5 @@ class DomainExtensionRegistration:
     """
 
     manifest: DomainExtensionManifest
-    generators: tuple["NodeTypeGenerator", ...]
-    decorators: tuple["EdgeTypeDecorator", ...] = field(default_factory=tuple)
+    generators: tuple[NodeTypeGenerator, ...]
+    decorators: tuple[EdgeTypeDecorator, ...] = field(default_factory=tuple)

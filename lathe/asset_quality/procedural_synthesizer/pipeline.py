@@ -17,9 +17,9 @@ Stages:
 
 from __future__ import annotations
 
-import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from ..shape_ir_v2 import ALL_OPS, SHAPE_IR_V2_VERSION, ShapeOp, ShapeProgram
 from .attributes import ATTRIBUTE_SCHEMAS, validate_attributes
@@ -31,12 +31,11 @@ from .context import (
 )
 from .knowledge_loader import (
     CompositionPolicy,
-    PolicyExpansion,
-    StyleKnowledge,
     FamilyAlias,
+    StyleKnowledge,
     precondition_matches,
 )
-from .registry import GeneratorRegistry, OpResolver, REGISTRY
+from .registry import REGISTRY, GeneratorRegistry, OpResolver
 from .trace import SynthesizerTrace, TraceBuilder
 
 
@@ -152,17 +151,148 @@ def _normalize_graph(ctx: SynthesizerContext, trace: TraceBuilder) -> _Normalize
 
 
 def _resolve_count(raw_count: Any, brief: Mapping[str, Any]) -> int:
+    """Resolve a policy-expansion count, applying ``brief.density`` as a multiplier.
+
+    Density is a non-family knob: 1.0 is the canonical base, >1 produces
+    more secondary features (more fasteners, more brackets), <1 produces
+    fewer. Used so the same policy JSON can produce sparse "factory new"
+    or dense "industrial heavy duty" outputs without per-policy variants.
+    The multiplier rounds half-up; a base count of 1 with density 0.5
+    stays at 1 to keep the minimum-canonical feature present.
+    """
+    raw_density = brief.get("density")
+    try:
+        density = float(raw_density) if raw_density is not None else 1.0
+    except (TypeError, ValueError):
+        density = 1.0
+    if density <= 0:
+        density = 1.0
+
     if isinstance(raw_count, int):
-        return max(0, raw_count)
-    if isinstance(raw_count, Mapping):
+        base = max(0, raw_count)
+    elif isinstance(raw_count, Mapping):
         field_name = raw_count.get("from_brief_field")
         default = int(raw_count.get("default") or 0)
         if isinstance(field_name, str):
             value = brief.get(field_name)
             if isinstance(value, int):
-                return max(0, value)
-        return default
-    return 1
+                base = max(0, value)
+            else:
+                base = default
+        else:
+            base = default
+    else:
+        base = 1
+
+    if base == 0:
+        return 0
+    scaled = round(base * density)
+    # Minimum-canonical preservation: if the base authored count is 1+
+    # and density tries to round it to 0, keep 1 so the canonical feature
+    # is at least present.
+    if base >= 1 and scaled <= 0:
+        return 1
+    return scaled
+
+
+def _body_dimensions_from_graph(
+    nodes: list[dict[str, Any]],
+) -> dict[str, float] | None:
+    """Find the primary_volume node and return its ``dimensions_cm``.
+
+    Used by policy expansion to compute corner / face positions for
+    policy-added nodes (brackets, fasteners) that the policy JSON
+    declares via ``placement.pattern``.
+    """
+    for node in nodes:
+        if node.get("node_type") != "primary_volume":
+            continue
+        attrs = node.get("attributes") or {}
+        if not isinstance(attrs, Mapping):
+            continue
+        dims = attrs.get("dimensions_cm")
+        if isinstance(dims, Mapping):
+            try:
+                return {
+                    "x": float(dims.get("x", 30.0)),
+                    "y": float(dims.get("y", 30.0)),
+                    "z": float(dims.get("z", 30.0)),
+                }
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
+def _position_for_policy_pattern(
+    pattern: str,
+    index: int,
+    count: int,
+    body_dims: dict[str, float],
+) -> tuple[float, float, float] | None:
+    """Map a policy.placement.pattern + index into a (x, y, z) position.
+
+    Convention: ``+Z is up``, ``+Y is the "front" face``. Standoff is
+    minimal (0.5cm) so the part sits flush against the body face.
+    Returns None for unrecognized patterns — the policy node then
+    falls back to origin (preserving prior behavior).
+    """
+    half_x = body_dims["x"] / 2.0
+    half_y = body_dims["y"] / 2.0
+    half_z = body_dims["z"] / 2.0
+    standoff = 0.5
+
+    if pattern in ("two_corners", "top_corners"):
+        # Top-front-left, then top-front-right (or back if back-corner pair).
+        if index == 0:
+            return (-half_x - standoff, half_y, half_z)
+        if index == 1:
+            return (half_x + standoff, half_y, half_z)
+    if pattern in ("four_corners", "top_face_corners"):
+        # Four top corners (TL, TR, BL, BR on top face).
+        signs = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
+        if 0 <= index < 4:
+            sx, sy = signs[index]
+            return (sx * (half_x + standoff), sy * (half_y + standoff), half_z)
+    if pattern in ("eight_corners", "all_corners"):
+        # 8 corners of the bounding box.
+        signs = [
+            (-1, -1, -1), (1, -1, -1), (-1, 1, -1), (1, 1, -1),
+            (-1, -1, 1), (1, -1, 1), (-1, 1, 1), (1, 1, 1),
+        ]
+        if 0 <= index < 8:
+            sx, sy, sz = signs[index]
+            return (
+                sx * (half_x + standoff),
+                sy * (half_y + standoff),
+                sz * (half_z + standoff),
+            )
+    if pattern == "front_face_anchor":
+        return (0.0, half_y + standoff, 0.0)
+    if pattern == "back_face_anchor":
+        return (0.0, -half_y - standoff, 0.0)
+    if pattern in ("top_face_anchor", "top_anchor"):
+        return (0.0, 0.0, half_z + standoff)
+    if pattern in ("bottom_face_anchor", "bottom_anchor"):
+        return (0.0, 0.0, -half_z - standoff)
+    if pattern in ("left_face_anchor", "left_anchor"):
+        return (-half_x - standoff, 0.0, 0.0)
+    if pattern in ("right_face_anchor", "right_anchor"):
+        return (half_x + standoff, 0.0, 0.0)
+    if pattern == "front_face_grid":
+        # Distribute ``count`` items across the front face. Single
+        # column for now — produces a vertical row of fasteners.
+        if count == 1:
+            return (0.0, half_y + standoff, 0.0)
+        # Even distribution along Z.
+        z_step = body_dims["z"] / (count + 1)
+        z = -half_z + z_step * (index + 1)
+        return (0.0, half_y + standoff, z)
+    if pattern == "front_face_belt":
+        # Single horizontal trim wrapping the front face at mid-height.
+        return (0.0, half_y + standoff, 0.0)
+    if pattern == "back_face_belt":
+        return (0.0, -half_y - standoff, 0.0)
+    return None
 
 
 def _expand_policies(
@@ -173,6 +303,7 @@ def _expand_policies(
     trace.emit("stage_start", stage=3)
     nodes = list(graph.nodes)
     edges = list(graph.edges)
+    body_dims = _body_dimensions_from_graph(nodes)
     for policy in ctx.policies:
         node_types_present = {node["node_type"] for node in nodes}
         if not precondition_matches(
@@ -193,12 +324,45 @@ def _expand_policies(
         for expansion in policy.expansions:
             count = _resolve_count(expansion.count, ctx.brief)
             for index in range(count):
-                new_node_id = f"policy.{policy.policy_id}.{expansion.add_node_type}.{index}.{uuid.uuid4().hex[:6]}"
+                # Deterministic node ID: (policy_id, add_node_type, index)
+                # is unique within a single synthesize call because a
+                # given policy runs at most once per call and each
+                # expansion's per-index counter is monotonic. uuid was
+                # used here historically and broke compiler determinism
+                # — replaced with the stable triple.
+                new_node_id = f"policy.{policy.policy_id}.{expansion.add_node_type}.{index}"
                 attrs = dict(expansion.attributes_template)
                 # Placement hints become regular attributes — the
                 # generator decides how to interpret them.
                 for placement_key, placement_value in expansion.placement.items():
                     attrs.setdefault(str(placement_key), placement_value)
+                # Pattern-aware positioning: thread a position_cm into
+                # the attrs from the policy's placement.pattern when
+                # we know the body dimensions. Without this, every
+                # policy-added node (corner bracket, fastener) stacks
+                # at origin and gets buried inside the body. Recognized
+                # patterns include two_corners, four_corners,
+                # eight_corners, front/back/top/bottom/left/right
+                # face anchors, front_face_grid, and front/back_face_belt.
+                # Unrecognized patterns fall through (node stays at origin).
+                if body_dims is not None and "position_cm" not in attrs:
+                    pattern_value = expansion.placement.get("pattern")
+                    if isinstance(pattern_value, str):
+                        pos = _position_for_policy_pattern(
+                            pattern_value, index, count, body_dims
+                        )
+                        if pos is not None:
+                            attrs["position_cm"] = pos
+                # Body-aware length resolution: policies declare
+                # ``length_from_body: "x" | "y" | "z"`` to mark
+                # length-like attributes that should match a body
+                # axis at expansion time. Without this, a trim band
+                # with hard-coded ``length_cm: 30.0`` clips to 30cm
+                # on every asset regardless of body size.
+                if body_dims is not None:
+                    length_axis = expansion.placement.get("length_from_body")
+                    if isinstance(length_axis, str) and length_axis in body_dims:
+                        attrs["length_cm"] = float(body_dims[length_axis])
                 added_node = {
                     "node_id": new_node_id,
                     "node_type": expansion.add_node_type,
@@ -216,9 +380,15 @@ def _expand_policies(
                 for edge_template in expansion.edges_to_existing:
                     # Connect the new node to every existing node whose
                     # type matches edge_template.target_node_type.
+                    # Slice ``nodes[:-1]`` excludes only the just-appended
+                    # node (the new one is always at the tail because
+                    # ``nodes.append(added_node)`` ran above). The
+                    # previous ``nodes[:-1-index]`` form excluded ``index``
+                    # extra nodes — wrongly hiding earlier policy
+                    # expansions of this loop from being valid targets.
                     targets = [
                         node["node_id"]
-                        for node in nodes[: -1 - index]
+                        for node in nodes[:-1]
                         if node["node_type"] == edge_template.target_node_type
                     ]
                     for target_id in targets:
@@ -397,6 +567,192 @@ def _topological_order(
     return ordered_nodes, ordered_edges
 
 
+# ---------- Stage 5b: resolve_placement_bindings ----------
+
+
+def _body_dims_from_typed_nodes(nodes: tuple[ConstructionNodeTyped, ...]) -> dict[str, float]:
+    """Find primary_volume node and extract its dimensions_cm."""
+    for node in nodes:
+        if node.node_type != "primary_volume":
+            continue
+        raw = node.raw_attributes if isinstance(node.raw_attributes, Mapping) else {}
+        dims = raw.get("dimensions_cm")
+        if isinstance(dims, Mapping):
+            try:
+                return {
+                    "x": float(dims.get("x", 30.0)),
+                    "y": float(dims.get("y", 30.0)),
+                    "z": float(dims.get("z", 30.0)),
+                }
+            except (TypeError, ValueError):
+                pass
+    return {"x": 30.0, "y": 30.0, "z": 30.0}
+
+
+def _resolve_placement_bindings(
+    nodes: tuple[ConstructionNodeTyped, ...],
+    edges: tuple[ConstructionEdgeTyped, ...],
+    trace: TraceBuilder,
+) -> dict[str, tuple[float, float, float]]:
+    """Anchor-driven placement resolution (research Milestone 1).
+
+    For each construction edge whose ``edge_type`` matches a registered
+    ``RelationSpec``, emit anchors for source and target nodes, invoke
+    ``RelationResolver``, and return ``{node_id: position_cm}`` for the
+    source node. Stage 6 reads this dict to override
+    ``raw_attributes.position_cm`` with the anchor-resolved transform.
+
+    Soft-fail by design — if any step errors (missing anchor emitter,
+    unknown relation, no valid candidate), the node falls back to its
+    existing heuristic position_cm. Anchor resolution is additive, not
+    a hard gate.
+    """
+    trace.emit("placement_binding_start", stage=5)
+    try:
+        from ...shape.placement import RelationResolver
+        from .anchors import emit_anchors_for_node
+    except Exception as exc:  # pragma: no cover - import path safety
+        trace.emit("placement_binding_import_failed", stage=5, error=str(exc))
+        return {}
+
+    body_dims = _body_dims_from_typed_nodes(nodes)
+    resolver = RelationResolver()
+    resolved: dict[str, tuple[float, float, float]] = {}
+    anchor_cache: dict[str, list[Any]] = {}
+
+    def anchors_for(node: ConstructionNodeTyped) -> list[Any]:
+        if node.node_id in anchor_cache:
+            return anchor_cache[node.node_id]
+        raw_dict = dict(node.raw_attributes) if isinstance(node.raw_attributes, Mapping) else {}
+        raw_dict["node_id"] = node.node_id
+        try:
+            anchors = emit_anchors_for_node(node.node_type, raw_dict, body_dims)
+        except Exception as exc:  # pragma: no cover - emitter safety
+            trace.emit(
+                "anchor_emit_failed",
+                stage=5,
+                node_id=node.node_id,
+                node_type=node.node_type,
+                error=str(exc),
+            )
+            anchors = []
+        anchor_cache[node.node_id] = anchors
+        return anchors
+
+    by_id = {n.node_id: n for n in nodes}
+    # Track per-target-anchor usage so multiple sources docking with
+    # the same host distribute across distinct anchors (capacity-aware).
+    # Maps target_anchor_id → number of source bindings already placed.
+    anchor_usage: dict[str, int] = {}
+    for edge in edges:
+        source = by_id.get(edge.source_id)
+        target = by_id.get(edge.target_id)
+        if source is None or target is None:
+            continue
+        source_anchors = anchors_for(source)
+        target_anchors_all = anchors_for(target)
+        if not source_anchors or not target_anchors_all:
+            continue
+        # Filter out target anchors that have reached capacity.
+        target_anchors = [
+            a for a in target_anchors_all
+            if anchor_usage.get(a.anchor_id, 0) < a.capacity
+        ]
+        if not target_anchors:
+            # Capacity exhausted on all known anchors — record + fall
+            # through to heuristic.
+            trace.emit(
+                "placement_binding_unresolved",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                proof="all_target_anchors_at_capacity",
+            )
+            continue
+        try:
+            binding = resolver.resolve(
+                edge_id=f"{edge.source_id}__{edge.edge_type}__{edge.target_id}",
+                relation=edge.edge_type,
+                source_node_id=edge.source_id,
+                target_node_id=edge.target_id,
+                source_anchors=source_anchors,
+                target_anchors=target_anchors,
+            )
+        except Exception as exc:  # pragma: no cover - resolver safety
+            trace.emit(
+                "relation_resolve_failed",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                error=str(exc),
+            )
+            continue
+        if binding.is_resolved() and binding.chosen is not None:
+            # First valid binding wins for each source node — subsequent
+            # edges on the same source are decorators, not primary
+            # placement. Mark the chosen target anchor as used.
+            resolved.setdefault(edge.source_id, binding.chosen.transform_world_cm)
+            # Stash the resolved frame so direct-anchor-read generators
+            # (P1 migration) can consume it without going through the
+            # position_cm bridge.
+            try:
+                from .anchors import ANCHOR_EMITTERS  # type: ignore
+                from .generators._anchor_bridge import ResolvedAnchorFrame, stash_anchor_resolution
+
+                # Find the target anchor's z_axis from its host's anchor list.
+                z_axis_value: tuple[float, float, float] = (0.0, 0.0, 1.0)
+                for a in target_anchors:
+                    if a.anchor_id == binding.chosen.target_anchor_id:
+                        z_axis_value = a.frame.z_axis
+                        break
+                _resolved_frame = ResolvedAnchorFrame(
+                    transform_world_cm=binding.chosen.transform_world_cm,
+                    z_axis=z_axis_value,
+                    source_anchor_id=binding.chosen.source_anchor_id,
+                    target_anchor_id=binding.chosen.target_anchor_id,
+                    relation=edge.edge_type,
+                )
+                # ConstructionNodeTyped.raw_attributes is a frozen
+                # Mapping; we can't mutate it. Instead, record the
+                # frame in a side-channel keyed by source_id so the
+                # P1 follow-on migration can read it deterministically.
+                # The accumulator carries this for Stage 6.
+                resolved.setdefault(
+                    f"__frame__{edge.source_id}", _resolved_frame  # type: ignore
+                )
+                # Quiet unused-import warnings.
+                _ = (ANCHOR_EMITTERS, stash_anchor_resolution)
+            except Exception:  # pragma: no cover - bridge is additive
+                pass
+            anchor_usage[binding.chosen.target_anchor_id] = (
+                anchor_usage.get(binding.chosen.target_anchor_id, 0) + 1
+            )
+            trace.emit(
+                "placement_binding_resolved",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                source_anchor=binding.chosen.source_anchor_id,
+                target_anchor=binding.chosen.target_anchor_id,
+                transform_cm=list(binding.chosen.transform_world_cm),
+            )
+        else:
+            trace.emit(
+                "placement_binding_unresolved",
+                stage=5,
+                source_id=edge.source_id,
+                target_id=edge.target_id,
+                relation=edge.edge_type,
+                proof=binding.proof,
+            )
+
+    trace.emit("placement_binding_end", stage=5, resolved_count=len(resolved))
+    return resolved
+
+
 # ---------- Stage 6: emit_node_ops ----------
 
 
@@ -410,10 +766,11 @@ class _NodeOpAccumulator:
 
     ops: list[ShapeOp]
     ops_by_node: dict[str, list[ShapeOp]]
+    anchor_resolved_positions: dict[str, tuple[float, float, float]]
 
     @classmethod
-    def empty(cls) -> "_NodeOpAccumulator":
-        return cls(ops=[], ops_by_node={})
+    def empty(cls) -> _NodeOpAccumulator:
+        return cls(ops=[], ops_by_node={}, anchor_resolved_positions={})
 
 
 class _OpResolverImpl:
@@ -429,9 +786,11 @@ def _emit_node_ops(
     ctx: SynthesizerContext,
     registry: GeneratorRegistry,
     trace: TraceBuilder,
+    anchor_positions: Mapping[str, tuple[float, float, float]] | None = None,
 ) -> _NodeOpAccumulator:
     trace.emit("stage_start", stage=6)
     acc = _NodeOpAccumulator.empty()
+    acc.anchor_resolved_positions.update(anchor_positions or {})
     for node in nodes:
         generator = registry.resolve_generator(node.domain, node.node_type)
         if generator is None:
@@ -458,6 +817,35 @@ def _emit_node_ops(
                     f"generator for {node.node_type!r} emitted non-ShapeOp "
                     f"value {type(op).__name__}"
                 )
+            # Apply auto-graph positioning to primitive ops. The
+            # construction-graph node may carry ``position_cm`` in its
+            # raw attributes (see
+            # ``_auto_graph_from_parts`` /
+            # ``_infer_position_cm``). The kernel reads ``center`` on
+            # every primitive (cube, capsule, cylinder, etc.) so we
+            # thread the position through here — without touching
+            # generators individually. Skips ops that already set
+            # ``center`` (the generator's own placement wins) and
+            # non-primitive ops (op.union, op.bevel, etc.).
+            if op.op.startswith("solid.") and "center" not in op.parameters:
+                # Priority: anchor-resolved position (M1 contract) →
+                # raw_attributes.position_cm (heuristic fallback).
+                resolved_position = acc.anchor_resolved_positions.get(node.node_id)
+                if resolved_position is not None:
+                    op.parameters["center"] = resolved_position
+                    op.parameters["_lathe_placement_source"] = "anchor_binding"
+                else:
+                    raw_attrs = getattr(node, "raw_attributes", None)
+                    if isinstance(raw_attrs, Mapping):
+                        position = raw_attrs.get("position_cm")
+                        if position is not None:
+                            try:
+                                coords = tuple(float(v) for v in position)
+                                if len(coords) == 3:
+                                    op.parameters["center"] = coords
+                                    op.parameters["_lathe_placement_source"] = "heuristic_position_cm"
+                            except (TypeError, ValueError):
+                                pass
             emitted.append(op)
             acc.ops.append(op)
             trace.emit(
@@ -621,8 +1009,16 @@ def synthesize_procedural_program(
     # Stage 5
     ordered_nodes, ordered_edges = _topological_order(typed_nodes, typed_edges, trace)
 
+    # Stage 5b — Anchor-driven placement resolution (research M1).
+    # Pre-pass before Stage 6 so resolved transforms feed back into the
+    # raw_attributes ``position_cm`` channel that Stage 6's center
+    # post-process already honors.
+    anchor_positions = _resolve_placement_bindings(ordered_nodes, ordered_edges, trace)
+
     # Stage 6
-    accumulator = _emit_node_ops(ordered_nodes, ctx_typed, registry, trace)
+    accumulator = _emit_node_ops(
+        ordered_nodes, ctx_typed, registry, trace, anchor_positions=anchor_positions
+    )
 
     # Stage 7
     edge_ops = _emit_edge_ops(ordered_edges, ctx_typed, registry, accumulator, trace)

@@ -13,7 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
 _VALID_PLANES: frozenset[str] = frozenset({"xy", "xz", "yz"})
 
 _VALID_BORDER_POLICIES: frozenset[str] = frozenset(
@@ -92,7 +91,7 @@ class PanelAttributes:
             )
 
     @classmethod
-    def from_dict(cls, attrs: dict[str, Any]) -> "PanelAttributes":
+    def from_dict(cls, attrs: dict[str, Any]) -> PanelAttributes:
         """Validate a raw attribute dict and produce a typed instance."""
         if not isinstance(attrs, dict):
             raise TypeError(

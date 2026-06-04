@@ -16,8 +16,8 @@ build-time failure.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
+from dataclasses import dataclass, field
 from typing import Any
 
 from .expressions import (
@@ -45,11 +45,11 @@ from .expressions import (
     RoundedSlot,
     Scale,
     Scale3,
+    SDFExpr,
     SegmentBox,
     SegmentCapsule,
     SegmentExtrudedProfile,
     SegmentLoftedProfile,
-    SDFExpr,
     Shell,
     SmoothIntersect,
     SmoothSubtract,
@@ -595,9 +595,7 @@ def _walk(node: SDFExpr, path: str, report: ValidationReport, visited: set[int])
             )
         _walk(node.a, f"{path}.a", report, visited)
         _walk(node.b, f"{path}.b", report, visited)
-    elif isinstance(node, ConnectedIntent):
-        _walk(node.expr, f"{path}.expr", report, visited)
-    elif isinstance(node, Translate):
+    elif isinstance(node, (ConnectedIntent, Translate)):
         _walk(node.expr, f"{path}.expr", report, visited)
     elif isinstance(node, Rotate):
         if all(v == 0.0 for v in node.axis):

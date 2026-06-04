@@ -44,6 +44,38 @@ METRIC_REPAIR_SUGGESTIONS = {
         "increase_panel_depth",
     ],
     "family_grammar_coverage": ["add_missing_required_part", "add_secondary_features"],
+    "hard_surface_class_anchor_score": ["add_secondary_features", "increase_panel_depth"],
+    "hard_surface_class_anchor_missing_required_count": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+    ],
+    "hard_surface_class_anchor_bounded_volume": ["refit_silhouette_region"],
+    "hard_surface_class_anchor_panel_breakup": [
+        "increase_panel_depth",
+        "add_secondary_features",
+    ],
+    "hard_surface_class_anchor_corner_reinforcement": [
+        "add_secondary_features",
+        "improve_attachment_integration",
+    ],
+    "hard_surface_class_anchor_access_seam": [
+        "increase_panel_depth",
+        "restore_edge_treatment",
+    ],
+    "hard_surface_class_anchor_material_separation": ["reauthor_surface_layer"],
+    "hard_surface_class_anchor_fastener_trim_detail": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+    ],
+    "hard_surface_class_anchor_scale_plausibility": ["refit_silhouette_region"],
+    "hard_surface_class_anchor_silhouette": [
+        "refit_silhouette_region",
+        "add_secondary_features",
+    ],
+    "hard_surface_class_anchor_face_count": [
+        "add_secondary_features",
+        "restore_edge_treatment",
+    ],
 }
 
 
@@ -208,7 +240,7 @@ def _surface_feature_repairs(asset_graph: AssetGraph, shape_ir: ShapeIR) -> list
         )
     if (
         assessment.get("panel_feature_count", 0) < MIN_PANEL_FEATURE_COUNT
-        and asset_graph.family in PANEL_DEPTH_FAMILIES
+        and asset_graph.family in PANEL_DEPTH_FAMILIES  # no-family-dispatch: per-family panel-depth repair gating; migrate to a panel-depth threshold parameter on the StyleKnowledge pack so the repair rule no longer depends on family identity
     ):
         repairs.append(
             _repair(
@@ -374,6 +406,7 @@ class _ShapeRepairApplier:
             "increase_structural_richness": self._increase_structural_richness,
             "restore_hinge_alignment": self._restore_hinge_alignment,
             "refit_silhouette_region": self._refit_silhouette_region,
+            "restore_edge_treatment": self._restore_edge_treatment,
         }.get(repair.action)
         if handler is None:
             return False
@@ -550,6 +583,42 @@ class _ShapeRepairApplier:
         )
         self._add_region(region, primitive)
         return True
+
+    def _restore_edge_treatment(self, repair: SemanticRepairAction) -> bool:
+        """Sprint 0 S0-6: mark the primary body primitives for bevel.
+
+        Marks the primary-body primitives with
+        ``semantic_metadata.edge_treatment="beveled"`` + a sensible
+        default width. The next-iteration shape-program emit reads the
+        flag (procedural synthesizer's primary_volume generator
+        consults its `edge_treatment` attribute, which the upstream
+        shape stage can populate from this semantic_metadata) and
+        emits the corresponding op.bevel; the kernel-level
+        edge-treatment pass then produces visible bevels on the rebuilt
+        artifact.
+
+        Returns True iff at least one body primitive was marked. The
+        return tells the dispatcher to record the repair as applied
+        (so the trace records the action and the next build round
+        sees the changed shape_ir).
+        """
+        body_region = self._first_body_region(default_to_first=True)
+        if body_region is None:
+            return False
+        marked = 0
+        for primitive in self.primitives:
+            if primitive.region != body_region.name and primitive.part != body_region.part:
+                continue
+            # ShapePrimitive carries a mutable semantic_metadata dict
+            # for exactly this kind of repair-time annotation.
+            metadata = dict(primitive.semantic_metadata or {})
+            metadata["edge_treatment"] = "beveled"
+            metadata.setdefault("edge_treatment_width_cm", 0.6)
+            metadata.setdefault("edge_treatment_segments", 3)
+            metadata.setdefault("edge_treatment_source", "repair.restore_edge_treatment")
+            primitive.semantic_metadata = metadata
+            marked += 1
+        return marked > 0
 
     def _first_body_region(self, *, default_to_first: bool) -> ShapeRegion | None:
         default = self.regions[0] if default_to_first and self.regions else None

@@ -254,7 +254,7 @@ def resolve_style_target(target: Any) -> dict[str, str]:
         base_preset = STYLE_PRESETS.get(preset_name, STYLE_PRESETS[DEFAULT_PRESET])
         stack = deepcopy(base_preset)
         for axis in STYLE_AXES:
-            if axis in target and target[axis]:
+            if target.get(axis):
                 stack[axis] = str(target[axis])
         return stack
     return deepcopy(STYLE_PRESETS[DEFAULT_PRESET])

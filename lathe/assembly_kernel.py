@@ -9,64 +9,25 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import asdict, dataclass, field
 from typing import Any
 
+# Dataclasses + numeric epsilon were extracted into
+# ``lathe.assembly_kernel_types`` per the P1 module decomposition
+# (`docs/asset-quality/p0-p1-stabilization-execution-plan.md` §6). They
+# are re-exported here so existing
+# ``from lathe.assembly_kernel import BlueprintComponent`` /
+# ``AssemblyBlueprint`` / ``NUMERIC_EPSILON`` callers continue to work.
+from .assembly_kernel_types import (
+    NUMERIC_EPSILON,
+    AssemblyBlueprint,
+    BlueprintComponent,
+)
 from .asset_graph import AssetGraph
 from .errors import ContractViolation
 from .geometry_detail import geometry_detail_controls_from_authoring
 from .nested_assets import nested_asset_manifest_for_signature
 from .primitive_selector import primitive_selection_summary, select_component_primitives
 from .shape_ir import ShapeIR, ShapePrimitive, ShapeRegion
-
-NUMERIC_EPSILON = 1e-6
-
-
-@dataclass
-class BlueprintComponent:
-    """BlueprintComponent."""
-
-    name: str
-    component_type: str
-    part: str
-    center: tuple[float, float, float]
-    extents: tuple[float, float, float]
-    tags: list[str] = field(default_factory=list)
-    adjacency: list[str] = field(default_factory=list)
-    axis: str = "y"
-    radius: float | None = None
-    height: float | None = None
-    symmetry_mate: str | None = None
-    interface_role: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Returns:
-            The result.
-        """
-        return asdict(self)
-
-
-@dataclass
-class AssemblyBlueprint:
-    """AssemblyBlueprint."""
-
-    blueprint_id: str
-    family: str
-    components: list[BlueprintComponent]
-    notes: list[str] = field(default_factory=list)
-
-    def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Returns:
-            The result.
-        """
-        payload = asdict(self)
-        payload["components"] = [component.to_dict() for component in self.components]
-        return payload
 
 
 def _box(
@@ -366,10 +327,7 @@ def _is_container_component(component: BlueprintComponent) -> bool:
     tag_set = {str(tag).lower() for tag in component.tags}
     if tag_set & _CHEST_CONTAINER_TAGS:
         return True
-    for tag in tag_set:
-        if "chest" in tag or "brassbound" in tag or "loot_chest" in tag:
-            return True
-    return False
+    return any("chest" in tag or "brassbound" in tag or "loot_chest" in tag for tag in tag_set)
 
 
 def _asset_graph_authoring_tokens(asset_graph: AssetGraph) -> set[str]:
@@ -2903,7 +2861,7 @@ def _deck_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
 def _mast_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     radius = component.radius if component.radius is not None else max(min(component.extents[0], component.extents[2]) * 0.24, 0.12)
     height = component.height if component.height is not None else component.extents[1]
-    width, _, depth = component.extents
+    width, _, _depth = component.extents
     return [
         _swept_profile(
             component.part,
@@ -3494,7 +3452,7 @@ def _wing_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
 
 
 def _manipulator_arm_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
-    width, height, depth = component.extents
+    _width, height, depth = component.extents
     cx, cy, cz = component.center
     return [
         _subdivision_box(component.part, component, tags=[*list(component.tags), "upper_arm", "subdivision_manipulator_arm"], corner_segments=4),
@@ -5316,7 +5274,7 @@ def _mushroom_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
 def _fallen_log_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
     radius = component.radius if component.radius is not None else max(min(component.extents[1], component.extents[2]) * 0.42, 0.06)
     log_length = component.height if component.height is not None else component.extents[0]
-    width, height, depth = component.extents
+    _width, height, depth = component.extents
     sweep_path = [(-log_length * 0.50, 0.0, 0.0), (-log_length * 0.12, -height * 0.03, depth * 0.04), (log_length * 0.50, height * 0.02, 0.0)]
     if component.axis == "z":
         sweep_path = [(z, y, x) for x, y, z in sweep_path]
@@ -6816,7 +6774,7 @@ def _guardrail_primitives(component: BlueprintComponent) -> list[ShapePrimitive]
 
 
 def _access_ladder_primitives(component: BlueprintComponent) -> list[ShapePrimitive]:
-    width, height, depth = component.extents
+    width, height, _depth = component.extents
     cx, cy, cz = component.center
     rail_w = max(width * 0.16, 0.035)
     primitives = [
@@ -8807,7 +8765,7 @@ def _shape_assessment(
         assessment["mesh_grammar_modified_primitive_count"] = sum(
             1
             for primitive in mesh_grammar_primitives
-            if any(tag in primitive.tags for tag in {"bevel", "chamfer"})
+            if any(tag in primitive.tags for tag in ("bevel", "chamfer"))
         )
     return assessment
 
@@ -9591,7 +9549,7 @@ def _edge_class_text_values(value: Any) -> list[str]:
         stripped = value.strip()
         return [stripped] if stripped else []
     if isinstance(value, dict):
-        return [str(key) for key in value.keys() if str(key)]
+        return [str(key) for key in value if str(key)]
     if isinstance(value, (list, tuple, set)):
         return [str(item) for item in value if str(item)]
     return []
@@ -9889,7 +9847,7 @@ def _feature_density_multiplier(asset_graph: AssetGraph) -> float:
 
 
 def _feature_density_count(value: int, multiplier: float, *, lower: int, upper: int) -> int:
-    scaled = int(round(float(value) * max(0.5, float(multiplier))))
+    scaled = round(float(value) * max(0.5, float(multiplier)))
     return max(lower, min(upper, scaled))
 
 
@@ -10863,13 +10821,11 @@ def _integration_rule_target_score(
         primitive_tokens & {"body", "shell", "case", "crate", "container", "cabinet", "panel"}
     ):
         score += 38.0
-    elif feature_kind == "panel_line" and (
+    elif (feature_kind == "panel_line" and (
         primitive_tokens & {"body", "shell", "lid", "door", "panel", "frame"}
-    ):
-        score += 30.0
-    elif feature_kind == "panel_frame" and (
+    )) or (feature_kind == "panel_frame" and (
         primitive_tokens & {"screen", "bezel", "frame", "door", "panel", "terminal", "cabinet"}
-    ):
+    )):
         score += 30.0
     elif feature_kind == "socket_point" and (
         primitive_tokens & {"rotor", "mount", "pod", "socket", "hardpoint", "plate", "module"}
@@ -11278,7 +11234,7 @@ def _surface_damage_requests(asset_graph: AssetGraph) -> dict[str, tuple[str, st
                     break
         if matched is None:
             continue
-        modifier_key, kind = matched
+        modifier_key, _kind = matched
         amount = 0.38
         if tokens & {"heavy", "battle", "worn", "salvaged", "weathered"}:
             amount = 0.55

@@ -6,13 +6,12 @@ Translates a typed PanelAttributes into a ShapeIR v2 solid.panel op
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from ....shape_ir_v2 import ShapeOp
 from ...attributes.panel import PanelAttributes
 from ...context import ConstructionNodeTyped, SynthesizerContext
 from ...registry import GeneratorCapabilityManifest, NodeTypeGenerator
-
 
 _MANIFEST = GeneratorCapabilityManifest(
     node_type="panel",

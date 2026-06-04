@@ -66,7 +66,7 @@ def _unique_normal_count(face_normals: np.ndarray) -> int:
         return 0
     rounded = np.round(face_normals, decimals=_NORMAL_ROUND_DECIMALS)
     unique = np.unique(rounded, axis=0)
-    return int(len(unique))
+    return len(unique)
 
 
 def _bbox_fill(mesh: Any) -> float:
@@ -136,6 +136,6 @@ def evaluate_box_stack_detector(
             "bbox_fill_threshold": _BBOX_FILL_THRESHOLD,
             "hard_reject_score": _HARD_REJECT_SCORE,
             "asset_class": asset_class,
-            "face_count": int(len(mesh.faces)),
+            "face_count": len(mesh.faces),
         },
     }

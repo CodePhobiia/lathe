@@ -10,7 +10,6 @@ from .creative_grammar import creative_grammar_from_asset
 from .fidelity import _tier_multipliers
 from .object_grammar import object_grammar_from_asset
 
-
 _ROUGHNESS_DELTA_CAP = 0.5
 _NORMAL_DELTA_CAP = 0.45
 
@@ -23,7 +22,6 @@ def _scaled_delta(base: float, fidelity_tier: str, kind: str = "normal") -> floa
     cinematic tiers. Sign of base is preserved; magnitude is capped at the
     physical clamp for the channel (roughness within [0,1], normal map clip).
     """
-
     if not base:
         return 0.0
     try:
@@ -41,7 +39,6 @@ def _scaled_delta(base: float, fidelity_tier: str, kind: str = "normal") -> floa
 
 def _scale_feature_deltas(feature: dict[str, Any], fidelity_tier: str) -> None:
     """In-place scale roughness/normal deltas of a feature dict by tier."""
-
     rough = float(feature.get("roughness_delta", 0.0) or 0.0)
     normal = float(feature.get("normal_delta", 0.0) or 0.0)
     if rough:
@@ -56,7 +53,6 @@ def _infer_fidelity_tier_from_asset(asset: dict[str, Any]) -> str:
     The presets here run in the surface stage where the materialized asset is
     the only context available; this avoids importing AssetGraph circularly.
     """
-
     validate = asset.get("validate", {}) if isinstance(asset.get("validate"), dict) else {}
     critic_name = str(validate.get("score") or "").lower()
     threshold = _number(validate.get("threshold"), 0.80)
@@ -98,7 +94,7 @@ def _dedupe(values: list[str]) -> list[str]:
 
 
 def _present(value: Any) -> bool:
-    return value not in ("", None) and value != [] and value != {}
+    return value not in ("", None) and value not in ([], {})
 
 
 def _feature(
@@ -1233,21 +1229,21 @@ def surface_grammar_for_controls(
     pattern = _token(controls.get("environment_pattern") or controls.get("scatter_pattern") or source_surface.get("pattern"))
     grammar = _empty_grammar(procedural_family=family, landform=landform, biome=biome, pattern=pattern)
 
-    if family == "procedural_terrain" and not landform:
+    if family == "procedural_terrain" and not landform:  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         landform = "terrain_patch"
         grammar["landform"] = landform
-    if family == "procedural_road" and landform in {"", "path", "trail"}:
+    if family == "procedural_road" and landform in {"", "path", "trail"}:  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         landform = landform or "road_edge"
         grammar["landform"] = landform
 
-    if family in _FAMILY_PRESETS:
-        _merge_preset(grammar, _FAMILY_PRESETS[family])
+    if family in _FAMILY_PRESETS:  # no-family-dispatch: membership pre-check on the per-family surface-preset map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
+        _merge_preset(grammar, _FAMILY_PRESETS[family])  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
     if landform in _LANDFORM_PRESETS:
         _merge_preset(grammar, _LANDFORM_PRESETS[landform])
     if biome in _BIOME_PRESETS:
         _merge_preset(grammar, _BIOME_PRESETS[biome])
 
-    if family == "procedural_boat":
+    if family == "procedural_boat":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         boat_type = _token(
             controls.get("boat_type")
             or controls.get("hull_type")
@@ -1279,7 +1275,7 @@ def surface_grammar_for_controls(
             grammar["story_decals"] = _dedupe([*grammar["story_decals"], "cargo_stencil", "hold_scuff"])
         grammar["zones"] = zones
 
-    if family == "procedural_furniture":
+    if family == "procedural_furniture":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         furniture_type = _token(
             controls.get("furniture_type")
             or controls.get("furnishing_type")
@@ -1310,7 +1306,7 @@ def surface_grammar_for_controls(
             grammar["story_decals"] = _dedupe([*grammar["story_decals"], "warm_light_falloff"])
         grammar["zones"] = zones
 
-    if family == "procedural_foliage":
+    if family == "procedural_foliage":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         foliage_type = _token(
             controls.get("foliage_type")
             or controls.get("plant_type")
@@ -1349,7 +1345,7 @@ def surface_grammar_for_controls(
             grammar["story_decals"] = _dedupe([*grammar["story_decals"], "soil_spill"])
         grammar["zones"] = zones
 
-    if family == "procedural_urban_prop":
+    if family == "procedural_urban_prop":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         urban_type = _token(
             controls.get("urban_prop_type")
             or controls.get("street_prop_type")
@@ -1391,7 +1387,7 @@ def surface_grammar_for_controls(
             grammar["story_decals"] = _dedupe([*grammar["story_decals"], "cargo_stencil"])
         grammar["zones"] = zones
 
-    if family == "procedural_infrastructure":
+    if family == "procedural_infrastructure":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         infrastructure_type = _token(
             controls.get("infrastructure_type")
             or controls.get("utility_type")
@@ -1431,7 +1427,7 @@ def surface_grammar_for_controls(
             grammar["story_decals"] = _dedupe([*grammar["story_decals"], "tray_route_label"])
         grammar["zones"] = zones
 
-    if family == "procedural_access":
+    if family == "procedural_access":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         access_type = _token(
             controls.get("access_type")
             or controls.get("traversal_type")
@@ -1470,7 +1466,7 @@ def surface_grammar_for_controls(
             grammar["story_decals"] = _dedupe([*grammar["story_decals"], "safety_stripe"])
         grammar["zones"] = zones
 
-    if family == "procedural_setpiece":
+    if family == "procedural_setpiece":  # no-family-dispatch: per-family surface grammar + _FAMILY_PRESETS map; migrate to StyleKnowledge + CompositionPolicy packs per surface band
         archetype = _token(controls.get("object_archetype") or controls.get("archetype") or controls.get("setpiece"))
         if archetype:
             grammar["object_archetype"] = archetype
@@ -1804,7 +1800,7 @@ def _mix_color(base: list[Any], target: list[Any], amount: float) -> list[int]:
     for index in range(3):
         base_value = float(base[index]) if index < len(base) else 0.0
         target_value = float(target[index]) if index < len(target) else base_value
-        out.append(int(round(max(0.0, min(255.0, base_value * (1.0 - amount) + target_value * amount)))))
+        out.append(round(max(0.0, min(255.0, base_value * (1.0 - amount) + target_value * amount))))
     return out
 
 

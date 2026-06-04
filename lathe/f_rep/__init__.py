@@ -31,9 +31,12 @@ Reference: Inigo Quilez, "Distance Functions" — https://iquilezles.org/
 
 from __future__ import annotations
 
+from .bounds import estimate_bounds
+from .dual_contouring import extract_dual_contouring
+from .evaluator import evaluate_program, evaluate_sdf, sample_grid
 from .expressions import (
-    Box,
     Bend,
+    Box,
     Capsule,
     ChamferIntersect,
     ChamferSubtract,
@@ -56,11 +59,11 @@ from .expressions import (
     RoundedSlot,
     Scale,
     Scale3,
+    SDFExpr,
     SegmentBox,
     SegmentCapsule,
     SegmentExtrudedProfile,
     SegmentLoftedProfile,
-    SDFExpr,
     Shell,
     SmoothIntersect,
     SmoothSubtract,
@@ -75,13 +78,9 @@ from .expressions import (
     Union,
     Warp,
 )
-from .evaluator import evaluate_program, evaluate_sdf, sample_grid
 from .marching_cubes import extract_marching_cubes
-from .dual_contouring import extract_dual_contouring
-from .bounds import estimate_bounds
 from .parser import compile_program, parse_f_rep_program
 from .validator import ValidationDiagnostic, ValidationReport, validate_program
-
 
 F_REP_CONTRACT_ID = "lathe.shape.f_rep_v1"
 F_REP_COMPOSITION_IR_ID = "lathe.f_rep_sdf_composition_ir.v1"
@@ -115,7 +114,7 @@ def resolve_extraction_backend(backend: str = "marching_cubes") -> dict[str, obj
 
 
 def extract_mesh(
-    expr: "SDFExpr",
+    expr: SDFExpr,
     *,
     bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
     resolution: int | tuple[int, int, int] = 64,
@@ -146,19 +145,20 @@ def extract_mesh(
 
 
 __all__ = [
-    "Box",
+    "F_REP_COMPOSITION_IR_ID",
+    "F_REP_CONTRACT_ID",
     "Bend",
+    "Box",
     "Capsule",
     "ChamferIntersect",
     "ChamferSubtract",
     "ChamferUnion",
     "Cone",
+    "ConnectedIntent",
     "Cylinder",
     "Displace",
     "Ellipsoid",
     "ExtrudedPolygon",
-    "F_REP_COMPOSITION_IR_ID",
-    "F_REP_CONTRACT_ID",
     "Frustum",
     "HexPrism",
     "Intersect",
@@ -192,9 +192,9 @@ __all__ = [
     "ValidationReport",
     "Warp",
     "compile_program",
+    "estimate_bounds",
     "evaluate_program",
     "evaluate_sdf",
-    "estimate_bounds",
     "extract_dual_contouring",
     "extract_marching_cubes",
     "extract_mesh",

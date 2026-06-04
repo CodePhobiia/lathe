@@ -10,11 +10,8 @@ behavior on demos that don't author a ``build.topology.subsurf_level``.
 from __future__ import annotations
 
 import unittest
-from unittest.mock import MagicMock
 
-import numpy as np
 import trimesh
-
 from lathe.core.mesh import RuntimeMesh
 from lathe.core.stages.topology import (
     _asset_class_budget_target_quads,

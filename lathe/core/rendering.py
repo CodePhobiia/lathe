@@ -69,7 +69,7 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
         return {
             "status": "empty_mesh_preview",
             "mode": mode,
-            "face_count": int(len(faces)),
+            "face_count": len(faces),
             "rendered_face_count": 0,
             "sampled": False,
         }
@@ -119,8 +119,8 @@ def render_mesh_preview(runtime_mesh: RuntimeMesh, path: Path, *, mode: str = "s
     return {
         "status": "rendered_sampled_preview" if len(face_indices) < len(faces) else "rendered_preview",
         "mode": mode,
-        "face_count": int(len(faces)),
-        "rendered_face_count": int(len(face_indices)),
+        "face_count": len(faces),
+        "rendered_face_count": len(face_indices),
         "sampled": bool(len(face_indices) < len(faces)),
         "max_preview_faces": int(MAX_PREVIEW_FACES),
     }
@@ -169,12 +169,11 @@ def render_lod_sheet(runtime_mesh: RuntimeMesh, lod_count: int, path: Path) -> N
     cell = 512
     sheet = Image.new("RGBA", (cell * 2, cell * 2), PREVIEW_BG)
     for idx in range(grid):
-        tmp_path = path.parent / f"._lod_{idx}.png"
+        tmp_path = path.parent / f"lod_tile_{idx}.png"
         render_mesh_preview(runtime_mesh, tmp_path, mode="shaded")
         with open_guarded(tmp_path) as opened:
-            img = opened.resize((cell, cell))
+            img = opened.copy().resize((cell, cell))
         x = (idx % 2) * cell
         y = (idx // 2) * cell
         sheet.paste(img, (x, y))
-        tmp_path.unlink(missing_ok=True)
     sheet.save(path)

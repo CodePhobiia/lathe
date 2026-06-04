@@ -113,7 +113,7 @@ def apply_season(
         # Deterministic stride filter so the same input always yields the
         # same kept set for a given season.
         if keep_ratio < 1.0:
-            cutoff = int(round(1.0 / max(keep_ratio, 1e-3)))
+            cutoff = round(1.0 / max(keep_ratio, 1e-3))
             if idx % cutoff != 0:
                 continue
         tags = list(prim.get("tags", []))

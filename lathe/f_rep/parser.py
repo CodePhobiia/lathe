@@ -23,7 +23,6 @@ from typing import Any
 
 from . import expressions as E
 
-
 # ---------------------------------------------------------------------------
 # Op registry
 # ---------------------------------------------------------------------------
@@ -243,7 +242,8 @@ def _build_modifier(
     bindings: dict[str, E.SDFExpr],
     context: str,
 ) -> E.SDFExpr:
-    resolve = lambda v: _resolve_value(v, bindings, context)
+    def resolve(v):
+        return _resolve_value(v, bindings, context)
     if op == "translate":
         offset = resolve(named.get("offset", extra_positional[0] if extra_positional else (0, 0, 0)))
         return E.Translate(expr=child, offset=tuple(offset))

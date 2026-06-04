@@ -28,7 +28,6 @@ from pathlib import Path
 
 import pytest
 import trimesh
-
 from lathe.shape.backend import run_shape_backend
 
 

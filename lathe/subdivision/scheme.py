@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class SubdivisionScheme(str, Enum):
+class SubdivisionScheme(StrEnum):
     """Supported subdivision schemes."""
 
     CATMULL_CLARK = "catmull_clark"
     LOOP = "loop"
 
     @classmethod
-    def from_text(cls, text: str) -> "SubdivisionScheme":
+    def from_text(cls, text: str) -> SubdivisionScheme:
         """Parse a scheme name from authored text."""
         normalised = text.lower().strip().replace("-", "_").replace(" ", "_")
         aliases = {

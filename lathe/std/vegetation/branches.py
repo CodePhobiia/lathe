@@ -119,7 +119,7 @@ def _segment_path(
     pts: list[tuple[float, float, float]] = [origin]
     cur_dir = direction
     cur_pos = origin
-    for i in range(nodes - 1):
+    for _i in range(nodes - 1):
         # Apply incremental bend along the segment so the curve is gentle.
         if bend_amount_rad != 0.0:
             cur_dir = _bend_direction(cur_dir, bend_axis, bend_amount_rad / (nodes - 1))
@@ -156,7 +156,7 @@ def generate_branch_skeleton(
 
     # Trunk: vertical, slight bend, with intermediate nodes so child
     # branches can fork from interior whorls.
-    trunk_path, trunk_dir = _segment_path(
+    trunk_path, _trunk_dir = _segment_path(
         (0.0, 0.0, 0.0),
         (0.0, 1.0, 0.0),
         trunk_height_cm,

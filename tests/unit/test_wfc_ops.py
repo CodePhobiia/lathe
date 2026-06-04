@@ -9,7 +9,6 @@ module's primitive).
 from __future__ import annotations
 
 import pytest
-
 from lathe.mesh_program import MeshProgramError, lower_mesh_program
 from lathe.parser.imports import parse_text
 from lathe.shape_ir import ShapePrimitive

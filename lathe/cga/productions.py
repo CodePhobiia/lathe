@@ -25,10 +25,9 @@ Whitespace is insignificant outside identifiers.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import re
+from dataclasses import dataclass, field
 from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Dataclasses
@@ -60,7 +59,7 @@ class SplitItem:
 
     size: float
     unit: str  # "m" | "ratio"
-    rhs: "RHS"
+    rhs: RHS
 
 
 @dataclass
@@ -76,7 +75,7 @@ class Repeat:
     """N-fold repetition of a single RHS along an implicit axis (default x)."""
 
     count: int
-    rhs: "RHS"
+    rhs: RHS
     axis: str = "x"
     mirror: bool = False
     rotate_deg: float = 0.0
@@ -86,7 +85,7 @@ class Repeat:
 class ChooseOne:
     """Deterministic-with-seed weighted choose."""
 
-    options: list[tuple[float, "RHS"]] = field(default_factory=list)
+    options: list[tuple[float, RHS]] = field(default_factory=list)
 
 
 @dataclass
@@ -95,7 +94,7 @@ class Extrude:
 
     height: float
     axis: str = "z"
-    rhs: "RHS | None" = None
+    rhs: RHS | None = None
 
 
 @dataclass
@@ -103,7 +102,7 @@ class Translate:
     """Offset the current shape origin."""
 
     offset: tuple[float, float, float]
-    rhs: "RHS | None" = None
+    rhs: RHS | None = None
 
 
 @dataclass
@@ -112,7 +111,7 @@ class Rotate:
 
     axis: str
     degrees: float
-    rhs: "RHS | None" = None
+    rhs: RHS | None = None
 
 
 @dataclass
@@ -120,7 +119,7 @@ class Scale:
     """Scale the current shape along axes."""
 
     factors: tuple[float, float, float]
-    rhs: "RHS | None" = None
+    rhs: RHS | None = None
 
 
 # RHS is a union covering each form a production right-hand side may take.
@@ -356,8 +355,8 @@ def _parse_rhs_atom(c: _Cursor) -> Any:
             if opt == "mirror":
                 mirror = c.eat("IDENT").text in {"true", "True"}
             elif opt == "rotate":
-                rot_val, rot_unit = _read_length(c)
-                rotate_deg = rot_val if rot_unit == "deg" else rot_val
+                rot_val, _rot_unit = _read_length(c)
+                rotate_deg = rot_val
             elif opt == "axis":
                 axis = c.eat("IDENT").text
             else:
@@ -389,7 +388,7 @@ def _parse_rhs_atom(c: _Cursor) -> Any:
         if kw != "height":
             raise ValueError(f"extrude expects 'height:', got {kw!r}")
         c.eat("COLON")
-        h_val, h_unit = _read_length(c)
+        h_val, _h_unit = _read_length(c)
         axis = "z"
         if c.peek("COMMA"):
             c.eat("COMMA")
@@ -400,7 +399,7 @@ def _parse_rhs_atom(c: _Cursor) -> Any:
         sub: Any | None = None
         if not (c.peek("COMMA") or c.peek("RBRACE") or c.at_end()):
             sub = _parse_rhs_atom(c)
-        return Extrude(height=h_val if h_unit in {"m", ""} else h_val, axis=axis, rhs=sub)
+        return Extrude(height=h_val, axis=axis, rhs=sub)
 
     if head == "translate":
         c.eat("IDENT")

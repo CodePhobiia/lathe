@@ -651,11 +651,11 @@ def _composition_group_transform(records: list[dict[str, Any]]) -> dict[str, lis
     if not positions:
         return {"position": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0], "scale": [1.0, 1.0, 1.0]}
     mins = [
-        min(float(position[axis]) - max(0.5, float(scale[axis]) * 0.5) for position, scale in zip(positions, scales))
+        min(float(position[axis]) - max(0.5, float(scale[axis]) * 0.5) for position, scale in zip(positions, scales, strict=False))
         for axis in range(3)
     ]
     maxs = [
-        max(float(position[axis]) + max(0.5, float(scale[axis]) * 0.5) for position, scale in zip(positions, scales))
+        max(float(position[axis]) + max(0.5, float(scale[axis]) * 0.5) for position, scale in zip(positions, scales, strict=False))
         for axis in range(3)
     ]
     center = [round((mins[axis] + maxs[axis]) * 0.5, 6) for axis in range(3)]

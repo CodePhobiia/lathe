@@ -13,14 +13,14 @@ It cannot reference custom code. It is metadata.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from .style import KnowledgePackInvalid
-
 
 _SCHEMA_PATH = Path(__file__).parent / "schemas" / "alias.schema.json"
 _KNOWLEDGE_ROOT = Path(__file__).resolve().parents[4] / "std" / "procedural" / "knowledge" / "aliases"
@@ -31,8 +31,14 @@ class FamilyAlias:
     """Pure metadata pointer from family name to (style, policies, domain).
 
     Cannot add structural nodes. Cannot reference code. Cannot influence
-    behavior beyond selecting which style and policy packs the
-    synthesizer loads.
+    behavior beyond selecting which style, policy, morphology, and
+    visual-language packs the synthesizer loads.
+
+    ``morphology_profile_id`` and ``visual_language_id`` were added with
+    the placement_binding / morphology contracts (newresearch §2 + §14).
+    Both are optional — aliases without them continue to function with
+    the legacy ``_KIND_ASPECT`` fallback and the previous style-only
+    visual handling.
     """
 
     family_id: str
@@ -40,15 +46,27 @@ class FamilyAlias:
     policy_ids: tuple[str, ...]
     domain: str
     description: str = ""
+    morphology_profile_id: str | None = None
+    visual_language_id: str | None = None
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "FamilyAlias":
+    def from_dict(cls, raw: Mapping[str, Any]) -> FamilyAlias:
         return cls(
             family_id=str(raw["family_id"]),
             style_id=str(raw["style_id"]),
             policy_ids=tuple(str(p) for p in raw.get("policy_ids") or ()),
             domain=str(raw["domain"]),
             description=str(raw.get("description") or ""),
+            morphology_profile_id=(
+                str(raw["morphology_profile_id"])
+                if raw.get("morphology_profile_id")
+                else None
+            ),
+            visual_language_id=(
+                str(raw["visual_language_id"])
+                if raw.get("visual_language_id")
+                else None
+            ),
         )
 
 

@@ -24,12 +24,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from PIL import Image
-
 from lathe import imaging, publish, ref, runtime_config
 from lathe.errors import RuntimeConfigError
 from lathe.paths import PathGuardError
-
+from PIL import Image
 
 # --- M1 -------------------------------------------------------------
 

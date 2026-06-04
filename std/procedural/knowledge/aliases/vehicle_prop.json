@@ -1,0 +1,9 @@
+{
+  "family_id": "vehicle_prop",
+  "style_id": "industrial_pbr_v1",
+  "policy_ids": [
+    "panelized_hard_surface_object"
+  ],
+  "domain": "hard_surface",
+  "description": "Vehicle prop fixture (chassis volume, cabin panel, motion-system rails, front-orientation trim, payload-zone inset, access handle, light mounts, fasteners, marking decals, edge wear). Routes through the procedural synthesizer (Cycle 3 Round 6 decommissioned the legacy _RECIPES dispatch). Per-alias build-artifact integration test: tests/integration/test_recipe_migration_build_artifact_diff.py."
+}

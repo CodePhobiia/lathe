@@ -8,7 +8,6 @@ they don't depend on subprocess plumbing.
 
 from __future__ import annotations
 
-import os
 import time
 from pathlib import Path
 

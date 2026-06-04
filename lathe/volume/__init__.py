@@ -36,15 +36,15 @@ from .vdb_backend import VDB_AVAILABLE
 from .volume import Volume, compile_volume, simulate_volume
 
 __all__ = [
+    "SKIMAGE_AVAILABLE",
+    "VDB_AVAILABLE",
     "Volume",
     "compile_volume",
-    "simulate_volume",
     "extract_isosurface",
+    "fractal_volume",
     "simulate_advection",
     "simulate_buoyancy",
     "simulate_diffusion",
-    "fractal_volume",
+    "simulate_volume",
     "worley_clusters",
-    "VDB_AVAILABLE",
-    "SKIMAGE_AVAILABLE",
 ]

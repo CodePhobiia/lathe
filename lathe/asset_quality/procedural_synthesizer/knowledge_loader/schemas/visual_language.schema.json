@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.procedural/schemas/visual_language.v1.json",
+  "title": "VisualLanguage",
+  "description": "Cross-class art direction pack: silhouette bias + motifs + palette + materials + wear + feature weights.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "silhouette_bias": {
+      "type": "object",
+      "properties": {
+        "forms": {"type": "array", "items": {"type": "string"}},
+        "avoid": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "motifs": {
+      "type": "object",
+      "properties": {
+        "preferred": {"type": "array", "items": {"type": "string"}},
+        "rare": {"type": "array", "items": {"type": "string"}},
+        "forbidden": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "palette": {
+      "type": "object",
+      "properties": {
+        "body": {"type": "array", "items": {"type": "string"}},
+        "accent": {"type": "array", "items": {"type": "string"}},
+        "emissive": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "materials": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "wear": {
+      "type": "object",
+      "properties": {
+        "edge_polish": {"type": "number", "minimum": 0, "maximum": 1},
+        "dust_in_seams": {"type": "number", "minimum": 0, "maximum": 1},
+        "paint_chipping": {"type": "number", "minimum": 0, "maximum": 1},
+        "oil_staining": {"type": "number", "minimum": 0, "maximum": 1},
+        "rust_probability": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "feature_weight_overrides": {
+      "type": "object",
+      "additionalProperties": {"type": "number", "minimum": 0}
+    }
+  }
+}

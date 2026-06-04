@@ -1032,7 +1032,7 @@ def _normal_to_tangent_rgb(
     )
     tangent_space = tangent_space / max(1e-8, float(np.linalg.norm(tangent_space)))
     return tuple(
-        int(round(max(0, min(255, (value * 0.5 + 0.5) * 255.0))))
+        round(max(0, min(255, (value * 0.5 + 0.5) * 255.0)))
         for value in tangent_space
     )
 

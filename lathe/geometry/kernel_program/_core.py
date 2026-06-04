@@ -218,7 +218,7 @@ def _capability_names(value: Any) -> Iterable[str]:
     if isinstance(value, str):
         return (value,)
     if isinstance(value, dict):
-        return (str(name) for name in value.keys())
+        return (str(name) for name in value)
     if isinstance(value, Iterable):
         return (str(name) for name in value)
     return (str(value),)

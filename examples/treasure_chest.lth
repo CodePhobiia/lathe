@@ -1,0 +1,253 @@
+// Source-authored Lathe target for the post-northstar geometry-kernel push.
+// It exercises the mesh_program hard-surface path: rounded solids, booleans,
+// seam-group bevels, named trim bands, fastener grids, subtractive plank
+// grooves, and scatter placement.
+module examples.treasure_chest
+import std.families.brassbound_chest
+
+asset treasure_chest : hard_surface_prop {
+  intent {
+    role = "hero treasure chest authored with Lathe mesh_program hard-surface ops"
+    asset_class = "hero"
+    style = ["fantasy", "ornate", "wood_and_brass", "adventure_prop"]
+    parts = [
+      body,
+      lid,
+      front_recess,
+      lock_plate,
+      hinge_bar,
+      handle_l,
+      handle_r,
+      foot_fl,
+      foot_fr,
+      foot_bl,
+      foot_br,
+      brass_trim,
+      lid_plank_grooves,
+      front_rivets,
+      lid_rivets,
+      inset_gems,
+    ]
+    materials = ["dark_oak", "aged_brass", "ruby_gems", "shadowed_interior"]
+    negatives = ["plastic", "modern", "sci_fi", "flat_blockout"]
+    scale = 1.0m
+    interactions = [open_lid, collect_loot, place_in_world]
+  }
+
+  geometry {
+    mode = exact_hard_surface
+    seam_classes = [
+      lid_saddle,
+      front_recess_lip,
+      lock_plate_seat,
+      hinge_bar_seat,
+      handle_mount_lip,
+      foot_socket,
+      lid_plank_grooves,
+    ]
+    edge_classes = [hero_bevel, brass_trim_edge, panel_lip, rivet_lip]
+    integration_rules = [boolean_union, boolean_subtract, preserve_lid_break]
+  }
+
+  features {
+    density = hero
+    allow = [
+      solid_rounded_box,
+      solid_rail,
+      trim_band,
+      fastener_grid,
+      vent_slats,
+      scatter,
+      seam_group_bevel,
+      recessed_panel,
+      lock_plate,
+      hinge_bar,
+      side_handle,
+      support_foot,
+    ]
+  }
+
+  surface {
+    material_layers = [dark_oak, aged_brass, ruby_gems]
+    material_zones = [wood_body, brass_hardware, gem_insets, dark_recesses]
+    palette = fantasy_brassbound
+    wear_story = handled_loot_chest
+    wear_level = medium
+    story_decals = [rubbed_edges, tarnished_brass, dust_in_corners]
+  }
+
+  build {
+    shape {
+      mode = generate
+      candidates = 1
+      seed = 73
+      symmetry = x
+      detail_density = hero
+      edge_treatment = rounded
+      edge_hardness = medium
+
+      mesh_program {
+        let body = solid_rounded_box(extents: [84cm, 44cm, 32cm], radius: 25mm)
+        let lid = solid_rounded_box(extents: [86cm, 46cm, 22cm], radius: 32mm)
+              .translate([0cm, 0cm, 25cm])
+        let shell = boolean(op: union, a: body, b: lid, seam_group: "lid_saddle")
+        fillet_edge(target: shell, edge_class: "lid_saddle", radius: 8mm, segments: 4)
+
+        let front_recess = box(extents: [58cm, 5cm, 18cm]).translate([0cm, -23cm, 4cm])
+        let carved = boolean(op: subtract, a: shell, b: front_recess, seam_group: "front_recess_lip")
+        fillet_edge(target: carved, edge_class: "front_recess_lip", radius: 5mm, segments: 4)
+
+        let lock_plate = solid_rounded_box(extents: [18cm, 4cm, 20cm], radius: 6mm)
+              .translate([0cm, -25cm, 5cm])
+        let plated = boolean(op: union, a: carved, b: lock_plate, seam_group: "lock_plate_seat")
+        fillet_edge(target: plated, edge_class: "lock_plate_seat", radius: 4mm, segments: 3)
+
+        let hinge_bar = solid_rail(length: 72cm, profile: 28mm, axis: "x")
+              .translate([0cm, 24cm, 24cm])
+        let hinged = boolean(op: union, a: plated, b: hinge_bar, seam_group: "hinge_bar_seat")
+        fillet_edge(target: hinged, edge_class: "hinge_bar_seat", radius: 3mm, segments: 3)
+
+        let handle_l = solid_rail(length: 20cm, profile: 22mm, axis: "z")
+              .translate([-45cm, 0cm, 2cm])
+        let with_left_handle = boolean(op: union, a: hinged, b: handle_l, seam_group: "handle_mount_lip")
+        fillet_edge(target: with_left_handle, edge_class: "handle_mount_lip", radius: 3mm, segments: 3)
+
+        let handle_r = solid_rail(length: 20cm, profile: 22mm, axis: "z")
+              .translate([45cm, 0cm, 2cm])
+        let with_handles = boolean(op: union, a: with_left_handle, b: handle_r, seam_group: "handle_mount_lip")
+        fillet_edge(target: with_handles, edge_class: "handle_mount_lip", radius: 3mm, segments: 3)
+
+        let foot_fl = solid_rounded_box(extents: [14cm, 12cm, 8cm], radius: 5mm)
+              .translate([-31cm, -15cm, -19cm])
+        let with_foot_fl = boolean(op: union, a: with_handles, b: foot_fl, seam_group: "foot_socket")
+        let foot_fr = solid_rounded_box(extents: [14cm, 12cm, 8cm], radius: 5mm)
+              .translate([31cm, -15cm, -19cm])
+        let with_foot_fr = boolean(op: union, a: with_foot_fl, b: foot_fr, seam_group: "foot_socket")
+        let foot_bl = solid_rounded_box(extents: [14cm, 12cm, 8cm], radius: 5mm)
+              .translate([-31cm, 15cm, -19cm])
+        let with_foot_bl = boolean(op: union, a: with_foot_fr, b: foot_bl, seam_group: "foot_socket")
+        let foot_br = solid_rounded_box(extents: [14cm, 12cm, 8cm], radius: 5mm)
+              .translate([31cm, 15cm, -19cm])
+        let chest_core = boolean(op: union, a: with_foot_bl, b: foot_br, seam_group: "foot_socket")
+        fillet_edge(target: chest_core, edge_class: "foot_socket", radius: 4mm, segments: 3)
+
+        op_trim_band(
+          target: chest_core,
+          axis: "x",
+          width: 5cm,
+          depth: 6mm,
+          seam_group: "brass_trim",
+          part: "brass_trim",
+        )
+        op_trim_band(
+          target: chest_core,
+          axis: "y",
+          width: 5cm,
+          depth: 6mm,
+          seam_group: "brass_trim",
+          part: "brass_trim",
+        )
+
+        op_vent_slats(
+          target: chest_core,
+          face: "+z",
+          count: 5,
+          slot_width: 5mm,
+          slot_length: 70cm,
+          slot_depth: 9mm,
+          spacing: 9cm,
+          axis: "y",
+          seam_group: "lid_plank_grooves",
+          part: "lid_plank_grooves",
+        )
+        fillet_edge(target: chest_core, edge_class: "lid_plank_grooves", radius: 2mm, segments: 3)
+
+        op_fastener_grid(
+          target: chest_core,
+          face: "-y",
+          rows: 2,
+          cols: 8,
+          spacing: 10cm,
+          fastener_radius: 4mm,
+          fastener_height: 5mm,
+          seam_group: "front_rivets",
+          part: "front_rivets",
+          head_style: "domed",
+          include_washer: true,
+          washer_radius: 6mm,
+          washer_height: 2mm,
+        )
+
+        op_fastener_grid(
+          target: chest_core,
+          face: "+z",
+          rows: 2,
+          cols: 7,
+          spacing: 10cm,
+          fastener_radius: 5mm,
+          fastener_height: 4mm,
+          seam_group: "lid_rivets",
+          part: "lid_rivets",
+          head_style: "domed",
+        )
+
+        let gem = solid_cylinder(radius: 45mm, height: 5mm, axis: "y")
+              .translate([0cm, -28cm, 7cm])
+        let gem_points = points_grid(extents: [36cm, 12cm], rows: 2, cols: 3, plane: "-y")
+        scatter(
+          primitive: gem,
+          points: gem_points,
+          jitter: 1mm,
+          seam_group: "gem_settings",
+          part: "inset_gems",
+        )
+      }
+    }
+
+    rig {
+      type = rigid_mechanical
+      joints = [lid]
+      pivot_policy = studio_standard
+      joint_limits = auto
+    }
+
+    interfaces {
+      sockets = [socket(id: loot_anchor, socket_type: attach)]
+      pivots = [pivot(id: floor_contact, pivot_type: contact)]
+      clearance = 2cm
+    }
+
+    physics {
+      collision = convex_decomp
+      max_hulls = 8
+      mass = auto
+      center_of_mass = auto
+    }
+
+    optimize {
+      lods = 3
+      atlas = true
+      draw_calls = 3
+      texture_budget = 24mb
+      mesh_compression = true
+    }
+  }
+
+  validate {
+    threshold = 0.78
+  }
+
+  package {
+    formats = [glb]
+    previews = [turntable, material_ids, wireframe]
+  }
+
+  publish {
+    registry = "props/containers/treasure_chest"
+    version = "0.1.0"
+    tags = ["collectible", "decoration", "interactable", "static"]
+    visibility = studio
+    approval = required
+    channel = dev
+  }
+}

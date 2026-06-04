@@ -6,7 +6,7 @@ HTTP router, authentication layer, account model, billing model, gallery, or
 chat experience.
 
 The committed schema is
-[`schema/service_wonder_api.schema.json`](../../schema/service_wonder_api.schema.json).
+[`schema/service_wonder_api.schema.json`](../schema/service_wonder_api.schema.json).
 Each endpoint has a named request and response schema under that file's
 `$defs`.
 
@@ -24,23 +24,23 @@ Service envelopes add transport metadata around existing Lathe payloads:
 The nested payloads remain existing Lathe contracts:
 
 - Dream Brief:
-  [`schema/dream_brief.schema.json`](../../schema/dream_brief.schema.json)
+  [`schema/dream_brief.schema.json`](../schema/dream_brief.schema.json)
 - Scene Graph:
-  [`schema/scene_graph.schema.json`](../../schema/scene_graph.schema.json)
+  [`schema/scene_graph.schema.json`](../schema/scene_graph.schema.json)
 - Scene Patch:
-  [`schema/scene_patch.schema.json`](../../schema/scene_patch.schema.json)
+  [`schema/scene_patch.schema.json`](../schema/scene_patch.schema.json)
 - Render Inspection:
-  [`schema/render_inspection.schema.json`](../../schema/render_inspection.schema.json)
+  [`schema/render_inspection.schema.json`](../schema/render_inspection.schema.json)
 - Scene Package Manifest:
-  [`schema/scene_package_manifest.schema.json`](../../schema/scene_package_manifest.schema.json)
+  [`schema/scene_package_manifest.schema.json`](../schema/scene_package_manifest.schema.json)
 - Scene Plan:
-  [`schema/scene_plan.schema.json`](../../schema/scene_plan.schema.json)
+  [`schema/scene_plan.schema.json`](../schema/scene_plan.schema.json)
 - Scene Assembly:
-  [`schema/scene_assembly.schema.json`](../../schema/scene_assembly.schema.json)
+  [`schema/scene_assembly.schema.json`](../schema/scene_assembly.schema.json)
 - Scene Quality Report:
-  [`schema/scene_quality_report.schema.json`](../../schema/scene_quality_report.schema.json)
+  [`schema/scene_quality_report.schema.json`](../schema/scene_quality_report.schema.json)
 - Scene Repair Report:
-  [`schema/scene_repair_report.schema.json`](../../schema/scene_repair_report.schema.json)
+  [`schema/scene_repair_report.schema.json`](../schema/scene_repair_report.schema.json)
 
 ## Endpoints
 

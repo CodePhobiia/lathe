@@ -81,15 +81,38 @@ def export_obj(mesh: trimesh.Trimesh, path: Path) -> None:
 
 
 def export_runtime_scene_glb(runtime_mesh: RuntimeMesh, path: Path) -> None:
-    """Export runtime scene glb.
+    """Export runtime scene glb, applying per-part vertex colors when available.
+
+    This is the no-PBR-atlas export path used by the quick preview and
+    early build paths before a full PBR material is authored. Without
+    per-part color application, every part in the resulting GLB shares
+    the default trimesh material (dark grey plastic), which is why
+    quick-preview renders read as a featureless dark cube even when the
+    geometry has rich part decomposition.
+
+    When ``runtime_mesh.part_colors`` carries per-part (r, g, b) tuples
+    (already populated by the synthesizer's ``_make_color(part_name)``
+    in ``procedural_program_path.py``), each part's submesh gets its
+    face colors assigned. The exported GLB then carries vertex-color
+    differentiation per part, so the quick path's render shows the
+    semantic part decomposition without needing the full UV/bake path.
 
     Args:
-        runtime_mesh: runtime_mesh argument.
-        path: path argument.
+        runtime_mesh: the post-UV runtime mesh.
+        path: GLB output path.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
+    part_colors = getattr(runtime_mesh, "part_colors", None) or {}
     scene = trimesh.Scene()
     for part_name, submesh in runtime_scene_parts(runtime_mesh):
+        color = part_colors.get(part_name)
+        if color is not None:
+            try:
+                r, g, b = (int(c) for c in color[:3])
+                rgba = [max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)), 255]
+                submesh.visual.face_colors = rgba
+            except (TypeError, ValueError):
+                pass
         scene.add_geometry(submesh, geom_name=part_name, node_name=part_name)
     path.write_bytes(scene.export(file_type="glb"))
 

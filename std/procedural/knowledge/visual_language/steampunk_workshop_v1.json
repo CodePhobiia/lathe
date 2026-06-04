@@ -1,0 +1,37 @@
+{
+  "id": "steampunk_workshop_v1",
+  "description": "Steampunk workshop language. Layered mechanical forms, brass+wood materials, decorative rivets and gauges, warm desaturated palette.",
+  "silhouette_bias": {
+    "forms": ["rounded_rectangular", "layered", "mechanical", "valves_and_gauges"],
+    "avoid": ["clean_flat_unbroken_surfaces"]
+  },
+  "motifs": {
+    "preferred": ["brass_trim", "rivets", "pressure_gauge", "leather_grip", "valves", "ornate_brackets"],
+    "rare": ["emissive_strip"],
+    "forbidden": ["holographic_panel", "clean_minimal_surfaces"]
+  },
+  "palette": {
+    "body": ["#3D2818", "#5C3E22", "#704A2E"],
+    "accent": ["#B58C5C", "#A57A48", "#CFA060"],
+    "emissive": ["#FFB060"]
+  },
+  "materials": {
+    "body_panel": "oak_wood.fantasy",
+    "metal_trim": "brass_fittings.steampunk",
+    "fastener": "brass_fittings.steampunk",
+    "handle_grip": "oak_wood.fantasy"
+  },
+  "wear": {
+    "edge_polish": 0.5,
+    "dust_in_seams": 0.7,
+    "paint_chipping": 0.1,
+    "oil_staining": 0.4,
+    "rust_probability": 0.2
+  },
+  "feature_weight_overrides": {
+    "decorative_trim": 1.3,
+    "visible_fasteners": 1.4,
+    "warning_decals": 0.3,
+    "clean_inset_panels": 0.5
+  }
+}

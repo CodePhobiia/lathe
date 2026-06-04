@@ -32,15 +32,13 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.shape_ir_v2 import (
+    _REQUIRED_PARAMS,
     ALL_OPS,
     ShapeOp,
     ShapeProgram,
-    _REQUIRED_PARAMS,
     lower_to_v1,
 )
-
 
 _VALID_STATES: frozenset[str] = frozenset(
     {"executed", "approximated", "unsupported", "provisional"}
@@ -123,7 +121,6 @@ _PARAM_STUBS: dict[str, Any] = {
     "u_start": 0.0,
     "u_end": 1.0,
     "scale": 1.2,
-    "angle_degrees": 45.0,
     "density": 1.0,
     "angle_degrees": 30.0,
     # tuples / lists — minimal viable shapes
@@ -292,8 +289,8 @@ def test_all_ops_count_matches_pinned_value() -> None:
     This catches accidental op-set drift from migration / refactoring.
     Update the pinned count when intentionally adding/removing ops.
     """
-    assert len(ALL_OPS) == 83, (
-        f"ALL_OPS has {len(ALL_OPS)} members; pinned value is 83. If this is an "
+    assert len(ALL_OPS) == 86, (
+        f"ALL_OPS has {len(ALL_OPS)} members; pinned value is 86. If this is an "
         "intentional change, update the pinned value here and re-run the "
         "coverage assertion to confirm new ops have explicit states."
     )

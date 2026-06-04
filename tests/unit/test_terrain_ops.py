@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
 from lathe.mesh_program import MeshProgramError, lower_mesh_program
 from lathe.parser.imports import parse_text
 
@@ -60,7 +59,7 @@ def test_terrain_heightfield_emits_grid_with_correct_extents() -> None:
     assert hf.primitive_type == "heightfield"
     # Resolution recorded as (nx, ny).
     assert hf.resolution == (32, 32)
-    # bounds_xy centered on origin, full 40m × 40m == 4000cm × 4000cm.
+    # bounds_xy centered on origin, full 40m x 40m == 4000cm x 4000cm.
     assert hf.bounds_xy is not None
     xmin, ymin, xmax, ymax = hf.bounds_xy
     assert xmin == pytest.approx(-2000.0)
@@ -69,7 +68,7 @@ def test_terrain_heightfield_emits_grid_with_correct_extents() -> None:
     assert ymax == pytest.approx(2000.0)
     # vertical_scale stores the requested scale_z in cm.
     assert hf.vertical_scale == pytest.approx(800.0)
-    # height_data is an ny × nx grid normalised to [0, 1] (rim taper drops
+    # height_data is an ny x nx grid normalised to [0, 1] (rim taper drops
     # corners to 0; fbm noise lifts interior).
     assert hf.height_data is not None
     h = np.asarray(hf.height_data)

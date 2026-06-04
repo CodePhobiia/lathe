@@ -8,7 +8,6 @@ from typing import Any
 
 from .materials import assign_material_zones
 
-
 _OFF = {"", "none", "off", "false", "0"}
 
 

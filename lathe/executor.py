@@ -14,6 +14,7 @@ emitted by the shape stage. See ``lathe/shape/`` for the contract bytes.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
@@ -197,6 +198,71 @@ def clear_quick_cache() -> int:
             shutil.rmtree(child, ignore_errors=True)
             removed += 1
     return removed
+
+
+def _zone_atlas_summary(topology_runtime: dict[str, Any]) -> dict[str, Any]:
+    """Surface ZoneAtlas evidence at build_report top level (M3)."""
+    bundle = topology_runtime.get("bundle") if isinstance(topology_runtime, dict) else None
+    if not isinstance(bundle, dict):
+        return {"available": False, "reason": "topology_bundle_missing"}
+    atlas = bundle.get("zone_atlas")
+    if not isinstance(atlas, dict) or not atlas:
+        return {"available": False, "reason": "zone_atlas_absent"}
+    return {
+        "available": True,
+        "version": atlas.get("version", "lathe.surface.zone_binding_v1"),
+        "zone_count": len(atlas.get("zones", [])),
+        "face_count": atlas.get("face_count", 0),
+        "material_classes": sorted({
+            z.get("material_class", "unspecified")
+            for z in atlas.get("zones", [])
+            if isinstance(z, dict)
+        }),
+    }
+
+
+def _uv_evidence_summary(uv_runtime: dict[str, Any]) -> dict[str, Any]:
+    """Surface UV / texel-density evidence at build_report top level (B9).
+
+    Reads the uv bundle's per-chart texel density and packing report,
+    extracting the worst-chart drift, the requested-vs-actual ratio,
+    and the chart count. The full per-chart manifest stays in the
+    uv stage bundle; this is the at-a-glance summary so a reviewer
+    can see UV/texel evidence without opening 4 nested files.
+    """
+    bundle = uv_runtime.get("bundle") if isinstance(uv_runtime, dict) else None
+    if not isinstance(bundle, dict):
+        return {"available": False, "reason": "uv_bundle_missing"}
+    texel = bundle.get("texel_density")
+    if not isinstance(texel, dict):
+        return {"available": False, "reason": "texel_density_absent"}
+    charts = bundle.get("chart_manifest") or []
+    chart_count = len(charts) if isinstance(charts, list) else 0
+    summary: dict[str, Any] = {
+        "available": True,
+        "chart_count": chart_count,
+        "texel_density": {
+            "min": texel.get("min"),
+            "max": texel.get("max"),
+            "mean": texel.get("mean") or texel.get("avg"),
+            "requested_px_per_cm": texel.get("requested_px_per_cm")
+            or texel.get("requested"),
+            "ratio_max_to_min": texel.get("ratio_max_to_min")
+            or texel.get("ratio"),
+        },
+        "packing_report": {
+            k: v
+            for k, v in (bundle.get("packing_report") or {}).items()
+            if k
+            in (
+                "wasted_uv_area_ratio",
+                "packing_efficiency",
+                "packed_chart_count",
+                "uv_overlap_count",
+            )
+        },
+    }
+    return summary
 
 
 def _deterministic_backend_fingerprint(runtime_config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -636,6 +702,18 @@ class BuildExecutor:
                 "lods": optimize_bundle.get("lods"),
                 "collision": optimize_bundle.get("collision"),
             },
+            # B9 — surface texel density evidence at the build_report
+            # top level. Authored vs actual, worst-chart drift, and
+            # chart count are read from the uv bundle. Without this
+            # the texel-density audit is buried in stage bundles and
+            # invisible to anyone judging the build at a glance.
+            "uv_evidence": _uv_evidence_summary(self.runtime.get("uv", {})),
+            # M3 — surface ZoneAtlas evidence at the build_report
+            # top level. Reads from the topology bundle's zone_atlas
+            # (populated by the procedural_program_path lowering).
+            "zone_atlas_summary": _zone_atlas_summary(
+                self.runtime.get("topology", {})
+            ),
             "cache": {
                 "hit": False,
                 "persisted": False,
@@ -647,10 +725,8 @@ class BuildExecutor:
         report["cache"] = cache_status
         dump_json(self.out_dir / "build_report.json", report)
         if cache_status.get("persisted"):
-            try:
+            with contextlib.suppress(OSError):
                 dump_json(self.cache_dir / "build_report.json", report)
-            except OSError:
-                pass
         return report
 
     def _prepare_dirs(self) -> None:
@@ -748,8 +824,8 @@ class BuildExecutor:
             "out_dir": str(self.out_dir),
             "glb_path": str(glb_path),
             "part_count": part_count,
-            "face_count": int(len(uv_runtime_mesh.mesh.faces)),
-            "vertex_count": int(len(uv_runtime_mesh.mesh.vertices)),
+            "face_count": len(uv_runtime_mesh.mesh.faces),
+            "vertex_count": len(uv_runtime_mesh.mesh.vertices),
             "stage_timings_s": {k: round(v, 3) for k, v in timings.items()},
             "cache_hit": False,
             "stage_bundles": {

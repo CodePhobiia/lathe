@@ -279,7 +279,7 @@ def _physics_parts(runtime_mesh: RuntimeMesh, total_mass_kg: float, physics_inte
     volumes = [_bbox_volume_cm3(group) for group in groups]
     volume_total = max(sum(volumes), 1e-6)
     parts: list[dict[str, Any]] = []
-    for group, volume in zip(groups, volumes):
+    for group, volume in zip(groups, volumes, strict=False):
         name = str(group.get("name") or "mesh")
         extents = _bounds_extents(group)
         mass = max(total_mass_kg * (volume / volume_total), 1e-6)

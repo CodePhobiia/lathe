@@ -216,8 +216,18 @@ def test_public_docs_do_not_contain_private_path_or_secret_literals() -> None:
         "windows_user_path": re.compile(r"[A-Z]:[/\\]Users[/\\][^`\\s]+", re.IGNORECASE),
         "private_key": re.compile(r"BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY"),
         "aws_access_key": re.compile(r"AKIA[0-9A-Z]{16}"),
+        # ``long_provider_secret`` catches realistic secret-shaped values assigned to a
+        # provider/token/key name, both quoted and unquoted. The unquoted branch
+        # rejects ``token = _python_identifier(...)`` shapes by requiring the value
+        # to start with an alphanumeric (negative lookahead ``(?!_)``) and to contain
+        # at least one digit, both characteristic of real provider tokens and
+        # uncharacteristic of Python identifier RHS expressions.
         "long_provider_secret": re.compile(
-            r"(?i)(?:api[_-]?key|token|secret)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{24,}"
+            r"(?i)\b(?:api[_-]?key|token|secret)\s*[:=]\s*(?:"
+            r"['\"][A-Za-z0-9_\-+/=]{24,}['\"]"
+            r"|"
+            r"(?!_)(?=[A-Za-z0-9\-+/=]*\d)[A-Za-z0-9\-+/=]{24,}\b"
+            r")"
         ),
     }
     failures: list[str] = []
@@ -237,8 +247,13 @@ def test_source_and_public_docs_do_not_contain_private_path_or_secret_literals()
         "windows_user_path": re.compile(r"[A-Z]:[/\\]Users[/\\][^`\\s]+", re.IGNORECASE),
         "private_key": re.compile(r"BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY"),
         "aws_access_key": re.compile(r"AKIA[0-9A-Z]{16}"),
+        # Same shape as the public-only patterns above. See the docstring there.
         "long_provider_secret": re.compile(
-            r"(?i)(?:api[_-]?key|token|secret)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{24,}"
+            r"(?i)\b(?:api[_-]?key|token|secret)\s*[:=]\s*(?:"
+            r"['\"][A-Za-z0-9_\-+/=]{24,}['\"]"
+            r"|"
+            r"(?!_)(?=[A-Za-z0-9\-+/=]*\d)[A-Za-z0-9\-+/=]{24,}\b"
+            r")"
         ),
     }
     files = [*_public_markdown_files()]
@@ -593,6 +608,7 @@ def test_deprecated_cli_and_config_terms_are_marked_or_replaced() -> None:
 
 def test_docs_markdown_links_and_fenced_code_blocks_are_linted() -> None:
     failures: list[str] = []
+    schema_dir = REPO_ROOT / "schema"
     for path in _docs_markdown_files():
         text = path.read_text(encoding="utf-8")
         relative = path.relative_to(REPO_ROOT).as_posix()
@@ -611,6 +627,15 @@ def test_docs_markdown_links_and_fenced_code_blocks_are_linted() -> None:
                 continue
             decoded = urllib.parse.unquote(target_without_fragment)
             target = (path.parent / decoded).resolve()
+            # ``docs/<page>.md`` files reference repo-root schemas as
+            # ``../schema/X.schema.json``; the schemas live in
+            # ``<repo-root>/schema/`` and are mirrored into the built site
+            # by ``docs/gen_external_pages.py``. Resolve those references
+            # against ``<repo-root>/schema/`` for link-lint purposes.
+            if not target.exists() and target.parent.name == "schema":
+                schema_candidate = schema_dir / target.name
+                if schema_candidate.exists():
+                    continue
             if target.exists():
                 continue
             failures.append(

@@ -13,20 +13,17 @@ Exercises:
 from __future__ import annotations
 
 import pytest
-
 from lathe.asset_quality.procedural_synthesizer import (
     SynthesisResult,
     synthesize_procedural_program,
 )
 from lathe.asset_quality.procedural_synthesizer.knowledge_loader import (
     CompositionPolicy,
+    FamilyAlias,
     PolicyExpansion,
     PolicyPrecondition,
-    StyleKnowledge,
-    FamilyAlias,
 )
 from lathe.asset_quality.shape_ir_v2 import ALL_OPS
-
 
 _PRIMARY_NODE = {
     "node_id": "body",
@@ -98,10 +95,16 @@ class TestPipeline:
                 "Stage 8 validation must have failed"
             )
 
-    def test_same_intent_different_brief_produces_different_proportions(self) -> None:
-        # Two assets with identical graph but different briefs that
-        # produce different rounding via style biasing — proves intent
-        # dominance plus style biasing are wired.
+    def test_node_attribute_changes_flow_through_to_emitted_op_parameters(self) -> None:
+        # Two assets with the same brief but a single node-attribute
+        # difference (rounding_cm) — proves authored attributes flow
+        # through Stage 4 validation into the generator's emitted op
+        # parameters. NOTE: this is a node-attribute test, not a
+        # brief/style biasing test; the pipeline does have a
+        # style-biasing path via parameter_priors but it requires a
+        # loaded StyleKnowledge with primary_volume.rounding_cm in its
+        # parameter_priors, which the default test fixture does not
+        # exercise.
         asset = _minimal_asset()
         runtime_a = _runtime_with_graph([_PRIMARY_NODE], [])
         runtime_b = _runtime_with_graph(
@@ -110,7 +113,7 @@ class TestPipeline:
                     **_PRIMARY_NODE,
                     "attributes": {
                         **_PRIMARY_NODE["attributes"],
-                        "rounding_cm": 5.0,  # different rounding
+                        "rounding_cm": 5.0,  # different rounding on the node
                     },
                 }
             ],
@@ -118,11 +121,14 @@ class TestPipeline:
         )
         result_a = synthesize_procedural_program(asset, runtime_a)
         result_b = synthesize_procedural_program(asset, runtime_b)
-        # Both produce rounded_box, but the parameters differ
         ops_a = [op for op in result_a.shape_program.ops if op.op == "solid.rounded_box"]
         ops_b = [op for op in result_b.shape_program.ops if op.op == "solid.rounded_box"]
         assert ops_a and ops_b
-        assert ops_a[0].parameters["rounding_cm"] != ops_b[0].parameters["rounding_cm"]
+        # primary_volume generator emits the kernel-expected ``radius_cm``
+        # param name (not the attribute schema's ``rounding_cm``) so the
+        # v1 lowering finds it. The attribute → op param rename happens in
+        # the generator; verified here at the emit boundary.
+        assert ops_a[0].parameters["radius_cm"] != ops_b[0].parameters["radius_cm"]
 
     def test_attribute_schema_violation_surfaces_in_trace_not_crash(self) -> None:
         # Missing required dimension key — schema rejects the node, but
@@ -251,6 +257,108 @@ class TestIndividualGenerators:
         assert op.parameters["width_cm"] == 10.0
         assert op.parameters["height_cm"] == 20.0
         assert op.parameters["depth_cm"] == 30.0
+
+    def test_primary_volume_edge_treatment_attribute_emits_bevel_op(self) -> None:
+        """Sprint 0 S0-3: a primary_volume with edge_treatment='beveled' emits
+        an op.bevel op immediately after the primary solid, keyed to the same
+        target. This is the path that escapes the "looks like procedural
+        blockout" failure mode by adding visible chamfered edges to every
+        hard-surface body.
+        """
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "box",
+                "dimensions_cm": {"x": 10.0, "y": 10.0, "z": 10.0},
+                "edge_treatment": "beveled",
+                "edge_treatment_width_cm": 0.8,
+                "edge_treatment_segments": 3,
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        ops = result.shape_program.ops
+        body_ops = [op for op in ops if op.target == "body"]
+        assert len(body_ops) == 2, (
+            f"expected 2 body-targeted ops (solid.box + op.bevel), got {len(body_ops)}: "
+            f"{[(op.op, op.target) for op in body_ops]}"
+        )
+        primary, bevel = body_ops
+        assert primary.op == "solid.box"
+        assert bevel.op == "op.bevel"
+        assert bevel.target == "body"
+        assert bevel.parameters["width_cm"] == 0.8
+        assert bevel.parameters["segments"] == 3
+
+    def test_primary_volume_edge_treatment_chamfered_emits_chamfer_op(self) -> None:
+        """Mirror of the beveled test but for chamfered edge treatment.
+
+        op.chamfer emits a single 45° face (no segments parameter).
+        """
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "box",
+                "dimensions_cm": {"x": 10.0, "y": 10.0, "z": 10.0},
+                "edge_treatment": "chamfered",
+                "edge_treatment_width_cm": 0.5,
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        body_ops = [op for op in result.shape_program.ops if op.target == "body"]
+        chamfer_ops = [op for op in body_ops if op.op == "op.chamfer"]
+        assert len(chamfer_ops) == 1, (
+            f"expected exactly 1 op.chamfer keyed to body, got {len(chamfer_ops)}"
+        )
+        assert chamfer_ops[0].parameters["width_cm"] == 0.5
+
+    def test_primary_volume_sphere_skips_edge_treatment(self) -> None:
+        """Spheres have no straight edges; the generator must not emit a
+        bevel/chamfer op for them even when edge_treatment is requested."""
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "sphere",
+                "dimensions_cm": {"radius": 5.0},
+                "edge_treatment": "beveled",
+                "edge_treatment_width_cm": 0.3,
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        body_ops = [op for op in result.shape_program.ops if op.target == "body"]
+        assert len(body_ops) == 1, (
+            "sphere should emit exactly 1 op (solid.sphere) and skip edge treatment"
+        )
+        assert body_ops[0].op == "solid.sphere"
+
+    def test_primary_volume_sharp_attribute_emits_no_edge_op(self) -> None:
+        """Default 'sharp' edge_treatment must not emit op.bevel / op.chamfer."""
+        node = {
+            **_PRIMARY_NODE,
+            "attributes": {
+                "shape": "box",
+                "dimensions_cm": {"x": 10.0, "y": 10.0, "z": 10.0},
+                # edge_treatment omitted — defaults to "sharp"
+            },
+        }
+        result = synthesize_procedural_program(
+            _minimal_asset(),
+            _runtime_with_graph([node], []),
+        )
+        body_ops = [op for op in result.shape_program.ops if op.target == "body"]
+        edge_ops = [op for op in body_ops if op.op in ("op.bevel", "op.chamfer")]
+        assert not edge_ops, (
+            f"sharp edge_treatment should emit no edge ops; got: "
+            f"{[(op.op, op.parameters) for op in edge_ops]}"
+        )
 
     def test_primary_volume_cylinder(self) -> None:
         node = {

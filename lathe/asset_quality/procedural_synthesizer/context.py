@@ -12,8 +12,9 @@ for behavior — only style and policies drive subsequent stages.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Any
 
 from .knowledge_loader import (
     CompositionPolicy,
@@ -192,9 +193,15 @@ def _resolve_knowledge(
         )
         return _ResolvedKnowledge(style=style, policies=policies, domain=domain, family_alias=family)
 
-    # Path 2: family alias lookup
+    # Path 2: family alias lookup. The .lth ``from <family>`` convention
+    # appends a ``_family`` suffix (``industrial_crate_family``) while the
+    # alias JSON registry is keyed by the stem (``industrial_crate``).
+    # Accept either form so callers don't need to normalize upstream.
     if family is not None:
-        alias = alias_packs.get(family)
+        alias = alias_packs.get(family)  # no-family-dispatch: declarative alias-pack lookup, see _family_alias_exists
+        if alias is None and family.endswith("_family"):
+            stem = family[: -len("_family")]
+            alias = alias_packs.get(stem)  # no-family-dispatch: same registry, stem form
         if alias is not None:
             trace.emit(
                 "alias_resolved",

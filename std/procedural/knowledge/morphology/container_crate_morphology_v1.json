@@ -1,0 +1,39 @@
+{
+  "id": "container_crate_morphology_v1",
+  "description": "Industrial / shipping / fantasy / sci-fi crate morphology. Bounded volume with reinforced corners, panel breakup, lid seam, optional handles + latch + warning decal.",
+  "domain": "hard_surface",
+  "body": {
+    "archetype": "bounded_volume",
+    "long_axis": "X_or_Y",
+    "expected_aspect": {
+      "x": [0.7, 1.0],
+      "y": [0.5, 0.9],
+      "z": [0.3, 0.7]
+    }
+  },
+  "parts_ladder": [
+    {"role": "primary_volume", "required": true, "min_count": 1, "max_count": 1, "node_type": "primary_volume"},
+    {"role": "corner_reinforcement", "required": true, "min_count": 2, "max_count": 8, "node_type": "bracket"},
+    {"role": "lid_seam", "required": true, "min_count": 1, "max_count": 1, "node_type": "trim"},
+    {"role": "side_panel_break", "required": false, "min_count": 0, "max_count": 4, "node_type": "panel"},
+    {"role": "handle", "required": false, "min_count": 0, "max_count": 4, "node_type": "handle"},
+    {"role": "latch", "required": false, "min_count": 0, "max_count": 2, "node_type": "latch"},
+    {"role": "fastener", "required": false, "min_count": 0, "max_count": 24, "node_type": "fastener"},
+    {"role": "warning_decal", "required": false, "min_count": 0, "max_count": 4, "node_type": "decal_zone"},
+    {"role": "primary_material", "required": true, "min_count": 1, "max_count": 1, "node_type": "material_zone"}
+  ],
+  "anchor_emitters": [
+    {"role": "exterior_corner", "selector": "all_box_corners"},
+    {"role": "side_face_center", "selector": "major_side_faces"},
+    {"role": "lid_seam_path", "selector": "top_face_inset_loop"},
+    {"role": "front_face_anchor", "selector": "front_face"}
+  ],
+  "default_relations": [
+    {"source_role": "corner_reinforcement", "relation": "wraps_around", "target_role": "exterior_corner"},
+    {"source_role": "lid_seam", "relation": "inset_into", "target_role": "lid_seam_path"},
+    {"source_role": "handle", "relation": "attached_to", "target_role": "side_face_center"},
+    {"source_role": "latch", "relation": "attached_to", "target_role": "front_face_anchor"},
+    {"source_role": "fastener", "relation": "attached_to", "target_role": "front_face_anchor"},
+    {"source_role": "warning_decal", "relation": "inset_into", "target_role": "front_face_anchor"}
+  ]
+}

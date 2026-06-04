@@ -82,6 +82,9 @@ def _annotate_repair_primitive(
         "action": repair.action,
         "target": repair.target,
         "reason": repair.reason,
+        "repair_target_layer": "shape_ir_patch",
+        "attempted_operation": operation,
+        "actual_operation": operation,
         "lowered_operation": operation,
         "operation_id": operation_id,
         "execution_path": "repair_executor.feature_primitives",
@@ -97,11 +100,27 @@ def _annotate_repair_primitive(
     return {
         "operation": operation,
         "operation_id": operation_id,
+        "repair_target_layer": "shape_ir_patch",
+        "attempted_operation": operation,
+        "actual_operation": operation,
         "primitive_type": primitive.primitive_type,
         "part": primitive.part,
         "component": primitive.component,
         "region": primitive.region,
     }
+
+
+def _enrich_repair_trace(record: dict[str, object]) -> dict[str, object]:
+    enriched = dict(record)
+    action = str(enriched.get("action") or "unknown_repair_action")
+    enriched.setdefault("repair_target_layer", "shape_ir_patch")
+    enriched.setdefault("attempted_operation", action)
+    enriched.setdefault(
+        "actual_operation",
+        action if bool(enriched.get("applied", False)) else "unsupported",
+    )
+    enriched.setdefault("semantic_repair_path", "intent_to_shape_ir")
+    return enriched
 
 
 def execute_shape_repairs(
@@ -130,7 +149,7 @@ def execute_shape_repairs(
 
     repaired_shape_ir, applied = _apply_semantic_repairs(asset_graph, shape_ir, base_repairs)
     if not custom_repairs:
-        return repaired_shape_ir, applied
+        return repaired_shape_ir, [_enrich_repair_trace(record) for record in applied]
 
     working = deepcopy(repaired_shape_ir)
     custom_applied: list[dict[str, object]] = []
@@ -316,9 +335,12 @@ def execute_shape_repairs(
             if executed_operations:
                 repair.details["executed_operations"] = executed_operations
                 repair.details["generated_primitive_count"] = len(executed_operations)
+            repair.details["repair_target_layer"] = "shape_ir_patch"
+            repair.details["attempted_operation"] = repair.action
+            repair.details["actual_operation"] = repair.action
             custom_applied.append(repair.to_dict())
 
     refreshed = refresh_shape_ir(
         asset_graph, working, notes=list(working.signature.get("blueprint_notes", []))
     )
-    return refreshed, applied + custom_applied
+    return refreshed, [_enrich_repair_trace(record) for record in applied + custom_applied]

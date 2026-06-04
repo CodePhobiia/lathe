@@ -13,11 +13,29 @@ it in ``ATTRIBUTE_SCHEMAS``. Schemas are frozen dataclasses with
 
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping
+from collections.abc import Callable, Mapping
+from typing import Any
 
+from .bracket import BracketAttributes
+from .conduit import ConduitAttributes
+from .decal_zone import DecalZoneAttributes
+from .fastener import FastenerAttributes
+from .frame import FrameAttributes
+from .guard import GuardAttributes
+from .handle import HandleAttributes
+from .hinge import HingeAttributes
+from .inset import InsetAttributes
+from .latch import LatchAttributes
+from .material_zone import MaterialZoneAttributes
+from .mount import MountAttributes
 from .panel import PanelAttributes
 from .primary_volume import PrimaryVolumeAttributes
-
+from .rail import RailAttributes
+from .socket import SocketAttributes
+from .trim import TrimAttributes
+from .vent import VentAttributes
+from .wear_zone import WearZoneAttributes
+from .weld import WeldAttributes
 
 # Per-NODE_TYPE schema registry. Adding a new NODE_TYPE attribute
 # schema means adding it here. The pipeline consults this map in
@@ -26,6 +44,24 @@ from .primary_volume import PrimaryVolumeAttributes
 ATTRIBUTE_SCHEMAS: Mapping[str, Callable[[dict[str, Any]], Any]] = {
     "primary_volume": PrimaryVolumeAttributes.from_dict,
     "panel": PanelAttributes.from_dict,
+    "frame": FrameAttributes.from_dict,
+    "trim": TrimAttributes.from_dict,
+    "fastener": FastenerAttributes.from_dict,
+    "handle": HandleAttributes.from_dict,
+    "material_zone": MaterialZoneAttributes.from_dict,
+    "decal_zone": DecalZoneAttributes.from_dict,
+    "wear_zone": WearZoneAttributes.from_dict,
+    "inset": InsetAttributes.from_dict,
+    "rail": RailAttributes.from_dict,
+    "socket": SocketAttributes.from_dict,
+    "bracket": BracketAttributes.from_dict,
+    "vent": VentAttributes.from_dict,
+    "conduit": ConduitAttributes.from_dict,
+    "latch": LatchAttributes.from_dict,
+    "weld": WeldAttributes.from_dict,
+    "mount": MountAttributes.from_dict,
+    "hinge": HingeAttributes.from_dict,
+    "guard": GuardAttributes.from_dict,
 }
 
 
@@ -44,7 +80,25 @@ def validate_attributes(node_type: str, raw_attributes: dict[str, Any]) -> Any:
 
 __all__ = [
     "ATTRIBUTE_SCHEMAS",
+    "BracketAttributes",
+    "ConduitAttributes",
+    "DecalZoneAttributes",
+    "FastenerAttributes",
+    "FrameAttributes",
+    "GuardAttributes",
+    "HandleAttributes",
+    "HingeAttributes",
+    "InsetAttributes",
+    "LatchAttributes",
+    "MaterialZoneAttributes",
+    "MountAttributes",
     "PanelAttributes",
     "PrimaryVolumeAttributes",
+    "RailAttributes",
+    "SocketAttributes",
+    "TrimAttributes",
+    "VentAttributes",
+    "WearZoneAttributes",
+    "WeldAttributes",
     "validate_attributes",
 ]

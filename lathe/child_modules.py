@@ -420,7 +420,7 @@ def _count(
         if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
             return min(maximum, max(minimum, len(value)))
         try:
-            return min(maximum, max(minimum, int(round(float(value)))))
+            return min(maximum, max(minimum, round(float(value))))
         except (TypeError, ValueError):
             continue
     return min(maximum, max(minimum, default))
@@ -842,7 +842,7 @@ def _summary(slots: Sequence[Mapping[str, Any]], connections: Sequence[Any] | No
             if template:
                 by_template[template] = by_template.get(template, 0) + 1
             if family:
-                by_family[family] = by_family.get(family, 0) + 1
+                by_family[family] = by_family.get(family, 0) + 1  # no-family-dispatch: aggregation counter, not behavior dispatch — `by_family` is a local histogram of seen family values for a report payload, with no per-family branching
     return {
         "slot_count": len(slots),
         "module_slot_count": len(slots),

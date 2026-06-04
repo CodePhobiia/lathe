@@ -21,12 +21,12 @@ that downstream evaluators and extractors can consume uniformly.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Callable
-
 import math
-import numpy as np
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
+import numpy as np
 
 # ---------------------------------------------------------------------------
 # Base
@@ -860,7 +860,7 @@ class Cone(SDFExpr):
         radial = np.linalg.norm(pts[:, [0, 2]], axis=1)
         # IQ "sdCone" capped variant
         q = np.stack([radial, py], axis=1)
-        tip = np.array([0.0, h], dtype=np.float64)
+        np.array([0.0, h], dtype=np.float64)
         base_to_tip = np.array([r, h], dtype=np.float64)
         # distance to the cone's slant edge
         slant_t = np.clip((q @ base_to_tip) / (base_to_tip @ base_to_tip), 0.0, 1.0)

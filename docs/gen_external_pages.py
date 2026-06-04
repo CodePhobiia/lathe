@@ -5,6 +5,14 @@ Files like ``spec/lathe-v0.1.md`` and ``CONTRIBUTING.md`` live outside
 us generate virtual pages without committing copies that would drift.
 
 Used by ``mkdocs.yml`` plugins -> gen-files scripts.
+
+In addition to markdown mirrors, this hook also copies the JSON schema
+files under ``<repo-root>/schema/`` into ``<docs_dir>/schema/`` so that
+mkdocs-strict link resolution finds the targets that ``docs/api/`` and
+``docs/llm/`` pages reference. Authors continue to write ``../../schema/X``
+links in source docs (which navigate from ``docs/X/Y.md`` up to the repo
+root then back into ``schema/``); after the mirror, the same path
+resolves to ``docs_dir/schema/X`` inside the built site.
 """
 
 from __future__ import annotations
@@ -43,3 +51,23 @@ for src, dst in _MIRRORS:
     with mkdocs_gen_files.open(dst, "w") as out:
         out.write(text)
     mkdocs_gen_files.set_edit_path(dst, src.relative_to(_REPO_ROOT).as_posix())
+
+
+# Mirror every JSON schema referenced by docs into ``docs_dir/schema/`` so
+# that ``../schema/X.schema.json`` style links from ``docs/**/page.md``
+# resolve under mkdocs --strict. The mirrored files are virtual (gen-files
+# adds them to the built site without writing them to the source tree).
+# We don't call ``set_edit_path`` for the schemas because mkdocs-gen-files
+# warns when an edit-path target is a non-markdown asset; the link target
+# itself is what matters for strict mode.
+_SCHEMA_DIR = _REPO_ROOT / "schema"
+if _SCHEMA_DIR.is_dir():
+    for schema_path in sorted(_SCHEMA_DIR.rglob("*.schema.json")):
+        relative = schema_path.relative_to(_SCHEMA_DIR).as_posix()
+        target = f"schema/{relative}"
+        try:
+            content = schema_path.read_bytes()
+        except OSError:
+            continue
+        with mkdocs_gen_files.open(target, "wb") as out:
+            out.write(content)

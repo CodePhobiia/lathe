@@ -54,6 +54,22 @@ from .reports import (
     render_final_readiness_markdown,
     write_readiness_report_files,
 )
+from .wonder_cli import (
+    CONTRACT_VERSION as WONDER_CLI_VERSION,
+    WonderRequest,
+    WonderResult,
+    plan_wonder_build,
+    quick_wonder_request_from_prompt,
+)
+from .prompt_parser import (
+    PROMPT_PARSER_VERSION,
+    ParsedWonderPrompt,
+    parse_wonder_prompt,
+)
+from .critique import (
+    WONDER_CRITIQUE_TRACE_VERSION,
+    run_world_wonder_critique_repair,
+)
 
 __all__ = [
     "CONTRACT_SPECS",
@@ -104,4 +120,15 @@ __all__ = [
     "write_evidence_trace",
     "write_example_golden_files",
     "write_readiness_report_files",
+    # Wave 26 wonder-mode CLI planner (P15)
+    "WONDER_CLI_VERSION",
+    "WonderRequest",
+    "WonderResult",
+    "plan_wonder_build",
+    "quick_wonder_request_from_prompt",
+    "PROMPT_PARSER_VERSION",
+    "ParsedWonderPrompt",
+    "parse_wonder_prompt",
+    "WONDER_CRITIQUE_TRACE_VERSION",
+    "run_world_wonder_critique_repair",
 ]

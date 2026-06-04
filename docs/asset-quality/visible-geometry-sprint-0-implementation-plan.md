@@ -274,8 +274,8 @@ python -m pytest -q tests/unit/test_asset_quality_semantic_critique.py tests/uni
 - Create: `lathe/geometry/kernel_program.py`
 - Create: `lathe/geometry/shape_ir_lowering.py`
 - Modify: `lathe/geometry/kernel.py` only for additive capability metadata if needed.
-- Test: `tests/unit/test_geometry_kernel_program.py`
-- Test: `tests/unit/test_shape_ir_kernel_lowering.py`
+- Test: `tests/unit/test_geometry_kernel.py`
+- Test: `tests/unit/test_shape_ir_v2.py`
 
 **Step 1: Write failing tests**
 
@@ -293,7 +293,7 @@ Do not route production builds through this globally yet. This is a seam introdu
 
 Run:
 ```bash
-python -m pytest -q tests/unit/test_geometry_kernel_program.py tests/unit/test_shape_ir_kernel_lowering.py tests/contract/test_shape_handoff_v1.py
+python -m pytest -q tests/unit/test_geometry_kernel.py tests/unit/test_shape_ir_v2.py tests/contract/test_shape_handoff_v1.py
 ```
 
 ---

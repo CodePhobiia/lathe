@@ -20,7 +20,7 @@ v2 introduces two frozen dataclasses:
 - ``ShapeProgram`` — an ordered tuple of ``ShapeOp`` plus ``version``,
   ``asset_name`` and an optional ``family`` hint.
 
-Operations are organised into seven families:
+Operations are organised into eight families:
 
 - ``SOLID_OPS`` — primitive solids that introduce new geometry.
 - ``BOOLEAN_OPS`` (7) — boolean and construction modifiers.
@@ -29,6 +29,7 @@ Operations are organised into seven families:
 - ``REPETITION_OPS`` — semantic repetition / detail strips.
 - ``INTEGRATION_OPS`` (4) — attachment / seating ops (sockets, brackets).
 - ``WEAR_OPS`` (4) — wear / damage authoring ops.
+- ``ZONE_OPS`` (3) — material / decal / wear zone annotation ops.
 
 Required parameters per op are defined in ``_REQUIRED_PARAMS``.
 
@@ -60,14 +61,14 @@ industrial_crate grammar into v2 operations.
 
 from __future__ import annotations
 
+import itertools
+import math
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from contextvars import ContextVar
 from copy import deepcopy
-import math
-from collections.abc import Callable
 from dataclasses import dataclass, fields
-from typing import Any, Mapping
-
+from typing import Any
 
 _V1Record = dict[str, Any]
 _V1Lowering = _V1Record | tuple[_V1Record, ...]
@@ -575,144 +576,23 @@ _PRESERVE_CONTEXTUAL_SOURCE_WITHOUT_KERNEL_OPS = frozenset(
 _TARGET_REPLACEMENT_OPS = frozenset({"sop.scatter_on_surface"}) | _CONTEXTUAL_BOOLEAN_OPS
 
 
-SHAPE_IR_V2_VERSION = "shape_ir_v2"
-
-
-SOLID_OPS: frozenset[str] = frozenset(
-    {
-        "solid.box",
-        "solid.rounded_box",
-        "solid.cylinder",
-        "solid.sphere",
-        "solid.torus",
-        "solid.revolved_profile",
-        "solid.extruded_profile",
-        "solid.curve_extruded_profile",
-        "solid.curve_revolved_profile",
-        "solid.curve_swept_profile",
-        "solid.curve_lofted_solid",
-        "solid.swept_profile",
-        "solid.subdivision_box",
-        "solid.prism",
-        "solid.rail",
-        "solid.panel",
-        "solid.gear",
-        "solid.capsule",
-        "solid.flange",
-        "solid.hinge",
-        "solid.handle",
-        "solid.perforated_panel",
-        "solid.structural_beam",
-        "solid.ladder_frame",
-        "solid.truss_frame",
-        "solid.ribbed_panel",
-        "solid.louver_panel",
-        "solid.terrain_patch",
-        "solid.branching_tree",
-        "solid.sdf_metaball_cluster",
-        "solid.wfc_modular_assembly",
-        "solid.cga_facade",
-        "solid.spring",
-        "solid.threaded_cylinder",
-        "solid.tube",
-        "solid.curved_tube",
-    }
+# Op family frozensets and ALL_OPS were extracted into
+# ``lathe.asset_quality.shape_ir_v2_ops`` per the P1 module decomposition
+# (`docs/asset-quality/p0-p1-stabilization-execution-plan.md` §6). They are
+# re-exported here so existing ``from lathe.asset_quality.shape_ir_v2
+# import ALL_OPS, SOLID_OPS, ...`` callers continue to work unchanged.
+from .shape_ir_v2_ops import (  # noqa: F401 — compatibility re-exports
+    ALL_OPS,
+    BOOLEAN_OPS,
+    EDGE_OPS,
+    INTEGRATION_OPS,
+    REPETITION_OPS,
+    SHAPE_IR_V2_VERSION,
+    SOLID_OPS,
+    SOP_OPS,
+    WEAR_OPS,
+    ZONE_OPS,
 )
-
-
-BOOLEAN_OPS: frozenset[str] = frozenset(
-    {
-        "op.union",
-        "op.subtract",
-        "op.intersect",
-        "op.inset",
-        "op.extrude",
-        "op.shell",
-        "op.hull",
-        "op.minkowski",
-        "op.cut_panel_line",
-        "op.countersunk_hole",
-        "op.rounded_slot",
-    }
-)
-
-
-EDGE_OPS: frozenset[str] = frozenset(
-    {
-        "op.bevel",
-        "op.chamfer",
-        "op.weighted_normals",
-        "op.mark_hard_edge",
-    }
-)
-
-
-SOP_OPS: frozenset[str] = frozenset(
-    {
-        "sop.boolean",
-        "sop.polybevel",
-        "sop.sweep",
-        "sop.polyextrude",
-        "sop.loft",
-        "sop.copy_to_points",
-        "sop.scatter_on_surface",
-        "sop.subdivide",
-        "sop.remesh",
-        "sop.carve",
-        "sop.polywire",
-        "sop.helical_sweep",
-        "sop.transform",
-        "sop.twist",
-        "sop.taper",
-        "sop.bend",
-    }
-)
-
-
-REPETITION_OPS: frozenset[str] = frozenset(
-    {
-        "op.repeat",
-        "op.distribute",
-        "op.fastener_grid",
-        "op.vent_slats",
-        "op.trim_band",
-        "op.panel_frame",
-        "op.corner_guard_set",
-        "op.mirror",
-    }
-)
-
-
-INTEGRATION_OPS: frozenset[str] = frozenset(
-    {
-        "op.socket",
-        "op.bracket",
-        "op.mount_plate",
-        "op.weld_seam",
-    }
-)
-
-
-WEAR_OPS: frozenset[str] = frozenset(
-    {
-        "op.chip_edges",
-        "op.scratch_mask",
-        "op.dent_mask",
-        "op.grime_mask",
-    }
-)
-
-
-ALL_OPS: frozenset[str] = (
-    SOLID_OPS
-    | BOOLEAN_OPS
-    | EDGE_OPS
-    | SOP_OPS
-    | REPETITION_OPS
-    | INTEGRATION_OPS
-    | WEAR_OPS
-)
-
 
 _REQUIRED_PARAMS: dict[str, tuple[str, ...]] = {
     # Solids
@@ -2061,13 +1941,77 @@ def _lowering_exception_diagnostic(op: ShapeOp, exc: Exception) -> dict[str, Any
     }
 
 
+_IMMUTABLE_LEAF_TYPES: tuple[type, ...] = (str, int, float, bool, type(None), bytes, frozenset)
+
+
+# Per-call memoization cache for ``_metadata_safe_value``. Cleared at
+# the start of each ``lower_to_v1`` invocation. Keyed by ``id(value)``
+# of dict / list / tuple inputs so identical sub-structures (e.g. the
+# semantic_metadata that propagates through a long boolean chain)
+# only deep-walk once. Critically: the cache stores the FRESH
+# OUT-COPY, not a shared reference — callers can mutate the returned
+# dict/list without affecting prior callers, but multiple callers
+# requesting the same source structure get distinct top-level copies.
+# This is the structural fix for the metadata-accumulation blowup
+# step 3 of the kernel-perf audit identified (28M asdict_inner calls,
+# 87M deepcopy calls per build → most are redundant copies of the
+# same metadata trees).
+_METADATA_SAFE_VALUE_CACHE: dict[int, Any] = {}
+
+
+def _metadata_safe_value_cache_reset() -> None:
+    """Clear the per-call memoization cache. Called at lower_to_v1 entry."""
+    _METADATA_SAFE_VALUE_CACHE.clear()
+
+
 def _metadata_safe_value(value: Any) -> Any:
+    """Recursively safe-copy a metadata structure.
+
+    Recurses into dict / list / tuple to produce a fresh outer
+    container (so callers can mutate without affecting the source).
+    For leaves, returns immutable types AS-IS — ``deepcopy`` of a
+    string / int / float / bool / None is wasted work. Mutable leaves
+    still go through ``deepcopy`` to preserve the original semantic.
+
+    Memoized per-lower-to-v1-call via ``_METADATA_SAFE_VALUE_CACHE``.
+    The same source dict / list / tuple passed multiple times during
+    one lowering pass returns the same FROZEN sub-structure on
+    subsequent calls. The outer container is fresh each call so
+    callers can mutate freely; the cache reuses inner sub-structures
+    that hadn't been mutated.
+    """
+    # Immutable leaves bypass the cache entirely — they're cheap to
+    # share, and don't need cache slots.
+    if isinstance(value, _IMMUTABLE_LEAF_TYPES):
+        return value
+    cache_key = id(value)
+    cached = _METADATA_SAFE_VALUE_CACHE.get(cache_key)
+    if cached is not None:
+        # Return a fresh shallow copy of the outer container — inner
+        # references are reused. The shallow copy means callers can
+        # mutate keys/items at the top level without affecting other
+        # cached callers; but mutations to nested values DO propagate
+        # to all consumers of this cache entry. For the
+        # lower_to_v1 hot path that's safe — derived records build
+        # their own outer structures and only READ inner metadata.
+        if isinstance(cached, dict):
+            return dict(cached)
+        if isinstance(cached, list):
+            return list(cached)
+        return cached
     if isinstance(value, dict):
-        return {str(key): _metadata_safe_value(item) for key, item in value.items()}
+        result = {str(key): _metadata_safe_value(item) for key, item in value.items()}
+        _METADATA_SAFE_VALUE_CACHE[cache_key] = result
+        return dict(result)
     if isinstance(value, tuple):
-        return [_metadata_safe_value(item) for item in value]
+        result_list = [_metadata_safe_value(item) for item in value]
+        _METADATA_SAFE_VALUE_CACHE[cache_key] = result_list
+        return list(result_list)
     if isinstance(value, list):
-        return [_metadata_safe_value(item) for item in value]
+        result_list = [_metadata_safe_value(item) for item in value]
+        _METADATA_SAFE_VALUE_CACHE[cache_key] = result_list
+        return list(result_list)
+    # Mutable / unknown leaf type — preserve the prior deepcopy semantics.
     return deepcopy(value)
 
 
@@ -2920,31 +2864,30 @@ def _record_context_extents(record: _V1Record) -> tuple[float, float, float]:
                     max(max(ys) - min(ys) + reach * 2.0, 1e-6),
                     max(max(zs) - min(zs) + reach * 2.0, 1e-6),
                 )
-    if primitive_type == "curved_tube":
-        if (
-            record.get("radius") is not None
-            and record.get("tube_radius") is not None
-            and record.get("angle_degrees") is not None
-        ):
-            radius = float(record["radius"])
-            tube_radius = float(record["tube_radius"])
-            angle_degrees = float(record["angle_degrees"])
-            path_segments = int(record.get("path_segments") or max(8, math.ceil(abs(angle_degrees) / 10.0)))
-            path = _curved_tube_path(
-                plane_axis=str(record.get("plane_axis") or "z"),
-                radius=radius,
-                angle_degrees=angle_degrees,
-                start_angle_degrees=float(record.get("start_angle_degrees") or 0.0),
-                path_segments=max(3, min(path_segments, 512)),
-            )
-            xs = [point[0] for point in path]
-            ys = [point[1] for point in path]
-            zs = [point[2] for point in path]
-            return (
-                max(max(xs) - min(xs) + tube_radius * 2.0, 1e-6),
-                max(max(ys) - min(ys) + tube_radius * 2.0, 1e-6),
-                max(max(zs) - min(zs) + tube_radius * 2.0, 1e-6),
-            )
+    if primitive_type == "curved_tube" and (
+        record.get("radius") is not None
+        and record.get("tube_radius") is not None
+        and record.get("angle_degrees") is not None
+    ):
+        radius = float(record["radius"])
+        tube_radius = float(record["tube_radius"])
+        angle_degrees = float(record["angle_degrees"])
+        path_segments = int(record.get("path_segments") or max(8, math.ceil(abs(angle_degrees) / 10.0)))
+        path = _curved_tube_path(
+            plane_axis=str(record.get("plane_axis") or "z"),
+            radius=radius,
+            angle_degrees=angle_degrees,
+            start_angle_degrees=float(record.get("start_angle_degrees") or 0.0),
+            path_segments=max(3, min(path_segments, 512)),
+        )
+        xs = [point[0] for point in path]
+        ys = [point[1] for point in path]
+        zs = [point[2] for point in path]
+        return (
+            max(max(xs) - min(xs) + tube_radius * 2.0, 1e-6),
+            max(max(ys) - min(ys) + tube_radius * 2.0, 1e-6),
+            max(max(zs) - min(zs) + tube_radius * 2.0, 1e-6),
+        )
     if primitive_type == "torus" and record.get("major_radius") is not None and record.get("minor_radius") is not None:
         radius = (float(record["major_radius"]) + float(record["minor_radius"])) * 2.0
         return (max(radius, 1e-6), max(radius, 1e-6), max(radius, 1e-6))
@@ -4765,7 +4708,7 @@ def _sample_closed_curve_polygon_payload(
         last = points[-1]
         if sum((float(a) - float(b)) ** 2 for a, b in zip(first, last, strict=True)) <= 1e-16:
             points = points[:-1]
-    if len(points) < 3:  # noqa: PLR2004
+    if len(points) < 3:
         raise ValueError(f"parameter '{key}' must sample to at least 3 points")
     polygon = tuple((float(point[0]), float(point[1])) for point in points)
     area = _polygon_area(polygon)
@@ -4786,7 +4729,7 @@ def _resample_closed_polygon(
     count: int,
     key: str,
 ) -> tuple[tuple[float, float], ...]:
-    if count < 3:  # noqa: PLR2004
+    if count < 3:
         raise ValueError(f"parameter '{key}' resample count must be >= 3")
     if len(polygon) == count:
         return polygon
@@ -4794,7 +4737,7 @@ def _resample_closed_polygon(
     ring.append(ring[0])
     segment_lengths: list[float] = []
     perimeter = 0.0
-    for start, end in zip(ring, ring[1:], strict=False):
+    for start, end in itertools.pairwise(ring):
         length = math.hypot(float(end[0]) - float(start[0]), float(end[1]) - float(start[1]))
         segment_lengths.append(length)
         perimeter += length
@@ -4861,7 +4804,7 @@ def _curve_loft_section_scale(
             _float_param({"scale_y": y_value}, "scale_y"),
         )
     elif isinstance(raw, (list, tuple)):
-        if len(raw) != 2:  # noqa: PLR2004
+        if len(raw) != 2:
             raise ValueError(
                 f"parameter 'sections' item {index} scale must have 2 values"
             )
@@ -5294,7 +5237,7 @@ def _v1_record_for_solid_curve_lofted_solid(
     sections_value = parameters["sections"]
     if not isinstance(sections_value, (list, tuple)):
         raise ValueError("parameter 'sections' must be a sequence of section records")
-    if len(sections_value) < 2:  # noqa: PLR2004
+    if len(sections_value) < 2:
         raise ValueError("parameter 'sections' must contain at least 2 sections")
 
     profile_point_count = _curve_int_value(
@@ -7073,7 +7016,7 @@ def _normalize_kernel_result_face_operation_summary(
     if not isinstance(summary, dict):
         return metadata
     try:
-        emitted_face_count = int(len(mesh.faces))
+        emitted_face_count = len(mesh.faces)
     except (AttributeError, TypeError, ValueError):
         return metadata
     previous_face_count = int(summary.get("face_count") or 0)
@@ -7559,10 +7502,8 @@ def _kernel_program_exact_profile_bevel_applied(result: Any) -> dict[str, Any] |
     ):
         value = final.get(source_key)
         if value not in (None, "", (), [], {}):
-            try:
+            with suppress(TypeError, ValueError):
                 payload[target_key] = int(value)
-            except (TypeError, ValueError):
-                pass
     if final.get("result_watertight") is not None:
         payload["exact_profile_cut_result_watertight"] = bool(final.get("result_watertight"))
     return payload
@@ -9549,8 +9490,8 @@ def _v1_record_for_sop_subdivide(
             raise ValueError("sop.subdivide source produced an empty mesh")
         vertices = np.asarray(mesh.vertices, dtype=np.float64)
         faces = np.asarray(mesh.faces, dtype=np.int64)
-        source_face_count = int(len(faces))
-        source_vertex_count = int(len(vertices))
+        source_face_count = len(faces)
+        source_vertex_count = len(vertices)
         try:
             for _ in range(levels):
                 vertices, faces = trimesh.remesh.subdivide(vertices, faces)
@@ -9559,10 +9500,8 @@ def _v1_record_for_sop_subdivide(
         refined = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
         refined.remove_unreferenced_vertices()
         refined.merge_vertices()
-        try:
+        with suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
             refined.fix_normals()
-        except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-            pass
         if len(refined.vertices) == 0 or len(refined.faces) == 0:
             raise ValueError("sop.subdivide mesh refinement produced an empty mesh")
         source_record = source
@@ -9748,8 +9687,8 @@ def _v1_record_for_sop_remesh(
         raise ValueError("sop.remesh source produced an empty mesh")
     vertices = np.asarray(mesh.vertices, dtype=np.float64)
     faces = np.asarray(mesh.faces, dtype=np.int64)
-    source_face_count = int(len(faces))
-    source_vertex_count = int(len(vertices))
+    source_face_count = len(faces)
+    source_vertex_count = len(vertices)
     try:
         if max_iterations > 0:
             for _ in range(max_iterations):
@@ -9771,21 +9710,17 @@ def _v1_record_for_sop_remesh(
         raise ValueError(f"sop.remesh edge refinement failed: {exc}") from exc
     remeshed = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
     if mode == "smooth":
-        try:
+        with suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
             trimesh.smoothing.filter_laplacian(
                 remeshed,
                 lamb=0.35,
                 iterations=1,
                 volume_constraint=True,
             )
-        except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-            pass
     remeshed.remove_unreferenced_vertices()
     remeshed.merge_vertices()
-    try:
+    with suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         remeshed.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     if len(remeshed.vertices) == 0 or len(remeshed.faces) == 0:
         raise ValueError("sop.remesh edge refinement produced an empty mesh")
     modifier = {
@@ -10108,7 +10043,7 @@ def _v1_record_for_sop_helical_sweep(
     if segments_per_turn < 3:
         raise ValueError("parameter 'segments_per_turn' must be >= 3")
     segments_per_turn = min(segments_per_turn, 128)
-    path_count = int(math.ceil(turns * segments_per_turn)) + 1
+    path_count = math.ceil(turns * segments_per_turn) + 1
     path_count = max(2, min(path_count, 4096))
     if "cross_section_segments" in parameters:
         cross_section_segments = _int_param(parameters, "cross_section_segments")
@@ -10344,7 +10279,7 @@ def _threaded_cylinder_path(
     handedness: str,
 ) -> tuple[tuple[float, float, float], ...]:
     path_height = height - start_clearance - end_clearance
-    path_count = int(math.ceil(turns * segments_per_turn)) + 1
+    path_count = math.ceil(turns * segments_per_turn) + 1
     path_count = max(2, min(path_count, 4096))
     sign = -1.0 if handedness == "left" else 1.0
     phase = math.radians(phase_degrees)
@@ -10707,7 +10642,7 @@ def _v1_record_for_solid_curved_tube(
         if "path_segments" in parameters:
             path_segments = _int_param(parameters, "path_segments")
         else:
-            path_segments = max(8, int(math.ceil(abs(angle_degrees) / 10.0)))
+            path_segments = max(8, math.ceil(abs(angle_degrees) / 10.0))
         if path_segments < 3:
             raise ValueError("parameter 'path_segments' must be >= 3")
         path_segments = min(path_segments, 512)
@@ -10904,7 +10839,7 @@ def _v1_record_for_solid_threaded_cylinder(
         segments_per_turn = _int_param(parameters, "segments_per_turn")
     else:
         segments_per_turn = 28
-    if segments_per_turn < 4:  # noqa: PLR2004
+    if segments_per_turn < 4:
         raise ValueError("parameter 'segments_per_turn' must be >= 4")
     segments_per_turn = min(segments_per_turn, 160)
     if "cross_section_segments" in parameters:
@@ -10971,7 +10906,7 @@ def _v1_record_for_solid_threaded_cylinder(
     part = op.target or "threaded_cylinder"
     center = _center_param(parameters)
     blend_mode = _optional_blend_mode(parameters)
-    path_count = int(math.ceil(turns * segments_per_turn)) + 1
+    path_count = math.ceil(turns * segments_per_turn) + 1
     path_count = max(2, min(path_count, 4096))
     axis_vector = _axis_unit_vector(axis)
     ridge_center_offset = (start_clearance - end_clearance) * 0.5
@@ -12324,7 +12259,7 @@ def _sdf_mesh_planar_cap_extend(
 
         cap_faces = faces[cap_face_indices]
         cap_vertices = sorted({int(index) for face in cap_faces for index in face})
-        if len(cap_vertices) < 3:  # noqa: PLR2004
+        if len(cap_vertices) < 3:
             return None, None, "planar_cap_has_too_few_vertices"
 
         edge_counts: dict[tuple[int, int], int] = {}
@@ -12362,10 +12297,8 @@ def _sdf_mesh_planar_cap_extend(
             process=False,
         )
         candidate.remove_unreferenced_vertices()
-        try:
+        with suppress(AttributeError, TypeError, ValueError, RuntimeError):
             candidate.fix_normals()
-        except (AttributeError, TypeError, ValueError, RuntimeError):
-            pass
         if len(candidate.faces) == 0:
             return None, None, "planar_cap_extend_result_empty"
         if not bool(candidate.is_watertight):
@@ -12380,12 +12313,12 @@ def _sdf_mesh_planar_cap_extend(
             "source_max_cm": source_max,
             "source_extent_cm": source_extent,
             "cap_coordinate_cm": cap_coord,
-            "cap_face_count": int(len(cap_face_indices)),
-            "cap_vertex_count": int(len(cap_vertices)),
-            "cap_boundary_edge_count": int(len(boundary_edges)),
-            "source_face_count": int(len(faces)),
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "cap_face_count": len(cap_face_indices),
+            "cap_vertex_count": len(cap_vertices),
+            "cap_boundary_edge_count": len(boundary_edges),
+            "source_face_count": len(faces),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         return candidate, modifier, None
@@ -12454,10 +12387,8 @@ def _measured_bounds_cap_hull_polyextrude(
             return None, None, "measured_bounds_cap_hull_result_empty"
         candidate.metadata.update(dict(mesh.metadata))
         candidate.remove_unreferenced_vertices()
-        try:
+        with suppress(AttributeError, TypeError, ValueError, RuntimeError):
             candidate.fix_normals()
-        except (AttributeError, TypeError, ValueError, RuntimeError):
-            pass
         if not bool(candidate.is_watertight):
             return None, None, "measured_bounds_cap_hull_result_not_watertight"
         source_faces = record.get("mesh_faces")
@@ -12478,9 +12409,9 @@ def _measured_bounds_cap_hull_polyextrude(
             "result_cap_coordinate_cm": out_coord,
             "measured_cap_vertex_count": len(cap_points),
             "source_face_count": int(source_face_count),
-            "source_vertex_count": int(len(vertices)),
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "source_vertex_count": len(vertices),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         return candidate, modifier, None
@@ -12551,10 +12482,8 @@ def _measured_bounds_axis_slab_mesh(
             process=False,
         )
         mesh.remove_unreferenced_vertices()
-        try:
+        with suppress(AttributeError, TypeError, ValueError, RuntimeError):
             mesh.fix_normals()
-        except (AttributeError, TypeError, ValueError, RuntimeError):
-            pass
         if len(mesh.faces) == 0:
             return None, None, "measured_bounds_axis_slab_result_empty"
         if not bool(mesh.is_watertight):
@@ -12575,8 +12504,8 @@ def _measured_bounds_axis_slab_mesh(
             "carved_max_cm": slab_max,
             "carved_span_cm": float(slab_max - slab_min),
             "source_face_count": int(source_face_count),
-            "result_face_count": int(len(mesh.faces)),
-            "result_vertex_count": int(len(mesh.vertices)),
+            "result_face_count": len(mesh.faces),
+            "result_vertex_count": len(mesh.vertices),
             "result_watertight": bool(mesh.is_watertight),
         }
         return mesh, modifier, None
@@ -12670,7 +12599,7 @@ def _sdf_mesh_axis_open_shell(
         normalized = (vertices - source_min) / source_span
         inner_vertices = inner_min + normalized * (inner_max - inner_min)
 
-        vertex_count = int(len(vertices))
+        vertex_count = len(vertices)
         combined_vertices = np.vstack([vertices, inner_vertices])
         shell_faces: list[list[int]] = []
         for face in faces[~open_cap_mask].tolist():
@@ -12691,10 +12620,8 @@ def _sdf_mesh_axis_open_shell(
             process=False,
         )
         candidate.remove_unreferenced_vertices()
-        try:
+        with suppress(AttributeError, TypeError, ValueError, RuntimeError):
             candidate.fix_normals()
-        except (AttributeError, TypeError, ValueError, RuntimeError):
-            pass
         if len(candidate.faces) == 0:
             return None, None, "axis_open_shell_result_empty"
         if not bool(candidate.is_watertight):
@@ -12711,11 +12638,11 @@ def _sdf_mesh_axis_open_shell(
             "source_extents": [float(value) for value in source_span.tolist()],
             "inner_min": [float(value) for value in inner_min.tolist()],
             "inner_max": [float(value) for value in inner_max.tolist()],
-            "open_cap_face_count": int(len(open_cap_faces)),
-            "rim_boundary_edge_count": int(len(boundary_edges)),
-            "source_face_count": int(len(faces)),
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "open_cap_face_count": len(open_cap_faces),
+            "rim_boundary_edge_count": len(boundary_edges),
+            "source_face_count": len(faces),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         return candidate, modifier, None
@@ -12850,10 +12777,8 @@ def _measured_bounds_axis_open_shell_mesh(
             process=False,
         )
         candidate.remove_unreferenced_vertices()
-        try:
+        with suppress(AttributeError, TypeError, ValueError, RuntimeError):
             candidate.fix_normals()
-        except (AttributeError, TypeError, ValueError, RuntimeError):
-            pass
         if len(candidate.faces) == 0:
             return None, None, "measured_bounds_axis_open_shell_result_empty"
         if not bool(candidate.is_watertight):
@@ -12878,8 +12803,8 @@ def _measured_bounds_axis_open_shell_mesh(
             "inner_max": [float(value) for value in inner_max.tolist()],
             "rim_boundary_edge_count": 4,
             "source_face_count": int(source_face_count),
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         return candidate, modifier, None
@@ -13184,10 +13109,8 @@ def _source_box_axis_inset_recess_mesh(
         candidate.remove_infinite_values()
         candidate.remove_unreferenced_vertices()
         candidate.merge_vertices()
-        try:
+        with suppress(AttributeError, TypeError, ValueError, RuntimeError):
             candidate.fix_normals()
-        except (AttributeError, TypeError, ValueError, RuntimeError):
-            pass
         repair_method = ""
         if not bool(candidate.is_watertight):
             with suppress(AttributeError, TypeError, ValueError, RuntimeError):
@@ -13264,7 +13187,7 @@ def _source_box_axis_inset_recess_mesh(
                 "bevel_applied": bevel_inset > 1e-9,
                 "floor_axial_cm": float(floor_coord),
                 "open_side": side,
-                "result_face_count": int(len(candidate.faces)),
+                "result_face_count": len(candidate.faces),
                 "result_watertight": bool(candidate.is_watertight),
             }
             candidate.metadata["lathe_reference_profile_cut_state"] = profile_cut_state
@@ -13288,8 +13211,8 @@ def _source_box_axis_inset_recess_mesh(
             "source_extents": [float(value) for value in source_span.tolist()],
             "floor_coordinate_cm": float(floor_coord),
             "front_coordinate_cm": float(front_coord),
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         if profile_cut_state is not None:
@@ -13522,12 +13445,12 @@ def _source_box_axis_profile_recess_mesh(
             "profile_cut_count": 1,
             "profile_cut_kinds": ["profile_blind"],
             "profile_kind": profile_kind,
-            "profile_vertex_count": int(len(profile)),
+            "profile_vertex_count": len(profile),
             "bevel_width_cm": float(bevel_inset),
             "bevel_applied": bevel_inset > eps,
             "floor_axial_cm": float(floor_coord),
             "open_side": side,
-            "result_face_count": int(len(candidate.faces)),
+            "result_face_count": len(candidate.faces),
             "result_watertight": bool(candidate.is_watertight),
         }
         if bevel_inset > eps:
@@ -13538,9 +13461,9 @@ def _source_box_axis_profile_recess_mesh(
                 "width_cm": float(bevel_inset),
                 "layer_count": 3,
                 "profile_kind": profile_kind,
-                "profile_vertex_count": int(len(profile)),
-                "result_face_count": int(len(candidate.faces)),
-                "result_vertex_count": int(len(candidate.vertices)),
+                "profile_vertex_count": len(profile),
+                "result_face_count": len(candidate.faces),
+                "result_vertex_count": len(candidate.vertices),
                 "result_watertight": bool(candidate.is_watertight),
             }
             candidate.metadata["lathe_analytic_box_profile_cut_bevel"] = profile_bevel
@@ -13555,7 +13478,7 @@ def _source_box_axis_profile_recess_mesh(
             "side": side,
             "line_axis": profile_u_axis,
             "width_axis": profile_v_axis,
-            "opening_profile_point_count": int(len(profile)),
+            "opening_profile_point_count": len(profile),
             "opening_width_cm": float(profile[:, 0].max() - profile[:, 0].min()),
             "opening_height_cm": float(profile[:, 1].max() - profile[:, 1].min()),
             "bevel_width_cm": float(bevel_inset),
@@ -13567,8 +13490,8 @@ def _source_box_axis_profile_recess_mesh(
             "front_coordinate_cm": float(front_coord),
             "profile_cut_state": profile_cut_state,
             "exact_boolean": exact_boolean,
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         return candidate, modifier, None
@@ -13635,10 +13558,8 @@ def _mesh_with_vertices(source_mesh: Any, vertices: Any):
     )
     mesh.remove_unreferenced_vertices()
     mesh.merge_vertices()
-    try:
+    with suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         mesh.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     return mesh
 
 
@@ -13665,10 +13586,10 @@ def _mesh_for_deform_source(
         if segments < 1:
             raise ValueError("parameter 'segments' must be >= 1")
         segments = min(segments, 64)
-        levels = max(1, min(6, int(math.ceil(math.log2(float(segments))))))
+        levels = max(1, min(6, math.ceil(math.log2(float(segments)))))
     else:
         segments = 12
-        levels = max(1, min(6, int(math.ceil(math.log2(float(segments))))))
+        levels = max(1, min(6, math.ceil(math.log2(float(segments)))))
     axis_index = _axis_index(axis)
     _, _, span = _axis_span(np.asarray(mesh.vertices, dtype=np.float64), axis_index)
     details: dict[str, Any] = {
@@ -13693,10 +13614,8 @@ def _mesh_for_deform_source(
     refined = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
     refined.remove_unreferenced_vertices()
     refined.merge_vertices()
-    try:
+    with suppress(ValueError, RuntimeError, AttributeError, IndexError, TypeError):
         refined.fix_normals()
-    except (ValueError, RuntimeError, AttributeError, IndexError, TypeError):
-        pass
     if len(refined.vertices) == 0 or len(refined.faces) == 0:
         raise ValueError("sop deform subdivision produced an empty mesh")
     details.update(
@@ -14189,7 +14108,7 @@ def _v1_record_for_sop_bend(
         return tuple(records)
     source_record = source_records[0]
     axis = _optional_string_param(parameters, "axis", "y", allowed={"x", "y", "z"})
-    first, second = _perpendicular_axis_indices(axis)
+    first, _second = _perpendicular_axis_indices(axis)
     direction_axis = _optional_string_param(
         parameters,
         "direction_axis",
@@ -14345,7 +14264,7 @@ def _surface_scatter_samples(
     if "count" in parameters:
         count = _positive_count_param(parameters, "count")
     else:
-        count = int(round(density * surface_area_m2))
+        count = round(density * surface_area_m2)
     if count <= 0:
         raise ValueError(
             "sop.scatter_on_surface density * surface area produced no instances"
@@ -16030,6 +15949,7 @@ def _v1_record_for_sop_transform(
         return record
 
     import trimesh
+
     from ..geometry.shape_ir_lowering import execute_shape_ir_kernel_program
 
     matrix = trimesh.transformations.concatenate_matrices(
@@ -16366,7 +16286,7 @@ def _interpolate_path_point(
     if u >= 1.0:
         return path[-1]
     scaled = u * (len(path) - 1)
-    index = int(math.floor(scaled))
+    index = math.floor(scaled)
     t = scaled - index
     a = path[index]
     b = path[min(index + 1, len(path) - 1)]
@@ -16480,7 +16400,7 @@ def _v1_record_for_sop_carve(
             if u_value >= 1.0:
                 return section_centers[-1], parsed_sections[-1]
             scaled = u_value * (len(section_centers) - 1)
-            index = int(math.floor(scaled))
+            index = math.floor(scaled)
             t = scaled - index
             next_index = min(index + 1, len(section_centers) - 1)
             left_center = section_centers[index]
@@ -16586,8 +16506,8 @@ def _v1_record_for_sop_carve(
             v_value = max(0.0, min(1.0, float(v_value)))
             x = u_value * (nx - 1)
             y = v_value * (ny - 1)
-            x0 = int(math.floor(x))
-            y0 = int(math.floor(y))
+            x0 = math.floor(x)
+            y0 = math.floor(y)
             x1 = min(x0 + 1, nx - 1)
             y1 = min(y0 + 1, ny - 1)
             tx = x - x0
@@ -17003,10 +16923,8 @@ def _v1_record_for_sop_carve(
             )
             if isinstance(upper_clipped, trimesh.Trimesh) and len(upper_clipped.faces) > 0:
                 upper_clipped.remove_unreferenced_vertices()
-                try:
+                with suppress(AttributeError, TypeError, ValueError, RuntimeError):
                     upper_clipped.fix_normals()
-                except (AttributeError, TypeError, ValueError, RuntimeError):
-                    pass
                 exact_slice_mesh = upper_clipped
             else:
                 exact_slice_failure = "empty_or_non_mesh_slice_result"
@@ -18913,7 +18831,7 @@ def _terrain_height_data(
         heights.append(height_row)
 
     if erosion_strength > 0.0:
-        iterations = min(5, max(1, int(math.ceil(erosion_strength * 4.0))))
+        iterations = min(5, max(1, math.ceil(erosion_strength * 4.0)))
         blend = min(0.42, max(0.0, erosion_strength) * 0.28)
         for _ in range(iterations):
             smoothed = [list(row) for row in heights]
@@ -21235,7 +21153,7 @@ def _v1_record_for_solid_tube(
         segments = _int_param(parameters, "segments")
     else:
         segments = 64
-    if segments < 8:  # noqa: PLR2004
+    if segments < 8:
         raise ValueError("parameter 'segments' must be >= 8")
     segments = min(segments, 512)
     axis = _optional_string_param(parameters, "axis", "y", allowed={"x", "y", "z"})
@@ -22941,7 +22859,7 @@ def _v1_record_for_solid_gear(
                 twist_segments = _int_param(parameters, key)
                 break
         else:
-            twist_segments = max(4, int(math.ceil(abs(twist_degrees) / 8.0)))
+            twist_segments = max(4, math.ceil(abs(twist_degrees) / 8.0))
         if twist_segments < 1:
             raise ValueError("parameter 'helix_segments' must be >= 1")
         twist_segments = min(twist_segments, 160)
@@ -24669,7 +24587,7 @@ def _path_point_at(
         return path[0]
     segment_lengths: list[float] = []
     total = 0.0
-    for start, end in zip(path, path[1:]):
+    for start, end in itertools.pairwise(path):
         length = math.sqrt(
             (end[0] - start[0]) ** 2
             + (end[1] - start[1]) ** 2
@@ -24697,7 +24615,7 @@ def _path_point_at(
 
 def _path_length_cm(path: tuple[tuple[float, float, float], ...]) -> float:
     length = 0.0
-    for start, end in zip(path, path[1:]):
+    for start, end in itertools.pairwise(path):
         length += math.sqrt(
             (end[0] - start[0]) ** 2
             + (end[1] - start[1]) ** 2
@@ -24729,10 +24647,10 @@ def _distribution_count_from_controls(
         return _positive_count_param(parameters, key)
     density_per_cm = _optional_positive_distribution_float(parameters, "density_per_cm")
     if density_per_cm is not None:
-        return max(1, int(math.ceil(max(float(measure_cm), 1e-6) * density_per_cm)))
+        return max(1, math.ceil(max(float(measure_cm), 1e-6) * density_per_cm))
     density = _optional_positive_distribution_float(parameters, "density")
     if density is not None:
-        return max(1, int(round(max(1, default_count) * density)))
+        return max(1, round(max(1, default_count) * density))
     return max(1, int(default_count))
 
 
@@ -26861,50 +26779,49 @@ def _distribution_points_for_op(
                 "radial_normal_axis": normal_axis,
                 "radial_plane_axes": [axis_a, axis_b],
             }
+        end_degrees, _end_key = _optional_float_alias(
+            parameters,
+            ("end_angle_degrees", "end_angle_deg", "end_degrees", "end_deg"),
+        )
+        sweep_degrees, _sweep_key = _optional_float_alias(
+            parameters,
+            ("angle_degrees", "angle_deg", "sweep_degrees", "sweep_deg", "arc_degrees", "arc_angle_degrees"),
+        )
+        if end_degrees is None:
+            end_degrees = start_degrees + (180.0 if sweep_degrees is None else float(sweep_degrees))
+        elif sweep_degrees is not None and abs(float(end_degrees) - (start_degrees + float(sweep_degrees))) > 1e-6:
+            raise ValueError("op.distribute arc end_angle_degrees conflicts with angle_degrees/sweep_degrees")
+        end_degrees = float(end_degrees)
+        sweep = end_degrees - start_degrees
+        if abs(sweep) <= 1e-9:
+            raise ValueError("op.distribute arc sweep must be non-zero")
+        end_angle = math.radians(end_degrees)
+        count = _distribution_count_from_controls(
+            parameters,
+            measure_cm=max(abs(end_angle - start_angle) * radius, 1e-6),
+            default_count=4,
+        )
+        if count == 1:
+            angles = ((start_angle + end_angle) * 0.5,)
         else:
-            end_degrees, _end_key = _optional_float_alias(
-                parameters,
-                ("end_angle_degrees", "end_angle_deg", "end_degrees", "end_deg"),
+            angles = tuple(
+                start_angle + (end_angle - start_angle) * index / (count - 1)
+                for index in range(count)
             )
-            sweep_degrees, _sweep_key = _optional_float_alias(
-                parameters,
-                ("angle_degrees", "angle_deg", "sweep_degrees", "sweep_deg", "arc_degrees", "arc_angle_degrees"),
+        return tuple(
+            _add_points(
+                _add_points(center, _axis_center_shift(axis_a, math.cos(angle) * radius)),
+                _axis_center_shift(axis_b, math.sin(angle) * radius),
             )
-            if end_degrees is None:
-                end_degrees = start_degrees + (180.0 if sweep_degrees is None else float(sweep_degrees))
-            elif sweep_degrees is not None and abs(float(end_degrees) - (start_degrees + float(sweep_degrees))) > 1e-6:
-                raise ValueError("op.distribute arc end_angle_degrees conflicts with angle_degrees/sweep_degrees")
-            end_degrees = float(end_degrees)
-            sweep = end_degrees - start_degrees
-            if abs(sweep) <= 1e-9:
-                raise ValueError("op.distribute arc sweep must be non-zero")
-            end_angle = math.radians(end_degrees)
-            count = _distribution_count_from_controls(
-                parameters,
-                measure_cm=max(abs(end_angle - start_angle) * radius, 1e-6),
-                default_count=4,
-            )
-            if count == 1:
-                angles = ((start_angle + end_angle) * 0.5,)
-            else:
-                angles = tuple(
-                    start_angle + (end_angle - start_angle) * index / (count - 1)
-                    for index in range(count)
-                )
-            return tuple(
-                _add_points(
-                    _add_points(center, _axis_center_shift(axis_a, math.cos(angle) * radius)),
-                    _axis_center_shift(axis_b, math.sin(angle) * radius),
-                )
-                for angle in angles
-            ), {
-                "arc_radius_cm": radius,
-                "arc_start_angle_degrees": start_degrees,
-                "arc_end_angle_degrees": end_degrees,
-                "arc_sweep_degrees": sweep,
-                "arc_normal_axis": normal_axis,
-                "arc_plane_axes": [axis_a, axis_b],
-            }
+            for angle in angles
+        ), {
+            "arc_radius_cm": radius,
+            "arc_start_angle_degrees": start_degrees,
+            "arc_end_angle_degrees": end_degrees,
+            "arc_sweep_degrees": sweep,
+            "arc_normal_axis": normal_axis,
+            "arc_plane_axes": [axis_a, axis_b],
+        }
 
     if pattern == "along_path":
         path, path_metadata = _distribution_path_param(parameters)
@@ -27243,7 +27160,7 @@ def _v1_records_for_op_scratch_mask(
     tangent_a, tangent_b = _tangent_axes(normal_axis)
     line_axis = _optional_string_param(parameters, "line_axis", tangent_a, allowed={"x", "y", "z"})
     row_axis = _optional_string_param(parameters, "row_axis", tangent_b, allowed={"x", "y", "z"})
-    if line_axis == normal_axis or row_axis == normal_axis or line_axis == row_axis:
+    if line_axis in (normal_axis, row_axis) or row_axis == normal_axis:
         raise ValueError(
             "line_axis, row_axis, and normal_axis must be distinct for op.scratch_mask"
         )
@@ -27643,7 +27560,7 @@ def _v1_records_for_op_grime_mask(
     tangent_a, tangent_b = _tangent_axes(normal_axis)
     line_axis = _optional_string_param(parameters, "line_axis", tangent_a, allowed={"x", "y", "z"})
     row_axis = _optional_string_param(parameters, "row_axis", tangent_b, allowed={"x", "y", "z"})
-    if line_axis == normal_axis or row_axis == normal_axis or line_axis == row_axis:
+    if line_axis in (normal_axis, row_axis) or row_axis == normal_axis:
         raise ValueError("line_axis, row_axis, and normal_axis must be distinct for op.grime_mask")
     count = int(_optional_float_param(parameters, "count", max(1.0, round(1.0 + amount * 5.0))))
     if count <= 0:
@@ -30290,7 +30207,7 @@ def _v1_record_for_op_trim_band(
         return record
 
     if pattern == "frame":
-        assert frame_height is not None
+        assert frame_height is not None  # noqa: S101 — internal invariant; caller guarantees frame_height is set when pattern=="frame"
         frame_modifier = {
             **modifier,
             "method": "axis_aligned_trim_band_frame_v1",
@@ -30776,8 +30693,8 @@ def _source_box_axis_rect_attachment_mesh(
             "source_min": [float(value) for value in source_min.tolist()],
             "source_max": [float(value) for value in source_max.tolist()],
             "source_extents": [float(value) for value in source_span.tolist()],
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
             "result_body_count": int(candidate.body_count),
         }
@@ -30967,8 +30884,8 @@ def _source_box_axis_weld_seam_attachment_mesh(
             "source_min": [float(value) for value in source_min.tolist()],
             "source_max": [float(value) for value in source_max.tolist()],
             "source_extents": [float(value) for value in source_span.tolist()],
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
             "result_body_count": int(candidate.body_count),
         }
@@ -31235,8 +31152,8 @@ def _source_box_axis_perforated_rect_attachment_mesh(
             "source_min": [float(value) for value in source_min.tolist()],
             "source_max": [float(value) for value in source_max.tolist()],
             "source_extents": [float(value) for value in source_span.tolist()],
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
             "result_body_count": int(candidate.body_count),
         }
@@ -31436,8 +31353,8 @@ def _source_box_axis_panel_frame_attachment_mesh(
             "source_min": [float(value) for value in source_min.tolist()],
             "source_max": [float(value) for value in source_max.tolist()],
             "source_extents": [float(value) for value in source_span.tolist()],
-            "result_face_count": int(len(candidate.faces)),
-            "result_vertex_count": int(len(candidate.vertices)),
+            "result_face_count": len(candidate.faces),
+            "result_vertex_count": len(candidate.vertices),
             "result_watertight": bool(candidate.is_watertight),
         }
         return candidate, modifier, None
@@ -33009,53 +32926,52 @@ def _v1_records_for_op_vent_slats(
                     purpose=op.purpose,
                 )
             )
+        elif len(length_axes) == 1:
+            extents = [float(height), float(height), float(height)]
+            extents[_axis_index(length_axes[0])] = float(length)
+            extents[_axis_index(row_axis)] = float(height)
+            extents[_axis_index(normal_axis)] = float(thickness)
+            slat_source_record = {
+                "primitive_type": "box",
+                "part": op.target or "vent_slats",
+                "center": center,
+                "extents": (extents[0], extents[1], extents[2]),
+                "tags": ["op_vent_slats", "vent_slat", "rectangular_vent_slat"],
+                "blend_mode": blend_mode,
+                "rounding": 0.0,
+                "v2_op": op.op,
+                "v2_purpose": op.purpose,
+                "v2_vent_slats_modifier": {
+                    "count": count,
+                    "spacing_cm": spacing,
+                    "length_cm": length,
+                    "height_cm": height,
+                    "thickness_cm": thickness,
+                    "row_axis": row_axis,
+                    "length_axis": length_axes[0],
+                    "normal_axis": normal_axis,
+                    "slat_shape": slat_shape,
+                    **({"seam_group": seam_group} if seam_group else {}),
+                    **({"face": face} if face else {}),
+                    "method": "rectangular_box_slat_source_v1",
+                    **_metadata_safe_value(placement_metadata),
+                },
+            }
         else:
-            if len(length_axes) == 1:
-                extents = [float(height), float(height), float(height)]
-                extents[_axis_index(length_axes[0])] = float(length)
-                extents[_axis_index(row_axis)] = float(height)
-                extents[_axis_index(normal_axis)] = float(thickness)
-                slat_source_record = {
-                    "primitive_type": "box",
-                    "part": op.target or "vent_slats",
-                    "center": center,
-                    "extents": (extents[0], extents[1], extents[2]),
-                    "tags": ["op_vent_slats", "vent_slat", "rectangular_vent_slat"],
-                    "blend_mode": blend_mode,
-                    "rounding": 0.0,
-                    "v2_op": op.op,
-                    "v2_purpose": op.purpose,
-                    "v2_vent_slats_modifier": {
-                        "count": count,
-                        "spacing_cm": spacing,
-                        "length_cm": length,
+            slat_source_record = _v1_record_for_solid_panel(
+                ShapeOp(
+                    op="solid.panel",
+                    target=op.target or "vent_slats",
+                    parameters={
+                        "width_cm": length,
                         "height_cm": height,
                         "thickness_cm": thickness,
-                        "row_axis": row_axis,
-                        "length_axis": length_axes[0],
-                        "normal_axis": normal_axis,
-                        "slat_shape": slat_shape,
-                        **({"seam_group": seam_group} if seam_group else {}),
-                        **({"face": face} if face else {}),
-                        "method": "rectangular_box_slat_source_v1",
-                        **_metadata_safe_value(placement_metadata),
+                        "center": center,
+                        "axis": normal_axis,
                     },
-                }
-            else:
-                slat_source_record = _v1_record_for_solid_panel(
-                    ShapeOp(
-                        op="solid.panel",
-                        target=op.target or "vent_slats",
-                        parameters={
-                            "width_cm": length,
-                            "height_cm": height,
-                            "thickness_cm": thickness,
-                            "center": center,
-                            "axis": normal_axis,
-                        },
-                        purpose=op.purpose,
-                    )
+                    purpose=op.purpose,
                 )
+            )
         _with_targeted_polybevel(
             slat_source_record,
             seam_group=seam_group or "vent_slat_source_edge",
@@ -34433,7 +34349,7 @@ def _v1_record_for_op_mount_plate(
                 hole_shape_for_exact = "round"
             if source_record is not None and hole_shape_for_exact == "round":
                 hole_modifier = dict(hole_record.get("v2_countersunk_hole_set_modifier") or {})
-                hole_semantic_modifier = dict(hole_record.get("v2_mount_plate_modifier") or modifier)
+                dict(hole_record.get("v2_mount_plate_modifier") or modifier)
                 hole_style = str(hole_modifier.get("style") or "straight")
                 sign = -1.0 if float(placement_metadata.get("normal_sign", hole_normal_sign)) < 0.0 else 1.0
                 axis_index = _axis_index(axis)
@@ -34827,6 +34743,14 @@ def lower_to_v1(
 ) -> V1AdapterResult:
     """Lower a ShapeProgram while scoping kernel-aware ops to ``geometry_kernel``."""
     token = _LOWERING_GEOMETRY_KERNEL.set(geometry_kernel)
+    # Step-3 of the kernel-perf audit: reset the per-call
+    # _metadata_safe_value cache at lower_to_v1 entry. The cache
+    # short-circuits redundant deep walks of the same metadata
+    # sub-structures across the many _v1_record_for_* lowerers and
+    # _kernel_*_record_for_* boolean-record builders, which would
+    # otherwise re-deep-walk the same semantic_metadata trees
+    # millions of times per build.
+    _metadata_safe_value_cache_reset()
     try:
         return _lower_to_v1_with_context(
             program,

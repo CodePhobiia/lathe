@@ -469,7 +469,7 @@ def _try_vhacd_decompose(mesh: trimesh.Trimesh, max_hulls: int) -> list[trimesh.
             if len(v) == 0 or len(f) == 0:
                 continue
             out.append(trimesh.Trimesh(vertices=v, faces=f, process=False))
-        except Exception:
+        except Exception:  # noqa: S112 — best-effort: skip malformed entries during repair
             continue
     return out or None
 
@@ -505,7 +505,7 @@ def create_collision_proxy(executor: Any, **_: Any) -> RepairOperatorResult:
                 hull = comp.convex_hull
                 if isinstance(hull, trimesh.Trimesh) and len(hull.faces) > 0:
                     hulls.append(hull)
-            except Exception:
+            except Exception:  # noqa: S112 — best-effort: skip components whose hull cannot be computed
                 continue
         if not hulls:
             try:
@@ -525,8 +525,8 @@ def create_collision_proxy(executor: Any, **_: Any) -> RepairOperatorResult:
         proxy_records.append(
             {
                 "name": f"hull_{idx:02d}",
-                "vertex_count": int(len(hull.vertices)),
-                "face_count": int(len(hull.faces)),
+                "vertex_count": len(hull.vertices),
+                "face_count": len(hull.faces),
                 "aabb_min": [float(bounds[0, 0]), float(bounds[0, 1]), float(bounds[0, 2])],
                 "aabb_max": [float(bounds[1, 0]), float(bounds[1, 1]), float(bounds[1, 2])],
             }
@@ -639,16 +639,16 @@ def dispatch_operator(name: str, executor: Any, **kwargs: Any) -> RepairOperator
 
 
 __all__ = [
-    "RepairOperatorResult",
     "OPERATOR_REGISTRY",
+    "RepairOperatorResult",
+    "create_collision_proxy",
     "dispatch_operator",
     "enforce_symmetry",
-    "seal_mesh",
-    "retopo_auto",
+    "generate_lods",
+    "normalize_pivots",
+    "rebake_maps",
     "reduce_tris",
     "repack_uvs",
-    "rebake_maps",
-    "normalize_pivots",
-    "create_collision_proxy",
-    "generate_lods",
+    "retopo_auto",
+    "seal_mesh",
 ]

@@ -292,7 +292,7 @@ def integration_config_for_family(
     if strategy not in VALID_MESHING_STRATEGIES:
         strategy = "auto"
 
-    legacy_hero = family in _LEGACY_EXACT_FAMILIES
+    legacy_hero = family in _LEGACY_EXACT_FAMILIES  # no-family-dispatch: legacy hero-family allowlist for the exact-meshing default path; migrate to a capability tag (e.g. ``intent.tags`` containing ``hero_exact_mesh``) once the StyleKnowledge pack carries that intent
     authoring_exact, authoring_exact_reason = _shape_authoring_requests_exact(
         primitives,
         shape_signature,
@@ -330,7 +330,7 @@ def integration_config_for_family(
     else:
         pitch = 2.6
         blur_sigma = 0.16
-    if family == "courier_drone":
+    if family == "courier_drone":  # no-family-dispatch: pitch tuning ride-along for the courier_drone legacy fixture; migrate to a parameter-prior on the StyleKnowledge pack when pitch becomes a dimension there
         pitch *= 1.05
     if use_exact:
         if component_assembly_mode:

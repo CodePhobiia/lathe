@@ -32,7 +32,6 @@ from dataclasses import FrozenInstanceError
 from typing import Any
 
 import pytest
-
 from lathe.asset_quality.construction_graph import (
     CONSTRUCTION_GRAPH_VERSION,
     EDGE_TYPES,
@@ -43,7 +42,6 @@ from lathe.asset_quality.construction_graph import (
     evaluate_construction_graph,
     extract_construction_graph,
 )
-
 
 _EXPECTED_PAYLOAD_KEYS: frozenset[str] = frozenset(
     {
@@ -125,8 +123,11 @@ def test_semantic_construction_graph_dataclass_is_frozen() -> None:
         graph.family = "mechanical_door"  # type: ignore[misc]
 
 
-def test_node_types_has_exactly_fifteen_members() -> None:
-    assert len(NODE_TYPES) == 15
+def test_node_types_has_exactly_twenty_members() -> None:
+    """Cycle 3 expanded NODE_TYPES to 20: 15 from the original master
+    prompt plus 5 added when the procedural synthesizer's generator
+    stream landed (bracket, vent, conduit, latch, weld)."""
+    assert len(NODE_TYPES) == 20
 
 
 def test_edge_types_has_exactly_ten_members() -> None:
@@ -134,7 +135,9 @@ def test_edge_types_has_exactly_ten_members() -> None:
 
 
 def test_node_types_match_master_prompt() -> None:
-    assert NODE_TYPES == frozenset(
+    """Cycle 3 superset: original 15 + 5 added with the hard-surface
+    generator stream (bracket, vent, conduit, latch, weld)."""
+    assert frozenset(
         {
             "primary_volume",
             "frame",
@@ -151,12 +154,17 @@ def test_node_types_match_master_prompt() -> None:
             "decal_zone",
             "wear_zone",
             "material_zone",
+            "bracket",
+            "vent",
+            "conduit",
+            "latch",
+            "weld",
         }
-    )
+    ) == NODE_TYPES
 
 
 def test_edge_types_match_master_prompt() -> None:
-    assert EDGE_TYPES == frozenset(
+    assert frozenset(
         {
             "attached_to",
             "inset_into",
@@ -169,7 +177,7 @@ def test_edge_types_match_master_prompt() -> None:
             "wears_on",
             "material_bound_to",
         }
-    )
+    ) == EDGE_TYPES
 
 
 def test_to_dict_round_trips_tuples_to_lists_and_preserves_dicts() -> None:
@@ -228,7 +236,12 @@ def test_extract_industrial_crate_baseline_yields_six_nodes_with_canonical_types
     types_by_id = {node.node_id: node.node_type for node in graph.nodes}
     assert types_by_id == {
         "body": "primary_volume",
-        "latch_plate": "inset",
+        # latch_plate classifies as "latch" since Cycle 3 added the
+        # latch NODE_TYPE; the substring rule for "latch" precedes the
+        # fallback "panel"/"inset" rules. Either is semantically valid
+        # for a crate's latch plate — the latch generator decomposes
+        # into a plate + arm so the higher-level intent is preserved.
+        "latch_plate": "latch",
         "handle_l": "handle",
         "handle_r": "handle",
         "foot_l": "mount",
@@ -331,16 +344,19 @@ def test_substring_rule_precedence_first_match_wins() -> None:
     that contains tokens from multiple rules resolves to the *earliest*
     matching rule's type.
 
-    ``latch_panel`` contains both ``panel`` (rule #4) and ``latch``
-    (rule #16); first-match-wins resolves it to ``panel``. Phase 5+ may
-    add new tokens and reorder rules — this test pins the precedence so
-    a refactor cannot silently flip the outcome.
+    Cycle 3 promoted ``latch`` to a proper NODE_TYPE with its own
+    generator; the substring rule for ``latch`` now precedes ``panel``
+    in the dispatch tuple. ``latch_panel`` → ``latch`` (first-match
+    wins). The latch generator decomposes into a plate + arm, so the
+    semantic intent of a "latch panel" is preserved one level down.
     """
     from lathe.asset_quality.construction_graph import _classify_part
 
-    assert _classify_part("latch_panel") == "panel"
-    # Sanity checks for the two reference single-token cases:
-    assert _classify_part("latch_plate") == "inset"
+    assert _classify_part("latch_panel") == "latch"
+    # Sanity checks: latch_plate now classifies as latch (the part
+    # IS a latch component), and front_panel still classifies as
+    # panel since no earlier-rule substring matches.
+    assert _classify_part("latch_plate") == "latch"
     assert _classify_part("front_panel") == "panel"
 
 

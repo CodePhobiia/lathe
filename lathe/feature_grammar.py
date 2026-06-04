@@ -18,17 +18,17 @@ from .feature_ops import (
     arch_opening_features,
     barrel_module_features,
     blade_module_features,
-    cable_attachment_features,
     bolt_grid_features,
     brass_band_rivets_features,
+    cable_attachment_features,
     clasp_set_features,
     column_set_features,
     corner_guard_features,
     edge_break_features,
     fastener_strip_features,
     fin_attachment_features,
-    guard_bar_attachment_features,
     groove_channel_features,
+    guard_bar_attachment_features,
     handle_bar_attachment_features,
     hinge_set_features,
     hull_keel_features,
@@ -36,25 +36,21 @@ from .feature_ops import (
     layer_plate_features,
     leg_module_features,
     linear_detail_array_features,
+    ornament_attachment_features,
     outset_panel_features,
-    panel_seam_features,
     panel_frame_features,
+    panel_seam_features,
     pipe_run_features,
     power_cell_module_features,
     radial_detail_array_features,
+    rail_attachment_features,
     raised_ridge_features,
     recessed_handle_features,
     rib_features,
-    rail_attachment_features,
     rotor_shroud_features,
+    screen_bezel_features,
     sensor_pod_module_features,
     shield_plate_module_features,
-    socket_point_features,
-    screen_bezel_features,
-    support_bracket_features,
-    strap_attachment_features,
-    stair_step_features,
-    structural_frame_features,
     silhouette_blade_features,
     silhouette_guard_cowl_features,
     silhouette_handle_features,
@@ -62,11 +58,15 @@ from .feature_ops import (
     silhouette_spine_features,
     silhouette_tower_features,
     silhouette_wing_features,
+    socket_point_features,
+    stair_step_features,
+    strap_attachment_features,
+    structural_frame_features,
+    support_bracket_features,
     trim_band_features,
     trim_strip_features,
-    ornament_attachment_features,
-    vent_stack_attachment_features,
     vent_grille_features,
+    vent_stack_attachment_features,
     wheel_pair_features,
     wing_module_features,
 )
@@ -76,8 +76,8 @@ from .geometry_detail import (
     GeometryDetailControls,
     geometry_detail_controls_from_authoring,
 )
-from .shape_ir import ShapeIR, ShapePrimitive
 from .shape_authoring_context import ShapeAuthoringContext, authoring_context_from_asset_graph
+from .shape_ir import ShapeIR, ShapePrimitive
 
 HIGH_FEATURE_DENSITY = 0.95
 
@@ -122,12 +122,12 @@ def _feature_density_cap(feature: ShapePrimitive, context: ShapeAuthoringContext
         return None
     kind = _feature_kind(feature).lower()
     if any(token in kind for token in ("fastener", "bolt", "rivet", "socket")):
-        return max(1, int(round(4 * multiplier)))
+        return max(1, round(4 * multiplier))
     if any(token in kind for token in ("vent", "slat", "grille", "rib")):
-        return max(1, int(round(3 * multiplier)))
+        return max(1, round(3 * multiplier))
     if any(token in kind for token in ("trim", "frame", "panel", "groove", "ridge")):
-        return max(1, int(round(2 * multiplier)))
-    return max(1, int(round(2 * multiplier)))
+        return max(1, round(2 * multiplier))
+    return max(1, round(2 * multiplier))
 
 
 def _annotate_feature_with_authoring(
@@ -848,11 +848,11 @@ def _detail_features_for_scope(
     radial_count = min(12, _zone_int(zone, "radial_detail_repeats", controls.radial_detail_repeats))
     attachment_count = min(10, _zone_int(zone, "attachment_count", controls.attachment_count))
     if attachment_motifs and attachment_count <= 0:
-        attachment_count = min(6, max(2, int(round(density * 2.0))))
+        attachment_count = min(6, max(2, round(density * 2.0)))
     module_count = min(8, _zone_int(zone, "module_count", controls.module_count))
     if module_categories and module_count <= 0:
-        module_count = min(5, max(1, int(round(density * 1.75))))
-    silhouette_count = min(4, max(1, int(round(max(density, 0.5) * controls.silhouette_intensity))))
+        module_count = min(5, max(1, round(density * 1.75)))
+    silhouette_count = min(4, max(1, round(max(density, 0.5) * controls.silhouette_intensity)))
     array_axis = _zone_str(zone, "detail_array_axis", controls.detail_array_axis)
 
     features: list[ShapePrimitive] = []
@@ -932,7 +932,7 @@ def _detail_features_for_scope(
             _structural_geometry_motif_features(
                 component,
                 structural_motifs=structural_motifs,
-                count=max(2, int(round(density * 3.0))),
+                count=max(2, round(density * 3.0)),
                 depth_scale=depth_scale,
                 thickness_scale=thickness_scale,
             )
@@ -1251,7 +1251,7 @@ def _motif_count(
 def _detail_count(control_value: float, density: float, *, base: int, limit: int) -> int:
     if control_value <= 0.0 or density <= 0.0:
         return 0
-    return min(limit, max(0, int(round(base + control_value * density * 2.0))))
+    return min(limit, max(0, round(base + control_value * density * 2.0)))
 
 
 def _zone_float(zone: DetailZoneSpec | None, field: str, fallback: float) -> float:
@@ -1447,12 +1447,12 @@ def _multi_octave_features(
         # opt-in via an authored high/hero/dense feature-density request.
         if feature_density not in {"high", "hero", "dense", "ultra"} and density_multiplier < 1.25:
             return []
-        secondary_target = max(2, min(5, int(round(2 * density_multiplier))))
+        secondary_target = max(2, min(5, round(2 * density_multiplier)))
         tertiary_per_secondary = 0
     else:
         # cinematic: still visibly richer than hero, but tuned down from
         # the original 12-per-primary which inflated surface variance metrics.
-        secondary_target = max(4, min(8, int(round(4 * density_multiplier))))
+        secondary_target = max(4, min(8, round(4 * density_multiplier)))
         tertiary_per_secondary = 1
 
     octave: list[ShapePrimitive] = []
@@ -1479,7 +1479,7 @@ def _multi_octave_features(
 
         # Rivet count scales with the primary's length.
         density_factor = min(1.4, max(0.5, long_span / 8.0))
-        rivet_count = max(2, min(secondary_target, int(round(secondary_target * density_factor))))
+        rivet_count = max(2, min(secondary_target, round(secondary_target * density_factor)))
 
         # Rivet size: tiny relative to short span and long span.
         rivet_radius = max(min(short_span * 0.18, long_span * 0.04, 0.40), 0.10)

@@ -55,9 +55,9 @@ def _tangent_normal_rgb(x: int = 128, y: int = 128) -> tuple[int, int, int]:
         nx *= scale
         ny *= scale
     nz = math.sqrt(max(0.0, 1.0 - min(0.95, nx * nx + ny * ny)))
-    out_x = int(round((nx * 0.5 + 0.5) * 255.0))
-    out_y = int(round((ny * 0.5 + 0.5) * 255.0))
-    out_z = int(round((nz * 0.5 + 0.5) * 255.0))
+    out_x = round((nx * 0.5 + 0.5) * 255.0)
+    out_y = round((ny * 0.5 + 0.5) * 255.0)
+    out_z = round((nz * 0.5 + 0.5) * 255.0)
     return (
         max(0, min(255, out_x)),
         max(0, min(255, out_y)),
@@ -132,7 +132,7 @@ def _generated_chart_sidecar_maps(
         notch_count = min(32, max(2, edge_count))
         step = chart_size / float(notch_count + 1)
         for notch in range(1, notch_count + 1):
-            x = int(round(notch * step))
+            x = round(notch * step)
             strength = 120 + int((_stable_byte(f"{chart_id}:{notch}", 0) / 255.0) * 80.0)
             trim_draw.line((x, y0 + 3, x, y1 - 3), fill=strength, width=1)
             wear_draw.line((x, y0, x, y0 + int((y1 - y0) * 0.22)), fill=180, width=1)
@@ -181,8 +181,8 @@ def _generated_chart_packed_atlas(
     if not chart_items:
         return {}
     atlas_size = max(128, min(1024, int(target_size // 2) if target_size else 512))
-    columns = max(1, int(math.ceil(math.sqrt(len(chart_items)))))
-    rows = max(1, int(math.ceil(len(chart_items) / columns)))
+    columns = max(1, math.ceil(math.sqrt(len(chart_items))))
+    rows = max(1, math.ceil(len(chart_items) / columns))
     cell_w = max(1, atlas_size // columns)
     cell_h = max(1, atlas_size // rows)
     atlas_dir = pack_dir / "generated_surface_chart_atlas"

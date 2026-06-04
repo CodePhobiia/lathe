@@ -110,7 +110,7 @@ def evaluate_texel_density_consistency(
             "mean_density": round(float(np.mean(density)), 6),
             "median_density": round(float(np.median(density)), 6),
             "uv_mapped_face_count": int(np.sum(valid)),
-            "total_face_count": int(len(faces)),
+            "total_face_count": len(faces),
             "warn_threshold": _WARN_THRESHOLD,
         },
     }

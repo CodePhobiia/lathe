@@ -12,8 +12,8 @@ the same :class:`AssemblyTree`.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import random
+from dataclasses import dataclass, field
 from typing import Any
 
 from .productions import (
@@ -26,7 +26,6 @@ from .productions import (
     Rotate,
     Scale,
     Split,
-    SplitItem,
     Terminal,
     Translate,
 )
@@ -47,7 +46,7 @@ class InitialShape:
     rotation: tuple[str, float] = ("z", 0.0)
     extruded: bool = False
 
-    def with_axis_size(self, axis: str, size: float, offset: float) -> "InitialShape":
+    def with_axis_size(self, axis: str, size: float, offset: float) -> InitialShape:
         x, y, z = self.position
         if axis == "x":
             return InitialShape(
@@ -87,7 +86,7 @@ class ProductionNode:
     kind: str  # "rule" | "split" | "repeat" | "choose" | "extrude" | "transform" | "terminal"
     label: str
     shape: InitialShape
-    children: list["ProductionNode"] = field(default_factory=list)
+    children: list[ProductionNode] = field(default_factory=list)
     terminal: Terminal | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 

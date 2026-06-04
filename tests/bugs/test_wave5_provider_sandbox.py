@@ -21,12 +21,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from lathe.asset_quality.vision_critique import _safe_config_keys
 from lathe.parser import LatheParseError, parse_file
 from lathe.parser.imports import _MAX_IMPORT_DEPTH
 from lathe.sandbox import blender as sandbox_blender
-
 
 # --- M6 -------------------------------------------------------------
 
@@ -56,7 +54,6 @@ def test_manifold_fallback_records_attempted_report() -> None:
     integration_report must preserve the original failure under ``attempted``.
     """
     import trimesh
-
     from lathe import scaffold_compiler
     from lathe.asset_graph import AssetGraph
     from lathe.fidelity import FidelityProfile
