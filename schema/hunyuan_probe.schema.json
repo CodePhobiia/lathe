@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schemas/hunyuan_probe-v1.json",
+  "title": "Hunyuan Probe Health Response v1",
+  "description": "JSON body returned by a Hunyuan shape-provider HTTP endpoint at GET /health, parsed by lathe/capabilities.py::probe_hunyuan_endpoint. Trust boundary: response is network-sourced. additionalProperties:true lets endpoint implementations attach diagnostic fields; unknown keys are warned but not rejected so probe doesn't break on upstream field additions.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "status": {
+      "description": "Free-form status label reported by the endpoint (e.g. 'ok', 'ready', 'degraded').",
+      "type": "string",
+      "maxLength": 64
+    },
+    "version": {
+      "description": "Version string advertised by the service.",
+      "type": "string",
+      "maxLength": 128
+    },
+    "service": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "model": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "uptime_s": {
+      "type": "number",
+      "minimum": 0
+    },
+    "queue_depth": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gpu": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "raw": {
+      "description": "Present only when the response body was not a JSON object (populated by the probe, not the server).",
+      "type": "string",
+      "maxLength": 65536
+    }
+  }
+}

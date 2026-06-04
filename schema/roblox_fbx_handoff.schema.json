@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/roblox-fbx-handoff-v1.json",
+  "title": "Lathe Wonder Roblox FBX Handoff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "stack_id",
+    "scene_id",
+    "status",
+    "source_glb",
+    "roblox_manifest",
+    "recommended_tool",
+    "units",
+    "identity_requirement"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.roblox_fbx_handoff.v1"
+    },
+    "stack_id": {
+      "const": "lathe.stack.roblox_asset_kit_v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "status": {
+      "const": "handoff_required"
+    },
+    "source_glb": {
+      "$ref": "#/$defs/relative_path"
+    },
+    "roblox_manifest": {
+      "$ref": "#/$defs/relative_path"
+    },
+    "recommended_tool": {
+      "type": "string",
+      "minLength": 1
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "length"
+      ],
+      "properties": {
+        "length": {
+          "const": "studs"
+        }
+      }
+    },
+    "identity_requirement": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "(^/|^[A-Za-z]:)"
+      }
+    }
+  }
+}

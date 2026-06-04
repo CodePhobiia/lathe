@@ -1,0 +1,6633 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Declarative language + reference compiler for 3D asset intent">
+      
+      
+      
+        <link rel="canonical" href="https://talmerri.github.io/lathe/release/release-gates-v0.2.0rc1/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Release gates — v0.2.0rc1 - Lathe</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#release-gates-v020rc1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Lathe" class="md-header__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Lathe
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Release gates — v0.2.0rc1
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../cli_reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../canonical_commands/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Commands
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Troubleshooting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../product_value/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Product Value
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../gallery/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Gallery
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quality_dashboard/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quality Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../deterministic_builds/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deterministic Builds
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../wonder-readiness/00_overview/" class="md-tabs__link">
+          
+  
+  
+  Wonder Readiness
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorial/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cookbook/" class="md-tabs__link">
+          
+  
+  
+  Cookbook
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adr/" class="md-tabs__link">
+          
+  
+  
+  Decisions
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language_reference/" class="md-tabs__link">
+          
+  
+  
+  Language Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/cli/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../spec/lathe-v0.1/" class="md-tabs__link">
+          
+  
+  
+  Specs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Release
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../privacy/" class="md-tabs__link">
+          
+  
+  
+  Legal and privacy
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Lathe" class="md-nav__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Lathe
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../canonical_commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../product_value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Value
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gallery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quality_dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deterministic_builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deterministic Builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder Readiness
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wonder Readiness
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/00_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/01_dream_brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dream Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/02_scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/03_scene_patch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Patch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/04_render_inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/05_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/07_scene_build_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Build Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/08_scene_package/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/pre_wonder_baseline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pre-Wonder Baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/phase0_working_tree_classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 0 Working Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/09_scene_validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/10_render_repair_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Repair Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/11_curiosity_anchors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Curiosity Anchors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/12_world_memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/13_branching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Branching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/14_roblox_profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roblox Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/15_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/16_limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/first_asset/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first asset
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/second_asset_reconstruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/fallback_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fallback provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/learned_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learned provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/engine_export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engine export workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/deep_dive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deep dive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookbook
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Cookbook
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/01_generate_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 Generate flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/02_reconstruct_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/03_kit_assembly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 Kit assembly
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/04_mobile_adapt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 Mobile adapt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/05_surface_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 Surface control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/06_variant_patching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 Variant patching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/07_custom_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 Custom backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/08_runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/09_certification_debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 Certification debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/10_blender_bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 Blender bridge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/reading_a_trace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading a trace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/per_validator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-validator reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/runtime_config_schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/stage_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/shape_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape stage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0000-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0001-shape-handoff-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0001 Shape handoff contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0002-blender-and-xatlas-fallback-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0002 Blender and xatlas fallback policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0003-provider-mux-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0003 Provider mux design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0004-plugin-entry-points/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0004 Plugin entry points
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0005-layering-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0005 Layering enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0006-validator-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0006 Validator composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0007-resolver-loc-exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0007 Resolver LOC exception
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0008-geometry-kernel-manifold/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0008 Geometry kernel Manifold
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0009-public-contract-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0009 Public contract index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0010-experimental-scene-source-language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0010 Experimental scene source language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0011-roblox-export-lane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0011 Roblox export lane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0012-wonder-service-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0012 Wonder service boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0013-wonder-layer-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0013 Wonder Layer boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_15" id="__nav_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated current reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schema_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalized schema reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../v08_language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v0.8
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16" id="__nav_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/normalizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/checker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/planner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/executor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/capabilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/wonder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scene/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_14" id="__nav_16_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Shape
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/asset_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_kernel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly kernel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scaffold_compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaffold compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature grammar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mesh_finalize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mesh finalize
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_15" id="__nav_16_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IR modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    IR modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/fit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/transfer_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transfer IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/kit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reuse_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reuse IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reference_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_16" id="__nav_16_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Surface
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/materials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Materials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pbr_deriver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PBR deriver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/texture_control_pack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Texture control pack
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/surface_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_17" id="__nav_16_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validators
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validators
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/semantic_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semantic quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/visual_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/flow_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flow quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/surface_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/silhouette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Silhouette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_18" id="__nav_16_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/bridge/blender_plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blender plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stdlib/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stdlib
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_17" id="__nav_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Specs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spec/lathe-v0.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language v0.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.0-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.2-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Maintenance and triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dependency_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_19" >
+        
+          
+          <label class="md-nav__link" for="__nav_19" id="__nav_19_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_19_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_19">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Release
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quality-bar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality bar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasklist_milestones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Readiness milestones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../asset-provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-note-value-guidance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release-note value guidance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_20" >
+        
+          
+          <label class="md-nav__link" for="__nav_20" id="__nav_20_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal and privacy
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_20_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_20">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Legal and privacy
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy notice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../terms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms applicability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-type-checking-mypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Type checking — mypy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Type checking — mypy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-top-error-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Top error categories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-subpackages-with-most-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Subpackages with most errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-gradual-typing-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Gradual typing plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-existing-claims-to-revisit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Existing claims to revisit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-dependency-vulnerability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Dependency vulnerability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Dependency vulnerability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lxml-cve-2026-41066" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 lxml — CVE-2026-41066
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-pip-cve-2026-3219" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 pip — CVE-2026-3219
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-re-run-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Re-run plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-security-scanners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Security scanners
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Security scanners">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-bandit-findings-full-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Bandit findings (full list)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-gitleaks-semgrep-codeql-requires-human" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Gitleaks / Semgrep / CodeQL — requires-human
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-lint-ruff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Lint — ruff
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-tests-pytest-default-lane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tests — pytest default lane
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Tests — pytest default lane">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-ci-lanes-requires-human" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 CI lanes — requires-human
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-docs-mkdocs-strict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Docs — mkdocs --strict
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-package-link-to-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Package — link to Phase 3
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-ci-branch-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. CI + branch protection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. CI + branch protection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-verification-commands-run-after-branch-push" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Verification commands (run after branch push)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-expected-required-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Expected required checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-requires-human-items-in-this-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 requires-human items in this section
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-ci-links-post-push-requires-human" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. CI links (post-push, requires-human)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-cross-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Cross-references
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-new-requires-human-items-raised-in-this-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. New requires-human items raised in this pass
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-release-exceptions-raised-in-this-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Release exceptions raised in this pass
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-new-requires-fix-before-launch-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. New requires-fix-before-launch items
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="release-gates-v020rc1">Release gates — v0.2.0rc1<a class="headerlink" href="#release-gates-v020rc1" title="Permanent link">&para;</a></h1>
+<p><strong>Version:</strong> 0.2.0rc1 (pre-release reference compiler scaffold)
+<strong>Captured:</strong> 2026-04-28
+<strong>Owner:</strong> Tal Merri (@talmerri)
+<strong>Worktree:</strong> <code>.claude/worktrees/readiness-pass-v020rc1/</code> (paths in this
+document are written relative to the repo root unless otherwise noted)
+<strong>Branch:</strong> <code>worktree-readiness-pass-v020rc1</code>
+<strong>Scope:</strong> Phase 6 of the v0.2.0rc1 readiness remediation pass — record
+every release-gate decision (mypy, dependency vulns, security scanners,
+lint, tests, docs, package, branch protection) with evidence paths,
+exception cross-references, and <code>requires-human</code> follow-ups.</p>
+<p>This document is the canonical Phase-6 gate record. The aggregator doc
+(<code>docs/release/evidence-v0.2.0rc1.md</code> Phase 6 section) cross-links to it.
+Release exceptions accepted in this pass are registered in
+<code>docs/release/decision-log-v0.2.0rc1.md</code>.</p>
+<p>Nothing in this document changes the release timeline; v0.2.0rc1 remains
+under the launch freeze recorded in
+<code>docs/release/evidence-v0.2.0rc1.md</code> until every Phase 0–18 task in
+<code>readiness-tasks.md</code> is green or has a recorded exception.</p>
+<hr />
+<h2 id="1-type-checking-mypy">1. Type checking — mypy<a class="headerlink" href="#1-type-checking-mypy" title="Permanent link">&para;</a></h2>
+<h3 id="11-result">1.1 Result<a class="headerlink" href="#11-result" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Command: <code>.venv/Scripts/python.exe -m mypy lathe/</code> (run from the
+  worktree root)</li>
+<li>Config: <code>pyproject.toml [tool.mypy]</code> — <code>python_version = "3.11"</code>,
+  <code>strict = false</code>, <code>disallow_untyped_defs = true</code>,
+  <code>check_untyped_defs = true</code>, <code>warn_unused_ignores = true</code>,
+  <code>warn_redundant_casts = true</code>. The override block disables
+  <code>import-untyped</code> for <code>trimesh.*</code>, <code>lark.*</code>, <code>xatlas.*</code>, <code>torch.*</code>,
+  <code>torchvision.*</code>.</li>
+<li>Outcome: <strong>fail</strong> (<code>exit_code = 1</code>).</li>
+<li>Reported: <strong>217 errors in 81 files</strong> (out of 219 source files checked).</li>
+<li>Evidence: <code>evidence-bundle-v0.2.0rc1/mypy.txt</code>.</li>
+</ul>
+<h3 id="12-decision">1.2 Decision<a class="headerlink" href="#12-decision" title="Permanent link">&para;</a></h3>
+<p><strong>Decision: not-blocking-for-rc1.</strong> A new release exception is added in
+<code>decision-log-v0.2.0rc1.md</code>:</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EXC-PHASE6-MYPY-001</code></td>
+<td>full <code>mypy lathe/</code> is not a blocking gate for v0.2.0rc1</td>
+</tr>
+</tbody>
+</table>
+<p>See the decision log for the full row (rationale, owner, impact, workaround,
+removal target). The short version: this is a pre-release scaffold; full
+strict typing is tracked as the long-term plan in
+<code>docs/next_version_roadmap.md</code> (E13). Blocking on full mypy now would force
+out-of-scope-for-rc1 work.</p>
+<h3 id="13-top-error-categories">1.3 Top error categories<a class="headerlink" href="#13-top-error-categories" title="Permanent link">&para;</a></h3>
+<p>Aggregated from <code>mypy.txt</code>:</p>
+<table>
+<thead>
+<tr>
+<th>category</th>
+<th>count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no-untyped-def</code></td>
+<td>61</td>
+</tr>
+<tr>
+<td><code>arg-type</code></td>
+<td>56</td>
+</tr>
+<tr>
+<td><code>var-annotated</code></td>
+<td>24</td>
+</tr>
+<tr>
+<td><code>assignment</code></td>
+<td>18</td>
+</tr>
+<tr>
+<td><code>attr-defined</code></td>
+<td>13</td>
+</tr>
+<tr>
+<td><code>misc</code></td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>union-attr</code></td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>unused-ignore</code></td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>return-value</code></td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>call-arg</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td>other (<code>valid-type</code>, <code>import-untyped</code>, <code>call-overload</code>, <code>index</code>, <code>import-not-found</code>, <code>override</code>)</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-subpackages-with-most-errors">1.4 Subpackages with most errors<a class="headerlink" href="#14-subpackages-with-most-errors" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>subpackage</th>
+<th>files with errors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lathe/cli</code></td>
+<td>24</td>
+</tr>
+<tr>
+<td><code>lathe/core</code></td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>lathe/scaffolds</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>lathe/providers</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>lathe/geometry</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>lathe/reports</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>lathe/shape</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>lathe/parser</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>lathe/publish</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>lathe/blender</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>lathe/validators</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>lathe/engine_manifests</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>(37 single-file modules)</td>
+<td>1 each</td>
+</tr>
+</tbody>
+</table>
+<h3 id="15-gradual-typing-plan">1.5 Gradual typing plan<a class="headerlink" href="#15-gradual-typing-plan" title="Permanent link">&para;</a></h3>
+<p>The following sub-packages are proposed as the <strong>first wave</strong> to reach
+mypy-clean before v0.2.0 final, ordered by existing test coverage and
+public-surface risk. They are deliberately small, well-tested, and form
+public-ish boundaries so the typing investment does the most work.</p>
+<ol>
+<li><code>lathe/parser/</code> — language-grammar boundary; small, regression-tested,
+   public surface for users authoring <code>.lth</code>. (Currently 2 files with
+   errors.)</li>
+<li><code>lathe/runtime_config.py</code> — provider-config boundary; covered by
+   <code>tests/test_runtime_config.py</code> and the <code>provider_config</code> coverage gate
+   in <code>[tool.lathe.coverage_gates]</code> (<code>fail_under = 75</code>).</li>
+<li><code>lathe/net.py</code> — egress boundary; covered by the <code>security</code> coverage
+   gate (<code>fail_under = 75</code>). Wrong typing here can leak credentials.</li>
+<li><code>lathe/telemetry.py</code> — privacy-sensitive; covered by the <code>telemetry</code>
+   coverage gate (<code>fail_under = 80</code>).</li>
+<li><code>lathe/publish/</code> — release-pipeline boundary; covered by the <code>security</code>
+   coverage gate. Two files currently emit errors.</li>
+</ol>
+<p>Wave 2 (after wave 1 lands and CI gates them): <code>lathe/checker/</code> (per the
+70% coverage gate), <code>lathe/planner.py</code> (90% gate), <code>lathe/resolver.py</code>
+(90% gate), then <code>lathe/cli/</code> last because of its size (24 affected files).</p>
+<p>The gradual-typing plan is not enforced by CI in this RC. Tracking issue:
+<code>requires-human: open a tracking issue named "v0.2.0 final: mypy clean
+wave 1 (parser, runtime_config, net, telemetry, publish)" and link it
+from</code>docs/next_version_roadmap.md<code>E13.</code></p>
+<h3 id="16-existing-claims-to-revisit">1.6 Existing claims to revisit<a class="headerlink" href="#16-existing-claims-to-revisit" title="Permanent link">&para;</a></h3>
+<p>A grep of the repository for "type checking passes", "mypy passes",
+"type-checked", "fully typed", "strictly typed" surfaces only one stale
+claim:</p>
+<ul>
+<li><code>tasklist.md:28</code> — <code>- [x] Type checking passes for the supported typed surface.</code>
+  This claim is consistent with our exception scope — <code>disallow_untyped_defs</code>
+  errors are NOT a "supported typed surface" claim violation per se, since
+  the supported surface is undefined. However, the line is ambiguous and
+  should be reworded once the gradual-typing plan above lands. This pass
+  does NOT modify <code>tasklist.md</code> (out of scope for the Phase 6 worker).
+  Tracked as a follow-up <code>requires-human: H45</code> (see § 11 below).</li>
+</ul>
+<p><code>README.md</code>, <code>CHANGELOG.md</code>, <code>docs/release/*</code>, <code>docs/lathe_prd.md</code>,
+<code>docs/release/support-matrix.md</code>, <code>docs/quality_dashboard.md</code>,
+<code>docs/plan_completeness.md</code>, and <code>docs/contributing.md</code> mention mypy but
+do NOT make a "type checking passes" claim. No additional doc updates
+are needed in this pass.</p>
+<hr />
+<h2 id="2-dependency-vulnerability">2. Dependency vulnerability<a class="headerlink" href="#2-dependency-vulnerability" title="Permanent link">&para;</a></h2>
+<p>Phase 3 captured the canonical pip-audit transcripts in
+<code>evidence-bundle-v0.2.0rc1/pip-audit-runtime.txt</code> and <code>pip-audit-dev.txt</code>.
+Both transcripts identify two CVEs:</p>
+<table>
+<thead>
+<tr>
+<th>package</th>
+<th>version</th>
+<th>id</th>
+<th>fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lxml</code></td>
+<td>5.4.0</td>
+<td>CVE-2026-41066</td>
+<td>6.1.0</td>
+</tr>
+<tr>
+<td><code>pip</code></td>
+<td>26.0.1</td>
+<td>CVE-2026-3219</td>
+<td>(no Fix Versions in pip-audit DB)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="21-lxml-cve-2026-41066">2.1 lxml — CVE-2026-41066<a class="headerlink" href="#21-lxml-cve-2026-41066" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Investigation: <code>evidence-bundle-v0.2.0rc1/lxml-investigation.txt</code>.</li>
+<li>Disposition: <strong>NOT a release blocker. NO release exception required.</strong></li>
+<li>Why: <code>lxml</code> is <strong>not declared anywhere</strong> in <code>pyproject.toml</code>
+  (<code>dependencies</code> or any <code>optional-dependencies.*</code>) or any <code>requirements*.txt</code>,
+  and is <strong>not imported anywhere</strong> in <code>lathe/</code> or <code>scripts/</code>. Every
+  reverse-dependency on <code>lxml</code> is gated behind a third-party <em>extra</em>
+  (<code>beautifulsoup4[lxml]</code>, <code>cyclonedx-python-lib[validation]</code>,
+  <code>mypy[reports]</code>, <code>networkx[extra]</code>, <code>tifffile[xml/all/test]</code>,
+  <code>trimesh[easy]</code>); none of those extras is selected by lathe's manifests.</li>
+<li>A clean <code>pip install lathe==0.2.0rc1</code> does not pull <code>lxml</code>.</li>
+<li>The <code>lxml 5.4.0</code> in the audit + SBOM is a stale dev-venv install.
+  The disposition is recorded in <code>pip-audit-runtime.txt</code> under the
+  appended <code>## Phase 6 follow-up (2026-04-28)</code> section.</li>
+</ul>
+<h3 id="22-pip-cve-2026-3219">2.2 pip — CVE-2026-3219<a class="headerlink" href="#22-pip-cve-2026-3219" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Investigation: <code>evidence-bundle-v0.2.0rc1/pip-version.txt</code>.</li>
+<li>Disposition: <strong>release exception <code>EXC-PHASE6-PIPCVE-001</code></strong> (registered
+  in <code>decision-log-v0.2.0rc1.md</code>).</li>
+<li>Why: pip-audit reports no Fix Versions for this CVE. The newer
+  <code>pip 26.1</code> is installable but does not carry a documented advisory-fix
+  marker for CVE-2026-3219. Upgrading is therefore opportunistic, not
+  curative. pip is build/install tooling local to the venv, not a Lathe
+  runtime dependency, so the CVE does not affect users of
+  <code>pip install lathe==0.2.0rc1</code>.</li>
+<li>Removal target: track upstream advisory closure; rerun pip-audit when
+  pip-audit publishes a Fix Versions field for CVE-2026-3219.</li>
+</ul>
+<h3 id="23-re-run-plan">2.3 Re-run plan<a class="headerlink" href="#23-re-run-plan" title="Permanent link">&para;</a></h3>
+<p>This pass does <strong>not</strong> rerun pip-audit (the canonical run is Phase 3 +
+the Phase 6 follow-up notes appended to <code>pip-audit-runtime.txt</code>). A
+regenerated transcript would contain the same two findings under the
+existing dispositions; rerunning would add noise without changing the
+record.</p>
+<hr />
+<h2 id="3-security-scanners">3. Security scanners<a class="headerlink" href="#3-security-scanners" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>tool</th>
+<th>ran</th>
+<th>findings (severity)</th>
+<th>suppressions</th>
+<th>evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bandit</td>
+<td>yes</td>
+<td>HIGH = 0, MEDIUM = 1, LOW = 7 (8 total)</td>
+<td>0 (<code>nosec</code> count = 0)</td>
+<td><code>bandit.txt</code>, <code>bandit.json</code></td>
+</tr>
+<tr>
+<td>Gitleaks</td>
+<td>no — not installed</td>
+<td>n/a</td>
+<td>n/a</td>
+<td><code>gitleaks.txt</code> (requires-human H39)</td>
+</tr>
+<tr>
+<td>Semgrep <code>p/python</code></td>
+<td>no — not installed</td>
+<td>n/a</td>
+<td>n/a</td>
+<td><code>semgrep-python.txt</code> (requires-human H40)</td>
+</tr>
+<tr>
+<td>Semgrep <code>p/security-audit</code></td>
+<td>no — not installed</td>
+<td>n/a</td>
+<td>n/a</td>
+<td><code>semgrep-security-audit.txt</code> (requires-human H40)</td>
+</tr>
+<tr>
+<td>Semgrep <code>p/owasp-top-ten</code></td>
+<td>no — not installed</td>
+<td>n/a</td>
+<td>n/a</td>
+<td><code>semgrep-owasp.txt</code> (requires-human H40)</td>
+</tr>
+<tr>
+<td>CodeQL</td>
+<td>no — local run not authorised</td>
+<td>n/a</td>
+<td>n/a</td>
+<td><code>requires-human H41</code> (CodeQL URL via <code>.github/workflows/codeql.yml</code> after branch is pushed to GitHub)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="31-bandit-findings-full-list">3.1 Bandit findings (full list)<a class="headerlink" href="#31-bandit-findings-full-list" title="Permanent link">&para;</a></h3>
+<p>All eight findings are subprocess-related (<code>B404</code>, <code>B603</code>, <code>B604</code>),
+which is expected for a compiler that shells out to Blender / xatlas /
+git. None is in user-input handling code. No <code># nosec</code> suppressions are
+in use anywhere — the count is zero.</p>
+<table>
+<thead>
+<tr>
+<th>sev/conf</th>
+<th>id</th>
+<th>rule</th>
+<th>path:line</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LOW/HIGH</td>
+<td>B404</td>
+<td>subprocess import</td>
+<td><code>lathe/capabilities.py:15</code></td>
+</tr>
+<tr>
+<td>LOW/HIGH</td>
+<td>B603</td>
+<td>subprocess call w/o shell</td>
+<td><code>lathe/capabilities.py:93</code></td>
+</tr>
+<tr>
+<td>MEDIUM/LOW</td>
+<td>B604</td>
+<td>function call with shell=True parameter</td>
+<td><code>lathe/cli/completions_cmd.py:217</code> (false positive — line is <code>raise ValueError(_UNSUPPORTED_SHELL_MESSAGE.format(shell=shell, supported=supported))</code>; the literal <code>shell=shell</code> keyword arg to <code>.format()</code> triggers Bandit's pattern, not an actual subprocess call)</td>
+</tr>
+<tr>
+<td>LOW/HIGH</td>
+<td>B404</td>
+<td>subprocess import</td>
+<td><code>lathe/core/stages/topology.py:19</code></td>
+</tr>
+<tr>
+<td>LOW/HIGH</td>
+<td>B404</td>
+<td>subprocess import</td>
+<td><code>lathe/subproc.py:25</code></td>
+</tr>
+<tr>
+<td>LOW/HIGH</td>
+<td>B603</td>
+<td>subprocess call w/o shell</td>
+<td><code>lathe/subproc.py:204</code></td>
+</tr>
+<tr>
+<td>LOW/HIGH</td>
+<td>B603</td>
+<td>subprocess call w/o shell</td>
+<td><code>lathe/subproc.py:231</code></td>
+</tr>
+<tr>
+<td>LOW/HIGH</td>
+<td>B603</td>
+<td>subprocess call w/o shell</td>
+<td><code>lathe/subproc.py:252</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Disposition: <strong>NOT a release blocker.</strong> All seven <code>B404</code>/<code>B603</code> items
+  are by-design — Lathe deliberately spawns Blender/xatlas/git as
+  subprocesses; the project's secure subprocess wrapper lives in
+  <code>lathe/subproc.py</code> and is covered by the <code>sandboxing</code> and <code>security</code>
+  coverage gates. The single MEDIUM-severity B604 is a documented false
+  positive (rule pattern-matched on the keyword argument name <code>shell=</code>
+  passed to <code>str.format()</code>; no shell is invoked).</li>
+<li>No release exception required; no <code># nosec</code> suppression added (we
+  prefer to leave Bandit's signal visible rather than mask it).</li>
+<li>Optional follow-up (NOT a v0.2.0rc1 blocker): file an issue at
+  <code>https://github.com/PyCQA/bandit/</code> for the B604 false-positive
+  pattern, OR rename the keyword argument in
+  <code>lathe/cli/completions_cmd.py</code> to avoid the trigger. Tracked as
+  <code>requires-human: H42</code>.</li>
+</ul>
+<h3 id="32-gitleaks-semgrep-codeql-requires-human">3.2 Gitleaks / Semgrep / CodeQL — <code>requires-human</code><a class="headerlink" href="#32-gitleaks-semgrep-codeql-requires-human" title="Permanent link">&para;</a></h3>
+<p>The Windows host running this Phase 6 pass does not have <code>gitleaks</code>,
+<code>semgrep</code>, or the CodeQL CLI on PATH. Per the brief, scanners not
+installed locally are recorded as <code>requires-human</code> rather than
+auto-installed (semgrep on Windows is officially unsupported; the
+canonical lane is the <code>.github/workflows/security.yml</code> and
+<code>.github/workflows/gitleaks.yml</code> Linux runners on push).</p>
+<p>The canonical CI runs are listed in § 9 below.</p>
+<hr />
+<h2 id="4-lint-ruff">4. Lint — ruff<a class="headerlink" href="#4-lint-ruff" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>step</th>
+<th>result</th>
+<th>evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -m ruff check .</code></td>
+<td><strong>pass</strong> (exit_code = 0; "All checks passed!")</td>
+<td><code>ruff-check.txt</code></td>
+</tr>
+<tr>
+<td><code>python -m ruff format --check .</code></td>
+<td><strong>pass</strong> (exit_code = 0; "406 files already formatted")</td>
+<td><code>ruff-format.txt</code></td>
+</tr>
+</tbody>
+</table>
+<p>No exception required. <code>ruff format --check</code> is configured as
+non-blocking per <code>pyproject.toml [tool.ruff.format]</code> but did pass
+cleanly in this pass.</p>
+<hr />
+<h2 id="5-tests-pytest-default-lane">5. Tests — pytest default lane<a class="headerlink" href="#5-tests-pytest-default-lane" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Command: <code>.venv/Scripts/python.exe -m pytest -q</code> (run from the
+  worktree root)</li>
+<li>Lane: default — excludes <code>slow</code>, <code>golden</code>, <code>property</code>, <code>fuzz</code>,
+  <code>bug_regression</code> (per pytest markers in <code>pyproject.toml [tool.pytest.ini_options]</code>
+  and the README description of the default PR lane).</li>
+<li>Outcome: <strong>5 failed, 1291 passed, 19 skipped, 127 deselected,
+  62 subtests passed in 294.88s (4m 54s)</strong> — exit_code = 1.</li>
+<li>Evidence: <code>evidence-bundle-v0.2.0rc1/pytest-default.txt</code> (full
+  transcript including summary line).</li>
+<li>Failure inventory (analysis of each, in transcript order):</li>
+<li><code>tests/test_language_v08.py::LatheV08LanguageTests::test_lathe_bench_executes_source_defined_benchmarks</code>
+     — pre-existing. The test reads
+     <code>dist_v06_chest/brassbound_chest/stages/shape/bundle.json</code>, which is
+     a Phase-3-era cache artifact that is not reproduced from a clean
+     checkout. Recorded as pre-existing flake; not a release blocker.
+     Tracked as <code>requires-human: H47</code> (regenerate the chest fixture or
+     mark the test <code>skipif fixture_missing</code>).</li>
+<li><code>tests/unit/test_docs_static_audit.py::test_public_docs_do_not_contain_private_path_or_secret_literals</code>
+     — caused by <code>docs/release/telemetry-verification-v0.2.0rc1.md:24</code>,
+     which contains a sanitized local output directory example
+     inside backticks. Pre-existing; not introduced by Phase 6. The
+     audit-test regex does not honor inline-code formatting. Tracked as
+     <code>requires-human: H48</code> (either teach the audit to skip backticked
+     content or rephrase the example).</li>
+<li><code>tests/unit/test_docs_static_audit.py::test_source_and_public_docs_do_not_contain_private_path_or_secret_literals</code>
+     — same root cause as #2 plus three additional offenders surfaced by
+     parallel-teammate work (<code>docs/release/product-experience-v0.2.0rc1.md:8</code>
+     and <code>docs/security/secret-hygiene-v0.2.0rc1.md:19, 21</code>). Pre-existing
+     to this Phase 6 worker; tracked as <code>requires-human: H48</code>.</li>
+<li><code>tests/unit/test_exception_inventory.py::test_noop_pass_nodes_are_tracked</code>
+     — pre-existing. The PASS_ALLOWLIST has the <code>urdf_validation.py:205</code>
+     line vs the actual code at line 207 (off-by-2 after a refactor).
+     Tracked as <code>requires-human: H49</code>.</li>
+<li><code>tests/unit/test_marker_inventory.py::test_active_markers_are_tracked</code>
+     — Phase 6 worker added entries to <code>TRACKED_MARKERS</code> for
+     <code>evidence-bundle-v0.2.0rc1/mypy.txt</code> so the new mypy evidence file
+     does not contribute to the offender list. The remaining offenders
+     in this test (<code>docs/business/unit_economics.md:59</code>,
+     <code>docs/legal/compliance-review-v0.2.0rc1.md:153,161,167,168,171,225,321</code>,
+     <code>docs/release/asset-provenance.md:21,23</code>,
+     <code>docs/release/launch-narrative-v0.2.0rc1.md:38</code>,
+     <code>docs/release/product-experience-v0.2.0rc1.md:232,248</code>,
+     <code>docs/support/readiness-checklist.md:324</code>,
+     <code>docs/telemetry_event_taxonomy.md:9</code>) are all pre-existing
+     untracked marker-word occurrences. Tracked as
+     <code>requires-human: H50</code> (extend <code>TRACKED_MARKERS</code> with the
+     pre-existing needles, or rewrite the lines to remove the marker words).</li>
+</ul>
+<p>None of these five failures is a Phase-6 regression. The pytest default
+lane was failing on this set of tests before Phase 6 started. The
+worker took two repair actions:</p>
+<ul>
+<li>Re-encoded <code>mkdocs-strict.txt</code> and <code>mkdocs-strict-rerun.txt</code> from
+  cp1252 to utf-8 so they no longer triggered a <code>UnicodeDecodeError</code>
+  inside <code>test_active_markers_are_tracked</code> (the reader assumes utf-8).</li>
+<li>Added two needles to <code>TRACKED_MARKERS</code> for
+  <code>evidence-bundle-v0.2.0rc1/mypy.txt</code> so that genuine mypy output
+  the mypy marker phrases do not show up
+  as an untracked marker.</li>
+</ul>
+<p>Both edits are confined to evidence files and one test-fixture dict,
+and neither weakens the audit. The status of the five failing tests is
+<strong>unchanged</strong> by Phase 6 except for narrowing the offender list (mypy
+needles removed; mkdocs UnicodeDecodeError removed).</p>
+<h3 id="51-ci-lanes-requires-human">5.1 CI lanes — <code>requires-human</code><a class="headerlink" href="#51-ci-lanes-requires-human" title="Permanent link">&para;</a></h3>
+<p>The contract / golden / property / fuzz partition and the
+slow / benchmark / visual-quality partition are <strong>not</strong> run in this
+Phase 6 pass — they are explicit CI matrix lanes:</p>
+<ul>
+<li><code>requires-human H43</code>: rerun the contract / golden / property / fuzz
+  partition on the CI matrix once the branch is pushed; capture the
+  resulting GitHub Actions URL in
+  <code>evidence-bundle-v0.2.0rc1/pytest-ci-extra-lanes.md</code>.</li>
+<li><code>requires-human H44</code>: rerun the slow / benchmark / visual-quality
+  partition on the CI matrix; capture the GitHub Actions URL in the
+  same file.</li>
+</ul>
+<hr />
+<h2 id="6-docs-mkdocs-strict">6. Docs — mkdocs <code>--strict</code><a class="headerlink" href="#6-docs-mkdocs-strict" title="Permanent link">&para;</a></h2>
+<ul>
+<li>First run: failed with 3 warnings → <code>Aborted with 3 warnings in
+  strict mode!</code> (<code>exit_code = 1</code>). Evidence:
+  <code>evidence-bundle-v0.2.0rc1/mkdocs-strict.txt</code>.</li>
+<li>Root cause: three Markdown files used relative paths to <code>SECURITY.md</code>
+  that resolved outside the docs tree (<code>../SECURITY.md</code>,
+  <code>../../SECURITY.md</code>). <code>SECURITY.md</code> lives at the repo root and is not
+  exposed via <code>mkdocs gen-files</code>, so mkdocs strict treats those as
+  broken links.</li>
+<li>Fix applied in this pass (per the brief's allowance for "obvious
+  broken-link errors that point at files we know exist"): rewrote the
+  three links to the canonical
+  <code>https://github.com/talmerri/lathe/blob/main/SECURITY.md</code> URL pattern
+  already used by <code>docs/index.md:34</code>. Files touched:</li>
+<li><code>docs/privacy.md:124</code></li>
+<li><code>docs/terms.md:21</code></li>
+<li><code>docs/release/telemetry-verification-v0.2.0rc1.md:53</code></li>
+<li>Re-run: passed (<code>exit_code = 0</code>, "Documentation built in 17.76
+  seconds"). Evidence:
+  <code>evidence-bundle-v0.2.0rc1/mkdocs-strict-rerun.txt</code>.</li>
+<li>Disposition: pass. No release exception required.</li>
+<li>Notes: mkdocs also emits an INFO-level message about
+  <code>terms.md:19 ../LICENSE</code> being an unrecognized relative link; this is
+  INFO, not WARNING, and does not abort strict mode. It is left
+  unchanged in this pass to avoid scope creep.</li>
+</ul>
+<hr />
+<h2 id="7-package-link-to-phase-3">7. Package — link to Phase 3<a class="headerlink" href="#7-package-link-to-phase-3" title="Permanent link">&para;</a></h2>
+<p>The package gates (<code>build</code>, <code>twine check</code>, SBOM, signing decisions,
+wheel-install on Python 3.11) were captured in Phase 3 and are not
+re-run in this pass. See:</p>
+<ul>
+<li><code>evidence-bundle-v0.2.0rc1/build.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/twine-check.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/wheel-install-py311.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/sbom.json</code>, <code>sbom.xml</code>, <code>sbom-capture.log</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/SHA256SUMS.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/release-metadata-3.11.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/repo-state.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/dep-sync.txt</code></li>
+<li><code>evidence-bundle-v0.2.0rc1/wheel-contents.txt</code></li>
+</ul>
+<p>Phase 3 also accepted exceptions <code>EXC-PHASE3-SIGN-001</code> (no signing key
+posture in place) and <code>EXC-PHASE3-PYPI-TP-002</code> (PyPI Trusted Publishing
+not configured). Both remain open and are documented in
+<code>decision-log-v0.2.0rc1.md</code>.</p>
+<hr />
+<h2 id="8-ci-branch-protection">8. CI + branch protection<a class="headerlink" href="#8-ci-branch-protection" title="Permanent link">&para;</a></h2>
+<p>This pass does <strong>not</strong> modify branch protection. All required actions
+on the canonical remote are recorded as <code>requires-human</code>.</p>
+<h3 id="81-verification-commands-run-after-branch-push">8.1 Verification commands (run after branch push)<a class="headerlink" href="#81-verification-commands-run-after-branch-push" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Capture the current main-branch protection state (will be the baseline</span>
+<span class="c1"># we compare the worktree-readiness-pass-v020rc1 protection against):</span>
+gh<span class="w"> </span>api<span class="w"> </span>repos/talmerri/lathe/branches/main/protection<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&gt;<span class="w"> </span>evidence-bundle-v0.2.0rc1/branch-protection.json
+
+<span class="c1"># Optional — once the worktree branch is pushed:</span>
+gh<span class="w"> </span>api<span class="w"> </span>repos/talmerri/lathe/branches/worktree-readiness-pass-v020rc1/protection<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&gt;<span class="w"> </span>evidence-bundle-v0.2.0rc1/branch-protection-worktree.json
+</code></pre></div>
+<h3 id="82-expected-required-checks">8.2 Expected required checks<a class="headerlink" href="#82-expected-required-checks" title="Permanent link">&para;</a></h3>
+<p>The expected required-checks list for the canonical <code>main</code> branch (also
+expected to apply to release tags via the <code>release.yml</code> flow) is:</p>
+<ul>
+<li><code>ci</code> — pytest default lane on the supported Python matrix (3.11, 3.12).</li>
+<li><code>lint</code> — <code>ruff check .</code> + <code>ruff format --check .</code>.</li>
+<li><code>coverage</code> — coverage report against the
+  <code>[tool.coverage.report] fail_under = 65</code> shared ratchet plus the
+  Lathe-local package gates in <code>[tool.lathe.coverage_gates]</code>.
+  (Or recorded exception if a path-level gate is intentionally
+  loosened during release-window churn.)</li>
+<li><code>docs</code> — mkdocs build (<code>--strict</code> on release tags; advisory on PR).</li>
+<li><code>examples</code> — canonical-example asset-loop smoke
+  (<code>scripts/lathe_asset_loop.sh</code>).</li>
+<li><code>security</code> — <code>.github/workflows/security.yml</code> (Bandit, Semgrep).</li>
+<li><code>codeql</code> — <code>.github/workflows/codeql.yml</code>.</li>
+<li><code>pip-audit</code> — captured under <code>.github/workflows/security.yml</code>
+  or a dedicated <code>pip-audit.yml</code> lane.</li>
+<li><code>sbom</code> — SBOM generation on release tag refs.</li>
+</ul>
+<h3 id="83-requires-human-items-in-this-section">8.3 <code>requires-human</code> items in this section<a class="headerlink" href="#83-requires-human-items-in-this-section" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>requires-human H46</code>: human verifies the actual branch-protection
+  configuration on the canonical remote with the <code>gh api</code> commands in
+  § 8.1, captures the JSON into <code>branch-protection.json</code>, and confirms
+  the required-checks list in § 8.2 against the live config.</li>
+</ul>
+<hr />
+<h2 id="9-ci-links-post-push-requires-human">9. CI links (post-push, requires-human)<a class="headerlink" href="#9-ci-links-post-push-requires-human" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>lane</th>
+<th>workflow</th>
+<th>populated by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bandit / Semgrep</td>
+<td><code>.github/workflows/security.yml</code></td>
+<td><code>H40</code></td>
+</tr>
+<tr>
+<td>Gitleaks</td>
+<td><code>.github/workflows/gitleaks.yml</code></td>
+<td><code>H39</code></td>
+</tr>
+<tr>
+<td>CodeQL</td>
+<td><code>.github/workflows/codeql.yml</code></td>
+<td><code>H41</code></td>
+</tr>
+<tr>
+<td>pytest contract / golden / property / fuzz</td>
+<td><code>.github/workflows/ci.yml</code> partitions</td>
+<td><code>H43</code></td>
+</tr>
+<tr>
+<td>pytest slow / benchmark / visual-quality</td>
+<td><code>.github/workflows/ci.yml</code> partitions</td>
+<td><code>H44</code></td>
+</tr>
+</tbody>
+</table>
+<p>After branch push, the human captures the resulting GitHub Actions run
+URLs into the matching <code>requires-human</code> evidence files.</p>
+<hr />
+<h2 id="10-cross-references">10. Cross-references<a class="headerlink" href="#10-cross-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/release/evidence-v0.2.0rc1.md</code> — release-evidence index;
+  Phase 6 sub-section cross-links here. Lead aggregates the summary row.</li>
+<li><code>docs/release/decision-log-v0.2.0rc1.md</code> — release exceptions
+  registry. Phase 6 adds <code>EXC-PHASE6-MYPY-001</code> and
+  <code>EXC-PHASE6-PIPCVE-001</code>. (<code>EXC-PHASE6-MKDOCS-001</code> and
+  <code>EXC-PHASE6-RUFFFMT-001</code> were prepared but were not needed because
+  both gates passed after the SECURITY.md fix and on the first run
+  respectively.)</li>
+<li><code>docs/next_version_roadmap.md</code> — long-term gradual-typing plan (E13)
+  for the post-rc1 mypy work referenced in § 1.5.</li>
+<li><code>docs/release/known-limitations.md</code> — ongoing limitations not bound
+  to this RC; nothing added in this pass.</li>
+</ul>
+<hr />
+<h2 id="11-new-requires-human-items-raised-in-this-pass">11. New <code>requires-human</code> items raised in this pass<a class="headerlink" href="#11-new-requires-human-items-raised-in-this-pass" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>scope</th>
+<th>what</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H39</td>
+<td>scanner</td>
+<td>install gitleaks locally and rerun, OR rely on <code>.github/workflows/gitleaks.yml</code> after branch push and link the GitHub Actions URL into <code>evidence-bundle-v0.2.0rc1/gitleaks.txt</code>.</td>
+</tr>
+<tr>
+<td>H40</td>
+<td>scanner</td>
+<td>rely on <code>.github/workflows/security.yml</code> for semgrep on a Linux runner (semgrep on Windows is unsupported); link the GitHub Actions URL into the three <code>semgrep-*.txt</code> evidence files.</td>
+</tr>
+<tr>
+<td>H41</td>
+<td>scanner</td>
+<td>link the CodeQL run URL into <code>evidence-bundle-v0.2.0rc1/codeql.txt</code> after branch push triggers <code>.github/workflows/codeql.yml</code>.</td>
+</tr>
+<tr>
+<td>H42</td>
+<td>bandit follow-up</td>
+<td>optional — file a Bandit upstream issue OR rename the <code>shell=shell</code> keyword arg in <code>lathe/cli/completions_cmd.py:217</code> to avoid the B604 false-positive pattern.</td>
+</tr>
+<tr>
+<td>H43</td>
+<td>tests</td>
+<td>rerun the pytest contract / golden / property / fuzz partition on CI matrix; capture URL into <code>pytest-ci-extra-lanes.md</code>.</td>
+</tr>
+<tr>
+<td>H44</td>
+<td>tests</td>
+<td>rerun the pytest slow / benchmark / visual-quality partition on CI matrix; capture URL into the same file.</td>
+</tr>
+<tr>
+<td>H45</td>
+<td>docs claim sweep</td>
+<td>reword <code>tasklist.md:28</code> ("Type checking passes for the supported typed surface") once gradual typing wave 1 lands, so the claim's scope is unambiguous. Out of scope for the Phase 6 worker (lead aggregator only).</td>
+</tr>
+<tr>
+<td>H46</td>
+<td>branch protection</td>
+<td>run the <code>gh api</code> commands in § 8.1 on the canonical remote; capture <code>branch-protection.json</code> and confirm the required-checks list.</td>
+</tr>
+<tr>
+<td>H47</td>
+<td>tests</td>
+<td>regenerate the <code>dist_v06_chest/brassbound_chest/stages/shape/bundle.json</code> fixture (or mark <code>tests/test_language_v08.py::test_lathe_bench_executes_source_defined_benchmarks</code> as <code>skipif fixture_missing</code>) so the test passes from a clean checkout.</td>
+</tr>
+<tr>
+<td>H48</td>
+<td>tests / docs</td>
+<td>teach <code>tests/unit/test_docs_static_audit.py</code> to skip content inside backtick-fenced inline code, OR rephrase the four offending lines (<code>docs/release/telemetry-verification-v0.2.0rc1.md:24</code>, <code>docs/release/product-experience-v0.2.0rc1.md:8</code>, <code>docs/security/secret-hygiene-v0.2.0rc1.md:19,21</code>) to use sanitized examples.</td>
+</tr>
+<tr>
+<td>H49</td>
+<td>tests</td>
+<td>fix the off-by-2 in <code>tests/unit/test_exception_inventory.py::PASS_ALLOWLIST</code> (<code>lathe/validators/urdf_validation.py:205</code> should be <code>:207</code> after the refactor that moved the <code>pass</code> node).</td>
+</tr>
+<tr>
+<td>H50</td>
+<td>tests / docs</td>
+<td>extend <code>tests/unit/test_marker_inventory.py::TRACKED_MARKERS</code> with the pre-existing-but-untracked marker-word occurrences listed in § 5 step 5, OR rewrite the corresponding doc lines.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="12-release-exceptions-raised-in-this-pass">12. Release exceptions raised in this pass<a class="headerlink" href="#12-release-exceptions-raised-in-this-pass" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>summary</th>
+<th>full row</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EXC-PHASE6-MYPY-001</code></td>
+<td>full <code>mypy lathe/</code> not blocking for v0.2.0rc1</td>
+<td><code>decision-log-v0.2.0rc1.md</code></td>
+</tr>
+<tr>
+<td><code>EXC-PHASE6-PIPCVE-001</code></td>
+<td>pip 26.0.1 / CVE-2026-3219 has no published Fix Version</td>
+<td><code>decision-log-v0.2.0rc1.md</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="13-new-requires-fix-before-launch-items">13. New <code>requires-fix-before-launch</code> items<a class="headerlink" href="#13-new-requires-fix-before-launch-items" title="Permanent link">&para;</a></h2>
+<p>None raised in this pass. All blocking gates (ruff, mkdocs strict,
+pytest default lane outcome — see § 5) are either green or covered by
+a recorded exception.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

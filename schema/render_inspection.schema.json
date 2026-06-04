@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/render-inspection-v1.json",
+  "title": "Lathe Wonder Render Inspection v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inspection_id",
+    "scene_id",
+    "render_ref",
+    "status",
+    "visual_summary",
+    "scores",
+    "problems",
+    "recommended_patches"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.render_inspection.v1"
+    },
+    "inspection_id": {
+      "type": "string",
+      "pattern": "^inspect_[a-z0-9_]{3,80}$"
+    },
+    "scene_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "render_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image_path",
+        "camera_id",
+        "render_pass"
+      ],
+      "properties": {
+        "image_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "camera_id": {
+          "type": "string",
+          "pattern": "^camera_[a-z0-9_]{3,80}$"
+        },
+        "render_pass": {
+          "enum": [
+            "beauty",
+            "depth",
+            "normal",
+            "object_id",
+            "material_id",
+            "wireframe"
+          ]
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "passed_with_warnings",
+        "failed"
+      ]
+    },
+    "visual_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matches_brief",
+        "style_consistency",
+        "spatial_coherence",
+        "composition",
+        "curiosity",
+        "overall"
+      ],
+      "properties": {
+        "matches_brief": {
+          "$ref": "#/$defs/score"
+        },
+        "style_consistency": {
+          "$ref": "#/$defs/score"
+        },
+        "spatial_coherence": {
+          "$ref": "#/$defs/score"
+        },
+        "composition": {
+          "$ref": "#/$defs/score"
+        },
+        "curiosity": {
+          "$ref": "#/$defs/score"
+        },
+        "overall": {
+          "$ref": "#/$defs/score"
+        }
+      }
+    },
+    "problems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "problem_id",
+          "severity",
+          "target_id",
+          "summary"
+        ],
+        "properties": {
+          "problem_id": {
+            "type": "string",
+            "pattern": "^problem_[a-z0-9_]{3,80}$"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ]
+          },
+          "target_id": {
+            "type": "string",
+            "pattern": "^(obj|region|camera|light|curiosity|hidden)_[a-z0-9_]{3,80}$"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recommended_patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scope",
+          "target_id",
+          "change"
+        ],
+        "properties": {
+          "scope": {
+            "enum": [
+              "asset",
+              "object",
+              "region",
+              "scene",
+              "camera",
+              "light",
+              "curiosity_anchor",
+              "hidden_state"
+            ]
+          },
+          "target_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,95}$"
+          },
+          "change": {
+            "type": "string",
+            "minLength": 1
+          },
+          "suggested_patch": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

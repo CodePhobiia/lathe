@@ -1,0 +1,94 @@
+// Invalid generated scene source fixture for LLM diagnostics.
+//// LATHE_SCENE_GRAPH_JSON_V1_BEGIN
+{
+  "schema_version": "lathe.scene_graph.v1",
+  "scene_id": "bad_source_scene",
+  "version": 1,
+  "prompt": "A tiny invalid scene for source-span tests.",
+  "style_bible": {
+    "mood": [
+      "quiet"
+    ],
+    "palette": [
+      "warm"
+    ],
+    "materials": [
+      "wax"
+    ],
+    "forms": [
+      "simple"
+    ],
+    "lighting": [
+      "soft"
+    ]
+  },
+  "regions": [
+    {
+      "region_id": "region_main_001",
+      "name": "Main",
+      "type": "interior",
+      "purpose": "Test",
+      "mood": "quiet",
+      "bounds": {
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          4,
+          4,
+          3
+        ]
+      }
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "bad object id",
+      "name": "Bad Object",
+      "role": "dressing_prop",
+      "region": "region_main_001",
+      "lathe_asset": "test_asset",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "semantic_tags": [
+        "bad"
+      ],
+      "state": {}
+    }
+  ],
+  "relationships": [],
+  "materials": [],
+  "lights": [],
+  "cameras": [
+    {
+      "camera_id": "camera_main_001",
+      "target": "obj_bad_001",
+      "framing": "inspection",
+      "purpose": "Inspect the bad object."
+    }
+  ],
+  "curiosity_anchors": [],
+  "hidden_state": [],
+  "exports": [],
+  "build_artifacts": [],
+  "memory_events": []
+}
+//// LATHE_SCENE_GRAPH_JSON_V1_END
+

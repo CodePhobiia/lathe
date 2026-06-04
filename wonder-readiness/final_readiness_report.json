@@ -1,0 +1,307 @@
+{
+  "schema_version": "lathe.wonder_alpha_gate_report.v1",
+  "ok": true,
+  "core_alpha_gate": "passed",
+  "mode": "core",
+  "example": "examples/wonder/alchemist_observatory",
+  "reports_dir": ".tmp_tests\\post_source_alpha_gate\\reports",
+  "blocking_missing_runtimes": [],
+  "optional_lanes": {
+    "posix": "skipped_nonblocking",
+    "blender": "passed",
+    "roblox": "skipped_nonblocking",
+    "external_viewer": "skipped_nonblocking"
+  },
+  "alpha_decision_ready": true,
+  "remaining_human_decision": "Approve Project Wonder alpha gate.",
+  "summary": {
+    "lanes": 12,
+    "passed": 12,
+    "failed": 0,
+    "optional_missing": 3
+  },
+  "lanes": [
+    {
+      "id": "env_probe",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": [],
+      "artifacts": {
+        "report": ".tmp_tests\\post_source_alpha_gate\\reports\\env_probe.json"
+      },
+      "details": {
+        "blocking_missing": [],
+        "optional_missing": [
+          "posix_shell",
+          "roblox_studio",
+          "external_viewer"
+        ]
+      }
+    },
+    {
+      "id": "evidence_traceability",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": [],
+      "artifacts": {
+        "report": ".tmp_tests\\post_source_alpha_gate\\reports\\evidence_traceability.json"
+      }
+    },
+    {
+      "id": "dream_brief_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "scene_graph_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "brief_scene_consistency",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "scene_graph_semantics",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "scene_patch_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "render_inspection_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "world_memory_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "scene_plan_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "scene_assembly_contract",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "scene_quality_validators",
+      "status": "passed",
+      "blocking": true,
+      "diagnostics": []
+    }
+  ],
+  "report_bundle": {
+    "benchmark_report": ".tmp_tests/post_source_alpha_gate/reports/benchmark_report.json",
+    "cli_catalog": ".tmp_tests/post_source_alpha_gate/reports/cli_catalog.json",
+    "contract_catalog": ".tmp_tests/post_source_alpha_gate/reports/contract_catalog.json",
+    "env_probe": ".tmp_tests/post_source_alpha_gate/reports/env_probe.json",
+    "evidence_traceability": ".tmp_tests/post_source_alpha_gate/reports/evidence_traceability.json",
+    "example_catalog": ".tmp_tests/post_source_alpha_gate/reports/example_catalog.json",
+    "final_readiness_report_json": ".tmp_tests/post_source_alpha_gate/reports/final_readiness_report.json",
+    "final_readiness_report_md": ".tmp_tests/post_source_alpha_gate/reports/final_readiness_report.md",
+    "performance_report": ".tmp_tests/post_source_alpha_gate/reports/performance_report.json",
+    "security_report": ".tmp_tests/post_source_alpha_gate/reports/security_report.json"
+  },
+  "known_deferred_lanes": [
+    {
+      "lane": "external_viewer",
+      "status": "skipped_nonblocking",
+      "blocking": false,
+      "reason": "gltf-viewer: Known pipe types:"
+    },
+    {
+      "lane": "posix",
+      "status": "skipped_nonblocking",
+      "blocking": false,
+      "reason": "bash: <3>WSL (11 - Relay) ERROR: CreateProcessCommon:800: execvpe(/bin/bash) failed: No such file or directory"
+    },
+    {
+      "lane": "roblox",
+      "status": "skipped_nonblocking",
+      "blocking": false,
+      "reason": "no candidate executable found"
+    },
+    {
+      "lane": "human_alpha_decision",
+      "status": "pending",
+      "blocking": false,
+      "reason": "Approve Project Wonder alpha gate."
+    }
+  ],
+  "reports": {
+    "benchmark": {
+      "schema_version": "lathe.wonder_benchmark_report.v1",
+      "status": "recorded",
+      "measurement_mode": "deterministic_gate_summary",
+      "core_alpha_gate": "passed",
+      "measured_timings": [],
+      "reason": "Wave 6 records deterministic core gate status here. It does not claim fresh wall-clock benchmark measurements unless a separate benchmark command records them.",
+      "core_lane_summary": [
+        {
+          "id": "env_probe",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "evidence_traceability",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "dream_brief_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "scene_graph_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "brief_scene_consistency",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "scene_graph_semantics",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "scene_patch_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "render_inspection_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "world_memory_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "scene_plan_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "scene_assembly_contract",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        },
+        {
+          "id": "scene_quality_validators",
+          "status": "passed",
+          "blocking": true,
+          "diagnostics": 0
+        }
+      ]
+    },
+    "security": {
+      "schema_version": "lathe.wonder_security_report.v1",
+      "status": "passed",
+      "scope": "deterministic_wonder_core",
+      "checks": [
+        {
+          "id": "world_memory_redaction",
+          "status": "covered",
+          "evidence": "tests/unit/test_wonder_memory.py"
+        },
+        {
+          "id": "path_safety",
+          "status": "covered",
+          "evidence": "tests/fuzz/test_wonder_contract_fuzz.py"
+        },
+        {
+          "id": "llm_validator_boundary",
+          "status": "covered",
+          "evidence": "tests/unit/test_wonder_llm.py"
+        },
+        {
+          "id": "optional_external_runtimes_nonblocking",
+          "status": "covered",
+          "evidence": "lathe/wonder/env.py"
+        }
+      ],
+      "limitations": [
+        "External Blender, Roblox, and viewer lanes are not required by the deterministic core report.",
+        "The final human alpha decision remains pending."
+      ]
+    },
+    "performance": {
+      "schema_version": "lathe.wonder_performance_report.v1",
+      "status": "recorded",
+      "measurement_mode": "ci_script_and_alpha_gate_summary",
+      "core_alpha_gate": "passed",
+      "slow_or_external_lanes": {
+        "blender": "optional",
+        "roblox": "optional",
+        "external_viewer": "optional"
+      },
+      "measured_timings": [],
+      "reason": "Core readiness is intentionally dependency-light. Performance measurements can be attached later without making optional runtimes block core CI."
+    },
+    "contract_catalog_summary": {
+      "total": 29
+    },
+    "cli_catalog_summary": {
+      "total": 142,
+      "wonder": 56
+    },
+    "example_catalog_summary": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "deferred_nonblocking": 0
+    },
+    "evidence_traceability_summary": {
+      "checked_tasks": 956,
+      "covered_checked_tasks": 956,
+      "missing_evidence": 0,
+      "evidence_items": 413,
+      "used_evidence_items": 1,
+      "diagnostics": 0
+    }
+  },
+  "example_catalog": {
+    "path": ".tmp_tests/post_source_alpha_gate/reports/example_catalog.json",
+    "summary": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "deferred_nonblocking": 0
+    }
+  }
+}

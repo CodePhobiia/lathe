@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/evidence-trace-v1.json",
+  "title": "Lathe Wonder Evidence Trace v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "ok",
+    "status",
+    "tasks_path",
+    "evidence_path",
+    "summary",
+    "checked_tasks",
+    "evidence_items",
+    "coverage",
+    "missing_evidence",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.wonder_evidence_trace.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "tasks_path": {
+      "type": "string"
+    },
+    "evidence_path": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "checked_tasks",
+        "covered_checked_tasks",
+        "missing_evidence",
+        "evidence_items",
+        "used_evidence_items",
+        "diagnostics"
+      ],
+      "properties": {
+        "checked_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "covered_checked_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_evidence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "used_evidence_items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "diagnostics": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "checked_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/checked_task"
+      }
+    },
+    "evidence_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence_item"
+      }
+    },
+    "coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "text",
+          "line",
+          "section",
+          "evidence_ids"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "section": {
+            "type": "string"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/checked_task"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "severity",
+          "path",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "evidence_id": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "checked_task": {
+      "type": "object",
+      "required": [
+        "task_id",
+        "text",
+        "line",
+        "section"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "section": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_item": {
+      "type": "object",
+      "required": [
+        "evidence_id",
+        "kind",
+        "text",
+        "line",
+        "paths"
+      ],
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "date": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "covers_all_checked_tasks": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

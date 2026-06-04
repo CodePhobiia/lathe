@@ -1,0 +1,7383 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Declarative language + reference compiler for 3D asset intent">
+      
+      
+      
+        <link rel="canonical" href="https://talmerri.github.io/lathe/asset-quality/procedural-synthesizer-architecture-spec/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Procedural Synthesizer Architecture Specification - Lathe</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#procedural-synthesizer-architecture-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Lathe" class="md-header__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Lathe
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Procedural Synthesizer Architecture Specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../cli_reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../canonical_commands/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Commands
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Troubleshooting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../product_value/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Product Value
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../gallery/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Gallery
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quality_dashboard/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quality Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../deterministic_builds/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deterministic Builds
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../wonder-readiness/00_overview/" class="md-tabs__link">
+          
+  
+  
+  Wonder Readiness
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorial/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cookbook/" class="md-tabs__link">
+          
+  
+  
+  Cookbook
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adr/" class="md-tabs__link">
+          
+  
+  
+  Decisions
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language_reference/" class="md-tabs__link">
+          
+  
+  
+  Language Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/cli/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../spec/lathe-v0.1/" class="md-tabs__link">
+          
+  
+  
+  Specs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../release/" class="md-tabs__link">
+          
+  
+  
+  Release
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../privacy/" class="md-tabs__link">
+          
+  
+  
+  Legal and privacy
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Lathe" class="md-nav__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Lathe
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../canonical_commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../product_value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Value
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gallery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quality_dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deterministic_builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deterministic Builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder Readiness
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wonder Readiness
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/00_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/01_dream_brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dream Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/02_scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/03_scene_patch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Patch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/04_render_inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/05_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/07_scene_build_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Build Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/08_scene_package/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/pre_wonder_baseline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pre-Wonder Baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/phase0_working_tree_classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 0 Working Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/09_scene_validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/10_render_repair_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Repair Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/11_curiosity_anchors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Curiosity Anchors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/12_world_memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/13_branching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Branching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/14_roblox_profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roblox Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/15_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/16_limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/first_asset/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first asset
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/second_asset_reconstruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/fallback_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fallback provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/learned_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learned provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/engine_export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engine export workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/deep_dive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deep dive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookbook
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Cookbook
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/01_generate_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 Generate flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/02_reconstruct_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/03_kit_assembly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 Kit assembly
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/04_mobile_adapt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 Mobile adapt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/05_surface_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 Surface control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/06_variant_patching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 Variant patching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/07_custom_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 Custom backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/08_runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/09_certification_debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 Certification debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/10_blender_bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 Blender bridge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/reading_a_trace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading a trace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/per_validator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-validator reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/runtime_config_schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/stage_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/shape_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape stage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0000-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0001-shape-handoff-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0001 Shape handoff contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0002-blender-and-xatlas-fallback-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0002 Blender and xatlas fallback policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0003-provider-mux-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0003 Provider mux design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0004-plugin-entry-points/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0004 Plugin entry points
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0005-layering-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0005 Layering enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0006-validator-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0006 Validator composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0007-resolver-loc-exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0007 Resolver LOC exception
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0008-geometry-kernel-manifold/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0008 Geometry kernel Manifold
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0009-public-contract-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0009 Public contract index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0010-experimental-scene-source-language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0010 Experimental scene source language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0011-roblox-export-lane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0011 Roblox export lane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0012-wonder-service-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0012 Wonder service boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0013-wonder-layer-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0013 Wonder Layer boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_15" id="__nav_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated current reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schema_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalized schema reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../v08_language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v0.8
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16" id="__nav_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/normalizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/checker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/planner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/executor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/capabilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/wonder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scene/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_14" id="__nav_16_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Shape
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/asset_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_kernel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly kernel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scaffold_compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaffold compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature grammar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mesh_finalize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mesh finalize
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_15" id="__nav_16_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IR modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    IR modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/fit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/transfer_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transfer IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/kit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reuse_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reuse IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reference_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_16" id="__nav_16_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Surface
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/materials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Materials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pbr_deriver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PBR deriver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/texture_control_pack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Texture control pack
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/surface_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_17" id="__nav_16_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validators
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validators
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/semantic_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semantic quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/visual_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/flow_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flow quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/surface_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/silhouette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Silhouette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_18" id="__nav_16_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/bridge/blender_plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blender plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stdlib/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stdlib
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_17" id="__nav_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Specs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spec/lathe-v0.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language v0.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.0-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.2-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Maintenance and triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dependency_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_19" >
+        
+          
+          <label class="md-nav__link" for="__nav_19" id="__nav_19_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_19_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_19">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Release
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/quality-bar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality bar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/tasklist_milestones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Readiness milestones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/asset-provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/release-note-value-guidance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release-note value guidance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/support-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_20" >
+        
+          
+          <label class="md-nav__link" for="__nav_20" id="__nav_20_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal and privacy
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_20_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_20">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Legal and privacy
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy notice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../terms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms applicability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#revision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision History
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-why-this-spec-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. Why This Spec Exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-northstar-placement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Northstar Placement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Northstar Placement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-which-lanes-does-this-address" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Which Lanes Does This Address
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-phase-placement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Phase Placement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-decision-filter-pass-northstar-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Decision Filter Pass (Northstar §14)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-current-state-diagnosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Current State Diagnosis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Current State Diagnosis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-the-anti-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 The Anti-Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-what-this-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 What This Costs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-what-already-exists-that-we-can-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 What Already Exists That We Can Use
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-proposed-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Proposed Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Proposed Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-the-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 The Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-core-data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Core Data Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Core Data Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-styleknowledge-parameter-biasing-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 StyleKnowledge — Parameter Biasing Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-compositionpolicy-reusable-procedural-structure-not-family-keyed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 CompositionPolicy — Reusable Procedural Structure (Not Family-Keyed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323-familyalias-pure-metadata-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.3 FamilyAlias — Pure Metadata Lookup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#324-typednodeattributes-per-node_type-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.4 TypedNodeAttributes — Per-NODE_TYPE Schemas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#325-synthesizercontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.5 SynthesizerContext
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#326-nodetypegenerator-with-capability-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.6 NodeTypeGenerator With Capability Manifest
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#327-edgetypedecorator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.7 EdgeTypeDecorator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-the-generator-registry-domain-extensible-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 The Generator Registry (Domain-Extensible Plugin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-hint-resolution-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Hint Resolution Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-the-compiler-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 The Compiler Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-migration-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Migration Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Migration Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-coexistence-phase-first-n-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Coexistence Phase (first N sessions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-migration-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Migration Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-per-recipe-migration-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Per-Recipe Migration Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-decommissioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Decommissioning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-component-inventory-files-to-create" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Component Inventory (Files To Create)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Component Inventory (Files To Create)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-engine-code-latheasset_qualityprocedural_synthesizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Engine code (lathe/asset_quality/procedural_synthesizer/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-declarative-knowledge-stdproceduralknowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Declarative knowledge (std/procedural/knowledge/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Acceptance Criteria
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Acceptance Criteria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-per-slice-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Per-Slice Acceptance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-per-recipe-migration-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Per-Recipe Migration Acceptance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-architecture-level-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Architecture-Level Acceptance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-stable-contracts-preserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Stable Contracts Preserved
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-explicit-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Explicit Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-resolved-decisions-and-remaining-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Resolved Decisions And Remaining Open Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Resolved Decisions And Remaining Open Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-resolved-domain-extension-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Resolved: Domain Extension Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-resolved-knowledge-pack-source-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Resolved: Knowledge Pack Source Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-resolved-first-implementation-slice-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Resolved: First Implementation Slice Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-resolved-edge-decoration-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Resolved: Edge Decoration Ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#95-remaining-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.5 Remaining Open Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-risk-and-mitigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Risk And Mitigation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-estimated-effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Estimated Effort
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-implementation-sequencing-within-this-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Implementation Sequencing Within This Spec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Implementation Sequencing Within This Spec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#first-commit-single-session-all-in-one-slice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First commit (single session, all-in-one slice)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subsequent-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Subsequent sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-bottom-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Bottom Line
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="procedural-synthesizer-architecture-specification">Procedural Synthesizer Architecture Specification<a class="headerlink" href="#procedural-synthesizer-architecture-specification" title="Permanent link">&para;</a></h1>
+<p>Date: 2026-05-11 (revision iteration 1: same day)
+Status: Canonical architecture spec for the language-to-kernel bridge upgrade
+Scope: Replacing family-name dispatch in shape program synthesis with a procedural compiler pipeline driven by typed construction-graph nodes, biased by orthogonal declarative knowledge packs (style, policy, family-alias), and extensible by domain
+Related: <code>docs/asset-quality/lathe-implementation-northstar.md</code>, <code>docs/asset-quality/lathe-implementation-northstar-current-audit.md</code>, <code>docs/asset-quality/lathe-northstar-full-implementation-plan.md</code></p>
+<p>This spec describes the architecture that turns Lathe's shape-program
+synthesis layer from a registry of 73 family-specific code-dispatched
+recipes into a procedural compiler pipeline. The pipeline consumes
+typed construction-graph nodes, expands reusable composition policies
+(matched by authored intent, never by family name), validates typed
+per-NODE_TYPE attribute schemas, and emits ShapeOps through
+domain-extensible generators with declared capability manifests.</p>
+<h2 id="revision-history">Revision History<a class="headerlink" href="#revision-history" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>2026-05-11 v1 (initial)</strong> — first draft. Used a single
+  <code>FamilyKnowledge</code> data class that included <code>required_node_types</code>
+  and <code>suggested_node_types</code> fields. Used a linear "walk nodes then
+  walk edges" outer loop. Knowledge packs proposed as Python files
+  per family. Registry hardcoded by node type. First implementation
+  slice was a no-op skeleton.</li>
+<li><strong>2026-05-11 v2 (this revision)</strong> — review iteration resolved six
+  findings:</li>
+<li>FamilyKnowledge split into three orthogonal concepts:
+     <code>StyleKnowledge</code> (parameter biasing only), <code>CompositionPolicy</code>
+     (reusable, non-family-keyed graph rules), <code>FamilyAlias</code>
+     (pure-metadata pointer that cannot add structure). The
+     <code>required_node_types</code> and <code>suggested_node_types</code> fields are
+     removed from all knowledge data classes.</li>
+<li>Knowledge packs moved to declarative JSON files under
+     <code>std/procedural/knowledge/{style,policy,aliases}/</code> with
+     schema validation at startup. No Python knowledge files.</li>
+<li>Generator registry made domain-extensible by key
+     <code>(domain, node_type)</code>. Phase 3 domains (vegetation, terrain,
+     WFC, CGA) plug in without touching the hard-surface registry.</li>
+<li>Typed per-NODE_TYPE attribute schemas added. The
+     <code>ConstructionNode.attributes</code> dict is validated against the
+     schema before generators consume it.</li>
+<li>Linear outer loop replaced with an 8-stage compiler pipeline:
+     resolve_context → normalize_graph → expand_policies →
+     validate_attributes → topo_order → emit_node_ops →
+     emit_edge_ops → validate_ops.</li>
+<li>First implementation slice updated to require real ShapeProgram
+     output (not a no-op skeleton): <code>primary_volume</code> + <code>panel</code>
+     generators, <code>attached_to</code> decorator, full pipeline, real
+     JSON knowledge packs, all in the first commit.
+  Plus the domain-extension open question was resolved as a
+  shared-core + per-domain-package model.</li>
+</ul>
+<h2 id="0-why-this-spec-exists">0. Why This Spec Exists<a class="headerlink" href="#0-why-this-spec-exists" title="Permanent link">&para;</a></h2>
+<p>The northstar identifies the language-versus-kernel imbalance as the
+core problem (§3). The kernel cannot honor the breadth the language
+promises because most of the breadth is encoded as fixed per-family
+blueprints that dispatch on family name and discard authored intent.</p>
+<p>The user has stated the procedural principle clearly:</p>
+<div class="highlight"><pre><span></span><code>Lathe must be modular, and the key here is procedural generation.
+We should not specify any specific asset.
+</code></pre></div>
+<p>This spec is the architecture that operationalizes that principle in
+the shape-program synthesis layer without throwing away the domain
+knowledge currently encoded in 14,145 lines of family recipes. The
+family knowledge migrates from dispatched code into declarative data
+that the procedural engine consumes as suggested defaults.</p>
+<h2 id="1-northstar-placement">1. Northstar Placement<a class="headerlink" href="#1-northstar-placement" title="Permanent link">&para;</a></h2>
+<h3 id="11-which-lanes-does-this-address">1.1 Which Lanes Does This Address<a class="headerlink" href="#11-which-lanes-does-this-address" title="Permanent link">&para;</a></h3>
+<p>This spec advances four northstar lanes simultaneously:</p>
+<table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Section</th>
+<th>What This Work Resolves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lane B</td>
+<td>§10 Lane B "ShapeIR v2 As Drivers"</td>
+<td>Makes construction-graph nodes the primary driver of shape program emission, fulfilling "Lower design brief, construction graph, and ShapeIR v2 ops into executable op records."</td>
+</tr>
+<tr>
+<td>Lane C</td>
+<td>§10 Lane C "Feature Ops And Modularity"</td>
+<td>Replaces family-specific emitters with reusable per-node-type generators dispatched by tag/role, not family.</td>
+</tr>
+<tr>
+<td>Lane I</td>
+<td>§10 Lane I "Authoring Surface And Stdlib Modularity"</td>
+<td>Moves family rules to stdlib-style declarative data. New families become small data packs, not 200-line recipe functions.</td>
+</tr>
+<tr>
+<td>Blocker B12</td>
+<td>§7 B12 "Chest-Specific Code Is A Product Smell"</td>
+<td>Eliminates family-name dispatch from the synthesis path entirely. Family becomes metadata, never a discriminator.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-phase-placement">1.2 Phase Placement<a class="headerlink" href="#12-phase-placement" title="Permanent link">&para;</a></h3>
+<p>The northstar's phase ladder (§11) places this work at:</p>
+<div class="highlight"><pre><span></span><code>Phase 2 (Real Surface And Kernel Bridge, 2-4 months)
+  -&gt; deliverable: ShapeIR/ShapeIR v2 -&gt; KernelProgram lowering
+  -&gt; this spec extends that lowering upstream into shape-program
+     SYNTHESIS, not just downstream lowering execution
+</code></pre></div>
+<p>It also is the structural foundation Phase 3 builds on:</p>
+<div class="highlight"><pre><span></span><code>Phase 3 (Procedural Domain Libraries, 6-9 months)
+  -&gt; deliverables: WFC and CGA-style modular assembly,
+     SpeedTree-inspired vegetation vocabulary, scatter as
+     production multiplier
+  -&gt; all of these are procedural-composition systems that require
+     a generic synthesizer substrate; this spec is that substrate
+</code></pre></div>
+<p>Without this work, Phase 3 inherits the family-dispatch anti-pattern
+and ends up with more hardcoded blueprints per domain (vegetation,
+terrain, WFC) rather than one generic engine driving all domains.</p>
+<h3 id="13-decision-filter-pass-northstar-14">1.3 Decision Filter Pass (Northstar §14)<a class="headerlink" href="#13-decision-filter-pass-northstar-14" title="Permanent link">&para;</a></h3>
+<ol>
+<li>What visible claim does this make true? — "Lathe synthesizes any
+   asset from authored construction graph + brief, without per-family
+   dispatched code."</li>
+<li>Which asset or fixture proves it? — Verified against industrial
+   crate, mechanical door, weapon prop, vehicle prop, lighting prop,
+   plus at least one non-recipe-covered fixture authored at
+   verification time.</li>
+<li>Which artifact path will show it? — The
+   <code>payload["shape_program"]</code> field of <code>evaluate_grammar_lowering</code>
+   contains identical or equivalent ops regardless of whether the
+   recipe path or synthesizer path produced it.</li>
+<li>Which diagnostic or report field will judge it? — New
+   <code>synthesizer_trace</code> field on the grammar-lowering payload records
+   which generator emitted each op, plus which family knowledge pack
+   biased it. Plus an explicit <code>family_dispatch_used: bool</code> flag that
+   must trend to <code>false</code> across the migration.</li>
+<li>Which repair route will use it? — Repair planner consumes the same
+   construction graph the synthesizer consumes, so repair operations
+   become construction-graph mutations rather than recipe edits.</li>
+<li>Does it preserve <code>.lth</code> compatibility and
+   <code>lathe.shape.intent_mesh_handoff_v1</code>? — Yes, both are upstream
+   boundaries this spec sits underneath.</li>
+<li>Does it avoid chest-only or one-family-only logic? — Yes, by
+   construction. Family-name dispatch is removed entirely.</li>
+<li>If it falls back, will users see attempted vs actual behavior? —
+   Yes, <code>synthesizer_trace</code> records <code>attempted_via: family_knowledge</code>
+   vs <code>attempted_via: graph_only_inference</code> plus fallback reasons.</li>
+<li>What is the narrowest test or build that proves the change? —
+   <code>tests/unit/test_asset_quality_procedural_synthesizer.py</code> plus the
+   existing <code>test_asset_quality_grammar_lowering.py</code> continue to pass.</li>
+<li>What claim remains explicitly not verified? — Visual quality.
+    The synthesizer produces equivalent ShapeProgram structure; visual
+    quality verification belongs to downstream stages.</li>
+</ol>
+<h2 id="2-current-state-diagnosis">2. Current State Diagnosis<a class="headerlink" href="#2-current-state-diagnosis" title="Permanent link">&para;</a></h2>
+<h3 id="21-the-anti-pattern">2.1 The Anti-Pattern<a class="headerlink" href="#21-the-anti-pattern" title="Permanent link">&para;</a></h3>
+<p><code>lathe/asset_quality/grammar_lowering.py</code> is 14,145 lines. It contains
+<strong>73 family-specific recipes</strong> registered in a <code>_RECIPES</code> dict keyed
+by family name:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_RECIPES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;industrial_crate&quot;</span><span class="p">:</span> <span class="n">industrial_crate_recipe</span><span class="p">,</span>
+    <span class="s2">&quot;mechanical_door&quot;</span><span class="p">:</span> <span class="n">_mechanical_door_recipe</span><span class="p">,</span>
+    <span class="s2">&quot;service_cabinet&quot;</span><span class="p">:</span> <span class="n">_service_cabinet_recipe</span><span class="p">,</span>
+    <span class="c1"># ... 70 more ...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>evaluate_grammar_lowering</code> function dispatches:</p>
+<div class="highlight"><pre><span></span><code><span class="n">recipe</span> <span class="o">=</span> <span class="n">_RECIPES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">family</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">recipe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_empty_recipe</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">asset_name</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">recipe</span><span class="p">(</span><span class="n">brief</span><span class="p">,</span> <span class="n">parts</span><span class="p">,</span> <span class="n">graph_nodes</span><span class="p">)</span>
+</code></pre></div>
+<p>Each recipe currently discards its inputs. Example from
+<code>industrial_crate_recipe</code> (line 13535):</p>
+<div class="highlight"><pre><span></span><code><span class="k">del</span> <span class="n">brief</span><span class="p">,</span> <span class="n">parts</span><span class="p">,</span> <span class="n">graph_nodes</span>
+<span class="c1"># ... emit fixed 10-op program for &quot;industrial_crate&quot; ...</span>
+</code></pre></div>
+<h3 id="22-what-this-costs">2.2 What This Costs<a class="headerlink" href="#22-what-this-costs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Authored intent is ignored.</strong> A brief that says "tall narrow
+  crate" produces the same output as one that says "wide squat crate"
+  because the recipe ignores the brief.</li>
+<li><strong>Adding a family requires Python code.</strong> Each new asset family is
+  a ~200-line recipe function, not a data pack.</li>
+<li><strong>Family-name routing leaks into downstream stages.</strong> The 73 family
+  names propagate through ShapeProgram.family field and become
+  dispatch keys for shape backend, surface defaults, validators, and
+  more.</li>
+<li><strong>Domain expansion is anti-scalable.</strong> Phase 3's WFC, CGA,
+  vegetation, terrain work risks repeating the same per-family
+  blueprint anti-pattern in new domains.</li>
+</ul>
+<h3 id="23-what-already-exists-that-we-can-use">2.3 What Already Exists That We Can Use<a class="headerlink" href="#23-what-already-exists-that-we-can-use" title="Permanent link">&para;</a></h3>
+<p>The procedural vocabulary is already defined in
+<code>lathe/asset_quality/construction_graph.py</code>:</p>
+<p><strong><code>NODE_TYPES</code></strong> (20 generic component roles):</p>
+<div class="highlight"><pre><span></span><code>primary_volume, frame, panel, inset, trim, guard, rail, bracket,
+vent, conduit, latch, weld, socket, mount, handle, hinge, fastener,
+decal_zone, wear_zone, material_zone
+</code></pre></div>
+<p><strong><code>EDGE_TYPES</code></strong> (graph relations):</p>
+<div class="highlight"><pre><span></span><code>attached_to, inset_into, wraps_around, mirrors, aligned_with,
+supports, cuts, ...
+</code></pre></div>
+<p><code>evaluate_construction_graph</code> produces typed graph nodes from
+authored intent. The procedural engine this spec describes consumes
+those typed nodes.</p>
+<p><code>lathe/asset_quality/shape_ir_v2.py</code> already defines the operation
+families the engine emits into:</p>
+<div class="highlight"><pre><span></span><code>SOLID_OPS (36), BOOLEAN_OPS (11), EDGE_OPS (4), SOP_OPS (16),
+REPETITION_OPS (8), INTEGRATION_OPS (4), WEAR_OPS (4) = 83 total
+</code></pre></div>
+<p>The data substrate exists. The missing piece is the engine that
+maps <code>(node_type, attributes, edges, brief, family_hints?) -&gt; ShapeOp</code>
+generically.</p>
+<h2 id="3-proposed-architecture">3. Proposed Architecture<a class="headerlink" href="#3-proposed-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="31-the-flow">3.1 The Flow<a class="headerlink" href="#31-the-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>asset[intent].parts                                                       \
+asset[intent].brief                                                        \
+runtime[construction_graph].nodes (typed)                                   \
+runtime[construction_graph].edges                                            &gt; inputs
+runtime[design_brief]                                                       /
+family_alias? -&gt; resolves to (StyleKnowledge, CompositionPolicy[])         /
+                  (or brief specifies them directly)                      /
+                                |
+                                v
+              ProceduralSynthesizer (8-stage compiler pipeline)
+                                |
+        Stage 1: resolve_context  -&gt; typed SynthesizerContext
+        Stage 2: normalize_graph  -&gt; canonical graph
+        Stage 3: expand_policies  -&gt; graph + policy-added nodes
+        Stage 4: validate_attrs   -&gt; typed-attribute graph
+        Stage 5: topo_order       -&gt; deterministic node + edge order
+        Stage 6: emit_node_ops    -&gt; per-node generators run
+        Stage 7: emit_edge_ops    -&gt; per-edge decorators run
+        Stage 8: validate_ops     -&gt; every emitted op in ALL_OPS
+                                |
+                                v
+                          ShapeProgram
+                                |
+                                v
+                   lower_to_v1 (existing)
+                                |
+                                v
+                   kernel execution (existing)
+
+Family alias appears only at Stage 1 (resolves style + policies) and
+in the trace metadata. No stage consults family identity for behavior.
+</code></pre></div>
+<h3 id="32-core-data-types">3.2 Core Data Types<a class="headerlink" href="#32-core-data-types" title="Permanent link">&para;</a></h3>
+<p>Revision note (review iteration 1, 2026-05-11): the earlier draft of
+this section defined a single <code>FamilyKnowledge</code> data class that
+included <code>required_node_types</code> and <code>suggested_node_types</code> fields.
+That design failed review because those fields would let a family
+pack add structure to the construction graph — recipes-in-data
+clothing. This revision splits the concept into three orthogonal
+pieces with strict capability boundaries, none of which can add
+structural nodes by name.</p>
+<h4 id="321-styleknowledge-parameter-biasing-only">3.2.1 StyleKnowledge — Parameter Biasing Only<a class="headerlink" href="#321-styleknowledge-parameter-biasing-only" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StyleKnowledge</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Declarative parameter bias for generators. Never adds structure.</span>
+
+<span class="sd">    Loaded from std/procedural/knowledge/style/*.json at startup.</span>
+<span class="sd">    Schema validated. Contains no callables, no Python logic, no</span>
+<span class="sd">    emitters. The synthesizer reads style knowledge as suggested</span>
+<span class="sd">    parameter defaults; generators consume them through the</span>
+<span class="sd">    hint-resolution priority chain (§3.5).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">style_id</span><span class="p">:</span> <span class="nb">str</span>                                      <span class="c1"># e.g. &quot;industrial_pbr_v1&quot;</span>
+    <span class="n">style_band</span><span class="p">:</span> <span class="nb">str</span>                                    <span class="c1"># routes to material defaults</span>
+    <span class="n">proportion_priors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>     <span class="c1"># node_type -&gt; axis weights</span>
+    <span class="n">silhouette_priors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>                <span class="c1"># dominance ratios</span>
+    <span class="n">density_priors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>        <span class="c1"># node_type -&gt; density hints</span>
+    <span class="n">parameter_priors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>        <span class="c1"># node_type -&gt; field -&gt; value</span>
+</code></pre></div>
+<p>Hard boundary: a <code>StyleKnowledge</code> pack cannot add or require any
+<code>NODE_TYPE</code>. It can only suggest values for fields the generator
+would have read anyway. A generator that receives style knowledge
+for a node type whose graph node is absent ignores it entirely —
+the style cannot create the node.</p>
+<h4 id="322-compositionpolicy-reusable-procedural-structure-not-family-keyed">3.2.2 CompositionPolicy — Reusable Procedural Structure (Not Family-Keyed)<a class="headerlink" href="#322-compositionpolicy-reusable-procedural-structure-not-family-keyed" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompositionPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reusable graph-composition rule. Never keyed by family.</span>
+
+<span class="sd">    A policy describes a structural pattern that applies whenever</span>
+<span class="sd">    its precondition matches the authored intent. Examples:</span>
+
+<span class="sd">      - &quot;panelized_hard_surface_object&quot;:</span>
+<span class="sd">          IF brief.composition == &quot;panelized&quot; AND graph has primary_volume,</span>
+<span class="sd">          THEN ensure graph contains: panels (one per major face),</span>
+<span class="sd">               fasteners (corner pattern), edge_trim (top edges).</span>
+<span class="sd">      - &quot;radial_mechanical_assembly&quot;:</span>
+<span class="sd">          IF brief.composition == &quot;radial&quot; AND graph has primary_volume,</span>
+<span class="sd">          THEN ensure graph contains: central_hub, spokes, rim.</span>
+
+<span class="sd">    Policies are declarative data, loaded from</span>
+<span class="sd">    std/procedural/knowledge/policy/*.json. They reference the</span>
+<span class="sd">    NODE_TYPES vocabulary, not family names. A single policy applies</span>
+<span class="sd">    to any asset whose authored intent matches its precondition —</span>
+<span class="sd">    crates, doors, terminals, cabinets, whatever.</span>
+
+<span class="sd">    Critical: a policy adds STRUCTURE by expanding the construction</span>
+<span class="sd">    graph BEFORE generators run. But it does so by matching a</span>
+<span class="sd">    precondition on AUTHORED INTENT, not by family name. The graph</span>
+<span class="sd">    expansion is traced so a future inspector can see which policy</span>
+<span class="sd">    added which node and why.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">policy_id</span><span class="p">:</span> <span class="nb">str</span>                                  <span class="c1"># e.g. &quot;panelized_hard_surface_object&quot;</span>
+    <span class="n">precondition</span><span class="p">:</span> <span class="n">PolicyPrecondition</span>                <span class="c1"># see §3.2.3</span>
+    <span class="n">expansions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PolicyExpansion</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>         <span class="c1"># see §3.2.4</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span>                                     <span class="c1"># e.g. &quot;hard_surface&quot;, &quot;vegetation&quot;</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolicyPrecondition</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;When a policy applies. Pure-data predicates over authored intent.</span>
+
+<span class="sd">    No callables. No family-name checks. Predicates are JSON-expressible</span>
+<span class="sd">    so they can live in declarative knowledge files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">requires_node_types</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>            <span class="c1"># graph must contain these</span>
+    <span class="n">forbids_node_types</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>             <span class="c1"># graph must NOT contain these</span>
+    <span class="n">requires_brief_fields</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>           <span class="c1"># brief must have these values</span>
+    <span class="n">requires_parts_any</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>             <span class="c1"># at least one of these parts</span>
+    <span class="n">forbids_parts_any</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>              <span class="c1"># none of these parts</span>
+    <span class="n">requires_intent_tags</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>           <span class="c1"># asset-level tag requirements</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolicyExpansion</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What a policy adds to the construction graph when it applies.</span>
+
+<span class="sd">    Adds nodes by NODE_TYPE (never by family name). Records the</span>
+<span class="sd">    policy_id that added the node so traces can attribute structure</span>
+<span class="sd">    correctly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">add_node_type</span><span class="p">:</span> <span class="nb">str</span>                              <span class="c1"># must be in NODE_TYPES</span>
+    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">CountFromBrief</span>                     <span class="c1"># may resolve from authored intent</span>
+    <span class="n">placement</span><span class="p">:</span> <span class="n">PlacementHint</span>                        <span class="c1"># pure-data placement rule</span>
+    <span class="n">attributes_template</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>             <span class="c1"># node attributes</span>
+    <span class="n">edges_to_existing</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">EdgeTemplate</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>     <span class="c1"># edges this expansion creates</span>
+</code></pre></div>
+<h4 id="323-familyalias-pure-metadata-lookup">3.2.3 FamilyAlias — Pure Metadata Lookup<a class="headerlink" href="#323-familyalias-pure-metadata-lookup" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FamilyAlias</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Family name -&gt; (style_id, policy_ids[]) lookup. METADATA ONLY.</span>
+
+<span class="sd">    A FamilyAlias is the ONLY place where a family name appears in</span>
+<span class="sd">    knowledge data, and it does NOTHING except point at non-family-</span>
+<span class="sd">    keyed packs. It cannot reference custom code; it cannot add</span>
+<span class="sd">    nodes; it cannot override the structural composition that the</span>
+<span class="sd">    matched policies produce.</span>
+
+<span class="sd">    Loaded from std/procedural/knowledge/aliases/*.json.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">      {</span>
+<span class="sd">        &quot;family_id&quot;: &quot;industrial_crate&quot;,</span>
+<span class="sd">        &quot;style_id&quot;: &quot;industrial_pbr_v1&quot;,</span>
+<span class="sd">        &quot;policy_ids&quot;: [&quot;panelized_hard_surface_object&quot;, &quot;industrial_density_v1&quot;],</span>
+<span class="sd">        &quot;domain&quot;: &quot;hard_surface&quot;</span>
+<span class="sd">      }</span>
+
+<span class="sd">    A user can author a brief that names the family alias OR that</span>
+<span class="sd">    directly specifies (style_id, policy_ids). Either path produces</span>
+<span class="sd">    identical behavior, because the dispatch is on the resolved</span>
+<span class="sd">    style + policies, never the family alias itself.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">family_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">style_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy_ids</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+<h4 id="324-typednodeattributes-per-node_type-schemas">3.2.4 TypedNodeAttributes — Per-NODE_TYPE Schemas<a class="headerlink" href="#324-typednodeattributes-per-node_type-schemas" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># One schema per NODE_TYPE. The dict-of-Any in ConstructionNode is</span>
+<span class="c1"># validated against the typed schema before generators consume it.</span>
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PrimaryVolumeAttributes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Typed attribute contract for node_type=&#39;primary_volume&#39;.&quot;&quot;&quot;</span>
+
+    <span class="n">shape</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;box&quot;</span><span class="p">,</span> <span class="s2">&quot;rounded_box&quot;</span><span class="p">,</span> <span class="s2">&quot;cylinder&quot;</span><span class="p">,</span> <span class="s2">&quot;sphere&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;extruded_profile&quot;</span><span class="p">,</span> <span class="s2">&quot;revolved_profile&quot;</span><span class="p">]</span>
+    <span class="n">dimensions_cm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>    <span class="c1"># axis -&gt; length</span>
+    <span class="n">symmetry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">rounding_cm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">scale_intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;small_prop&quot;</span><span class="p">,</span> <span class="s2">&quot;human_scale&quot;</span><span class="p">,</span> <span class="s2">&quot;structure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;human_scale&quot;</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PanelAttributes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Typed attribute contract for node_type=&#39;panel&#39;.&quot;&quot;&quot;</span>
+
+    <span class="n">plane</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">]</span>
+    <span class="n">inset_depth_cm</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">border_policy</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;beveled&quot;</span><span class="p">,</span> <span class="s2">&quot;sharp&quot;</span><span class="p">,</span> <span class="s2">&quot;rounded&quot;</span><span class="p">,</span> <span class="s2">&quot;trim_band&quot;</span><span class="p">]</span>
+    <span class="n">thickness_cm</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">region_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>       <span class="c1"># links to a face/material zone</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FastenerAttributes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Typed attribute contract for node_type=&#39;fastener&#39;.&quot;&quot;&quot;</span>
+
+    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;radial&quot;</span><span class="p">,</span> <span class="s2">&quot;corners&quot;</span><span class="p">]</span>
+    <span class="n">seating_target_node_id</span><span class="p">:</span> <span class="nb">str</span>        <span class="c1"># the node this fastener attaches to</span>
+    <span class="n">fastener_kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bolt&quot;</span><span class="p">,</span> <span class="s2">&quot;rivet&quot;</span><span class="p">,</span> <span class="s2">&quot;screw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bolt&quot;</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MaterialZoneAttributes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Typed attribute contract for node_type=&#39;material_zone&#39;.&quot;&quot;&quot;</span>
+
+    <span class="n">target_node_id</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># the node this zone applies to</span>
+    <span class="n">mask_kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span> <span class="s2">&quot;edge&quot;</span><span class="p">,</span> <span class="s2">&quot;scratch&quot;</span><span class="p">,</span> <span class="s2">&quot;grime&quot;</span><span class="p">,</span> <span class="s2">&quot;decal&quot;</span><span class="p">]</span>
+    <span class="n">contrast_intent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;readable&quot;</span><span class="p">,</span> <span class="s2">&quot;subtle&quot;</span><span class="p">,</span> <span class="s2">&quot;high&quot;</span><span class="p">]</span>
+    <span class="n">material_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Schemas exist for every NODE_TYPE. The synthesizer validates
+attributes before generators run. Attribute validation failures
+emit <code>attribute_schema_violation</code> diagnostics rather than crashing.</p>
+<h4 id="325-synthesizercontext">3.2.5 SynthesizerContext<a class="headerlink" href="#325-synthesizercontext" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SynthesizerContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-synthesis-call immutable context.</span>
+
+<span class="sd">    Note: there is no `family_knowledge` field — that concept was</span>
+<span class="sd">    split into resolved (style, policies). The family alias name, if</span>
+<span class="sd">    any, is preserved only in the trace for audit purposes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">brief</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">parts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">graph_nodes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ConstructionNode</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>      <span class="c1"># typed, post-validation</span>
+    <span class="n">graph_edges</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ConstructionEdge</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">style</span><span class="p">:</span> <span class="n">StyleKnowledge</span> <span class="o">|</span> <span class="kc">None</span>                   <span class="c1"># resolved from alias OR brief</span>
+    <span class="n">policies</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">CompositionPolicy</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>        <span class="c1"># resolved from alias OR brief</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span>                                    <span class="c1"># routes to domain generators</span>
+    <span class="n">asset_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">family_alias</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>                       <span class="c1"># metadata-only, never dispatched on</span>
+</code></pre></div>
+<p>Synthesizer functions take only <code>(node, context)</code> or
+<code>(edge, context)</code>. No global state.</p>
+<h4 id="326-nodetypegenerator-with-capability-manifest">3.2.6 NodeTypeGenerator With Capability Manifest<a class="headerlink" href="#326-nodetypegenerator-with-capability-manifest" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneratorCapabilityManifest</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Declares what a generator does. Inspectable at registration time.&quot;&quot;&quot;</span>
+
+    <span class="n">node_type</span><span class="p">:</span> <span class="nb">str</span>                                 <span class="c1"># which NODE_TYPE this handles</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span>                                    <span class="c1"># &quot;hard_surface&quot; | &quot;vegetation&quot; | ...</span>
+    <span class="n">consumed_attributes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>           <span class="c1"># which typed attribute fields read</span>
+    <span class="n">consumed_style_fields</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>         <span class="c1"># which StyleKnowledge fields read</span>
+    <span class="n">emitted_op_kinds</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>              <span class="c1"># ShapeIR v2 ops this can emit</span>
+    <span class="n">required_kernel_capabilities</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>  <span class="c1"># kernel features needed</span>
+    <span class="n">fallback_diagnostics</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>          <span class="c1"># diagnostics on degraded path</span>
+    <span class="n">output_kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>                          <span class="c1"># what this generator produces</span>
+        <span class="s2">&quot;visible_geometry&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;material_mask&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metadata_only&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NodeTypeGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A generator is the manifest plus the implementation.</span>
+
+<span class="sd">    The manifest is data; the implementation is a callable. The</span>
+<span class="sd">    synthesizer inspects manifests at registration time to detect</span>
+<span class="sd">    incomplete coverage and at run time to attribute trace entries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">manifest</span><span class="p">:</span> <span class="n">GeneratorCapabilityManifest</span>
+    <span class="n">implementation</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+        <span class="p">[</span><span class="n">ConstructionNode</span><span class="p">,</span> <span class="n">SynthesizerContext</span><span class="p">],</span>
+        <span class="n">Iterable</span><span class="p">[</span><span class="n">ShapeOp</span><span class="p">],</span>
+    <span class="p">]</span>
+</code></pre></div>
+<p>Symmetric <code>EdgeTypeDecorator</code> with <code>manifest + implementation</code> shape.</p>
+<p>Style biasing flows through <code>StyleKnowledge</code>. Generators consume
+typed attributes plus style fields named in their manifest — they
+never inspect family identity:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_PRIMARY_VOLUME_MANIFEST</span> <span class="o">=</span> <span class="n">GeneratorCapabilityManifest</span><span class="p">(</span>
+    <span class="n">node_type</span><span class="o">=</span><span class="s2">&quot;primary_volume&quot;</span><span class="p">,</span>
+    <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;hard_surface&quot;</span><span class="p">,</span>
+    <span class="n">consumed_attributes</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="s2">&quot;dimensions_cm&quot;</span><span class="p">,</span> <span class="s2">&quot;symmetry&quot;</span><span class="p">,</span> <span class="s2">&quot;rounding_cm&quot;</span><span class="p">),</span>
+    <span class="n">consumed_style_fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;proportion_priors&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_priors&quot;</span><span class="p">),</span>
+    <span class="n">emitted_op_kinds</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;solid.box&quot;</span><span class="p">,</span> <span class="s2">&quot;solid.rounded_box&quot;</span><span class="p">,</span> <span class="s2">&quot;solid.cylinder&quot;</span><span class="p">,</span>
+                      <span class="s2">&quot;solid.sphere&quot;</span><span class="p">,</span> <span class="s2">&quot;solid.extruded_profile&quot;</span><span class="p">,</span>
+                      <span class="s2">&quot;solid.revolved_profile&quot;</span><span class="p">),</span>
+    <span class="n">required_kernel_capabilities</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;solid.box&quot;</span><span class="p">,</span> <span class="s2">&quot;solid.rounded_box&quot;</span><span class="p">),</span>
+    <span class="n">fallback_diagnostics</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;primary_volume_unsupported_shape&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;primary_volume_dimension_default_used&quot;</span><span class="p">),</span>
+    <span class="n">output_kind</span><span class="o">=</span><span class="s2">&quot;visible_geometry&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_primary_volume_impl</span><span class="p">(</span>
+    <span class="n">node</span><span class="p">:</span> <span class="n">ConstructionNode</span><span class="p">,</span>
+    <span class="n">ctx</span><span class="p">:</span> <span class="n">SynthesizerContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ShapeOp</span><span class="p">]:</span>
+    <span class="c1"># Typed attributes — already schema-validated by the pipeline</span>
+    <span class="n">attrs</span><span class="p">:</span> <span class="n">PrimaryVolumeAttributes</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">typed_attributes</span>
+
+    <span class="c1"># Style biasing — second class, only fills gaps</span>
+    <span class="n">style_priors</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">parameter_priors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;primary_volume&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="p">{}</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Merge: typed attrs win; style fills gaps; absolute defaults last.</span>
+    <span class="c1"># NO family-name lookup. NO conditional on ctx.family_alias.</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># already required by schema</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">dimensions_cm</span>
+    <span class="n">rounding</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">rounding_cm</span> <span class="ow">or</span> <span class="n">style_priors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rounding_cm&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">op</span> <span class="o">=</span> <span class="n">ShapeOp</span><span class="p">(</span>
+        <span class="n">op</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;solid.</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">dims</span><span class="p">,</span> <span class="s2">&quot;rounding_cm&quot;</span><span class="p">:</span> <span class="n">rounding</span><span class="p">},</span>
+        <span class="n">purpose</span><span class="o">=</span><span class="s2">&quot;procedural_primary_volume&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">yield</span> <span class="n">op</span>
+</code></pre></div>
+<h4 id="327-edgetypedecorator">3.2.7 EdgeTypeDecorator<a class="headerlink" href="#327-edgetypedecorator" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EdgeTypeDecorator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Symmetric to NodeTypeGenerator. Decorates a graph edge.</span>
+
+<span class="sd">    The decorator may emit ops that reference earlier-emitted ops</span>
+<span class="sd">    (e.g., a &#39;mirrors&#39; edge emits an op.mirror that points at the</span>
+<span class="sd">    target node&#39;s ops). The compiler pipeline orders decorators so</span>
+<span class="sd">    referenced ops always emit first.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">manifest</span><span class="p">:</span> <span class="n">EdgeDecoratorCapabilityManifest</span>
+    <span class="n">implementation</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+        <span class="p">[</span><span class="n">ConstructionEdge</span><span class="p">,</span> <span class="n">SynthesizerContext</span><span class="p">,</span> <span class="n">OpResolver</span><span class="p">],</span>
+        <span class="n">Iterable</span><span class="p">[</span><span class="n">ShapeOp</span><span class="p">],</span>
+    <span class="p">]</span>
+</code></pre></div>
+<p>Operates on edges between graph nodes. Emits relational ops:
+mirrors, booleans, alignments, scatter-on-surface, attached-to
+constraints. Receives the current list of emitted ops so it can
+emit ops that reference earlier records.</p>
+<h3 id="33-the-generator-registry-domain-extensible-plugin">3.3 The Generator Registry (Domain-Extensible Plugin)<a class="headerlink" href="#33-the-generator-registry-domain-extensible-plugin" title="Permanent link">&para;</a></h3>
+<p>The registry is keyed by <code>(domain, node_type)</code>. Domains register their
+generators independently. Hard-surface, vegetation, terrain, WFC,
+CGA, animation — each domain plugs into the same shared core without
+bloating any other domain's registry.</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GeneratorRegistry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin-extensible registry. No hardcoded family knowledge.</span>
+
+<span class="sd">    Domains register generators at import time via:</span>
+
+<span class="sd">        registry.register_generator(</span>
+<span class="sd">            NodeTypeGenerator(manifest=..., implementation=...)</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Registration is idempotent — re-registering the same (domain,</span>
+<span class="sd">    node_type) replaces the previous registration with a trace entry,</span>
+<span class="sd">    not silently. Manifest inspection happens at registration time so</span>
+<span class="sd">    incomplete coverage surfaces as a diagnostic.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gen</span><span class="p">:</span> <span class="n">NodeTypeGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_decorator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dec</span><span class="p">:</span> <span class="n">EdgeTypeDecorator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_generator</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NodeTypeGenerator</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># 1. Try (domain, node_type) exact match</span>
+        <span class="c1"># 2. Fall back to (default_domain=&quot;core&quot;, node_type) — for</span>
+        <span class="c1">#    shared types like material_zone that work cross-domain</span>
+        <span class="c1"># 3. Return None and let the pipeline emit</span>
+        <span class="c1">#    `unknown_node_type_for_domain` diagnostic</span>
+        <span class="o">...</span>
+
+
+<span class="c1"># Hard-surface generators register themselves at import time:</span>
+<span class="c1">#   lathe/asset_quality/procedural_synthesizer/generators/hard_surface/__init__.py</span>
+<span class="c1">#</span>
+<span class="c1">#   from . import primary_volume, panel, fastener, ...</span>
+<span class="c1">#   primary_volume.register(REGISTRY)</span>
+<span class="c1">#   panel.register(REGISTRY)</span>
+<span class="c1">#   ...</span>
+<span class="c1">#</span>
+<span class="c1"># Vegetation does the same in:</span>
+<span class="c1">#   lathe/asset_quality/procedural_synthesizer/generators/vegetation/__init__.py</span>
+<span class="c1">#</span>
+<span class="c1"># Domain extension packs (Phase 3) plug in without touching the</span>
+<span class="c1"># hard-surface tree. Each domain has its own NODE_TYPES extension</span>
+<span class="c1"># subset.</span>
+</code></pre></div>
+<p>The registry size grows linearly with NODE_TYPES across domains. It
+never grows with family count.</p>
+<h3 id="34-hint-resolution-rules">3.4 Hint Resolution Rules<a class="headerlink" href="#34-hint-resolution-rules" title="Permanent link">&para;</a></h3>
+<p>Strict priority chain. Authored intent always wins over style bias.
+Policies add structure to the graph before this chain runs, but they
+add via NODE_TYPES, not by family identity.</p>
+<div class="highlight"><pre><span></span><code>priority order (highest wins) for any field value:
+  1. typed node attribute (already schema-validated)
+  2. authored brief field
+  3. authored parts list (presence/absence)
+  4. style.parameter_priors[node_type][field]
+  5. style.proportion_priors[node_type] / density_priors / silhouette_priors
+  6. generator-internal absolute defaults
+</code></pre></div>
+<p>Every resolution writes a <code>hint_resolution_trace</code> entry recording
+the source priority level that won.</p>
+<p>CompositionPolicy expansions are NOT part of the hint chain — they
+run earlier, in the compiler pipeline's <code>expand_policies</code> step
+(§3.5). A policy adds nodes; generators consume nodes. The two
+concerns are separate.</p>
+<h3 id="35-the-compiler-pipeline">3.5 The Compiler Pipeline<a class="headerlink" href="#35-the-compiler-pipeline" title="Permanent link">&para;</a></h3>
+<p>Replaces the earlier draft's linear "walk nodes then walk edges"
+loop. Real procedural composition requires staged processing with
+explicit graph normalization, dependency ordering, validation gates,
+and trace attribution. Each stage has a single responsibility and a
+typed input/output.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">synthesize_shape_program</span><span class="p">(</span>
+    <span class="n">asset</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">runtime</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynthesisResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Procedural compilation pipeline. Eight ordered stages.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Stage 1: Resolve context from authored sources</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">_resolve_context</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">runtime</span><span class="p">)</span>
+    <span class="c1">#   - parse brief, parts, intent tags</span>
+    <span class="c1">#   - resolve family_alias -&gt; (style, policy_ids) if alias given</span>
+    <span class="c1">#   - load StyleKnowledge pack by style_id</span>
+    <span class="c1">#   - load CompositionPolicy packs by policy_ids</span>
+    <span class="c1">#   - record family_alias in trace metadata only</span>
+
+    <span class="c1"># Stage 2: Normalize the authored construction graph</span>
+    <span class="n">raw_graph</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;construction_graph&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">normalized_graph</span> <span class="o">=</span> <span class="n">_normalize_graph</span><span class="p">(</span><span class="n">raw_graph</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1">#   - dedupe node_ids</span>
+    <span class="c1">#   - canonicalize edge directions</span>
+    <span class="c1">#   - resolve string node references to node_id pointers</span>
+    <span class="c1">#   - reject unknown node_types with diagnostic</span>
+
+    <span class="c1"># Stage 3: Expand graph with applicable composition policies</span>
+    <span class="n">expanded_graph</span> <span class="o">=</span> <span class="n">_expand_policies</span><span class="p">(</span><span class="n">normalized_graph</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1">#   - for each loaded policy:</span>
+    <span class="c1">#     - test precondition against authored intent (NOT family)</span>
+    <span class="c1">#     - if matches AND no forbid conflict: apply expansion</span>
+    <span class="c1">#     - record `policy_added_node` trace entry per added node</span>
+    <span class="c1">#   - policies run in deterministic order by policy_id</span>
+
+    <span class="c1"># Stage 4: Validate typed attributes</span>
+    <span class="n">validated_graph</span> <span class="o">=</span> <span class="n">_validate_attributes</span><span class="p">(</span><span class="n">expanded_graph</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1">#   - for each node, validate against PER_NODE_TYPE_SCHEMA</span>
+    <span class="c1">#   - missing required fields -&gt; emit attribute_schema_violation</span>
+    <span class="c1">#   - extra fields -&gt; emit attribute_schema_extension trace</span>
+    <span class="c1">#   - schema-passing nodes get `typed_attributes` set on the node</span>
+
+    <span class="c1"># Stage 5: Topologically order nodes and edges</span>
+    <span class="n">ordered</span> <span class="o">=</span> <span class="n">_topological_order</span><span class="p">(</span><span class="n">validated_graph</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1">#   - parent volumes before their attached components</span>
+    <span class="c1">#   - source primitives before booleans that consume them</span>
+    <span class="c1">#   - target nodes before edge decorators that reference them</span>
+    <span class="c1">#   - cycles -&gt; emit cycle_in_construction_graph and break</span>
+    <span class="c1">#     deterministically by node_id</span>
+
+    <span class="c1"># Stage 6: Emit base ops (one generator call per node, in order)</span>
+    <span class="n">base_ops</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ShapeOp</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">base_trace</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TraceEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">ordered</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+        <span class="n">gen</span> <span class="o">=</span> <span class="n">REGISTRY</span><span class="o">.</span><span class="n">resolve_generator</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">domain</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">node_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_trace</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_no_generator_trace</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ctx</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">node_ops</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">implementation</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ctx</span><span class="p">))</span>
+        <span class="n">base_ops</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">node_ops</span><span class="p">)</span>
+        <span class="n">base_trace</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_attribute_ops_to_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">node_ops</span><span class="p">,</span> <span class="n">gen</span><span class="p">))</span>
+
+    <span class="c1"># Stage 7: Emit relational ops (one decorator call per edge)</span>
+    <span class="n">op_resolver</span> <span class="o">=</span> <span class="n">_build_op_resolver</span><span class="p">(</span><span class="n">base_ops</span><span class="p">,</span> <span class="n">ordered</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">edge_ops</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ShapeOp</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">edge_trace</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TraceEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">ordered</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+        <span class="n">dec</span> <span class="o">=</span> <span class="n">REGISTRY</span><span class="o">.</span><span class="n">resolve_decorator</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">domain</span><span class="p">,</span> <span class="n">edge</span><span class="o">.</span><span class="n">edge_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edge_trace</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_no_decorator_trace</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">ctx</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">edge_op_iter</span> <span class="o">=</span> <span class="n">dec</span><span class="o">.</span><span class="n">implementation</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">op_resolver</span><span class="p">)</span>
+        <span class="n">edge_ops</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">edge_op_iter</span><span class="p">)</span>
+        <span class="n">edge_trace</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_attribute_ops_to_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">edge_op_iter</span><span class="p">,</span> <span class="n">dec</span><span class="p">))</span>
+
+    <span class="c1"># Stage 8: Validate emitted ops + attach trace</span>
+    <span class="n">all_ops</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">base_ops</span><span class="p">,</span> <span class="o">*</span><span class="n">edge_ops</span><span class="p">)</span>
+    <span class="n">_validate_against_all_ops</span><span class="p">(</span><span class="n">all_ops</span><span class="p">)</span>
+    <span class="c1">#   - every emitted op.op must be in shape_ir_v2.ALL_OPS</span>
+    <span class="c1">#   - violations emit emitted_op_outside_shape_ir_v2 diagnostic</span>
+    <span class="c1">#     AND drop the offending op (no silent degradation)</span>
+
+    <span class="n">program</span> <span class="o">=</span> <span class="n">ShapeProgram</span><span class="p">(</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">SHAPE_IR_V2_VERSION</span><span class="p">,</span>
+        <span class="n">asset_name</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">asset_name</span><span class="p">,</span>
+        <span class="n">family</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">family_alias</span><span class="p">,</span>           <span class="c1"># metadata tag, never dispatched</span>
+        <span class="n">ops</span><span class="o">=</span><span class="n">all_ops</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">SynthesisResult</span><span class="p">(</span>
+        <span class="n">shape_program</span><span class="o">=</span><span class="n">program</span><span class="p">,</span>
+        <span class="n">synthesized_graph_nodes</span><span class="o">=</span><span class="n">_policy_added_nodes</span><span class="p">(</span><span class="n">ordered</span><span class="p">,</span> <span class="n">normalized_graph</span><span class="p">),</span>
+        <span class="n">synthesizer_trace</span><span class="o">=</span><span class="n">SynthesizerTrace</span><span class="p">(</span>
+            <span class="n">stage_traces</span><span class="o">=</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+            <span class="n">hint_resolution</span><span class="o">=</span><span class="n">base_trace</span> <span class="o">+</span> <span class="n">edge_trace</span><span class="p">,</span>
+            <span class="n">policy_applications</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">_policy_applied_log</span><span class="p">(</span><span class="n">ctx</span><span class="p">)),</span>
+            <span class="n">attempted_via</span><span class="o">=</span><span class="s2">&quot;procedural_engine&quot;</span><span class="p">,</span>
+            <span class="n">family_dispatch_used</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>    <span class="c1"># by construction, every run</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+</code></pre></div>
+<p>Eight stages, each with a single concern. Each stage's trace is
+addressable and inspectable. No stage looks at the family alias for
+behavior — alias appears only in trace metadata.</p>
+<p><code>program.family</code> carries the family id as a metadata tag, but no
+code downstream dispatches on it. The pipeline guarantees this by
+construction: family is consumed at Stage 1 to resolve (style,
+policies) and not referenced again.</p>
+<h2 id="4-migration-strategy">4. Migration Strategy<a class="headerlink" href="#4-migration-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="41-coexistence-phase-first-n-sessions">4.1 Coexistence Phase (first N sessions)<a class="headerlink" href="#41-coexistence-phase-first-n-sessions" title="Permanent link">&para;</a></h3>
+<p>The procedural synthesizer co-exists with <code>_RECIPES</code>. The dispatch
+inside <code>evaluate_grammar_lowering</code> becomes:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_grammar_lowering</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">family</span> <span class="o">=</span> <span class="n">_resolve_family</span><span class="p">(</span><span class="n">brief</span><span class="p">)</span>
+    <span class="n">recipe</span> <span class="o">=</span> <span class="n">_RECIPES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">family</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">_MIGRATED_TO_SYNTHESIZER</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">synthesize_shape_program</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">runtime</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">recipe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">recipe</span><span class="p">(</span><span class="n">brief</span><span class="p">,</span> <span class="n">parts</span><span class="p">,</span> <span class="n">graph_nodes</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">synthesize_shape_program</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">runtime</span><span class="p">)</span>  <span class="c1"># unknowns route here</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p><code>_MIGRATED_TO_SYNTHESIZER</code> is an explicit allowlist. A family moves
+from <code>_RECIPES</code> to <code>_MIGRATED_TO_SYNTHESIZER</code> only after the
+synthesizer produces an equivalent or improved ShapeProgram for it.</p>
+<h3 id="42-migration-order">4.2 Migration Order<a class="headerlink" href="#42-migration-order" title="Permanent link">&para;</a></h3>
+<p>Sequenced by complexity and risk, lowest first:</p>
+<ol>
+<li><strong>Unknown families first.</strong> Today they route to <code>_empty_recipe</code>
+   (zero ops). Routing them to the synthesizer immediately upgrades
+   them from empty-program to whatever the construction graph
+   describes. No risk, only gain.</li>
+<li><strong>Simple recipes second.</strong> Recipes that emit a small fixed program
+   per family migrate first (e.g., <code>surface_material_sample_recipe</code>,
+   <code>set_dressing_prop_recipe</code>). Quick equivalence verification.</li>
+<li><strong>Hard-surface fixtures third.</strong> <code>industrial_crate</code>, <code>mechanical_door</code>,
+   <code>service_cabinet</code>. These are the Sprint 0 guardrails — careful
+   verification, side-by-side ShapeProgram diff before flipping.</li>
+<li><strong>Composite system bundles last.</strong> <code>world_system_assembly</code>,
+   <code>engine_facing_runtime_bundle_system</code>, etc. — these encode large
+   bundle compositions and may need new generator capabilities (e.g.,
+   recursive sub-asset assembly) before the synthesizer can produce
+   equivalents.</li>
+</ol>
+<h3 id="43-per-recipe-migration-steps">4.3 Per-Recipe Migration Steps<a class="headerlink" href="#43-per-recipe-migration-steps" title="Permanent link">&para;</a></h3>
+<p>For each recipe:</p>
+<ol>
+<li><strong>Identify the construction graph the recipe currently emits
+   under.</strong> Inspect the recipe's emitted ops and group them by their
+   semantic component role.</li>
+<li><strong>Author the declarative knowledge files</strong> that capture the recipe's
+   decisions:</li>
+<li><strong>StyleKnowledge JSON pack</strong> at
+     <code>std/procedural/knowledge/style/&lt;style_id&gt;.json</code> for parameter
+     biasing (proportions, density, style band). Reused across many
+     families; not family-specific by default.</li>
+<li><strong>CompositionPolicy JSON pack(s)</strong> at
+     <code>std/procedural/knowledge/policy/&lt;policy_id&gt;.json</code> for the
+     structural decisions the recipe currently makes. Match by
+     authored-intent precondition, not family name. Reuse existing
+     policies before authoring a new one.</li>
+<li><strong>FamilyAlias JSON file</strong> at
+     <code>std/procedural/knowledge/aliases/&lt;family_id&gt;.json</code> mapping the
+     family name to (style_id, policy_ids[]). The alias is pure
+     metadata; it carries no structural decisions itself.
+   All three file types are schema-validated at load time. No
+   callables. No Python logic. Each value records provenance
+   (which file, which field) in <code>synthesizer_trace</code>.</li>
+<li><strong>Verify equivalence</strong>: run synthesizer with the new pack,
+   diff the resulting ShapeProgram against the recipe's. Differences
+   are acceptable IF the synthesized program is more authored-intent-
+   driven (e.g., it now actually consumes the brief).</li>
+<li><strong>Add the family to <code>_MIGRATED_TO_SYNTHESIZER</code>.</strong></li>
+<li><strong>Delete the recipe function</strong> and its registration in <code>_RECIPES</code>.</li>
+<li><strong>Commit.</strong> One family per commit, ideally.</li>
+</ol>
+<h3 id="44-decommissioning">4.4 Decommissioning<a class="headerlink" href="#44-decommissioning" title="Permanent link">&para;</a></h3>
+<p>When <code>_RECIPES</code> is empty:</p>
+<ol>
+<li>Replace the dispatch in <code>evaluate_grammar_lowering</code> with a direct
+   call to <code>synthesize_shape_program</code>.</li>
+<li>Remove <code>_RECIPES</code>, <code>_MIGRATED_TO_SYNTHESIZER</code>, and all
+   <code>_*_recipe</code> functions.</li>
+<li>Move <code>_INDUSTRIAL_CRATE_LOWERERS</code> and per-requirement lowerer
+   constants either into the generator that needed them, or delete
+   them if the generator's generic logic supersedes them.</li>
+<li>Reduce <code>grammar_lowering.py</code> from 14,145 lines to whatever the
+   synthesizer plus its support utilities require (target: under
+   2,000 lines).</li>
+</ol>
+<h2 id="5-component-inventory-files-to-create">5. Component Inventory (Files To Create)<a class="headerlink" href="#5-component-inventory-files-to-create" title="Permanent link">&para;</a></h2>
+<p>Code lives under <code>lathe/</code>. Declarative knowledge lives under <code>std/</code>.
+The boundary is strict: code knows the engine, knowledge declares
+the data.</p>
+<h3 id="51-engine-code-latheasset_qualityprocedural_synthesizer">5.1 Engine code (<code>lathe/asset_quality/procedural_synthesizer/</code>)<a class="headerlink" href="#51-engine-code-latheasset_qualityprocedural_synthesizer" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>lathe/asset_quality/procedural_synthesizer/
+    __init__.py                 # public API: synthesize_shape_program
+    context.py                  # SynthesizerContext, _resolve_context
+    pipeline.py                 # 8-stage compiler pipeline
+    registry.py                 # GeneratorRegistry (domain-extensible)
+    trace.py                    # SynthesizerTrace + TraceEntry schemas
+    hint_resolution.py          # priority-merge logic with trace attribution
+    attributes/
+        __init__.py             # PER_NODE_TYPE_SCHEMA dispatch
+        primary_volume.py       # PrimaryVolumeAttributes
+        panel.py                # PanelAttributes
+        fastener.py             # FastenerAttributes
+        material_zone.py        # MaterialZoneAttributes
+        ...                     # one per NODE_TYPE
+    knowledge_loader/
+        __init__.py
+        style.py                # loads + schema-validates StyleKnowledge JSON
+        policy.py               # loads + schema-validates CompositionPolicy JSON
+        alias.py                # loads + schema-validates FamilyAlias JSON
+        schemas/
+            style.schema.json
+            policy.schema.json
+            alias.schema.json
+    generators/
+        __init__.py             # registry assembly (calls per-domain register())
+        hard_surface/
+            __init__.py         # registers hard-surface generators
+            primary_volume.py
+            panel.py
+            fastener.py
+            trim.py
+            decal_zone.py
+            guard.py
+            frame.py
+            inset.py
+            rail.py
+            bracket.py
+            vent.py
+            conduit.py
+            latch.py
+            weld.py
+            socket.py
+            mount.py
+            handle.py
+            hinge.py
+            wear_zone.py
+            material_zone.py
+        # Phase 3 additions (cycle 6 of master plan):
+        vegetation/             # registers vegetation generators
+            trunk.py
+            branch.py
+            leaf_cluster.py
+            ...
+        terrain/                # registers terrain generators
+            heightfield_tile.py
+            erosion_basin.py
+            ...
+        # ... future domain packages live here, never bloat each other
+    decorators/
+        __init__.py
+        attached_to.py
+        inset_into.py
+        wraps_around.py
+        mirrors.py
+        aligned_with.py
+        supports.py
+        cuts.py
+        # symmetric per-domain extension structure
+</code></pre></div>
+<h3 id="52-declarative-knowledge-stdproceduralknowledge">5.2 Declarative knowledge (<code>std/procedural/knowledge/</code>)<a class="headerlink" href="#52-declarative-knowledge-stdproceduralknowledge" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>std/procedural/knowledge/
+    style/
+        industrial_pbr_v1.json
+        natural_organic_v1.json
+        stylized_lowpoly_v1.json
+        ...                     # one file per style, reusable across families
+    policy/
+        panelized_hard_surface_object.json
+        radial_mechanical_assembly.json
+        l_system_branching.json
+        wfc_modular_layout.json
+        ...                     # one file per composition policy, reusable
+    aliases/
+        industrial_crate.json   # { family_id, style_id, policy_ids, domain }
+        mechanical_door.json
+        weapon_prop.json
+        ...                     # one file per family alias — METADATA ONLY
+</code></pre></div>
+<p>Every file in <code>std/procedural/knowledge/</code> is schema-validated at
+load. No Python files. No callables. Adding a new family is a single
+JSON file under <code>aliases/</code> that references existing style + policy
+packs; no Python code change required.</p>
+<p>The schema files in <code>lathe/.../knowledge_loader/schemas/</code> define
+exactly what fields are permitted. Any file that doesn't validate
+fails loudly at startup with a <code>knowledge_pack_invalid</code> error
+naming the offending file and field.</p>
+<p>Each generator file is <strong>bounded</strong> in size — target under 300 lines.
+Each decorator file similarly.</p>
+<h2 id="6-acceptance-criteria">6. Acceptance Criteria<a class="headerlink" href="#6-acceptance-criteria" title="Permanent link">&para;</a></h2>
+<h3 id="61-per-slice-acceptance">6.1 Per-Slice Acceptance<a class="headerlink" href="#61-per-slice-acceptance" title="Permanent link">&para;</a></h3>
+<p>A node-type generator is "done" when:</p>
+<ul>
+<li>It emits <code>ShapeOps</code> whose <code>v2_op</code> membership is bounded to
+  <code>ALL_OPS</code>.</li>
+<li>It consumes node attributes, brief fields, and family hints with
+  the priority order specified in §3.4.</li>
+<li>It produces deterministic output for identical input.</li>
+<li>It emits a <code>synthesizer_trace</code> entry for every op.</li>
+<li>It is unit-tested with at least three input scenarios:
+  graph-only, graph + brief, graph + brief + family hints.</li>
+</ul>
+<h3 id="62-per-recipe-migration-acceptance">6.2 Per-Recipe Migration Acceptance<a class="headerlink" href="#62-per-recipe-migration-acceptance" title="Permanent link">&para;</a></h3>
+<p>A recipe is "migrated" when:</p>
+<ul>
+<li>Declarative knowledge files exist:</li>
+<li>One <code>StyleKnowledge</code> JSON at
+    <code>std/procedural/knowledge/style/&lt;style_id&gt;.json</code> (may be shared
+    with other families).</li>
+<li>One or more <code>CompositionPolicy</code> JSONs at
+    <code>std/procedural/knowledge/policy/&lt;policy_id&gt;.json</code> (may be
+    shared).</li>
+<li>One <code>FamilyAlias</code> JSON at
+    <code>std/procedural/knowledge/aliases/&lt;family_id&gt;.json</code> referencing
+    the style and policies.</li>
+<li>All knowledge files pass schema validation at startup.</li>
+<li>The synthesizer's output ShapeProgram passes equivalence-or-better
+  diff against the original recipe's output across three test
+  scenarios (default brief, varied brief, varied parts).</li>
+<li>The recipe function and its <code>_RECIPES</code> registration are deleted.</li>
+<li>The family appears in <code>_MIGRATED_TO_SYNTHESIZER</code> (during
+  coexistence) or is no longer dispatched anywhere (after
+  decommissioning).</li>
+<li>Every test in <code>tests/unit/test_asset_quality_grammar_lowering.py</code>
+  that referenced the family continues to pass, updated for the new
+  expected outputs where intent-driven differences are present (per
+  §9.5 "structured expected outputs" policy).</li>
+</ul>
+<h3 id="63-architecture-level-acceptance">6.3 Architecture-Level Acceptance<a class="headerlink" href="#63-architecture-level-acceptance" title="Permanent link">&para;</a></h3>
+<p>The architecture is "complete" when:</p>
+<ul>
+<li><code>_RECIPES</code> is removed from the codebase.</li>
+<li><code>evaluate_grammar_lowering</code> dispatches only to
+  <code>synthesize_shape_program</code>.</li>
+<li><code>grep -r 'family ==' lathe/</code> returns no hits in synthesis,
+  geometry, surface, or validator code paths. Metadata-only retention
+  in trace/report fields is acceptable.</li>
+<li>A test fixture authored with an unknown family produces a non-empty,
+  geometrically valid ShapeProgram driven entirely by the
+  construction graph.</li>
+<li>A test fixture authored with the same family but different briefs
+  produces different ShapeProgram outputs (proving intent dominance
+  over family bias).</li>
+</ul>
+<h2 id="7-stable-contracts-preserved">7. Stable Contracts Preserved<a class="headerlink" href="#7-stable-contracts-preserved" title="Permanent link">&para;</a></h2>
+<p>Under the northstar's §5 stable-contracts list, this work touches:</p>
+<ul>
+<li><strong>Public <code>.lth</code> source compatibility</strong>: preserved. The <code>.lth</code>
+  surface that produces a brief/intent/parts/graph still flows into
+  the synthesizer identically.</li>
+<li><strong><code>lathe.shape.intent_mesh_handoff_v1</code></strong>: untouched. This work is
+  upstream of the shape-stage handoff.</li>
+<li><strong><code>profile</code>, <code>contract</code>, <code>critic</code>, <code>asset</code>, <code>variant</code> surface</strong>:
+  untouched.</li>
+<li><strong>Topology, UV, surface, package contracts</strong>: untouched.</li>
+<li><strong>Attempted-vs-actual tracing</strong>: extended. The synthesizer adds
+  <code>attempted_via: procedural_engine</code> plus stage-level traces
+  (<code>policy_applied</code>, <code>hint_resolution</code>, <code>attribute_validated</code>,
+  <code>generator_resolved</code>, <code>decorator_resolved</code>) to every program.
+  <code>family_dispatch_used: false</code> is set on every synthesized program
+  by construction.</li>
+</ul>
+<p>What changes is the <strong>internal</strong> synthesis substrate — explicitly
+allowed under §5: "Internal architecture can evolve aggressively
+underneath the stable handoff when it is additive and
+truth-preserving."</p>
+<h2 id="8-explicit-non-goals">8. Explicit Non-Goals<a class="headerlink" href="#8-explicit-non-goals" title="Permanent link">&para;</a></h2>
+<p>This spec does NOT:</p>
+<ul>
+<li>Expand the public <code>.lth</code> language surface.</li>
+<li>Change the <code>ShapeProgram</code> data class shape (still emits the same
+  <code>(version, asset_name, family, ops)</code> tuple).</li>
+<li>Change the lowering or kernel-execution layer (covered by the
+  northstar S0-7 KernelProgram seam work, already underway).</li>
+<li>Replace the construction graph or design brief representations.</li>
+<li>Add new operation kinds to <code>ShapeIR v2</code>.</li>
+<li>Make claims about visual quality (downstream stages decide that).</li>
+<li>Migrate provider/learned-quality-claim paths (out of scope per
+  northstar §2).</li>
+</ul>
+<h2 id="9-resolved-decisions-and-remaining-open-questions">9. Resolved Decisions And Remaining Open Questions<a class="headerlink" href="#9-resolved-decisions-and-remaining-open-questions" title="Permanent link">&para;</a></h2>
+<p>Review iteration 1 (2026-05-11) resolved several questions that the
+earlier draft had left open. They are recorded here as decisions, not
+questions, so subsequent agents do not re-litigate them.</p>
+<h3 id="91-resolved-domain-extension-model">9.1 Resolved: Domain Extension Model<a class="headerlink" href="#91-resolved-domain-extension-model" title="Permanent link">&para;</a></h3>
+<p><strong>Decision: shared synthesizer core + domain extension packs keyed
+by <code>domain</code> field, never by family.</strong></p>
+<ul>
+<li>The <code>GeneratorRegistry</code> is keyed by <code>(domain, node_type)</code>.</li>
+<li>Each domain (<code>hard_surface</code>, <code>vegetation</code>, <code>terrain</code>, <code>wfc</code>,
+  <code>cga</code>, <code>sdf_organic</code>, <code>scatter</code>, <code>animation</code>) lives in its own
+  subpackage under <code>generators/&lt;domain&gt;/</code> and <code>decorators/&lt;domain&gt;/</code>.</li>
+<li>Each domain registers its generators at import time. No domain's
+  registry pollutes another's.</li>
+<li>The <code>ConstructionEdge</code> and authored brief carry a <code>domain</code> field
+  that selects the active domain. A scene with multiple domains
+  (e.g., a forest with hard-surface buildings) lives in a parent
+  graph whose nodes individually carry their domain.</li>
+<li>NODE_TYPES grow per-domain. The core set (20 hard-surface types)
+  is one domain's subset, not the global universe. Vegetation has
+  its own subset (<code>trunk</code>, <code>branch</code>, <code>leaf_cluster</code>, <code>frond</code>,
+  <code>root</code>, <code>bark</code>); terrain has its own; etc.</li>
+<li>A <code>material_zone</code> type that works across domains lives in a
+  pseudo-domain <code>core</code> that all domains fall back to.</li>
+</ul>
+<h3 id="92-resolved-knowledge-pack-source-format">9.2 Resolved: Knowledge Pack Source Format<a class="headerlink" href="#92-resolved-knowledge-pack-source-format" title="Permanent link">&para;</a></h3>
+<p><strong>Decision: JSON files schema-validated at load time. No callables.
+No Python.</strong></p>
+<ul>
+<li>Style, policy, and alias packs live in <code>std/procedural/knowledge/</code>
+  as <code>.json</code> files.</li>
+<li>Schemas live in
+  <code>lathe/asset_quality/procedural_synthesizer/knowledge_loader/schemas/</code>
+  and are enforced at startup with <code>jsonschema</code> (or equivalent).</li>
+<li>Adding a new family is a single JSON file under <code>aliases/</code> that
+  references existing style and policy packs. No Python code
+  change required.</li>
+<li>A lint rule rejects any non-JSON file under
+  <code>std/procedural/knowledge/</code>.</li>
+</ul>
+<h3 id="93-resolved-first-implementation-slice-output">9.3 Resolved: First Implementation Slice Output<a class="headerlink" href="#93-resolved-first-implementation-slice-output" title="Permanent link">&para;</a></h3>
+<p><strong>Decision: the first cycle 1 commit produces real ShapeProgram
+output, not a no-op skeleton.</strong></p>
+<ul>
+<li>The minimum viable first commit must include:</li>
+<li>The full compiler pipeline (all 8 stages, with no-op
+    implementations only for stages that need future work).</li>
+<li>Working <code>primary_volume</code> generator with capability manifest.</li>
+<li>Working <code>panel</code> generator with capability manifest.</li>
+<li>Working <code>attached_to</code> edge decorator (so panels can attach
+    to primary volumes).</li>
+<li>Typed attribute schemas for primary_volume and panel.</li>
+<li>Schema validation for those two types.</li>
+<li>The hint resolution chain with trace attribution.</li>
+<li>Routing of unknown families to the synthesizer.</li>
+<li>The acceptance proof: a test fixture authored with NO family
+  alias, only a brief saying "container with 2 panels" plus a
+  graph with primary_volume + 2 panel nodes attached_to it,
+  produces a non-empty ShapeProgram with <code>family_dispatch_used:
+  false</code> and at least 3 visible-geometry ops. The same test runs
+  via the build pipeline and produces a real GLB.</li>
+<li>No "stub returning empty" placeholders. Every committed
+  generator does its real job.</li>
+</ul>
+<h3 id="94-resolved-edge-decoration-ordering">9.4 Resolved: Edge Decoration Ordering<a class="headerlink" href="#94-resolved-edge-decoration-ordering" title="Permanent link">&para;</a></h3>
+<p><strong>Decision: edges are topologically ordered in Stage 5 of the
+compiler pipeline.</strong></p>
+<ul>
+<li>Decorator priority is implicit in topological order: edges whose
+  source ops already exist when the decorator runs are processed
+  in order of source-op emission.</li>
+<li>Ties broken deterministically by <code>edge_id</code> lexicographic order.</li>
+<li>A <code>decoration_order_trace</code> entry records the order so an
+  inspector can audit deterministic behavior.</li>
+</ul>
+<h3 id="95-remaining-open-questions">9.5 Remaining Open Questions<a class="headerlink" href="#95-remaining-open-questions" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Sub-asset composition</strong> — recipes for bundle-style families
+   (<code>world_system_assembly</code>, <code>engine_facing_runtime_bundle_system</code>)
+   today emit references to sub-assets. Candidate: an <code>assembly</code>
+   NODE_TYPE in the <code>core</code> domain that references a child
+   construction graph (recursive synthesis). Resolution deferred
+   to the first time we attempt to migrate a bundle recipe;
+   prototype then ratify.</li>
+<li><strong>Backward compatibility for pinned tests</strong> — the existing
+   <code>test_asset_quality_grammar_lowering.py</code> pins recipe behavior
+   tightly (exact op counts, primitive types). During migration we
+   need a policy: synthesizer changes that diverge from the recipe
+   are acceptable if intent-driven; pure-regression divergences are
+   not. The trace field provides the audit trail. Policy candidate:
+   each test's pinned expectations are converted from a single
+   "expected program" to a structured "expected_op_kinds (subset
+   assertion) + expected_min_records + expected_node_types_covered"
+   trio.</li>
+<li><strong>Style overlay composition</strong> — what happens when a brief
+   references multiple style packs (e.g., "industrial" + "weathered")?
+   Candidate: ordered overlay, later styles override earlier;
+   <code>style_overlay_trace</code> records resolution. Deferred to first
+   multi-style fixture.</li>
+</ol>
+<h2 id="10-risk-and-mitigation">10. Risk And Mitigation<a class="headerlink" href="#10-risk-and-mitigation" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>73-recipe migration produces ShapeProgram regressions invisible until rendering</td>
+<td>Per-recipe equivalence diff before migration; coexistence phase keeps fallback on.</td>
+</tr>
+<tr>
+<td>Generators grow to recipe-equivalent complexity (each becomes a 200-line monster)</td>
+<td>Per-node-type generator size budget: under 300 lines. If a generator exceeds it, factor into sub-generators by structural attribute.</td>
+</tr>
+<tr>
+<td>Family knowledge packs become covertly procedural (people add logic to packs)</td>
+<td>Pack data classes are <code>frozen=True</code> and contain only literal dicts/tuples/strings/floats. No callables. Lint rule enforces.</td>
+</tr>
+<tr>
+<td>Construction graph is too coarse for some families' decisions</td>
+<td>Add <code>NODE_TYPES</code> only when the new type generalizes across ≥3 unrelated families. Resist single-family node types.</td>
+</tr>
+<tr>
+<td>Synthesizer becomes the single point of failure for all asset synthesis</td>
+<td>Generators are independent; one broken generator only breaks programs that use that node type. Comprehensive per-generator unit tests.</td>
+</tr>
+<tr>
+<td>Migration takes longer than estimated</td>
+<td>Migration is incremental; each per-recipe migration is independently shippable. Coexistence phase has no end date until the last recipe migrates.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-estimated-effort">11. Estimated Effort<a class="headerlink" href="#11-estimated-effort" title="Permanent link">&para;</a></h2>
+<p>Bounded estimates assuming production-grade verification per step:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Effort</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Foundation: types, context, registry plumbing, trace schema</td>
+<td>1-2 sessions</td>
+<td><code>procedural_synthesizer/__init__.py</code>, <code>context.py</code>, <code>synthesizer.py</code>, <code>trace.py</code>, plus skeletons</td>
+</tr>
+<tr>
+<td>First 5 generators (primary_volume, panel, fastener, trim, decal_zone)</td>
+<td>2-4 sessions</td>
+<td>Core component-role coverage</td>
+</tr>
+<tr>
+<td>Remaining 15 generators</td>
+<td>6-10 sessions</td>
+<td>Full NODE_TYPES coverage</td>
+</tr>
+<tr>
+<td>Edge decorators (≈8)</td>
+<td>2-4 sessions</td>
+<td>Full EDGE_TYPES coverage</td>
+</tr>
+<tr>
+<td>First 10 recipe migrations (simple recipes)</td>
+<td>3-5 sessions</td>
+<td>Synthesizer proves out on real families</td>
+</tr>
+<tr>
+<td>Hard-surface migrations (crate, door, weapon, vehicle, console)</td>
+<td>4-6 sessions</td>
+<td>Sprint 0 guardrails fully migrated</td>
+</tr>
+<tr>
+<td>Remaining 50+ recipe migrations</td>
+<td>10-20 sessions</td>
+<td>Decommissioning ready</td>
+</tr>
+<tr>
+<td><code>_RECIPES</code> removal + cleanup</td>
+<td>1-2 sessions</td>
+<td>Architecture complete</td>
+</tr>
+</tbody>
+</table>
+<p>Total: roughly 30-55 sessions of focused work. Aligned with the
+northstar's Phase 2 to Phase 3 timeline (2-4 months to 6-9 months).
+Each individual session ships a real, verifiable, production-grade
+slice — no MVPs, no scaffolding.</p>
+<h2 id="12-implementation-sequencing-within-this-spec">12. Implementation Sequencing Within This Spec<a class="headerlink" href="#12-implementation-sequencing-within-this-spec" title="Permanent link">&para;</a></h2>
+<p>Per the northstar §18 "What To Implement Next" pattern AND §9.3
+resolved decision ("first slice produces real output, no no-op
+skeleton"):</p>
+<h3 id="first-commit-single-session-all-in-one-slice">First commit (single session, all-in-one slice)<a class="headerlink" href="#first-commit-single-session-all-in-one-slice" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Create the engine code tree per §5.1 with all 8 pipeline stages
+   stubbed but functional (<code>pipeline.py</code>).</li>
+<li>Implement <code>registry.py</code> with <code>GeneratorRegistry</code>, manifest
+   inspection at registration time, <code>(domain, node_type)</code> lookup
+   plus <code>core</code> domain fallback.</li>
+<li>Implement <code>trace.py</code> with <code>SynthesizerTrace</code>, <code>TraceEntry</code>,
+   stage-traces aggregation, and JSON-serializable output.</li>
+<li>Implement <code>hint_resolution.py</code> with the §3.4 priority chain plus
+   trace attribution.</li>
+<li>Implement <code>attributes/primary_volume.py</code> and <code>attributes/panel.py</code>
+   (typed schemas).</li>
+<li>Implement <code>knowledge_loader/{style.py, policy.py, alias.py}</code> plus
+   the three JSON schemas in
+   <code>knowledge_loader/schemas/{style,policy,alias}.schema.json</code>.
+   Load at module import time, fail loudly on schema violations.</li>
+<li>Implement <code>generators/hard_surface/primary_volume.py</code> end-to-end
+   with capability manifest. Same for <code>panel.py</code>.</li>
+<li>Implement <code>decorators/attached_to.py</code> end-to-end with capability
+   manifest.</li>
+<li>Author the first declarative knowledge files:</li>
+<li><code>std/procedural/knowledge/style/industrial_pbr_v1.json</code> (minimal)</li>
+<li><code>std/procedural/knowledge/policy/panelized_hard_surface_object.json</code>
+     (the panel-on-primary-volume policy that applies to many families)</li>
+<li>One <code>aliases/&lt;family&gt;.json</code> for the simplest currently-known
+     family the synthesizer can handle (likely <code>surface_material_sample</code>
+     or <code>set_dressing_prop</code>).</li>
+<li>Wire <code>evaluate_grammar_lowering</code> to route both unknown families
+    AND the one migrated family through <code>synthesize_shape_program</code>.</li>
+<li>Add <code>tests/unit/test_procedural_synthesizer_pipeline.py</code> with at
+    minimum:<ul>
+<li>A test that authored intent (primary_volume + 2 panels +
+  attached_to edges) produces a ShapeProgram with ≥ 3 ops, all
+  in <code>shape_ir_v2.ALL_OPS</code>, <code>family_dispatch_used: false</code>.</li>
+<li>A test that the same authored intent with a different brief
+  produces a structurally-different ShapeProgram (intent
+  dominance).</li>
+<li>A test that a policy expansion adds an expected node type
+  when its precondition matches.</li>
+<li>A test that a knowledge file with invalid schema fails
+  startup loudly.</li>
+</ul>
+</li>
+<li>Run the targeted verification slice (the 136+ tests). Commit.
+    Push.</li>
+</ol>
+<h3 id="subsequent-sessions">Subsequent sessions<a class="headerlink" href="#subsequent-sessions" title="Permanent link">&para;</a></h3>
+<p>Each session adds either:</p>
+<ul>
+<li>A new generator (one of the remaining 18 hard-surface NODE_TYPES),
+  or</li>
+<li>A new edge decorator (one of the remaining EDGE_TYPES), or</li>
+<li>A new recipe migration (one of the 73 families), or</li>
+<li>A new typed attribute schema (paired with a generator), or</li>
+<li>A new policy pack (composable across families).</li>
+</ul>
+<p>No session ships a no-op skeleton. Every session's commit produces
+something that runs end-to-end.</p>
+<h2 id="13-bottom-line">13. Bottom Line<a class="headerlink" href="#13-bottom-line" title="Permanent link">&para;</a></h2>
+<p>This spec converts the language-versus-kernel imbalance the northstar
+diagnoses (§3) into a concrete, multi-session, production-grade
+architecture. It honors the user's procedural-generation principle
+absolutely: no code dispatches on asset name. Family knowledge is
+preserved as data, not lost. New families become declarative packs,
+not Python functions. Phase 3 domain expansion (vegetation, terrain,
+WFC, CGA) inherits a generic engine instead of repeating the
+family-blueprint anti-pattern.</p>
+<p>The northstar gets a stronger spine. The kernel gets a synthesis
+layer that respects its capabilities. The user gets the modular
+procedural engine they specified.</p>
+<p>This spec is the canonical source of truth for the procedural
+synthesizer work. Future implementation agents should start here for
+any task that touches <code>lathe/asset_quality/grammar_lowering.py</code> or
+shape-program synthesis upstream of <code>lower_to_v1</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

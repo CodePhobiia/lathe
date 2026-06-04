@@ -1,0 +1,610 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/lathe.selector.schema.json",
+  "title": "Lathe Selector Manifest",
+  "description": "Sidecar manifest emitted alongside every certified Lathe build. Every addressable entity (part, socket, pivot, collision, LOD, material, diagnostic, face/edge/vertex in Phase 2) has a stable id whose canonical form is the corresponding @lathe[...] token. REF-4 of the V0.2 E1 Semantic Reference System. Phase 1 ships the schema only; the REF-5 writer lands in a follow-up wave. See docs/refs.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "latheVersion",
+    "sourcePath",
+    "asset",
+    "variant",
+    "buildHash",
+    "packageHash",
+    "coordinateSystem",
+    "tables",
+    "parts",
+    "sockets",
+    "pivots",
+    "collisions",
+    "lods",
+    "materials",
+    "diagnostics",
+    "relations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Major schema version. Increments are breaking."
+    },
+    "latheVersion": {
+      "type": "string",
+      "description": "Lathe package version that wrote this manifest (lathe.__version__).",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
+    },
+    "sourcePath": {
+      "type": "string",
+      "description": "Repo-relative path to the .lth source that produced the build."
+    },
+    "asset": {
+      "type": "string",
+      "description": "Asset declaration name (matches build_report.json.asset)."
+    },
+    "variant": {
+      "type": ["string", "null"],
+      "description": "Variant name if the build was materialized from a variant, else null."
+    },
+    "buildHash": {
+      "type": "string",
+      "description": "Deterministic hash of the materialized build inputs (source + refs + runtime config).",
+      "pattern": "^[0-9a-f]{8,}$"
+    },
+    "packageHash": {
+      "type": "string",
+      "description": "Hash of the packaged output artifacts (.usda/.glb).",
+      "pattern": "^[0-9a-f]{8,}$"
+    },
+    "coordinateSystem": {
+      "type": "object",
+      "description": "Frame of reference for all geometric data in this manifest.",
+      "additionalProperties": false,
+      "required": ["upAxis", "unit"],
+      "properties": {
+        "upAxis": {
+          "type": "string",
+          "enum": ["Y", "Z", "-Y", "-Z"]
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["m", "cm", "mm", "in"]
+        },
+        "handedness": {
+          "type": "string",
+          "enum": ["right", "left"],
+          "description": "Default: right (OpenUSD convention)."
+        }
+      }
+    },
+    "tables": {
+      "type": "object",
+      "description": "Optional lookup tables keyed by stable id. Consumers may use these to resolve refs without re-reading bundle.json.",
+      "additionalProperties": { "type": "object" }
+    },
+    "parts": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Addressable mesh parts. Empty on asset kinds that do not expose parts.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#part\\.[^\\]]+\\]$" },
+          "name": { "type": "string" },
+          "materialId": { "type": "string" },
+          "bbox": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 6,
+            "maxItems": 6,
+            "description": "[minX, minY, minZ, maxX, maxY, maxZ] in manifest units."
+          },
+          "faceCount": { "type": "integer", "minimum": 0 },
+          "faces": {
+            "type": "array",
+            "minItems": 0,
+            "description": "Phase 2 (REF-6). Empty in Phase 1.",
+            "items": { "type": "object" }
+          },
+          "edges": {
+            "type": "array",
+            "minItems": 0,
+            "description": "Phase 2 (REF-6). Empty in Phase 1.",
+            "items": { "type": "object" }
+          },
+          "vertices": {
+            "type": "array",
+            "minItems": 0,
+            "description": "Phase 2 (REF-6). Empty in Phase 1.",
+            "items": { "type": "object" }
+          }
+        }
+      }
+    },
+    "sockets": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref", "socketType"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#socket\\.[^\\]]+\\]$" },
+          "name": { "type": "string" },
+          "socketType": {
+            "type": "string",
+            "enum": [
+              "attach",
+              "hand",
+              "mount",
+              "port",
+              "attachment_point",
+              "hinge",
+              "door",
+              "slot",
+              "grip",
+              "muzzle",
+              "rail"
+            ],
+            "description": "Typed socket kind. See docs/anchor_catalog.md."
+          },
+          "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "axis": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "transform": {
+            "type": "array",
+            "description": "4x4 row-major homogeneous transform.",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "aabb": {
+            "type": "object",
+            "description": "Axis-aligned bounding box for the socket region.",
+            "additionalProperties": false,
+            "required": ["min", "max"],
+            "properties": {
+              "min": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+              "max": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+            }
+          },
+          "kind": { "type": "string" },
+          "compatKind": { "type": "string" },
+          "parentPartId": { "type": "string" }
+        }
+      }
+    },
+    "pivots": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref", "pivotType"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#pivot\\.[^\\]]+\\]$" },
+          "name": { "type": "string" },
+          "pivotType": {
+            "type": "string",
+            "enum": [
+              "world",
+              "center",
+              "bottom",
+              "contact",
+              "hand_hold",
+              "sight_line"
+            ],
+            "description": "Typed pivot kind. See docs/anchor_catalog.md."
+          },
+          "origin": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "axis": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "transform": {
+            "type": "array",
+            "description": "4x4 row-major homogeneous transform.",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          },
+          "kind": { "type": "string" },
+          "parentPartId": { "type": "string" }
+        }
+      }
+    },
+    "collisions": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#collision\\.[^\\]]+\\]$" },
+          "kind": { "type": "string", "enum": ["box", "sphere", "capsule", "hull", "mesh"] },
+          "parentPartId": { "type": "string" },
+          "hullCount": { "type": "integer", "minimum": 0 },
+          "volume": { "type": "number" }
+        }
+      }
+    },
+    "lods": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "ref"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 0 },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#lod[0-9]+\\..+\\]$" },
+          "partId": { "type": "string" },
+          "triangleCount": { "type": "integer", "minimum": 0 },
+          "screenSize": { "type": "number", "minimum": 0, "maximum": 1 },
+          "distanceMin": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Minimum camera distance (m) at which this LOD becomes active."
+          },
+          "distanceMax": {
+            "type": ["number", "null"],
+            "description": "Maximum camera distance (m) at which this LOD is active; null means unbounded."
+          },
+          "screenCoverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Screen-space coverage hint (fraction of screen height)."
+          }
+        }
+      }
+    },
+    "lodConfig": {
+      "type": "array",
+      "minItems": 0,
+      "description": "STAGE-9 LOD configuration echoed from the asset build config. See docs/engine_handoff.md.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 0 },
+          "ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+          "distance_min": { "type": "number", "minimum": 0 },
+          "distance_max": { "type": ["number", "null"] },
+          "screen_coverage": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "gameplayTags": {
+      "type": "array",
+      "minItems": 0,
+      "description": "STAGE-12 gameplay-tag catalog values declared on the asset. See docs/gameplay_tags.md.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "engineManifests": {
+      "type": "object",
+      "description": "STAGE-10 engine-specific manifest files emitted alongside the main glb, keyed by engine id ('godot', 'unity', 'unreal').",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "format": { "type": "string", "enum": ["json", "yaml"] }
+        }
+      }
+    },
+    "constructionProvenance": {
+      "type": "object",
+      "description": "Compact truth-preserving construction trace for downstream tools that need to know which kernel programs and semantic operations actually shaped the asset.",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "selectedCandidateId",
+        "shapeMode",
+        "geometryKernel",
+        "kernelProgramSucceeded",
+        "kernelProgramPrimary",
+        "kernelProgramBooleanFallbackCount",
+        "kernelProgramManifestCount",
+        "kernelProgramManifests",
+        "operationRecordCount",
+        "operationCounts",
+        "operationRecords"
+      ],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "lathe.selector.construction_provenance.v1"
+        },
+        "selectedCandidateId": { "type": "string" },
+        "shapeMode": { "type": "string" },
+        "geometryKernel": { "type": "string" },
+        "kernelProgramSucceeded": { "type": "boolean" },
+        "kernelProgramPrimary": { "type": "boolean" },
+        "kernelProgramBooleanFallbackCount": { "type": "integer", "minimum": 0 },
+        "kernelProgramManifestCount": { "type": "integer", "minimum": 0 },
+        "fallbackReason": { "type": "string" },
+        "kernelProgramManifests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programKind",
+              "route",
+              "backend",
+              "operandCount",
+              "operationCount",
+              "semanticOperationRecordCount",
+              "requiredCapabilities"
+            ],
+            "properties": {
+              "programKind": { "type": "string" },
+              "route": { "type": "string" },
+              "backend": { "type": "string" },
+              "operandCount": { "type": "integer", "minimum": 0 },
+              "operationCount": { "type": "integer", "minimum": 0 },
+              "semanticOperationRecordCount": { "type": "integer", "minimum": 0 },
+              "requiredCapabilities": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "diagnosticCount": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "operationRecordCount": { "type": "integer", "minimum": 0 },
+        "operationCounts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "operationRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["operation"],
+            "properties": {
+              "operation": { "type": "string" },
+              "operationId": { "type": "string" },
+              "operandId": { "type": "string" },
+              "operandIndex": { "type": "integer" },
+              "part": { "type": "string" },
+              "primitiveType": { "type": "string" },
+              "blendMode": { "type": "string" },
+              "source": { "type": "string" },
+              "target": { "type": "string" },
+              "meshFaceIndex": { "type": "integer", "minimum": 0 },
+              "sampleIndex": { "type": "integer", "minimum": 0 },
+              "instanceCount": { "type": "integer", "minimum": 0 },
+              "pointSet": { "type": "string" },
+              "pointIndex": { "type": "integer", "minimum": 0 },
+              "semanticEquivalentOperationCount": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "kernelFeatureDetailCount": { "type": "integer", "minimum": 0 },
+        "kernelEdgeTreatmentCount": { "type": "integer", "minimum": 0 },
+        "kernelPatternInstanceCount": { "type": "integer", "minimum": 0 },
+        "kernelDeformCount": { "type": "integer", "minimum": 0 },
+        "kernelProfilePathCount": { "type": "integer", "minimum": 0 },
+        "kernelEdgeControlCount": { "type": "integer", "minimum": 0 },
+        "kernelComponentAssemblyCount": { "type": "integer", "minimum": 0 },
+        "kernelSdfFieldCount": { "type": "integer", "minimum": 0 },
+        "kernelTerrainFieldCount": { "type": "integer", "minimum": 0 },
+        "kernelScatterCount": { "type": "integer", "minimum": 0 },
+        "kernelSurfaceDamageCount": { "type": "integer", "minimum": 0 },
+        "kernelFeatureDetails": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelEdgeTreatments": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelPatternInstances": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelDeforms": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelProfilePaths": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelEdgeControls": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelComponentAssemblies": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelSdfFields": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelTerrainFields": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelScatters": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        },
+        "kernelSurfaceDamage": {
+          "$ref": "#/$defs/kernelConstructionRecords"
+        }
+      }
+    },
+    "materials": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#material\\.[^\\]]+\\]$" },
+          "displayName": { "type": "string" },
+          "textureMemoryMB": { "type": "number", "minimum": 0 },
+          "textureSet": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ref", "severity"],
+        "properties": {
+          "id": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^@lathe\\[.+#diagnostic\\.[^\\]]+\\]$" },
+          "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+          "stage": { "type": "string" },
+          "message": { "type": "string" },
+          "code": { "type": "string" },
+          "refs": {
+            "type": "array",
+            "description": "REF-13 back-links: @lathe[...] tokens this diagnostic relates to.",
+            "items": { "type": "string", "pattern": "^@lathe\\[.+\\]$" }
+          },
+          "suggestedCommands": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "relations": {
+      "type": "object",
+      "description": "Cross-entity relations (socket <-> part, collision <-> part, LOD <-> part, etc.). Keys are relation names; values are arrays of 2-tuples of @lathe[...] tokens.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "buffers": {
+      "type": "object",
+      "description": "Phase-2 optional pointer to the compact selectors.bin file emitted by REF-6.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "sizeBytes"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "sizeBytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "description": "Optional budget report carried through from the optimize stage (STAGE-7/8). Same shape as schema/budget_manifest.schema.json. Absent on builds that predate STAGE-7/8.",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "texture_memory", "materials", "draw_calls", "overall_status"],
+      "properties": {
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "overall_status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+        "texture_memory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["budget_bytes", "estimated_bytes", "per_material", "status"],
+          "properties": {
+            "budget_bytes": { "type": "integer", "minimum": 0 },
+            "estimated_bytes": { "type": "integer", "minimum": 0 },
+            "per_material": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "bytes"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "bytes": { "type": "integer", "minimum": 0 }
+                }
+              }
+            },
+            "status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+            "reason": { "type": "string" }
+          }
+        },
+        "materials": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["budget", "count", "status", "materials"],
+          "properties": {
+            "budget": { "type": "integer", "minimum": 0 },
+            "count": { "type": "integer", "minimum": 0 },
+            "status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+            "materials": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "reason": { "type": "string" }
+          }
+        },
+        "draw_calls": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["budget", "estimated", "status", "breakdown"],
+          "properties": {
+            "budget": { "type": "integer", "minimum": 0 },
+            "estimated": { "type": "integer", "minimum": 0 },
+            "status": { "type": "string", "enum": ["pass", "warning", "error", "skipped"] },
+            "breakdown": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["lod", "count"],
+                "properties": {
+                  "lod": { "type": "integer", "minimum": 0 },
+                  "count": { "type": "integer", "minimum": 0 }
+                }
+              }
+            },
+            "reason": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "kernelConstructionRecords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation"],
+        "properties": {
+          "operation": { "type": "string" },
+          "kind": { "type": "string" },
+          "sourcePart": { "type": "string" },
+          "method": { "type": "string" },
+          "count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

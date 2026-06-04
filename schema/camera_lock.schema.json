@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/camera-lock-v1.json",
+  "title": "Lathe Wonder Camera Lock v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "camera_id",
+    "projection",
+    "type",
+    "target",
+    "framing",
+    "purpose",
+    "camera_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.camera_lock.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "camera_id": {
+      "$ref": "#/$defs/camera_id"
+    },
+    "projection": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "$ref": "#/$defs/scene_ref"
+    },
+    "framing": {
+      "$ref": "#/$defs/camera_framing"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transform": {
+      "$ref": "#/$defs/transform"
+    },
+    "position": {
+      "$ref": "#/$defs/vector3"
+    },
+    "rotation": {
+      "$ref": "#/$defs/vector3"
+    },
+    "scale": {
+      "$ref": "#/$defs/vector3"
+    },
+    "fov_degrees": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 180
+    },
+    "camera_hash": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "camera_id": {
+      "type": "string",
+      "pattern": "^camera_[a-z0-9_]{3,80}$"
+    },
+    "scene_ref": {
+      "type": "string",
+      "pattern": "^(obj|region|camera|light|curiosity|hidden)_[a-z0-9_]{3,80}$"
+    },
+    "camera_framing": {
+      "enum": [
+        "cinematic_wide",
+        "inspection",
+        "topdown",
+        "debug",
+        "contact_sheet",
+        "before_after"
+      ]
+    },
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        },
+        "scale": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

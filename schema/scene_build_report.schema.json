@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-build-report-v1.json",
+  "title": "Lathe Wonder Scene Build Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "scene_version",
+    "mode",
+    "status",
+    "build_options",
+    "artifacts",
+    "counts",
+    "quality",
+    "asset_build_reports",
+    "asset_materialization",
+    "cache_reuse",
+    "provider_fallback_trace",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_build_report.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "mode": {
+      "enum": [
+        "preview",
+        "final"
+      ]
+    },
+    "status": {
+      "enum": [
+        "proxy_scene_package_built",
+        "failed"
+      ]
+    },
+    "build_options": {
+      "$ref": "#/$defs/build_options"
+    },
+    "artifacts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/relative_path"
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "score"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "passed_with_warnings",
+            "failed"
+          ]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "asset_build_reports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset_build_report"
+      }
+    },
+    "asset_materialization": {
+      "$ref": "#/$defs/asset_materialization"
+    },
+    "cache_reuse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_tasks",
+        "reused_assets",
+        "built_assets"
+      ],
+      "properties": {
+        "asset_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reused_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "built_assets": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "provider_fallback_trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime",
+        "effective_runtime",
+        "fallbacks",
+        "diagnostic_policy"
+      ],
+      "properties": {
+        "runtime": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "effective_runtime": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "fallbacks": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "diagnostic_policy": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^(asset|assembly|render|export)_task_[a-z0-9_]{3,120}$"
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 260,
+      "not": {
+        "pattern": "(^/|^[A-Za-z]:|\\\\|(^|/)\\.\\.(/|$))"
+      }
+    },
+    "build_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "executor",
+        "mode",
+        "runtime_config",
+        "deterministic",
+        "allow_fallback",
+        "strict",
+        "diagnostic_policy",
+        "runtime",
+        "effective_runtime",
+        "fallbacks"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.scene_build_options.v1"
+        },
+        "executor": {
+          "const": "lathe.scene.executor.offline_proxy_v1"
+        },
+        "mode": {
+          "enum": [
+            "preview",
+            "final"
+          ]
+        },
+        "runtime_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provided",
+            "path"
+          ],
+          "properties": {
+            "provided": {
+              "type": "boolean"
+            },
+            "path": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 500
+            }
+          }
+        },
+        "deterministic": {
+          "type": "boolean"
+        },
+        "allow_fallback": {
+          "type": "boolean"
+        },
+        "strict": {
+          "type": "boolean"
+        },
+        "diagnostic_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scene_validation",
+            "plan_diagnostics",
+            "fallback_diagnostics"
+          ],
+          "properties": {
+            "scene_validation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "plan_diagnostics": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fallback_diagnostics": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider_calls",
+            "asset_build",
+            "asset_materialization",
+            "renderer",
+            "exporter"
+          ],
+          "properties": {
+            "provider_calls": {
+              "const": "not_executed"
+            },
+            "asset_build": {
+              "enum": [
+                "deterministic_proxy_manifest",
+                "lathe.asset_build_pipeline.v1"
+              ]
+            },
+            "asset_materialization": {
+              "enum": [
+                "not_executed",
+                "lathe.scene.materialize.v1"
+              ]
+            },
+            "renderer": {
+              "const": "lathe.scene.proxy_renderer.v1"
+            },
+            "exporter": {
+              "const": "lathe.scene.proxy_glb_exporter.v1"
+            }
+          }
+        },
+        "effective_runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shape_provider",
+            "shape_strict",
+            "shape_allow_fallback"
+          ],
+          "properties": {
+            "shape_provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "shape_strict": {
+              "type": "boolean"
+            },
+            "shape_allow_fallback": {
+              "type": "boolean"
+            }
+          }
+        },
+        "fallbacks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deterministic_proxy_assets",
+            "deterministic_proxy_renderer",
+            "deterministic_proxy_glb_exporter",
+            "provider_fallbacks_executed"
+          ],
+          "properties": {
+            "deterministic_proxy_assets": {
+              "const": true
+            },
+            "deterministic_proxy_renderer": {
+              "const": true
+            },
+            "deterministic_proxy_glb_exporter": {
+              "const": true
+            },
+            "provider_fallbacks_executed": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "asset_build_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "path",
+        "cache_key",
+        "object_ids",
+        "source",
+        "status",
+        "reused",
+        "reuse_reason"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "cache_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/object_id"
+          }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "status": {
+          "enum": [
+            "built",
+            "reused",
+            "failed"
+          ]
+        },
+        "reused": {
+          "type": "boolean"
+        },
+        "reuse_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "asset_materialization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "manifest_path",
+        "builds_requested",
+        "builds_succeeded",
+        "builds_failed"
+      ],
+      "properties": {
+        "requested": {
+          "type": "boolean"
+        },
+        "manifest_path": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/relative_path"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "builds_requested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "builds_succeeded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "builds_failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

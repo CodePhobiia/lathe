@@ -1,0 +1,26 @@
+{
+  "asset": "service_cabinet",
+  "system": "lathe_fallback",
+  "date": "2026-04-24",
+  "result": "ok",
+  "metrics": {
+    "wall_clock_s": 2.457,
+    "peak_memory_mb": null,
+    "score": 0.820871,
+    "threshold": 0.82,
+    "certified": true,
+    "glb_sha256": "5ce826894017f965ffe036684dcab3a28204be9b5e2fcc2f08069c5ffbfb34a6",
+    "triangle_count": 82,
+    "uv_valid": true,
+    "collision_present": true,
+    "pivot_correct": true,
+    "reproducible": true,
+    "reproducibility_hashes": [
+      "5ce826894017f965ffe036684dcab3a28204be9b5e2fcc2f08069c5ffbfb34a6",
+      "5ce826894017f965ffe036684dcab3a28204be9b5e2fcc2f08069c5ffbfb34a6",
+      "5ce826894017f965ffe036684dcab3a28204be9b5e2fcc2f08069c5ffbfb34a6"
+    ]
+  },
+  "diagnostics": [],
+  "note": null
+}

@@ -1,0 +1,6 @@
+# Phase 3: SHA256 sums of tmp_release_dist/*
+# Captured: 2026-04-28
+# Tool: python hashlib (sha256sum unavailable on Windows native bash)
+
+b6b75bc4b7ebee329db8fc779ee111ddec2094ba0be4c015cf6a42f1b6dcfc7b  lathe-0.2.0rc1-py3-none-any.whl
+3fadbf090f3213298f204699d1bc68fc58236725db4273d324a05f02725118ba  lathe-0.2.0rc1.tar.gz

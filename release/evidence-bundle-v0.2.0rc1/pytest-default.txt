@@ -1,0 +1,208 @@
+..............................................F...................... [  5%]
+............................................................... [ 10%]
+........................................................................ [ 15%]
+.........................s.............................................. [ 20%]
+........................................................................ [ 26%]
+........................................................................ [ 31%]
+................FF.........................................F............ [ 37%]
+............................................. [ 40%]
+......................................s.......................... [ 45%]
+.................ssssssssF.............................................. [ 51%]
+.............................ss......................................... [ 56%]
+...s............................................................. [ 61%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........ss..................................................... [ 77%]
+............s........................................................... [ 82%]
+............................................s.....ss.................... [ 88%]
+........................................................................ [ 93%]
+........................................................................ [ 99%]
+.........                                                                [100%]
+================================== FAILURES ===================================
+__ LatheV08LanguageTests.test_lathe_bench_executes_source_defined_benchmarks __
+
+self = <test_language_v08.LatheV08LanguageTests testMethod=test_lathe_bench_executes_source_defined_benchmarks>
+
+    def test_lathe_bench_executes_source_defined_benchmarks(self) -> None:
+>       result = run_lathe_benchmarks([str(CHEST_EXAMPLE)])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_language_v08.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+lathe\bench_runtime.py:54: in run_lathe_benchmarks
+    negative = _negative_scorecard(Path.cwd(), benchmark_entry, expected_to_fail=True)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lathe\eval_harness.py:129: in _negative_scorecard
+    snapshot = _load_legacy_snapshot(workspace, benchmark)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lathe\eval_harness.py:67: in _load_legacy_snapshot
+    shape_bundle = json.loads((build_dir / "stages" / "shape" / "bundle.json").read_text(encoding="utf-8"))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\pathlib\_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\pathlib\_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/lathe_v0_1/.claude/worktrees/readiness-pass-v020rc1/dist_v06_chest/brassbound_chest/stages/shape/bundle.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'D:\\lathe_v0_1\\.claude\\worktrees\\readiness-pass-v020rc1\\dist_v06_chest\\brassbound_chest\\stages\\shape\\bundle.json'
+
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\pathlib\_local.py:537: FileNotFoundError
+_______ test_public_docs_do_not_contain_private_path_or_secret_literals _______
+
+    def test_public_docs_do_not_contain_private_path_or_secret_literals() -> None:
+        patterns = {
+            "windows_user_path": re.compile(r"[A-Z]:[/\\]Users[/\\][^`\\s]+", re.IGNORECASE),
+            "private_key": re.compile(r"BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY"),
+            "aws_access_key": re.compile(r"AKIA[0-9A-Z]{16}"),
+            "long_provider_secret": re.compile(
+                r"(?i)(?:api[_-]?key|token|secret)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{24,}"
+            ),
+        }
+        failures: list[str] = []
+        for path in _public_markdown_files():
+            text = path.read_text(encoding="utf-8")
+            for name, pattern in patterns.items():
+                for match in pattern.finditer(text):
+                    relative = path.relative_to(REPO_ROOT).as_posix()
+                    failures.append(f"{relative}:{_line_number(text, match.start())} matched {name}")
+    
+>       assert failures == []
+E       AssertionError: assert ['docs/releas...ws_user_path'] == []
+E         
+E         Left contains one more item: 'docs/release/telemetry-verification-v0.2.0rc1.md:24 matched windows_user_path'
+E         Use -v to get more diff
+
+tests\unit\test_docs_static_audit.py:231: AssertionError
+_ test_source_and_public_docs_do_not_contain_private_path_or_secret_literals __
+
+    def test_source_and_public_docs_do_not_contain_private_path_or_secret_literals() -> None:
+        patterns = {
+            "checkout_path": re.compile(r"\b[A-Z]:[/\\][^`'\"]*lathe_v0_1\b", re.IGNORECASE),
+            "windows_user_path": re.compile(r"[A-Z]:[/\\]Users[/\\][^`\\s]+", re.IGNORECASE),
+            "private_key": re.compile(r"BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY"),
+            "aws_access_key": re.compile(r"AKIA[0-9A-Z]{16}"),
+            "long_provider_secret": re.compile(
+                r"(?i)(?:api[_-]?key|token|secret)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{24,}"
+            ),
+        }
+        files = [*_public_markdown_files()]
+        for root in SOURCE_TEXT_ROOTS:
+            files.extend(path for path in root.rglob("*.py") if path.is_file())
+    
+        failures: list[str] = []
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            for name, pattern in patterns.items():
+                for match in pattern.finditer(text):
+                    relative = path.relative_to(REPO_ROOT).as_posix()
+                    failures.append(f"{relative}:{_line_number(text, match.start())} matched {name}")
+    
+>       assert failures == []
+E       AssertionError: assert ['docs/releas...ws_user_path'] == []
+E         
+E         Left contains one more item: 'docs/release/telemetry-verification-v0.2.0rc1.md:24 matched windows_user_path'
+E         Use -v to get more diff
+
+tests\unit\test_docs_static_audit.py:256: AssertionError
+______________________ test_noop_pass_nodes_are_tracked _______________________
+
+    def test_noop_pass_nodes_are_tracked() -> None:
+        observed: set[str] = set()
+        for path in _source_files():
+            rel = path.relative_to(REPO_ROOT).as_posix()
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Pass):
+                    observed.add(f"{rel}:{node.lineno}")
+    
+>       assert observed == PASS_ALLOWLIST
+E       AssertionError: assert {'lathe/cache...s.py:66', ...} == {'lathe/cache...s.py:66', ...}
+E         
+E         Extra items in the left set:
+E         'lathe/validators/urdf_validation.py:205'
+E         Extra items in the right set:
+E         'lathe/validators/urdf_validation.py:207'
+E         Use -v to get more diff
+
+tests\unit\test_exception_inventory.py:87: AssertionError
+_______________________ test_active_markers_are_tracked _______________________
+
+    def test_active_markers_are_tracked() -> None:
+        import re
+    
+        offenders: list[str] = []
+        marker_re = re.compile(MARKER_PATTERN, re.IGNORECASE)
+        for path in _scan_files():
+            rel = path.relative_to(REPO_ROOT).as_posix()
+            if rel in EXCLUDED_PATHS:
+                continue
+            tracked_needles = TRACKED_MARKERS.get(rel, ())
+>           for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\unit\test_marker_inventory.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\pathlib\_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\pathlib\_abc.py:633: in read_text
+    return f.read()
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <encodings.utf_8.IncrementalDecoder object at 0x000001D7F98E5A30>
+input = b'\r\n \\u2502  \\u26a0  Warning from the Material for MkDocs team\r\n \\u2502\r\n \\u2502  MkDocs 2.0, the underlying...EC-6, V0.2 P0)\': found 1 diagrams, adding scripts\r\nINFO    -  Documentation built in 17.76 seconds\r\nexit_code=0\n'
+final = True
+
+>   ???
+E   UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 227: invalid continuation byte
+
+<frozen codecs>:325: UnicodeDecodeError
+============================== warnings summary ===============================
+tests/unit/test_ref.py::test_resolve_asset_mismatch
+  D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\tests\unit\test_ref.py:251: StaleRefWarning: @lathe[D:\lathe_v0_1\.claude\worktrees\readiness-pass-v020rc1\.tmp_tests\pytest-26660-8d1842b1\test_resolve_asset_mismatch80\mini_drone#asset.not_the_asset] does not match build_report.json asset 'mini_drone' — ref may be stale
+    result = resolve_ref(node, repo_root=mini_build)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\unit\test_cache_failure_modes.py:40: symlinks are unavailable in this environment
+SKIPPED [1] tests\unit\test_geometry_kernel_selection.py:144: manifold3d not installed
+SKIPPED [1] tests\unit\test_manifold_adapter.py:25: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:34: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:43: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:52: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:62: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:71: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:78: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_manifold_adapter.py:85: manifold3d is not installed; install via `pip install manifold3d`
+SKIPPED [1] tests\unit\test_paths.py:106: symlinks unsupported in this environment
+SKIPPED [1] tests\unit\test_paths.py:117: symlinks unsupported in this environment
+SKIPPED [1] tests\unit\test_publish.py:218: POSIX permission check
+SKIPPED [1] tests\unit\test_sandbox_blender.py:195: POSIX resource-limit fixture uses RLIMIT_CPU in the child process
+SKIPPED [1] tests\unit\test_sandbox_blender.py:216: RLIMIT_AS memory fixture is deterministic only on Linux
+SKIPPED [1] tests\unit\test_signed_repro.py:119: POSIX permission bits only
+SKIPPED [1] tests\unit\test_subproc_failure_modes.py:71: POSIX symlink artifact escape coverage only
+SKIPPED [1] tests\unit\test_subproc_failure_modes.py:175: POSIX symlink executable rejection only
+SKIPPED [1] tests\unit\test_subproc_failure_modes.py:187: resource.setrlimit is POSIX-only
+FAILED tests/test_language_v08.py::LatheV08LanguageTests::test_lathe_bench_executes_source_defined_benchmarks
+FAILED tests/unit/test_docs_static_audit.py::test_public_docs_do_not_contain_private_path_or_secret_literals
+FAILED tests/unit/test_docs_static_audit.py::test_source_and_public_docs_do_not_contain_private_path_or_secret_literals
+FAILED tests/unit/test_exception_inventory.py::test_noop_pass_nodes_are_tracked
+FAILED tests/unit/test_marker_inventory.py::test_active_markers_are_tracked
+5 failed, 1291 passed, 19 skipped, 127 deselected, 1 warning, 62 subtests passed in 294.88s (0:04:54)
+exit_code=1

@@ -1,0 +1,6354 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Declarative language + reference compiler for 3D asset intent">
+      
+      
+      
+        <link rel="canonical" href="https://talmerri.github.io/lathe/release/anti-pattern-sweep-v0.2.0rc1/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Anti-pattern doc sweep — v0.2.0rc1 - Lathe</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#anti-pattern-doc-sweep-v020rc1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Lathe" class="md-header__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Lathe
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Anti-pattern doc sweep — v0.2.0rc1
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../cli_reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../canonical_commands/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Commands
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Troubleshooting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../product_value/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Product Value
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../gallery/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Gallery
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quality_dashboard/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quality Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../deterministic_builds/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deterministic Builds
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../wonder-readiness/00_overview/" class="md-tabs__link">
+          
+  
+  
+  Wonder Readiness
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorial/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cookbook/" class="md-tabs__link">
+          
+  
+  
+  Cookbook
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adr/" class="md-tabs__link">
+          
+  
+  
+  Decisions
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language_reference/" class="md-tabs__link">
+          
+  
+  
+  Language Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/cli/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../spec/lathe-v0.1/" class="md-tabs__link">
+          
+  
+  
+  Specs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Release
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../privacy/" class="md-tabs__link">
+          
+  
+  
+  Legal and privacy
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Lathe" class="md-nav__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Lathe
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../canonical_commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../product_value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Value
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gallery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quality_dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deterministic_builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deterministic Builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder Readiness
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wonder Readiness
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/00_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/01_dream_brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dream Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/02_scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/03_scene_patch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Patch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/04_render_inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/05_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/07_scene_build_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Build Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/08_scene_package/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/pre_wonder_baseline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pre-Wonder Baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/phase0_working_tree_classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 0 Working Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/09_scene_validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/10_render_repair_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Repair Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/11_curiosity_anchors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Curiosity Anchors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/12_world_memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/13_branching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Branching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/14_roblox_profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roblox Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/15_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/16_limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/first_asset/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first asset
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/second_asset_reconstruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/fallback_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fallback provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/learned_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learned provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/engine_export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engine export workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/deep_dive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deep dive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookbook
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Cookbook
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/01_generate_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 Generate flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/02_reconstruct_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/03_kit_assembly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 Kit assembly
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/04_mobile_adapt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 Mobile adapt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/05_surface_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 Surface control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/06_variant_patching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 Variant patching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/07_custom_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 Custom backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/08_runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/09_certification_debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 Certification debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/10_blender_bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 Blender bridge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/reading_a_trace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading a trace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/per_validator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-validator reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/runtime_config_schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/stage_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/shape_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape stage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0000-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0001-shape-handoff-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0001 Shape handoff contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0002-blender-and-xatlas-fallback-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0002 Blender and xatlas fallback policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0003-provider-mux-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0003 Provider mux design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0004-plugin-entry-points/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0004 Plugin entry points
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0005-layering-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0005 Layering enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0006-validator-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0006 Validator composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0007-resolver-loc-exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0007 Resolver LOC exception
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0008-geometry-kernel-manifold/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0008 Geometry kernel Manifold
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0009-public-contract-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0009 Public contract index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0010-experimental-scene-source-language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0010 Experimental scene source language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0011-roblox-export-lane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0011 Roblox export lane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0012-wonder-service-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0012 Wonder service boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0013-wonder-layer-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0013 Wonder Layer boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_15" id="__nav_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated current reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schema_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalized schema reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../v08_language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v0.8
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16" id="__nav_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/normalizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/checker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/planner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/executor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/capabilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/wonder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scene/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_14" id="__nav_16_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Shape
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/asset_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_kernel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly kernel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scaffold_compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaffold compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature grammar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mesh_finalize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mesh finalize
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_15" id="__nav_16_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IR modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    IR modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/fit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/transfer_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transfer IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/kit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reuse_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reuse IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reference_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_16" id="__nav_16_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Surface
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/materials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Materials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pbr_deriver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PBR deriver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/texture_control_pack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Texture control pack
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/surface_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_17" id="__nav_16_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validators
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validators
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/semantic_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semantic quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/visual_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/flow_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flow quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/surface_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/silhouette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Silhouette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_18" id="__nav_16_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/bridge/blender_plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blender plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stdlib/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stdlib
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_17" id="__nav_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Specs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spec/lathe-v0.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language v0.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.0-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.2-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Maintenance and triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dependency_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_19" >
+        
+          
+          <label class="md-nav__link" for="__nav_19" id="__nav_19_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_19_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_19">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Release
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quality-bar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality bar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tasklist_milestones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Readiness milestones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../asset-provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-note-value-guidance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release-note value guidance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_20" >
+        
+          
+          <label class="md-nav__link" for="__nav_20" id="__nav_20_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal and privacy
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_20_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_20">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Legal and privacy
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy notice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../terms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms applicability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-after-launch-used-to-defer-monitoring-or-rigor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "after launch" used to defer monitoring or rigor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-probably-fine-should-be-fine-vague-legal-hand-waving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "probably fine" / "should be fine" / vague legal hand-waving
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-works-on-my-machine-or-equivalent-no-matrix-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "works on my machine" or equivalent — no matrix evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-scales-to-n-high-throughput-thousands-of-users-scale-claims-without-a-load-artifact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "scales to N", "high throughput", "thousands of users" — scale claims without a load artifact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-secure-hardened-audited-production-ready-security-claims-without-threat-model-scan-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "secure", "hardened", "audited", "production-ready" security claims without threat-model + scan evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-best-practices-without-naming-the-specific-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "best practices" without naming the specific practice
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-production-ready-stable-ga-10-battle-tested" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "production-ready" / "stable" / "GA" / "1.0" / "battle-tested"
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-users-wont-do-that-assumptions-we-trust-users-to-without-a-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "users won't do that" assumptions / "we trust users to" without a guard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-hotfix-mentioned-as-mitigation-without-rollback-owner-date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: "hotfix" mentioned as mitigation without rollback owner + date
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anti-pattern-claims-of-pypi-godot-assetlib-discord-signed-partners-benchmark-publication-without-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-pattern: claims of PyPI / Godot AssetLib / Discord / signed partners / benchmark publication without evidence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register-completeness-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk-register completeness check
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap-we-chose-not-to-build-x-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap "we chose not to build X" entries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scale-security-claim-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale + security claim audit
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="anti-pattern-doc-sweep-v020rc1">Anti-pattern doc sweep — v0.2.0rc1<a class="headerlink" href="#anti-pattern-doc-sweep-v020rc1" title="Permanent link">&para;</a></h1>
+<p><strong>Version:</strong> 0.2.0rc1 (pre-release reference compiler scaffold)
+<strong>Captured:</strong> 2026-04-28
+<strong>Owner:</strong> Tal Merri (@talmerri)
+<strong>Worktree:</strong> <code>.claude/worktrees/readiness-pass-v020rc1/</code>
+<strong>Branch:</strong> <code>worktree-readiness-pass-v020rc1</code>
+<strong>Scope:</strong> Phase 17 of the v0.2.0rc1 readiness remediation pass — read-only sweep of <code>docs/</code>, <code>README.md</code>, <code>CHANGELOG.md</code>, <code>spec/</code>, and in-repo marketing copy for the ten launch-anti-pattern claim families. Findings recorded as file:line + disposition; no doc text was edited in this pass (the lead aggregates rewrites).</p>
+<p>This document is the canonical Phase-17 sweep record. The aggregator doc
+(<code>docs/release/evidence-v0.2.0rc1.md</code> Phase 17 section) cross-links to it.</p>
+<p>Pre-release-only language is used throughout: the project is a release candidate, not a stable / production / GA release.</p>
+<hr />
+<h3 id="anti-pattern-after-launch-used-to-defer-monitoring-or-rigor">Anti-pattern: "after launch" used to defer monitoring or rigor<a class="headerlink" href="#anti-pattern-after-launch-used-to-defer-monitoring-or-rigor" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/rollback-plan-v0.2.0rc1.md:292</code></td>
+<td><code>## What is irreversible after launch</code></td>
+<td>keep-with-caveat</td>
+<td>Section names <em>what becomes irreversible at the moment of launch</em> — that is rigor (a list of things that cannot be undone), not deferral. Caveat: section is intrinsic to a rollback plan and does not promise post-launch monitoring.</td>
+</tr>
+<tr>
+<td><code>docs/ops/on-call.md:80</code></td>
+<td><code>## Post-launch operating cadence (first 14 days)</code></td>
+<td>keep-with-caveat</td>
+<td>Title introduces a cadence table that names owner, content, and cadence per day for 14 days — concrete, not deferred. Caveat: cadence is gated on the first public-launch milestone (not v0.2.0rc1).</td>
+</tr>
+<tr>
+<td><code>docs/ops/on-call.md:106-112</code></td>
+<td><code>### Post-launch sprint plan (skeleton)</code> and the hotfix-/stabilization-/forward-progress-lane bullets</td>
+<td>keep-with-caveat</td>
+<td>Skeleton has 40/40/20 capacity allocation, named owner (Tal Merri), Day 7 + Day 14 review checkpoints. Caveat: 0% reservation for v0.2.0rc1 itself per <code>raci-v0.2.0rc1.md:72</code>.</td>
+</tr>
+<tr>
+<td><code>docs/security/threat_model.md:217</code></td>
+<td><code>Next review: 2026-05-28 or T+30 post-launch (whichever later)</code></td>
+<td>keep-with-caveat</td>
+<td>Names a date and a trigger; not deferral. Caveat: the date is concrete (2026-05-28) and the post-launch trigger only widens the window. Same pattern at <code>docs/security/supply-chain-review-v0.2.0rc1.md:237</code>, <code>docs/security/security-review-scope-v0.2.0rc1.md:399</code>, <code>docs/security/secret-hygiene-v0.2.0rc1.md:114</code>, <code>docs/security/owasp-mapping-v0.2.0rc1.md:404</code>.</td>
+</tr>
+<tr>
+<td><code>docs/community/early_access.md:3</code></td>
+<td><code>weekly cadence looks like after launch</code></td>
+<td>keep-with-caveat</td>
+<td>Phrase introduces a cadence that is then concretely scoped to the V0.5 public launch (Month 4) per <code>docs/roadmap_public.md</code>. Not v0.2.0rc1 launch; not deferral.</td>
+</tr>
+<tr>
+<td><code>docs/business/design_partners.md:74</code></td>
+<td><code>**Month 5 (post-launch)**: design-partner retro</code></td>
+<td>keep-with-caveat</td>
+<td>Specific event tied to a specific month after the V0.5 OSS launch. Concrete.</td>
+</tr>
+<tr>
+<td><code>docs/Specs/Lathe-V1.0-Spec.md:468</code></td>
+<td><code>V1.0 MUST ship first-party hero programs for:</code></td>
+<td>keep-with-caveat</td>
+<td>"ship first" is the verb "ship" + "first-party"; not the anti-pattern phrase "ship first, fix later". Caveat: this is V1.0 spec, not v0.2.0rc1 copy.</td>
+</tr>
+<tr>
+<td><code>readiness-tasks.md:155, 418, 420, 780, 781, 826</code></td>
+<td>tracking entries for "after launch" / "post-launch"</td>
+<td>keep-with-caveat</td>
+<td>These are the readiness-pass tracking lines that <em>exist to find this anti-pattern</em>; they reference docs already audited above. Read-only; not public copy.</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>requires-fix-before-launch:</code> items in this anti-pattern.</p>
+<hr />
+<h3 id="anti-pattern-probably-fine-should-be-fine-vague-legal-hand-waving">Anti-pattern: "probably fine" / "should be fine" / vague legal hand-waving<a class="headerlink" href="#anti-pattern-probably-fine-should-be-fine-vague-legal-hand-waving" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/godot_integration.md:196</code></td>
+<td><code>polling (2s) via FileAccess.get_modified_time. Good enough for</code></td>
+<td>keep-with-caveat</td>
+<td>Phrase is qualified by the v0.3 alpha scope of the Godot demo and the immediate next sentence describes when polling will be replaced. Caveat: technical scope, not legal.</td>
+</tr>
+<tr>
+<td><code>docs/blog/04_godot_integration_walkthrough.md:152</code></td>
+<td><code>whether the build output is good enough to replace a</code></td>
+<td>keep-with-caveat</td>
+<td>Qualified — sentence is asking whether the certified build clears the human-eyeball test, with the certification metrics defined elsewhere. Not vague; not a deferral.</td>
+</tr>
+<tr>
+<td><code>docs/blog/01_the_build_passed.md:89</code></td>
+<td><code>not inspect a mesh in Blender to decide if it was "good enough."</code></td>
+<td>keep-with-caveat</td>
+<td>Quoted — the post is critiquing the historical "good enough" eyeball check and replacing it with deterministic certification. Quotation marks make this explicit.</td>
+</tr>
+<tr>
+<td><code>docs/blog/01_the_build_passed.md:148</code></td>
+<td><code>whether the certified build is good enough to ship</code></td>
+<td>keep-with-caveat</td>
+<td>Same context as line 89 — explicitly defining what "good enough" means via certification.</td>
+</tr>
+<tr>
+<td><code>docs/integrations/godot.md:95</code></td>
+<td><code>2s polling loop is good enough for the demo;</code></td>
+<td>keep-with-caveat</td>
+<td>Time-bounded ("for the demo"); not load-bearing for production claims.</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>requires-fix-before-launch:</code> items in this anti-pattern. No "probably fine" or vague legal hand-waving language was found in any release-window or public copy. <code>readiness-tasks.md:827</code> confirms the sweep was actively conducted.</p>
+<hr />
+<h3 id="anti-pattern-works-on-my-machine-or-equivalent-no-matrix-evidence">Anti-pattern: "works on my machine" or equivalent — no matrix evidence<a class="headerlink" href="#anti-pattern-works-on-my-machine-or-equivalent-no-matrix-evidence" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(none found)</td>
+<td>—</td>
+<td>—</td>
+<td>No matches in <code>docs/</code>, <code>README.md</code>, <code>CHANGELOG.md</code>, <code>spec/</code>, or in-repo marketing copy. <code>readiness-tasks.md:828</code> confirms the sweep was actively conducted. The supported test matrix is documented in <code>docs/release/support-matrix.md</code> and the CI matrix runs Python 3.11 + 3.12.</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>requires-fix-before-launch:</code> items in this anti-pattern.</p>
+<hr />
+<h3 id="anti-pattern-scales-to-n-high-throughput-thousands-of-users-scale-claims-without-a-load-artifact">Anti-pattern: "scales to N", "high throughput", "thousands of users" — scale claims without a load artifact<a class="headerlink" href="#anti-pattern-scales-to-n-high-throughput-thousands-of-users-scale-claims-without-a-load-artifact" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:171-173</code></td>
+<td><code>**Scale / load claims** — "scales to N assets", "thousands of users", "high throughput", etc.</code></td>
+<td>keep-with-caveat</td>
+<td>This <em>is</em> the forbidden-claims gate (item 11 of the forbidden-claims list). It explicitly forbids scale claims pre-launch. Anti-pattern policy enforcement, not a violation.</td>
+</tr>
+<tr>
+<td><code>docs/release/launch-narrative-v0.2.0rc1.md:28</code></td>
+<td><code>not benchmarked at scale, not security-audited by a third party</code></td>
+<td>keep-with-caveat</td>
+<td>Phrase is a <em>negation</em> — explicitly disclaims scale benchmarking. Properly qualified.</td>
+</tr>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:151</code></td>
+<td><code>has not been deployed at scale by external users</code></td>
+<td>keep-with-caveat</td>
+<td>Negation — explicitly disclaims field deployment scale.</td>
+</tr>
+<tr>
+<td><code>docs/blog/05_certification_as_the_product.md:123, 139, 141, 197</code></td>
+<td>"fleet of runners with learned-backend access already…", "scale bet, not a feature moat", "build-pass-at-scale"</td>
+<td>rewrite (recommended; not blocker)</td>
+<td>Blog post is a <em>forward-looking thesis</em> essay, not a v0.2.0rc1 capability claim. The "build-pass-at-scale" phrase at line 141 risks being read as a current capability if the post is republished publicly during the launch window. Recommended replacement: re-frame each "at scale" usage with explicit time gating ("when the V1.0 hosted SaaS lands"); flag the post itself with a "thesis essay, not v0.2.0rc1 capability claim" header before public republishing.</td>
+</tr>
+<tr>
+<td><code>docs/business/monetization.md:24</code></td>
+<td><code>Studio support doesn't scale with one maintainer</code></td>
+<td>keep-with-caveat</td>
+<td>Negation — disclaiming the scalability of an option that is <em>rejected</em>. Concrete.</td>
+</tr>
+<tr>
+<td><code>docs/business/unit_economics.md:53, 148</code></td>
+<td><code>Scale | Active users | Maintainer h/week …</code>, <code>load scales with opt-in rate only</code></td>
+<td>keep-with-caveat</td>
+<td>Both are internal capacity/cost models, not external claims. Caveat: these are scratch-pad sketches per <code>docs/business/monetization.md:43</code> and not pricing copy.</td>
+</tr>
+<tr>
+<td><code>docs/architecture/runtime-posture-v0.2.0rc1.md:40</code></td>
+<td><code>RPS, load tests, and "sustained 30-minute test at target peak × 3" do not apply.</code></td>
+<td>keep-with-caveat</td>
+<td>Explicit disclaimer that load testing does not apply to a local CLI release. Properly qualified.</td>
+</tr>
+<tr>
+<td><code>docs/security/security-review-scope-v0.2.0rc1.md:355</code></td>
+<td><code>there race conditions … at scale. v0.2.0rc1 does NOT have a transparency log integration</code></td>
+<td>keep-with-caveat</td>
+<td>Negation — explicitly disclaims a transparency-log capability.</td>
+</tr>
+<tr>
+<td><code>docs/lathe_prd.md:88</code></td>
+<td><code>small teams needing asset throughput without large art pipelines</code></td>
+<td>keep-with-caveat</td>
+<td>Persona description, not a claim about Lathe's throughput. Caveat: the line describes a <em>user need</em>, not a Lathe capability.</td>
+</tr>
+<tr>
+<td><code>docs/business/outreach_template.md:66</code></td>
+<td><code>pipeline scale&gt;</code></td>
+<td>keep-with-caveat</td>
+<td>Inside an outreach-template fill-in field; the template asks the prospect to fill in <em>their</em> scale.</td>
+</tr>
+</tbody>
+</table>
+<p><code>requires-fix-before-launch:</code> — <code>docs/blog/05_certification_as_the_product.md:141</code> ("build-pass-at-scale, not") if this blog post is republished as a public v0.2.0rc1 launch artifact. The phrase needs an explicit "future" or "V1.0+" qualifier or removal before public republishing. Tracked under <code>decision-log-v0.2.0rc1.md</code> forbidden claim #11.</p>
+<hr />
+<h3 id="anti-pattern-secure-hardened-audited-production-ready-security-claims-without-threat-model-scan-evidence">Anti-pattern: "secure", "hardened", "audited", "production-ready" security claims without threat-model + scan evidence<a class="headerlink" href="#anti-pattern-secure-hardened-audited-production-ready-security-claims-without-threat-model-scan-evidence" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:174-178</code></td>
+<td><code>**Security / hardening claims** — "secure", "hardened", "enterprise-grade security", "audited" — until a documented security scan + threat model + mitigation list is published…</code></td>
+<td>keep-with-caveat</td>
+<td>This is the forbidden-claims gate (item 12). Anti-pattern policy enforcement.</td>
+</tr>
+<tr>
+<td><code>docs/contributing.md:23</code></td>
+<td><code>Public docs and source are statically audited for common leaks.</code></td>
+<td>keep-with-caveat</td>
+<td>"statically audited" refers to gitleaks + Bandit + CI-gate scans (<code>docs/security/ci_gates.md</code>); the qualifier "for common leaks" is honest scope. Caveat: not a third-party-audit claim; reads as automated scanning, which is true.</td>
+</tr>
+<tr>
+<td><code>docs/risk_register.md:22</code></td>
+<td><code>gitleaks in CI; hardened repository quality gates (commit 30f9186)</code></td>
+<td>keep-with-caveat</td>
+<td>Phrase "hardened repository quality gates" refers to a specific commit — <code>git show 30f9186</code> is the artifact. Specific claim with evidence.</td>
+</tr>
+<tr>
+<td><code>docs/security/owasp-mapping-v0.2.0rc1.md:185</code></td>
+<td><code>**Default state hardened.** Telemetry off by default</code></td>
+<td>keep-with-caveat</td>
+<td>"hardened" is qualified to <em>default-state</em> (telemetry-off + LATHE_ALLOW_EXTERNAL_OUT=0); the artifacts are listed inline. Caveat: scoped to defaults, not the package overall.</td>
+</tr>
+<tr>
+<td><code>docs/release/release-gates-v0.2.0rc1.md:226</code></td>
+<td><code>the project's secure subprocess wrapper lives in lathe/subproc.py</code></td>
+<td>keep-with-caveat</td>
+<td>"secure subprocess wrapper" describes a specific module (<code>lathe/subproc.py</code>); coverage gates "sandboxing" and "security" are named. Caveat: claim is module-scoped, not product-wide.</td>
+</tr>
+<tr>
+<td><code>docs/telemetry.md:102</code></td>
+<td><code>Network traffic can be audited by any mitmproxy-class tool</code></td>
+<td>keep-with-caveat</td>
+<td>"can be audited" — describes user/operator capability, not a vendor audit. Caveat: passive verb, not a "we are audited" claim.</td>
+</tr>
+<tr>
+<td><code>docs/security/ci_gates.md:96</code></td>
+<td><code>Dismissals are audited — prefer a fix.</code></td>
+<td>keep-with-caveat</td>
+<td>"audited" describes the dismissal-review process, not a vendor audit. Internal-process scope.</td>
+</tr>
+<tr>
+<td><code>docs/security/owasp-mapping-v0.2.0rc1.md:134</code></td>
+<td><code>## A04 — Insecure Design</code></td>
+<td>keep-with-caveat</td>
+<td>OWASP category title (literal). Not a claim.</td>
+</tr>
+<tr>
+<td><code>docs/research/beta-feedback-v0.2.0rc1.md:73</code></td>
+<td><code>requires-human: secure ≥3 LOIs or mark public launch blocked</code></td>
+<td>keep-with-caveat</td>
+<td>Verb "secure" (acquire) — not a security claim.</td>
+</tr>
+<tr>
+<td><code>README.md:3</code></td>
+<td><code>Lathe is a declarative programming language and compiler/runtime for turning 3D asset intent into certified production-ready asset packages.</code></td>
+<td>keep-with-caveat</td>
+<td>Decision-log forbidden claim #1 forbids "production-ready" <em>as a v0.2.0rc1 self-description</em>. This line describes the <em>output category</em> (asset packages) — not the v0.2.0rc1 release itself. Caveat: the surrounding paragraph at <code>README.md:5,18</code> immediately qualifies the package itself as "alpha/pre-release reference compiler scaffold". Borderline; recommended secondary action: tighten phrasing to "certified asset packages aimed at production use" or similar to remove the ambiguity, but the file is still pre-release-truthful when read whole.</td>
+</tr>
+<tr>
+<td><code>docs/index.md:3</code></td>
+<td>Same wording as README.md:3 — "certified production-ready asset packages"</td>
+<td>rewrite (recommended; not blocker)</td>
+<td>Same disposition as <code>README.md:3</code>. The docs landing page does not have the "alpha/pre-release" qualifier within the next paragraph that README has — the qualifier is on a different page (<code>docs/release/known-limitations.md</code>). Recommended replacement: append a status line "v0.2.0rc1 is a pre-release reference compiler scaffold; see <a href="../">release notes</a>" immediately after the lede.</td>
+</tr>
+<tr>
+<td><code>docs/architecture/overview.md:3</code></td>
+<td><code>emits a certified bundle of production-ready assets</code></td>
+<td>rewrite (recommended; not blocker)</td>
+<td>Same vocabulary as README.md:3. Architecture overview has no surrounding pre-release qualifier. Recommended replacement: re-word to "certified asset bundles aimed at production use" or add a "v0.2.0rc1 status" callout at the top of the page.</td>
+</tr>
+<tr>
+<td><code>docs/lathe_manifesto.md:7</code></td>
+<td><code>compile it into a production-ready 3D asset package</code></td>
+<td>keep-with-caveat</td>
+<td>Manifesto is explicitly a forward-looking vision document ("Lathe should become…", "What success looks like", "North star"). The phrase "production-ready" describes the eventual product, not v0.2.0rc1. Caveat: the manifesto has no v0.2.0rc1-specific claims to gate.</td>
+</tr>
+<tr>
+<td><code>docs/lathe_prd.md:26, 28, 34, 422</code></td>
+<td>PRD describes "production-ready 3D assets"</td>
+<td>keep-with-caveat</td>
+<td>PRD line 28 explicitly qualifies: "The current shipping version (0.2.0rc1) is a pre-release reference compiler scaffold. It is NOT production-ready, NOT stable, and NOT GA." Forward-looking PRD vocabulary is then properly gated.</td>
+</tr>
+<tr>
+<td><code>docs/Specs/Lathe-V1.0-Spec.md:32, 182</code></td>
+<td><code>production-ready hard-surface assets</code>, <code>a production-ready authoritative mesh</code></td>
+<td>keep-with-caveat</td>
+<td>V1.0 spec describes V1.0, not v0.2.0rc1. Spec is forward-looking.</td>
+</tr>
+<tr>
+<td><code>docs/release/launch-narrative-v0.2.0rc1.md:20</code></td>
+<td><code>not a production-ready service</code></td>
+<td>keep-with-caveat</td>
+<td>Negation — explicit disclaimer.</td>
+</tr>
+<tr>
+<td><code>docs/release/raci-v0.2.0rc1.md:7</code></td>
+<td><code>Version | v0.2.0rc1 (pre-release; not production-ready)</code></td>
+<td>keep-with-caveat</td>
+<td>Negation — explicit disclaimer.</td>
+</tr>
+<tr>
+<td><code>docs/release/evidence-v0.2.0rc1.md:8, 56</code></td>
+<td><code>Stable / "production-ready" public claims are forbidden</code>, <code>Public copy may NOT use "production-ready"…</code></td>
+<td>keep-with-caveat</td>
+<td>Forbidden-claim references / quoted-as-forbidden language.</td>
+</tr>
+<tr>
+<td><code>docs/support/readiness-checklist.md:83</code></td>
+<td><code>### 1. What is Lathe? Is it production-ready?</code></td>
+<td>keep-with-caveat</td>
+<td>FAQ heading; the answer at lines 85-94 explicitly rejects production-ready and labels v0.2.0rc1 as "alpha".</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md:7</code></td>
+<td><code>produces certified production-ready asset packages (usd/glb/gltf/obj)</code></td>
+<td>keep-with-caveat</td>
+<td>CLAUDE.md is internal-agent context. Not public copy.</td>
+</tr>
+<tr>
+<td><code>spec/lathe-v0.1.md:7</code></td>
+<td><code>Lathe is a declarative, end-to-end build language for production-ready 3D assets.</code></td>
+<td>rewrite (recommended; not blocker)</td>
+<td>Spec lede uses unqualified "production-ready" without an inline pre-release qualifier. Recommended replacement: append "(v0.2.0rc1 release status: pre-release reference compiler scaffold)" or similar to the lede; or add a status callout at the top of the spec.</td>
+</tr>
+</tbody>
+</table>
+<p><code>requires-fix-before-launch:</code> —
+- <code>docs/index.md:3</code>: add inline pre-release status qualifier or page-level status callout (otherwise the docs landing page reads as an unqualified "production-ready" claim).
+- <code>docs/architecture/overview.md:3</code>: add inline pre-release status qualifier or page-level status callout.
+- <code>spec/lathe-v0.1.md:7</code>: add inline pre-release status qualifier or top-of-page status callout.
+- <code>README.md:3</code>: optional tightening (lower priority — README has surrounding pre-release qualifier at lines 5 and 18).</p>
+<p>No third-party security audit has been performed; <code>EXC-PHASE9-PENTEST-001</code> in <code>decision-log-v0.2.0rc1.md</code> formally accepts this gap and bars all "audited" / "hardened" / "secure" claims until closed. The in-tree threat model + OWASP mapping + supply-chain review + scanner gates are the v0.2.0rc1 baseline.</p>
+<hr />
+<h3 id="anti-pattern-best-practices-without-naming-the-specific-practice">Anti-pattern: "best practices" without naming the specific practice<a class="headerlink" href="#anti-pattern-best-practices-without-naming-the-specific-practice" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plans/reviews/05_developer_experience_review.md:46</code></td>
+<td><code>**pygls for LSP:** industry standard, fine.</code></td>
+<td>keep-with-caveat</td>
+<td>"industry standard" attached to a named tool (<code>pygls</code>); the named-practice requirement is satisfied. Internal review doc, not public copy.</td>
+</tr>
+<tr>
+<td><code>plans/02_documentation.md:10</code></td>
+<td>(omitted long line)</td>
+<td>keep-with-caveat</td>
+<td>Internal plan doc, not public copy. (Long match line — recommend confirming next pass; first pass treats internal <code>plans/</code> as out of scope for the launch-anti-pattern bar.)</td>
+</tr>
+</tbody>
+</table>
+<p>No "best practices" hits in <code>docs/</code>, <code>README.md</code>, <code>CHANGELOG.md</code>, <code>spec/</code>, or release-window copy. <code>readiness-tasks.md:831</code> confirms the sweep was actively conducted.</p>
+<hr />
+<h3 id="anti-pattern-production-ready-stable-ga-10-battle-tested">Anti-pattern: "production-ready" / "stable" / "GA" / "1.0" / "battle-tested"<a class="headerlink" href="#anti-pattern-production-ready-stable-ga-10-battle-tested" title="Permanent link">&para;</a></h3>
+<p>Covered above under the security-claims anti-pattern (because the audit pattern overlaps significantly). Additional findings specific to "stable" / "GA" / "battle-tested":</p>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:142-152</code></td>
+<td>Forbidden claims #1-#5 enumerate "Production-ready", "Stable", "GA", "1.0", "Battle-tested" / "production-tested" / "field-tested"</td>
+<td>keep-with-caveat</td>
+<td>Forbidden-claims gate. Anti-pattern policy enforcement.</td>
+</tr>
+<tr>
+<td><code>README.md:18</code></td>
+<td><code>Stability: alpha/pre-release reference compiler scaffold.</code></td>
+<td>keep-with-caveat</td>
+<td>Self-classifies as alpha/pre-release. Concrete and pre-release-truthful.</td>
+</tr>
+</tbody>
+</table>
+<p>No "battle-tested" / "field-tested" / "production-tested" matches in <code>docs/</code>, <code>README.md</code>, <code>CHANGELOG.md</code>, or <code>spec/</code> outside the forbidden-claims list itself.</p>
+<hr />
+<h3 id="anti-pattern-users-wont-do-that-assumptions-we-trust-users-to-without-a-guard">Anti-pattern: "users won't do that" assumptions / "we trust users to" without a guard<a class="headerlink" href="#anti-pattern-users-wont-do-that-assumptions-we-trust-users-to-without-a-guard" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/adr/0003-provider-mux-design.md:108</code></td>
+<td><code>In V0.2, the same users will…</code></td>
+<td>keep-with-caveat</td>
+<td>Phrase is a forward design note about future ADR behavior, not a "users won't do X" assumption. Specific user-behavior expectation paired with a feature design (<code>strict=false</code> capture).</td>
+</tr>
+</tbody>
+</table>
+<p>No "users won't do that" / "we trust users to" assumption phrases found. <code>readiness-tasks.md:833</code> confirms the sweep was actively conducted. Ingress hardening covered in <code>docs/security/json_ingress_audit.md</code> and <code>docs/security/threat_model.md</code> STRIDE table.</p>
+<hr />
+<h3 id="anti-pattern-hotfix-mentioned-as-mitigation-without-rollback-owner-date">Anti-pattern: "hotfix" mentioned as mitigation without rollback owner + date<a class="headerlink" href="#anti-pattern-hotfix-mentioned-as-mitigation-without-rollback-owner-date" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/risk_register.md:14</code> (RISK-004)</td>
+<td><code>Request AssetLib removal; publish hotfix; pin GitHub issue</code></td>
+<td>keep-with-caveat</td>
+<td>Owner: Tal Merri; Review date: 2026-05-28. Both columns populated; trigger condition specified.</td>
+</tr>
+<tr>
+<td><code>docs/ops/on-call.md:23</code></td>
+<td><code>Next hotfix window</code> (P1 SLA cell)</td>
+<td>keep-with-caveat</td>
+<td>Surrounding table names owner ("On triage and on close" — <code>on-call.md</code> table, with on-call rotation = Tal Merri solo). Date implied by the 24h / 3-business-day SLAs in the same row.</td>
+</tr>
+<tr>
+<td><code>docs/ops/on-call.md:90</code></td>
+<td><code>hotfix delivery</code> (Day 7 retrospective bullet)</td>
+<td>keep-with-caveat</td>
+<td>Owner column on same row: "Tal Merri / <strong>requires-human:</strong> content review". Date: Day 7.</td>
+</tr>
+<tr>
+<td><code>docs/ops/on-call.md:96-101, 110, 112</code></td>
+<td>Hotfix capacity reservation block; hotfix lane bullet</td>
+<td>keep-with-caveat</td>
+<td>Section "Hotfix capacity reservation" is the rollback owner + date artifact: 40% reservation, days 0–14, calendar-blocked, enforced by maintainer.</td>
+</tr>
+<tr>
+<td><code>docs/release/raci-v0.2.0rc1.md:70-72</code></td>
+<td><code>### 7. Hotfix Capacity Reservation</code></td>
+<td>keep-with-caveat</td>
+<td>Cross-references the on-call.md hotfix block; v0.2.0rc1 reservation explicitly 0% (no public launch window active).</td>
+</tr>
+</tbody>
+</table>
+<p>No <code>requires-fix-before-launch:</code> items. Every hotfix mention has both a named owner (Tal Merri) and a window/date.</p>
+<hr />
+<h3 id="anti-pattern-claims-of-pypi-godot-assetlib-discord-signed-partners-benchmark-publication-without-evidence">Anti-pattern: claims of PyPI / Godot AssetLib / Discord / signed partners / benchmark publication without evidence<a class="headerlink" href="#anti-pattern-claims-of-pypi-godot-assetlib-discord-signed-partners-benchmark-publication-without-evidence" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File:line</th>
+<th>Current text (≤120 chars)</th>
+<th>Disposition</th>
+<th>Recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:153-170</code></td>
+<td>Forbidden claims #6 (PyPI), #7 (AssetLib), #8 (signed partners), #9 (Discord), #10 (benchmark numbers without raw data)</td>
+<td>keep-with-caveat</td>
+<td>Forbidden-claims gate enumerates each of these. Anti-pattern policy enforcement.</td>
+</tr>
+<tr>
+<td><code>docs/release/launch-narrative-v0.2.0rc1.md:28</code></td>
+<td><code>not GA, not benchmarked at scale, not on Godot AssetLib, and does not yet have signed design partners</code></td>
+<td>keep-with-caveat</td>
+<td>Negations — explicit disclaimers.</td>
+</tr>
+<tr>
+<td><code>docs/research/beta-feedback-v0.2.0rc1.md:8, 73</code></td>
+<td>"claim about beta users…" guarding language; <code>requires-human: secure ≥3 LOIs or mark public launch blocked</code></td>
+<td>keep-with-caveat</td>
+<td>Operates as the gate for the LOI / partner claim — recorded as a launch-blocker.</td>
+</tr>
+<tr>
+<td><code>docs/walkthroughs/01_godot_indie_crate_family.md:3</code>, <code>02_studio_door_contract.md:3</code>, <code>03_agent_authored_panel.md:3</code></td>
+<td><code>**Synthetic scenario — not a real user story.** This is a narrative walkthrough; replace with a real case study when a design partner signs.</code></td>
+<td>keep-with-caveat</td>
+<td>Each walkthrough opens with explicit synthetic disclaimer. Properly qualified.</td>
+</tr>
+<tr>
+<td><code>docs/walkthroughs/README.md:7-17</code></td>
+<td>Synthetic-walkthrough policy block</td>
+<td>keep-with-caveat</td>
+<td>Defines when synthetic walkthroughs are replaced (LOI signed + logo + quotation rights). Concrete trigger.</td>
+</tr>
+<tr>
+<td><code>docs/business/design_partners.md</code> (file-wide)</td>
+<td><code>## What "design partner" means here</code> and the LOI definition</td>
+<td>keep-with-caveat</td>
+<td>Defines design-partner relationship structure; uses "signed design partners" language but never claims one exists.</td>
+</tr>
+<tr>
+<td><code>docs/community/early_access.md:54</code></td>
+<td><code>45-minute 1:1 with each signed design partner (see docs/business/design_partners.md for the three prospects and target-of-three signed)</code></td>
+<td>keep-with-caveat</td>
+<td>"target-of-three" is a target, not a claim. Surrounding context describes the recruitment pipeline.</td>
+</tr>
+<tr>
+<td><code>docs/business/monetization.md:54</code></td>
+<td><code>from the signed design partners, see docs/business/design_partners.md</code></td>
+<td>rewrite (recommended; minor)</td>
+<td>Phrase "from the signed design partners" reads as if partners are already signed. Recommended replacement: "from the design partners signed by V0.8 launch (target three; see…)". Not a v0.2.0rc1 launch claim — V0.8 scope — but tightening before public republishing reduces ambiguity.</td>
+</tr>
+<tr>
+<td><code>readiness-tasks.md:30, 110, 131, 149, 150, 153, 155, 741, 745, 796, 797</code></td>
+<td>tracking entries for PyPI / AssetLib / Discord / partner / benchmark gates</td>
+<td>keep-with-caveat</td>
+<td>Tracking lines, not public copy. Each forbidden claim has a tracking entry confirming it is gated.</td>
+</tr>
+</tbody>
+</table>
+<p><code>requires-fix-before-launch:</code> — <code>docs/business/monetization.md:54</code> if <code>business/monetization.md</code> is published before V0.8 launch (low priority — monetization page is internal-flavored and not on the v0.2.0rc1 launch path).</p>
+<p>No claim of "Available on PyPI", "Listed on Godot AssetLib", "Discord community is open", or "≥N signed design partners" was found in any release-window or public-copy doc.</p>
+<hr />
+<h3 id="risk-register-completeness-check">Risk-register completeness check<a class="headerlink" href="#risk-register-completeness-check" title="Permanent link">&para;</a></h3>
+<ul>
+<li>File: <code>docs/risk_register.md</code> (46 lines).</li>
+<li>Risks counted: <strong>18</strong> (RISK-001 through RISK-018) — exceeds the ≥10 floor.</li>
+<li>Categories represented (from the categorical-summary table at lines 32-43):</li>
+<li>Legal — RISK-001, RISK-014 ✓</li>
+<li>Security — RISK-002, RISK-012, RISK-017 ✓</li>
+<li>Reputational — RISK-005, RISK-008 ✓</li>
+<li>Technical — RISK-003, RISK-006, RISK-011, RISK-016, RISK-018 ✓</li>
+<li>Financial — RISK-009, RISK-010 ✓</li>
+<li>Key-person — RISK-007, RISK-015 ✓</li>
+<li>Platform dependency — RISK-004, RISK-013 ✓</li>
+<li>Provider dependency — RISK-005, RISK-014 ✓ (re-used; both rows have provider-dependency exposure)</li>
+<li>Every required category (legal, security, reputational, technical, financial, key-person, platform-dependency, provider-dependency) is covered.</li>
+<li>All risks include Owner, Review date (2026-05-28), Mitigation, Contingency, Trigger condition columns.</li>
+<li><code>requires-human</code> annotations on RISK-001, RISK-004, RISK-007, RISK-013, RISK-014, RISK-015 are documented as single-points-of-failure at line 45.</li>
+</ul>
+<p><strong>Risk register completeness: yes.</strong></p>
+<hr />
+<h3 id="roadmap-we-chose-not-to-build-x-entries">Roadmap "we chose not to build X" entries<a class="headerlink" href="#roadmap-we-chose-not-to-build-x-entries" title="Permanent link">&para;</a></h3>
+<ul>
+<li>File: <code>docs/release/decision-log-v0.2.0rc1.md</code>, "Non-goals for v0.2.0rc1" section (lines 25-67).</li>
+<li>Non-goal entries counted: <strong>14</strong> explicit non-goals — exceeds the ≥9 floor:</li>
+<li>GA / stable / 1.0</li>
+<li>Hosted asset registry</li>
+<li>Paid CI / certification SaaS</li>
+<li>Godot AssetLib submission</li>
+<li>Full multi-round autonomous repair loop</li>
+<li>Pyodide / browser playground</li>
+<li>Soft-surface backend stack (<code>soft_surface_prop_v1</code>)</li>
+<li>Full mypy strict across the codebase</li>
+<li>Python 3.13 / 3.14 support</li>
+<li>Hosted telemetry collection / live dashboards</li>
+<li>Discord launch</li>
+<li>Signed design partners</li>
+<li>Public benchmark with raw data</li>
+<li>Second-language support, IDE plugins beyond what already ships, marketing site</li>
+<li>File: <code>docs/roadmap_public.md</code> exists (verified).</li>
+<li><strong>Cross-reference status:</strong> <code>docs/roadmap_public.md</code> does NOT cross-reference the decision-log non-goals as of 2026-04-28. A grep for <code>decision-log</code> / <code>Non-goal</code> / <code>non-goal</code> in <code>docs/roadmap_public.md</code> returns zero matches.</li>
+</ul>
+<p><strong>Decision-log non-goals completeness: yes</strong> (14 explicit non-goals).
+<strong>Roadmap public cross-reference completeness: no</strong> — <code>requires-fix-before-launch:</code> add a single section to <code>docs/roadmap_public.md</code> cross-referencing <code>docs/release/decision-log-v0.2.0rc1.md</code> "Non-goals for v0.2.0rc1" (the decision-log already references roadmap_public.md from inside its non-goals; the back-link is missing).</p>
+<hr />
+<h3 id="scale-security-claim-audit">Scale + security claim audit<a class="headerlink" href="#scale-security-claim-audit" title="Permanent link">&para;</a></h3>
+<p><strong>Scale claims (per the sweep above):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Claim file:line</th>
+<th>Required artifact</th>
+<th>Artifact present?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:171-173</code> (forbidden-claims gate)</td>
+<td><code>docs/perf_budgets.md</code>, <code>tests/test_benchmarks.py</code></td>
+<td>yes — <code>docs/perf_budgets.md</code> exists; <code>tests/test_benchmarks.py</code> exists in repo.</td>
+</tr>
+<tr>
+<td><code>docs/release/launch-narrative-v0.2.0rc1.md:28</code> ("not benchmarked at scale")</td>
+<td>n/a (negation)</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><code>docs/blog/05_certification_as_the_product.md:123, 139, 141, 197</code></td>
+<td>A load artifact, OR explicit time-gating to V1.0</td>
+<td>partial — <code>docs/perf_budgets.md</code> covers per-asset budgets but not "fleet of runners" capacity claims. <strong><code>requires-fix-before-launch:</code></strong> if blog post is republished publicly during the v0.2.0rc1 launch window.</td>
+</tr>
+<tr>
+<td><code>docs/business/unit_economics.md:53, 148</code></td>
+<td>Internal capacity model, scoped to opt-in users</td>
+<td>yes — same file is the artifact.</td>
+</tr>
+<tr>
+<td><code>docs/architecture/runtime-posture-v0.2.0rc1.md:40</code> ("RPS, load tests do not apply")</td>
+<td>n/a (negation, scoped to local CLI release)</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><code>docs/lathe_prd.md:88</code> ("small teams needing asset throughput")</td>
+<td>n/a (persona description, not a Lathe capability claim)</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security claims (per the sweep above):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Claim file:line</th>
+<th>Required artifact</th>
+<th>Artifact present?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/release/decision-log-v0.2.0rc1.md:174-178</code> (forbidden-claims gate, item 12)</td>
+<td><code>docs/security/threat_model.md</code>, <code>docs/release/evidence-bundle-v0.2.0rc1/sbom.json</code>, <code>docs/release/release-gates-v0.2.0rc1.md</code> § 3</td>
+<td>yes — all three artifacts exist.</td>
+</tr>
+<tr>
+<td><code>docs/contributing.md:23</code> ("statically audited for common leaks")</td>
+<td><code>docs/security/ci_gates.md</code> (gitleaks + Bandit)</td>
+<td>yes.</td>
+</tr>
+<tr>
+<td><code>docs/risk_register.md:22</code> ("hardened repository quality gates (commit 30f9186)")</td>
+<td><code>git show 30f9186</code> artifact</td>
+<td>yes — commit referenced explicitly.</td>
+</tr>
+<tr>
+<td><code>docs/security/owasp-mapping-v0.2.0rc1.md:185</code> ("Default state hardened")</td>
+<td><code>docs/release/telemetry-verification-v0.2.0rc1.md</code>, <code>.env.example:43-44</code></td>
+<td>yes — both artifacts cited inline.</td>
+</tr>
+<tr>
+<td><code>docs/release/release-gates-v0.2.0rc1.md:226</code> ("secure subprocess wrapper")</td>
+<td><code>lathe/subproc.py</code> source + sandbox/security coverage gates</td>
+<td>yes — module exists.</td>
+</tr>
+<tr>
+<td><code>docs/telemetry.md:102</code> ("can be audited by any mitmproxy-class tool")</td>
+<td>n/a (capability statement, not vendor audit)</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><code>docs/security/ci_gates.md:96</code> ("Dismissals are audited")</td>
+<td>n/a (internal process scope)</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Claims lacking the required artifact link:</strong></p>
+<ul>
+<li><code>docs/blog/05_certification_as_the_product.md:141</code> ("build-pass-at-scale") — no load artifact yet exists; the only path to publication is to add a "future / V1.0+" qualifier or remove the phrase before public republishing.</li>
+<li><code>docs/index.md:3</code>, <code>docs/architecture/overview.md:3</code>, <code>spec/lathe-v0.1.md:7</code> ("production-ready" without inline pre-release qualifier) — production readiness has no third-party-audit artifact (<code>EXC-PHASE9-PENTEST-001</code>); the missing artifact is "page-level pre-release status callout" rather than a security artifact.</li>
+</ul>
+<p><code>requires-fix-before-launch:</code> — five items total:
+1. <code>docs/index.md:3</code> — add page-level pre-release status qualifier.
+2. <code>docs/architecture/overview.md:3</code> — add page-level pre-release status qualifier.
+3. <code>spec/lathe-v0.1.md:7</code> — add inline / top-of-page pre-release status qualifier.
+4. <code>docs/blog/05_certification_as_the_product.md:141</code> (and lines 123, 139, 197) — add a "thesis essay, not v0.2.0rc1 capability claim" header, or explicitly time-gate "at scale" usages, before any public republishing during the launch window.
+5. <code>docs/roadmap_public.md</code> — add cross-reference to <code>docs/release/decision-log-v0.2.0rc1.md</code> "Non-goals for v0.2.0rc1" (currently missing).</p>
+<p>All five are documentation-only fixes; none change product behavior or security posture. Lead aggregates the rewrites — this sweep is read-only.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

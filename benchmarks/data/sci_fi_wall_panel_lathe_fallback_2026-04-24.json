@@ -1,0 +1,26 @@
+{
+  "asset": "sci_fi_wall_panel",
+  "system": "lathe_fallback",
+  "date": "2026-04-24",
+  "result": "ok",
+  "metrics": {
+    "wall_clock_s": 2.585,
+    "peak_memory_mb": null,
+    "score": 0.862025,
+    "threshold": 0.84,
+    "certified": true,
+    "glb_sha256": "dcd499e6ad744d058afff91f857ec91927accbd5779d11f51d9d6f9a0160ac21",
+    "triangle_count": 1008,
+    "uv_valid": true,
+    "collision_present": true,
+    "pivot_correct": true,
+    "reproducible": true,
+    "reproducibility_hashes": [
+      "dcd499e6ad744d058afff91f857ec91927accbd5779d11f51d9d6f9a0160ac21",
+      "dcd499e6ad744d058afff91f857ec91927accbd5779d11f51d9d6f9a0160ac21",
+      "dcd499e6ad744d058afff91f857ec91927accbd5779d11f51d9d6f9a0160ac21"
+    ]
+  },
+  "diagnostics": [],
+  "note": null
+}

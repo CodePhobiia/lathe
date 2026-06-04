@@ -1,0 +1,1006 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/service-api-v1.json",
+  "title": "Lathe Wonder Service API Contract Envelopes v1",
+  "description": "Transport envelopes for a future Project Wonder service boundary. The envelopes carry correlation and job metadata while nesting the existing Lathe Wonder and Scene contract payloads.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/dream_brief_check_request"
+    },
+    {
+      "$ref": "#/$defs/dream_brief_check_response"
+    },
+    {
+      "$ref": "#/$defs/scene_graph_check_request"
+    },
+    {
+      "$ref": "#/$defs/scene_graph_check_response"
+    },
+    {
+      "$ref": "#/$defs/scene_build_request"
+    },
+    {
+      "$ref": "#/$defs/scene_build_response"
+    },
+    {
+      "$ref": "#/$defs/scene_render_request"
+    },
+    {
+      "$ref": "#/$defs/scene_render_response"
+    },
+    {
+      "$ref": "#/$defs/scene_patch_request"
+    },
+    {
+      "$ref": "#/$defs/scene_patch_response"
+    },
+    {
+      "$ref": "#/$defs/artifacts_list_request"
+    },
+    {
+      "$ref": "#/$defs/artifacts_list_response"
+    },
+    {
+      "$ref": "#/$defs/status_request"
+    },
+    {
+      "$ref": "#/$defs/status_response"
+    }
+  ],
+  "$defs": {
+    "correlation_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{7,119}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[a-z0-9_]{3,96}$"
+    },
+    "scene_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "mode": {
+      "enum": [
+        "preview",
+        "final"
+      ]
+    },
+    "service_status": {
+      "enum": [
+        "accepted",
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "terminal_status": {
+      "enum": [
+        "succeeded",
+        "failed"
+      ]
+    },
+    "endpoint": {
+      "enum": [
+        "dream-brief/check",
+        "scene-graph/check",
+        "scene/build",
+        "scene/render",
+        "scene/patch",
+        "artifacts/list",
+        "status"
+      ]
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 260,
+      "not": {
+        "pattern": "(^/|^[A-Za-z]:|(^|/)\\.\\.(/|$))"
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "artifact_status": {
+      "enum": [
+        "planned",
+        "built",
+        "validated",
+        "failed",
+        "missing"
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "path",
+        "status"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^artifact_[a-z0-9_]{3,96}$"
+        },
+        "kind": {
+          "enum": [
+            "prompt",
+            "dream_brief",
+            "style_bible",
+            "lathe_source",
+            "reference",
+            "scene_graph",
+            "scene_patch",
+            "world_memory",
+            "scene_plan",
+            "scene_assembly",
+            "scene_quality_report",
+            "render_inspection",
+            "scene_repair_report",
+            "wonder_report",
+            "scene_manifest",
+            "scene_package_manifest",
+            "scene_build",
+            "asset_build",
+            "stage_bundle",
+            "selector_manifest",
+            "package_manifest",
+            "proxy_manifest",
+            "render",
+            "export",
+            "report",
+            "package"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "status": {
+          "$ref": "#/$defs/artifact_status"
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_id": {
+          "type": "string",
+          "pattern": "^obj_[a-z0-9_]{3,80}$"
+        },
+        "camera_id": {
+          "type": "string",
+          "pattern": "^camera_[a-z0-9_]{3,80}$"
+        },
+        "target": {
+          "enum": [
+            "scene_package",
+            "blend",
+            "glb",
+            "usd",
+            "fbx",
+            "roblox_manifest",
+            "godot_manifest",
+            "unity_manifest",
+            "unreal_manifest"
+          ]
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "artifact_paths": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/relative_path"
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "objects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "asset_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assembly_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "render_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "export_tasks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory_events": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "passed_with_warnings",
+            "failed"
+          ]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "operation_result": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "dream_brief": {
+      "$ref": "https://lathe.dev/schema/wonder/dream-brief-v1.json"
+    },
+    "scene_graph": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-graph-v1.json"
+    },
+    "scene_patch": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-patch-v1.json"
+    },
+    "render_inspection": {
+      "$ref": "https://lathe.dev/schema/wonder/render-inspection-v1.json"
+    },
+    "scene_package_manifest": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-package-manifest-v1.json"
+    },
+    "scene_plan": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-plan-v1.json"
+    },
+    "scene_assembly": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-assembly-v1.json"
+    },
+    "scene_quality_report": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-quality-report-v1.json"
+    },
+    "scene_repair_report": {
+      "$ref": "https://lathe.dev/schema/wonder/scene-repair-report-v1.json"
+    },
+    "dream_brief_check_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "dream_brief"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.dream_brief_check.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "dream-brief/check"
+        },
+        "dream_brief": {
+          "$ref": "#/$defs/dream_brief"
+        }
+      }
+    },
+    "dream_brief_check_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "ok",
+        "status",
+        "contract",
+        "check",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.dream_brief_check.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "dream-brief/check"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/terminal_status"
+        },
+        "contract": {
+          "const": "dream_brief"
+        },
+        "check": {
+          "const": "dream_brief_schema"
+        },
+        "schema_id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "scene_graph_check_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "scene_graph"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_graph_check.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene-graph/check"
+        },
+        "scene_graph": {
+          "$ref": "#/$defs/scene_graph"
+        }
+      }
+    },
+    "scene_graph_check_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "ok",
+        "status",
+        "contract",
+        "check",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_graph_check.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene-graph/check"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/terminal_status"
+        },
+        "contract": {
+          "const": "scene_graph"
+        },
+        "check": {
+          "const": "scene_graph_semantics"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "schema_id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "scene_build_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "mode",
+        "scene_graph"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_build.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene/build"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "scene_graph": {
+          "$ref": "#/$defs/scene_graph"
+        }
+      }
+    },
+    "scene_build_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "job_id",
+        "ok",
+        "status",
+        "command",
+        "contract",
+        "mode",
+        "artifacts",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_build.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene/build"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/service_status"
+        },
+        "command": {
+          "const": "scene.build"
+        },
+        "contract": {
+          "const": "scene_package_manifest"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "scene_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "package_dir": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "manifest_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "artifact_paths": {
+          "$ref": "#/$defs/artifact_paths"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/artifacts"
+        },
+        "counts": {
+          "$ref": "#/$defs/counts"
+        },
+        "quality": {
+          "$ref": "#/$defs/quality"
+        },
+        "scene_plan": {
+          "$ref": "#/$defs/scene_plan"
+        },
+        "scene_assembly": {
+          "$ref": "#/$defs/scene_assembly"
+        },
+        "scene_quality_report": {
+          "$ref": "#/$defs/scene_quality_report"
+        },
+        "scene_package_manifest": {
+          "$ref": "#/$defs/scene_package_manifest"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "scene_render_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "mode",
+        "scene_graph"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_render.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene/render"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "scene_graph": {
+          "$ref": "#/$defs/scene_graph"
+        },
+        "scene_plan": {
+          "$ref": "#/$defs/scene_plan"
+        },
+        "camera_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^camera_[a-z0-9_]{3,80}$"
+          }
+        },
+        "render_passes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "beauty",
+              "depth",
+              "normal",
+              "object_id",
+              "material_id",
+              "wireframe"
+            ]
+          }
+        }
+      }
+    },
+    "scene_render_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "job_id",
+        "ok",
+        "status",
+        "mode",
+        "artifacts",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_render.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene/render"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/service_status"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "scene_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/artifacts"
+        },
+        "render_inspections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/render_inspection"
+          }
+        },
+        "scene_repair_report": {
+          "$ref": "#/$defs/scene_repair_report"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "scene_patch_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "scene_graph",
+        "patch",
+        "preview"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_patch.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene/patch"
+        },
+        "scene_graph": {
+          "$ref": "#/$defs/scene_graph"
+        },
+        "patch": {
+          "$ref": "#/$defs/scene_patch"
+        },
+        "preview": {
+          "type": "boolean"
+        }
+      }
+    },
+    "scene_patch_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "ok",
+        "status",
+        "command",
+        "contract",
+        "preview",
+        "written",
+        "applied_operations",
+        "rejected_operations",
+        "scene_graph",
+        "artifacts",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.scene_patch.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "scene/patch"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/terminal_status"
+        },
+        "command": {
+          "const": "scene.patch"
+        },
+        "contract": {
+          "const": "scene_patch"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "patch_id": {
+          "type": "string",
+          "pattern": "^patch_[a-z0-9_]{3,80}$"
+        },
+        "preview": {
+          "type": "boolean"
+        },
+        "written": {
+          "type": "boolean"
+        },
+        "patch_event": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "scene_memory_event": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "applied_operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/operation_result"
+          }
+        },
+        "rejected_operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/operation_result"
+          }
+        },
+        "scene_graph": {
+          "$ref": "#/$defs/scene_graph"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/artifacts"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "artifacts_list_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "job_id"
+          ]
+        },
+        {
+          "required": [
+            "scene_id"
+          ]
+        },
+        {
+          "required": [
+            "scene_package_manifest"
+          ]
+        }
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.artifacts_list.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "artifacts/list"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "scene_package_manifest": {
+          "$ref": "#/$defs/scene_package_manifest"
+        },
+        "kinds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/artifact/properties/kind"
+          }
+        }
+      }
+    },
+    "artifacts_list_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "ok",
+        "status",
+        "artifacts",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.artifacts_list.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "artifacts/list"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/service_status"
+        },
+        "scene_package_manifest": {
+          "$ref": "#/$defs/scene_package_manifest"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/artifacts"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    },
+    "status_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "job_id"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.status.request.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "status"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        }
+      }
+    },
+    "status_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "correlation_id",
+        "endpoint",
+        "job_id",
+        "ok",
+        "status",
+        "artifacts",
+        "diagnostics"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.service.status.response.v1"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/correlation_id"
+        },
+        "endpoint": {
+          "const": "status"
+        },
+        "job_id": {
+          "$ref": "#/$defs/job_id"
+        },
+        "target_endpoint": {
+          "$ref": "#/$defs/endpoint"
+        },
+        "scene_id": {
+          "$ref": "#/$defs/scene_id"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/service_status"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifacts": {
+          "$ref": "#/$defs/artifacts"
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/diagnostics"
+        }
+      }
+    }
+  }
+}

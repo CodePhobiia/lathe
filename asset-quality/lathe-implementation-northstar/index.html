@@ -1,0 +1,7657 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Declarative language + reference compiler for 3D asset intent">
+      
+      
+      
+        <link rel="canonical" href="https://talmerri.github.io/lathe/asset-quality/lathe-implementation-northstar/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Lathe Implementation Northstar - Lathe</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lathe-implementation-northstar" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Lathe" class="md-header__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Lathe
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lathe Implementation Northstar
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../cli_reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../canonical_commands/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Commands
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Troubleshooting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../product_value/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Product Value
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../gallery/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Canonical Gallery
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quality_dashboard/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quality Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../deterministic_builds/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deterministic Builds
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../wonder-readiness/00_overview/" class="md-tabs__link">
+          
+  
+  
+  Wonder Readiness
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorial/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cookbook/" class="md-tabs__link">
+          
+  
+  
+  Cookbook
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adr/" class="md-tabs__link">
+          
+  
+  
+  Decisions
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../language_reference/" class="md-tabs__link">
+          
+  
+  
+  Language Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/cli/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../spec/lathe-v0.1/" class="md-tabs__link">
+          
+  
+  
+  Specs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../release/" class="md-tabs__link">
+          
+  
+  
+  Release
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../privacy/" class="md-tabs__link">
+          
+  
+  
+  Legal and privacy
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Lathe" class="md-nav__button md-logo" aria-label="Lathe" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Lathe
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/talmerri/lathe" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    talmerri/lathe
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../canonical_commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../product_value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product Value
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gallery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canonical Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quality_dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deterministic_builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deterministic Builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder Readiness
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wonder Readiness
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/00_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/01_dream_brief/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dream Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/02_scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/03_scene_patch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Patch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/04_render_inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/05_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/06_scene_language_design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Language Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/07_scene_build_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Build Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/08_scene_package/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/pre_wonder_baseline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pre-Wonder Baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/phase0_working_tree_classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 0 Working Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/09_scene_validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/10_render_repair_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Render Repair Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/11_curiosity_anchors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Curiosity Anchors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/12_world_memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/13_branching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Branching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/14_roblox_profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roblox Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/15_mvp_demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wonder-readiness/16_limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/first_asset/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first asset
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/second_asset_reconstruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/fallback_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fallback provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/learned_provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learned provider workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/engine_export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engine export workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/deep_dive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deep dive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookbook
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Cookbook
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/01_generate_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 Generate flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/02_reconstruct_flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 Reconstruct flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/03_kit_assembly/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 Kit assembly
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/04_mobile_adapt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 Mobile adapt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/05_surface_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 Surface control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/06_variant_patching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 Variant patching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/07_custom_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 Custom backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/08_runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/09_certification_debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 Certification debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/10_blender_bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 Blender bridge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/reading_a_trace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading a trace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/per_validator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Per-validator reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cookbook/runtime_config_schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/stage_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/shape_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape stage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0000-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0001-shape-handoff-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0001 Shape handoff contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0002-blender-and-xatlas-fallback-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0002 Blender and xatlas fallback policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0003-provider-mux-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0003 Provider mux design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0004-plugin-entry-points/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0004 Plugin entry points
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0005-layering-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0005 Layering enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0006-validator-composition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0006 Validator composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0007-resolver-loc-exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0007 Resolver LOC exception
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0008-geometry-kernel-manifold/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0008 Geometry kernel Manifold
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0009-public-contract-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0009 Public contract index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0010-experimental-scene-source-language/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0010 Experimental scene source language
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0011-roblox-export-lane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0011 Roblox export lane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0012-wonder-service-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0012 Wonder service boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0013-wonder-layer-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0013 Wonder Layer boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_15" id="__nav_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated current reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schema_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalized schema reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../v08_language_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v0.8
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16" id="__nav_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/normalizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Normalizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/checker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/planner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/executor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/capabilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/runtime_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/wonder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wonder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scene/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_14" id="__nav_16_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Shape
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/shape_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/asset_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_kernel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly kernel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/scaffold_compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaffold compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature grammar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature_fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mesh_finalize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mesh finalize
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_15" id="__nav_16_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IR modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    IR modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/assembly_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assembly IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/fit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/transfer_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transfer IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/kit_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kit IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reuse_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reuse IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/reference_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_16" id="__nav_16_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Surface
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/materials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Materials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pbr_deriver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PBR deriver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/texture_control_pack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Texture control pack
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/surface_ir/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface IR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_17" id="__nav_16_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validators
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validators
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/semantic_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Semantic quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/visual_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/flow_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Flow quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/surface_quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Surface quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/validators/silhouette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Silhouette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_16_18" id="__nav_16_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/bridge/blender_plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blender plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stdlib/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stdlib
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_17" id="__nav_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Specs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spec/lathe-v0.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language v0.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.0-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.2-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Specs/Lathe-V1.3.1-Spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    V1.3.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Maintenance and triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dependency_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../review_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_19" >
+        
+          
+          <label class="md-nav__link" for="__nav_19" id="__nav_19_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_19_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_19">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Release
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/quality-bar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality bar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/tasklist_milestones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Readiness milestones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/asset-provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asset provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/release-note-value-guidance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release-note value guidance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/support-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release/known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_20" >
+        
+          
+          <label class="md-nav__link" for="__nav_20" id="__nav_20_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal and privacy
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_20_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_20">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Legal and privacy
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy notice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../terms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms applicability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-how-to-use-this-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. How To Use This Document
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-northstar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Northstar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-product-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Product Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-core-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Core Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-rule-of-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Rule Of Truth
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-stable-contracts-and-hard-guardrails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Stable Contracts And Hard Guardrails
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-current-product-state-to-respect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Current Product State To Respect
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-consolidated-diagnosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Consolidated Diagnosis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Consolidated Diagnosis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b0-the-language-is-ahead-of-the-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B0. The Language Is Ahead Of The Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b1-authored-intent-dies-before-geometry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B1. Authored Intent Dies Before Geometry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b2-shapeir-v2-grammar-lowering-and-construction-graph-are-too-often-validators-not-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B2. ShapeIR v2, Grammar Lowering, And Construction Graph Are Too Often Validators, Not Drivers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b3-csg-and-exact-paths-have-been-too-narrow-or-too-fallback-oriented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B3. CSG And Exact Paths Have Been Too Narrow Or Too Fallback-Oriented
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b4-bevels-chamfers-and-edge-treatments-are-the-biggest-hard-surface-signal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B4. Bevels, Chamfers, And Edge Treatments Are The Biggest Hard-Surface Signal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b5-feature-density-is-not-yet-author-controllable-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B5. Feature Density Is Not Yet Author-Controllable Enough
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b6-surface-and-bake-truth-are-not-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B6. Surface And Bake Truth Are Not Optional
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b7-highlow-transfer-must-contain-real-extra-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B7. High/Low Transfer Must Contain Real Extra Detail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b8-topology-can-erase-craft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B8. Topology Can Erase Craft
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b9-uv-and-texel-density-must-become-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B9. UV And Texel Density Must Become Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b10-validators-must-judge-visible-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B10. Validators Must Judge Visible Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b11-semantic-repair-must-become-operational" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B11. Semantic Repair Must Become Operational
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b12-chest-specific-code-is-a-product-smell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B12. Chest-Specific Code Is A Product Smell
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-immediate-focus-visible-geometry-kernel-sprint-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Immediate Focus: Visible Geometry Kernel Sprint 0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Immediate Focus: Visible Geometry Kernel Sprint 0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sprint-0-non-negotiables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 0 Non-Negotiables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-0-done-condition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 0 Done Condition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-detailed-sprint-0-task-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Detailed Sprint 0 Task Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Detailed Sprint 0 Task Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-1-capture-baseline-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-1: Capture Baseline Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-2-strengthen-preview-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-2: Strengthen Preview Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-3-add-one-visible-geometry-detail-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-3: Add One Visible Geometry Detail Operation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-4-improve-crate-surface-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-4: Improve Crate Surface Defaults
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-5-add-human-visible-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-5: Add Human-Visible Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-6-wire-one-semantic-repair-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-6: Wire One Semantic Repair Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-7-start-kernelprogram-seam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-7: Start KernelProgram Seam
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-s0-8-produce-final-sprint-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task S0-8: Produce Final Sprint Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-implementation-lanes-beyond-sprint-0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Implementation Lanes Beyond Sprint 0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Implementation Lanes Beyond Sprint 0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lane-a-geometry-kernel-and-csg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane A: Geometry Kernel And CSG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-b-shapeir-v2-and-construction-graph-as-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane B: ShapeIR v2 And Construction Graph As Drivers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-c-feature-ops-and-modularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane C: Feature Ops And Modularity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-d-surface-graph-bake-and-material-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane D: Surface Graph, Bake, And Material Truth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-e-topology-retopo-and-mesh-finalization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane E: Topology, Retopo, And Mesh Finalization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-f-uv-texel-density-trim-sheets-udim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane F: UV, Texel Density, Trim Sheets, UDIM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-g-diagnostics-validation-and-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane G: Diagnostics, Validation, And Reports
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-h-semantic-repair-and-regeneration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane H: Semantic Repair And Regeneration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-i-authoring-surface-and-stdlib-modularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane I: Authoring Surface And Stdlib Modularity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lane-j-multi-domain-imagination-to-life-demos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lane J: Multi-Domain Imagination-To-Life Demos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-phase-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Phase Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Phase Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-stop-false-positives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 0: Stop False Positives
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-visible-hard-surface-geometry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Visible Hard-Surface Geometry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-real-surface-and-kernel-bridge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Real Surface And Kernel Bridge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-procedural-domain-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Procedural Domain Libraries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-organic-and-animation-forward-vocabulary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Organic And Animation-Forward Vocabulary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-lathe-runtime-and-engine-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5: Lathe Runtime And Engine Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-style-band-priorities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Style Band Priorities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-capability-parity-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Capability Parity Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-decision-filter-for-every-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Decision Filter For Every Task
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-allowed-claims-vocabulary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Allowed Claims Vocabulary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-recommended-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Recommended Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-source-inputs-consolidated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Source Inputs Consolidated
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-what-to-implement-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. What To Implement Next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-bottom-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19. Bottom Line
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="lathe-implementation-northstar">Lathe Implementation Northstar<a class="headerlink" href="#lathe-implementation-northstar" title="Permanent link">&para;</a></h1>
+<p>Date: 2026-05-05
+Status: Canonical source of truth for the next Lathe implementation push
+Scope: Visible geometry, asset quality, and the imagination-to-life execution path</p>
+<p>This is the working source of truth for choosing, sequencing, implementing, and validating the next Lathe work.</p>
+<p>Historical docs remain useful as evidence and detail, but this document is the operational path unless it is explicitly replaced. Future implementation agents should start here, then open only the task-relevant source docs or code files.</p>
+<h2 id="0-how-to-use-this-document">0. How To Use This Document<a class="headerlink" href="#0-how-to-use-this-document" title="Permanent link">&para;</a></h2>
+<p>Use this document as:</p>
+<ol>
+<li>The decision filter for what to build next.</li>
+<li>The implementation backlog for visible-geometry and asset-quality work.</li>
+<li>The acceptance standard for claiming progress.</li>
+<li>The guardrail against metadata-only success.</li>
+<li>The bridge between the long imagination-to-life roadmap and the next concrete code changes.</li>
+</ol>
+<p>If another document conflicts with this one, prefer this document for next implementation sequencing. If a source doc has a lower-level code detail not repeated here, use the source doc as evidence, but do not change the implementation priority unless the user explicitly redirects.</p>
+<h2 id="1-northstar">1. Northstar<a class="headerlink" href="#1-northstar" title="Permanent link">&para;</a></h2>
+<p>Lathe must become the truthful deterministic craft engine for AI-native 3D creation.</p>
+<p>The product loop is:</p>
+<div class="highlight"><pre><span></span><code>creative intent / .lth source
+-&gt; explicit construction program
+-&gt; real visible geometry
+-&gt; topology, UV, and surface evidence
+-&gt; preview/export artifacts
+-&gt; diagnostics that judge visible quality
+-&gt; semantic repair or honest rejection
+-&gt; regenerated improved asset package
+</code></pre></div>
+<p>Every new implementation should strengthen that loop.</p>
+<p>Work is not strategic if it only adds:</p>
+<ul>
+<li>more words to <code>.lth</code>;</li>
+<li>more report fields;</li>
+<li>more prose;</li>
+<li>more metadata completeness;</li>
+<li>more validator scores;</li>
+<li>more optional provider paths;</li>
+<li>more fixture-specific branches;</li>
+<li>more examples that do not prove a new execution capability.</li>
+</ul>
+<p>Work is strategic when it makes one of these more true:</p>
+<ul>
+<li>Lathe builds richer geometry.</li>
+<li>Lathe preserves semantic construction evidence through the pipeline.</li>
+<li>Lathe surfaces real previews, exports, and reports.</li>
+<li>Lathe detects visually weak output.</li>
+<li>Lathe repairs a weak output through executable operations.</li>
+<li>Lathe rejects or degrades unsupported claims truthfully.</li>
+<li>Lathe lets new asset families be authored without Python edits per family.</li>
+</ul>
+<h2 id="2-product-boundary">2. Product Boundary<a class="headerlink" href="#2-product-boundary" title="Permanent link">&para;</a></h2>
+<p>Lathe is the execution substrate.</p>
+<p>Wonder or another creative director can request assets, scenes, repairs, inspections, and revisions. Lathe must execute those requests into deterministic geometry, materials, previews, reports, exports, and packages.</p>
+<p>The boundary is:</p>
+<div class="highlight"><pre><span></span><code>Wonder
+= creative direction, scene memory, curiosity loop, orchestration, critique
+
+Lathe
+= deterministic asset/world construction, geometry/material execution, export evidence, repair substrate
+</code></pre></div>
+<p>Learned providers may remain optional proposal sources. They must not become the answer to Lathe asset quality. The next push is standalone procedural: no AI 3D runtime dependency, no fake learned-quality claims, no provider-critical path.</p>
+<h2 id="3-core-problem">3. Core Problem<a class="headerlink" href="#3-core-problem" title="Permanent link">&para;</a></h2>
+<p>Lathe's language, stdlib, quality layer, and imagination-to-life vision are ahead of its geometry and surface execution layer.</p>
+<p>The most dangerous failure mode is success-shaped output:</p>
+<div class="highlight"><pre><span></span><code>source says &quot;beveled sci-fi crate with panels, vents, fasteners, material zones, and wear&quot;
+report says the package is complete
+preview still looks like primitive blockout or debug material output
+</code></pre></div>
+<p>The problem is not lack of language ambition. The problem is representation/execution mismatch:</p>
+<div class="highlight"><pre><span></span><code>semantic asset intent
+-&gt; incomplete construction operations
+-&gt; partially supported kernel path
+-&gt; weak mesh provenance
+-&gt; weak surface/material masks
+-&gt; validators that may reward metadata
+-&gt; package that appears certified but is not visibly convincing
+</code></pre></div>
+<p>The next implementation work must close this gap, not widen it.</p>
+<h2 id="4-rule-of-truth">4. Rule Of Truth<a class="headerlink" href="#4-rule-of-truth" title="Permanent link">&para;</a></h2>
+<p>For every public or reportable asset-quality claim, one of these must be true:</p>
+<ol>
+<li>Lathe builds it as visible geometry or visible surface output.</li>
+<li>Lathe lowers it into supported construction operations.</li>
+<li>Lathe reports the unsupported or degraded state honestly.</li>
+<li>Lathe does not promise it yet.</li>
+</ol>
+<p>This state is forbidden:</p>
+<div class="highlight"><pre><span></span><code>Language, docs, validator, or report says it happened,
+but mesh, material, preview, package, or import evidence does not prove it.
+</code></pre></div>
+<p>The implementation standard is:</p>
+<div class="highlight"><pre><span></span><code>claim -&gt; construction -&gt; output -&gt; evidence -&gt; judgment -&gt; repair or honest blocker
+</code></pre></div>
+<h2 id="5-stable-contracts-and-hard-guardrails">5. Stable Contracts And Hard Guardrails<a class="headerlink" href="#5-stable-contracts-and-hard-guardrails" title="Permanent link">&para;</a></h2>
+<p>Preserve these unless a task explicitly declares a migration:</p>
+<ul>
+<li>Public <code>.lth</code> source compatibility.</li>
+<li>Stable shape-stage handoff contract: <code>lathe.shape.intent_mesh_handoff_v1</code>.</li>
+<li>Public language surface around <code>profile</code>, <code>contract</code>, <code>critic</code>, <code>asset</code>, <code>variant</code>, and build-stage names.</li>
+<li>Existing downstream topology, UV, surface, package, and publish contracts unless the task names a migration.</li>
+<li>Attempted-vs-actual tracing for providers, kernels, renderers, topology adapters, UV adapters, package exporters, and external import evidence.</li>
+</ul>
+<p>Implementation guardrails:</p>
+<ul>
+<li>Do not add public syntax before the internal execution path proves visible output.</li>
+<li>Do not claim production, game, Roblox, Unity, Unreal, or DCC readiness from proxy evidence.</li>
+<li>Do not fake Blender, xatlas, Manifold, renderer, bake, package, import, or learned-provider evidence.</li>
+<li>Do not hide fallback behavior.</li>
+<li>Do not let validators reward metadata completeness over human-visible quality.</li>
+<li>Do not add chest-only fixes unless they generalize through tags, asset class, operations, or stdlib.</li>
+<li>Do not expand the language faster than the kernel can honor.</li>
+<li>Do not tune old outputs to pass by weakening the gate.</li>
+</ul>
+<p>Internal architecture can evolve aggressively underneath the stable handoff when it is additive and truth-preserving.</p>
+<h2 id="6-current-product-state-to-respect">6. Current Product State To Respect<a class="headerlink" href="#6-current-product-state-to-respect" title="Permanent link">&para;</a></h2>
+<p>Lathe already contains real, useful foundations:</p>
+<ul>
+<li>Parser, normalizer, resolver, checker, planner, materializer, executor.</li>
+<li>Stable shape handoff: <code>lathe.shape.intent_mesh_handoff_v1</code>.</li>
+<li>Native assembly-first shape core.</li>
+<li>ShapeIR v1 with richer primitives than the oldest roadmap assumed: box, cylinder, sphere, revolved profile, extruded profile, torus, subdivision box, swept profile, heightfield, lofted solid, SDF mesh.</li>
+<li>ShapeIR v2 semantic operation model.</li>
+<li>Asset-quality modules for diagnostics, quality planning, grammar lowering, material/wear graph, preview evidence, semantic critique, semantic patch, reference boards, and vision critique.</li>
+<li>Geometry kernel seam and optional Manifold adapter.</li>
+<li>Mesh program examples and several procedural domains from the imagination-to-life session.</li>
+<li>Existing demos for hard-surface, vegetation, terrain, SDF organic, WFC modular, scatter, and surface scatter.</li>
+<li>Optional learned providers, explicitly non-critical.</li>
+</ul>
+<p>The next push should use these foundations. It should not restart the product from scratch.</p>
+<h2 id="7-consolidated-diagnosis">7. Consolidated Diagnosis<a class="headerlink" href="#7-consolidated-diagnosis" title="Permanent link">&para;</a></h2>
+<p>The source docs converge on the same diagnosis. This section is the canonical blocker map.</p>
+<h3 id="b0-the-language-is-ahead-of-the-engine">B0. The Language Is Ahead Of The Engine<a class="headerlink" href="#b0-the-language-is-ahead-of-the-engine" title="Permanent link">&para;</a></h3>
+<p>Symptom:</p>
+<ul>
+<li><code>.lth</code> can imply rich assets.</li>
+<li>Reports can describe rich assets.</li>
+<li>The mesh/preview may still show blockout-level geometry or debug-style materials.</li>
+</ul>
+<p>Root cause:</p>
+<ul>
+<li>Semantic intent is not consistently lowered into construction operations.</li>
+<li>Construction operations are not consistently routed through capable kernels.</li>
+<li>Mesh/surface provenance does not survive far enough downstream.</li>
+<li>Validators and reports may not inspect the pixels or final artifacts that humans judge.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Make the visible geometry loop the implementation center.</li>
+<li>Promote dormant authoring layers into execution drivers only when tied to visible output.</li>
+</ul>
+<h3 id="b1-authored-intent-dies-before-geometry">B1. Authored Intent Dies Before Geometry<a class="headerlink" href="#b1-authored-intent-dies-before-geometry" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Large parts of <code>intent</code>, <code>geometry</code>, <code>features</code>, <code>surface</code>, <code>assembly</code>, and <code>style_target</code> may not reach the shape builder.</li>
+<li>Family inference and hardcoded blueprint routing can dominate.</li>
+<li><code>features.allow</code>, <code>geometry.integration_rules</code>, and <code>surface.patterns</code> have historically been under-consumed.</li>
+</ul>
+<p>Primary files to inspect when implementing:</p>
+<ul>
+<li><code>lathe/asset_graph.py</code></li>
+<li><code>lathe/assembly_kernel.py</code></li>
+<li><code>lathe/feature_grammar.py</code></li>
+<li><code>lathe/asset_quality/grammar_lowering.py</code></li>
+<li><code>lathe/asset_quality/construction_graph.py</code></li>
+<li><code>lathe/asset_quality/shape_ir_v2.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Add a typed authoring context that carries feature allowlists, edge classes, seam classes, integration rules, style target, density, preservation intent, material zones, and surface patterns into shape construction.</li>
+<li>Prefer tag/component/asset-class dispatch over family-name dispatch.</li>
+<li>Record what was consumed, ignored, approximated, or rejected.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>A test changes an authored feature or integration rule and the generated construction program changes.</li>
+<li>Ignored authoring fields produce diagnostics instead of silent no-op behavior.</li>
+</ul>
+<h3 id="b2-shapeir-v2-grammar-lowering-and-construction-graph-are-too-often-validators-not-drivers">B2. ShapeIR v2, Grammar Lowering, And Construction Graph Are Too Often Validators, Not Drivers<a class="headerlink" href="#b2-shapeir-v2-grammar-lowering-and-construction-graph-are-too-often-validators-not-drivers" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>ShapeIR v2 has semantic operations for solids, booleans, edge control, SOP-style operations, repetition, integration, and wear.</li>
+<li>Grammar lowering and construction graph produce useful semantic records.</li>
+<li>Too much of this remains informational after the mesh already exists.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/shape_ir_v2.py</code></li>
+<li><code>lathe/asset_quality/grammar_lowering.py</code></li>
+<li><code>lathe/asset_quality/construction_graph.py</code></li>
+<li><code>lathe/scaffold_compiler.py</code></li>
+<li><code>lathe/assembly_kernel.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Promote one narrow ShapeIR v2 operation at a time into execution.</li>
+<li>Do not promote all v2 ops at once.</li>
+<li>Start with high-signal hard-surface ops: trim band, fastener grid, vent slats, bevel/chamfer, socket/bracket/mount plate.</li>
+<li>Add diagnostics for unsupported operations.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>An operation survives lowering.</li>
+<li>It produces visible geometry or material-mask output.</li>
+<li>Reports name whether it was executed, approximated, or unsupported.</li>
+</ul>
+<h3 id="b3-csg-and-exact-paths-have-been-too-narrow-or-too-fallback-oriented">B3. CSG And Exact Paths Have Been Too Narrow Or Too Fallback-Oriented<a class="headerlink" href="#b3-csg-and-exact-paths-have-been-too-narrow-or-too-fallback-oriented" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Exact solid paths and robust kernel seams exist.</li>
+<li>CSG enablement has historically been tied to selected hero families.</li>
+<li>Manifold may be available but not always primary.</li>
+<li>Boolean failure can degrade to concatenated geometry unless surfaced strongly.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/feature_fusion.py</code></li>
+<li><code>lathe/exact_solids.py</code></li>
+<li><code>lathe/geometry_kernel.py</code></li>
+<li><code>lathe/geometry/kernel.py</code></li>
+<li><code>lathe/shape/backend.py</code></li>
+<li><code>lathe/scaffold_compiler.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Make CSG capability depend on authored intent, asset class, feature requirements, and kernel support, not family names alone.</li>
+<li>Route boolean operations through explicit kernel resolution.</li>
+<li>Prefer Manifold for clean manifold hard-surface CSG when the resolved backend supports the needed primitive set.</li>
+<li>Add a backend chain where useful: Manifold, optional robust fallback, voxel/levelset repair as last resort.</li>
+<li>Never silently certify boolean fallback on a hero-quality claim.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Reports include attempted kernel, actual kernel, fallback reason, watertightness/body-count checks, and unsupported primitive diagnostics.</li>
+<li>A boolean fallback creates a visible diagnostic such as <code>boolean_csg_fallback</code>.</li>
+</ul>
+<h3 id="b4-bevels-chamfers-and-edge-treatments-are-the-biggest-hard-surface-signal">B4. Bevels, Chamfers, And Edge Treatments Are The Biggest Hard-Surface Signal<a class="headerlink" href="#b4-bevels-chamfers-and-edge-treatments-are-the-biggest-hard-surface-signal" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Edge treatment is the fastest way to move output from blockout to intentional hard-surface.</li>
+<li>Some current or historical bevel paths are corner-only, post-boolean-limited, or family-gated.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/exact_solids.py</code></li>
+<li><code>lathe/feature_ops/bevel_real.py</code></li>
+<li><code>lathe/mesh_program/__init__.py</code></li>
+<li><code>lathe/asset_quality/shape_ir_v2.py</code></li>
+<li><code>lathe/assembly_kernel.py</code></li>
+<li><code>lathe/mesh_finalize.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Keep the canonical hard-surface idiom: <code>boolean -&gt; bevel(seam_group)</code>.</li>
+<li>Preserve seam group IDs through MeshIR, topology, UV, surface, and validate where feasible.</li>
+<li>Implement edge-class treatment generically, not by family equality.</li>
+<li>Add selective edge selectors and edge profiles as a later step.</li>
+<li>Emit low-fidelity bevel diagnostics when the operation degenerates.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Preview shows edge highlights or chamfer strips.</li>
+<li>Mesh/report names bevel source operation and seam group.</li>
+<li>Validator can distinguish missing bevel evidence from present bevel evidence.</li>
+</ul>
+<h3 id="b5-feature-density-is-not-yet-author-controllable-enough">B5. Feature Density Is Not Yet Author-Controllable Enough<a class="headerlink" href="#b5-feature-density-is-not-yet-author-controllable-enough" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Feature density can become a tier ladder instead of a real authoring control.</li>
+<li>Repetition patterns can be hardcoded per fixture.</li>
+<li>Secondary/tertiary detail can be too flat or too uniform.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/feature_grammar.py</code></li>
+<li><code>lathe/feature_ops/__init__.py</code></li>
+<li><code>lathe/mesh_program/__init__.py</code></li>
+<li><code>lathe/instance_pattern.py</code></li>
+<li><code>lathe/asset_quality/family_grammar.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Treat density as a multiplier and a pattern driver, not only a tier name.</li>
+<li>Prefer generic distribution/scatter operations over fixture helpers.</li>
+<li>Add primary/secondary/tertiary hierarchy: large form breaks, medium trim, small fasteners/wear.</li>
+<li>Support deterministic variation with bounds, symmetry, and snap constraints.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Increasing density or count changes visible instance/detail count.</li>
+<li>Variation is bounded and deterministic.</li>
+<li>Report includes count and placement evidence.</li>
+</ul>
+<h3 id="b6-surface-and-bake-truth-are-not-optional">B6. Surface And Bake Truth Are Not Optional<a class="headerlink" href="#b6-surface-and-bake-truth-are-not-optional" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Surface output can make good geometry look bad.</li>
+<li>World-space face-normal polygon fill is not a valid tangent-space normal map.</li>
+<li>AO, curvature, and wear can be weak if based on low-poly faces only.</li>
+<li>DesignerGraph and LayerStack capability must feed actual buffers, not only sidecars.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/bake_runtime.py</code></li>
+<li><code>lathe/surface_runtime.py</code></li>
+<li><code>lathe/surface_graph/designer_graph.py</code></li>
+<li><code>lathe/surface_graph/nodes.py</code></li>
+<li><code>lathe/surface_graph/layer_stack.py</code></li>
+<li><code>lathe/surface_graph/materialx.py</code></li>
+<li><code>lathe/materials.py</code></li>
+<li><code>lathe/asset_quality/material_wear_graph.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Fix fallback normal bake to tangent-space output.</li>
+<li>Use high-poly or primitive-native source for curvature where claiming edge wear.</li>
+<li>Evaluate DesignerGraph or LayerStack into actual basecolor/normal/roughness/AO/curvature buffers.</li>
+<li>Add missing graph nodes incrementally: SlopeBlur, HistogramScan/Levels, EdgeDetect, GradientMap, PositionMask/WorldYMask.</li>
+<li>Distinguish final beauty from material-ID/debug previews.</li>
+<li>Emit authored-vs-proxy flags for maps and materials.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>The final preview changes when material-zone or wear settings change.</li>
+<li>Normal map is neutral/tangent-space when no high source is available.</li>
+<li>Reports state which maps are real, proxy, fallback, or unavailable.</li>
+</ul>
+<h3 id="b7-highlow-transfer-must-contain-real-extra-detail">B7. High/Low Transfer Must Contain Real Extra Detail<a class="headerlink" href="#b7-highlow-transfer-must-contain-real-extra-detail" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Subdividing the low mesh does not create real high-poly source detail.</li>
+<li>Curvature/wear transfer from a subdivided low mesh is not real high/low.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/surface_runtime.py</code></li>
+<li><code>lathe/highlow.py</code></li>
+<li><code>lathe/bake_runtime.py</code></li>
+<li><code>lathe/shape_ir.py</code></li>
+<li><code>lathe/asset_quality/highlow_relation.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Generate high source from ShapeIR primitives at native curvature, not just low mesh subdivision.</li>
+<li>Preserve bevel, chamfer, panel, rivet, groove, and seam geometry in the high source when claiming baked detail.</li>
+<li>Report real high/low ratio, projection quality, hit ratio, and fallback decision.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>High source has additional detail or curvature not present in the low mesh.</li>
+<li>Curvature/wear maps show detail beyond low-poly silhouette edges.</li>
+</ul>
+<h3 id="b8-topology-can-erase-craft">B8. Topology Can Erase Craft<a class="headerlink" href="#b8-topology-can-erase-craft" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Blender adapter failures or fallback paths can collapse multi-part or bevel work.</li>
+<li>Retopology/cleanup can remove detail or produce ugly shading.</li>
+<li>Hard-edge and seam semantics need preservation.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/topology_runtime.py</code></li>
+<li><code>lathe/core/stages/topology.py</code></li>
+<li><code>scripts/blender_topology_adapter.py</code></li>
+<li><code>lathe/mesh_finalize.py</code></li>
+<li><code>lathe/topology_runtime.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Fix or confirm Blender import behavior for current Blender versions.</li>
+<li>Keep Blender optional and truthfully traced.</li>
+<li>Add deterministic fallback quality improvements: beauty-diagonal triangulation, Taubin smoothing for voxel-origin parts, hard-edge normal split.</li>
+<li>Add real quad-remesh provider only when it can be validated and traced.</li>
+<li>Preserve seam groups, bevel strips, material zones, and part names.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Before/after topology does not lose named parts or critical seam groups.</li>
+<li>Reports include attempted topology adapter and actual adapter.</li>
+<li>Fallback is not silent.</li>
+</ul>
+<h3 id="b9-uv-and-texel-density-must-become-evidence">B9. UV And Texel Density Must Become Evidence<a class="headerlink" href="#b9-uv-and-texel-density-must-become-evidence" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Texel-density inconsistency is a major visible quality failure.</li>
+<li>Per-part importance and authored density can be recorded without governing packing enough.</li>
+<li>Trim sheets and UDIM are key hard-surface quality levers.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/uv_runtime.py</code></li>
+<li><code>lathe/core/stages/uv.py</code></li>
+<li><code>lathe/core/uv_ops.py</code></li>
+<li><code>lathe/atlas_assembler.py</code></li>
+<li><code>lathe/texture_control_pack.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Add texel-density audit: min, max, ratio, worst chart, per-part density.</li>
+<li>Honor asset density request and importance weights at pack time.</li>
+<li>Add constrained chart pre-scaling before packing.</li>
+<li>Add trim-sheet binding later: slot atlas, UV rect, edge/face binding, packing exclusion.</li>
+<li>Add UDIM spillover later for hero assets when one tile cannot preserve density.</li>
+<li>Use triplanar only when declared or when UV evidence shows it is the right fallback.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Validator/report can name the chart or part causing density drift.</li>
+<li>UV fallback reports why it happened.</li>
+<li>Texture evidence links to density and packing decisions.</li>
+</ul>
+<h3 id="b10-validators-must-judge-visible-output">B10. Validators Must Judge Visible Output<a class="headerlink" href="#b10-validators-must-judge-visible-output" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Validators can reward metadata or old box-like output.</li>
+<li>Pixel-level or preview-level evidence is missing in parts of the current system.</li>
+<li>Certification must correlate with human review.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/diagnostics.py</code></li>
+<li><code>lathe/validators/visual_quality.py</code></li>
+<li><code>lathe/validators/semantic_quality.py</code></li>
+<li><code>lathe/render_eval.py</code></li>
+<li><code>lathe/core/stages/validate.py</code></li>
+<li><code>lathe/asset_quality/preview_evidence.py</code></li>
+<li><code>lathe/asset_quality/preview_render.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Add diagnostics for visible blockers: blockout shape, debug material look, missing bevel/detail, weak hierarchy, weak material contrast, fake high/low, attachment seating, boolean fallback, preview absence.</li>
+<li>Prefer pixel/mesh/artifact evidence over metadata.</li>
+<li>Keep thresholds honest: warnings for proxy gaps, errors for false hero claims.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>The baseline crate or door fails/warns for the visible weakness a human sees.</li>
+<li>The improved artifact changes at least one visible metric and report code.</li>
+</ul>
+<h3 id="b11-semantic-repair-must-become-operational">B11. Semantic Repair Must Become Operational<a class="headerlink" href="#b11-semantic-repair-must-become-operational" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Repair machinery exists, but it is only meaningful when diagnostics map to executable operations.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/semantic_critique.py</code></li>
+<li><code>lathe/asset_quality/semantic_patch.py</code></li>
+<li><code>lathe/repair_loop.py</code></li>
+<li><code>lathe/repair_executor.py</code></li>
+<li><code>lathe/repair_policy.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Start with one mapping.</li>
+<li>Suggested first mapping: weak detail hierarchy -&gt; add trim band, fastener grid, or vent slats.</li>
+<li>Keep patch operations deterministic, serializable, and allowlisted.</li>
+<li>Reject patches that require public syntax or shape handoff migration.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Baseline diagnostic produces a repair suggestion.</li>
+<li>Suggestion lowers to an allowed patch/regeneration operation.</li>
+<li>Rebuild produces visible before/after difference and improved metric.</li>
+</ul>
+<h3 id="b12-chest-specific-code-is-a-product-smell">B12. Chest-Specific Code Is A Product Smell<a class="headerlink" href="#b12-chest-specific-code-is-a-product-smell" title="Permanent link">&para;</a></h3>
+<p>Known finding:</p>
+<ul>
+<li>Historical fixes often concentrated around chest.</li>
+<li>Family-specific token sets and allowlists make new families require Python edits.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_graph.py</code></li>
+<li><code>lathe/assembly_kernel.py</code></li>
+<li><code>lathe/feature_grammar.py</code></li>
+<li><code>lathe/feature_fusion.py</code></li>
+<li><code>lathe/highlow_relation.py</code></li>
+<li><code>lathe/surface_runtime.py</code></li>
+<li><code>lathe/primitive_selector.py</code></li>
+</ul>
+<p>Implementation direction:</p>
+<ul>
+<li>Dispatch by asset class, tags, authored selector rules, component roles, and feature ops.</li>
+<li>Move family rules to stdlib where possible.</li>
+<li>Use chest, crate, door, weapon, terrain, vegetation, SDF, WFC as guardrails, not as type-system anchors.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>A non-chest fixture benefits from the fix.</li>
+<li>New functionality is not gated by <code>family == "brassbound_chest"</code> or equivalent one-off equality unless explicitly legacy.</li>
+</ul>
+<h2 id="8-immediate-focus-visible-geometry-kernel-sprint-0">8. Immediate Focus: Visible Geometry Kernel Sprint 0<a class="headerlink" href="#8-immediate-focus-visible-geometry-kernel-sprint-0" title="Permanent link">&para;</a></h2>
+<p>Sprint name:</p>
+<div class="highlight"><pre><span></span><code>visible-geometry-kernel-sprint-0
+</code></pre></div>
+<p>Objective:</p>
+<div class="highlight"><pre><span></span><code>Make one existing hard-surface fixture visibly better while preserving public source compatibility and the stable shape handoff contract.
+</code></pre></div>
+<p>Primary fixture:</p>
+<div class="highlight"><pre><span></span><code>industrial_crate / sci-fi crate
+</code></pre></div>
+<p>Secondary guardrail:</p>
+<div class="highlight"><pre><span></span><code>mechanical_door or fantasy_weapon
+</code></pre></div>
+<p>The before/after improvement must be obvious in five seconds. If it needs a long explanation, it is not strong enough.</p>
+<h3 id="sprint-0-non-negotiables">Sprint 0 Non-Negotiables<a class="headerlink" href="#sprint-0-non-negotiables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Capture baseline before changing behavior.</li>
+<li>Generate or reference visible preview evidence.</li>
+<li>Improve real geometry or real surface output.</li>
+<li>Add diagnostics that catch the before-state.</li>
+<li>Wire one semantic repair mapping if feasible.</li>
+<li>Preserve <code>.lth</code> compatibility.</li>
+<li>Preserve <code>lathe.shape.intent_mesh_handoff_v1</code>.</li>
+<li>Report every proxy/fallback/unavailable dependency.</li>
+<li>Keep the implementation reusable beyond one fixture.</li>
+</ul>
+<h3 id="sprint-0-done-condition">Sprint 0 Done Condition<a class="headerlink" href="#sprint-0-done-condition" title="Permanent link">&para;</a></h3>
+<p>The sprint is complete when this chain exists:</p>
+<div class="highlight"><pre><span></span><code>.lth intent
+-&gt; baseline crate artifact
+-&gt; visible weakness diagnostic
+-&gt; concrete operation or repair path
+-&gt; rebuilt crate artifact
+-&gt; before/after preview
+-&gt; report metrics change
+-&gt; export/package artifacts exist
+</code></pre></div>
+<p>Minimum visible improvement:</p>
+<ul>
+<li>less primitive/blockout-looking;</li>
+<li>clearer silhouette or hard-surface hierarchy;</li>
+<li>visible bevel/chamfer, trim, fasteners, vents, panels, or equivalent secondary detail;</li>
+<li>coherent final materials instead of debug-only colors;</li>
+<li>evidence paths in the report or sprint evidence doc.</li>
+</ul>
+<h2 id="9-detailed-sprint-0-task-plan">9. Detailed Sprint 0 Task Plan<a class="headerlink" href="#9-detailed-sprint-0-task-plan" title="Permanent link">&para;</a></h2>
+<h3 id="task-s0-1-capture-baseline-evidence">Task S0-1: Capture Baseline Evidence<a class="headerlink" href="#task-s0-1-capture-baseline-evidence" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Create a truthful before-state.</li>
+<li>Prevent subjective or memory-based claims.</li>
+</ul>
+<p>Create or update:</p>
+<ul>
+<li><code>docs/asset-quality/visible-geometry-sprint-0-evidence.md</code></li>
+</ul>
+<p>Read:</p>
+<ul>
+<li><code>examples/industrial_crate.lth</code></li>
+<li><code>examples/mechanical_door.lth</code></li>
+<li>closest equivalent fixtures if paths differ</li>
+</ul>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">git</span> <span class="n">status</span> <span class="p">-</span><span class="n">-short</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">check</span> <span class="n">examples</span><span class="p">/</span><span class="n">industrial_crate</span><span class="p">.</span><span class="n">lth</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">check</span> <span class="n">examples</span><span class="p">/</span><span class="n">mechanical_door</span><span class="p">.</span><span class="n">lth</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">build</span> <span class="n">examples</span><span class="p">/</span><span class="n">industrial_crate</span><span class="p">.</span><span class="n">lth</span> <span class="n">industrial_crate</span> <span class="p">-</span><span class="n">-out</span> <span class="p">.</span><span class="n">tmp_tests</span><span class="p">/</span><span class="n">baseline_industrial_crate</span> <span class="p">-</span><span class="n">-deterministic</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">build</span> <span class="n">examples</span><span class="p">/</span><span class="n">mechanical_door</span><span class="p">.</span><span class="n">lth</span> <span class="n">mechanical_door</span> <span class="p">-</span><span class="n">-out</span> <span class="p">.</span><span class="n">tmp_tests</span><span class="p">/</span><span class="n">baseline_mechanical_door</span> <span class="p">-</span><span class="n">-deterministic</span>
+</code></pre></div>
+<p>Record:</p>
+<ul>
+<li>commands run;</li>
+<li>output directories;</li>
+<li>build reports;</li>
+<li>shape/topology/UV/surface/validate/package artifacts;</li>
+<li>preview paths;</li>
+<li>optional dependency blockers;</li>
+<li>whether each preview is real or proxy;</li>
+<li>human-visible weaknesses;</li>
+<li>exact dirty worktree state without cleaning unrelated files.</li>
+</ul>
+<p>Validation:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_baseline_report_shape</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_preview_evidence</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>There is a readable evidence doc with exact paths and allowed claims.</li>
+</ul>
+<h3 id="task-s0-2-strengthen-preview-evidence">Task S0-2: Strengthen Preview Evidence<a class="headerlink" href="#task-s0-2-strengthen-preview-evidence" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Make the artifact inspectable.</li>
+<li>Stop reports from passing without visual proof.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/preview_evidence.py</code></li>
+<li><code>lathe/asset_quality/preview_render.py</code></li>
+<li><code>lathe/asset_quality/certification.py</code></li>
+<li><code>lathe/core/stages/validate.py</code></li>
+<li><code>tests/unit/test_asset_quality_preview_evidence.py</code></li>
+</ul>
+<p>Required preview evidence model:</p>
+<ul>
+<li><code>final_beauty</code></li>
+<li><code>material_ids</code></li>
+<li><code>wireframe</code></li>
+<li><code>orthographic_front</code></li>
+<li><code>orthographic_top</code></li>
+<li><code>orthographic_three_quarter</code></li>
+<li><code>comparison_sheet</code></li>
+<li><code>renderer_status</code></li>
+<li><code>proxy_status</code></li>
+<li><code>artifact_paths</code></li>
+</ul>
+<p>Truth statuses:</p>
+<ul>
+<li><code>real_renderer_used</code></li>
+<li><code>renderer_unavailable</code></li>
+<li><code>proxy_preview_only</code></li>
+<li><code>artifact_missing</code></li>
+<li><code>not_requested</code></li>
+</ul>
+<p>Tests:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_preview_evidence</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_certification</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>Missing renderers create explicit statuses.</li>
+<li>Reports can point to human-inspectable preview artifacts or explicitly say they are missing/proxy.</li>
+</ul>
+<h3 id="task-s0-3-add-one-visible-geometry-detail-operation">Task S0-3: Add One Visible Geometry Detail Operation<a class="headerlink" href="#task-s0-3-add-one-visible-geometry-detail-operation" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Prove semantic intent can become real visible output.</li>
+</ul>
+<p>Recommended first op:</p>
+<ul>
+<li><code>op.trim_band</code> or <code>op.fastener_grid</code> if bevel/chamfer is risky.</li>
+<li><code>op.bevel</code> or <code>op.chamfer</code> if current mesh path supports it cleanly.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/shape_ir_v2.py</code></li>
+<li><code>lathe/asset_quality/grammar_lowering.py</code></li>
+<li><code>lathe/mesh_program/__init__.py</code></li>
+<li><code>lathe/feature_ops/__init__.py</code></li>
+<li><code>lathe/feature_ops/bevel_real.py</code></li>
+<li><code>lathe/geometry_kernel.py</code></li>
+<li><code>lathe/exact_solids.py</code></li>
+</ul>
+<p>Test files:</p>
+<ul>
+<li><code>tests/unit/test_shape_ir_v2.py</code></li>
+<li><code>tests/unit/test_asset_quality_grammar_lowering.py</code></li>
+<li><code>tests/unit/test_mesh_program_ops.py</code></li>
+<li><code>tests/unit/test_geometry_kernel.py</code></li>
+</ul>
+<p>Requirements:</p>
+<ul>
+<li>operation has stable semantic ID;</li>
+<li>operation has target/face/axis/count/size parameters as relevant;</li>
+<li>operation either emits visible geometry or visible material-mask/region evidence;</li>
+<li>unsupported target geometry creates diagnostics;</li>
+<li>approximation is tagged as approximation;</li>
+<li>stable shape handoff is not broken.</li>
+</ul>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_shape_ir_v2</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_grammar_lowering</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_mesh_program_ops</span><span class="p">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_geometry_kernel</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>A fixture build produces visible detail and report evidence names the operation.</li>
+</ul>
+<h3 id="task-s0-4-improve-crate-surface-defaults">Task S0-4: Improve Crate Surface Defaults<a class="headerlink" href="#task-s0-4-improve-crate-surface-defaults" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Kill debug-material look and make final beauty readable.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/materials.py</code></li>
+<li><code>lathe/surface_runtime.py</code></li>
+<li><code>lathe/bake_runtime.py</code></li>
+<li><code>lathe/asset_quality/material_wear_graph.py</code></li>
+</ul>
+<p>Test files:</p>
+<ul>
+<li><code>tests/unit/test_surface_runtime.py</code></li>
+<li><code>tests/unit/test_asset_quality_material_wear_graph.py</code></li>
+</ul>
+<p>Requirements:</p>
+<ul>
+<li>family/style-aware material defaults;</li>
+<li>non-debug final palette;</li>
+<li>material zones with readable contrast;</li>
+<li>roughness/normal/AO/curvature/wear map status;</li>
+<li>authored-vs-proxy flags;</li>
+<li>final beauty distinct from material-ID debug.</li>
+</ul>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_surface_runtime</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_material_wear_graph</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>Surface changes are visible in final preview or texture artifacts.</li>
+</ul>
+<h3 id="task-s0-5-add-human-visible-diagnostics">Task S0-5: Add Human-Visible Diagnostics<a class="headerlink" href="#task-s0-5-add-human-visible-diagnostics" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Make the before-state fail or warn for the same reason a human would complain.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/diagnostics.py</code></li>
+<li><code>lathe/validators/visual_quality.py</code></li>
+<li><code>lathe/core/stages/validate.py</code></li>
+</ul>
+<p>Test files:</p>
+<ul>
+<li><code>tests/unit/test_asset_quality_diagnostics.py</code></li>
+<li><code>tests/test_visual_quality.py</code></li>
+<li><code>tests/unit/test_asset_quality_baseline_report_shape.py</code></li>
+</ul>
+<p>Diagnostic targets:</p>
+<ul>
+<li><code>blockout_geometry_appearance</code></li>
+<li><code>debug_material_preview_penalty</code></li>
+<li><code>missing_bevel_chamfer_detail_evidence</code></li>
+<li><code>weak_primary_secondary_tertiary_balance</code></li>
+<li><code>weak_material_zone_contrast</code></li>
+<li><code>attachment_seating_quality</code></li>
+<li><code>fake_highlow_detail</code></li>
+<li><code>boolean_csg_fallback</code></li>
+<li><code>proxy_preview_only</code></li>
+</ul>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_diagnostics</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_baseline_report_shape</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">test_visual_quality</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>Baseline artifact receives an accurate warning/failure.</li>
+<li>Improved artifact improves the relevant metric.</li>
+</ul>
+<h3 id="task-s0-6-wire-one-semantic-repair-mapping">Task S0-6: Wire One Semantic Repair Mapping<a class="headerlink" href="#task-s0-6-wire-one-semantic-repair-mapping" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Seed the Wonder-style revision loop.</li>
+</ul>
+<p>Primary files:</p>
+<ul>
+<li><code>lathe/asset_quality/semantic_critique.py</code></li>
+<li><code>lathe/asset_quality/semantic_patch.py</code></li>
+<li><code>lathe/repair_loop.py</code></li>
+<li><code>lathe/asset_quality/generation_steering.py</code> if used by current implementation</li>
+</ul>
+<p>Test files:</p>
+<ul>
+<li><code>tests/unit/test_asset_quality_semantic_critique.py</code></li>
+<li><code>tests/unit/test_asset_quality_semantic_patch.py</code></li>
+<li><code>tests/unit/test_asset_quality_generation_steering.py</code></li>
+</ul>
+<p>First mapping:</p>
+<div class="highlight"><pre><span></span><code>weak_primary_secondary_tertiary_balance
+-&gt; add trim band / fastener grid / vent slats
+</code></pre></div>
+<p>Other early mappings:</p>
+<div class="highlight"><pre><span></span><code>debug_material_preview_penalty
+-&gt; apply family-aware non-debug material defaults
+
+attachment_seating_quality low
+-&gt; add socket, bracket, or mount plate
+
+missing_bevel_chamfer_detail_evidence
+-&gt; add bevel/chamfer or report unsupported operation/kernel
+</code></pre></div>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_semantic_critique</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_semantic_patch</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_generation_steering</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>Diagnostic maps to deterministic allowlisted patch.</li>
+<li>Unsafe patch is rejected.</li>
+<li>Rebuild can produce before/after evidence.</li>
+</ul>
+<h3 id="task-s0-7-start-kernelprogram-seam">Task S0-7: Start KernelProgram Seam<a class="headerlink" href="#task-s0-7-start-kernelprogram-seam" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Begin the structural Phase 2 fix without switching behavior globally.</li>
+</ul>
+<p>Suggested files:</p>
+<ul>
+<li><code>lathe/geometry/kernel_program.py</code></li>
+<li><code>lathe/geometry/shape_ir_lowering.py</code></li>
+<li><code>tests/unit/test_geometry_kernel.py</code></li>
+<li><code>tests/unit/test_shape_ir_v2.py</code></li>
+</ul>
+<p>Requirements:</p>
+<ul>
+<li>deterministic serialization;</li>
+<li>stable IDs for primitives, parts, operations, seams, material zones;</li>
+<li>diagnostics for unsupported primitive/op combinations;</li>
+<li>explicit approximation records;</li>
+<li>no breaking public shape handoff fields.</li>
+</ul>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_geometry_kernel</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_shape_ir_v2</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">contract</span><span class="p">/</span><span class="n">test_shape_handoff_v1</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Done when:</p>
+<ul>
+<li>Internal seam exists and is tested.</li>
+<li>Production build path is not globally switched until visible slice proves value.</li>
+</ul>
+<h3 id="task-s0-8-produce-final-sprint-evidence">Task S0-8: Produce Final Sprint Evidence<a class="headerlink" href="#task-s0-8-produce-final-sprint-evidence" title="Permanent link">&para;</a></h3>
+<p>Purpose:</p>
+<ul>
+<li>Close the loop honestly.</li>
+</ul>
+<p>Commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_preview_evidence</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_diagnostics</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_generation_steering</span><span class="p">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_shape_ir_v2</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_grammar_lowering</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_geometry_kernel</span><span class="p">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_surface_runtime</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_material_wear_graph</span><span class="p">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">check</span> <span class="n">examples</span><span class="p">/</span><span class="n">industrial_crate</span><span class="p">.</span><span class="n">lth</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">build</span> <span class="n">examples</span><span class="p">/</span><span class="n">industrial_crate</span><span class="p">.</span><span class="n">lth</span> <span class="n">industrial_crate</span> <span class="p">-</span><span class="n">-out</span> <span class="p">.</span><span class="n">tmp_tests</span><span class="p">/</span><span class="n">visible_geometry_sprint0</span> <span class="p">-</span><span class="n">-deterministic</span>
+</code></pre></div>
+<p>Record:</p>
+<ul>
+<li>before and after preview paths;</li>
+<li>metrics that changed;</li>
+<li>report paths;</li>
+<li>package/export paths;</li>
+<li>optional dependency blockers;</li>
+<li>exact allowed claims and disallowed claims.</li>
+</ul>
+<p>Done when:</p>
+<ul>
+<li>A future reader can inspect the evidence and understand what became real.</li>
+</ul>
+<h2 id="10-implementation-lanes-beyond-sprint-0">10. Implementation Lanes Beyond Sprint 0<a class="headerlink" href="#10-implementation-lanes-beyond-sprint-0" title="Permanent link">&para;</a></h2>
+<p>These lanes are the detailed master backlog. Use them after or alongside Sprint 0 only when they directly support the visible loop.</p>
+<h3 id="lane-a-geometry-kernel-and-csg">Lane A: Geometry Kernel And CSG<a class="headerlink" href="#lane-a-geometry-kernel-and-csg" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make construction operations execute through explicit, truthful geometry backends.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Promote resolved Manifold path ahead of brittle fallback where primitive coverage is sufficient.</li>
+<li>Add missing primitive coverage in Manifold path, especially lofted solids if still missing.</li>
+<li>Replace family-only exact-mode gating with capability/asset-class/authoring checks.</li>
+<li>Add boolean backend chain telemetry: attempted, actual, fallback reason, diagnostics.</li>
+<li>Emit validation diagnostic when boolean fallback emits concatenated or degraded mesh.</li>
+<li>Add strict geometry mode failure for invalid hero claims.</li>
+<li>Add mesh-to-levelset repair as a last-resort experimental fallback only with visible degraded status.</li>
+</ol>
+<p>Potential future tasks:</p>
+<ul>
+<li>hull operation;</li>
+<li>minkowski operation;</li>
+<li>twist/scale on extruded profiles;</li>
+<li>partial rotate extrude;</li>
+<li>unified tessellation policy;</li>
+<li>helical sweep;</li>
+<li>involute gear primitive;</li>
+<li>NURBS-backed profile curves;</li>
+<li>bend/twist/taper deformers;</li>
+<li>B-Rep IR via OCCT/build123d as a parallel high-ceiling lane;</li>
+<li>half-edge bevel operator for arbitrary mesh topology.</li>
+</ul>
+<p>Do not build the full future list before Sprint 0 has visible evidence.</p>
+<h3 id="lane-b-shapeir-v2-and-construction-graph-as-drivers">Lane B: ShapeIR v2 And Construction Graph As Drivers<a class="headerlink" href="#lane-b-shapeir-v2-and-construction-graph-as-drivers" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make semantic construction records drive geometry instead of only validating after the fact.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Define minimal <code>ShapeProgram</code> or <code>KernelProgram</code> for one hard-surface fixture.</li>
+<li>Lower design brief, construction graph, and ShapeIR v2 ops into executable op records.</li>
+<li>Consume executable op records before family-specific fallback blueprint when present.</li>
+<li>Preserve operation IDs into mesh provenance.</li>
+<li>Add unsupported-op diagnostics.</li>
+<li>Retain current blueprint path as fallback.</li>
+</ol>
+<p>First ops:</p>
+<ul>
+<li><code>solid.panel</code></li>
+<li><code>op.trim_band</code></li>
+<li><code>op.fastener_grid</code></li>
+<li><code>op.vent_slats</code></li>
+<li><code>op.bevel</code></li>
+<li><code>op.chamfer</code></li>
+<li><code>op.socket</code></li>
+<li><code>op.bracket</code></li>
+<li><code>op.mount_plate</code></li>
+</ul>
+<p>Later ops:</p>
+<ul>
+<li><code>op.hull</code></li>
+<li><code>op.minkowski</code></li>
+<li><code>op.distribute</code></li>
+<li><code>op.shell</code></li>
+<li><code>op.cut_panel_line</code></li>
+<li><code>op.weld_seam</code></li>
+<li><code>op.grime_mask</code></li>
+<li><code>op.scratch_mask</code></li>
+<li><code>op.chip_edges</code></li>
+</ul>
+<h3 id="lane-c-feature-ops-and-modularity">Lane C: Feature Ops And Modularity<a class="headerlink" href="#lane-c-feature-ops-and-modularity" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Replace chest-specific emitters with reusable feature operations.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Move feature operations into focused modules rather than one large <code>__init__.py</code> when touched.</li>
+<li>Add generic distribution primitive: linear, grid, radial, arc, along_path.</li>
+<li>Use component tags and target selectors rather than family equality.</li>
+<li>Add count, density, spacing, jitter, mirror, snap, and seed controls.</li>
+<li>Record instance count and target surface/face evidence.</li>
+<li>Add stdlib fastener definitions later.</li>
+</ol>
+<p>Feature ops to generalize:</p>
+<ul>
+<li>rivets;</li>
+<li>bolts;</li>
+<li>trim bands;</li>
+<li>corner guards;</li>
+<li>panel frames;</li>
+<li>vent slats;</li>
+<li>handle brackets;</li>
+<li>sockets;</li>
+<li>mount plates;</li>
+<li>weld seams;</li>
+<li>decals and trim bindings.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>A crate, door, and one non-container asset can reuse the same operation.</li>
+</ul>
+<h3 id="lane-d-surface-graph-bake-and-material-truth">Lane D: Surface Graph, Bake, And Material Truth<a class="headerlink" href="#lane-d-surface-graph-bake-and-material-truth" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make final surfaces look authored and physically plausible enough for the asset class.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Fix tangent-space fallback normal bake.</li>
+<li>Add a simple supersampled UV rasterizer for map generation.</li>
+<li>Wire DesignerGraph evaluation to actual texture buffers.</li>
+<li>Wire LayerStack evaluation to actual texture buffers where available.</li>
+<li>Add HistogramScan/Levels, EdgeDetect, GradientMap, PositionMask, SlopeBlur incrementally.</li>
+<li>Generate procedural high source from ShapeIR primitives.</li>
+<li>Add OKLab blending for basecolor/material color mixes.</li>
+<li>Add per-engine normal map convention outputs when packaging.</li>
+<li>Add MaterialX stdlib lowering and colorspace tags.</li>
+<li>Add map sidecars for <code>colorspace: srgb|linear|none</code>.</li>
+</ol>
+<p>Later tasks:</p>
+<ul>
+<li>trim-sheet IR and atlas builder;</li>
+<li>per-face trim binding;</li>
+<li>decal placement IR;</li>
+<li>mip-aware dilation/padding;</li>
+<li>triplanar material fallback;</li>
+<li>parametric MaterialX nodegraph inputs;</li>
+<li>cel/painterly stylization nodes.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Material changes are visible in preview.</li>
+<li>Texture maps are not debug placeholders unless labeled.</li>
+<li>Engine/DCC export manifests state normal and colorspace conventions.</li>
+</ul>
+<h3 id="lane-e-topology-retopo-and-mesh-finalization">Lane E: Topology, Retopo, And Mesh Finalization<a class="headerlink" href="#lane-e-topology-retopo-and-mesh-finalization" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Preserve hard-surface craft and produce engine-usable topology.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Confirm/fix Blender GLB import compatibility.</li>
+<li>Keep Blender adapter truthful: attempted vs actual plus fallback reason.</li>
+<li>Preserve multi-part scene names and part manifests.</li>
+<li>Split normals or vertices along hard-edge classes where needed.</li>
+<li>Preserve seam and bevel metadata through topology.</li>
+<li>Add beauty-diagonal triangulation fallback.</li>
+<li>Add Taubin smoothing for voxel-origin parts only.</li>
+<li>Consider Instant Meshes provider once a narrow fixture can prove better topology.</li>
+<li>Add topology report that names preserved/lost semantic groups.</li>
+</ol>
+<p>Later tasks:</p>
+<ul>
+<li>hard-surface pipeline: bool cleanup -&gt; adaptive bevel -&gt; quad remesh;</li>
+<li>QuadriFlow fallback for organic;</li>
+<li>cross-field constraints from seam groups;</li>
+<li>decimation preserving UV seams and normals.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Topology stage does not erase visible detail added by shape stage.</li>
+<li>Fallback quality degradation is reported.</li>
+</ul>
+<h3 id="lane-f-uv-texel-density-trim-sheets-udim">Lane F: UV, Texel Density, Trim Sheets, UDIM<a class="headerlink" href="#lane-f-uv-texel-density-trim-sheets-udim" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make texture density and UV decisions auditable and art-directed.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Add texel-density audit after unwrap.</li>
+<li>Honor asset-level target density.</li>
+<li>Honor per-part importance weights.</li>
+<li>Report density ratio, worst chart, worst part, and requested vs actual.</li>
+<li>Avoid silent xatlas overrides where possible.</li>
+<li>Add constrained packing with fixed chart sizes when feasible.</li>
+</ol>
+<p>Later tasks:</p>
+<ul>
+<li>rectpack-based constrained packer;</li>
+<li>UDIM spillover;</li>
+<li>trim-sheet authoring and slot binding;</li>
+<li>BFF unwrapper for seam-group parts;</li>
+<li>OptCuts opt-in;</li>
+<li>triplanar by part/surface method.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Hero asset cannot hide extreme texel-density drift.</li>
+<li>UV fallback is visible in report.</li>
+</ul>
+<h3 id="lane-g-diagnostics-validation-and-reports">Lane G: Diagnostics, Validation, And Reports<a class="headerlink" href="#lane-g-diagnostics-validation-and-reports" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make certification correlate with human visual review.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Add visible-quality diagnostics that inspect output or evidence.</li>
+<li>Add preview evidence completeness check.</li>
+<li>Add debug-material final-preview check.</li>
+<li>Add bevel/detail evidence check.</li>
+<li>Add material-zone contrast check.</li>
+<li>Add primary/secondary/tertiary balance check.</li>
+<li>Add attachment seating check.</li>
+<li>Add boolean fallback check.</li>
+<li>Add fake high/low check.</li>
+<li>Add box-stack or primitive/blockout detector.</li>
+</ol>
+<p>Later tasks:</p>
+<ul>
+<li>multi-angle silhouette validator;</li>
+<li>frequency-energy validator;</li>
+<li>topology class compliance by asset type;</li>
+<li>PBR chart compliance;</li>
+<li>style stack compatibility;</li>
+<li>real-render validation lane.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>A visually primitive artifact cannot pass as hero solely through metadata.</li>
+<li>Diagnostics produce actionable repair routes.</li>
+</ul>
+<h3 id="lane-h-semantic-repair-and-regeneration">Lane H: Semantic Repair And Regeneration<a class="headerlink" href="#lane-h-semantic-repair-and-regeneration" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make the repair loop real and deterministic.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Map one visible diagnostic to one allowed operation.</li>
+<li>Keep patch schema narrow.</li>
+<li>Reject unsafe syntax/contract edits.</li>
+<li>Rebuild and compare before/after evidence.</li>
+<li>Record metric deltas.</li>
+<li>Add rollback for worse output if current repair loop supports it.</li>
+</ol>
+<p>First mappings:</p>
+<ul>
+<li>weak hierarchy -&gt; trim/fastener/vent detail;</li>
+<li>debug material -&gt; non-debug surface defaults;</li>
+<li>attachment seating -&gt; socket/bracket/mount plate;</li>
+<li>missing bevel evidence -&gt; bevel/chamfer operation or unsupported diagnostic;</li>
+<li>fake high/low -&gt; high-source generation or honest downgrade.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Repair changes actual output, not only metadata.</li>
+</ul>
+<h3 id="lane-i-authoring-surface-and-stdlib-modularity">Lane I: Authoring Surface And Stdlib Modularity<a class="headerlink" href="#lane-i-authoring-surface-and-stdlib-modularity" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Make new assets possible without Python edits.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Enforce kit/HDA contracts: ports, parameters, ranges, units, enums, tooltips.</li>
+<li>Add stdlib registry for versioned kits.</li>
+<li>Add director vocabulary entries as stdlib compositions.</li>
+<li>Promote field-style attr language for masks and scatter.</li>
+<li>Add CGA-style assembly rules after terminals are stable.</li>
+<li>Add reference-driven palette/silhouette/frequency extraction.</li>
+</ol>
+<p>Do not start broad syntax work until execution can honor the claims.</p>
+<p>Acceptance:</p>
+<ul>
+<li>New authoring constructs lower to existing operations or produce unsupported diagnostics.</li>
+<li>Public syntax changes update grammar, schema, checker, docs, examples, and tests together.</li>
+</ul>
+<h3 id="lane-j-multi-domain-imagination-to-life-demos">Lane J: Multi-Domain Imagination-To-Life Demos<a class="headerlink" href="#lane-j-multi-domain-imagination-to-life-demos" title="Permanent link">&para;</a></h3>
+<p>Goal:</p>
+<ul>
+<li>Preserve the product-wide capability direction while improving quality.</li>
+</ul>
+<p>Existing demo domains to keep alive:</p>
+<ul>
+<li>hard-surface mechanical;</li>
+<li>vegetation;</li>
+<li>terrain;</li>
+<li>SDF organic;</li>
+<li>WFC modular;</li>
+<li>scatter;</li>
+<li>scatter on surface;</li>
+<li>capstone scene combining several paradigms.</li>
+</ul>
+<p>Priority tasks:</p>
+<ol>
+<li>Keep at least one hard-surface fixture as quality anchor.</li>
+<li>Keep at least one non-hard-surface fixture as modularity guardrail.</li>
+<li>Avoid overfitting all work to chest or crate.</li>
+<li>Update demo catalog when new examples are added.</li>
+<li>Use <code>lathe quick</code> for fast visual iteration where appropriate.</li>
+</ol>
+<p>Acceptance:</p>
+<ul>
+<li>Product-wide demos continue to run or failures are documented as known blockers.</li>
+</ul>
+<h2 id="11-phase-roadmap">11. Phase Roadmap<a class="headerlink" href="#11-phase-roadmap" title="Permanent link">&para;</a></h2>
+<p>This is the consolidated roadmap for sequencing beyond Sprint 0.</p>
+<h3 id="phase-0-stop-false-positives">Phase 0: Stop False Positives<a class="headerlink" href="#phase-0-stop-false-positives" title="Permanent link">&para;</a></h3>
+<p>Time horizon:</p>
+<ul>
+<li>Immediate to 1-2 weeks.</li>
+</ul>
+<p>Goal:</p>
+<ul>
+<li>Make obvious weak outputs warn/fail honestly.</li>
+</ul>
+<p>Deliverables:</p>
+<ul>
+<li>baseline evidence;</li>
+<li>preview evidence statuses;</li>
+<li>primitive/blockout detector;</li>
+<li>debug-material final-preview warning;</li>
+<li>boolean fallback diagnostic;</li>
+<li>hard-edge preservation check;</li>
+<li>tangent-space normal bake fix if in scope.</li>
+</ul>
+<p>Do not:</p>
+<ul>
+<li>broaden syntax;</li>
+<li>tune thresholds to make old output pass;</li>
+<li>declare game-ready.</li>
+</ul>
+<h3 id="phase-1-visible-hard-surface-geometry">Phase 1: Visible Hard-Surface Geometry<a class="headerlink" href="#phase-1-visible-hard-surface-geometry" title="Permanent link">&para;</a></h3>
+<p>Time horizon:</p>
+<ul>
+<li>4-8 weeks, depending on scope.</li>
+</ul>
+<p>Goal:</p>
+<ul>
+<li>Make hard-surface assets visibly intentional.</li>
+</ul>
+<p>Deliverables:</p>
+<ul>
+<li>boolean -&gt; bevel(seam_group) chain;</li>
+<li>trim/fastener/vent operations;</li>
+<li>material zones and final beauty evidence;</li>
+<li>preview comparison sheets;</li>
+<li>diagnostics that catch weak hierarchy;</li>
+<li>one semantic repair mapping;</li>
+<li>initial KernelProgram seam.</li>
+</ul>
+<p>Target assets:</p>
+<ul>
+<li>industrial_crate;</li>
+<li>mechanical_door;</li>
+<li>one guardrail such as fantasy_weapon or console_terminal.</li>
+</ul>
+<h3 id="phase-2-real-surface-and-kernel-bridge">Phase 2: Real Surface And Kernel Bridge<a class="headerlink" href="#phase-2-real-surface-and-kernel-bridge" title="Permanent link">&para;</a></h3>
+<p>Time horizon:</p>
+<ul>
+<li>2-4 months.</li>
+</ul>
+<p>Goal:</p>
+<ul>
+<li>Turn the visible slice into a durable internal architecture.</li>
+</ul>
+<p>Deliverables:</p>
+<ul>
+<li>ShapeIR/ShapeIR v2 -&gt; KernelProgram lowering;</li>
+<li>GeometryKernel execution with capability negotiation;</li>
+<li>semantic provenance through mesh/surface;</li>
+<li>DesignerGraph/LayerStack buffers;</li>
+<li>high-source from primitives;</li>
+<li>texel-density audit;</li>
+<li>MaterialX correctness;</li>
+<li>stronger preview/render validators.</li>
+</ul>
+<h3 id="phase-3-procedural-domain-libraries">Phase 3: Procedural Domain Libraries<a class="headerlink" href="#phase-3-procedural-domain-libraries" title="Permanent link">&para;</a></h3>
+<p>Time horizon:</p>
+<ul>
+<li>6-9 months.</li>
+</ul>
+<p>Goal:</p>
+<ul>
+<li>Expand product capability while preserving deterministic execution.</li>
+</ul>
+<p>Deliverables:</p>
+<ul>
+<li>SpeedTree-inspired vegetation vocabulary;</li>
+<li>terrain heightfield plus erosion/material zones;</li>
+<li>WFC and CGA-style modular assembly;</li>
+<li>OpenSubDiv finishing;</li>
+<li>F-Rep/SDF sharper extraction;</li>
+<li>scatter and surface scatter as production multipliers;</li>
+<li>trim sheets and UDIM for hero surfaces.</li>
+</ul>
+<h3 id="phase-4-organic-and-animation-forward-vocabulary">Phase 4: Organic And Animation-Forward Vocabulary<a class="headerlink" href="#phase-4-organic-and-animation-forward-vocabulary" title="Permanent link">&para;</a></h3>
+<p>Time horizon:</p>
+<ul>
+<li>12-18 months.</li>
+</ul>
+<p>Goal:</p>
+<ul>
+<li>Add rig/anatomy/animation vocabulary without compromising deterministic substrate.</li>
+</ul>
+<p>Deliverables:</p>
+<ul>
+<li>rig as typed data;</li>
+<li>parametric rig components;</li>
+<li>skin program;</li>
+<li>morph targets;</li>
+<li>canonical topology and rig families;</li>
+<li>animation library compatibility.</li>
+</ul>
+<h3 id="phase-5-lathe-runtime-and-engine-integration">Phase 5: Lathe Runtime And Engine Integration<a class="headerlink" href="#phase-5-lathe-runtime-and-engine-integration" title="Permanent link">&para;</a></h3>
+<p>Time horizon:</p>
+<ul>
+<li>18-36 months.</li>
+</ul>
+<p>Goal:</p>
+<ul>
+<li>Ship Lathe as live procedural runtime where it makes product sense.</li>
+</ul>
+<p>Deliverables:</p>
+<ul>
+<li>engine runtime plugins or export lanes;</li>
+<li>USD generative procedural path;</li>
+<li>Unity/Unreal/Godot handoff with actual import evidence;</li>
+<li>live parameter overrides;</li>
+<li>signed package/repro evidence.</li>
+</ul>
+<h2 id="12-style-band-priorities">12. Style Band Priorities<a class="headerlink" href="#12-style-band-priorities" title="Permanent link">&para;</a></h2>
+<p>Near-term:</p>
+<ul>
+<li>Band A: chunky/stylized low-poly.</li>
+<li>Band D: stylized PBR hard-surface.</li>
+</ul>
+<p>Medium-term:</p>
+<ul>
+<li>Band F: toy/Lego/clay, via WFC and strict construction grammar.</li>
+<li>Band E partial: hard-surface and environment realistic, not photoreal humans.</li>
+</ul>
+<p>Later:</p>
+<ul>
+<li>Band B: anime/cel, after stronger stylized material and anatomy support.</li>
+<li>Band C: painterly single-asset, not full directed sequence.</li>
+<li>Band G: hybrid, especially Astro-like PBR/stylized mixes.</li>
+</ul>
+<p>Important:</p>
+<ul>
+<li>Style stack compatibility must refuse incoherent mixes.</li>
+<li>PBR, cel, painterly, toy, and realistic targets need different geometry/material defaults.</li>
+<li>Do not let a style label substitute for executable material/shading decisions.</li>
+</ul>
+<h2 id="13-capability-parity-matrix">13. Capability Parity Matrix<a class="headerlink" href="#13-capability-parity-matrix" title="Permanent link">&para;</a></h2>
+<p>This matrix is the anti-false-positive shield.</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Real only when</th>
+<th>Implementation standard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Beveled/chamfered hard-surface edges</td>
+<td>Mesh or normals show edge treatment and report names operation/kernel path</td>
+<td>Build, prove, or report unsupported</td>
+</tr>
+<tr>
+<td>Panelized surfaces</td>
+<td>Panels appear in mesh/preview and have semantic region or material-zone evidence</td>
+<td>No metadata-only panel claims</td>
+</tr>
+<tr>
+<td>Vents/slats</td>
+<td>Repeated geometry or cuts are visible and counted</td>
+<td>Unsupported ops warn</td>
+</tr>
+<tr>
+<td>Fasteners</td>
+<td>Instances are visible, placed intentionally, and not random noise</td>
+<td>Prefer generic distribute/scatter over family-specific emitters</td>
+</tr>
+<tr>
+<td>Sockets/brackets/mounts</td>
+<td>Attachments are visibly seated and tagged</td>
+<td>Weak seating warns and can map to repair</td>
+</tr>
+<tr>
+<td>Material zones</td>
+<td>Final preview and material maps show distinct zones</td>
+<td>Debug/material-ID preview is not final beauty</td>
+</tr>
+<tr>
+<td>Edge wear/grime/scratches</td>
+<td>Masks affect visible surface output</td>
+<td>Proxy status must be explicit</td>
+</tr>
+<tr>
+<td>Boolean cuts</td>
+<td>Selected kernel reports success or fallback; artifacts show the cut</td>
+<td>Fallback cannot silently certify hero quality</td>
+</tr>
+<tr>
+<td>Swept/revolved/extruded profiles</td>
+<td>Profile geometry appears and validates</td>
+<td>Not a facade over box stacks</td>
+</tr>
+<tr>
+<td>High/low detail</td>
+<td>High source contains additional detail and bake transfer proves it</td>
+<td>Subdivided low mesh alone is not real high/low</td>
+</tr>
+<tr>
+<td>Texel density</td>
+<td>Report names requested vs actual density and drift</td>
+<td>Density cannot be invisible telemetry only</td>
+</tr>
+<tr>
+<td>Trim sheets</td>
+<td>UV rects/slot bindings affect final texture output</td>
+<td>String handles alone are not enough</td>
+</tr>
+<tr>
+<td>Game/Roblox readiness</td>
+<td>Package evidence plus real or clearly labeled proxy import/readiness gates</td>
+<td>Do not claim actual readiness from proxy evidence</td>
+</tr>
+<tr>
+<td>Wonder readiness</td>
+<td>Lathe can execute, inspect, repair, and report deterministic artifacts</td>
+<td>Do not imply hosted/runtime proof without running it</td>
+</tr>
+</tbody>
+</table>
+<h2 id="14-decision-filter-for-every-task">14. Decision Filter For Every Task<a class="headerlink" href="#14-decision-filter-for-every-task" title="Permanent link">&para;</a></h2>
+<p>Before implementing, answer:</p>
+<ol>
+<li>What visible claim does this make true?</li>
+<li>Which asset or fixture proves it?</li>
+<li>Which artifact path will show it?</li>
+<li>Which diagnostic or report field will judge it?</li>
+<li>Which repair route will use it, if any?</li>
+<li>Does it preserve <code>.lth</code> compatibility and <code>lathe.shape.intent_mesh_handoff_v1</code>?</li>
+<li>Does it avoid chest-only or one-family-only logic?</li>
+<li>If it falls back, will users see attempted vs actual behavior?</li>
+<li>What is the narrowest test or build that proves the change?</li>
+<li>What claim remains explicitly not verified?</li>
+</ol>
+<p>If the answers are weak, the task is not ready.</p>
+<h2 id="15-allowed-claims-vocabulary">15. Allowed Claims Vocabulary<a class="headerlink" href="#15-allowed-claims-vocabulary" title="Permanent link">&para;</a></h2>
+<p>Use these terms consistently:</p>
+<ul>
+<li><code>real</code>: produced by Lathe and visible in mesh/material/preview/export evidence.</li>
+<li><code>proxy</code>: represented by deterministic placeholder or non-final evidence, explicitly labeled.</li>
+<li><code>fallback</code>: requested path degraded to another path, with attempted and actual recorded.</li>
+<li><code>unsupported</code>: rejected or warned before false success.</li>
+<li><code>not verified</code>: code exists but no relevant command/artifact was produced in the current run.</li>
+<li><code>blocked</code>: required dependency or upstream condition is missing and named.</li>
+</ul>
+<p>Avoid these unless evidence supports them:</p>
+<ul>
+<li>production-ready;</li>
+<li>game-ready;</li>
+<li>Roblox-ready;</li>
+<li>Unity-ready;</li>
+<li>Unreal-ready;</li>
+<li>AAA;</li>
+<li>fixed;</li>
+<li>complete;</li>
+<li>done.</li>
+</ul>
+<h2 id="16-recommended-commands">16. Recommended Commands<a class="headerlink" href="#16-recommended-commands" title="Permanent link">&para;</a></h2>
+<p>Use current exact paths if examples differ.</p>
+<p>Baseline:</p>
+<div class="highlight"><pre><span></span><code><span class="n">git</span> <span class="n">status</span> <span class="p">-</span><span class="n">-short</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">check</span> <span class="n">examples</span><span class="p">/</span><span class="n">industrial_crate</span><span class="p">.</span><span class="n">lth</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">check</span> <span class="n">examples</span><span class="p">/</span><span class="n">mechanical_door</span><span class="p">.</span><span class="n">lth</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">build</span> <span class="n">examples</span><span class="p">/</span><span class="n">industrial_crate</span><span class="p">.</span><span class="n">lth</span> <span class="n">industrial_crate</span> <span class="p">-</span><span class="n">-out</span> <span class="p">.</span><span class="n">tmp_tests</span><span class="p">/</span><span class="n">baseline_industrial_crate</span> <span class="p">-</span><span class="n">-deterministic</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">build</span> <span class="n">examples</span><span class="p">/</span><span class="n">mechanical_door</span><span class="p">.</span><span class="n">lth</span> <span class="n">mechanical_door</span> <span class="p">-</span><span class="n">-out</span> <span class="p">.</span><span class="n">tmp_tests</span><span class="p">/</span><span class="n">baseline_mechanical_door</span> <span class="p">-</span><span class="n">-deterministic</span>
+</code></pre></div>
+<p>Preview/diagnostics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_preview_evidence</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_diagnostics</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_generation_steering</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Shape/geometry:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_shape_ir_v2</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_grammar_lowering</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_geometry_kernel</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Surface:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_surface_runtime</span><span class="p">.</span><span class="n">py</span> <span class="n">tests</span><span class="p">/</span><span class="n">unit</span><span class="p">/</span><span class="n">test_asset_quality_material_wear_graph</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Kernel seam:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-q</span> <span class="n">tests</span><span class="p">/</span><span class="n">contract</span><span class="p">/</span><span class="n">test_shape_handoff_v1</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+<p>Fast visual iteration:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">quick</span> <span class="n">examples</span><span class="p">/</span><span class="n">bevel_demo</span><span class="p">.</span><span class="n">lth</span> <span class="n">bevel_demo</span> <span class="p">-</span><span class="n">-out</span> <span class="n">tmp_bevel_demo</span><span class="p">.</span><span class="n">glb</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">lathe</span><span class="p">.</span><span class="nb">cli </span><span class="n">quick</span> <span class="n">examples</span><span class="p">/</span><span class="n">alien_grove_showcase</span><span class="p">.</span><span class="n">lth</span> <span class="n">alien_grove</span> <span class="p">-</span><span class="n">-out</span> <span class="n">tmp_alien_grove</span><span class="p">.</span><span class="n">glb</span> <span class="p">-</span><span class="n">-no-cache</span>
+</code></pre></div>
+<p>Run broader checks only after targeted checks are green or when the touched surface requires them.</p>
+<h2 id="17-source-inputs-consolidated">17. Source Inputs Consolidated<a class="headerlink" href="#17-source-inputs-consolidated" title="Permanent link">&para;</a></h2>
+<p>This document consolidates:</p>
+<ul>
+<li><code>docs/asset-quality/lathe-context-problem-solution-goals-success-criteria.md</code></li>
+<li><code>docs/asset-quality/phase1-phase2-visible-geometry-upgrade-guide.md</code></li>
+<li><code>docs/asset-quality/visible-geometry-sprint-0-implementation-plan.md</code></li>
+<li><code>docs/imagination_to_life_session_report.md</code></li>
+<li><code>plans/lathe_imagination_to_life_roadmap.md</code></li>
+<li><code>lathe_quality_research.md</code></li>
+<li><code>research/SYNTHESIS_blockers_and_breakthroughs.md</code></li>
+<li><code>research/audit_shape_blockers.md</code></li>
+<li><code>research/openscad_lessons.md</code></li>
+<li><code>research/sota_geometry.md</code></li>
+<li><code>research/sota_topology_uv.md</code></li>
+<li><code>research/sota_surface_materials.md</code></li>
+<li><code>research/sota_art_direction.md</code></li>
+<li><code>CLAUDE.md</code></li>
+<li><code>README.md</code></li>
+</ul>
+<h2 id="18-what-to-implement-next">18. What To Implement Next<a class="headerlink" href="#18-what-to-implement-next" title="Permanent link">&para;</a></h2>
+<p>Unless the user redirects, the next implementation sequence is:</p>
+<ol>
+<li>Create <code>docs/asset-quality/visible-geometry-sprint-0-evidence.md</code> and capture baseline crate/door evidence.</li>
+<li>Strengthen preview evidence payload and artifact path reporting.</li>
+<li>Implement one visible operation for industrial crate: trim band or fastener grid first, bevel/chamfer if safe.</li>
+<li>Add diagnostics that flag weak hierarchy, missing detail, debug material look, and proxy preview evidence.</li>
+<li>Wire one semantic repair mapping from weak hierarchy to a concrete detail operation.</li>
+<li>Rebuild crate and record before/after preview, report metrics, and package artifacts.</li>
+<li>Add private <code>KernelProgram</code> seam only after the vertical slice has visible evidence.</li>
+<li>Fix surface truth bugs touched by the slice, especially tangent-space normals and material-zone visibility.</li>
+<li>Harden topology/UV only where the visible detail is being lost or misrepresented.</li>
+<li>Use the guardrail fixture to prove the work is not crate-only.</li>
+</ol>
+<p>This is the first path. Do not skip to broad Phase 3 or Phase 4 work until Sprint 0 creates undeniable visible proof.</p>
+<h2 id="19-bottom-line">19. Bottom Line<a class="headerlink" href="#19-bottom-line" title="Permanent link">&para;</a></h2>
+<p>Lathe does not win by adding more words faster than the engine can honor them.</p>
+<p>Lathe wins by making this loop undeniable:</p>
+<div class="highlight"><pre><span></span><code>intent -&gt; artifact -&gt; evidence -&gt; judgment -&gt; repair -&gt; better artifact
+</code></pre></div>
+<p>The next implementation work should stay on that loop until it is visibly true.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

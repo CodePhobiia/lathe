@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/style-pack-v1.json",
+  "title": "Lathe Wonder Style Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "style_pack_id",
+    "display_name",
+    "source",
+    "style_bible",
+    "palette",
+    "materials",
+    "lighting",
+    "form_language",
+    "reuse_policy",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.style_pack.v1"
+    },
+    "style_pack_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "scene_graph",
+            "curated",
+            "user_supplied",
+            "generated"
+          ]
+        },
+        "scene_id": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "scene_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "style_bible": {
+      "$ref": "#/$defs/style_bible"
+    },
+    "palette": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/palette_token"
+      }
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/material"
+      }
+    },
+    "lighting": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lighting_preset"
+      }
+    },
+    "form_language": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/form_term"
+      }
+    },
+    "reuse_policy": {
+      "$ref": "#/$defs/reuse_policy"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generated_by",
+        "fingerprint"
+      ],
+      "properties": {
+        "generated_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{16}$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "material_id": {
+      "type": "string",
+      "pattern": "^mat_[a-z0-9_]{3,80}$"
+    },
+    "string_tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      }
+    },
+    "style_bible": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mood",
+        "palette",
+        "materials",
+        "forms",
+        "lighting"
+      ],
+      "properties": {
+        "mood": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "palette": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "materials": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "forms": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "lighting": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "avoid": {
+          "$ref": "#/$defs/string_tags"
+        }
+      }
+    },
+    "palette_token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "token_id",
+        "name",
+        "roles",
+        "tags"
+      ],
+      "properties": {
+        "token_id": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "roles": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "tags": {
+          "$ref": "#/$defs/string_tags"
+        }
+      }
+    },
+    "material": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "material_id",
+        "name",
+        "role",
+        "palette_refs",
+        "pbr",
+        "tags"
+      ],
+      "properties": {
+        "material_id": {
+          "$ref": "#/$defs/material_id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "palette_refs": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "pbr": {
+          "$ref": "#/$defs/pbr"
+        },
+        "tags": {
+          "$ref": "#/$defs/string_tags"
+        }
+      }
+    },
+    "pbr": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "basecolor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metallic": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "roughness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "emissive": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "lighting_preset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preset_id",
+        "light_type",
+        "color",
+        "intensity",
+        "purpose",
+        "style_terms"
+      ],
+      "properties": {
+        "preset_id": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "light_type": {
+          "enum": [
+            "directional",
+            "point",
+            "area",
+            "spot",
+            "emissive_practical",
+            "moonbeam",
+            "candle_cluster"
+          ]
+        },
+        "color": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intensity": {
+          "type": "number",
+          "minimum": 0
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "style_terms": {
+          "$ref": "#/$defs/string_tags"
+        }
+      }
+    },
+    "form_term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "form_id",
+        "term"
+      ],
+      "properties": {
+        "form_id": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "term": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reuse_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_signature_fields",
+        "instance_override_fields",
+        "allow_shared_assets"
+      ],
+      "properties": {
+        "asset_signature_fields": {
+          "$ref": "#/$defs/reuse_field_list"
+        },
+        "instance_override_fields": {
+          "$ref": "#/$defs/reuse_field_list"
+        },
+        "allow_shared_assets": {
+          "type": "boolean"
+        }
+      }
+    },
+    "reuse_field_list": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "source_asset",
+          "lathe_asset",
+          "source_family",
+          "source_kit",
+          "variant",
+          "material_bindings",
+          "name",
+          "role",
+          "region",
+          "transform",
+          "semantic_tags",
+          "state",
+          "surface_overrides",
+          "affordances",
+          "provenance"
+        ]
+      }
+    }
+  }
+}

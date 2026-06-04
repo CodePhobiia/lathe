@@ -1,0 +1,7 @@
+{
+  "schema_pointer_version": "lathe.llm_schema_pointer.v1",
+  "contract": "scene_patch",
+  "schema_version": "lathe.scene_patch.v1",
+  "canonical_schema": "../../schema/scene_patch.schema.json",
+  "usage": "Link to the canonical schema from prompts and tools instead of copying schema bodies."
+}

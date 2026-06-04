@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-quality-report-v1.json",
+  "title": "Lathe Wonder Scene Quality Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "scene_version",
+    "status",
+    "score",
+    "summary",
+    "human_summary",
+    "validators",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_quality_report.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "enum": [
+        "passed",
+        "passed_with_warnings",
+        "failed"
+      ]
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "validators",
+        "diagnostics",
+        "errors",
+        "warnings"
+      ],
+      "properties": {
+        "validators": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "diagnostics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "human_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "headline",
+        "strengths",
+        "needs_work"
+      ],
+      "properties": {
+        "headline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strengths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "needs_work": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "validators": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/validator_report"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "validator_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "validator",
+        "score",
+        "diagnostics"
+      ],
+      "properties": {
+        "validator": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "name",
+        "severity",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "contract": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

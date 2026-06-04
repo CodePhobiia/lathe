@@ -1,0 +1,26 @@
+{
+  "asset": "mechanical_door",
+  "system": "lathe_fallback",
+  "date": "2026-04-24",
+  "result": "ok",
+  "metrics": {
+    "wall_clock_s": 2.768,
+    "peak_memory_mb": null,
+    "score": 0.876905,
+    "threshold": 0.84,
+    "certified": true,
+    "glb_sha256": "ed4c8d41d1346aa344d2982fcd5551772ee407f9cc8f78a2b4fcad962346f08c",
+    "triangle_count": 1838,
+    "uv_valid": true,
+    "collision_present": true,
+    "pivot_correct": true,
+    "reproducible": true,
+    "reproducibility_hashes": [
+      "ed4c8d41d1346aa344d2982fcd5551772ee407f9cc8f78a2b4fcad962346f08c",
+      "ed4c8d41d1346aa344d2982fcd5551772ee407f9cc8f78a2b4fcad962346f08c",
+      "ed4c8d41d1346aa344d2982fcd5551772ee407f9cc8f78a2b4fcad962346f08c"
+    ]
+  },
+  "diagnostics": [],
+  "note": null
+}

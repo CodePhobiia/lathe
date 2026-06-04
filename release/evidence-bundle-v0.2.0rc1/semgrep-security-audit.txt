@@ -1,0 +1,8 @@
+# Phase 6: semgrep p/security-audit scan attempt
+# Captured: 2026-04-28
+
+## command: D:\lathe_v0_1\.venv\Scripts\semgrep.exe --config p/security-audit --json --output docs/release/evidence-bundle-v0.2.0rc1/semgrep-security-audit.json
+## status: tool not installed (see semgrep-python.txt)
+
+## disposition: requires-human (H40, same root cause as p/python)
+## CI authority: .github/workflows/security.yml.

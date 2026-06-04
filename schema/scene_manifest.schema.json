@@ -1,0 +1,511 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-manifest-v1.json",
+  "title": "Lathe Wonder Scene Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "scene_version",
+    "mode",
+    "status",
+    "offline",
+    "objects",
+    "planned_renders",
+    "planned_exports",
+    "built_renders",
+    "built_exports"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_manifest.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "mode": {
+      "$ref": "#/$defs/build_mode"
+    },
+    "status": {
+      "enum": [
+        "golden_fixture_proxy_contract",
+        "offline_preview_package",
+        "offline_final_package",
+        "proxy_scene_package_built"
+      ]
+    },
+    "offline": {
+      "type": "boolean"
+    },
+    "build_options": {
+      "$ref": "#/$defs/build_options"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/relative_path"
+      }
+    },
+    "package_paths": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/relative_path"
+      }
+    },
+    "objects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/object_record"
+      }
+    },
+    "planned_renders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/planned_render"
+      }
+    },
+    "planned_exports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/planned_export"
+      }
+    },
+    "built_renders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/built_render"
+      }
+    },
+    "built_exports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/built_export"
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "score"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "passed_with_warnings",
+            "failed"
+          ]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 600
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "camera_id": {
+      "type": "string",
+      "pattern": "^camera_[a-z0-9_]{3,80}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,128}$"
+    },
+    "build_mode": {
+      "enum": [
+        "preview",
+        "final"
+      ]
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "built",
+        "validated",
+        "failed",
+        "skipped"
+      ]
+    },
+    "build_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "executor",
+        "mode",
+        "runtime_config",
+        "deterministic",
+        "allow_fallback",
+        "strict",
+        "diagnostic_policy",
+        "runtime",
+        "effective_runtime",
+        "fallbacks"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.scene_build_options.v1"
+        },
+        "executor": {
+          "const": "lathe.scene.executor.offline_proxy_v1"
+        },
+        "mode": {
+          "$ref": "#/$defs/build_mode"
+        },
+        "runtime_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provided",
+            "path"
+          ],
+          "properties": {
+            "provided": {
+              "type": "boolean"
+            },
+            "path": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 500
+            }
+          }
+        },
+        "deterministic": {
+          "type": "boolean"
+        },
+        "allow_fallback": {
+          "type": "boolean"
+        },
+        "strict": {
+          "type": "boolean"
+        },
+        "diagnostic_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scene_validation",
+            "plan_diagnostics",
+            "fallback_diagnostics"
+          ],
+          "properties": {
+            "scene_validation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "plan_diagnostics": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fallback_diagnostics": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider_calls",
+            "asset_build",
+            "asset_materialization",
+            "renderer",
+            "exporter"
+          ],
+          "properties": {
+            "provider_calls": {
+              "const": "not_executed"
+            },
+            "asset_build": {
+              "enum": [
+                "deterministic_proxy_manifest",
+                "lathe.asset_build_pipeline.v1"
+              ]
+            },
+            "asset_materialization": {
+              "enum": [
+                "not_executed",
+                "lathe.scene.materialize.v1"
+              ]
+            },
+            "renderer": {
+              "const": "lathe.scene.proxy_renderer.v1"
+            },
+            "exporter": {
+              "const": "lathe.scene.proxy_glb_exporter.v1"
+            }
+          }
+        },
+        "effective_runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shape_provider",
+            "shape_strict",
+            "shape_allow_fallback"
+          ],
+          "properties": {
+            "shape_provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "shape_strict": {
+              "type": "boolean"
+            },
+            "shape_allow_fallback": {
+              "type": "boolean"
+            }
+          }
+        },
+        "fallbacks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deterministic_proxy_assets",
+            "deterministic_proxy_renderer",
+            "deterministic_proxy_glb_exporter",
+            "provider_fallbacks_executed"
+          ],
+          "properties": {
+            "deterministic_proxy_assets": {
+              "const": true
+            },
+            "deterministic_proxy_renderer": {
+              "const": true
+            },
+            "deterministic_proxy_glb_exporter": {
+              "const": true
+            },
+            "provider_fallbacks_executed": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 260,
+      "pattern": "^(?![A-Za-z]:[\\\\/])(?!/).+$"
+    },
+    "nullable_relative_path": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/relative_path"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "render_pass": {
+      "enum": [
+        "beauty",
+        "depth",
+        "normal",
+        "object_id",
+        "material_id",
+        "wireframe"
+      ]
+    },
+    "resolution": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "object_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id",
+        "status"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "source": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "asset_task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "asset_proxy_path": {
+          "$ref": "#/$defs/nullable_relative_path"
+        },
+        "artifact_dir": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        }
+      }
+    },
+    "planned_render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "camera_id",
+        "status",
+        "passes",
+        "artifact_path"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "camera_id": {
+          "$ref": "#/$defs/camera_id"
+        },
+        "status": {
+          "const": "planned"
+        },
+        "passes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/render_pass"
+          }
+        },
+        "artifact_path": {
+          "$ref": "#/$defs/nullable_relative_path"
+        }
+      }
+    },
+    "built_render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camera_id",
+        "render_pass",
+        "status",
+        "artifact_path",
+        "renderer",
+        "resolution"
+      ],
+      "properties": {
+        "camera_id": {
+          "$ref": "#/$defs/camera_id"
+        },
+        "render_pass": {
+          "$ref": "#/$defs/render_pass"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "artifact_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "renderer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution": {
+          "$ref": "#/$defs/resolution"
+        }
+      }
+    },
+    "planned_export": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "target",
+        "format",
+        "declared_path",
+        "status",
+        "artifact_path"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "target": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "format": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "declared_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "status": {
+          "const": "planned"
+        },
+        "artifact_path": {
+          "$ref": "#/$defs/nullable_relative_path"
+        }
+      }
+    },
+    "built_export": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "format",
+        "status",
+        "artifact_path"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "format": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "artifact_path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "object_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "identity": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

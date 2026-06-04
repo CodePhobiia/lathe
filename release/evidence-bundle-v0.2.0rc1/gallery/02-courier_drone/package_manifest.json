@@ -1,0 +1,86 @@
+{
+  "asset_id": "courier_drone",
+  "kind": "mechanical_assembly",
+  "contracts": [
+    "shipping_prop"
+  ],
+  "profiles": [
+    "unreal_interactable_prop"
+  ],
+  "version": "0.1.0",
+  "formats": [
+    "usd",
+    "glb"
+  ],
+  "outputs": [
+    {
+      "format": "usd",
+      "uri": "stages\\package\\courier_drone.usda",
+      "sha256": "106dc88c5eed594a811d65bfe98a33c0d6cea1d748e3b6f2eb3e9f14df36d8c5",
+      "size_bytes": 638585
+    },
+    {
+      "format": "glb",
+      "uri": "stages\\package\\courier_drone.glb",
+      "sha256": "5d20f33e24c8f2531d468a1fd5ea0b1090871f6ab0b08b35384a8a226aafe4d9",
+      "size_bytes": 217776
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages\\package\\lod_0.glb",
+      "sha256": "5d20f33e24c8f2531d468a1fd5ea0b1090871f6ab0b08b35384a8a226aafe4d9",
+      "size_bytes": 217776
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages\\package\\lod_1.glb",
+      "sha256": "a77cce5bc264bac314378bd285be9b2c933d03bcff6c4906b0ac5aea0ad48791",
+      "size_bytes": 79468
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages\\package\\lod_2.glb",
+      "sha256": "ce0fcd7acbd23e935bb11ff6da6d4592a906ed5fb7bfcb8aca342d247ccd8c34",
+      "size_bytes": 37348
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages\\package\\lod_3.glb",
+      "sha256": "8fdeac7a67370c8b42c3654fb957fcdb4fc7e43f23347fedc619ee0be1a6a429",
+      "size_bytes": 14124
+    },
+    {
+      "format": "collision_hull",
+      "uri": "stages\\package\\collision_hull.glb",
+      "sha256": "0a99b3f299865da2d2c48191dc57809378f9ef244557c1ed24658803d1b02a21",
+      "size_bytes": 4416
+    },
+    {
+      "format": "collision_parts",
+      "uri": "stages\\package\\collision_parts.glb",
+      "sha256": "04772e018cbb9efb4c4f356abdcdb5cea283309bfef1e3ae1b17586a4845ff3e",
+      "size_bytes": 23148
+    }
+  ],
+  "output_hashes": {
+    "stages\\package\\courier_drone.usda": "106dc88c5eed594a811d65bfe98a33c0d6cea1d748e3b6f2eb3e9f14df36d8c5",
+    "stages\\package\\courier_drone.glb": "5d20f33e24c8f2531d468a1fd5ea0b1090871f6ab0b08b35384a8a226aafe4d9",
+    "stages\\package\\lod_0.glb": "5d20f33e24c8f2531d468a1fd5ea0b1090871f6ab0b08b35384a8a226aafe4d9",
+    "stages\\package\\lod_1.glb": "a77cce5bc264bac314378bd285be9b2c933d03bcff6c4906b0ac5aea0ad48791",
+    "stages\\package\\lod_2.glb": "ce0fcd7acbd23e935bb11ff6da6d4592a906ed5fb7bfcb8aca342d247ccd8c34",
+    "stages\\package\\lod_3.glb": "8fdeac7a67370c8b42c3654fb957fcdb4fc7e43f23347fedc619ee0be1a6a429",
+    "stages\\package\\collision_hull.glb": "0a99b3f299865da2d2c48191dc57809378f9ef244557c1ed24658803d1b02a21",
+    "stages\\package\\collision_parts.glb": "04772e018cbb9efb4c4f356abdcdb5cea283309bfef1e3ae1b17586a4845ff3e"
+  },
+  "previews": [
+    "stages\\package\\previews\\turntable.png",
+    "stages\\package\\previews\\wireframe.png",
+    "stages\\package\\previews\\material_ids.png",
+    "stages\\package\\previews\\uv_layout.png",
+    "stages\\package\\previews\\collision.png",
+    "stages\\package\\previews\\lod_sheet.png"
+  ],
+  "trace_path": "stages\\package\\trace_manifest.json",
+  "normalized_source_path": "normalized_program.json",
+  "build_timestamp": null
+}

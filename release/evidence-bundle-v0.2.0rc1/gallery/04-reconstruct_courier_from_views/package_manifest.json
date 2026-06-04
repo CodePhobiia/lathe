@@ -1,0 +1,86 @@
+{
+  "asset_id": "reconstruct_courier_from_views",
+  "kind": "mechanical_assembly",
+  "contracts": [
+    "shipping_prop"
+  ],
+  "profiles": [
+    "unreal_interactable_prop"
+  ],
+  "version": "0.1.0",
+  "formats": [
+    "usd",
+    "glb"
+  ],
+  "outputs": [
+    {
+      "format": "usd",
+      "uri": "stages/package/reconstruct_courier_from_views.usda",
+      "sha256": "223c030ec1f593228c7e271a07a109c7ecb43aab8d0629200ee82a16f17f325e",
+      "size_bytes": 638643
+    },
+    {
+      "format": "glb",
+      "uri": "stages/package/reconstruct_courier_from_views.glb",
+      "sha256": "c2b5fef0e1c2697bfdb643a259cd5e7049d2c77f03eee4a3342b3f3a9a7a8ad5",
+      "size_bytes": 217772
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_0.glb",
+      "sha256": "c2b5fef0e1c2697bfdb643a259cd5e7049d2c77f03eee4a3342b3f3a9a7a8ad5",
+      "size_bytes": 217772
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_1.glb",
+      "sha256": "4be4f565a088759806488386f4d75daf20e64d8ec6196052d11758a617c7870c",
+      "size_bytes": 78424
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_2.glb",
+      "sha256": "3576c1982c0a4e5f6afc361ff8c17fb5342b4adf18c9b5df775213b01243c40c",
+      "size_bytes": 36304
+    },
+    {
+      "format": "lod_glb",
+      "uri": "stages/package/lod_3.glb",
+      "sha256": "100bf1a156066974bfd468de011ae737a678732e0d981923e6a26d2d9fe7798d",
+      "size_bytes": 14312
+    },
+    {
+      "format": "collision_hull",
+      "uri": "stages/package/collision_hull.glb",
+      "sha256": "ada14e4316a8ac0c315202e6f53a201dfa9bdd15b72ef52b2b55a9da27d29aaa",
+      "size_bytes": 4772
+    },
+    {
+      "format": "collision_parts",
+      "uri": "stages/package/collision_parts.glb",
+      "sha256": "8fa815504d542b6eae6ceee22ecb79a7e0f3f6df4818cf0a4cc01bbf50232127",
+      "size_bytes": 22784
+    }
+  ],
+  "output_hashes": {
+    "stages/package/reconstruct_courier_from_views.usda": "223c030ec1f593228c7e271a07a109c7ecb43aab8d0629200ee82a16f17f325e",
+    "stages/package/reconstruct_courier_from_views.glb": "c2b5fef0e1c2697bfdb643a259cd5e7049d2c77f03eee4a3342b3f3a9a7a8ad5",
+    "stages/package/lod_0.glb": "c2b5fef0e1c2697bfdb643a259cd5e7049d2c77f03eee4a3342b3f3a9a7a8ad5",
+    "stages/package/lod_1.glb": "4be4f565a088759806488386f4d75daf20e64d8ec6196052d11758a617c7870c",
+    "stages/package/lod_2.glb": "3576c1982c0a4e5f6afc361ff8c17fb5342b4adf18c9b5df775213b01243c40c",
+    "stages/package/lod_3.glb": "100bf1a156066974bfd468de011ae737a678732e0d981923e6a26d2d9fe7798d",
+    "stages/package/collision_hull.glb": "ada14e4316a8ac0c315202e6f53a201dfa9bdd15b72ef52b2b55a9da27d29aaa",
+    "stages/package/collision_parts.glb": "8fa815504d542b6eae6ceee22ecb79a7e0f3f6df4818cf0a4cc01bbf50232127"
+  },
+  "previews": [
+    "stages/package/previews/turntable.png",
+    "stages/package/previews/wireframe.png",
+    "stages/package/previews/material_ids.png",
+    "stages/package/previews/uv_layout.png",
+    "stages/package/previews/collision.png",
+    "stages/package/previews/lod_sheet.png"
+  ],
+  "trace_path": "stages/package/trace_manifest.json",
+  "normalized_source_path": "normalized_program.json",
+  "build_timestamp": null
+}

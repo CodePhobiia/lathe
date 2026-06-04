@@ -1,0 +1,336 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/scene-repair-report-v1.json",
+  "title": "Lathe Wonder Scene Repair Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repair_id",
+    "scene_id",
+    "scene_version",
+    "inspection_id",
+    "goal",
+    "status",
+    "max_rounds",
+    "rounds_completed",
+    "summary",
+    "proposals",
+    "rounds",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.scene_repair_report.v1"
+    },
+    "repair_id": {
+      "type": "string",
+      "pattern": "^repair_[a-z0-9_]{3,80}$"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "scene_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "inspection_id": {
+      "type": "string",
+      "pattern": "^inspect_[a-z0-9_]{3,80}$"
+    },
+    "goal": {
+      "enum": [
+        "wonder_preview",
+        "export_ready",
+        "roblox_ready"
+      ]
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "applied",
+        "partial",
+        "blocked",
+        "failed",
+        "max_rounds_reached",
+        "no_repairs_needed"
+      ]
+    },
+    "max_rounds": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rounds_completed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposals",
+        "applied",
+        "rejected",
+        "skipped",
+        "diagnostics",
+        "errors",
+        "warnings"
+      ],
+      "properties": {
+        "proposals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applied": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "diagnostics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/proposal_report"
+      }
+    },
+    "rounds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/round_report"
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "scene_patch": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "patch_id",
+        "scope",
+        "target_id",
+        "instruction",
+        "preserve",
+        "allowed_changes"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "lathe.scene_patch.v1"
+        },
+        "patch_id": {
+          "type": "string",
+          "pattern": "^patch_[a-z0-9_]{3,80}$"
+        },
+        "scope": {
+          "enum": [
+            "asset",
+            "object",
+            "region",
+            "scene",
+            "camera",
+            "light",
+            "curiosity_anchor",
+            "hidden_state"
+          ]
+        },
+        "target_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{2,95}$"
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preserve": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "proposal_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patch_id",
+        "scope",
+        "target_id",
+        "status",
+        "source_recommendation_index",
+        "instruction",
+        "allowed_changes",
+        "diagnostics",
+        "patch"
+      ],
+      "properties": {
+        "patch_id": {
+          "type": "string",
+          "pattern": "^patch_[a-z0-9_]{3,80}$"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "applied",
+            "rejected",
+            "skipped"
+          ]
+        },
+        "source_recommendation_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowed_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        },
+        "patch": {
+          "$ref": "#/$defs/scene_patch"
+        }
+      }
+    },
+    "round_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "round",
+        "patch_id",
+        "status",
+        "applied_operations",
+        "rejected_operations",
+        "diagnostics"
+      ],
+      "properties": {
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "patch_id": {
+          "type": "string",
+          "pattern": "^patch_[a-z0-9_]{3,80}$"
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "rejected"
+          ]
+        },
+        "applied_operations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_operations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "severity",
+        "path",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "contract": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

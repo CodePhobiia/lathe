@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lathe.dev/schema/wonder/game-readiness-v1.json",
+  "title": "Lathe Wonder Game Readiness Metadata v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scene_id",
+    "objects"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lathe.game_readiness.v1"
+    },
+    "scene_id": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "target": {
+      "$ref": "#/$defs/snake_id"
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "length": {
+          "enum": [
+            "meters",
+            "centimeters",
+            "studs",
+            "units"
+          ]
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object_game_readiness"
+      }
+    }
+  },
+  "$defs": {
+    "snake_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "object_id": {
+      "type": "string",
+      "pattern": "^obj_[a-z0-9_]{3,80}$"
+    },
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    },
+    "string_tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      }
+    },
+    "object_game_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_id"
+      ],
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/object_id"
+        },
+        "mobility": {
+          "enum": [
+            "static",
+            "dynamic",
+            "kinematic",
+            "decorative"
+          ]
+        },
+        "interactable": {
+          "type": "boolean"
+        },
+        "walkable": {
+          "type": "boolean"
+        },
+        "collision": {
+          "$ref": "#/$defs/collision"
+        },
+        "pivot": {
+          "$ref": "#/$defs/pivot"
+        },
+        "snap_points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snap_point"
+          }
+        },
+        "sockets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/socket"
+          }
+        },
+        "lod": {
+          "$ref": "#/$defs/lod_policy"
+        },
+        "physics": {
+          "$ref": "#/$defs/physics_profile"
+        },
+        "occlusion": {
+          "$ref": "#/$defs/occlusion_hint"
+        },
+        "mobile_performance": {
+          "$ref": "#/$defs/mobile_performance"
+        },
+        "gameplay_tags": {
+          "$ref": "#/$defs/string_tags"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/state_value"
+          },
+          "description": "Opaque caller metadata. lathe.scene.game_readiness rejects secret-bearing keys and values."
+        }
+      }
+    },
+    "collision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "none",
+            "box",
+            "sphere",
+            "capsule",
+            "hull",
+            "mesh",
+            "compound",
+            "trigger"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "walkable": {
+          "type": "boolean"
+        },
+        "primitives": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "pivot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "center",
+            "base_center",
+            "custom",
+            "socket"
+          ]
+        },
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "socket": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "snap_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "position"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "normal": {
+          "$ref": "#/$defs/vector3"
+        },
+        "tags": {
+          "$ref": "#/$defs/string_tags"
+        }
+      }
+    },
+    "socket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "kind": {
+          "$ref": "#/$defs/snake_id"
+        },
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        }
+      }
+    },
+    "lod_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy": {
+          "enum": [
+            "none",
+            "auto",
+            "manual"
+          ]
+        },
+        "levels": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8
+        },
+        "screen_size_thresholds": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "physics_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "enum": [
+            "none",
+            "static",
+            "dynamic",
+            "kinematic",
+            "trigger"
+          ]
+        },
+        "mass": {
+          "type": "number",
+          "minimum": 0
+        },
+        "material": {
+          "$ref": "#/$defs/snake_id"
+        }
+      }
+    },
+    "occlusion_hint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "occluder",
+            "occludee",
+            "both"
+          ]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    },
+    "mobile_performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "budget_class": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "estimated_triangles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "estimated_draw_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "texture_resolution": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "state_value": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}
