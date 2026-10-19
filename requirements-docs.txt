@@ -3,8 +3,8 @@
 # exist so non-uv contributors can `pip install -r requirements-docs.txt`
 # and run `mkdocs serve` / `mkdocs build --strict`.
 
-mkdocs-material>=9.5
-mkdocstrings[python]>=0.26
+mkdocs-material>=9.7.7
+mkdocstrings[python]>=1.0.7
 mkdocs-mermaid2-plugin>=1.1
 mkdocs-gen-files>=0.5
 mkdocs-literate-nav>=0.6
